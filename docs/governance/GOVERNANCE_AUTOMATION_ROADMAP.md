@@ -1,5 +1,19 @@
 # Governance Automation Roadmap
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Governance Automation Roadmap](#governance-automation-roadmap)
+  - [1. Automated Surface Audit](#1-automated-surface-audit)
+  - [2. Drift Scanner CI Integration](#2-drift-scanner-ci-integration)
+  - [3. Determinism Regression Auto-Block](#3-determinism-regression-auto-block)
+  - [4. Cross-Platform Hash Diff Automation](#4-cross-platform-hash-diff-automation)
+  - [5. Formal Verification Integration](#5-formal-verification-integration)
+
+<!-- T81-TOC:END -->
+
+
 **Status:** **Planned**
 **Objective:** Automate governance compliance to eliminate human error.
 

@@ -1,5 +1,30 @@
 # Installing & Building T81 Foundation
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Installing & Building T81 Foundation](#installing-&-building-t81-foundation)
+  - [Prerequisites](#prerequisites)
+  - [Clone and Build](#clone-and-build)
+- [Configure for Release with Ninja](#configure-for-release-with-ninja)
+- [Build all targets in parallel](#build-all-targets-in-parallel)
+  - [Verify Installation](#verify-installation)
+- [Run the core C++ test suite](#run-the-core-c++-test-suite)
+    - [Reproducibility Gate](#reproducibility-gate)
+  - [Running Examples](#running-examples)
+    - [Compiling T81Lang Code](#compiling-t81lang-code)
+  - [Running Benchmarks](#running-benchmarks)
+- [Build the benchmark targets](#build-the-benchmark-targets)
+- [Default smoke profile; outputs to JSON](#default-smoke-profile-outputs-to-json)
+- [Human-usable full profile:](#human-usable-full-profile)
+- [Exhaustive research/nightly profile:](#exhaustive-researchnightly-profile)
+- [Custom filtered local iteration using the CLI wrapper:](#custom-filtered-local-iteration-using-the-cli-wrapper)
+  - [Including T81 in Your CMake Project](#including-t81-in-your-cmake-project)
+
+<!-- T81-TOC:END -->
+
+
 T81 Foundation is a vertically integrated, ternary-native ecosystem. It is distributed as C++ source code and compiled via CMake. It currently supports Linux (GCC/Clang), macOS (Apple Clang), and Windows Server (MSVC, best-effort).
 
 ## Prerequisites

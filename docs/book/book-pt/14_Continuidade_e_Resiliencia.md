@@ -1,5 +1,19 @@
 # Capítulo 14: Continuidade e Resiliência
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Capítulo 14: Continuidade e Resiliência](#capítulo-14-continuidade-e-resiliência)
+  - [14.1 O Protocolo Cleanroom](#141-o-protocolo-cleanroom)
+    - [14.1.1 Etapas de Reconstrução](#1411-etapas-de-reconstrução)
+  - [14.2 Pontos Únicos de Falha](#142-pontos-únicos-de-falha)
+  - [14.3 Manifesto de Continuidade](#143-manifesto-de-continuidade)
+  - [14.4 Invariantes Formais Imutáveis](#144-invariantes-formais-imutáveis)
+
+<!-- T81-TOC:END -->
+
+
 ## 14.1 O Protocolo Cleanroom
 
 **Status: Aspiracional**

@@ -1,5 +1,39 @@
 # Research Synthesis & Decision Report — Ternary Research Closure and Next-Hypothesis Selection
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Research Synthesis & Decision Report — Ternary Research Closure and Next-Hypothesis Selection](#research-synthesis-&-decision-report-—-ternary-research-closure-and-next-hypothesis-selection)
+  - [Executive Summary](#executive-summary)
+    - [Key Operational Decisions](#key-operational-decisions)
+  - [Phase 1 — Evidence Reconstruction & Claim/Evidence Ledger](#phase-1-—-evidence-reconstruction-&-claimevidence-ledger)
+    - [Claim / Evidence Matrix (PRs #544–#549)](#claim--evidence-matrix-prs-#544–#549)
+  - [Phase 2 — Audited Research Conclusions & Document Corrections](#phase-2-—-audited-research-conclusions-&-document-corrections)
+    - [1. Mathematical Example & Proof Corrections](#1-mathematical-example-&-proof-corrections)
+    - [2. Overstated Performance & Memory Bandwidth Claims](#2-overstated-performance-&-memory-bandwidth-claims)
+    - [3. QEMU Emulation vs Physical Hardware Contextualization](#3-qemu-emulation-vs-physical-hardware-contextualization)
+    - [4. Single-Use vs Pre-Packed Execution Path Separation](#4-single-use-vs-pre-packed-execution-path-separation)
+    - [5. Prior-Art Analysis](#5-prior-art-analysis)
+  - [Phase 3 — Frozen Experiment Status & Preservation Register](#phase-3-—-frozen-experiment-status-&-preservation-register)
+    - [Preservation Status: **FROZEN / STOP**](#preservation-status-**frozen--stop**)
+    - [Reproducibility Instructions](#reproducibility-instructions)
+  - [Phase 4 — Candidate Hypotheses Assessment](#phase-4-—-candidate-hypotheses-assessment)
+    - [Candidate 1: Redundant Signed-Digit (RSD) Multi-Precision Arithmetic Crossover Analysis](#candidate-1-redundant-signed-digit-rsd-multi-precision-arithmetic-crossover-analysis)
+    - [Candidate 2: Hardware Cost Models for Ternary Logic & Memory (ASIC / FPGA vs Binary CMOS)](#candidate-2-hardware-cost-models-for-ternary-logic-&-memory-asic--fpga-vs-binary-cmos)
+    - [Candidate 3: Deterministic Execution & Canonical Provenance Verification in Policy-Gated AI Runtimes (RFC-0028 / RFC-0030 / Axion)](#candidate-3-deterministic-execution-&-canonical-provenance-verification-in-policy-gated-ai-runtimes-rfc-0028--rfc-0030--axion)
+    - [Candidate 4: Ternary-Native Sparse Graph Analytics & Adjacency Representations](#candidate-4-ternary-native-sparse-graph-analytics-&-adjacency-representations)
+    - [Candidate 5: Algebraic & Galois Field Representations ($\text{GF}(3^k)$ / Base-81) for Verifiable Storage & Communication](#candidate-5-algebraic-&-galois-field-representations-$\text{gf}3^k$--base-81-for-verifiable-storage-&-communication)
+  - [Phase 5 — Hypothesis Ranking & Next Experiment Proposal](#phase-5-—-hypothesis-ranking-&-next-experiment-proposal)
+    - [Candidate Comparative Ranking Matrix](#candidate-comparative-ranking-matrix)
+    - [Selected Next Experiment Proposal](#selected-next-experiment-proposal)
+      - [Experiment Title](#experiment-title)
+      - [Objective & Scope](#objective-&-scope)
+      - [Experimental Design & Test Protocol](#experimental-design-&-test-protocol)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `docs/research/TERNARY_RESEARCH_CLOSURE_AND_NEXT_HYPOTHESIS.md`
 **Date:** April 2026
 **Status:** Complete / Final Research Synthesis

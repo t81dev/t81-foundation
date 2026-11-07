@@ -1,5 +1,18 @@
 # BASE-01 B1 readiness matrix — proposed design v0.1
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [BASE-01 B1 readiness matrix — proposed design v0.1](#base-01-b1-readiness-matrix-—-proposed-design-v01)
+  - [Classification meaning](#classification-meaning)
+  - [Decisions and unresolved questions](#decisions-and-unresolved-questions)
+  - [Minimum future sequence](#minimum-future-sequence)
+  - [Exact validation of this design packet](#exact-validation-of-this-design-packet)
+
+<!-- T81-TOC:END -->
+
+
 **Design only. No workload is ready for measurement. Authorization is absent.**
 This matrix routes future work; its labels neither approve execution nor report
 qualification outcomes. Use the [measurement contract](BASE01_B1_MEASUREMENT_CONTRACT.md)

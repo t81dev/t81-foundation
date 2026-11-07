@@ -1,5 +1,25 @@
 # TISC Instruction Set and T81Lang Coverage Matrix
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [TISC Instruction Set and T81Lang Coverage Matrix](#tisc-instruction-set-and-t81lang-coverage-matrix)
+  - [1. Executive Summary](#1-executive-summary)
+    - [Key Metrics](#key-metrics)
+  - [2. Complete TISC Opcode Coverage Matrix](#2-complete-tisc-opcode-coverage-matrix)
+  - [3. T81Lang Construct and Pipeline Coverage](#3-t81lang-construct-and-pipeline-coverage)
+    - [3.1 Language Construct Matrix](#31-language-construct-matrix)
+  - [4. Compiler Reachability and Unreachable Opcode Analysis](#4-compiler-reachability-and-unreachable-opcode-analysis)
+    - [4.1 Reachable Opcodes (125 / 209)](#41-reachable-opcodes-125--209)
+    - [4.2 Unreachable Opcodes (84 / 209)](#42-unreachable-opcodes-84--209)
+  - [5. Ternary-Native Expressiveness vs Binary Abstractions](#5-ternary-native-expressiveness-vs-binary-abstractions)
+    - [5.1 The Binary Representation Tax](#51-the-binary-representation-tax)
+    - [5.2 Native Ternary Advantage](#52-native-ternary-advantage)
+
+<!-- T81-TOC:END -->
+
+
 ## 1. Executive Summary
 
 This document provides a comprehensive, source-grounded audit of the **TISC v1.1.0 Instruction Set Architecture** and the **T81Lang Compiler & Runtime Pipeline**.

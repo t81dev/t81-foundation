@@ -1,5 +1,40 @@
 # T81 Foundation Deep Research Analysis Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation Deep Research Analysis Report](#t81-foundation-deep-research-analysis-report)
+  - [Code Analysis](#code-analysis)
+    - [**Code Structure & Scale**](#**code-structure-&-scale**)
+    - [**Implementation Quality**](#**implementation-quality**)
+    - [**Testing & Verification**](#**testing-&-verification**)
+  - [Innovations and Contributions](#innovations-and-contributions)
+    - [**Revolutionary Ternary-Native Computing**](#**revolutionary-ternary-native-computing**)
+    - [**AI-Native ISA Design**](#**ai-native-isa-design**)
+    - [**Governance & Safety Innovation**](#**governance-&-safety-innovation**)
+    - [**Cryptographic & Scientific Applications**](#**cryptographic-&-scientific-applications**)
+  - [Installation and Usage](#installation-and-usage)
+    - [**Setup Requirements**](#**setup-requirements**)
+- [Prerequisites](#prerequisites)
+- [Clone and Build](#clone-and-build)
+    - [**Quick Start Examples**](#**quick-start-examples**)
+- [Compile and run](#compile-and-run)
+- [Output: Hello, World!](#output-hello-world!)
+    - [**Advanced Features**](#**advanced-features**)
+  - [Community and Impact](#community-and-impact)
+    - [**Repository Metrics** (as of March 2026)](#**repository-metrics**-as-of-march-2026)
+    - [**Development Activity**](#**development-activity**)
+    - [**Adoption Potential**](#**adoption-potential**)
+  - [Recommendations](#recommendations)
+    - [**Short-term Improvements** (0-6 months)](#**short-term-improvements**-0-6-months)
+    - [**Medium-term Strategic Initiatives** (6-18 months)](#**medium-term-strategic-initiatives**-6-18-months)
+    - [**Long-term Vision** (18+ months)](#**long-term-vision**-18+-months)
+  - [Analysis Summary](#analysis-summary)
+
+<!-- T81-TOC:END -->
+
+
 ## Code Analysis
 
 The T81 Foundation demonstrates exceptional code quality and architectural sophistication across its substantial codebase:

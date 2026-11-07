@@ -1,5 +1,30 @@
 # T81 Foundation Project Profile
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation Project Profile](#t81-foundation-project-profile)
+  - [1. Executive Positioning](#1-executive-positioning)
+  - [2. Architectural Overview](#2-architectural-overview)
+    - [Base-81 / balanced ternary data model](#base-81--balanced-ternary-data-model)
+    - [Deterministic runtime and virtual machine](#deterministic-runtime-and-virtual-machine)
+    - [Axion policy enforcement](#axion-policy-enforcement)
+    - [CanonFS immutable storage and provenance](#canonfs-immutable-storage-and-provenance)
+    - [TernaryOS and systems direction](#ternaryos-and-systems-direction)
+  - [3. What Works Now](#3-what-works-now)
+  - [4. What Is Stable, Draft, And Experimental](#4-what-is-stable-draft-and-experimental)
+    - [Stable enough to build against](#stable-enough-to-build-against)
+    - [Draft but meaningful](#draft-but-meaningful)
+    - [Experimental](#experimental)
+  - [5. Why T81 Is Distinct](#5-why-t81-is-distinct)
+  - [6. Current Risks And Friction](#6-current-risks-and-friction)
+  - [7. Best Near-Term Development Shape](#7-best-near-term-development-shape)
+  - [8. Recommended Reading Order](#8-recommended-reading-order)
+
+<!-- T81-TOC:END -->
+
+
 > **Historical runtime profile — qualified October 27, 2026.** This body preserves the earlier runtime-oriented framing. Its comparative descriptions of mainstream systems and statements of uncommon assurance are not established by this profile. Use the [current README](../../README.md), [continuity charter](../research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md), and [alignment audit](../research/ROOT_DOCUMENTATION_ALIGNMENT_AUDIT.md) for research positioning and evidence limits. Normative contracts and surface classifications remain unchanged.
 
 ## 1. Executive Positioning

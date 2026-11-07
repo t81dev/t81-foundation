@@ -1,5 +1,42 @@
 # T81 Foundation Strategic Consolidation Summary
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation Strategic Consolidation Summary](#t81-foundation-strategic-consolidation-summary)
+  - [**Date: April 3, 2026**](#**date-april-3-2026**)
+    - [**Mission Accomplished: Clear Separation of Stable Core from Experimental Frontier**](#**mission-accomplished-clear-separation-of-stable-core-from-experimental-frontier**)
+  - [**🎯 Strategic Problem Solved**](#**🎯-strategic-problem-solved**)
+    - [**Issue Identified**](#**issue-identified**)
+    - [**Root Cause**](#**root-cause**)
+  - [**✅ Strategic Actions Completed**](#**✅-strategic-actions-completed**)
+    - [**1. Clear Boundaries Established**](#**1-clear-boundaries-established**)
+    - [**2. Experimental Tooling Separated**](#**2-experimental-tooling-separated**)
+    - [**3. Project Positioning Clarified**](#**3-project-positioning-clarified**)
+    - [**4. Build System Updated**](#**4-build-system-updated**)
+  - [**📊 Impact Assessment**](#**📊-impact-assessment**)
+    - [**Quantitative Improvements**](#**quantitative-improvements**)
+    - [**Qualitative Improvements**](#**qualitative-improvements**)
+    - [**Risk Mitigation**](#**risk-mitigation**)
+  - [**🏗️ New Project Structure**](#**🏗️-new-project-structure**)
+    - [**Stable Production Core** (What Works Today)](#**stable-production-core**-what-works-today)
+    - [**Experimental Research Frontier** (What Might Become)](#**experimental-research-frontier**-what-might-become)
+  - [**🎯 Strategic Positioning Achieved**](#**🎯-strategic-positioning-achieved**)
+    - [**Primary Identity: "Deterministic AI Runtime"**](#**primary-identity-"deterministic-ai-runtime"**)
+    - [**Value Proposition**](#**value-proposition**)
+    - [**Target Markets**](#**target-markets**)
+  - [**📈 Next Steps (Optional)**](#**📈-next-steps-optional**)
+    - [**Phase 2: Tooling Consolidation** (Medium Priority)](#**phase-2-tooling-consolidation**-medium-priority)
+    - [**Phase 3: Market Development** (Future)](#**phase-3-market-development**-future)
+  - [**🏆 Success Metrics**](#**🏆-success-metrics**)
+    - [**Achieved**](#**achieved**)
+    - [**Ongoing**](#**ongoing**)
+  - [**🎉 Conclusion**](#**🎉-conclusion**)
+
+<!-- T81-TOC:END -->
+
+
 ## **Date: April 3, 2026**
 
 ### **Mission Accomplished: Clear Separation of Stable Core from Experimental Frontier**

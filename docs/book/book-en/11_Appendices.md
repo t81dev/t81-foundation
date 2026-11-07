@@ -1,5 +1,24 @@
 # Chapter 11: Appendices
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Chapter 11: Appendices](#chapter-11-appendices)
+  - [11.1 Boundary and Maturity Snapshot](#111-boundary-and-maturity-snapshot)
+  - [11.2 Glossary](#112-glossary)
+  - [11.3 Useful Links](#113-useful-links)
+    - [Recommended Onboarding Use](#recommended-onboarding-use)
+    - [Role-Based Learning Path](#role-based-learning-path)
+    - [Worked Example](#worked-example)
+    - [Hands-On Lab](#hands-on-lab)
+    - [Expected Outcomes](#expected-outcomes)
+    - [Chapter Summary](#chapter-summary)
+    - [Read Next](#read-next)
+
+<!-- T81-TOC:END -->
+
+
 The appendices are practical support material for onboarding, review, and operational alignment. They are not filler; they reduce ambiguity when teams need a quick reference during real work.
 
 ## 11.1 Boundary and Maturity Snapshot

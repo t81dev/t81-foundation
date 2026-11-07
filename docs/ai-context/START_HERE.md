@@ -1,5 +1,33 @@
 # T81 Research Continuity — START_HERE
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Research Continuity — START_HERE](#t81-research-continuity-—-start_here)
+  - [1. T81 Identity in One Paragraph](#1-t81-identity-in-one-paragraph)
+  - [2. Research Mission and Boundaries](#2-research-mission-and-boundaries)
+    - [Core Boundaries](#core-boundaries)
+  - [3. Document Loading Order](#3-document-loading-order)
+  - [4. Authority Depends on the Question](#4-authority-depends-on-the-question)
+  - [5. Evidence Classification Rules](#5-evidence-classification-rules)
+  - [6. Current-State Verification Requirements](#6-current-state-verification-requirements)
+  - [7. Prohibited Assumptions and Overclaims](#7-prohibited-assumptions-and-overclaims)
+  - [8. Research Continuation Protocol & Contradiction Resolution](#8-research-continuation-protocol-&-contradiction-resolution)
+    - [Continuation Protocol](#continuation-protocol)
+    - [Resolving Contradictions](#resolving-contradictions)
+  - [9. Rules for Updating the Continuity Package](#9-rules-for-updating-the-continuity-package)
+  - [10. Latest Operational Addenda (2026-10-29)](#10-latest-operational-addenda-2026-10-29)
+  - [11. Operational reading order — 2026-10-31](#11-operational-reading-order-—-2026-10-31)
+  - [2026-10-31 continuity reconciliation](#2026-10-31-continuity-reconciliation)
+  - [2026-10-31 research synthesis and publication boundary](#2026-10-31-research-synthesis-and-publication-boundary)
+  - [2026-11-01 active AIOPT M2 research boundary](#2026-11-01-active-aiopt-m2-research-boundary)
+  - [12. Cross-Profile Architecture (CPA-001 through CPA-005) Summary — 2026-11-05](#12-cross-profile-architecture-cpa-001-through-cpa-005-summary-—-2026-11-05)
+  - [13. Current research gate — 2026-11-05, after CPA-006 and ISA-001](#13-current-research-gate-—-2026-11-05-after-cpa-006-and-isa-001)
+
+<!-- T81-TOC:END -->
+
+
 **Latest Cross-Profile Architecture & Identity View (2026-11-05):** T81 has demonstrated a functioning bounded computational architecture. Bounded cross-profile TISC execution is verified across hosted T81VM and freestanding Axion OS (AArch64 QEMU) against an independent mathematical oracle across all 25 observation boundaries (CPA-004/CPA-005). Incoming research agents should **not** re-verify whether the bounded cross-profile implementation works; focus on open research hypotheses, remaining ISA discrepancies, and disciplined comparative advantage benchmarks.
 
 **Latest BASE-01 integration and readiness view (2026-11-03):** Read [BASE01_2026-11-03.md](BASE01_2026-11-03.md) first. PRs #694 and #695 are merged; integration acceptance does not authorize B1 measurement. Older dated operational views below remain historical.

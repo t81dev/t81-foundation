@@ -1,5 +1,51 @@
 # T81 Research Continuity — ACTIVE_RESEARCH_HANDOFF
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Research Continuity — ACTIVE_RESEARCH_HANDOFF](#t81-research-continuity-—-active_research_handoff)
+  - [1. Operational Snapshot](#1-operational-snapshot)
+    - [Current Research Boundary](#current-research-boundary)
+    - [Investigations and PR Status (checked 2026-10-29)](#investigations-and-pr-status-checked-2026-10-29)
+  - [2. Current Blockers](#2-current-blockers)
+    - [Scientific Blockers](#scientific-blockers)
+    - [Engineering Blockers](#engineering-blockers)
+  - [3. Unresolved Architectural Contradictions](#3-unresolved-architectural-contradictions)
+  - [4. Primary Next Research Action — Read-Only Reconciliation](#4-primary-next-research-action-—-read-only-reconciliation)
+    - [Action](#action)
+    - [Scope and Inputs](#scope-and-inputs)
+    - [Acceptance and Stopping Criteria](#acceptance-and-stopping-criteria)
+  - [5. Explicitly Deferred Work](#5-explicitly-deferred-work)
+  - [6. Template for Next Session Update (Append-Only Log)](#6-template-for-next-session-update-append-only-log)
+  - [7. Canonical Session Log (Append-Only)](#7-canonical-session-log-append-only)
+    - [Correction appended 2026-10-29 (documentation review; no experiment rerun)](#correction-appended-2026-10-29-documentation-review-no-experiment-rerun)
+  - [8. Operational update — 2026-10-29, PR reconciliation and governance validation](#8-operational-update-—-2026-10-29-pr-reconciliation-and-governance-validation)
+    - [CMP3 reconciliation](#cmp3-reconciliation)
+    - [Governance stack and acceptance](#governance-stack-and-acceptance)
+    - [Next single authorized action and stop condition](#next-single-authorized-action-and-stop-condition)
+  - [9. Operational reconciliation — 2026-10-31](#9-operational-reconciliation-—-2026-10-31)
+    - [Current parallel workstreams](#current-parallel-workstreams)
+    - [Bounded next actions and stopping conditions](#bounded-next-actions-and-stopping-conditions)
+    - [Session receipt (non-experimental)](#session-receipt-non-experimental)
+  - [2026-10-31 handoff delta — ADM-2 candidate report](#2026-10-31-handoff-delta-—-adm-2-candidate-report)
+  - [2026-10-31 research assessment and integration handoff (dated; refresh before action)](#2026-10-31-research-assessment-and-integration-handoff-dated-refresh-before-action)
+  - [2026-11-01 AIOPT-001 M2 handoff — latest inspected GitHub snapshot](#2026-11-01-aiopt-001-m2-handoff-—-latest-inspected-github-snapshot)
+  - [2026-11-05 CPA-001 through CPA-005 Research Handoff & Architecture Baseline](#2026-11-05-cpa-001-through-cpa-005-research-handoff-&-architecture-baseline)
+    - [1. Established Reality: Bounded Cross-Profile Implementation Works](#1-established-reality-bounded-cross-profile-implementation-works)
+    - [2. What Remains Unproven & Active Research Questions](#2-what-remains-unproven-&-active-research-questions)
+    - [3. Current Git & PR Status](#3-current-git-&-pr-status)
+    - [4. Primary Next Actions for Incoming Agents](#4-primary-next-actions-for-incoming-agents)
+  - [2026-11-05 CURRENT HANDOFF — CPA-006 complete; ISA-001 awaiting maintainer decision](#2026-11-05-current-handoff-—-cpa-006-complete-isa-001-awaiting-maintainer-decision)
+    - [Established and bounded](#established-and-bounded)
+    - [Pinned GitHub integration snapshot (2026-11-05)](#pinned-github-integration-snapshot-2026-11-05)
+    - [Outstanding semantic decisions](#outstanding-semantic-decisions)
+    - [Primary next action — T81-ISA-002 (documentation and maintainer review only)](#primary-next-action-—-t81-isa-002-documentation-and-maintainer-review-only)
+    - [Handoff rules](#handoff-rules)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `docs/ai-context/ACTIVE_RESEARCH_HANDOFF.md`
 **Version:** 1.0.1 · **Original Snapshot:** 2026-10-29T07:15:00Z · **Correction reviewed:** 2026-10-29
 **Repository:** `t81dev/t81-foundation`

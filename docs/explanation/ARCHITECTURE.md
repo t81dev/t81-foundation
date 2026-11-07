@@ -1,5 +1,27 @@
 # T81 Foundation: Architecture Overview
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation: Architecture Overview](#t81-foundation-architecture-overview)
+  - [1. Guiding Principles](#1-guiding-principles)
+  - [2. Build Graph (Authoritative Targets)](#2-build-graph-authoritative-targets)
+  - [3. Concurrent Workstream View](#3-concurrent-workstream-view)
+  - [4. End-to-End Flow](#4-end-to-end-flow)
+  - [5. Determinism and Verification Plane](#5-determinism-and-verification-plane)
+  - [6. Runtime Contract Boundary](#6-runtime-contract-boundary)
+  - [7. Key Architectural Boundaries](#7-key-architectural-boundaries)
+  - [8. Numeric API Consolidation and Compatibility](#8-numeric-api-consolidation-and-compatibility)
+  - [9. Architecture Drift Controls](#9-architecture-drift-controls)
+  - [10. Near-Term Architecture Work (Open)](#10-near-term-architecture-work-open)
+  - [11. Glossary (Project Terms)](#11-glossary-project-terms)
+  - [12. Local Verification Ritual (Single-Threaded Safe Mode)](#12-local-verification-ritual-single-threaded-safe-mode)
+  - [13. Ownership Map](#13-ownership-map)
+
+<!-- T81-TOC:END -->
+
+
 This document maps the current T81 codebase architecture: build graph, runtime flow, verification surfaces, and cross-repo runtime boundary contracts.
 
 **Status scope:** current `main` branch architecture as of February 17, 2026.

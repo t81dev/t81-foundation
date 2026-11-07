@@ -1,5 +1,27 @@
 # Axion Trace Reference
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Axion Trace Reference](#axion-trace-reference)
+  - [1. Command-line trace sample](#1-command-line-trace-sample)
+  - [2. Axion segment trace regression](#2-axion-segment-trace-regression)
+  - [3. CLI & REPL verification](#3-cli-&-repl-verification)
+    - [3.1 Guard-heavy match sample](#31-guard-heavy-match-sample)
+    - [3.2 Axion policy CLI sample](#32-axion-policy-cli-sample)
+    - [3.3 Reference policy file](#33-reference-policy-file)
+    - [3.4 Fault trace samples](#34-fault-trace-samples)
+    - [3.5 Interleaved Trap Trace](#35-interleaved-trap-trace)
+  - [4. Policy integration checklist](#4-policy-integration-checklist)
+  - [5. Policy runner trace](#5-policy-runner-trace)
+  - [6. Publishing the Axion policy trace](#6-publishing-the-axion-policy-trace)
+  - [7. Release artifact checklist](#7-release-artifact-checklist)
+  - [4. Copyrighted](#4-copyrighted)
+
+<!-- T81-TOC:END -->
+
+
 This guide explains how to observe the deterministic `AxionEvent.verdict.reason`
 strings that document segment transitions and guard evaluations inside the
 HanoiVM. These strings are the authority for Axion policies that `require`

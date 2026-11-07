@@ -1,5 +1,56 @@
 # T81 AI Training Guide
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 AI Training Guide](#t81-ai-training-guide)
+  - [1. Getting Started](#1-getting-started)
+  - [2. Core Concepts](#2-core-concepts)
+  - [3. Programming Basics](#3-programming-basics)
+  - [4. Control Flow](#4-control-flow)
+  - [5. Functions and Modules](#5-functions-and-modules)
+  - [6. Tensor Operations](#6-tensor-operations)
+  - [7. Memory Management](#7-memory-management)
+  - [8. Performance Optimization](#8-performance-optimization)
+  - [9. AI/ML Integration](#9-aiml-integration)
+  - [10. Policy and Governance](#10-policy-and-governance)
+- [policy.yaml](#policyyaml)
+  - [11. Testing and Debugging](#11-testing-and-debugging)
+  - [12. Integration with C++](#12-integration-with-c++)
+  - [13. Build System](#13-build-system)
+  - [14. Advanced Features](#14-advanced-features)
+  - [15. Best Practices](#15-best-practices)
+  - [16. Troubleshooting](#16-troubleshooting)
+  - [17. Community and Resources](#17-community-and-resources)
+  - [18. Reference Materials](#18-reference-materials)
+  - [19. Data Structures and Algorithms](#19-data-structures-and-algorithms)
+  - [20. Error Handling and Exceptions](#20-error-handling-and-exceptions)
+  - [21. File I/O and Serialization](#21-file-io-and-serialization)
+  - [22. Concurrent and Parallel Programming](#22-concurrent-and-parallel-programming)
+  - [23. Mathematical Operations](#23-mathematical-operations)
+  - [24. Machine Learning Models](#24-machine-learning-models)
+  - [25. Natural Language Processing](#25-natural-language-processing)
+  - [26. Computer Vision](#26-computer-vision)
+  - [27. Reinforcement Learning](#27-reinforcement-learning)
+  - [28. Time Series Analysis](#28-time-series-analysis)
+  - [29. Distributed Computing](#29-distributed-computing)
+  - [30. Security and Privacy](#30-security-and-privacy)
+- [security_policy.yaml](#security_policyyaml)
+  - [31. Advanced Tensor Operations](#31-advanced-tensor-operations)
+  - [32. Quantum-Inspired Computing](#32-quantum-inspired-computing)
+  - [33. GPU Acceleration](#33-gpu-acceleration)
+  - [34. Model Compression and Optimization](#34-model-compression-and-optimization)
+  - [35. Experimentation and Research](#35-experimentation-and-research)
+  - [36. Integration with External Systems](#36-integration-with-external-systems)
+  - [37. Advanced Debugging](#37-advanced-debugging)
+  - [38. Performance Tuning](#38-performance-tuning)
+  - [39. Specialized Domains](#39-specialized-domains)
+  - [40. Production Deployment](#40-production-deployment)
+
+<!-- T81-TOC:END -->
+
+
 ## 1. Getting Started
 
 **Q: How do I install T81 framework?**

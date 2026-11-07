@@ -1,5 +1,22 @@
 # Capítulo 8: Verificação e Auditoria
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Capítulo 8: Verificação e Auditoria](#capítulo-8-verificação-e-auditoria)
+  - [8.1 Metodologia de Verificação Formal](#81-metodologia-de-verificação-formal)
+    - [8.1.1 A Pilha de Verificação](#811-a-pilha-de-verificação)
+  - [8.2 A Matriz de Auditoria Formal](#82-a-matriz-de-auditoria-formal)
+  - [8.3 Testes Baseados em Propriedades](#83-testes-baseados-em-propriedades)
+    - [8.3.1 Os Axiomas do Anel](#831-os-axiomas-do-anel)
+  - [8.4 O Portão de Determinismo (Determinism Gate)](#84-o-portão-de-determinismo-determinism-gate)
+    - [8.4.1 Mecânica](#841-mecânica)
+    - [8.4.2 Rastreabilidade](#842-rastreabilidade)
+
+<!-- T81-TOC:END -->
+
+
 ## 8.1 Metodologia de Verificação Formal
 
 **Status: Implementado**

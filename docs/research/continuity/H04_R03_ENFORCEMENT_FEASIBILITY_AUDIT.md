@@ -1,5 +1,37 @@
 # Independent Feasibility Assessment: EXP-H04-R03 Physical Execution & Resource Enforcement
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Independent Feasibility Assessment: EXP-H04-R03 Physical Execution & Resource Enforcement](#independent-feasibility-assessment-exp-h04-r03-physical-execution-&-resource-enforcement)
+  - [1. Executive Summary & Audit Mandate](#1-executive-summary-&-audit-mandate)
+    - [Definitive Feasibility Conclusion](#definitive-feasibility-conclusion)
+  - [2. Requirement-by-Requirement Technical Findings](#2-requirement-by-requirement-technical-findings)
+    - [Question 1: Does Linux provide an enforceable bound on exact process RSS, or only on different memory-accounting quantities?](#question-1-does-linux-provide-an-enforceable-bound-on-exact-process-rss-or-only-on-different-memory-accounting-quantities?)
+    - [Question 2: Can all native scratch allocations, including temporary and hidden library allocations, be identified and bounded before allocation?](#question-2-can-all-native-scratch-allocations-including-temporary-and-hidden-library-allocations-be-identified-and-bounded-before-allocation?)
+    - [Question 3: Can a worker be placed under the required memory controls before user-space execution begins?](#question-3-can-a-worker-be-placed-under-the-required-memory-controls-before-user-space-execution-begins?)
+    - [Question 4: Can physical reclamation and cache-reset requirements be established with reproducible evidence?](#question-4-can-physical-reclamation-and-cache-reset-requirements-be-established-with-reproducible-evidence?)
+    - [Question 5: Are any requirements mutually inconsistent with the selected runtime, operating system, or workload?](#question-5-are-any-requirements-mutually-inconsistent-with-the-selected-runtime-operating-system-or-workload?)
+    - [Question 6: Would enforcement instrumentation materially contaminate the performance measurements?](#question-6-would-enforcement-instrumentation-materially-contaminate-the-performance-measurements?)
+    - [Question 7: Which properties require hardware evidence rather than code inspection?](#question-7-which-properties-require-hardware-evidence-rather-than-code-inspection?)
+    - [Question 8: Can the experiment remain scientifically meaningful if one or more required properties prove impossible?](#question-8-can-the-experiment-remain-scientifically-meaningful-if-one-or-more-required-properties-prove-impossible?)
+  - [3. Concrete Counterexamples & Technical Falsification](#3-concrete-counterexamples-&-technical-falsification)
+    - [Counterexample 1: Linux `RLIMIT_RSS` Non-Enforcement](#counterexample-1-linux-`rlimit_rss`-non-enforcement)
+- [Set RLIMIT_RSS to 1 MB (1048576 bytes)](#set-rlimit_rss-to-1-mb-1048576-bytes)
+- [Allocate 20 MB of anonymous physical memory](#allocate-20-mb-of-anonymous-physical-memory)
+- [Under Linux 2.6+, this allocation succeeds without error, signal, or kernel intervention](#under-linux-26+-this-allocation-succeeds-without-error-signal-or-kernel-intervention)
+    - [Counterexample 2: Incomplete Native Memory Coverage in `tracemalloc`](#counterexample-2-incomplete-native-memory-coverage-in-`tracemalloc`)
+    - [Counterexample 3: Cgroup v2 `memory.max` Accounting Scope vs Process RSS](#counterexample-3-cgroup-v2-`memorymax`-accounting-scope-vs-process-rss)
+  - [4. Separation of Implementation Defects from Protocol Infeasibility](#4-separation-of-implementation-defects-from-protocol-infeasibility)
+  - [5. Synthesis Disposition Across Preregistration Audit Questions](#5-synthesis-disposition-across-preregistration-audit-questions)
+  - [6. Audit Disposition & Recommendations](#6-audit-disposition-&-recommendations)
+    - [Final Audit Determination](#final-audit-determination)
+    - [Recommendations for Maintainers](#recommendations-for-maintainers)
+
+<!-- T81-TOC:END -->
+
+
 **Document:** `docs/research/continuity/H04_R03_ENFORCEMENT_FEASIBILITY_AUDIT.md`
 **Date:** 2026-11-03
 **Audit Target:** EXP-H04-R03 Candidate A Preregistration & Resource-Enforcement Infrastructure

@@ -1,5 +1,23 @@
 # RFC Tritwise Extension Gate Evidence
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [RFC Tritwise Extension Gate Evidence](#rfc-tritwise-extension-gate-evidence)
+  - [Executive Summary](#executive-summary)
+  - [Workload Evidence](#workload-evidence)
+    - [Performance Data (Clean)](#performance-data-clean)
+    - [Measurement Notes](#measurement-notes)
+    - [Profiling Statistics (Correction)](#profiling-statistics-correction)
+  - [Analysis](#analysis)
+    - [Small-Vector Residual Cost](#small-vector-residual-cost)
+  - [Decision: Outcome A (No Extension Needed)](#decision-outcome-a-no-extension-needed)
+  - [Closure Actions](#closure-actions)
+
+<!-- T81-TOC:END -->
+
+
 ## Executive Summary
 
 **Status:** Outcome A (No Extension Needed)

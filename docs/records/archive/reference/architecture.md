@@ -1,5 +1,20 @@
 # T81 Canonical Architecture
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Canonical Architecture](#t81-canonical-architecture)
+  - [1. Execution Pipeline](#1-execution-pipeline)
+  - [2. Runtime Boundary](#2-runtime-boundary)
+  - [3. Cognitive Tier Escalation](#3-cognitive-tier-escalation)
+  - [4. Data Types and Representation Map](#4-data-types-and-representation-map)
+  - [5. TISC ISA → VM Execution Micro-Flow](#5-tisc-isa-→-vm-execution-micro-flow)
+  - [6. CanonFS + Weights + Tensor Ingress](#6-canonfs-+-weights-+-tensor-ingress)
+
+<!-- T81-TOC:END -->
+
+
 This document defines the authoritative architecture of the T81 system as implemented in the current codebase.
 
 ## 1. Execution Pipeline

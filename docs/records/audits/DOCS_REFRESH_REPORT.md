@@ -1,5 +1,22 @@
 # Documentation Refresh Audit Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Documentation Refresh Audit Report](#documentation-refresh-audit-report)
+  - [1. Executive Summary](#1-executive-summary)
+  - [2. Determinism Confidence Assessment](#2-determinism-confidence-assessment)
+  - [3. CanonFS Enforcement Assessment](#3-canonfs-enforcement-assessment)
+  - [4. JIT Stability Assessment](#4-jit-stability-assessment)
+  - [5. Benchmark Claim Assessment](#5-benchmark-claim-assessment)
+  - [6. Spec ↔ Implementation Divergences](#6-spec-↔-implementation-divergences)
+  - [7. High-Risk Drift Zones](#7-high-risk-drift-zones)
+  - [8. Top 3 Areas to Harden First](#8-top-3-areas-to-harden-first)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** February 17, 2026
 **Auditor:** Jules (Technical Steward)
 

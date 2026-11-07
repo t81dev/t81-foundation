@@ -1,5 +1,21 @@
 # Analysis: Implementation vs. Specification
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Analysis: Implementation vs. Specification](#analysis-implementation-vs-specification)
+  - [1. Core Numerics (`t81_core`)](#1-core-numerics-`t81_core`)
+  - [2. TISC ISA & VM (`t81_isa`, `t81_vm`)](#2-tisc-isa-&-vm-`t81_isa`-`t81_vm`)
+  - [3. Cognitive Tiers (`t81_cog`)](#3-cognitive-tiers-`t81_cog`)
+  - [4. T81Lang Frontend (`t81_lang_frontend`)](#4-t81lang-frontend-`t81_lang_frontend`)
+  - [5. Supporting Systems](#5-supporting-systems)
+  - [6. Validation Baseline (Current)](#6-validation-baseline-current)
+  - [7. Known Spec/Context Drift](#7-known-speccontext-drift)
+
+<!-- T81-TOC:END -->
+
+
 **Last Updated:** February 17, 2026
 
 This document provides a technical analysis of the C++ implementation's conformance to the formal specifications in `/spec`. It identifies where the implementation is complete, where it is partial, and where it deviates.

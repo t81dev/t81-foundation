@@ -1,5 +1,23 @@
 # Capítulo 10: Niveles Cognitivos y Cómputo Distribuido
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Capítulo 10: Niveles Cognitivos y Cómputo Distribuido](#capítulo-10-niveles-cognitivos-y-cómputo-distribuido)
+  - [10.1 El Modelo de Niveles Cognitivos](#101-el-modelo-de-niveles-cognitivos)
+    - [10.1.1 Mecanismo de Promoción](#1011-mecanismo-de-promoción)
+  - [10.2 Cómputo Distribuido (Nivel 4)](#102-cómputo-distribuido-nivel-4)
+    - [10.2.1 Fusión de Estados](#1021-fusión-de-estados)
+    - [10.2.2 El Ataque de "Viaje en el Tiempo"](#1022-el-ataque-de-"viaje-en-el-tiempo")
+  - [10.3 Compilación JIT Basada en Trazas](#103-compilación-jit-basada-en-trazas)
+  - [10.4 Formas Infinitas (Nivel 5)](#104-formas-infinitas-nivel-5)
+    - [10.4.1 El Objeto Infinito](#1041-el-objeto-infinito)
+    - [10.4.2 Colapso y Convergencia](#1042-colapso-y-convergencia)
+
+<!-- T81-TOC:END -->
+
+
 ## 10.1 El Modelo de Niveles Cognitivos
 
 **Estado: Implementado**

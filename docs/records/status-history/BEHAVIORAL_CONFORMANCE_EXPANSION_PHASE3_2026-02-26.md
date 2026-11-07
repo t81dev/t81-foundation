@@ -1,5 +1,18 @@
 # Behavioral Conformance Expansion Phase 3
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Behavioral Conformance Expansion Phase 3](#behavioral-conformance-expansion-phase-3)
+  - [Objective](#objective)
+  - [Slice 1 — Completed 2026-02-28](#slice-1-—-completed-2026-02-28)
+  - [Parallel Work (2026-02-26..28, Outside Phase 3 Scope)](#parallel-work-2026-02-2628-outside-phase-3-scope)
+  - [Slice 2 — Current Active Slice (March 2026)](#slice-2-—-current-active-slice-march-2026)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-02-26
 Last Updated: 2026-02-28
 Status: Slice 1 complete — Slice 2 active

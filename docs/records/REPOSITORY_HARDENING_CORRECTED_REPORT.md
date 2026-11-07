@@ -1,5 +1,51 @@
 # T81 Foundation Repository Hardening - Corrected Remediation Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation Repository Hardening - Corrected Remediation Report](#t81-foundation-repository-hardening---corrected-remediation-report)
+  - [Executive Summary](#executive-summary)
+  - [1. Verified Problems Fixed](#1-verified-problems-fixed)
+    - [1.1 Broken Deterministic Float Behavior - FIXED](#11-broken-deterministic-float-behavior---fixed)
+    - [1.2 Non-Compiling Axion Evidence Tests - FIXED](#12-non-compiling-axion-evidence-tests---fixed)
+    - [1.3 Documentation-Only T81Lang Traceability - FIXED](#13-documentation-only-t81lang-traceability---fixed)
+  - [2. Problems Narrowed but Still Open](#2-problems-narrowed-but-still-open)
+    - [2.1 Comprehensive T81Lang Traceability - NARROWED](#21-comprehensive-t81lang-traceability---narrowed)
+    - [2.2 Advanced Axion Evidence Gaps - NARROWED](#22-advanced-axion-evidence-gaps---narrowed)
+  - [3. Code Changes Made](#3-code-changes-made)
+    - [3.1 Deterministic Float Profile Correction](#31-deterministic-float-profile-correction)
+    - [3.2 T81Map Determinism Enhancement](#32-t81map-determinism-enhancement)
+    - [3.3 Test Infrastructure](#33-test-infrastructure)
+  - [4. Tests Added or Repaired](#4-tests-added-or-repaired)
+    - [4.1 Corrected Tests](#41-corrected-tests)
+    - [4.2 Test Execution Results](#42-test-execution-results)
+  - [5. CI Changes Made](#5-ci-changes-made)
+    - [5.1 New CI Enforcement](#51-new-ci-enforcement)
+    - [5.2 CI Coverage](#52-ci-coverage)
+  - [6. Documents Corrected](#6-documents-corrected)
+    - [6.1 Status Document Corrections](#61-status-document-corrections)
+    - [6.2 Removed Misleading Documents](#62-removed-misleading-documents)
+  - [7. Remaining Proof Gaps](#7-remaining-proof-gaps)
+    - [7.1 High Priority Gaps](#71-high-priority-gaps)
+    - [7.2 Medium Priority Gaps](#72-medium-priority-gaps)
+  - [8. Exact Files Changed](#8-exact-files-changed)
+    - [8.1 Modified Files](#81-modified-files)
+    - [8.2 New Files](#82-new-files)
+    - [8.3 Removed Files](#83-removed-files)
+    - [8.4 File Statistics](#84-file-statistics)
+  - [9. Honest Final Assessment](#9-honest-final-assessment)
+    - [9.1 Success Criteria Achievement](#91-success-criteria-achievement)
+    - [9.2 Repository Posture](#92-repository-posture)
+    - [9.3 Risk Assessment](#93-risk-assessment)
+  - [10. Conclusion](#10-conclusion)
+    - [10.1 Corrective Remediation Success](#101-corrective-remediation-success)
+    - [10.2 Key Principles Followed](#102-key-principles-followed)
+    - [10.3 Repository State](#103-repository-state)
+
+<!-- T81-TOC:END -->
+
+
 **Generated:** 2026-03-06  
 **Audit Reference:** Repository Hardening Pass (Corrected)  
 **Duration:** Single sprint execution  

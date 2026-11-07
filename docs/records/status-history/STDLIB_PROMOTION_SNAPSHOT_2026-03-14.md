@@ -1,5 +1,15 @@
 # STDLIB Promotion Snapshot (2026-03)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [STDLIB Promotion Snapshot (2026-03)](#stdlib-promotion-snapshot-2026-03)
+  - [Module Statuses](#module-statuses)
+
+<!-- T81-TOC:END -->
+
+
 Generated (UTC): 2026-03-14
 Date: 2026-03-14
 Baseline: 1.3.2

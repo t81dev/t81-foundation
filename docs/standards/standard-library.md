@@ -1,5 +1,31 @@
 # T81Lang Standard Library
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Standard Library](#t81lang-standard-library)
+  - [Generic Call Syntax](#generic-call-syntax)
+  - [Core Modules](#core-modules)
+    - [`std.core`](#`stdcore`)
+    - [`std.math`](#`stdmath`)
+    - [`std.io`](#`stdio`)
+  - [Data Structure Modules](#data-structure-modules)
+    - [`std.collections`](#`stdcollections`)
+    - [`std.text`](#`stdtext`)
+    - [`std.bytes`](#`stdbytes`)
+    - [`std.symbol`](#`stdsymbol`)
+  - [System & Runtime](#system-&-runtime)
+    - [`std.sys`](#`stdsys`)
+    - [`std.async`](#`stdasync`)
+    - [`std.tensor`](#`stdtensor`)
+    - [`std.agent`](#`stdagent`)
+    - [`std.polynomial`](#`stdpolynomial`)
+    - [`std.symbolic`](#`stdsymbolic`)
+
+<!-- T81-TOC:END -->
+
+
 This document describes the standard library modules available in T81Lang.
 These modules are located in `lang/stdlib/std/`.
 

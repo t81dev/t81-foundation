@@ -1,5 +1,20 @@
 # PackedTritVector Phase 2E Proposal
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [PackedTritVector Phase 2E Proposal](#packedtritvector-phase-2e-proposal)
+  - [1. Objective](#1-objective)
+  - [2. Scope](#2-scope)
+  - [3. NEON Implementation Plan](#3-neon-implementation-plan)
+  - [4. Threshold Strategy](#4-threshold-strategy)
+  - [5. RFC Alignment Statement](#5-rfc-alignment-statement)
+  - [6. Deliverables](#6-deliverables)
+
+<!-- T81-TOC:END -->
+
+
 ## 1. Objective
 
 Transition the `ComputeTritVector` accelerator from an AVX2-only prototype to an architecture-complete deterministic backend by implementing ARM NEON support, refining dispatch thresholds, and hardening the benchmark infrastructure.

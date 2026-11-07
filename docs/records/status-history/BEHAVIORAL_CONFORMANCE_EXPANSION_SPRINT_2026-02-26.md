@@ -1,5 +1,17 @@
 # Behavioral Conformance Expansion Sprint
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Behavioral Conformance Expansion Sprint](#behavioral-conformance-expansion-sprint)
+  - [Objectives and Completion Status](#objectives-and-completion-status)
+  - [Verification Results](#verification-results)
+  - [Notes](#notes)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-02-26  
 Status: Completed  
 Scope: VM invariants, Axion policy invariants, CanonFS integrity matrix, workload-level determinism breadth, multilingual semantic parity gates, workload benchmark regression gates.

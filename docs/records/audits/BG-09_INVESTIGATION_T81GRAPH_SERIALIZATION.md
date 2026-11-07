@@ -1,5 +1,31 @@
 # BG-09 Investigation: T81Graph Serialization
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [BG-09 Investigation: T81Graph Serialization](#bg-09-investigation-t81graph-serialization)
+  - [📋 **Issue Analysis**](#📋-**issue-analysis**)
+    - [**Problem Statement:**](#**problem-statement**)
+    - [**Root Cause Identified:**](#**root-cause-identified**)
+    - [**Expected Outcome:**](#**expected-outcome**)
+  - [🔍 **Investigation Findings**](#🔍-**investigation-findings**)
+    - [**Phase 1: T81Graph Implementation ✅**](#**phase-1-t81graph-implementation-✅**)
+    - [**Phase 2: Language Runtime Analysis ✅**](#**phase-2-language-runtime-analysis-✅**)
+    - [**Phase 3: VM Format Value Analysis ✅**](#**phase-3-vm-format-value-analysis-✅**)
+  - [🎯 **Solution Strategy**](#🎯-**solution-strategy**)
+    - [**Option 1: Fix VM Format Value (Recommended)**](#**option-1-fix-vm-format-value-recommended**)
+    - [**Option 2: Fix IR Generator**](#**option-2-fix-ir-generator**)
+    - [**Option 3: Hybrid Approach**](#**option-3-hybrid-approach**)
+  - [🔧 **Implementation Plan**](#🔧-**implementation-plan**)
+    - [**Phase 1: VM Format Value Fix**](#**phase-1-vm-format-value-fix**)
+    - [**Phase 2: Enhanced Graph Support**](#**phase-2-enhanced-graph-support**)
+    - [**Phase 3: Determinism Verification**](#**phase-3-determinism-verification**)
+  - [🎯 **Next Steps**](#🎯-**next-steps**)
+
+<!-- T81-TOC:END -->
+
+
 **Investigation ID:** BG-09-2026-03-04  
 **Surface:** `T81Graph` + collection lang runtime  
 **Issue:** `serialize_canonical()` exists in C++ headers but is never called from the language runtime  

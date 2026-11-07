@@ -1,5 +1,19 @@
 # Drift Decomposition
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Drift Decomposition](#drift-decomposition)
+  - [How to Read This Table](#how-to-read-this-table)
+  - [Drift Matrix](#drift-matrix)
+  - [Summary Counts (2026-03-19)](#summary-counts-2026-03-19)
+  - [Update Protocol](#update-protocol)
+  - [Cross-References](#cross-references)
+
+<!-- T81-TOC:END -->
+
+
 Last Updated: 2026-03-19
 Owner: @t81dev
 

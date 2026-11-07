@@ -1,5 +1,20 @@
 # C2 Month-Close Check Report (2026-03-31 Runbook)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [C2 Month-Close Check Report (2026-03-31 Runbook)](#c2-month-close-check-report-2026-03-31-runbook)
+  - [Summary](#summary)
+  - [Derived Fields](#derived-fields)
+  - [Command Outputs](#command-outputs)
+    - [Governance hygiene check](#governance-hygiene-check)
+    - [Promotion gate snapshot refresh](#promotion-gate-snapshot-refresh)
+    - [Markdown link-target sweep](#markdown-link-target-sweep)
+
+<!-- T81-TOC:END -->
+
+
 Generated (UTC): 2026-02-28 16:20:08Z
 Generator: `scripts/governance/c2_month_close_check.py`
 Overall: PASS

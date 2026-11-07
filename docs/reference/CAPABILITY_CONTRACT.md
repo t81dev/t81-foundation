@@ -1,5 +1,40 @@
 # T81 Foundation — Capability Contract
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation — Capability Contract](#t81-foundation-—-capability-contract)
+  - [Intended Use](#intended-use)
+- [1. Purpose](#1-purpose)
+- [2. Execution Stack Overview](#2-execution-stack-overview)
+- [3. Determinism Scope](#3-determinism-scope)
+  - [3.1 Compile-Time Deterministic (CI-Enforced)](#31-compile-time-deterministic-ci-enforced)
+  - [3.2 Runtime Deterministic (Pure Logic)](#32-runtime-deterministic-pure-logic)
+  - [3.3 Host-Dependent](#33-host-dependent)
+  - [3.4 Hardware-Dependent](#34-hardware-dependent)
+- [4. Governance & Policy Enforcement](#4-governance-&-policy-enforcement)
+  - [4.1 Axion Capabilities](#41-axion-capabilities)
+  - [4.2 Invocation Model](#42-invocation-model)
+  - [4.3 Isolation Model](#43-isolation-model)
+- [5. CanonFS Integrity Model](#5-canonfs-integrity-model)
+  - [5.1 Write Path (Enforced)](#51-write-path-enforced)
+  - [5.2 Read Path (Verified by Default)](#52-read-path-verified-by-default)
+  - [5.3 Persistence](#53-persistence)
+- [6. Performance Model](#6-performance-model)
+  - [6.1 Interpreter](#61-interpreter)
+  - [6.2 Threaded Trace (“JIT”)](#62-threaded-trace-“jit”)
+  - [6.3 Tensor Engine](#63-tensor-engine)
+- [7. Cognitive Tiers](#7-cognitive-tiers)
+- [8. Hard Invariants](#8-hard-invariants)
+- [9. Negative Space (Explicit Non-Capabilities)](#9-negative-space-explicit-non-capabilities)
+- [10. Failure Modes](#10-failure-modes)
+- [11. Intended Use](#11-intended-use)
+- [12. Not Suitable For](#12-not-suitable-for)
+
+<!-- T81-TOC:END -->
+
+
 ## Intended Use
 
 This document is intended for:

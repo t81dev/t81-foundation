@@ -1,5 +1,56 @@
 # T81 + llama.cpp Moderate Integration Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 + llama.cpp Moderate Integration Report](#t81-+-llamacpp-moderate-integration-report)
+  - [Executive Summary](#executive-summary)
+  - [Key Achievements](#key-achievements)
+    - [✅ Ternary GGUF Format](#✅-ternary-gguf-format)
+    - [✅ AI-Native ISA Opcodes](#✅-ai-native-isa-opcodes)
+    - [✅ Quantized Matrix Operations](#✅-quantized-matrix-operations)
+    - [✅ Benchmark Framework](#✅-benchmark-framework)
+  - [Technical Implementation](#technical-implementation)
+    - [Core Components](#core-components)
+      - [1. Ternary Quantization Engine](#1-ternary-quantization-engine)
+      - [2. GGUF Ternary Support](#2-gguf-ternary-support)
+      - [3. AI-Native Opcodes](#3-ai-native-opcodes)
+    - [Performance Characteristics](#performance-characteristics)
+      - [Quantization Performance](#quantization-performance)
+      - [Memory Efficiency](#memory-efficiency)
+      - [Matrix Multiplication](#matrix-multiplication)
+  - [Integration Architecture](#integration-architecture)
+    - [Data Flow](#data-flow)
+    - [Opcode Integration](#opcode-integration)
+    - [Policy Enforcement](#policy-enforcement)
+  - [Validation Results](#validation-results)
+    - [✅ Build System](#✅-build-system)
+    - [✅ Functional Testing](#✅-functional-testing)
+    - [✅ Performance Validation](#✅-performance-validation)
+  - [Files and Components](#files-and-components)
+    - [New Implementation Files](#new-implementation-files)
+    - [Updated Files](#updated-files)
+    - [Generated Artifacts](#generated-artifacts)
+  - [Usage Examples](#usage-examples)
+    - [Basic Ternary Quantization](#basic-ternary-quantization)
+- [Run moderate integration demo](#run-moderate-integration-demo)
+- [Output includes:](#output-includes)
+- [- Ternary GGUF format demonstration](#--ternary-gguf-format-demonstration)
+- [- Quantized matrix multiplication](#--quantized-matrix-multiplication)
+- [- AI-native opcode concepts](#--ai-native-opcode-concepts)
+- [- Performance benchmarks](#--performance-benchmarks)
+    - [GGUF Model Conversion](#gguf-model-conversion)
+    - [Opcode Usage](#opcode-usage)
+  - [Next Steps: Deep Integration](#next-steps-deep-integration)
+    - [Immediate Priorities](#immediate-priorities)
+    - [Deep Integration Goals](#deep-integration-goals)
+    - [Technical Debt](#technical-debt)
+  - [Conclusion](#conclusion)
+
+<!-- T81-TOC:END -->
+
+
 **Generated:** Tue Mar 4 12:00:00 UTC 2026
 **Integration Level:** Moderate (Native Ternary Operations)
 **Status:** ✅ SUCCESSFULLY COMPLETED

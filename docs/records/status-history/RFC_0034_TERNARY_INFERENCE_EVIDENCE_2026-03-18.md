@@ -1,5 +1,16 @@
 # RFC-0034 Ternary Inference Evidence Snapshot
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [RFC-0034 Ternary Inference Evidence Snapshot](#rfc-0034-ternary-inference-evidence-snapshot)
+  - [Scope](#scope)
+  - [Verification](#verification)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Date: 2026-03-18
 Owner: @t81dev

@@ -1,5 +1,51 @@
 # T81 Foundation: Architecture Deep Dive & Use Case Discovery
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation: Architecture Deep Dive & Use Case Discovery](#t81-foundation-architecture-deep-dive-&-use-case-discovery)
+  - [Table of Contents](#table-of-contents)
+  - [1. Architecture Understanding Summary](#1-architecture-understanding-summary)
+    - [Execution Path (top to bottom)](#execution-path-top-to-bottom)
+    - [Six Load-Bearing Properties](#six-load-bearing-properties)
+  - [2. Core Capability Map](#2-core-capability-map)
+    - [2.1 Deterministic Computation](#21-deterministic-computation)
+    - [2.2 Policy-Governed Execution](#22-policy-governed-execution)
+    - [2.3 Verifiable Traces & Audit Trails](#23-verifiable-traces-&-audit-trails)
+    - [2.4 Ternary Arithmetic & Representation](#24-ternary-arithmetic-&-representation)
+    - [2.5 AI-Native Execution Primitives](#25-ai-native-execution-primitives)
+    - [2.6 Cognitive Tier Supervision](#26-cognitive-tier-supervision)
+  - [3. Use Case Landscape](#3-use-case-landscape)
+    - [3.1 Already-Demonstrated (near-term, building on existing examples)](#31-already-demonstrated-near-term-building-on-existing-examples)
+    - [3.2 Plausible with Modest Extension](#32-plausible-with-modest-extension)
+    - [3.3 Requiring Significant Engineering](#33-requiring-significant-engineering)
+  - [4. Novel & Speculative Applications](#4-novel-&-speculative-applications)
+    - [Use Case 1: Verifiable AI Inference-as-a-Service](#use-case-1-verifiable-ai-inference-as-a-service)
+    - [Use Case 2: Deterministic AI Audit Trail for Regulated Industries](#use-case-2-deterministic-ai-audit-trail-for-regulated-industries)
+    - [Use Case 3: AI Agent Containment Protocol](#use-case-3-ai-agent-containment-protocol)
+    - [Use Case 4: Cryptographic Program Identity](#use-case-4-cryptographic-program-identity)
+    - [Use Case 5: Reproducible Scientific Computation Archive](#use-case-5-reproducible-scientific-computation-archive)
+    - [Use Case 6: Ternary-Native Differential Privacy Engine](#use-case-6-ternary-native-differential-privacy-engine)
+    - [Use Case 7: Deterministic Smart Contract Execution Layer](#use-case-7-deterministic-smart-contract-execution-layer)
+    - [Use Case 8: Safety-Critical Controller Substrate](#use-case-8-safety-critical-controller-substrate)
+    - [Use Case 9: AI-Governed Software Patch Verification](#use-case-9-ai-governed-software-patch-verification)
+    - [Use Case 10: Ternary Zero-Knowledge Proof Substrate](#use-case-10-ternary-zero-knowledge-proof-substrate)
+    - [Use Case 11: Deterministic Multi-Agent Consensus Protocol](#use-case-11-deterministic-multi-agent-consensus-protocol)
+    - [Use Case 12: Cognitive Tier-Gated AI Reasoning Sandbox](#use-case-12-cognitive-tier-gated-ai-reasoning-sandbox)
+    - [Use Case 13: Long-Term Archival Computing Format](#use-case-13-long-term-archival-computing-format)
+    - [Use Case 14: Federated AI Model Governance Registry](#use-case-14-federated-ai-model-governance-registry)
+  - [5. Strategic Future Directions](#5-strategic-future-directions)
+    - [5.1 Research Initiatives](#51-research-initiatives)
+    - [5.2 Ecosystem Tooling](#52-ecosystem-tooling)
+    - [5.3 Hardware Acceleration](#53-hardware-acceleration)
+    - [5.4 AI Governance Infrastructure](#54-ai-governance-infrastructure)
+    - [5.5 Government & Enterprise Adoption Pathways](#55-government-&-enterprise-adoption-pathways)
+  - [6. Summary: What T81 Enables That Binary Systems Do Not](#6-summary-what-t81-enables-that-binary-systems-do-not)
+
+<!-- T81-TOC:END -->
+
+
 *Generated: 2026-03-08 | Based on full codebase exploration*
 
 ---

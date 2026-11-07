@@ -1,5 +1,18 @@
 # What Is A Bundle
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [What Is A Bundle](#what-is-a-bundle)
+  - [What It Represents](#what-it-represents)
+  - [What It Guarantees](#what-it-guarantees)
+  - [What It Is Not](#what-it-is-not)
+  - [The Core Innovation](#the-core-innovation)
+
+<!-- T81-TOC:END -->
+
+
 A bundle is a **canonical decision object with identity** that represents the complete, policy-gated outcome of a bounded AI task.
 
 ## What It Represents

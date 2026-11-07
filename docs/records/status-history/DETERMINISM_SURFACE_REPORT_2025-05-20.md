@@ -1,5 +1,19 @@
 # Determinism Surface Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Determinism Surface Report](#determinism-surface-report)
+  - [1. Executive Summary](#1-executive-summary)
+  - [2. Surface Classification](#2-surface-classification)
+  - [3. Drift & Anomalies](#3-drift-&-anomalies)
+  - [4. Reproducibility Evidence](#4-reproducibility-evidence)
+  - [5. Recommendations](#5-recommendations)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** 2025-05-20 (Updated 2025-05-20 post-remediation)
 **Agent:** Deterministic Systems Stress Agent (Jules)
 

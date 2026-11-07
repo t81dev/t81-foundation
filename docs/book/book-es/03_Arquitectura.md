@@ -1,5 +1,27 @@
 # Capítulo 3: Arquitectura T81VM
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Capítulo 3: Arquitectura T81VM](#capítulo-3-arquitectura-t81vm)
+  - [3.1 Visión General](#31-visión-general)
+    - [3.1.1 La Tubería de Ejecución](#311-la-tubería-de-ejecución)
+  - [3.2 El Límite del Runtime](#32-el-límite-del-runtime)
+  - [3.3 Modelo de Memoria](#33-modelo-de-memoria)
+    - [3.3.1 Definición Formal del Estado](#331-definición-formal-del-estado)
+    - [3.3.2 Segmentos de Memoria](#332-segmentos-de-memoria)
+    - [3.3.3 Manejadores e Indirección](#333-manejadores-e-indirección)
+  - [3.4 El Conjunto de Instrucciones (TISC)](#34-el-conjunto-de-instrucciones-tisc)
+    - [3.4.1 El Ciclo de Instrucción](#341-el-ciclo-de-instrucción)
+    - [3.4.2 Categorías de Opcode](#342-categorías-de-opcode)
+  - [3.5 Compilación JIT (Trace-JIT)](#35-compilación-jit-trace-jit)
+    - [3.5.1 El Proceso de Rastreo](#351-el-proceso-de-rastreo)
+    - [3.5.2 Equivalencia de Comportamiento](#352-equivalencia-de-comportamiento)
+
+<!-- T81-TOC:END -->
+
+
 ## 3.1 Visión General
 
 **Estado: Estable**

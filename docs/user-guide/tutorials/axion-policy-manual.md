@@ -1,5 +1,23 @@
 # Axion Policy Authoring Manual
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Axion Policy Authoring Manual](#axion-policy-authoring-manual)
+  - [1. APL policy anatomy](#1-apl-policy-anatomy)
+  - [2. Sample policy files](#2-sample-policy-files)
+    - [2.1 `require-axion-event` for GC/trace verification](#21-`require-axion-event`-for-gctrace-verification)
+  - [3. Embedding policies in builds](#3-embedding-policies-in-builds)
+    - [3.1 `t81 code build` + `t81 code run`](#31-`t81-code-build`-+-`t81-code-run`)
+    - [3.2 `t81 code run` / REPL](#32-`t81-code-run`--repl)
+  - [4. Diagnosing policy failures](#4-diagnosing-policy-failures)
+  - [5. Policy integration tips](#5-policy-integration-tips)
+  - [6. Related RFCs and docs](#6-related-rfcs-and-docs)
+
+<!-- T81-TOC:END -->
+
+
 This guide covers how to write, embed, and debug Axion Policy Language (APL) policies so your programs stay compliant with **RFC-0009**, **RFC-0020**, and **RFC-0019**. It explains each `require-*` predicate, shows diagnostics from policy regressions, and links to the provided sample files such as `docs/governance/archive/policy/guards.axion`.
 
 ## 1. APL policy anatomy

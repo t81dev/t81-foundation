@@ -1,5 +1,40 @@
 # Research Paper: H09 — Emergent Intelligence Through Recursive Process Interaction
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Research Paper: H09 — Emergent Intelligence Through Recursive Process Interaction](#research-paper-h09-—-emergent-intelligence-through-recursive-process-interaction)
+  - [1. Historical Evidence Map](#1-historical-evidence-map)
+    - [1.1 Lineage & Repository Mapping](#11-lineage-&-repository-mapping)
+    - [1.2 Summary Matrix of Historical Components](#12-summary-matrix-of-historical-components)
+  - [2. Architectural Interpretation & Minimal Formal Model](#2-architectural-interpretation-&-minimal-formal-model)
+    - [2.1 Formal Definitions](#21-formal-definitions)
+  - [3. Prior-Art Comparison](#3-prior-art-comparison)
+  - [4. Hypothesis Assessment: H09](#4-hypothesis-assessment-h09)
+    - [4.1 Formal Hypothesis Statement](#41-formal-hypothesis-statement)
+    - [4.2 Falsification Criteria & Stopping Conditions](#42-falsification-criteria-&-stopping-conditions)
+    - [4.3 Key Assumptions Challenged](#43-key-assumptions-challenged)
+  - [5. Role of Language Models & Ternary Computation Analysis](#5-role-of-language-models-&-ternary-computation-analysis)
+    - [5.1 Role of Language Models in Recursive Process Architectures](#51-role-of-language-models-in-recursive-process-architectures)
+    - [5.2 Multi-Dimensional Analysis of Ternary Computation](#52-multi-dimensional-analysis-of-ternary-computation)
+  - [6. Discriminating Experiment Specification](#6-discriminating-experiment-specification)
+    - [6.1 Environment & Task Benchmark: Compositional Graph Routing (CGR)](#61-environment-&-task-benchmark-compositional-graph-routing-cgr)
+    - [6.2 The Four Experimental Arms](#62-the-four-experimental-arms)
+    - [6.3 Resource-Matching & Budget Controls](#63-resource-matching-&-budget-controls)
+    - [6.4 Quantitative Evaluation Metrics](#64-quantitative-evaluation-metrics)
+    - [6.5 Ablation Suite](#65-ablation-suite)
+  - [7. Required Critical Analysis & Simplest Competing Explanations](#7-required-critical-analysis-&-simplest-competing-explanations)
+  - [8. Research Decision & Recommendation](#8-research-decision-&-recommendation)
+    - [8.1 Deliverables Summary & H09 Assessment](#81-deliverables-summary-&-h09-assessment)
+    - [8.2 Research Recommendation: **REVISE AND DEFER H09**](#82-research-recommendation-**revise-and-defer-h09**)
+  - [9. Completion Criteria & Direct Answer](#9-completion-criteria-&-direct-answer)
+    - [9.1 Direct Answer to Core Question](#91-direct-answer-to-core-question)
+    - [9.2 Recommended Next Experiment](#92-recommended-next-experiment)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `docs/research/H09_RECURSIVE_PROCESS_INTELLIGENCE.md`
 **Author:** Jules (T81 Research Program)
 **Date:** April 2026

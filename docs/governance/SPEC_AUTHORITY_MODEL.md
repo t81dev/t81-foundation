@@ -1,5 +1,26 @@
 # Specification Authority Model
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Specification Authority Model](#specification-authority-model)
+  - [1. Authority Levels](#1-authority-levels)
+  - [2. Conflict Resolution Rules](#2-conflict-resolution-rules)
+  - [3. Freeze Boundaries and Surface Classification](#3-freeze-boundaries-and-surface-classification)
+  - [4. Change Protocols](#4-change-protocols)
+    - [A. Spec-Only Change](#a-spec-only-change)
+    - [B. Implementation-Only Change](#b-implementation-only-change)
+    - [C. Spec + Impl Change (Feature)](#c-spec-+-impl-change-feature)
+    - [D. Breaking Change](#d-breaking-change)
+    - [E. Experimental Addition](#e-experimental-addition)
+    - [F. New Root File](#f-new-root-file)
+  - [5. Architecture Decision Records (ADR) Protocol](#5-architecture-decision-records-adr-protocol)
+  - [6. Directory Ownership](#6-directory-ownership)
+
+<!-- T81-TOC:END -->
+
+
 **Effective Date:** 2024-10-27
 **Status:** **Active**
 

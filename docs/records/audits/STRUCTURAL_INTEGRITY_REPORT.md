@@ -1,5 +1,19 @@
 # Structural Integrity Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Structural Integrity Report](#structural-integrity-report)
+  - [Dependency Firewall Status](#dependency-firewall-status)
+  - [Public API Boundary Confirmation](#public-api-boundary-confirmation)
+  - [Experimental Containment Confirmation](#experimental-containment-confirmation)
+  - [Legacy Path References Confirmation](#legacy-path-references-confirmation)
+  - [Validation Summary](#validation-summary)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-02-25
 Scope: Phase 10 structural invariants enforcement
 

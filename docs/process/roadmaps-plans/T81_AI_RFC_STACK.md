@@ -1,5 +1,45 @@
 # T81 AI Integration RFC Stack Summary
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 AI Integration RFC Stack Summary](#t81-ai-integration-rfc-stack-summary)
+  - [1. Full RFC Index](#1-full-rfc-index)
+  - [2. Cross-RFC Consistency Check](#2-cross-rfc-consistency-check)
+    - [✅ Terminology Consistency](#✅-terminology-consistency)
+    - [✅ CLI Command Consistency](#✅-cli-command-consistency)
+    - [✅ Directory Structure References](#✅-directory-structure-references)
+    - [✅ Determinism Terminology](#✅-determinism-terminology)
+    - [✅ Policy/Axion References](#✅-policyaxion-references)
+  - [3. Dependency Graph](#3-dependency-graph)
+  - [4. Repository Impact Map](#4-repository-impact-map)
+    - [Experimental Phase Directories](#experimental-phase-directories)
+    - [Extension Phase Directories](#extension-phase-directories)
+    - [Core Integration (Post-Promotion)](#core-integration-post-promotion)
+  - [5. UX Surface Summary](#5-ux-surface-summary)
+    - [Final CLI Command Surface](#final-cli-command-surface)
+- [Model Management](#model-management)
+- [Inference Operations](#inference-operations)
+- [Quantization](#quantization)
+- [Determinism Validation](#determinism-validation)
+- [Benchmarking](#benchmarking)
+- [Policy Management](#policy-management)
+- [Observability](#observability)
+    - [Key UX Principles](#key-ux-principles)
+  - [6. Implementation Phases](#6-implementation-phases)
+    - [Phase 1: Foundation (Low Risk)](#phase-1-foundation-low-risk)
+    - [Phase 2: Integration (Medium Risk)](#phase-2-integration-medium-risk)
+    - [Phase 3: Experience (Low-Medium Risk)](#phase-3-experience-low-medium-risk)
+    - [Phase 4: Optimization (High Risk - Permanent Experimental)](#phase-4-optimization-high-risk---permanent-experimental)
+  - [7. Architecture Risk Summary](#7-architecture-risk-summary)
+    - [Risk Mitigation Strategy](#risk-mitigation-strategy)
+    - [Determinism Preservation Guarantees](#determinism-preservation-guarantees)
+  - [Conclusion](#conclusion)
+
+<!-- T81-TOC:END -->
+
+
 ## 1. Full RFC Index
 
 | RFC ID | Title | Status | Risk Level | Experimental/Core | Dependencies |

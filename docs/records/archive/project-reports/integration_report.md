@@ -1,5 +1,43 @@
 # T81 + llama.cpp Integration Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 + llama.cpp Integration Report](#t81-+-llamacpp-integration-report)
+  - [Components Status](#components-status)
+    - [Core Libraries](#core-libraries)
+    - [Integration Features](#integration-features)
+    - [Build Artifacts](#build-artifacts)
+  - [Performance Characteristics](#performance-characteristics)
+    - [Quantization Schemes](#quantization-schemes)
+    - [Performance Benchmarks](#performance-benchmarks)
+    - [Quality Metrics](#quality-metrics)
+  - [Policy Enforcement](#policy-enforcement)
+  - [Test Results](#test-results)
+    - [Ternary Quantization Test Suite](#ternary-quantization-test-suite)
+    - [Integration Validation](#integration-validation)
+  - [Demo Results](#demo-results)
+    - [Minimal Integration Demo](#minimal-integration-demo)
+    - [Sample Output](#sample-output)
+  - [Next Steps](#next-steps)
+    - [Immediate (Completed)](#immediate-completed)
+    - [Short Term (Next Phase)](#short-term-next-phase)
+    - [Long Term](#long-term)
+  - [Usage Examples](#usage-examples)
+    - [Basic Integration](#basic-integration)
+    - [Policy-Gated Inference](#policy-gated-inference)
+    - [Testing](#testing)
+    - [Validation](#validation)
+  - [Technical Achievements](#technical-achievements)
+    - [Quantization Innovation](#quantization-innovation)
+    - [Integration Architecture](#integration-architecture)
+    - [Policy Framework](#policy-framework)
+  - [Conclusion](#conclusion)
+
+<!-- T81-TOC:END -->
+
+
 **Generated:** Tue Mar 4 11:40:00 UTC 2026
 **Build Directory:** build
 **Git Branch:** explore/ai-systems-integration

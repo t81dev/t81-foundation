@@ -1,5 +1,19 @@
 # BASE-01 B1 host qualification — proposed design v0.1
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [BASE-01 B1 host qualification — proposed design v0.1](#base-01-b1-host-qualification-—-proposed-design-v01)
+  - [Candidate profile and mandatory static requirements](#candidate-profile-and-mandatory-static-requirements)
+  - [Reproducible build profile](#reproducible-build-profile)
+  - [Desirable controls, not hidden prerequisites](#desirable-controls-not-hidden-prerequisites)
+  - [Dynamic qualification — future authorization required](#dynamic-qualification-—-future-authorization-required)
+  - [Report identity, lifetime and limits](#report-identity-lifetime-and-limits)
+
+<!-- T81-TOC:END -->
+
+
 **Status: design only; no host is qualified by this document.**
 No timer calibration, warm-up, pilot, timing, resource or footprint collection
 was performed for this task. Requirements are proposed acceptance rules, not

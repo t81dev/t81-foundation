@@ -1,5 +1,48 @@
 # BG-08 Implementation Evidence: T81Complex Binary Pool Serialization
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [BG-08 Implementation Evidence: T81Complex Binary Pool Serialization](#bg-08-implementation-evidence-t81complex-binary-pool-serialization)
+  - [📋 **Issue Analysis**](#📋-**issue-analysis**)
+    - [**Problem Identified:**](#**problem-identified**)
+    - [**Evidence Collected:**](#**evidence-collected**)
+  - [🎯 **Implementation Solution**](#🎯-**implementation-solution**)
+    - [**Complete Architecture Enhancement:**](#**complete-architecture-enhancement**)
+      - [**1. LiteralKind Extension**](#**1-literalkind-extension**)
+      - [**2. Program Structure Enhancement**](#**2-program-structure-enhancement**)
+      - [**3. Serialization Method Chain**](#**3-serialization-method-chain**)
+      - [**4. Binary I/O Integration**](#**4-binary-io-integration**)
+  - [🔧 **Implementation Details**](#🔧-**implementation-details**)
+    - [**T81Int Serialization**](#**t81int-serialization**)
+    - [**T81Float Serialization**](#**t81float-serialization**)
+    - [**T81Complex Serialization**](#**t81complex-serialization**)
+  - [📊 **Test Coverage Evidence**](#📊-**test-coverage-evidence**)
+    - [**✅ Functionality Test Results**](#**✅-functionality-test-results**)
+    - [**✅ Determinism Test Results**](#**✅-determinism-test-results**)
+    - [**✅ Round-Trip Evidence**](#**✅-round-trip-evidence**)
+  - [🔍 **Verification Results**](#🔍-**verification-results**)
+    - [**Binary Pool Integration:**](#**binary-pool-integration**)
+    - [**Serialization Chain:**](#**serialization-chain**)
+    - [**Determinism Verification:**](#**determinism-verification**)
+  - [📈 **Performance Impact**](#📈-**performance-impact**)
+    - [**Serialization Overhead:**](#**serialization-overhead**)
+    - [**Storage Efficiency:**](#**storage-efficiency**)
+  - [✅ **Acceptance Criteria Satisfaction**](#✅-**acceptance-criteria-satisfaction**)
+    - [**BG-08 Requirements Met:**](#**bg-08-requirements-met**)
+    - [**Implementation Quality:**](#**implementation-quality**)
+  - [🎯 **Strategic Impact**](#🎯-**strategic-impact**)
+    - [**Immediate Benefits:**](#**immediate-benefits**)
+    - [**Long-term Benefits:**](#**long-term-benefits**)
+  - [✅ **Implementation Conclusion**](#✅-**implementation-conclusion**)
+    - [**Requirements Satisfaction:**](#**requirements-satisfaction**)
+    - [**Production Readiness:**](#**production-readiness**)
+    - [**Governance Acceptance:**](#**governance-acceptance**)
+
+<!-- T81-TOC:END -->
+
+
 **Implementation ID:** BG-08-2026-03-04  
 **Surface:** `T81Complex` Binary Pool Serialization  
 **Issue:** Binary pool serialization absent in `binary_io.cpp` — persistence gap  

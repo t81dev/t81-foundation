@@ -1,5 +1,25 @@
 # CLI Exercise Findings - 2026-03-14
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [CLI Exercise Findings - 2026-03-14](#cli-exercise-findings---2026-03-14)
+  - [🧪 **Command-Line Utility Stress Test and Audit**](#🧪-**command-line-utility-stress-test-and-audit**)
+    - [**❌ Identified Bugs**](#**❌-identified-bugs**)
+      - [**1. Lossy Base81 Round-trip (CRITICAL)**](#**1-lossy-base81-round-trip-critical**)
+    - [**⚠️ Inconsistencies & Behavioral Observations**](#**⚠️-inconsistencies-&-behavioral-observations**)
+      - [**1. Redundant Compilation in `project run`**](#**1-redundant-compilation-in-`project-run`**)
+      - [**2. IR Metadata Gaps**](#**2-ir-metadata-gaps**)
+    - [**✅ Verified Working Surfaces**](#**✅-verified-working-surfaces**)
+      - [**🎯 Project Lifecycle**](#**🎯-project-lifecycle**)
+      - [**🔧 Diagnostics & Environment**](#**🔧-diagnostics-&-environment**)
+      - [**🔍 Trace & Determinism**](#**🔍-trace-&-determinism**)
+    - [**🚀 Conclusion**](#**🚀-conclusion**)
+
+<!-- T81-TOC:END -->
+
+
 ## 🧪 **Command-Line Utility Stress Test and Audit**
 
 I have performed a comprehensive exercise of the `t81` CLI utility, identifying several critical bugs and areas for improvement while confirming the overall robustness of the core workflow.

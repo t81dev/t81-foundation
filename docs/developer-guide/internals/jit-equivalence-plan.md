@@ -1,5 +1,19 @@
 # JIT Equivalence Plan
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [JIT Equivalence Plan](#jit-equivalence-plan)
+  - [1. Formal Equivalence Requirement](#1-formal-equivalence-requirement)
+  - [2. State Transition Equality](#2-state-transition-equality)
+  - [3. Verification Strategy: Hash-Based Equivalence](#3-verification-strategy-hash-based-equivalence)
+  - [4. Required Future Tests](#4-required-future-tests)
+  - [5. Preconditions for Stabilization](#5-preconditions-for-stabilization)
+
+<!-- T81-TOC:END -->
+
+
 **Status:** **Experimental / Planned**
 **Reference:** `spec/t81vm-spec.md`, `spec/rfcs/RFC-0042-deterministic-backend-equivalence-contract.md`
 **Objective:** Formalize the criteria for adopting Just-In-Time compilation into the Verified Core.

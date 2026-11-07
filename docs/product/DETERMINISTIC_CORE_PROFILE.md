@@ -1,5 +1,19 @@
 # Deterministic Core Profile (DCP)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Deterministic Core Profile (DCP)](#deterministic-core-profile-dcp)
+  - [A. Included in DCP (v1.x)](#a-included-in-dcp-v1x)
+  - [B. Explicitly Excluded from DCP](#b-explicitly-excluded-from-dcp)
+  - [C. DCP Guarantees](#c-dcp-guarantees)
+  - [D. Versioning Discipline Under DCP](#d-versioning-discipline-under-dcp)
+  - [Release Readiness Requirements (DCP)](#release-readiness-requirements-dcp)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Profile Line: v1.x
 Owner: Product/Governance

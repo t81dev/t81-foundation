@@ -1,5 +1,22 @@
 # VM Monolith Decomposition Plan
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [VM Monolith Decomposition Plan](#vm-monolith-decomposition-plan)
+  - [Objective](#objective)
+  - [Constraints](#constraints)
+  - [Target Decomposition (Current Baseline)](#target-decomposition-current-baseline)
+  - [Phase Plan](#phase-plan)
+  - [Verification Gates Per Phase](#verification-gates-per-phase)
+  - [Risk Register](#risk-register)
+  - [Exit Criteria](#exit-criteria)
+  - [Exit Evidence](#exit-evidence)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-02-26  
 Scope: `core/vm/vm.cpp`  
 Status: Completed (Phase A+B+C+D+E+F complete)
