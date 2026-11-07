@@ -10,7 +10,7 @@
 Observed main is `8e44c0f667c62e0d4143bb93169fc3235d5ebd66`: #675 is merged with
 arithmetic validation accepted within its declared scope; #676 is merged historical
 backlog-audit evidence; #677 is merged H04-R03 Candidate A preregistration, with
-**Phase C still unauthorized**. #656 remains open pending integration and #678
+**Phase C still unauthorized as of 2026-11-02**. At the 2026-11-02 snapshot, H04-R03 Candidate A implementation and correctness validation were reported and PRs #679/#680 were open; a subsequent 2026-11-06 repository check found both merged, without implying Phase C authorization. #656 remains open pending integration and #678
 remains open with corrections pending acceptance. Local cleanup's audit is reported
 completed; its execution outcome is **not independently verified** by this index.
 The earlier views and snapshots below remain dated history. This update grants no
@@ -94,7 +94,7 @@ Before taking any operational or research action:
 
 Research agents are strictly forbidden from repeating or generating the following invalid claims:
 
-1. **PROHIBITED:** Claiming software CPU ternary arithmetic or SWAR tryte packing provides an execution speedup on general-purpose binary CPUs (Falsified: software tryte addition is $10.6\times$ slower than 64-bit binary ALU addition; 2-bit packed MatVec is limited to $75.3\%$ of INT8 AVX2 speed in cache due to SIMD decode tax).
+1. **PROHIBITED:** Claiming software CPU ternary arithmetic or SWAR tryte packing provides an execution speedup on general-purpose binary CPUs (Falsified in the tested workloads: software tryte addition was $10.6\times$ slower than 64-bit binary ALU addition; historical cache-resident packed 2-bit ternary AVX2 matrix-vector multiplication measured **12.91 GFLOP/s** versus **17.15 GFLOP/s** for native INT8 AVX2, or **75.3%** of the binary baseline throughput, consistent with a SIMD decode tax). These are workload-specific negatives, not universal radix claims.
 2. **PROHIBITED:** Claiming T81 is a commercial operating system running on physical ternary microprocessors (Falsified: no physical ternary silicon exists in the repository; all execution uses binary hardware emulation).
 3. **PROHIBITED:** Claiming that a custom VM is strictly necessary **or** that Wasmtime + OPA has already demonstrated equivalent safety in the complete Baseline-X protocol. The [bounded precursor report](../../examples/governance/accountable-computation/REPORT.md) did not deploy Wasmtime/OPA; the [claim register](../../experiments/research_001/CLAIM_REGISTER.md) leaves that comparison under active test.
 4. **PROHIBITED:** Redefining, renumbering, or silently closing canonical hypotheses H01–H08.
