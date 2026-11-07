@@ -115,23 +115,36 @@ def evaluate_decision_rules(
                 "reason": f"Excessive run-to-run variation in {arm}: CV = {cv:.2%} > 5.0%",
             }
 
-    if not all(
-        arm in intervals and len(intervals[arm]) == 3
-        and all(math.isfinite(v) and v > 0 for v in intervals[arm])
-        and intervals[arm][1] <= intervals[arm][2]
-        for intervals, arms in ((ci_life, ARMS[1:]), (ci_query, ("B10", "B729-u5")))
-        for arm in arms
+    # Validate mandatory confidence intervals before Step 3/4 evaluation.
+    # Required lifecycle comparisons: B10, B729, B729-u5 vs T243.
+    # Required query comparisons: B10, B729-u5 vs T243.
+    # Missing, incomplete, nonfinite, non-positive, non-numeric, or inverted intervals fail closed as INVALID.
+    def _is_valid_ci(ci: Any) -> bool:
+        if not isinstance(ci, (tuple, list)) or len(ci) != 3:
+            return False
+        for v in ci:
+            if not isinstance(v, (int, float)) or isinstance(v, bool):
+                return False
+            if not math.isfinite(v) or v <= 0:
+                return False
+        return ci[1] <= ci[2]
+
+    if (
+        not isinstance(ci_life, dict)
+        or not isinstance(ci_query, dict)
+        or not all(arm in ci_life and _is_valid_ci(ci_life[arm]) for arm in ("B10", "B729", "B729-u5"))
+        or not all(arm in ci_query and _is_valid_ci(ci_query[arm]) for arm in ("B10", "B729-u5"))
     ):
         return {"classification": "INVALID", "reason": "Incomplete or invalid confidence intervals"}
 
     # Extract bounds vs T243: theta_life(C) = Median(T_life(C)) / Median(T_life(T243))
     # Note: If theta_life > 1.0, T243 is faster than C.
-    ci_u5_life = ci_life.get("B729-u5", (1.0, 1.0, 1.0))
-    ci_b10_life = ci_life.get("B10", (1.0, 1.0, 1.0))
-    ci_b729_life = ci_life.get("B729", (1.0, 1.0, 1.0))
+    ci_u5_life = ci_life["B729-u5"]
+    ci_b10_life = ci_life["B10"]
+    ci_b729_life = ci_life["B729"]
 
-    ci_u5_query = ci_query.get("B729-u5", (1.0, 1.0, 1.0))
-    ci_b10_query = ci_query.get("B10", (1.0, 1.0, 1.0))
+    ci_u5_query = ci_query["B729-u5"]
+    ci_b10_query = ci_query["B10"]
 
     # Step 3: Rejection Predicates
     # 3.1 Rejection of practical advantage: CI_upper < 1.10 against ANY binary control
@@ -205,10 +218,17 @@ class BenchmarkHarness:
         self.access_mode = WORKLOAD_ACCESS_MODE
 
     def run_dry_run_validation(self) -> Dict[str, Any]:
-        """Execute a deterministic dry-run verification of all 8 phases across the 4 arms."""
+        """Execute a deterministic dry-run verification across the 4 arms.
+
+        REPORTING BOUNDARY / PHASE 4 STATUS:
+        Phase 4 (wire-frame-only retention boundary and raw input release) is
+        NOT verified or enforced in this dry-run model; source symbols remain live
+        in memory to verify subsequent query and decode outputs. Phase 4 is therefore
+        explicitly reported as UNVERIFIED / UNIMPLEMENTED, and dry_run_status is
+        reported as PARTIAL — PHASE 4 UNVERIFIED / UNIMPLEMENTED.
+        """
         # Phase 1: Input Mapping & Generation
         symbols = generate_dataset_symbols(n=1000, seed=DATASET_SEED)
-        self.u_symbols = [x + 364 for x in symbols]
 
         # Phase 2: Frame Allocation & Oracle Layout Verification
         layouts = {arm: compute_layout(len(symbols), self.k, self.a, self.access_mode, arm) for arm in ARMS}
@@ -216,19 +236,25 @@ class BenchmarkHarness:
         # Phase 3: Encoding & Packing
         frames = {arm: encode(symbols, arm=arm, k=self.k, A=self.a, access_mode=self.access_mode) for arm in ARMS}
 
-        # Phase 4: Retention Boundary Simulation
-        # Wire frames alone are retained
+        # Phase 4: Retention Boundary Simulation (UNVERIFIED / UNIMPLEMENTED)
+        # Note: True wire-frame-only retention and physical input erasure are not enforced.
+        phase_4_status = "UNVERIFIED / UNIMPLEMENTED"
 
-        # Phase 5: Frame Validation
+        # Phase 5: Frame Validation (using admission boundary)
+        validated_frames = {}
         for arm in ARMS:
             if len(frames[arm]) != layouts[arm]["total_bytes"]:
                 raise ValueError(f"Size mismatch in {arm}")
+            # Explicit admission boundary validation
+            from .codec import validate_frame, admitted_random_access
+            validated_frames[arm] = validate_frame(frames[arm], arm=arm, k=self.k, A=self.a, access_mode=self.access_mode)
 
-        # Phase 6: Timed Random Access Queries (bounded dry-run)
+        # Phase 6: Timed Random Access Queries (bounded dry-run using admitted queries)
         query_schedule = [i % len(symbols) for i in range(50)]
         for arm in ARMS:
+            v_frame = validated_frames[arm]
             for q_idx in query_schedule:
-                val = random_access(frames[arm], q_idx, arm=arm, k=self.k, A=self.a, access_mode=self.access_mode)
+                val = admitted_random_access(v_frame, q_idx)
                 if val != symbols[q_idx]:
                     raise ValueError(f"Query mismatch in {arm} at index {q_idx}")
 
@@ -239,17 +265,27 @@ class BenchmarkHarness:
                 raise ValueError(f"Decode mismatch in {arm}")
 
         # Phase 8: Deallocation & Cleanup
+        del validated_frames
         del frames
         del symbols
 
         return {
-            "dry_run_status": "PASSED",
+            "dry_run_status": "PARTIAL — PHASE 4 UNVERIFIED / UNIMPLEMENTED",
             "arms_verified": ARMS,
+            "phase_status": {
+                "Phase 1: Input Mapping": "VERIFIED",
+                "Phase 2: Frame Allocation": "VERIFIED",
+                "Phase 3: Encoding & Packing": "VERIFIED",
+                "Phase 4: Retention Boundary": phase_4_status,
+                "Phase 5: Frame Validation": "VERIFIED",
+                "Phase 6: Timed Random Access Queries": "VERIFIED",
+                "Phase 7: Output Buffer Assembly & Checksum": "VERIFIED",
+                "Phase 8: Deallocation & Scratch Cleanup": "VERIFIED",
+            },
             "phases_verified": [
                 "Phase 1: Input Mapping",
                 "Phase 2: Frame Allocation",
                 "Phase 3: Encoding & Packing",
-                "Phase 4: Retention Boundary",
                 "Phase 5: Frame Validation",
                 "Phase 6: Timed Random Access Queries",
                 "Phase 7: Output Buffer Assembly & Checksum",

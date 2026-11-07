@@ -320,6 +320,11 @@ class TestH04R03MatchedCodec(unittest.TestCase):
         with self.assertRaises(CodecError):
             decode(bytes(blob), arm="B10", k=1, A=8, access_mode="RA-FIXED")
 
+        # Also verify validate_frame() rejects corrupted alignment padding
+        from experiments.h04_r03_matched_codec.codec import validate_frame
+        with self.assertRaises(CodecError):
+            validate_frame(bytes(blob), arm="B10", k=1, A=8, access_mode="RA-FIXED")
+
     def test_14_adversarial_random_access_bounds(self):
         """Reject random access out of range."""
         vals = [1, 2, 3]
