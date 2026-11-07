@@ -507,7 +507,7 @@ _VALIDATED_FRAME_CONSTRUCTOR_TOKEN = object()
 
 
 class ValidatedFrame:
-    """Immutable, factory-controlled admission token for random-access lookups.
+    """Validated, conventionally immutable object for trusted in-process random-access lookups.
 
     Per SPECIFICATION.md Section 6.6 and Candidate A access contract, admitted
     random-access queries operate exclusively on validated immutable frames.
@@ -515,11 +515,14 @@ class ValidatedFrame:
     block alignment paddings, and complete payload contents) is performed at the
     admission boundary (Phase 5).
 
-    Factory-controlled immutability:
-    - Direct public construction is prohibited; instances must be produced via
-      validate_frame().
-    - Internal state is frozen and read-only.
-    - Operates on an immutable bytes copy taken prior to validation.
+    Trust and Boundary Semantics:
+    - This is a validated, conventionally immutable object designed for cooperative,
+      trusted in-process Python callers—NOT a cryptographically authenticated or
+      hostile-caller-proof security boundary.
+    - Direct public construction is guarded; instances should be produced via the
+      validate_frame() factory.
+    - Internal state attributes are frozen and read-only.
+    - Operates on an immutable bytes snapshot taken prior to validation.
     """
 
     __slots__ = (
@@ -612,7 +615,16 @@ class ValidatedFrame:
 
 
 def validate_frame(blob: bytes, arm: str, k: int, A: int, access_mode: str = "RA-FIXED") -> ValidatedFrame:
-    """Explicitly validate immutable-frame boundary integrity in O(B) space/time.
+    """Explicitly validate immutable-frame boundary integrity and payload contents.
+
+    Accounting and Complexity:
+    - Validation performs an immutable snapshot copy of the input buffer
+      (O(total_bytes) copy cost) before inspection.
+    - Complete canonical payload content decoding is executed across all B blocks
+      (O(N) decoding cost across all symbols), ensuring unused microblock bits,
+      illegal states, and value boundaries are completely checked.
+    - Validation cost is accounted for separately in Phase 5 (Frame Validation)
+      prior to Phase 6 query admission.
 
     Validates:
     - 8-byte element count header N.
@@ -622,7 +634,7 @@ def validate_frame(blob: bytes, arm: str, k: int, A: int, access_mode: str = "RA
     - Zero padding in all block alignment padding regions.
     - Complete canonical payload contents via arm decoders across all blocks.
 
-    Returns a ValidatedFrame admission token upon success, or raises CodecError.
+    Returns a ValidatedFrame admission object upon success, or raises CodecError.
     Admitted random-access query loops MUST require a ValidatedFrame.
     """
     blob = bytes(blob)  # Defensive snapshot to immutable bytes before validation begins
