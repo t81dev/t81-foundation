@@ -24,7 +24,7 @@
 
 ## Other bounded findings to preserve
 
-- Historical **4096×4096 cache-resident packed 2-bit ternary AVX2 MatVec**: **12.91 GFLOP/s** vs **17.15 GFLOP/s** for native INT8 AVX2; packed ternary reached approximately **75.3%** of INT8 throughput, with **75% less weight storage** in the tested representation. Verify the exact memory regime in the primary benchmark packet before generalizing to DRAM-bound workloads. This is a negative CPU-speed result for the tested workload, not universal radix superiority.
+- Historical **4096×4096 packed 2-bit ternary AVX2 MatVec**: **12.91 GFLOP/s** vs **17.15 GFLOP/s** for native INT8 AVX2; packed ternary reached approximately **75.3%** of INT8 throughput, with **75% less weight storage** in the tested representation. The precise cache/DRAM working-set characterization must be checked against the primary benchmark packet; do not assert a memory regime from this summary alone. This is a negative CPU-speed result for the tested workload, not universal radix superiority.
 - **CPA-004/005**: 25 matching observation boundaries in the bounded hosted/freestanding comparison; correctness/determinism scope only, **not a ternary-vs-binary speed win**.
 - `CURRENT_STATE.json` remains an independently dated machine-readable inventory; **do not overwrite it** without a separate complete, evidence-backed regeneration.
 
