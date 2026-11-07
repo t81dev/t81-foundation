@@ -1,0 +1,6639 @@
+{
+  "oracle": "Ruby direct-predicate reference",
+  "ruby": "2.6.10",
+  "json": "2.1.0",
+  "cases": 60,
+  "agreement": 60,
+  "disagreements": 0,
+  "results": [
+    {
+      "case_id": "F01-C01",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "P",
+        "reasons": [
+
+        ],
+        "final_decision": "P",
+        "final_reasons": [
+
+        ],
+        "admissions": [
+          {
+            "event": "A",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "effect_dispatches": 1,
+            "new_rows": 1
+          }
+        ],
+        "effect_dispatches": 1,
+        "new_rows": 1,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "spent",
+          "remaining_units": 1,
+          "rows": 1
+        },
+        "outcome": "Committed",
+        "outcome_reasons": [
+
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 1,
+            "event": "R",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 2,
+            "event": "A",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "spent",
+              "remaining_units": 1,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "effect_dispatches": 1,
+            "new_rows": 1
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F01-C02",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "reject",
+        "interpretation": "reject",
+        "guards": [
+          "P",
+          "D",
+          "P",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "MODEL_REJECT",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "D",
+        "reasons": [
+          "MODEL_REJECT"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "MODEL_REJECT"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "MODEL_REJECT"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "MODEL_REJECT"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F01-C03",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "review",
+        "interpretation": "review",
+        "guards": [
+          "P",
+          "U",
+          "P",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "MODEL_REVIEW",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "U",
+        "reasons": [
+          "MODEL_REVIEW"
+        ],
+        "final_decision": "U",
+        "final_reasons": [
+          "MODEL_REVIEW"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Deferred",
+        "outcome_reasons": [
+          "MODEL_REVIEW"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "U",
+            "reasons": [
+              "MODEL_REVIEW"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F01-C04",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "P",
+        "reasons": [
+
+        ],
+        "final_decision": "P",
+        "final_reasons": [
+
+        ],
+        "admissions": [
+          {
+            "event": "A",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "effect_dispatches": 1,
+            "new_rows": 1
+          }
+        ],
+        "effect_dispatches": 1,
+        "new_rows": 1,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "spent",
+          "remaining_units": 1,
+          "rows": 1
+        },
+        "outcome": "Committed",
+        "outcome_reasons": [
+
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 1,
+            "event": "R",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 2,
+            "event": "A",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "spent",
+              "remaining_units": 1,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "effect_dispatches": 1,
+            "new_rows": 1
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F01-C05",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "P",
+        "reasons": [
+
+        ],
+        "final_decision": "P",
+        "final_reasons": [
+
+        ],
+        "admissions": [
+          {
+            "event": "A",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "effect_dispatches": 1,
+            "new_rows": 1
+          }
+        ],
+        "effect_dispatches": 1,
+        "new_rows": 1,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "spent",
+          "remaining_units": 0,
+          "rows": 1
+        },
+        "outcome": "Committed",
+        "outcome_reasons": [
+
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 1,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 1,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 1,
+            "event": "R",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 1,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 1,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 2,
+            "event": "A",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 1,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "spent",
+              "remaining_units": 0,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "effect_dispatches": 1,
+            "new_rows": 1
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F02-C01",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "P",
+        "reasons": [
+
+        ],
+        "final_decision": "P",
+        "final_reasons": [
+
+        ],
+        "admissions": [
+          {
+            "event": "A",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "effect_dispatches": 1,
+            "new_rows": 1
+          }
+        ],
+        "effect_dispatches": 1,
+        "new_rows": 1,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "spent",
+          "remaining_units": 1,
+          "rows": 1
+        },
+        "outcome": "Committed",
+        "outcome_reasons": [
+
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 1,
+            "event": "R",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 2,
+            "event": "A",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "spent",
+              "remaining_units": 1,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "effect_dispatches": 1,
+            "new_rows": 1
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F02-C02",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "P",
+        "reasons": [
+
+        ],
+        "final_decision": "P",
+        "final_reasons": [
+
+        ],
+        "admissions": [
+          {
+            "event": "A",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "effect_dispatches": 1,
+            "new_rows": 1
+          }
+        ],
+        "effect_dispatches": 1,
+        "new_rows": 1,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "spent",
+          "remaining_units": 1,
+          "rows": 1
+        },
+        "outcome": "Committed",
+        "outcome_reasons": [
+
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 1,
+            "event": "R",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 2,
+            "event": "A",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "spent",
+              "remaining_units": 1,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "effect_dispatches": 1,
+            "new_rows": 1
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F02-C03",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "P",
+        "reasons": [
+
+        ],
+        "final_decision": "P",
+        "final_reasons": [
+
+        ],
+        "admissions": [
+          {
+            "event": "A",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "effect_dispatches": 1,
+            "new_rows": 1
+          }
+        ],
+        "effect_dispatches": 1,
+        "new_rows": 1,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "spent",
+          "remaining_units": 1,
+          "rows": 1
+        },
+        "outcome": "Committed",
+        "outcome_reasons": [
+
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 1,
+            "event": "R",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 2,
+            "event": "A",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "spent",
+              "remaining_units": 1,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "effect_dispatches": 1,
+            "new_rows": 1
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F02-C04",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "review",
+        "interpretation": "review",
+        "guards": [
+          "P",
+          "U",
+          "P",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "MODEL_REVIEW",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "U",
+        "reasons": [
+          "MODEL_REVIEW"
+        ],
+        "final_decision": "U",
+        "final_reasons": [
+          "MODEL_REVIEW"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Deferred",
+        "outcome_reasons": [
+          "MODEL_REVIEW"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "U",
+            "reasons": [
+              "MODEL_REVIEW"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F02-C05",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "D",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "CAPABILITY",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "D",
+        "reasons": [
+          "CAPABILITY"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "CAPABILITY"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "CAPABILITY"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "CAPABILITY"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F03-C01",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "invalid",
+            "schema_errors": [
+              {
+                "keyword": "additionalProperties",
+                "path": ""
+              }
+            ]
+          }
+        },
+        "stored_interpretation": null,
+        "interpretation": null,
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "INVALID_RESPONSE",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ResponseSchema",
+        "decision": "D",
+        "reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "INVALID_RESPONSE"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F03-C02",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "invalid",
+            "schema_errors": [
+              {
+                "keyword": "additionalProperties",
+                "path": ""
+              }
+            ]
+          }
+        },
+        "stored_interpretation": null,
+        "interpretation": null,
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "INVALID_RESPONSE",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ResponseSchema",
+        "decision": "D",
+        "reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "INVALID_RESPONSE"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F03-C03",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "D",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "CAPABILITY",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "D",
+        "reasons": [
+          "CAPABILITY"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "CAPABILITY"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "CAPABILITY"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "CAPABILITY"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F03-C04",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "D",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "CAPABILITY",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "D",
+        "reasons": [
+          "CAPABILITY"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "CAPABILITY"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "CAPABILITY"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "CAPABILITY"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F03-C05",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "U",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "POLICY_UNAVAILABLE",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "U",
+        "reasons": [
+          "POLICY_UNAVAILABLE"
+        ],
+        "final_decision": "U",
+        "final_reasons": [
+          "POLICY_UNAVAILABLE"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "unavailable",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Deferred",
+        "outcome_reasons": [
+          "POLICY_UNAVAILABLE"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "U",
+            "reasons": [
+              "POLICY_UNAVAILABLE"
+            ],
+            "before": {
+              "policy_state": "unavailable",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "unavailable",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F04-C01",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "duplicate_key",
+            "schema": "not_run",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": null,
+        "interpretation": null,
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "INVALID_RESPONSE",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ResponseProfile",
+        "decision": "D",
+        "reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "INVALID_RESPONSE"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F04-C02",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "json_syntax",
+            "schema": "not_run",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": null,
+        "interpretation": null,
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "INVALID_RESPONSE",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ResponseProfile",
+        "decision": "D",
+        "reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "INVALID_RESPONSE"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F04-C03",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "invalid",
+            "schema_errors": [
+              {
+                "keyword": "enum",
+                "path": "/recommendation"
+              }
+            ]
+          }
+        },
+        "stored_interpretation": null,
+        "interpretation": null,
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "INVALID_RESPONSE",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ResponseSchema",
+        "decision": "D",
+        "reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "INVALID_RESPONSE"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F04-C04",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "utf8",
+            "schema": "not_run",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": null,
+        "interpretation": null,
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "INVALID_RESPONSE",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ResponseProfile",
+        "decision": "D",
+        "reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "INVALID_RESPONSE"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F04-C05",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "unicode_scalar",
+            "schema": "not_run",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": null,
+        "interpretation": null,
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "INVALID_RESPONSE",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ResponseProfile",
+        "decision": "D",
+        "reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "INVALID_RESPONSE"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F05-C01",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "invalid",
+            "schema_errors": [
+              {
+                "keyword": "additionalProperties",
+                "path": ""
+              }
+            ]
+          }
+        },
+        "stored_interpretation": null,
+        "interpretation": null,
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "INVALID_RESPONSE",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ResponseSchema",
+        "decision": "D",
+        "reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "INVALID_RESPONSE"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F05-C02",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "invalid",
+            "schema_errors": [
+              {
+                "keyword": "additionalProperties",
+                "path": ""
+              }
+            ]
+          }
+        },
+        "stored_interpretation": null,
+        "interpretation": null,
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "INVALID_RESPONSE",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ResponseSchema",
+        "decision": "D",
+        "reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "INVALID_RESPONSE"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F05-C03",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "invalid",
+            "schema_errors": [
+              {
+                "keyword": "additionalProperties",
+                "path": ""
+              }
+            ]
+          }
+        },
+        "stored_interpretation": null,
+        "interpretation": null,
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "INVALID_RESPONSE",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ResponseSchema",
+        "decision": "D",
+        "reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "INVALID_RESPONSE"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F05-C04",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "invalid",
+            "schema_errors": [
+              {
+                "keyword": "additionalProperties",
+                "path": ""
+              }
+            ]
+          }
+        },
+        "stored_interpretation": null,
+        "interpretation": null,
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "INVALID_RESPONSE",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ResponseSchema",
+        "decision": "D",
+        "reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "INVALID_RESPONSE"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F05-C05",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "invalid",
+            "schema_errors": [
+              {
+                "keyword": "enum",
+                "path": "/recommendation"
+              }
+            ]
+          }
+        },
+        "stored_interpretation": null,
+        "interpretation": null,
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "INVALID_RESPONSE",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ResponseSchema",
+        "decision": "D",
+        "reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "INVALID_RESPONSE"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F06-C01",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "U",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "EVIDENCE_MISSING",
+            "subject": "sha256:e8ae75898dc4af20cb5e7caa83cb47cbf8499812f222fdc6402add9e2281026c"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "U",
+        "reasons": [
+          "EVIDENCE_MISSING"
+        ],
+        "final_decision": "U",
+        "final_reasons": [
+          "EVIDENCE_MISSING"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Deferred",
+        "outcome_reasons": [
+          "EVIDENCE_MISSING"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "U",
+            "reasons": [
+              "EVIDENCE_MISSING"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F06-C02",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "U",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "EVIDENCE_MISSING",
+            "subject": "sha256:29ba5e1a86fc81386b6e46dd4e6ea888ba01bcf2238f10259e99024c7f9bb5df"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "U",
+        "reasons": [
+          "EVIDENCE_MISSING"
+        ],
+        "final_decision": "U",
+        "final_reasons": [
+          "EVIDENCE_MISSING"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Deferred",
+        "outcome_reasons": [
+          "EVIDENCE_MISSING"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "U",
+            "reasons": [
+              "EVIDENCE_MISSING"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F06-C03",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "U",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "EVIDENCE_MISSING",
+            "subject": "sha256:29ba5e1a86fc81386b6e46dd4e6ea888ba01bcf2238f10259e99024c7f9bb5df"
+          },
+          {
+            "code": "EVIDENCE_MISSING",
+            "subject": "sha256:e8ae75898dc4af20cb5e7caa83cb47cbf8499812f222fdc6402add9e2281026c"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "U",
+        "reasons": [
+          "EVIDENCE_MISSING",
+          "EVIDENCE_MISSING"
+        ],
+        "final_decision": "U",
+        "final_reasons": [
+          "EVIDENCE_MISSING",
+          "EVIDENCE_MISSING"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Deferred",
+        "outcome_reasons": [
+          "EVIDENCE_MISSING",
+          "EVIDENCE_MISSING"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "U",
+            "reasons": [
+              "EVIDENCE_MISSING",
+              "EVIDENCE_MISSING"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F06-C04",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "U",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "EVIDENCE_MISSING",
+            "subject": "sha256:fff960ee6dbcfb511988f3aee8e62bf93e7d40819c150e475b059c1b9c32970d"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "U",
+        "reasons": [
+          "EVIDENCE_MISSING"
+        ],
+        "final_decision": "U",
+        "final_reasons": [
+          "EVIDENCE_MISSING"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Deferred",
+        "outcome_reasons": [
+          "EVIDENCE_MISSING"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "U",
+            "reasons": [
+              "EVIDENCE_MISSING"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F06-C05",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "U",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "EVIDENCE_MISSING",
+            "subject": "sha256:95130176521d50318adfed785cb0f2365fc1308239cdf82e89e20aa912529f67"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "U",
+        "reasons": [
+          "EVIDENCE_MISSING"
+        ],
+        "final_decision": "U",
+        "final_reasons": [
+          "EVIDENCE_MISSING"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Deferred",
+        "outcome_reasons": [
+          "EVIDENCE_MISSING"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "U",
+            "reasons": [
+              "EVIDENCE_MISSING"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F07-C01",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "D",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "EVIDENCE_REFUTED",
+            "subject": "sha256:973e4cd6efa009e6cb6a36baaeff68c760f830960e7c69e81ed9d225ece260c1"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "D",
+        "reasons": [
+          "EVIDENCE_REFUTED"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "EVIDENCE_REFUTED"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "EVIDENCE_REFUTED"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "EVIDENCE_REFUTED"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F07-C02",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "D",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "EVIDENCE_CONFLICT",
+            "subject": "sha256:85e64ff6d2dc23ea5a0559c12eea6bb06614da85457fe68ed600ae2ade83f257"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "D",
+        "reasons": [
+          "EVIDENCE_CONFLICT"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "EVIDENCE_CONFLICT"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "EVIDENCE_CONFLICT"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "EVIDENCE_CONFLICT"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F07-C03",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "D",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "EVIDENCE_CONFLICT",
+            "subject": "sha256:85e64ff6d2dc23ea5a0559c12eea6bb06614da85457fe68ed600ae2ade83f257"
+          },
+          {
+            "code": "EVIDENCE_REFUTED",
+            "subject": "sha256:973e4cd6efa009e6cb6a36baaeff68c760f830960e7c69e81ed9d225ece260c1"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "D",
+        "reasons": [
+          "EVIDENCE_CONFLICT",
+          "EVIDENCE_REFUTED"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "EVIDENCE_CONFLICT",
+          "EVIDENCE_REFUTED"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "EVIDENCE_CONFLICT",
+          "EVIDENCE_REFUTED"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "EVIDENCE_CONFLICT",
+              "EVIDENCE_REFUTED"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F07-C04",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "D",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "EVIDENCE_INVALID",
+            "subject": "sha256:e8ae75898dc4af20cb5e7caa83cb47cbf8499812f222fdc6402add9e2281026c"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "D",
+        "reasons": [
+          "EVIDENCE_INVALID"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "EVIDENCE_INVALID"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "EVIDENCE_INVALID"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "EVIDENCE_INVALID"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F07-C05",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "D",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "EVIDENCE_INVALID",
+            "subject": "sha256:30544f64c29577b0903c42fe3620fcbead0c617f447cb123a17dcb1d481421d2"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "D",
+        "reasons": [
+          "EVIDENCE_INVALID"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "EVIDENCE_INVALID"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "EVIDENCE_INVALID"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "EVIDENCE_INVALID"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F08-C01",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "P",
+          "D",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "REPLAY",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "D",
+        "reasons": [
+          "REPLAY"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "REPLAY"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "spent",
+          "remaining_units": 2,
+          "rows": 1
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "REPLAY"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "REPLAY"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "spent",
+              "remaining_units": 2,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "spent",
+              "remaining_units": 2,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F08-C02",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "P",
+          "D",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "REPLAY",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "D",
+        "reasons": [
+          "REPLAY"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "REPLAY"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "spent",
+          "remaining_units": 2,
+          "rows": 1
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "REPLAY"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "REPLAY"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "spent",
+              "remaining_units": 2,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "spent",
+              "remaining_units": 2,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F08-C03",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "P",
+          "U",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "REPLAY_UNAVAILABLE",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "U",
+        "reasons": [
+          "REPLAY_UNAVAILABLE"
+        ],
+        "final_decision": "U",
+        "final_reasons": [
+          "REPLAY_UNAVAILABLE"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "unavailable",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Deferred",
+        "outcome_reasons": [
+          "REPLAY_UNAVAILABLE"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "U",
+            "reasons": [
+              "REPLAY_UNAVAILABLE"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "unavailable",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "unavailable",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F08-C04",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "BINDING",
+            "subject": "sha256:dfc77aa98e6d66f0d1be9c01b659b14159a9954eafe8fe748ffe05874571a569"
+          }
+        ],
+        "pipeline_stage": "ResponseBinding",
+        "decision": "D",
+        "reasons": [
+          "BINDING"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "BINDING"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "BINDING"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "BINDING"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F08-C05",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "P",
+        "reasons": [
+
+        ],
+        "final_decision": "P",
+        "final_reasons": [
+
+        ],
+        "admissions": [
+          {
+            "event": "A",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "effect_dispatches": 1,
+            "new_rows": 1
+          },
+          {
+            "event": "B",
+            "decision": "D",
+            "reasons": [
+              "REPLAY"
+            ],
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ],
+        "effect_dispatches": 1,
+        "new_rows": 1,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "spent",
+          "remaining_units": 1,
+          "rows": 1
+        },
+        "outcome": "Committed",
+        "outcome_reasons": [
+
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 1,
+            "event": "R",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 2,
+            "event": "A",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "spent",
+              "remaining_units": 1,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "effect_dispatches": 1,
+            "new_rows": 1
+          },
+          {
+            "sequence": 3,
+            "event": "B",
+            "decision": "D",
+            "reasons": [
+              "REPLAY"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "spent",
+              "remaining_units": 1,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "spent",
+              "remaining_units": 1,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F09-C01",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "BINDING",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ResponseBinding",
+        "decision": "D",
+        "reasons": [
+          "BINDING"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "BINDING"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "BINDING"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "BINDING"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F09-C02",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "BINDING",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ResponseBinding",
+        "decision": "D",
+        "reasons": [
+          "BINDING"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "BINDING"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "BINDING"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "BINDING"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F09-C03",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "BINDING",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ResponseBinding",
+        "decision": "D",
+        "reasons": [
+          "BINDING"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "BINDING"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "BINDING"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "BINDING"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F09-C04",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": null,
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "BINDING",
+            "subject": "sha256:e328e6bfa6f695f60605d9fa3a09ee84789f46211360615ee3f906a961844840"
+          }
+        ],
+        "pipeline_stage": "RequestBinding",
+        "decision": "D",
+        "reasons": [
+          "BINDING"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "BINDING"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "BINDING"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "BINDING"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F09-C05",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "BINDING",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ResponseBinding",
+        "decision": "D",
+        "reasons": [
+          "BINDING"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "BINDING"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "BINDING"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "BINDING"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F10-C01",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "D",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "POLICY_REVOKED",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "D",
+        "reasons": [
+          "POLICY_REVOKED"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "POLICY_REVOKED"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "revoked",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "POLICY_REVOKED"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "POLICY_REVOKED"
+            ],
+            "before": {
+              "policy_state": "revoked",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "revoked",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F10-C02",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "P",
+        "reasons": [
+
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "POLICY_REVOKED"
+        ],
+        "admissions": [
+          {
+            "event": "A",
+            "decision": "D",
+            "reasons": [
+              "POLICY_REVOKED"
+            ],
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "revoked",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "POLICY_REVOKED"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 1,
+            "event": "R",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 2,
+            "event": "V",
+            "decision": null,
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "revoked",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 3,
+            "event": "A",
+            "decision": "D",
+            "reasons": [
+              "POLICY_REVOKED"
+            ],
+            "before": {
+              "policy_state": "revoked",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "revoked",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F10-C03",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "P",
+          "D",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "STALE_POLICY",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "D",
+        "reasons": [
+          "STALE_POLICY"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "STALE_POLICY"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "STALE_POLICY"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "STALE_POLICY"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F10-C04",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "D",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "CAPABILITY",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "D",
+        "reasons": [
+          "CAPABILITY"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "CAPABILITY"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "CAPABILITY"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "CAPABILITY"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F10-C05",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "D",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+          {
+            "code": "CAPABILITY",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "D",
+        "reasons": [
+          "CAPABILITY"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "CAPABILITY"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "CAPABILITY"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "CAPABILITY"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F11-C01",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "P",
+          "P",
+          "D"
+        ],
+        "diagnostics": [
+          {
+            "code": "BUDGET",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "D",
+        "reasons": [
+          "BUDGET"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "BUDGET"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 0,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "BUDGET"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "BUDGET"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 0,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 0,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F11-C02",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "invalid",
+            "schema_errors": [
+              {
+                "keyword": "maximum",
+                "path": "/budget_units"
+              }
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": null,
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "INVALID_REQUEST",
+            "subject": "sha256:82799d908d5988a0c01fdee8851f1eabcd4a38d63cb90ba0836cb5e115f7a24d"
+          }
+        ],
+        "pipeline_stage": "RequestSchema",
+        "decision": "D",
+        "reasons": [
+          "INVALID_REQUEST"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "INVALID_REQUEST"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "INVALID_REQUEST"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "INVALID_REQUEST"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F11-C03",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "byte_limit",
+            "schema": "not_run",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": null,
+        "interpretation": null,
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "INVALID_RESPONSE",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ResponseProfile",
+        "decision": "D",
+        "reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "INVALID_RESPONSE"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F11-C04",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "depth_limit",
+            "schema": "not_run",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": null,
+        "interpretation": null,
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "INVALID_RESPONSE",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ResponseProfile",
+        "decision": "D",
+        "reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "INVALID_RESPONSE"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F11-C05",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "P",
+          "P",
+          "D"
+        ],
+        "diagnostics": [
+          {
+            "code": "DEADLINE",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "D",
+        "reasons": [
+          "DEADLINE"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "DEADLINE"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "DEADLINE"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "DEADLINE"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F12-C01",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "not_observed",
+            "schema": "not_run",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": null,
+        "interpretation": null,
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "MODEL_FAILURE",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ModelFailure",
+        "decision": "D",
+        "reasons": [
+          "MODEL_FAILURE"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "MODEL_FAILURE"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "MODEL_FAILURE"
+        ],
+        "failure_subtag": "Timeout",
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "MODEL_FAILURE"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F12-C02",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "not_observed",
+            "schema": "not_run",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": null,
+        "interpretation": null,
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "MODEL_FAILURE",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ModelFailure",
+        "decision": "D",
+        "reasons": [
+          "MODEL_FAILURE"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "MODEL_FAILURE"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "MODEL_FAILURE"
+        ],
+        "failure_subtag": "Cancelled",
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "MODEL_FAILURE"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F12-C03",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "not_observed",
+            "schema": "not_run",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": null,
+        "interpretation": null,
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "MODEL_FAILURE",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ModelFailure",
+        "decision": "D",
+        "reasons": [
+          "MODEL_FAILURE"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "MODEL_FAILURE"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "MODEL_FAILURE"
+        ],
+        "failure_subtag": "TransportFailure",
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "MODEL_FAILURE"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F12-C04",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "json_syntax",
+            "schema": "not_run",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": null,
+        "interpretation": null,
+        "guards": null,
+        "diagnostics": [
+          {
+            "code": "INVALID_RESPONSE",
+            "subject": "sha256:ef0fe9f93a736fc6e8f80039cb9a72743998b910d0b90186b5b77696c75be66b"
+          }
+        ],
+        "pipeline_stage": "ResponseProfile",
+        "decision": "D",
+        "reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "final_decision": "D",
+        "final_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "admissions": [
+
+        ],
+        "effect_dispatches": 0,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "Rejected",
+        "outcome_reasons": [
+          "INVALID_RESPONSE"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "D",
+            "reasons": [
+              "INVALID_RESPONSE"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "case_id": "F12-C05",
+      "actual": {
+        "wire_review": {
+          "request": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          },
+          "response": {
+            "profile": "ok",
+            "schema": "valid",
+            "schema_errors": [
+
+            ]
+          }
+        },
+        "stored_interpretation": "endorse",
+        "interpretation": "endorse",
+        "guards": [
+          "P",
+          "P",
+          "P",
+          "P",
+          "P",
+          "P"
+        ],
+        "diagnostics": [
+
+        ],
+        "pipeline_stage": "Guards",
+        "decision": "P",
+        "reasons": [
+
+        ],
+        "final_decision": "P",
+        "final_reasons": [
+
+        ],
+        "admissions": [
+          {
+            "event": "A",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "effect_dispatches": 1,
+            "new_rows": 0
+          }
+        ],
+        "effect_dispatches": 1,
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "active",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        },
+        "outcome": "EffectFailed",
+        "outcome_reasons": [
+          "SINK_FAILURE"
+        ],
+        "failure_subtag": null,
+        "transition_expectations": [
+          {
+            "sequence": 0,
+            "event": "Decision",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 1,
+            "event": "R",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 2,
+            "event": "A",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 1,
+            "new_rows": 0
+          }
+        ]
+      },
+      "mismatched_fields": [
+
+      ]
+    }
+  ],
+  "plans": [
+    {
+      "order": "RVAB",
+      "actual": {
+        "order": "RVAB",
+        "reachable": true,
+        "classification": "EXPECTED_TRANSITIONS",
+        "executed_events": [
+          {
+            "sequence": 1,
+            "event": "R",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 2,
+            "event": "V",
+            "decision": null,
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "revoked",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 3,
+            "event": "A",
+            "decision": "D",
+            "reasons": [
+              "POLICY_REVOKED"
+            ],
+            "before": {
+              "policy_state": "revoked",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "revoked",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 4,
+            "event": "B",
+            "decision": "D",
+            "reasons": [
+              "POLICY_REVOKED"
+            ],
+            "before": {
+              "policy_state": "revoked",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "revoked",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ],
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "revoked",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        }
+      },
+      "mismatched_fields": [
+        "executed_events"
+      ]
+    },
+    {
+      "order": "RVBA",
+      "actual": {
+        "order": "RVBA",
+        "reachable": false,
+        "classification": "INVALID_ORDER",
+        "executed_events": [
+
+        ],
+        "new_rows": null
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "order": "RAVB",
+      "actual": {
+        "order": "RAVB",
+        "reachable": true,
+        "classification": "EXPECTED_TRANSITIONS",
+        "executed_events": [
+          {
+            "sequence": 1,
+            "event": "R",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 2,
+            "event": "A",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "spent",
+              "remaining_units": 1,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "effect_dispatches": 1,
+            "new_rows": 1
+          },
+          {
+            "sequence": 3,
+            "event": "V",
+            "decision": null,
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "spent",
+              "remaining_units": 1,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "after": {
+              "policy_state": "revoked",
+              "replay_state": "spent",
+              "remaining_units": 1,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 4,
+            "event": "B",
+            "decision": "D",
+            "reasons": [
+              "POLICY_REVOKED",
+              "REPLAY"
+            ],
+            "before": {
+              "policy_state": "revoked",
+              "replay_state": "spent",
+              "remaining_units": 1,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "after": {
+              "policy_state": "revoked",
+              "replay_state": "spent",
+              "remaining_units": 1,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ],
+        "new_rows": 1,
+        "final_state": {
+          "policy_state": "revoked",
+          "replay_state": "spent",
+          "remaining_units": 1,
+          "rows": 1
+        }
+      },
+      "mismatched_fields": [
+        "executed_events"
+      ]
+    },
+    {
+      "order": "RABV",
+      "actual": {
+        "order": "RABV",
+        "reachable": true,
+        "classification": "EXPECTED_TRANSITIONS",
+        "executed_events": [
+          {
+            "sequence": 1,
+            "event": "R",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 2,
+            "event": "A",
+            "decision": "P",
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "spent",
+              "remaining_units": 1,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "effect_dispatches": 1,
+            "new_rows": 1
+          },
+          {
+            "sequence": 3,
+            "event": "B",
+            "decision": "D",
+            "reasons": [
+              "REPLAY"
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "spent",
+              "remaining_units": 1,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "after": {
+              "policy_state": "active",
+              "replay_state": "spent",
+              "remaining_units": 1,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 4,
+            "event": "V",
+            "decision": null,
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "spent",
+              "remaining_units": 1,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "after": {
+              "policy_state": "revoked",
+              "replay_state": "spent",
+              "remaining_units": 1,
+              "rows": 1,
+              "owner_sequence": 1
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ],
+        "new_rows": 1,
+        "final_state": {
+          "policy_state": "revoked",
+          "replay_state": "spent",
+          "remaining_units": 1,
+          "rows": 1
+        }
+      },
+      "mismatched_fields": [
+        "executed_events"
+      ]
+    },
+    {
+      "order": "RBVA",
+      "actual": {
+        "order": "RBVA",
+        "reachable": false,
+        "classification": "INVALID_ORDER",
+        "executed_events": [
+
+        ],
+        "new_rows": null
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "order": "RBAV",
+      "actual": {
+        "order": "RBAV",
+        "reachable": false,
+        "classification": "INVALID_ORDER",
+        "executed_events": [
+
+        ],
+        "new_rows": null
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "order": "VRAB",
+      "actual": {
+        "order": "VRAB",
+        "reachable": true,
+        "classification": "EXPECTED_TRANSITIONS",
+        "executed_events": [
+          {
+            "sequence": 1,
+            "event": "V",
+            "decision": null,
+            "reasons": [
+
+            ],
+            "before": {
+              "policy_state": "active",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "revoked",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 2,
+            "event": "R",
+            "decision": "D",
+            "reasons": [
+              "POLICY_REVOKED"
+            ],
+            "before": {
+              "policy_state": "revoked",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "revoked",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 3,
+            "event": "A",
+            "decision": "D",
+            "reasons": [
+              "POLICY_REVOKED"
+            ],
+            "before": {
+              "policy_state": "revoked",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "revoked",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          },
+          {
+            "sequence": 4,
+            "event": "B",
+            "decision": "D",
+            "reasons": [
+              "POLICY_REVOKED"
+            ],
+            "before": {
+              "policy_state": "revoked",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "after": {
+              "policy_state": "revoked",
+              "replay_state": "fresh",
+              "remaining_units": 2,
+              "rows": 0,
+              "owner_sequence": 0
+            },
+            "effect_dispatches": 0,
+            "new_rows": 0
+          }
+        ],
+        "new_rows": 0,
+        "final_state": {
+          "policy_state": "revoked",
+          "replay_state": "fresh",
+          "remaining_units": 2,
+          "rows": 0
+        }
+      },
+      "mismatched_fields": [
+        "executed_events"
+      ]
+    },
+    {
+      "order": "VRBA",
+      "actual": {
+        "order": "VRBA",
+        "reachable": false,
+        "classification": "INVALID_ORDER",
+        "executed_events": [
+
+        ],
+        "new_rows": null
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "order": "VARB",
+      "actual": {
+        "order": "VARB",
+        "reachable": false,
+        "classification": "INVALID_ORDER",
+        "executed_events": [
+
+        ],
+        "new_rows": null
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "order": "VABR",
+      "actual": {
+        "order": "VABR",
+        "reachable": false,
+        "classification": "INVALID_ORDER",
+        "executed_events": [
+
+        ],
+        "new_rows": null
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "order": "VBRA",
+      "actual": {
+        "order": "VBRA",
+        "reachable": false,
+        "classification": "INVALID_ORDER",
+        "executed_events": [
+
+        ],
+        "new_rows": null
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "order": "VBAR",
+      "actual": {
+        "order": "VBAR",
+        "reachable": false,
+        "classification": "INVALID_ORDER",
+        "executed_events": [
+
+        ],
+        "new_rows": null
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "order": "ARVB",
+      "actual": {
+        "order": "ARVB",
+        "reachable": false,
+        "classification": "INVALID_ORDER",
+        "executed_events": [
+
+        ],
+        "new_rows": null
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "order": "ARBV",
+      "actual": {
+        "order": "ARBV",
+        "reachable": false,
+        "classification": "INVALID_ORDER",
+        "executed_events": [
+
+        ],
+        "new_rows": null
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "order": "AVRB",
+      "actual": {
+        "order": "AVRB",
+        "reachable": false,
+        "classification": "INVALID_ORDER",
+        "executed_events": [
+
+        ],
+        "new_rows": null
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "order": "AVBR",
+      "actual": {
+        "order": "AVBR",
+        "reachable": false,
+        "classification": "INVALID_ORDER",
+        "executed_events": [
+
+        ],
+        "new_rows": null
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "order": "ABRV",
+      "actual": {
+        "order": "ABRV",
+        "reachable": false,
+        "classification": "INVALID_ORDER",
+        "executed_events": [
+
+        ],
+        "new_rows": null
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "order": "ABVR",
+      "actual": {
+        "order": "ABVR",
+        "reachable": false,
+        "classification": "INVALID_ORDER",
+        "executed_events": [
+
+        ],
+        "new_rows": null
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "order": "BRVA",
+      "actual": {
+        "order": "BRVA",
+        "reachable": false,
+        "classification": "INVALID_ORDER",
+        "executed_events": [
+
+        ],
+        "new_rows": null
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "order": "BRAV",
+      "actual": {
+        "order": "BRAV",
+        "reachable": false,
+        "classification": "INVALID_ORDER",
+        "executed_events": [
+
+        ],
+        "new_rows": null
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "order": "BVRA",
+      "actual": {
+        "order": "BVRA",
+        "reachable": false,
+        "classification": "INVALID_ORDER",
+        "executed_events": [
+
+        ],
+        "new_rows": null
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "order": "BVAR",
+      "actual": {
+        "order": "BVAR",
+        "reachable": false,
+        "classification": "INVALID_ORDER",
+        "executed_events": [
+
+        ],
+        "new_rows": null
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "order": "BARV",
+      "actual": {
+        "order": "BARV",
+        "reachable": false,
+        "classification": "INVALID_ORDER",
+        "executed_events": [
+
+        ],
+        "new_rows": null
+      },
+      "mismatched_fields": [
+
+      ]
+    },
+    {
+      "order": "BAVR",
+      "actual": {
+        "order": "BAVR",
+        "reachable": false,
+        "classification": "INVALID_ORDER",
+        "executed_events": [
+
+        ],
+        "new_rows": null
+      },
+      "mismatched_fields": [
+
+      ]
+    }
+  ]
+}

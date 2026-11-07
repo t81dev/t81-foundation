@@ -1,0 +1,355 @@
+[
+  {
+    "name": "oracle",
+    "command": [
+      "/usr/bin/ruby",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/oracle.rb",
+      "/private/tmp/t81-model-object-research/docs/research/model-computational-object"
+    ],
+    "returncode": 0,
+    "stdout_sha256": "ddd1de762f60979c5396d33f35a3b97b4c5a476343473df1590d9f73c47302b1"
+  },
+  {
+    "name": "arm-A",
+    "command": [
+      "/private/tmp/t81-mco-schema-review-venv/bin/python",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/driver.py",
+      "--arm",
+      "A",
+      "--proposal-trace",
+      "/private/tmp/t81-mco-r01-conformance-first/proposal-trace.json"
+    ],
+    "returncode": 0,
+    "stdout_sha256": "bf6927b83581fed795e6fe506b5c273f6949c9a8dc05c3eecc9f87a81f4755c2"
+  },
+  {
+    "name": "replay-A",
+    "command": [
+      "/private/tmp/t81-mco-schema-review-venv/bin/python",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/driver.py",
+      "--arm",
+      "A",
+      "--proposal-trace",
+      "/private/tmp/t81-mco-r01-conformance-first/proposal-trace.json"
+    ],
+    "returncode": 0,
+    "stdout_sha256": "bf6927b83581fed795e6fe506b5c273f6949c9a8dc05c3eecc9f87a81f4755c2"
+  },
+  {
+    "name": "reconstruct-A",
+    "command": [
+      "/usr/bin/ruby",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/oracle.rb",
+      "/private/tmp/t81-model-object-research/docs/research/model-computational-object",
+      "--reconstruct",
+      "/private/tmp/t81-mco-r01-conformance-first/observed-A.json",
+      "/private/tmp/t81-mco-r01-conformance-first/proposal-trace.json"
+    ],
+    "returncode": 0,
+    "stdout_sha256": "50dc73594cbf65085a3573b5bca3965fc8cf742f84de871cdfc482c1f91e0dc9"
+  },
+  {
+    "name": "arm-B",
+    "command": [
+      "/private/tmp/t81-mco-schema-review-venv/bin/python",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/driver.py",
+      "--arm",
+      "B",
+      "--proposal-trace",
+      "/private/tmp/t81-mco-r01-conformance-first/proposal-trace.json"
+    ],
+    "returncode": 0,
+    "stdout_sha256": "9c7875c1d93c57d591bf8862b84fec70760b052cd8bab92b14b980deaf1bb3fd"
+  },
+  {
+    "name": "replay-B",
+    "command": [
+      "/private/tmp/t81-mco-schema-review-venv/bin/python",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/driver.py",
+      "--arm",
+      "B",
+      "--proposal-trace",
+      "/private/tmp/t81-mco-r01-conformance-first/proposal-trace.json"
+    ],
+    "returncode": 0,
+    "stdout_sha256": "9c7875c1d93c57d591bf8862b84fec70760b052cd8bab92b14b980deaf1bb3fd"
+  },
+  {
+    "name": "reconstruct-B",
+    "command": [
+      "/usr/bin/ruby",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/oracle.rb",
+      "/private/tmp/t81-model-object-research/docs/research/model-computational-object",
+      "--reconstruct",
+      "/private/tmp/t81-mco-r01-conformance-first/observed-B.json",
+      "/private/tmp/t81-mco-r01-conformance-first/proposal-trace.json"
+    ],
+    "returncode": 0,
+    "stdout_sha256": "50dc73594cbf65085a3573b5bca3965fc8cf742f84de871cdfc482c1f91e0dc9"
+  },
+  {
+    "name": "mutant-A-permit_unknown",
+    "command": [
+      "/private/tmp/t81-mco-schema-review-venv/bin/python",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/driver.py",
+      "--arm",
+      "A",
+      "--mutant",
+      "permit_unknown"
+    ],
+    "returncode": 0,
+    "stdout_sha256": "e5125577b7d8356aeedab4461ddf889ffa09e6bea6ffac1a8c2a4b433f36298a"
+  },
+  {
+    "name": "reject-A-permit_unknown",
+    "command": [
+      "/usr/bin/ruby",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/oracle.rb",
+      "/private/tmp/t81-model-object-research/docs/research/model-computational-object",
+      "--reconstruct",
+      "/private/tmp/t81-mco-r01-conformance-first/mutated-A-permit_unknown.json"
+    ],
+    "returncode": 2,
+    "stdout_sha256": "eadbdeacd4d2e3eee39f8feb04ab9da1e1e46888ce6049efac3546627e7fa102"
+  },
+  {
+    "name": "mutant-A-skip_revocation",
+    "command": [
+      "/private/tmp/t81-mco-schema-review-venv/bin/python",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/driver.py",
+      "--arm",
+      "A",
+      "--mutant",
+      "skip_revocation"
+    ],
+    "returncode": 0,
+    "stdout_sha256": "95a529f1647c653e921a2ed7a851a3c0f6ed7b8e19de900db89ba4c486beebcd"
+  },
+  {
+    "name": "reject-A-skip_revocation",
+    "command": [
+      "/usr/bin/ruby",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/oracle.rb",
+      "/private/tmp/t81-model-object-research/docs/research/model-computational-object",
+      "--reconstruct",
+      "/private/tmp/t81-mco-r01-conformance-first/mutated-A-skip_revocation.json"
+    ],
+    "returncode": 2,
+    "stdout_sha256": "33ca18ee79a23edfec76b78845458a30456c272ae97fe103aa84f2f70317da13"
+  },
+  {
+    "name": "mutant-A-skip_replay",
+    "command": [
+      "/private/tmp/t81-mco-schema-review-venv/bin/python",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/driver.py",
+      "--arm",
+      "A",
+      "--mutant",
+      "skip_replay"
+    ],
+    "returncode": 0,
+    "stdout_sha256": "965ac1abe46b3034a247977331efc22a0f1b64f05510c7934efd2874453aec07"
+  },
+  {
+    "name": "reject-A-skip_replay",
+    "command": [
+      "/usr/bin/ruby",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/oracle.rb",
+      "/private/tmp/t81-model-object-research/docs/research/model-computational-object",
+      "--reconstruct",
+      "/private/tmp/t81-mco-r01-conformance-first/mutated-A-skip_replay.json"
+    ],
+    "returncode": 2,
+    "stdout_sha256": "46626131e62788c7fca5425bab15e1992ac72a93809f52d8f643718ccd81f899"
+  },
+  {
+    "name": "mutant-A-omit_model_binding",
+    "command": [
+      "/private/tmp/t81-mco-schema-review-venv/bin/python",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/driver.py",
+      "--arm",
+      "A",
+      "--mutant",
+      "omit_model_binding"
+    ],
+    "returncode": 0,
+    "stdout_sha256": "afe50794e3d5fa919c0bbb63b62b4702024e9f7bfc8bd41e7222819b99bddd67"
+  },
+  {
+    "name": "reject-A-omit_model_binding",
+    "command": [
+      "/usr/bin/ruby",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/oracle.rb",
+      "/private/tmp/t81-model-object-research/docs/research/model-computational-object",
+      "--reconstruct",
+      "/private/tmp/t81-mco-r01-conformance-first/mutated-A-omit_model_binding.json"
+    ],
+    "returncode": 2,
+    "stdout_sha256": "3391c9eee1cb522242b585e393a569882d0932673440989042d935dc9f40da0f"
+  },
+  {
+    "name": "mutant-B-permit_unknown",
+    "command": [
+      "/private/tmp/t81-mco-schema-review-venv/bin/python",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/driver.py",
+      "--arm",
+      "B",
+      "--mutant",
+      "permit_unknown"
+    ],
+    "returncode": 0,
+    "stdout_sha256": "2842d41d81144463c0795df1eba58abc54df986f2e4fb961cc063151f34d5ca6"
+  },
+  {
+    "name": "reject-B-permit_unknown",
+    "command": [
+      "/usr/bin/ruby",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/oracle.rb",
+      "/private/tmp/t81-model-object-research/docs/research/model-computational-object",
+      "--reconstruct",
+      "/private/tmp/t81-mco-r01-conformance-first/mutated-B-permit_unknown.json"
+    ],
+    "returncode": 2,
+    "stdout_sha256": "eadbdeacd4d2e3eee39f8feb04ab9da1e1e46888ce6049efac3546627e7fa102"
+  },
+  {
+    "name": "mutant-B-skip_revocation",
+    "command": [
+      "/private/tmp/t81-mco-schema-review-venv/bin/python",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/driver.py",
+      "--arm",
+      "B",
+      "--mutant",
+      "skip_revocation"
+    ],
+    "returncode": 0,
+    "stdout_sha256": "e25d47272d769ceab23ba1c06e1d08fb22a35cb3d2ea9e722db671bcf88d7792"
+  },
+  {
+    "name": "reject-B-skip_revocation",
+    "command": [
+      "/usr/bin/ruby",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/oracle.rb",
+      "/private/tmp/t81-model-object-research/docs/research/model-computational-object",
+      "--reconstruct",
+      "/private/tmp/t81-mco-r01-conformance-first/mutated-B-skip_revocation.json"
+    ],
+    "returncode": 2,
+    "stdout_sha256": "33ca18ee79a23edfec76b78845458a30456c272ae97fe103aa84f2f70317da13"
+  },
+  {
+    "name": "mutant-B-skip_replay",
+    "command": [
+      "/private/tmp/t81-mco-schema-review-venv/bin/python",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/driver.py",
+      "--arm",
+      "B",
+      "--mutant",
+      "skip_replay"
+    ],
+    "returncode": 0,
+    "stdout_sha256": "4d2d2301c884cad5b45f38d20c1b5bd6dc30158f2d349866fd3caa9102bb7b8f"
+  },
+  {
+    "name": "reject-B-skip_replay",
+    "command": [
+      "/usr/bin/ruby",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/oracle.rb",
+      "/private/tmp/t81-model-object-research/docs/research/model-computational-object",
+      "--reconstruct",
+      "/private/tmp/t81-mco-r01-conformance-first/mutated-B-skip_replay.json"
+    ],
+    "returncode": 2,
+    "stdout_sha256": "46626131e62788c7fca5425bab15e1992ac72a93809f52d8f643718ccd81f899"
+  },
+  {
+    "name": "mutant-B-omit_model_binding",
+    "command": [
+      "/private/tmp/t81-mco-schema-review-venv/bin/python",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/driver.py",
+      "--arm",
+      "B",
+      "--mutant",
+      "omit_model_binding"
+    ],
+    "returncode": 0,
+    "stdout_sha256": "c7f5bab0304186c8078a092a53a874c1aa23efd37ab57d2bfcaf43e25ef76702"
+  },
+  {
+    "name": "reject-B-omit_model_binding",
+    "command": [
+      "/usr/bin/ruby",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/oracle.rb",
+      "/private/tmp/t81-model-object-research/docs/research/model-computational-object",
+      "--reconstruct",
+      "/private/tmp/t81-mco-r01-conformance-first/mutated-B-omit_model_binding.json"
+    ],
+    "returncode": 2,
+    "stdout_sha256": "3391c9eee1cb522242b585e393a569882d0932673440989042d935dc9f40da0f"
+  },
+  {
+    "name": "detect-reported_permit",
+    "command": [
+      "/usr/bin/ruby",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/oracle.rb",
+      "/private/tmp/t81-model-object-research/docs/research/model-computational-object",
+      "--reconstruct",
+      "/private/tmp/t81-mco-r01-conformance-first/tamper-reported_permit.json",
+      "/private/tmp/t81-mco-r01-conformance-first/proposal-trace.json"
+    ],
+    "returncode": 2,
+    "stdout_sha256": "7093510634d8ead319f5d4a913972a656a9d82012ac672d2bcd948c24dbbab9b"
+  },
+  {
+    "name": "detect-rehash_wrong_ledger",
+    "command": [
+      "/usr/bin/ruby",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/oracle.rb",
+      "/private/tmp/t81-model-object-research/docs/research/model-computational-object",
+      "--reconstruct",
+      "/private/tmp/t81-mco-r01-conformance-first/tamper-rehash_wrong_ledger.json",
+      "/private/tmp/t81-mco-r01-conformance-first/proposal-trace.json"
+    ],
+    "returncode": 2,
+    "stdout_sha256": "0720eee00f16a85ecfb2068c4eadd6beb86d69dfa3e06830cb0630676845a443"
+  },
+  {
+    "name": "detect-omit_revocation",
+    "command": [
+      "/usr/bin/ruby",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/oracle.rb",
+      "/private/tmp/t81-model-object-research/docs/research/model-computational-object",
+      "--reconstruct",
+      "/private/tmp/t81-mco-r01-conformance-first/tamper-omit_revocation.json",
+      "/private/tmp/t81-mco-r01-conformance-first/proposal-trace.json"
+    ],
+    "returncode": 2,
+    "stdout_sha256": "7217cf18da2e1678b5256147768d21b16f21de074d2a1e35346257012fee0891"
+  },
+  {
+    "name": "detect-erase_observation",
+    "command": [
+      "/usr/bin/ruby",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/oracle.rb",
+      "/private/tmp/t81-model-object-research/docs/research/model-computational-object",
+      "--reconstruct",
+      "/private/tmp/t81-mco-r01-conformance-first/tamper-erase_observation.json",
+      "/private/tmp/t81-mco-r01-conformance-first/proposal-trace.json"
+    ],
+    "returncode": 2,
+    "stdout_sha256": "999e6f77cdf6482482baae98282344068318e6bdfaa7459889ed74f004452be0"
+  },
+  {
+    "name": "detect-omit_cases",
+    "command": [
+      "/usr/bin/ruby",
+      "/private/tmp/t81-model-object-research/experiments/mco_r01/oracle.rb",
+      "/private/tmp/t81-model-object-research/docs/research/model-computational-object",
+      "--reconstruct",
+      "/private/tmp/t81-mco-r01-conformance-first/tamper-omit_cases.json",
+      "/private/tmp/t81-mco-r01-conformance-first/proposal-trace.json"
+    ],
+    "returncode": 2,
+    "stdout_sha256": "4834080c9e708063be851cb93cf9690970662c276bcb38a3198570faeadc111d"
+  }
+]

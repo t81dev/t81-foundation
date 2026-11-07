@@ -1,0 +1,105 @@
+{
+  "files": {
+    "DISCREPANCIES.md": {
+      "bytes": 2193,
+      "sha256": "9f2222056003ae6e60add182ee0839c5a2566c5c84476e8a645414c340b3d27a"
+    },
+    "HANDOFF.md": {
+      "bytes": 1736,
+      "sha256": "09643f4e8432445549205e27e76e01bd6a1b97af2147543dd36eb8642bc4918c"
+    },
+    "README.md": {
+      "bytes": 3363,
+      "sha256": "6e430eb0acb2a6949a39eaf2426ab725dcfafc03453c1bf974af8a29074e91a1"
+    },
+    "RESULTS.md": {
+      "bytes": 10009,
+      "sha256": "4f5a06e1729148761291eeb1e33ee6365a1fbf5cd9ef75c373ef85ab765acaf9"
+    },
+    "arm_a.py": {
+      "bytes": 5675,
+      "sha256": "25afff4d62292d42f322e98ae69f644391a4df5bc00c63c4b1d4125171628e6b"
+    },
+    "arm_b.py": {
+      "bytes": 5120,
+      "sha256": "95eab39e92ba9fd494bcb1341231dca26f451a61c1b3717917e8f3a191af7d3b"
+    },
+    "driver.py": {
+      "bytes": 9403,
+      "sha256": "9ee826c3550b4dcba4f52325b1b5913bfc2ad3e9bc8badec1176560abb32d8e2"
+    },
+    "evidence/baseline-ci.tar.gz": {
+      "bytes": 88903,
+      "sha256": "cdf6e703e429cca6d7049afc96c047b09cf0728befca957080e0b7bbee92be13"
+    },
+    "evidence/baseline-pr-status.json": {
+      "bytes": 10835,
+      "sha256": "9abad8eca24f4dabbdf358a5345dfdcbd68de64d6180fc04006dc5a046c9ff78"
+    },
+    "evidence/conformance-final.tar.gz": {
+      "bytes": 383971,
+      "sha256": "37b6347bda2a052f08bfc5f7419d2cd1af5f0b9ac0f3e2a8758d603ddc75ec9c"
+    },
+    "evidence/conformance-first.tar.gz": {
+      "bytes": 385561,
+      "sha256": "1b5c69be4a38ff8da17bc13e21969a0a137c603de962fb73d3a9902142571202"
+    },
+    "evidence/final-commands.json": {
+      "bytes": 12730,
+      "sha256": "2d7739336f4d9326004b43985afeaaadb880347213d05479e8cbff09a90a7df9"
+    },
+    "evidence/final-proposal-trace.json": {
+      "bytes": 606,
+      "sha256": "3019c1e4f4a3b495309877fb38507e9600163185149860289d0a0c7740505880"
+    },
+    "evidence/final-results.json": {
+      "bytes": 6166,
+      "sha256": "850a3b5036e2f6ce9f22de4aeb1fc2a6b81103ee20d5b196727d29f87253c375"
+    },
+    "evidence/first-commands.json": {
+      "bytes": 12730,
+      "sha256": "340f5a839425685d95afc68c33377c32fba018facacd537f9a368a9cc512c2a7"
+    },
+    "evidence/first-proposal-trace.json": {
+      "bytes": 606,
+      "sha256": "28d826a4e69269f044d3d8b5d8926be6c183c19d235de24291bdf0f858d913d1"
+    },
+    "evidence/first-results.json": {
+      "bytes": 6166,
+      "sha256": "e2448714cb1114acecb2f887e5ee42a6042ab1ea7d34450640ed4f9cc6a9b92a"
+    },
+    "evidence/initial-plan-projection-failure.json": {
+      "bytes": 157257,
+      "sha256": "119eeeba8451501efa5abd2555f8e8e1756963123c5427996a1ca1e1298b132b"
+    },
+    "evidence/local-checks.json": {
+      "bytes": 4837,
+      "sha256": "8c0bd9593a51f09b089a6d803292efb606acce62fba608bf1b0323d442971a2d"
+    },
+    "evidence/oracle-first-phase.json": {
+      "bytes": 286,
+      "sha256": "9e9594f890b0a9470e57f85321b38e3630194f551e816863090bc85d1d42082e"
+    },
+    "evidence/oracle-first.json": {
+      "bytes": 139778,
+      "sha256": "3e93e701f94b349af824cf4550e0c49337117e4886ba6e1bc57b642c2ee18f55"
+    },
+    "evidence/oracle-first.rb": {
+      "bytes": 13788,
+      "sha256": "26f011489acb152eb57e7bda82d3bca9ae4acaa796870acb3683253935dbfcc8"
+    },
+    "oracle.rb": {
+      "bytes": 21196,
+      "sha256": "7d14ba10337c462018a3d4d3de9f7b38f74503d8b5c53f7ff86e079c6dbc514e"
+    },
+    "run.py": {
+      "bytes": 9692,
+      "sha256": "14b29797eae5a526be6f2633f6941bf32e179d48831d1a635394fb7007c666ab"
+    },
+    "wire.py": {
+      "bytes": 3405,
+      "sha256": "47ce33187f049ac626026daf8335ac36caa6f726ff111a0eabf144bb211b33c3"
+    }
+  },
+  "scope": "MCO-R01 sources, reports and preserved evidence; excludes this manifest and transient bytecode"
+}
