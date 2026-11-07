@@ -1,0 +1,725 @@
+{
+  "schema": "base01.b1-foundation.validation.v1",
+  "status": "PASS",
+  "mode": "correctness-only",
+  "source_sha": "cda9135d36144d4de2771af174e52ac7b30a83c9",
+  "source_tracked_bytes_sha256": "1c77b63826cd0adb7e5709a750fd6be3e7295bc3bbae9d94726e8c8cf2fa2c77",
+  "runner_sha": "db0e7c8b976991396eed7d14ddc1e889e9c511c2",
+  "runner_files": {
+    "AUTHORIZATION_INTERFACE.md": "59a413e30cc3620fa7fbfee9dd1a98eebae0b1001225c4d5a7b18cc4cafc8809",
+    "CMakeLists.txt": "0ce9e545bc173170ff151d172d0aebafc358a311cbd8f573121227078703f9c8",
+    "READINESS.md": "84edfda3bbe792ea79e5cabfa5cb7eb0466cfcb8ff35b8edb5087e07f77ce42b",
+    "README.md": "05abec41fff6b8dc5136b8bf73e8cec875764d9afc5923da9ac9284063fe8a1a",
+    "RETENTION_AND_BOUNDS.md": "7200602e73ddb67059f277350ec589acb7e4b2995b98bb43ff013c2906e7f64c",
+    "codec.cpp": "cc3e0b8dd010de71dec7a8aaadb010f0d2570efdc9b62d547f280ef632068103",
+    "codec.hpp": "72c4ac31a7d73041b88aa3bdd70dbe124c99d216d8dc540bc3ebb9fbc6c013e3",
+    "harness.py": "78593c21a639a879cf869b4a9831f5fb5b26dc57f1ee9f38dd6c85ddfd530137",
+    "native.cpp": "543ab287e12f4393689e478a5ecf34d9c0e5b39eab0fa1bc161e879cb7984fc4",
+    "observers.py": "08992e3ea7f81c5d899e8a0b19710e27a41b0a4efbe50ee838560b34bafe1b1b",
+    "oracle.py": "d9c5d305245e9ed94908c2cae71beb537f324b70926f5631ea30a424ad987bcb",
+    "phase-a-manifest.json": "1367b021f393594e4aab3bc4b52a7b76ca94ee70a49b8f0bda62aea96d46e4ea",
+    "test_foundation.py": "eb48f2a9debd61155b1661afc925a3c394225245a133f087f53cb1d293cafc69"
+  },
+  "manifest_commit": "ecd66137bacbce50e605cfc1466ec7d36131ba9e",
+  "manifest_sha256": "1367b021f393594e4aab3bc4b52a7b76ca94ee70a49b8f0bda62aea96d46e4ea",
+  "native_identity": "ba3ba798808b310168d8b73b4529533fed18675fb616aee8eb90a60149229b1b",
+  "worker": {
+    "pid": 32488,
+    "parent_pid": 32484,
+    "complete": true,
+    "returncode": 0,
+    "resource_samples": []
+  },
+  "codec": {
+    "input_sha256": "0fefb0e6b968e8c11556699700530d133505a0bac2013674a42203b10fcb54ef",
+    "retention": {
+      "inputs": 1031,
+      "encoded_outputs": 1031,
+      "decoded_outputs": 1031,
+      "trit_capacity": 65921,
+      "trit_bytes": 1,
+      "vector_object_bytes": 24,
+      "accounted_container_bytes": 107161
+    },
+    "oracle": "verbatim B0 arbitrary-precision positional check"
+  },
+  "canonfs": [
+    {
+      "bytes": 4096,
+      "payload_sha256": "725bcd6c66d02acf6ebeab9c92410e010ea22e336876256aaf05a211f4ce1902",
+      "expected_canonhash": "0ef03619c896d9694f13b525bde07582dcc6a6c1b04fe2d8e3caf5ee4daba40a",
+      "retained_refs": 2,
+      "retained_reads": 2,
+      "accounted_payload_bytes": 12288
+    },
+    {
+      "bytes": 65536,
+      "payload_sha256": "fee47b1f0d7685a226fd5f2b9dd8f525038bbb05fe9d89a5d75c249edac868e3",
+      "expected_canonhash": "9ad5626a6913267d510d36920bd68816f24f0c2ee7070a9f0c659f340647c351",
+      "retained_refs": 2,
+      "retained_reads": 2,
+      "accounted_payload_bytes": 196608
+    },
+    {
+      "bytes": 1048576,
+      "payload_sha256": "5ae9782017a68037004b2bf806c77d324db4d915ed3725d84eb3121b2ad16061",
+      "expected_canonhash": "4c1182f19f5163adc36a3c06f51467cf846c49fa21619d4137c7f3ca7fdeeea5",
+      "retained_refs": 2,
+      "retained_reads": 2,
+      "accounted_payload_bytes": 3145728
+    }
+  ],
+  "vm": {
+    "status": "PROVISIONAL PASS",
+    "reference": "7ef553d221ed668f333ff4429012ee0c9378cd13",
+    "input_sha256": "86787727b57b249fb6be8285043ffd957d3efba8a2728db12f70397d4142d529",
+    "independent_review": "not established; no readiness promotion",
+    "final_r75": [
+      406,
+      5,
+      250,
+      11,
+      7,
+      8
+    ],
+    "retention": [
+      {
+        "tier": "workload",
+        "memory_words": 1552,
+        "trace_entries": 163,
+        "axion_events": 344
+      },
+      {
+        "tier": "micro",
+        "memory_words": 1541,
+        "trace_entries": 5,
+        "axion_events": 0
+      },
+      {
+        "tier": "meso",
+        "memory_words": 1546,
+        "trace_entries": 157,
+        "axion_events": 140
+      },
+      {
+        "tier": "mixed",
+        "memory_words": 1547,
+        "trace_entries": 11,
+        "axion_events": 8
+      },
+      {
+        "tier": "policy-heavy",
+        "memory_words": 1543,
+        "trace_entries": 7,
+        "axion_events": 6
+      },
+      {
+        "tier": "tensor-access",
+        "memory_words": 1544,
+        "trace_entries": 8,
+        "axion_events": 14
+      }
+    ]
+  },
+  "workloads": {
+    "WL-ARITH-CODEC-I64": {
+      "engineering": "ENGINEERING COMPLETE \u2014 AWAITING QUALIFICATION",
+      "reason": "1031 retained encode/decode outputs checked; no timing qualification",
+      "eligibility": {
+        "correctness_only": true,
+        "qualification": false,
+        "measurement": false
+      }
+    },
+    "WL-VM-TISC-DETERMINISM-TIERS": {
+      "engineering": "ENGINEERING PARTIAL",
+      "reason": "PROVISIONAL reference pending independent review; no R75 generalization",
+      "eligibility": {
+        "correctness_only": true,
+        "qualification": false,
+        "measurement": false
+      }
+    },
+    "WL-CANONFS-MEM-THROUGHPUT": {
+      "engineering": "ENGINEERING COMPLETE \u2014 AWAITING QUALIFICATION",
+      "reason": "memory-only retained outputs and independent hashlib CanonHash expectations checked",
+      "eligibility": {
+        "correctness_only": true,
+        "qualification": false,
+        "measurement": false
+      }
+    },
+    "WL-RES-RUSAGE-METRICS": {
+      "engineering": "ENGINEERING PARTIAL",
+      "reason": "unit/selector/lifecycle validation only; real resource collector intentionally absent",
+      "eligibility": {
+        "correctness_only": true,
+        "qualification": false,
+        "measurement": false
+      }
+    },
+    "WL-RES-ARTIFACT-SIZE": {
+      "engineering": "ENGINEERING COMPLETE \u2014 AWAITING QUALIFICATION",
+      "reason": "bounded ELF64-LE/Mach-O64-LE metadata parsers; unsupported formats explicit",
+      "eligibility": {
+        "correctness_only": true,
+        "qualification": false,
+        "measurement": false
+      }
+    }
+  },
+  "artifacts": [
+    {
+      "sha256": "da1c76e04af82e2e21867aec4d10691f6f638acc02471a5f4381ec82ac38fae0",
+      "file_bytes": 1472744,
+      "parser": "base01-static-v1",
+      "status": "SUPPORTED",
+      "sections": [
+        {
+          "name": "",
+          "type": 0,
+          "flags": 0,
+          "address": 0,
+          "file_offset": 0,
+          "file_bytes": 0,
+          "memory_bytes": 0,
+          "alignment": 0
+        },
+        {
+          "name": ".interp",
+          "type": 1,
+          "flags": 2,
+          "address": 792,
+          "file_offset": 792,
+          "file_bytes": 28,
+          "memory_bytes": 28,
+          "alignment": 1
+        },
+        {
+          "name": ".note.gnu.property",
+          "type": 7,
+          "flags": 2,
+          "address": 824,
+          "file_offset": 824,
+          "file_bytes": 48,
+          "memory_bytes": 48,
+          "alignment": 8
+        },
+        {
+          "name": ".note.gnu.build-id",
+          "type": 7,
+          "flags": 2,
+          "address": 872,
+          "file_offset": 872,
+          "file_bytes": 36,
+          "memory_bytes": 36,
+          "alignment": 4
+        },
+        {
+          "name": ".note.ABI-tag",
+          "type": 7,
+          "flags": 2,
+          "address": 908,
+          "file_offset": 908,
+          "file_bytes": 32,
+          "memory_bytes": 32,
+          "alignment": 4
+        },
+        {
+          "name": ".gnu.hash",
+          "type": 1879048182,
+          "flags": 2,
+          "address": 944,
+          "file_offset": 944,
+          "file_bytes": 224,
+          "memory_bytes": 224,
+          "alignment": 8
+        },
+        {
+          "name": ".dynsym",
+          "type": 11,
+          "flags": 2,
+          "address": 1168,
+          "file_offset": 1168,
+          "file_bytes": 4584,
+          "memory_bytes": 4584,
+          "alignment": 8
+        },
+        {
+          "name": ".dynstr",
+          "type": 3,
+          "flags": 2,
+          "address": 5752,
+          "file_offset": 5752,
+          "file_bytes": 6551,
+          "memory_bytes": 6551,
+          "alignment": 1
+        },
+        {
+          "name": ".gnu.version",
+          "type": 1879048191,
+          "flags": 2,
+          "address": 12304,
+          "file_offset": 12304,
+          "file_bytes": 382,
+          "memory_bytes": 382,
+          "alignment": 2
+        },
+        {
+          "name": ".gnu.version_r",
+          "type": 1879048190,
+          "flags": 2,
+          "address": 12688,
+          "file_offset": 12688,
+          "file_bytes": 528,
+          "memory_bytes": 528,
+          "alignment": 8
+        },
+        {
+          "name": ".rela.dyn",
+          "type": 4,
+          "flags": 2,
+          "address": 13216,
+          "file_offset": 13216,
+          "file_bytes": 9720,
+          "memory_bytes": 9720,
+          "alignment": 8
+        },
+        {
+          "name": ".rela.plt",
+          "type": 4,
+          "flags": 66,
+          "address": 22936,
+          "file_offset": 22936,
+          "file_bytes": 3144,
+          "memory_bytes": 3144,
+          "alignment": 8
+        },
+        {
+          "name": ".init",
+          "type": 1,
+          "flags": 6,
+          "address": 28672,
+          "file_offset": 28672,
+          "file_bytes": 27,
+          "memory_bytes": 27,
+          "alignment": 4
+        },
+        {
+          "name": ".plt",
+          "type": 1,
+          "flags": 6,
+          "address": 28704,
+          "file_offset": 28704,
+          "file_bytes": 2112,
+          "memory_bytes": 2112,
+          "alignment": 16
+        },
+        {
+          "name": ".plt.got",
+          "type": 1,
+          "flags": 6,
+          "address": 30816,
+          "file_offset": 30816,
+          "file_bytes": 16,
+          "memory_bytes": 16,
+          "alignment": 16
+        },
+        {
+          "name": ".plt.sec",
+          "type": 1,
+          "flags": 6,
+          "address": 30832,
+          "file_offset": 30832,
+          "file_bytes": 2096,
+          "memory_bytes": 2096,
+          "alignment": 16
+        },
+        {
+          "name": ".text",
+          "type": 1,
+          "flags": 6,
+          "address": 32928,
+          "file_offset": 32928,
+          "file_bytes": 1142193,
+          "memory_bytes": 1142193,
+          "alignment": 16
+        },
+        {
+          "name": ".fini",
+          "type": 1,
+          "flags": 6,
+          "address": 1175124,
+          "file_offset": 1175124,
+          "file_bytes": 13,
+          "memory_bytes": 13,
+          "alignment": 4
+        },
+        {
+          "name": ".rodata",
+          "type": 1,
+          "flags": 2,
+          "address": 1175552,
+          "file_offset": 1175552,
+          "file_bytes": 30624,
+          "memory_bytes": 30624,
+          "alignment": 32
+        },
+        {
+          "name": ".eh_frame_hdr",
+          "type": 1,
+          "flags": 2,
+          "address": 1206176,
+          "file_offset": 1206176,
+          "file_bytes": 8764,
+          "memory_bytes": 8764,
+          "alignment": 4
+        },
+        {
+          "name": ".eh_frame",
+          "type": 1,
+          "flags": 2,
+          "address": 1214944,
+          "file_offset": 1214944,
+          "file_bytes": 62120,
+          "memory_bytes": 62120,
+          "alignment": 8
+        },
+        {
+          "name": ".gcc_except_table",
+          "type": 1,
+          "flags": 2,
+          "address": 1277064,
+          "file_offset": 1277064,
+          "file_bytes": 31864,
+          "memory_bytes": 31864,
+          "alignment": 4
+        },
+        {
+          "name": ".init_array",
+          "type": 14,
+          "flags": 3,
+          "address": 1314728,
+          "file_offset": 1310632,
+          "file_bytes": 96,
+          "memory_bytes": 96,
+          "alignment": 8
+        },
+        {
+          "name": ".fini_array",
+          "type": 15,
+          "flags": 3,
+          "address": 1314824,
+          "file_offset": 1310728,
+          "file_bytes": 8,
+          "memory_bytes": 8,
+          "alignment": 8
+        },
+        {
+          "name": ".data.rel.ro",
+          "type": 1,
+          "flags": 3,
+          "address": 1314832,
+          "file_offset": 1310736,
+          "file_bytes": 2160,
+          "memory_bytes": 2160,
+          "alignment": 16
+        },
+        {
+          "name": ".dynamic",
+          "type": 6,
+          "flags": 3,
+          "address": 1316992,
+          "file_offset": 1312896,
+          "file_bytes": 544,
+          "memory_bytes": 544,
+          "alignment": 8
+        },
+        {
+          "name": ".got",
+          "type": 1,
+          "flags": 3,
+          "address": 1317536,
+          "file_offset": 1313440,
+          "file_bytes": 1376,
+          "memory_bytes": 1376,
+          "alignment": 8
+        },
+        {
+          "name": ".data",
+          "type": 1,
+          "flags": 3,
+          "address": 1318912,
+          "file_offset": 1314816,
+          "file_bytes": 1384,
+          "memory_bytes": 1384,
+          "alignment": 32
+        },
+        {
+          "name": ".bss",
+          "type": 8,
+          "flags": 3,
+          "address": 1320320,
+          "file_offset": 1316200,
+          "file_bytes": 0,
+          "memory_bytes": 266376,
+          "alignment": 64
+        },
+        {
+          "name": ".comment",
+          "type": 1,
+          "flags": 48,
+          "address": 0,
+          "file_offset": 1316200,
+          "file_bytes": 45,
+          "memory_bytes": 45,
+          "alignment": 1
+        },
+        {
+          "name": ".symtab",
+          "type": 2,
+          "flags": 0,
+          "address": 0,
+          "file_offset": 1316248,
+          "file_bytes": 40824,
+          "memory_bytes": 40824,
+          "alignment": 8
+        },
+        {
+          "name": ".strtab",
+          "type": 3,
+          "flags": 0,
+          "address": 0,
+          "file_offset": 1357072,
+          "file_bytes": 113241,
+          "memory_bytes": 113241,
+          "alignment": 1
+        },
+        {
+          "name": ".shstrtab",
+          "type": 3,
+          "flags": 0,
+          "address": 0,
+          "file_offset": 1470313,
+          "file_bytes": 313,
+          "memory_bytes": 313,
+          "alignment": 1
+        }
+      ],
+      "segments": [
+        {
+          "type": 6,
+          "flags": 4,
+          "file_offset": 64,
+          "file_bytes": 728,
+          "memory_bytes": 728,
+          "address": 64,
+          "alignment": 8
+        },
+        {
+          "type": 3,
+          "flags": 4,
+          "file_offset": 792,
+          "file_bytes": 28,
+          "memory_bytes": 28,
+          "address": 792,
+          "alignment": 1
+        },
+        {
+          "type": 1,
+          "flags": 4,
+          "file_offset": 0,
+          "file_bytes": 26080,
+          "memory_bytes": 26080,
+          "address": 0,
+          "alignment": 4096
+        },
+        {
+          "type": 1,
+          "flags": 5,
+          "file_offset": 28672,
+          "file_bytes": 1146465,
+          "memory_bytes": 1146465,
+          "address": 28672,
+          "alignment": 4096
+        },
+        {
+          "type": 1,
+          "flags": 4,
+          "file_offset": 1175552,
+          "file_bytes": 133376,
+          "memory_bytes": 133376,
+          "address": 1175552,
+          "alignment": 4096
+        },
+        {
+          "type": 1,
+          "flags": 6,
+          "file_offset": 1310632,
+          "file_bytes": 5568,
+          "memory_bytes": 271968,
+          "address": 1314728,
+          "alignment": 4096
+        },
+        {
+          "type": 2,
+          "flags": 6,
+          "file_offset": 1312896,
+          "file_bytes": 544,
+          "memory_bytes": 544,
+          "address": 1316992,
+          "alignment": 8
+        },
+        {
+          "type": 4,
+          "flags": 4,
+          "file_offset": 824,
+          "file_bytes": 48,
+          "memory_bytes": 48,
+          "address": 824,
+          "alignment": 8
+        },
+        {
+          "type": 4,
+          "flags": 4,
+          "file_offset": 872,
+          "file_bytes": 68,
+          "memory_bytes": 68,
+          "address": 872,
+          "alignment": 4
+        },
+        {
+          "type": 1685382483,
+          "flags": 4,
+          "file_offset": 824,
+          "file_bytes": 48,
+          "memory_bytes": 48,
+          "address": 824,
+          "alignment": 8
+        },
+        {
+          "type": 1685382480,
+          "flags": 4,
+          "file_offset": 1206176,
+          "file_bytes": 8764,
+          "memory_bytes": 8764,
+          "address": 1206176,
+          "alignment": 4
+        },
+        {
+          "type": 1685382481,
+          "flags": 6,
+          "file_offset": 0,
+          "file_bytes": 0,
+          "memory_bytes": 0,
+          "address": 0,
+          "alignment": 16
+        },
+        {
+          "type": 1685382482,
+          "flags": 4,
+          "file_offset": 1310632,
+          "file_bytes": 4184,
+          "memory_bytes": 4184,
+          "address": 1314728,
+          "alignment": 1
+        }
+      ],
+      "format": "ELF64-LE",
+      "machine": 62,
+      "object_type": 3,
+      "path": "/tmp/base01-physical-linux-correctness-session/foundation-build/foundation_check"
+    },
+    {
+      "sha256": "e6114db0a0890b93b9f4d451ef353783bd864461c94c7de054e49d16c15f89c9",
+      "file_bytes": 2797702,
+      "parser": "base01-static-v1",
+      "status": "UNSUPPORTED",
+      "sections": [],
+      "segments": [],
+      "reason": "unknown, archive, fat, 32-bit or unsupported-endian artifact",
+      "path": "/tmp/base01-physical-linux-correctness-session/source-build/libt81_vm.a"
+    },
+    {
+      "sha256": "b1bfd16d6df9f28469280adf87f39dc0409f4ab5519499805577f3b8ed079cd0",
+      "file_bytes": 545718,
+      "parser": "base01-static-v1",
+      "status": "UNSUPPORTED",
+      "sections": [],
+      "segments": [],
+      "reason": "unknown, archive, fat, 32-bit or unsupported-endian artifact",
+      "path": "/tmp/base01-physical-linux-correctness-session/source-build/libt81_axion.a"
+    },
+    {
+      "sha256": "a1a765e0a1a67c181783374a8b9e1f93eb90c8abc85c849f71f5b3e50a997642",
+      "file_bytes": 595390,
+      "parser": "base01-static-v1",
+      "status": "UNSUPPORTED",
+      "sections": [],
+      "segments": [],
+      "reason": "unknown, archive, fat, 32-bit or unsupported-endian artifact",
+      "path": "/tmp/base01-physical-linux-correctness-session/source-build/libt81_isa.a"
+    },
+    {
+      "sha256": "9d12aa0d71037a27f3eb88c2172877edec2f8dc9f3ed2fa21152f289e8b0aac9",
+      "file_bytes": 459704,
+      "parser": "base01-static-v1",
+      "status": "UNSUPPORTED",
+      "sections": [],
+      "segments": [],
+      "reason": "unknown, archive, fat, 32-bit or unsupported-endian artifact",
+      "path": "/tmp/base01-physical-linux-correctness-session/source-build/libt81_experimental.a"
+    },
+    {
+      "sha256": "ed95bd3f5e0a9b91561c238e0a9440cd951c64512bcb25375e6630118e6091fd",
+      "file_bytes": 150166,
+      "parser": "base01-static-v1",
+      "status": "UNSUPPORTED",
+      "sections": [],
+      "segments": [],
+      "reason": "unknown, archive, fat, 32-bit or unsupported-endian artifact",
+      "path": "/tmp/base01-physical-linux-correctness-session/source-build/libt81_ffi.a"
+    },
+    {
+      "sha256": "c731a495af812c943f5d89c7882ee1a86bfdd6e9a227708e2ca0bb3f3c0e21cc",
+      "file_bytes": 1752220,
+      "parser": "base01-static-v1",
+      "status": "UNSUPPORTED",
+      "sections": [],
+      "segments": [],
+      "reason": "unknown, archive, fat, 32-bit or unsupported-endian artifact",
+      "path": "/tmp/base01-physical-linux-correctness-session/source-build/libt81_core.a"
+    }
+  ],
+  "platform": {
+    "os": "Linux",
+    "kernel": "6.8.0",
+    "architecture": "x86_64",
+    "python": "3.12.13 (main, Mar  6 2026, 16:37:31) [GCC 13.3.0]"
+  },
+  "oracle_providers": {
+    "codec": "accepted B0 pure Python positional oracle",
+    "canonhash": {
+      "algorithm": "SHA3-512 prefix",
+      "prefix_bytes": 32,
+      "module": "_hashlib"
+    }
+  },
+  "compiler": {
+    "path": "/usr/bin/g++",
+    "version": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0\nCopyright (C) 2023 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
+  },
+  "resource_observer": {
+    "status": "FIXTURE/SELECTOR VALIDATION ONLY",
+    "samples": [],
+    "accounting_collector": "not implemented",
+    "selector_bindings": {
+      "status": "SUPPORTED",
+      "RUSAGE_SELF": 0,
+      "RUSAGE_CHILDREN": -1,
+      "samples_collected": false
+    }
+  },
+  "measurement_enabled": false,
+  "performance_samples": []
+}
