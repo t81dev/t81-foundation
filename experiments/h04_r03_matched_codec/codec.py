@@ -15,7 +15,7 @@ Framing:
   Each block j occupies align_up(L_c(m_j), A) bytes.
 """
 import struct
-from typing import List, Sequence, Tuple
+from typing import Any, List, Sequence, Tuple
 
 from .oracle import (
     align_up,
@@ -503,22 +503,40 @@ def compute_expected_total_bytes(N: int, k: int, A: int, access_mode: str, arm: 
         return D + (B - 1) * stride + aligned_last
 
 
+_VALIDATED_FRAME_CONSTRUCTOR_TOKEN = object()
+
+
 class ValidatedFrame:
-    """Immutable, authenticated frame artifact admitted for random access lookup.
+    """Immutable, factory-controlled admission token for random-access lookups.
 
     Per SPECIFICATION.md Section 6.6 and Candidate A access contract, admitted
     random-access queries operate exclusively on validated immutable frames.
-    Validating the entire frame (canonical lengths, alignment gaps, index offsets,
-    and block alignment paddings) is performed at the admission boundary (Phase 5).
-    Admitted random access then reads strictly within the frozen bounded-byte limit
-    (<= 6 contiguous payload bytes for B729-u5, <= 3 for B10, <= 2 for T243,
-    and 0 bytes from other microblocks) without redundant, unbounded re-scanning.
+    Validating the entire frame (canonical framing, alignment gaps, index offsets,
+    block alignment paddings, and complete payload contents) is performed at the
+    admission boundary (Phase 5).
+
+    Factory-controlled immutability:
+    - Direct public construction is prohibited; instances must be produced via
+      validate_frame().
+    - Internal state is frozen and read-only.
+    - Operates on an immutable bytes copy taken prior to validation.
     """
 
-    __slots__ = ("_blob", "arm", "k", "a", "access_mode", "n", "blocks", "data_offset", "stride")
+    __slots__ = (
+        "_blob",
+        "_arm",
+        "_k",
+        "_a",
+        "_access_mode",
+        "_n",
+        "_blocks",
+        "_data_offset",
+        "_stride",
+    )
 
     def __init__(
         self,
+        token: object,
         blob: bytes,
         arm: str,
         k: int,
@@ -529,19 +547,61 @@ class ValidatedFrame:
         data_offset: int,
         stride: int,
     ):
-        self._blob = bytes(blob)  # Enforce immutable byte copy
-        self.arm = arm
-        self.k = k
-        self.a = a
-        self.access_mode = access_mode
-        self.n = n
-        self.blocks = blocks
-        self.data_offset = data_offset
-        self.stride = stride
+        if token is not _VALIDATED_FRAME_CONSTRUCTOR_TOKEN:
+            raise PermissionError(
+                "ValidatedFrame cannot be instantiated directly; use validate_frame() factory."
+            )
+        super().__setattr__("_blob", bytes(blob))
+        super().__setattr__("_arm", arm)
+        super().__setattr__("_k", k)
+        super().__setattr__("_a", a)
+        super().__setattr__("_access_mode", access_mode)
+        super().__setattr__("_n", n)
+        super().__setattr__("_blocks", blocks)
+        super().__setattr__("_data_offset", data_offset)
+        super().__setattr__("_stride", stride)
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        raise AttributeError("ValidatedFrame instances are immutable")
+
+    def __delattr__(self, name: str) -> None:
+        raise AttributeError("ValidatedFrame instances are immutable")
 
     @property
     def blob(self) -> bytes:
         return self._blob
+
+    @property
+    def arm(self) -> str:
+        return self._arm
+
+    @property
+    def k(self) -> int:
+        return self._k
+
+    @property
+    def a(self) -> int:
+        return self._a
+
+    @property
+    def access_mode(self) -> str:
+        return self._access_mode
+
+    @property
+    def n(self) -> int:
+        return self._n
+
+    @property
+    def blocks(self) -> int:
+        return self._blocks
+
+    @property
+    def data_offset(self) -> int:
+        return self._data_offset
+
+    @property
+    def stride(self) -> int:
+        return self._stride
 
     def __len__(self) -> int:
         return len(self._blob)
@@ -560,17 +620,19 @@ def validate_frame(blob: bytes, arm: str, k: int, A: int, access_mode: str = "RA
     - Zero padding in header-data alignment gap (D - H).
     - If RA-INDEXED, canonical block offset index values.
     - Zero padding in all block alignment padding regions.
+    - Complete canonical payload contents via arm decoders across all blocks.
 
     Returns a ValidatedFrame admission token upon success, or raises CodecError.
     Admitted random-access query loops MUST require a ValidatedFrame.
     """
+    blob = bytes(blob)  # Defensive snapshot to immutable bytes before validation begins
     if len(blob) < 8:
         raise CodecError(f"Corrupted frame: blob length {len(blob)} < 8 bytes")
     (N,) = struct.unpack('<Q', blob[:8])
     if N == 0:
         if len(blob) != 8:
             raise CodecError(f"Extra trailing bytes for N=0: length {len(blob)} != 8")
-        return ValidatedFrame(blob, arm, k, A, access_mode, 0, 0, 8, 0)
+        return ValidatedFrame(_VALIDATED_FRAME_CONSTRUCTOR_TOKEN, blob, arm, k, A, access_mode, 0, 0, 8, 0)
 
     expected_total = compute_expected_total_bytes(N, k, A, access_mode, arm)
     if len(blob) != expected_total:
@@ -594,17 +656,23 @@ def validate_frame(blob: bytes, arm: str, k: int, A: int, access_mode: str = "RA
             if block_offsets[j] != expected_off:
                 raise CodecError(f"Non-canonical block offset in index at {j}: got {block_offsets[j]}, expected {expected_off}")
 
+    decoder = ARM_DECODERS[arm]
     for j in range(B):
         m_j = min(k, N - j * k)
         off_j = D + j * stride
         raw_l = raw_func(m_j)
         aligned_l = align_up(raw_l, A)
+        block_data = blob[off_j : off_j + raw_l]
         if aligned_l > raw_l:
             pad_data = blob[off_j + raw_l : off_j + aligned_l]
             if any(b != 0 for b in pad_data):
                 raise CodecError(f"Nonzero padding in block {j} alignment padding")
 
-    return ValidatedFrame(blob, arm, k, A, access_mode, N, B, D, stride)
+        # Complete canonical payload content validation (including microblock high bits,
+        # out-of-range integer states, and value boundaries)
+        decoder(block_data, m_j)
+
+    return ValidatedFrame(_VALIDATED_FRAME_CONSTRUCTOR_TOKEN, blob, arm, k, A, access_mode, N, B, D, stride)
 
 
 def decode(blob: bytes, arm: str, k: int, A: int, access_mode: str = "RA-FIXED") -> List[int]:
@@ -666,7 +734,16 @@ def decode(blob: bytes, arm: str, k: int, A: int, access_mode: str = "RA-FIXED")
 
 
 def random_access(blob: bytes, index: int, arm: str, k: int, A: int, access_mode: str = "RA-FIXED") -> int:
-    """Random access query for x_i without decoding preceding blocks.
+    """Unvalidated raw random access query for x_i without decoding preceding blocks.
+
+    WARNING / ADMISSION BOUNDARY NOTICE:
+    This is an unvalidated raw primitive that operates directly on raw, unadmitted byte
+    buffers. To preserve the frozen bounded payload read guarantee (<= 6 payload bytes
+    for B729-u5, <= 3 for B10, <= 2 for T243; 0 bytes from other microblocks), this
+    function performs local digit/microblock extraction without scanning the entire
+    artifact for unvisited alignment padding or corruption in unread blocks/microblocks.
+    For benchmark queries and admitted workloads, use validate_frame() to produce an
+    immutable ValidatedFrame and invoke admitted_random_access() or frame.random_access().
 
     Work, memory allocation, and touched bytes are strictly bounded by block size k,
     computed in O(1) space without allocating or reconstructing an O(B) list of block offsets.

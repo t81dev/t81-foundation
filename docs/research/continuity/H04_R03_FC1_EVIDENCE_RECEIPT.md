@@ -13,14 +13,14 @@
 
 ## 1. Executive Summary & Review Findings Resolution
 
-This evidence receipt documents the corrective implementation addressing three Codex review findings reported on PR #679 in study EXP-H04-R03.
+This evidence receipt documents the corrective implementation resolving three Codex review findings reported on PR #679 in study EXP-H04-R03.
 
 ### Per-Finding Dispositions
 
 | Finding | Severity | Description | Final Disposition | Summary of Evidence |
 |---|---|---|---|---|
 | **Finding 1** | P1 | Fallback Confidence Intervals & Statistical Integrity | **FIXED (DEFENSIVE HARDENING)** | Removed all five `(1.0, 1.0, 1.0)` fallback confidence intervals in `benchmark_harness.py`. Clarified that at base `1103356`, required CI validation already returned `INVALID` for missing mandatory intervals; removal of dead fallback code eliminates misleading dead branches. Hardened CI validation with `_is_valid_ci()` so non-tuple, non-numeric, boolean, nonpositive, or nonfinite values fail closed as `INVALID` without raising uncaught exceptions. Preserved Step 1 protocol integrity and Step 2 CV > 5.0% early noise stop (`INCONCLUSIVE`). Negative tests added in `test_harness.py` (10/10 PASS). |
-| **Finding 2** | P2 | Alignment-Padding Integrity & Admission Boundary | **FIXED** | Reproduced both Codex counterexamples (`k=5, A=8` byte 10; `k=5, A=64` byte 8). Analyzed access-accounting trade-offs against frozen §4.5/4.6 byte budgets: scanning alignment gaps and block padding inside individual queries would violate the $\le 6$ payload byte limit and $O(1)$ random access operation count. Implemented an explicit, enforced immutable-frame admission boundary: `validate_frame()` returns an immutable `ValidatedFrame`, and `admitted_random_access()` requires a `ValidatedFrame`. Direct `admitted_random_access()` refuses raw unvalidated bytes, preventing corrupted frames from reaching admitted queries. Added deterministic regression tests in `test_b729_u5.py` and `test_matched_codec.py` (29/29 PASS). |
+| **Finding 2** | P2 | Alignment-Padding Integrity & Admission Boundary | **FIXED** | Verified both original Codex counterexamples (`k=5, A=8` byte 10; `k=5, A=64` byte 8) and added a third multi-microblock regression (`k=10, A=1`, 6 symbols, corrupted byte 15). Analyzed access-accounting trade-offs against frozen §4.5/4.6 byte budgets: scanning alignment gaps and block padding inside individual queries would violate the $\le 6$ payload byte limit and $O(1)$ random access operation count. Implemented an explicit, factory-controlled immutable admission boundary: `validate_frame()` returns an immutable `ValidatedFrame` with complete payload content validation; `admitted_random_access()` requires a `ValidatedFrame` and refuses raw unvalidated bytes; older `random_access()` is explicitly documented as an unvalidated raw primitive. Added deterministic regression tests in `test_b729_u5.py` and `test_matched_codec.py` (30/30 PASS). |
 | **Finding 3** | P1 | Phase 4 Retention Verification Reporting | **REPORTING CORRECTED — FUNCTIONAL REQUIREMENT OPEN** | Withdrew unsupported claims that Phase 4 wire-frame-only retention was verified. Updated dry-run validation to report Phase 4 as `UNVERIFIED / UNIMPLEMENTED` in a structured `phase_status` dictionary, excluded Phase 4 from `phases_verified`, and reported overall status as `PARTIAL — PHASE 4 UNVERIFIED / UNIMPLEMENTED`. Removed instance symbol caching. Functional retention requirement remains explicitly open. |
 
 ---
@@ -55,8 +55,9 @@ Because this validation ran before the `.get(..., (1.0, 1.0, 1.0))` lookups, mis
 ### 2.2 Finding 2 — Alignment-Padding Integrity & Admission Boundary
 
 #### Counterexample Reproduction
-1. **Counterexample 1 (Block Alignment Padding):** `k=5, A=8`, encode `[0]` with `B729-u5`, corrupt byte 10. `decode()` failed closed with `CodecError`, but `random_access(..., 0)` returned `0` without error.
-2. **Counterexample 2 (Header Alignment Gap):** `k=5, A=64`, encode `[0]` with `B729-u5`, corrupt byte 8. `decode()` failed closed with `CodecError`, but `random_access(..., 0)` returned `0` without error.
+1. **Counterexample 1 (Block Alignment Padding):** `k=5, A=8`, encode `[0]` with `B729-u5`, corrupt byte 10. `decode()` failed closed with `CodecError`, but unvalidated `random_access(..., 0)` returned `0` without error.
+2. **Counterexample 2 (Header Alignment Gap):** `k=5, A=64`, encode `[0]` with `B729-u5`, corrupt byte 8. `decode()` failed closed with `CodecError`, but unvalidated `random_access(..., 0)` returned `0` without error.
+3. **Counterexample 3 (Multi-Microblock Payload Corruption):** `k=10, A=1`, encode `[0]*6` with `B729-u5` (6 symbols across 2 microblocks: 5 symbols in µ0, 1 symbol in µ1). Corrupt bit 10 in byte 15 (unused high bit of µ1). If unvalidated, `random_access(..., 0)` targeting µ0 returns `0` without error because it reads only bytes 8..13.
 
 #### Access-Accounting Analysis Against Frozen §4.5/4.6 Contract
 
@@ -75,12 +76,18 @@ Per `SPECIFICATION.md` Section 6.6:
 > *"Validate complete inputs and canonical framing before admitted queries. Full validation work is reported separately and included in the end-to-end cost; a previously validated immutable buffer may amortize validation identically for all arms. Do not scan/validate the whole file silently inside one arm's lookup while giving others prevalidated input."*
 
 To satisfy both padding integrity and the frozen $\le 6$ payload byte access limit:
-1. Implemented `ValidatedFrame` in `codec.py`, encapsulating an immutable `bytes` copy and verified framing metadata.
-2. `validate_frame(blob, arm, k, A, access_mode)` performs complete $O(B)$ frame validation (header, total length, alignment gaps, index offsets, and all block alignment paddings) and returns a `ValidatedFrame`.
-3. Implemented `admitted_random_access(frame: ValidatedFrame, index: int)`:
+1. **Factory-Controlled Immutability:** Implemented `ValidatedFrame` in `codec.py`, utilizing a private token (`_VALIDATED_FRAME_CONSTRUCTOR_TOKEN`) to prevent direct public instantiation. Its attributes are read-only properties with `__setattr__` and `__delattr__` overrides preventing post-instantiation mutation. An immutable copy (`bytes(blob)`) is taken prior to validation.
+2. **Comprehensive Admission Validation:** `validate_frame(blob, arm, k, A, access_mode)` performs complete $O(B)$ frame validation:
+   - 8-byte element count header $N$ and canonical expected total wire length.
+   - Header alignment gap ($D - H$) zero padding.
+   - Canonical block offset index values (if RA-INDEXED).
+   - Zero padding in all block alignment padding regions.
+   - Complete canonical payload content verification via `ARM_DECODERS[arm]`, ensuring all microblock high padding bits, integer range bounds ($I_\mu < 729^v$), and value domains are strictly valid across all blocks.
+3. **Admitted Random Access:** `admitted_random_access(frame: ValidatedFrame, index: int)`:
    - Strictly requires a `ValidatedFrame` token; refuses raw unvalidated `bytes` or `bytearray` (raises `TypeError`).
    - Slices only the target microblock (at most 6 payload bytes for B729-µ5).
-   - Proven in `test_10`, `test_11`, and `test_12` in `test_b729_u5.py`: neither corrupted counterexample can produce a `ValidatedFrame` or reach an admitted query.
+   - Older `random_access()` is explicitly documented in docstrings as an unvalidated raw primitive for low-level testing that bypasses admission validation.
+   - Proven in `test_10`, `test_11`, `test_12`, and `test_13` in `test_b729_u5.py`: corrupted frames cannot produce a `ValidatedFrame` or reach an admitted query.
 
 ---
 
@@ -110,9 +117,9 @@ All relevant test suites were executed independently:
 python3 -m unittest -v experiments.h04_r03_matched_codec.test_matched_codec
 # Result: Ran 17 tests - OK
 
-# 2. Candidate A B729-µ5 correctness test suite (12 tests, +3 regression tests)
+# 2. Candidate A B729-µ5 correctness test suite (13 tests, +4 regression tests)
 python3 -m unittest -v experiments.h04_r03_matched_codec.test_b729_u5
-# Result: Ran 12 tests - OK
+# Result: Ran 13 tests - OK
 
 # 3. Deterministic PRNG & workload generators (4 tests)
 python3 -m unittest -v experiments.h04_r03_matched_codec.test_workload
@@ -138,7 +145,7 @@ python3 -m experiments.h04_r03_matched_codec.benchmark_harness --run-measurement
 # Output: ERROR: Phase C performance measurement is FROZEN. Exit code: 1
 ```
 
-Total tests verified across all active suites: **73 tests passing with zero regressions**.
+Total tests verified across all active suites: **74 tests passing with zero regressions**.
 
 ---
 
