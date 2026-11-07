@@ -1,0 +1,8 @@
+{
+  "results": {
+    "review-record": "schema_valid",
+    "reproduction-record": "schema_valid",
+    "discrepancy-record": "schema_valid"
+  },
+  "scope": "Standalone Draft202012 schema checks only; PR sources are not indexed by Commons; this does not certify acceptance or authorization"
+}

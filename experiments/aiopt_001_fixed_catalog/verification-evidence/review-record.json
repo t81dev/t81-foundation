@@ -1,0 +1,51 @@
+{
+  "status": "proposed",
+  "hypothesis_id": "H08",
+  "repository_revision": "32d7f9a885d527772227d0d13d108f5de3483497",
+  "attribution": {
+    "name": "Codex",
+    "kind": "agent",
+    "model": "GPT-6",
+    "role": "Correctness reviewer and corrective implementation author; prior related context disclosed"
+  },
+  "evidence": [
+    {
+      "source_ref": "https://github.com/t81dev/t81-foundation/blob/b83414f0b04563cecae1c3741ceba7692dd81a11/experiments/aiopt_001_fixed_catalog/m1.py",
+      "relationship": "contradictory",
+      "scope": "Original catalog and optimized-mode validation defects; valid matching outputs already agreed with arithmetic reference"
+    },
+    {
+      "source_ref": "https://github.com/t81dev/t81-foundation/blob/32d7f9a885d527772227d0d13d108f5de3483497/experiments/aiopt_001_fixed_catalog/verify_m1.py",
+      "relationship": "supporting",
+      "scope": "Separate arithmetic verification and preserved local observations, not independent human acceptance"
+    }
+  ],
+  "uncertainty": "One native macOS ARM64/Python 3.14.3 environment; prior related conversation; no independent human scientific review, performance or broad H08 benefit established.",
+  "human_authorization": {
+    "status": "authorized",
+    "human": "Requesting user; personal name not supplied",
+    "record": "Current conversation: T81-AIOPT-001-M1-VERIFY, completed by user-provided Jules_Instruct.txt; authorization is scoped to correctness verification/corrections and existing-branch push, not M2 or acceptance"
+  },
+  "schema": "t81.research-commons.independent-review.v1",
+  "id": "T81-AIOPT-001-M1-VERIFY-review",
+  "target": "Corrected equality-matching implementation at 32d7f9a885d527772227d0d13d108f5de3483497",
+  "independence": {
+    "relationship_to_author": "Target author/model identity not independently verified. Reviewer authored an earlier, different min/max experiment in this conversation.",
+    "prior_context": "Full previous conversation, prior min/max packet, task and source inspection; not a fresh independent reviewer.",
+    "independent_execution": false,
+    "limitations": "Fresh local subprocess execution and separate arithmetic reference occurred, but no independent-person/scientific replication claim."
+  },
+  "adversarial_checks": [
+    "All 81 vectors, all 40 entries and 3240 decisions per implementation",
+    "All 256 SWAR payloads and exhaustive invalid byte values at each position",
+    "Malformed catalogs, strict types, error precedence and one-shot iterables",
+    "Normal/-O instrumentation plus deliberate wrong-result and wrong-error mutations"
+  ],
+  "findings": [
+    "Four defect categories corrected without changing valid-domain digest",
+    "13,274 checks per fresh verifier process passed in normal and -O; 53,096 total over four runs",
+    "Original 604 malformed expectations count was accurate as calls, not unique states",
+    "Protocol remains reconstructed/proposed; independent acceptance outstanding"
+  ],
+  "verdict": "no_issue_found_in_scope"
+}
