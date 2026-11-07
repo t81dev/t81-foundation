@@ -68,9 +68,11 @@ T81 investigates the distinction.
 
 Research is valuable when it identifies both opportunities and limitations.
 
+**Lead result — an unfavorable optimized-binary comparison:** In the historical AVX2 matrix-vector experiment below, native INT8 reached **17.15 GFLOP/s**, versus **12.91 GFLOP/s** for packed 2-bit ternary (approximately **32.8% higher throughput** for the native INT8 implementation). This is a workload-specific result, not a universal radix ranking; T81 publishes it prominently because an unfavorable result is evidence, not a defect to conceal.
+
 T81's experimental history has produced several important findings.
 
-### 1. Representation density is not execution speed
+### 1. AVX2 negative result: representation density is not execution speed
 
 Packed ternary data can reduce storage requirements.
 
@@ -113,13 +115,15 @@ It is whether the chosen workload can distinguish meaningful differences between
 
 [Explore T81-AIOPT-001](docs/research/aiopt/)
 
-### 4. H04-R03: correctness before performance
+### 4. H04-R03 status snapshot (2026-11-02): correctness before performance
 
 The H04-R03 matched-codec program compares bounded representation and access alternatives, including a B729-µ5 candidate. Its preregistered protocol and Candidate A implementation/review are tracked in [PR #677](https://github.com/t81dev/t81-foundation/pull/677), [PR #679](https://github.com/t81dev/t81-foundation/pull/679), and [PR #680](https://github.com/t81dev/t81-foundation/pull/680). The independent review reports correctness and protocol acceptance only; as of 2026-11-02, PRs #679 and #680 remain open, and Phase C performance measurement is not authorized or reported. PR status must be refreshed before relying on this snapshot.
 
 An equality of payload lengths is a mathematical property, not a demonstrated latency, energy, or end-to-end benefit. No H04-R03 performance advantage is claimed.
 
 ### 5. Bounded cross-profile execution demonstrated (CPA-004/CPA-005)
+
+**Evidence classification: bounded determinism and portability, not comparative performance or whole-system maturity.** The results below concern a frozen program and specified execution environments; they do not qualify untested instructions, workloads, physical hardware, or the broader architecture.
 
 Recent research in the Cross-Profile Architecture (CPA) program demonstrated that the computational core of T81 executes consistently across divergent execution environments:
 
