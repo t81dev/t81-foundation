@@ -1,0 +1,94 @@
+{
+  "valid_scenarios": [
+    {
+      "prompt": "greet hello",
+      "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+      "result_ref": "sha3-256:2G3S\u03c4JVsMx\u03bc5RUbLoV<LlUfYQn\u03bb\u221eQ\u00d7RysZ\u2264RHBY\u03c4s",
+      "stages_compared": true
+    },
+    {
+      "prompt": "hello world",
+      "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+      "result_ref": "sha3-256:1M<\u2264Y\u2260k\u03c0C\u2265dAZ8V5<qciL1\u03c9tkOl\u2260Xx\u03bc\u2260\u03bbGG=w>xH\u2264",
+      "stages_compared": true
+    },
+    {
+      "prompt": "greet",
+      "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+      "result_ref": "sha3-256:BP\u2260\u03bc\u2265\u03bclXY\u00d7e-<Q>n9AsLZ2iT\u221e3l7b=YJPVhT=t\u00f7W",
+      "stages_compared": true
+    },
+    {
+      "prompt": "foo bar baz",
+      "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+      "result_ref": "sha3-256:3yMu\u03c48i7pZjJv7o\u2212g\u03c0jn9pXt<D\u03c9\u0393W\u00f7\u03c3d9\u03c3z7L\u221esC\u2212",
+      "stages_compared": true
+    },
+    {
+      "prompt": "123456",
+      "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+      "result_ref": "sha3-256:4otTP0q<lhO9l6fI\u00d7jRz9TWw\u03c0HB\u2264to41WYcGn9Dvc",
+      "stages_compared": true
+    },
+    {
+      "prompt": "greet hello\r\n",
+      "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+      "result_ref": "sha3-256:2G3S\u03c4JVsMx\u03bc5RUbLoV<LlUfYQn\u03bb\u221eQ\u00d7RysZ\u2264RHBY\u03c4s",
+      "stages_compared": true
+    },
+    {
+      "prompt": "  greet hello  ",
+      "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+      "result_ref": "sha3-256:21>i\u2264q\u2212\u03c3XS7J\u03bc\u2260\u00d7hAJ7\u00d7iLI\u2248\u03c4\u00d7jRK-\u2260xj\u2248\u03bcWMYcdy",
+      "stages_compared": true
+    },
+    {
+      "prompt": "greet\nhello",
+      "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+      "result_ref": "sha3-256:53za\u00d74aS9u\u22128\u221ebxdcVpSV\u2265kD\u2260kV1oL<\u0393f\u03bbv\u2248\u03bcAqNQ",
+      "stages_compared": true
+    },
+    {
+      "prompt": "\tgreet hello\t\r\n\n",
+      "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+      "result_ref": "sha3-256:3Zi-ZEs09Za\u2212T1T\u2212\u03c3a>6U\u03c9hK51WP\u2260Z-mIM\u03c4rlAZM\u03c9",
+      "stages_compared": true
+    },
+    {
+      "prompt": "greet hello world greet hello world",
+      "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+      "result_ref": "sha3-256:3H\u03c4A3S\u221eN7i\u03bb3h\u226062IO8Z=tZHGrHj1ltc3C8jnZ8pu",
+      "stages_compared": true
+    },
+    {
+      "prompt": "greet",
+      "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+      "result_ref": "sha3-256:2\u22129hBqdC\u2265g1\u2248zSDA9S1d2LKd8QBirWn\u00d7\u2264sFtL>VN0",
+      "stages_compared": true
+    },
+    {
+      "prompt": "greet hello",
+      "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+      "result_ref": "sha3-256:t<Z5LDz<P\u2260b\u00d7R0tZ\u2260CS\u0393w5<=ZC7Q\u2265a5b<Y\u22489W\u00f78x",
+      "stages_compared": true
+    },
+    {
+      "prompt": "greet hello",
+      "model_hash": "sha3-512:e996360e3279821292d6a63b7771480c7e814c6f22c4fe73dea7096609f9c67ced9b55020157bc95a644d83c76a22d7ef911fff0f7ec1a81078d2989e56d0e2f",
+      "result_ref": "sha3-256:2VYm<\u03bcHUokSC60W-9\u2212P5\u221eo2M\u2265YKmU\u03c4<\u00d7pXNz\u03bbv\u2248Vj",
+      "stages_compared": true
+    },
+    {
+      "prompt": "greet hello",
+      "model_hash": "sha3-512:e76359c1e301cad4668147b6f6b3a845c62f0a961f1efc2e61a704571e18221d3593275c5086f876da0360089d7b6969d52de04ae286ba1ce960176c42fdb0a3",
+      "result_ref": "sha3-256:TuF\u2260ccjCva5TG\u2248m<M\u03c4q\u00f7BpL\u00f7N0rhXM\u03c4\u221e8pR9nqI\u2260",
+      "stages_compared": true
+    },
+    {
+      "prompt": "greet hello",
+      "model_hash": "sha3-512:f71d3e9d787489cc69140ec7caca3834d08fa4ad12c8c6446beed28cc58890ee47b1e039b88e96e49f4ae6ea5f9f0f9cbcd3db881e07d1a86f9f1f14ce673737",
+      "result_ref": "sha3-256:3s\u03c0bVdVF7lH\u22608=IvK=b>nvA52\u03c0u9Jm10=Ihwailqv",
+      "stages_compared": true
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "schema": "t81.research-commons.experiment-proposal.v1",
+  "id": "investigation08-controlled-measurement-v1",
+  "status": "proposed",
+  "hypothesis_id": "H07",
+  "attribution": {
+    "name": "OpenAI Codex",
+    "kind": "agent",
+    "model": null,
+    "role": "Protocol author and same-session prior comparator reviewer; no new measurement performed"
+  },
+  "repository_revision": "0662e0e637f47168e56ca4ddd66e8ee877473b38",
+  "evidence": [
+    {
+      "source_ref": "charter",
+      "relationship": "context",
+      "scope": "Canonical hypothesis continuity and falsifiable-comparison requirements; not acceptance of this proposal"
+    },
+    {
+      "source_ref": "register",
+      "relationship": "context",
+      "scope": "Canonical H07 authority; H-S1 work package is not canonical H08"
+    },
+    {
+      "source_ref": "alignment-audit",
+      "relationship": "context",
+      "scope": "Prior comparison/assurance limitations, not a new timing result"
+    }
+  ],
+  "uncertainty": "The comparator is accepted for its bounded computation, not optimized architectural equivalence. Existing persistence/replay and phase-clock mismatches prevent the unchanged harness from satisfying this protocol. No new timing data; no proof of IID block effects or power guarantee. H-S1 is not canonical H08.",
+  "human_authorization": {
+    "status": "authorized",
+    "human": "Maintainer in this conversation",
+    "record": "Conditional Protocol Acceptance and Measurement Readiness user instruction: numerical design accepted subject to independent statistical validation; preparation and instrumentation tests ONLY. Confirmatory performance collection is NOT authorized. Independent Jules review and separate explicit measurement authorization remain required."
+  },
+  "research_question": "For the bounded assess-fixed two-layer workload, does the matched fresh-process implementation workflow show material latency differences? H-S1a-d interpretation stays separate from canonical H07 and H08.",
+  "falsification_criterion": "Any unexplained parity/identity/authorization/integrity failure invalidates the condition. Advantage requires every cell simultaneous interval upper bound below 1/1.10; an interval excluding that region fails the proposed advantage criterion. Missing ablations cannot establish composition or ternary causality.",
+  "matched_control": "Use unchanged accepted conventional comparator with identical model/tokenizer/input/APL, strict deterministic selection and common seven-object persistence/readback/recovery obligations; extend only existing research orchestration, not computation or production.",
+  "method": "Independent Jules review pending; source-separated analysis implementation, frozen schedule and correctness apparatus documented in READINESS.md. See PREREGISTRATION.md v1 and baseline-audit.json in this directory for the current merged-source audit. PREREGISTRATION.md v1: six input/store cells, 60 randomized balanced paired blocks per cell, fixed sample, parent fresh-process wall boundary, exact median-log-ratio intervals using order statistics20/41 and Bonferroni6, proposed reciprocal10% materiality band; preserve chronological attempts and stop on correctness/environment failures.",
+  "measurement_plan": "Conditionally accepted planned design; implemented apparatus is validation-only, with no batch collector enabled. After human approval and all readiness gates: 360 pairs, 720 measured workflows; balanced randomized order seed62708; storage and fully matched lookup/recovery are descriptive secondary endpoints; unmatched internal phases remain null. No performance collection in this proposal PR.",
+  "expected_artifacts": [
+    "Approved protocol commit/hash and frozen analysis/adapter",
+    "Gate outputs and independent13-case admission result",
+    "Schedule JSON and hash before timing",
+    "Append-only raw attempts including priming/failures",
+    "Executable/source/model/tokenizer/policy/environment identity manifest",
+    "Storage, lookup and fixture-free recovery records",
+    "Statistical summaries, uncertainty and bounded interpretation",
+    "Independent reproduction commands"
+  ],
+  "resource_requirements": [
+    "One idle AC-powered Apple M2 Mac14,2 with8GiB RAM, macOS26.5.2; no platform-generalization claim",
+    "Measurement budget cap4hours,360pairs; fixed sample is not a power guarantee",
+    "Explicit AppleClang21/Python3.14.3/CMake4.3/Ninja1.13 toolchain; pin actual outputs before execution",
+    "No new daemon, comparator, nativehardware or production subsystem"
+  ],
+  "security_requirements": [
+    "Trusted local sequential stores; unique roots for every pair/arm",
+    "Task admission and integrity checks before/after effects as specified; preserve denial cases",
+    "No secrets/full ambient environment captured; no governance activation or production changes",
+    "No merge or confirmatory timing before applicable maintainer approval"
+  ]
+}

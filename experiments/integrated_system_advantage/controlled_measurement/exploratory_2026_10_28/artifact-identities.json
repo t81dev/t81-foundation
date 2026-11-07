@@ -1,0 +1,29 @@
+{
+  "label": "EXPLORATORY — NONCONFIRMATORY",
+  "input_sha256": {
+    "model_sha256": "b5c1c97a22cb686cd4cdf82925c59b8102c67da11c493a70f0b9d6559534b064",
+    "input_sha256": "abfd31e72dfdf3eed106013bf64bd6fdf9b7f1c47b27b1ffcecaea7779be8ec2",
+    "policy_sha256": "0d696f18d11865bc1fcd04089e8fd53acf3eec59c1804abf7586fd3c5efc2b72",
+    "tokenizer_text_sha256": "f6daccb7d461e3df384edb878daa033dcbd02e858b29cb94b6661e478edb83d8"
+  },
+  "roles_stable_in_all_ten_pairs": {
+    "A": {
+      "model": "sha3-256:5BVYTZ<mW≠Qk5bfaR−YQ7ωx≥4<e×Ne8Yp<bB≠9≠kV",
+      "input": "sha3-256:2×f<wC318lnBfVλRFOJΓ7mrywIkZ≤fnQQwμXcyμwp",
+      "policy": "sha3-256:3VA0ST1X1ω09bnnTλ-≈U∞47rjσ8LcR≤TH≠G2I5ωVx",
+      "tokenizer": "sha3-256:1xmcH∞WστW≠DbOKLπ2−YAy≥≠−ZAPOSe≠μqp÷Zs6≤P",
+      "result": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+      "provenance": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+      "bundle": "sha3-256:2ππ0y≠ug3μm8Xz=1p≤FaK46≤NBgIXgJμ×wH8K×Bde"
+    },
+    "B": {
+      "model": "sha3-256:5BVYTZ<mW≠Qk5bfaR−YQ7ωx≥4<e×Ne8Yp<bB≠9≠kV",
+      "input": "sha3-256:2×f<wC318lnBfVλRFOJΓ7mrywIkZ≤fnQQwμXcyμwp",
+      "policy": "sha3-256:3VA0ST1X1ω09bnnTλ-≈U∞47rjσ8LcR≤TH≠G2I5ωVx",
+      "tokenizer": "sha3-256:1xmcH∞WστW≠DbOKLπ2−YAy≥≠−ZAPOSe≠μqp÷Zs6≤P",
+      "result": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+      "provenance": "sha3-256:1GλzvjEct-czFτW7D∞yIv−Hμ==cgalBBπ≥I9τapMW",
+      "bundle": "sha3-256:12hEy7XXπKhyEsf=<w≤Ppτ−ajBUNYJTvvOUBlcXnv"
+    }
+  }
+}
