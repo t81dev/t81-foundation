@@ -16,6 +16,8 @@ T81 Foundation is an **experimental computing research platform**, not a validat
 
 Preserve the canonical H01–H08 identities from [the JSON register](../research/continuity/HYPOTHESIS_REGISTER_v1.json) and [charter](../research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md). Distinguish **accepted contracts**, **source-observed behavior**, **reproducible evidence**, **unverified reports**, and **draft proposals**. Consult [START_HERE](START_HERE.md) for the Tier A–E definitions and exact authority precedence.
 
+> **H04-R03-FC1 corrective gate (2026-11-06):** [Dated acceptance-findings addendum](H04_R03_ACCEPTANCE_FINDINGS_2026-11-06.md) records three unresolved Codex review findings on merged PR #679: missing-statistics confidence intervals, random-access alignment padding, and Phase 4 retention. The historical 38/38 and 6/6 results are not finding-resolution evidence. FC1 remains open; Phase C measurement remains unauthorized. This is a non-normative review-status overlay, not a replacement for `CURRENT_STATE.json` or the frozen protocol.
+
 ## Evidence boundaries worth carrying forward
 
 1. **Hanoi arithmetic:** The isolated historical CWEB routines failed 422/547 positional addition cases and 140/201 multiplication cases; this does not falsify balanced ternary mathematics generally. [Evidence index](EVIDENCE_AND_FINDINGS.md).
