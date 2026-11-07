@@ -1,0 +1,3 @@
+PASS: review schema, 26 pinned sources, static arithmetic and local Markdown links
+PASS: git diff --check (tracked changes; all additions inspected separately)
+Commons H07 discovery response bytes: 9490

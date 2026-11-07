@@ -1,0 +1,47 @@
+{
+  "schema": "t81.research-commons.independent-review.v1",
+  "id": "BASE-01-B1-CONTRACT-RECONCILIATION-2026-11-03",
+  "status": "proposed",
+  "hypothesis_id": "H07",
+  "attribution": {
+    "name": "Codex",
+    "kind": "agent",
+    "model": "GPT-6",
+    "role": "Scientific methodology and protocol auditor; independence from Codex-authored apparatus not established"
+  },
+  "repository_revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+  "evidence": [
+    {
+      "source_ref": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/docs/research/base01/BASE01_B1_MEASUREMENT_CONTRACT.md",
+      "relationship": "contradictory",
+      "scope": "100 retained allocating 1 MiB reads versus 16 MiB output ceiling; doubling versus fixed insertion fraction"
+    }
+  ],
+  "uncertainty": "Static contract reconciliation and three mocked Python gate/identity fixtures only. No independent native execution, timed-runner, hardware or measurement qualification. Candidate B changes lifetime semantics and needs a maintainer design decision.",
+  "human_authorization": {
+    "status": "not_requested",
+    "human": null,
+    "record": "User authorizes this bounded audit and documentation-only draft PR; no measurement, resource campaign, host assignment or protocol acceptance granted."
+  },
+  "target": "BASE-01 B1 proposed scientific contract and readiness prerequisites; REPORT.md, AMENDMENT.md and READINESS.md",
+  "independence": {
+    "relationship_to_author": "The inspected contracts/apparatus attribute Codex/GPT-6 authorship. This reviewer is also Codex/GPT-6; independent authoring lineage is not established.",
+    "prior_context": "Current user-provided issues plus inspected source, design and historical reports. No original readiness audit artifact supplied.",
+    "independent_execution": false,
+    "limitations": "New static derivations and Python fixture execution are reported separately; no claim of independent scientific validation or reproduction of native work."
+  },
+  "adversarial_checks": [
+    "Computed exact payload-only contradiction from source-pinned sizes/counts.",
+    "Traced in-memory vector copy and first-key insertion call paths.",
+    "Tested current Python measurement rejection and mocked stale identity rejection.",
+    "Compared A/B/C without assuming timing equivalence from output equality.",
+    "Distinguished implemented denial and fixture accounting from absent B1 allow/enforcement mechanisms."
+  ],
+  "findings": [
+    "100 MiB payload minimum cannot fit proposed 16 MiB output ceiling.",
+    "One first insertion in 200 same-store writes is 0.5 percent; no implemented B1 200-write change observed.",
+    "Freeze write count at 100 to preserve distribution; read lifetime choice remains a maintainer decision.",
+    "FURTHER_PROTOCOL_DESIGN_REQUIRED; no recommended retention replacement established as equivalent."
+  ],
+  "verdict": "changes_requested"
+}
