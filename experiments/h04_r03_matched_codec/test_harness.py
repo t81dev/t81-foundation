@@ -12,11 +12,23 @@ class TestBenchmarkHarnessAndStatistics(unittest.TestCase):
     """Test bootstrap estimation, decision rule evaluation, and harness dry-run."""
 
     def test_01_dry_run_validation(self):
-        """Verify that the harness dry run completes successfully across all 8 phases."""
+        """Verify that the harness dry run completes across all 8 phases with Phase 4 verified."""
         harness = BenchmarkHarness(n=1000, k=64, a=1)
         res = harness.run_dry_run_validation()
         self.assertEqual(res["dry_run_status"], "PASSED")
+        # Ensure all 8 phases are verified including Phase 4
         self.assertEqual(len(res["phases_verified"]), 8)
+        self.assertIn("Phase 4: Retention Boundary", res["phases_verified"])
+        # Check structured phase_status report
+        self.assertIn("phase_status", res)
+        self.assertEqual(res["phase_status"]["Phase 4: Retention Boundary"], "VERIFIED")
+        self.assertEqual(res["phase_status"]["Phase 5: Frame Validation"], "VERIFIED")
+        # Ensure retention evidence is present and zero live input aliases remain
+        self.assertIn("retention_evidence", res)
+        self.assertEqual(res["retention_evidence"]["live_owned_buffers"], 0)
+        # Ensure raw input symbols are not leaked or retained as harness instance attributes
+        self.assertFalse(hasattr(harness, "u_symbols"))
+        self.assertFalse(hasattr(harness, "symbols"))
 
     def test_02_bootstrap_ci_calculation(self):
         """Verify bootstrap confidence interval calculation for paired ratios."""
@@ -112,6 +124,123 @@ class TestBenchmarkHarnessAndStatistics(unittest.TestCase):
             },
         )
         self.assertEqual(res["classification"], "INCONCLUSIVE")
+
+    def test_09_decision_rule_missing_or_partial_ci_rejected_as_invalid(self):
+        """Check that missing or partial CIs fail closed as INVALID without fabricating CIs."""
+        cv_good = {"T243": 0.01, "B10": 0.01, "B729": 0.01, "B729-u5": 0.01}
+        full_query = {
+            "B729-u5": (1.00, 0.96, 1.05),
+            "B10": (1.02, 0.97, 1.08),
+        }
+        full_life = {
+            "B729-u5": (1.18, 1.12, 1.25),
+            "B10": (1.20, 1.14, 1.28),
+            "B729": (1.50, 1.40, 1.65),
+        }
+
+        # Completely empty CIs when noise is low -> INVALID
+        res = evaluate_decision_rules(cv_good, {}, {})
+        self.assertEqual(res["classification"], "INVALID")
+        self.assertIn("Incomplete or invalid confidence intervals", res["reason"])
+
+        # Missing one required lifecycle arm (B729) even if other arms look favorable
+        favorable_partial_life = {
+            "B729-u5": (1.18, 1.12, 1.25),
+            "B10": (1.20, 1.14, 1.28),
+        }
+        res_fav = evaluate_decision_rules(cv_good, favorable_partial_life, full_query)
+        self.assertEqual(res_fav["classification"], "INVALID")
+        self.assertIn("Incomplete or invalid confidence intervals", res_fav["reason"])
+
+        # Missing one required query arm (B10)
+        partial_query = {
+            "B729-u5": (1.00, 0.96, 1.05),
+        }
+        res_q = evaluate_decision_rules(cv_good, full_life, partial_query)
+        self.assertEqual(res_q["classification"], "INVALID")
+
+        # Nonfinite values in CI
+        nonfinite_life = dict(full_life)
+        nonfinite_life["B729-u5"] = (1.18, float("nan"), 1.25)
+        res_nan = evaluate_decision_rules(cv_good, nonfinite_life, full_query)
+        self.assertEqual(res_nan["classification"], "INVALID")
+
+        # Inverted CI bounds (lower > upper)
+        inverted_life = dict(full_life)
+        inverted_life["B10"] = (1.20, 1.30, 1.15)
+        res_inv = evaluate_decision_rules(cv_good, inverted_life, full_query)
+        self.assertEqual(res_inv["classification"], "INVALID")
+
+        # Non-positive values in CI
+        nonpos_life = dict(full_life)
+        nonpos_life["B729"] = (1.50, 0.0, 1.65)
+        res_nonpos = evaluate_decision_rules(cv_good, nonpos_life, full_query)
+        self.assertEqual(res_nonpos["classification"], "INVALID")
+
+        # Incomplete tuple length (e.g., 2 elements instead of 3)
+        malformed_tuple_life = dict(full_life)
+        malformed_tuple_life["B729-u5"] = (1.18, 1.12)  # type: ignore
+        res_len = evaluate_decision_rules(cv_good, malformed_tuple_life, full_query)
+        self.assertEqual(res_len["classification"], "INVALID")
+
+        # Malformed non-numeric type (e.g., string or bool inside tuple)
+        bad_type_life = dict(full_life)
+        bad_type_life["B729-u5"] = (1.18, "invalid", 1.25)  # type: ignore
+        res_type = evaluate_decision_rules(cv_good, bad_type_life, full_query)
+        self.assertEqual(res_type["classification"], "INVALID")
+
+        # Malformed non-tuple type entirely (e.g., int or None instead of tuple)
+        bad_obj_life = dict(full_life)
+        bad_obj_life["B10"] = 1.23  # type: ignore
+        res_obj = evaluate_decision_rules(cv_good, bad_obj_life, full_query)
+        self.assertEqual(res_obj["classification"], "INVALID")
+
+    def test_10_high_noise_early_stop_without_calculating_ci(self):
+        """Check Step 2: High noise stop legitimately returns INCONCLUSIVE without requiring CIs."""
+        cv_high = {"T243": 0.06, "B10": 0.02, "B729": 0.01, "B729-u5": 0.02}
+        # CIs can be completely omitted or empty on high-noise early stop
+        res = evaluate_decision_rules(cv_high, {}, {})
+        self.assertEqual(res["classification"], "INCONCLUSIVE")
+        self.assertIn("Excessive run-to-run variation in T243: CV = 6.00% > 5.0%", res["reason"])
+
+    def test_11_retention_boundary_negative_alias_leak_rejected(self):
+        """Negative test: Retention barrier fails closed when an input alias remains live across Phase 4."""
+        from experiments.h04_r03_matched_codec.retention import RetentionBarrier
+        from experiments.h04_r03_matched_codec.measurement_engine import ProtocolError
+
+        retained_leak = []
+
+        def leaky_barrier_factory(owners):
+            # Adversarially capture and leak a strong reference to one of the owned input buffers
+            retained_leak.append(owners[0])
+            return RetentionBarrier(owners)
+
+        harness = BenchmarkHarness(n=1000, k=64, a=1)
+        with self.assertRaisesRegex(ProtocolError, "aliases remain live"):
+            harness.run_dry_run_validation(retention_barrier_factory=leaky_barrier_factory)
+
+        # Clear leaked reference
+        retained_leak.clear()
+
+    def test_12_query_witness_negative_corrupted_query_detected(self):
+        """Negative test: Corrupted random access queries fail closed against the query witness."""
+        from unittest.mock import patch
+        import experiments.h04_r03_matched_codec.codec as codec_mod
+
+        harness = BenchmarkHarness(n=1000, k=64, a=1)
+
+        # Patch admitted_random_access to return a corrupt value on a specific query
+        original_admitted_ra = codec_mod.admitted_random_access
+
+        def corrupt_admitted_ra(frame, index):
+            val = original_admitted_ra(frame, index)
+            if index == 10:
+                return val + 1  # corrupt single query output
+            return val
+
+        with patch("experiments.h04_r03_matched_codec.codec.admitted_random_access", side_effect=corrupt_admitted_ra):
+            with self.assertRaisesRegex(ValueError, "Query mismatch in .* against independent query witness"):
+                harness.run_dry_run_validation()
 
 
 if __name__ == "__main__":

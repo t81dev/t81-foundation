@@ -115,23 +115,36 @@ def evaluate_decision_rules(
                 "reason": f"Excessive run-to-run variation in {arm}: CV = {cv:.2%} > 5.0%",
             }
 
-    if not all(
-        arm in intervals and len(intervals[arm]) == 3
-        and all(math.isfinite(v) and v > 0 for v in intervals[arm])
-        and intervals[arm][1] <= intervals[arm][2]
-        for intervals, arms in ((ci_life, ARMS[1:]), (ci_query, ("B10", "B729-u5")))
-        for arm in arms
+    # Validate mandatory confidence intervals before Step 3/4 evaluation.
+    # Required lifecycle comparisons: B10, B729, B729-u5 vs T243.
+    # Required query comparisons: B10, B729-u5 vs T243.
+    # Missing, incomplete, nonfinite, non-positive, non-numeric, or inverted intervals fail closed as INVALID.
+    def _is_valid_ci(ci: Any) -> bool:
+        if not isinstance(ci, (tuple, list)) or len(ci) != 3:
+            return False
+        for v in ci:
+            if not isinstance(v, (int, float)) or isinstance(v, bool):
+                return False
+            if not math.isfinite(v) or v <= 0:
+                return False
+        return ci[1] <= ci[2]
+
+    if (
+        not isinstance(ci_life, dict)
+        or not isinstance(ci_query, dict)
+        or not all(arm in ci_life and _is_valid_ci(ci_life[arm]) for arm in ("B10", "B729", "B729-u5"))
+        or not all(arm in ci_query and _is_valid_ci(ci_query[arm]) for arm in ("B10", "B729-u5"))
     ):
         return {"classification": "INVALID", "reason": "Incomplete or invalid confidence intervals"}
 
     # Extract bounds vs T243: theta_life(C) = Median(T_life(C)) / Median(T_life(T243))
     # Note: If theta_life > 1.0, T243 is faster than C.
-    ci_u5_life = ci_life.get("B729-u5", (1.0, 1.0, 1.0))
-    ci_b10_life = ci_life.get("B10", (1.0, 1.0, 1.0))
-    ci_b729_life = ci_life.get("B729", (1.0, 1.0, 1.0))
+    ci_u5_life = ci_life["B729-u5"]
+    ci_b10_life = ci_life["B10"]
+    ci_b729_life = ci_life["B729"]
 
-    ci_u5_query = ci_query.get("B729-u5", (1.0, 1.0, 1.0))
-    ci_b10_query = ci_query.get("B10", (1.0, 1.0, 1.0))
+    ci_u5_query = ci_query["B729-u5"]
+    ci_b10_query = ci_query["B10"]
 
     # Step 3: Rejection Predicates
     # 3.1 Rejection of practical advantage: CI_upper < 1.10 against ANY binary control
@@ -204,11 +217,55 @@ class BenchmarkHarness:
         self.a = a
         self.access_mode = WORKLOAD_ACCESS_MODE
 
-    def run_dry_run_validation(self) -> Dict[str, Any]:
-        """Execute a deterministic dry-run verification of all 8 phases across the 4 arms."""
+    def run_dry_run_validation(self, retention_barrier_factory=None) -> Dict[str, Any]:
+        """Execute a deterministic dry-run verification across the 4 arms.
+
+        Phase 4 Wire-Frame-Only Retention Enforcement:
+        - Source symbols and mapped inputs are owned buffers monitored via weak references.
+        - Pre-computed independent verification digests (query schedule witness and full
+          output checksum) are established before Phase 4.
+        - In Phase 4, all raw symbols and mapped inputs are released, garbage collection is
+          executed, and the retention barrier confirms zero live aliases remain.
+        - Subsequent query checks (Phase 6) and output decode verification (Phase 7) use
+          strictly the wire frames and independent witness digests without retaining any
+          second raw-symbol array.
+        """
+        import gc
+        import hashlib
+        import struct
+        from .retention import OwnedSymbols, OwnedBuffer, RetentionBarrier
+
         # Phase 1: Input Mapping & Generation
-        symbols = generate_dataset_symbols(n=1000, seed=DATASET_SEED)
-        self.u_symbols = [x + 364 for x in symbols]
+        raw_symbols = generate_dataset_symbols(n=1000, seed=DATASET_SEED)
+        symbols = OwnedSymbols(raw_symbols)
+        raw_bytes = OwnedBuffer(struct.pack(f"<{len(symbols)}h", *symbols))
+        del raw_symbols
+
+        # Compute independent witness digests for queries and full decoded output
+        query_schedule = [i % len(symbols) for i in range(50)]
+        query_hasher = hashlib.sha256()
+        for q_idx in query_schedule:
+            query_hasher.update(struct.pack("<q", symbols[q_idx]))
+        expected_query_witness = query_hasher.hexdigest()
+
+        output_hasher = hashlib.sha256()
+        output_bytes = bytearray()
+        for val in symbols:
+            packed = struct.pack("<q", val)
+            output_hasher.update(packed)
+            output_bytes.extend(packed)
+        expected_output_witness = output_hasher.hexdigest()
+
+        # Compute reference xxHash64 if xxhash is available
+        from .checksum_witness import reference_xxh64
+        expected_xxh64 = f"{reference_xxh64(output_bytes):016x}"
+        del output_bytes
+
+        # Establish retention barrier on owned input representations
+        if retention_barrier_factory is not None:
+            barrier = retention_barrier_factory([symbols, raw_bytes])
+        else:
+            barrier = RetentionBarrier([symbols, raw_bytes])
 
         # Phase 2: Frame Allocation & Oracle Layout Verification
         layouts = {arm: compute_layout(len(symbols), self.k, self.a, self.access_mode, arm) for arm in ARMS}
@@ -216,35 +273,68 @@ class BenchmarkHarness:
         # Phase 3: Encoding & Packing
         frames = {arm: encode(symbols, arm=arm, k=self.k, A=self.a, access_mode=self.access_mode) for arm in ARMS}
 
-        # Phase 4: Retention Boundary Simulation
-        # Wire frames alone are retained
+        # Phase 4: Wire-Frame-Only Retention Boundary Enforcement
+        # Release all raw input representations, intermediate lists, and mapped buffers
+        del symbols
+        del raw_bytes
+        gc.collect()
 
-        # Phase 5: Frame Validation
+        retention_evidence = barrier.verify_release()
+        phase_4_status = "VERIFIED"
+
+        # Phase 5: Frame Validation (using admission boundary)
+        validated_frames = {}
         for arm in ARMS:
             if len(frames[arm]) != layouts[arm]["total_bytes"]:
                 raise ValueError(f"Size mismatch in {arm}")
+            # Explicit admission boundary validation
+            from .codec import validate_frame, admitted_random_access
+            validated_frames[arm] = validate_frame(frames[arm], arm=arm, k=self.k, A=self.a, access_mode=self.access_mode)
 
-        # Phase 6: Timed Random Access Queries (bounded dry-run)
-        query_schedule = [i % len(symbols) for i in range(50)]
+        # Phase 6: Timed Random Access Queries (bounded dry-run using admitted queries against witness)
         for arm in ARMS:
+            v_frame = validated_frames[arm]
+            arm_q_hasher = hashlib.sha256()
             for q_idx in query_schedule:
-                val = random_access(frames[arm], q_idx, arm=arm, k=self.k, A=self.a, access_mode=self.access_mode)
-                if val != symbols[q_idx]:
-                    raise ValueError(f"Query mismatch in {arm} at index {q_idx}")
+                val = admitted_random_access(v_frame, q_idx)
+                arm_q_hasher.update(struct.pack("<q", val))
+            if arm_q_hasher.hexdigest() != expected_query_witness:
+                raise ValueError(f"Query mismatch in {arm} against independent query witness")
 
         # Phase 7: Output Buffer Assembly & Witness Checksum
         for arm in ARMS:
             dec = decode(frames[arm], arm=arm, k=self.k, A=self.a, access_mode=self.access_mode)
-            if dec != symbols:
-                raise ValueError(f"Decode mismatch in {arm}")
+            arm_out_hasher = hashlib.sha256()
+            arm_out_bytes = bytearray()
+            for val in dec:
+                packed = struct.pack("<q", val)
+                arm_out_hasher.update(packed)
+                arm_out_bytes.extend(packed)
+            if arm_out_hasher.hexdigest() != expected_output_witness:
+                raise ValueError(f"Decode mismatch in {arm} against independent output witness")
+            if f"{reference_xxh64(arm_out_bytes):016x}" != expected_xxh64:
+                raise ValueError(f"Checksum mismatch in {arm} against independent xxh64 witness")
+            del arm_out_bytes
+            del dec
 
         # Phase 8: Deallocation & Cleanup
+        del validated_frames
         del frames
-        del symbols
 
         return {
             "dry_run_status": "PASSED",
             "arms_verified": ARMS,
+            "retention_evidence": retention_evidence,
+            "phase_status": {
+                "Phase 1: Input Mapping": "VERIFIED",
+                "Phase 2: Frame Allocation": "VERIFIED",
+                "Phase 3: Encoding & Packing": "VERIFIED",
+                "Phase 4: Retention Boundary": phase_4_status,
+                "Phase 5: Frame Validation": "VERIFIED",
+                "Phase 6: Timed Random Access Queries": "VERIFIED",
+                "Phase 7: Output Buffer Assembly & Checksum": "VERIFIED",
+                "Phase 8: Deallocation & Scratch Cleanup": "VERIFIED",
+            },
             "phases_verified": [
                 "Phase 1: Input Mapping",
                 "Phase 2: Frame Allocation",

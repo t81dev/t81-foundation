@@ -1,8 +1,10 @@
 """Owned-reference and ordering barriers; physical reclamation is not inferred."""
+from array import array
 import ctypes
 import gc
 import hashlib
 from pathlib import Path
+from typing import List, Optional, Sequence
 import weakref
 
 from .measurement_engine import ProtocolError
@@ -12,27 +14,44 @@ class OwnedBuffer(bytearray):
     """Weak-referenceable raw input buffer for independently observing release."""
 
 
+class OwnedSymbols(list):
+    """Weak-referenceable symbol container for independently observing release."""
+
+
+class OwnedArray(array):
+    """Weak-referenceable array container for independently observing release."""
+
+
 class RetentionBarrier:
-    def __init__(self, owners, fence_path, fence_sha256):
+    def __init__(self, owners: Sequence[object], fence_path: Optional[str] = None, fence_sha256: Optional[str] = None):
         self.references = [weakref.ref(owner) for owner in owners]
-        binary = Path(fence_path)
-        if hashlib.sha256(binary.read_bytes()).hexdigest() != fence_sha256:
-            raise ProtocolError("retention fence binary identity mismatch")
-        self.library = ctypes.CDLL(str(binary.resolve()))
-        self.fence = self.library.h04_retention_fence
-        self.fence.argtypes, self.fence.restype = [], None
+        self.fence = None
         self.binary_sha256 = fence_sha256
+
+        if fence_path is not None:
+            binary = Path(fence_path)
+            if hashlib.sha256(binary.read_bytes()).hexdigest() != fence_sha256:
+                raise ProtocolError("retention fence binary identity mismatch")
+            self.library = ctypes.CDLL(str(binary.resolve()))
+            self.fence = self.library.h04_retention_fence
+            self.fence.argtypes, self.fence.restype = [], None
 
     def verify_release(self):
         gc.collect()
-        self.fence()
+        if self.fence is not None:
+            self.fence()
         aliases = sum(reference() is not None for reference in self.references)
-        evidence = {"live_owned_buffers": aliases, "ordering_fence_sha256": self.binary_sha256,
-                    "ordering_fence_called": True, "allocator_pages_reclaimed": None,
-                    "physical_bytes_erased": False, "cache_flushed": False,
-                    "exact_RSS_enforcement": False}
+        evidence = {
+            "live_owned_buffers": aliases,
+            "ordering_fence_sha256": self.binary_sha256,
+            "ordering_fence_called": self.fence is not None,
+            "allocator_pages_reclaimed": None,
+            "physical_bytes_erased": False,
+            "cache_flushed": False,
+            "exact_RSS_enforcement": False,
+        }
         if aliases:
-            raise ProtocolError("raw/mapped input aliases remain live")
+            raise ProtocolError(f"raw/mapped input aliases remain live ({aliases} aliases)")
         return evidence
 
 
