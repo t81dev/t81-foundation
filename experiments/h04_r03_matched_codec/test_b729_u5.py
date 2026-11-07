@@ -279,6 +279,42 @@ class TestB729U5Correctness(unittest.TestCase):
             self.assertEqual(admitted_random_access(valid_frame, idx), expected)
             self.assertEqual(valid_frame.random_access(idx), expected)
 
+    def test_13_adversarial_second_microblock_corruption_fails_admission(self):
+        """Corrupt an unused high bit in the final one-symbol microblock of a 6-symbol frame.
+
+        Parameters: k=10, A=1, encode [0]*6 using B729-u5.
+        - Block 0 contains 6 symbols:
+          - Microblock 0 contains 5 symbols (6 bytes at offsets 8..13).
+          - Microblock 1 contains 1 symbol (2 bytes at offsets 14..15, with 6 unused high bits).
+        - Corrupt bit 10 in byte 15 (unused high bit of microblock 1).
+        - Verify that validate_frame() fails closed with CodecError, preventing admission.
+        - Verify that no ValidatedFrame is created, so admitted queries (even targeting index 0
+          in microblock 0) are completely blocked.
+        - Document that raw random_access(corrupted, 0) would succeed if unvalidated, demonstrating
+          the essential protection of the admission boundary.
+        """
+        from experiments.h04_r03_matched_codec.codec import validate_frame, admitted_random_access
+        vals = [0] * 6
+        blob = bytearray(encode(vals, arm="B729-u5", k=10, A=1, access_mode="RA-FIXED"))
+        self.assertEqual(len(blob), 16)
+        # Offset 15: top byte of microblock 1. Bit 10 overall is bit 2 of byte 15 (0x04).
+        blob[15] |= 0x04
+        corrupted = bytes(blob)
+
+        # 1. Full frame validation must fail closed
+        with self.assertRaises(CodecError):
+            validate_frame(corrupted, arm="B729-u5", k=10, A=1, access_mode="RA-FIXED")
+
+        # 2. Admitted random access refuses unvalidated raw input
+        with self.assertRaises(TypeError):
+            admitted_random_access(corrupted, 0)  # type: ignore
+
+        # 3. Older raw random_access() on index 0 touches only microblock 0 (offsets 8..13),
+        # demonstrating that without the admission boundary, unvalidated lookups would miss
+        # corrupted trailing microblocks.
+        raw_val = random_access(corrupted, 0, arm="B729-u5", k=10, A=1, access_mode="RA-FIXED")
+        self.assertEqual(raw_val, 0)
+
 
 if __name__ == "__main__":
     unittest.main()
