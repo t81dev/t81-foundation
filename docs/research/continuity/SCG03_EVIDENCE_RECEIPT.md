@@ -34,9 +34,9 @@ This evidence receipt documents the corrective implementation resolving contradi
 
 | File | Change Description | SHA-256 Digest |
 |---|---|---|
-| `include/t81/types/T81Int.hpp` | Repaired `operator*` via full $2N$-trit convolution and balanced ternary normalization | `ccbe34d78d5275500c05c3cf667976439e107eb0a8472628784ccfd69774e551` |
+| `include/t81/types/T81Int.hpp` | Repaired `operator*` via full $2N$-trit convolution and balanced ternary normalization; clang-formatted | `42a666a422d10e157b5a9f508c854182478f8d6cef80722a322c78c95913256b` |
 | `tests/cpp/test_bitwise.cpp` | Replaced `assert()` with always-active fail-closed `require()` | `286019d1e392826786c8cc84b792eac3493425992d5ceb2cc0781b9bb2d0dd2d` |
-| `tests/cpp/test_t81int.cpp` | Added C05 regression cases, boundary tests, exhaustive $N=1..4$ oracle checks, and `consteval` static_assert | `58b6bcc2c5940b433f0aeb06015bab594fc14f3d5e6b727345fa7f887d09e3b0` |
+| `tests/cpp/test_t81int.cpp` | Added C05 regression cases, boundary tests, exhaustive $N=1..4$ oracle checks, and `consteval` static_assert; clang-formatted | `43bdbed129af3804e4058e527dcc72eda3b7a6adfe6e31cce4c433f4ba2ed5f4` |
 | `tests/cpp/test_tritwise_backend_equivalence.cpp` | Replaced all test `assert()` calls with always-active `require()` | `88c1110b56d7a698724918856dbf353bf0d7eeb95068e55452a2c844f8907016` |
 | `docs/research/continuity/SCG03_EVIDENCE_RECEIPT.md` | This SHA-pinned evidence receipt | Pinned upon commit |
 
