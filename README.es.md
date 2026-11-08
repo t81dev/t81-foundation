@@ -1,247 +1,409 @@
-<!-- translation_status: outdated; full source translation pending -->
+# T81 Foundation
 
-> **Traducción histórica pendiente de actualización (2026-10-27).** El [README en inglés](README.md), revisado en `391b9652` (#598), describe T81 como una plataforma experimental de investigación. Las secciones siguientes conservan una versión anterior; sus afirmaciones de rendimiento, seguridad, integración y madurez no describen garantías actuales. La superioridad general frente a sistemas binarios no está demostrada. Véase la [auditoría de alineación](docs/research/ROOT_DOCUMENTATION_ALIGNMENT_AUDIT.md).
+### Investigando representaciones alternativas, ejecución adaptativa y computación verificable.
 
-<p align="center">
-  <img src="docs/assets/banner.png" alt="T81 — Una Arquitectura de Computación Ternaria" width="100%">
-</p>
+**Ternario equilibrado · IA/ML consciente de la representación · Ejecución determinista · Arquitectura experimental**
 
-[English](./README.md) | [简体中文](./README.zh-CN.md) | [Español](./README.es.md) | [Русский](./README.ru.md) | [Português](./README.pt-BR.md)
-
-<!-- T81-SPEED-START -->
-<!-- T81-SPEED-END -->
-
-# T81 — Una Arquitectura de Computación Ternaria
-
-![ISA](https://img.shields.io/badge/ISA-v1.9.0_Frozen-blue)
-![License](https://img.shields.io/badge/license-Apache_2.0-blue)
-
-Aprovechando la eficiencia teórica de la computación en base-e, **T81** es una arquitectura de computación determinista construida sobre **aritmética ternaria equilibrada** ({-1, 0, +1}) con un modelo de gobernanza de cadena completa que cubre el conjunto de instrucciones, la máquina virtual, el compilador del lenguaje y el entorno de inferencia de IA.
-
-La arquitectura ofrece:
-
-- **reproducibilidad exacta de bits en superficies verificadas** — las superficies deterministas gobernadas producen hashes de rastreo idénticos en las plataformas compatibles
-- **inferencia de IA gobernada** — el motor de políticas Axion intercepta y audita cada operación privilegiada antes de que tenga efectos secundarios
-- **procedencia dirigida por contenido** — CanonFS registra todos los artefactos, pesos del modelo y estado en tiempo de ejecución de forma inmutable
-- **ejecución paralela determinista para semántica de época gobernada** — el modelo de gráfico de tareas DPE (RFC-DPE-0002) permite cargas de trabajo TISC concurrentes con salidas comprometidas por época bajo la superficie determinista actual
+[Carta de Investigación](https://www.google.com/search?q=docs/research/RESEARCH_CHARTER.md) · [Hoja de Ruta](https://www.google.com/search?q=docs/ROADMAP.md) · [Arquitectura](https://www.google.com/search?q=docs/explanation/ARCHITECTURE.md) · [Contexto de Investigación en IA](https://www.google.com/search?q=docs/ai-context/)
 
 ---
 
-## Tabla de Contenidos
-- [Estado del Proyecto](#estado-del-proyecto)
-- [Descripción General de Arquitectura y Ecosistema](#descripción-general-de-arquitectura-y-ecosistema)
-- [Componentes Clave](#componentes-clave)
-- [Inicio Rápido](#inicio-rápido)
-- [Verificación de Determinismo](#verificación-de-determinismo)
-- [Documentación](#documentación)
-- [Gobernanza](#gobernanza)
-- [La Ventaja Ternaria](#la-ventaja-ternaria)
-- [Licencia](#licencia)
+## ¿Qué es T81?
+
+**T81 Foundation es una arquitectura informática experimental implementada y un programa de investigación científica de código abierto que investiga si las representaciones computacionales alternativas —en particular el ternario equilibrado— pueden ofrecer ventajas medibles sobre los sistemas binarios convencionales.**
+
+T81 es una **arquitectura implementada y funcional**: define el Computador de Conjunto de Instrucciones Ternarias (TISC, por sus siglas en inglés) como su contrato de instrucciones computacionales, con una ejecución acotada entre perfiles demostrada tanto en una máquina virtual alojada (T81VM) como en un entorno de micronúcleo aislado *bare-metal* (Axion OS / TernaryOS en AArch64 QEMU).
+
+El proyecto estudia la computación en varios niveles: representación matemática, algoritmos, ejecución de software, almacenamiento, arquitectura de hardware y comportamiento verificable del sistema. Su arquitectura orientada a la investigación se originó en las matemáticas discretas, CWEB/Hanoi y la investigación de sistemas numéricos alternativos antes de expandirse a los subsistemas de lenguajes, máquinas virtuales, instrucciones, políticas y garantía de investigación.
+
+Una segunda dirección, explícitamente experimental, es la **ejecución adaptativa consciente de la representación**: seleccionar representaciones de datos, algoritmos y rutas de ejecución para cargas de trabajo particulares, especialmente en IA/ML, midiendo al mismo tiempo los costos completos de selección, conversión, computación y precisión. Esta es una hipótesis arquitectónica, **no** una ventaja de rendimiento establecida de T81.
+
+Su pregunta central es:
+
+> ¿Bajo qué condiciones la computación ternaria puede superar, simplificar o mejorar de otro modo un enfoque binario equivalente?
+
+La respuesta no se da por sentada.
+
+Algunos experimentos han demostrado propiedades matemáticas y de representación útiles. Otros han mostrado que las implementaciones binarias convencionales siguen siendo más rápidas o eficientes. Varias preguntas importantes siguen sin resolverse.
+
+T81 existe para investigar esos límites de forma sistemática.
+
+**Esta es una plataforma de investigación, no una afirmación de que ya se haya construido un computador ternario superior.**
 
 ---
 
-## Estado del Proyecto
+## ¿Por qué el ternario?
 
-**Fase: Desarrollo Activo** — v1.9.0-Stable; 369/369 pruebas pasadas; determinismo multiplataforma verificado en Linux x86\_64 + macOS ARM64.
+La informática moderna utiliza abrumadoramente estados binarios: 0 y 1.
 
-La clasificación de la superficie determinista sigue el modelo de gobernanza introducido por el Registro de Superficie de Determinismo y RFC-0048:
+La computación ternaria utiliza tres estados. En el ternario equilibrado, estos se representan como:
 
-- **DCP / superficie determinista verificada**: la semántica, el límite y la prueba de repetición están gobernados y aplicados por CI
-- **Gobernado no DCP**: limitado por políticas y arquitectónicamente importante, pero aún no tiene derecho a afirmaciones deterministas completas
-- **Experimental**: superficie de diseño o validación activa; ninguna afirmación de garantía determinista
+$$T = \{-1,0,+1\}$$
 
-| Componente | Madurez | Notas |
-| :--- | :--- | :--- |
-| **TISC ISA** | ❄️ Frozen | v1.9.0; la semántica de los opcodes es inmutable bajo v1.x; `AgentInvoke` (RFC-0015), 6 de inferencia nativa ternaria (RFC-0034), 3 FFI (RFC-00B8), 2 de criptografía de red (RFC-0038), 1 de anillo KEM (RFC-0039) |
-| **Data Types** | ❄️ Frozen | BigInt, Float, Complex, Map, Set — codificación estable de bits; auditoría limpia |
-| **T81VM** | ✅ Stable | DCP / superficie determinista verificada para el intérprete y la paridad de rastreo actual de la plataforma compatible; despacho completo de TISC v1.9.0 con `AgentInvoke`, inferencia nativa ternaria, FFI, criptografía de red y opcodes NTRU-KEM; 369/369 pruebas |
-| **T81Lang** | ✅ Stable | Gobernado no DCP en general: especificación v1.9.0 Stable con controles de determinismo del compilador activos, pero la emisión del compilador sigue estando parcialmente verificada en lugar de ser promovida completamente como una superficie determinista verificada |
-| **Axion Governance Kernel** | ✅ Stable | Gobernado no DCP en general: las cadenas de razones canónicas y los ganchos de auditoría están activos, pero la superficie completa del kernel/gobernanza es más amplia que el registro determinista verificado actualmente |
-| **Ternary-Native Inference** | ✅ Stable | Gobernado no DCP: la superficie opcode/runtime/stdlib de RFC-0034 + RFC-0037 está implementada y evidenciada, pero no todas las rutas de ejecución adyacentes a la inferencia se promueven aún como superficies deterministas verificadas |
-| **Lattice Cryptography** | ✅ Stable | Gobernado no DCP: la superficie RFC-0038+0039 está implementada y limitada por políticas; la promoción determinista sigue siendo específica de la superficie en lugar de implícita para todo el vertical criptográfico |
-| **Governed FFI** | ✅ Stable | Gobernado no DCP: el puente de lenguaje/VM de RFC-00B8 + RFC-0036 está implementado de extremo a extremo, pero la caja de arena y la promoción de esquema más amplia permanecen abiertas antes de afirmaciones deterministas más sólides |
-| **TUI Frontends** | ✅ Beta | Gobernado no DCP: las TUI de operador y agente son interfaces utilizables en producción, pero la integración UI/runtime no es en sí misma una superficie determinista verificada |
-| **DPE (Parallel Execution)** | ✅ Stable | Modelo de ejecución determinista gobernado con RFC-DPE-0001–0009 aceptados; la semántica de época determinista está en su lugar, mientras que la promoción de la superficie más amplia sigue gobernada por el registro y la cadena RFC complementaria |
-| **Cognitive Tiers** | ✅ Beta | Experimental / no DCP: la cognición de Nivel 4 (Tier4 Cognition) permanece limitada por la gobernanza pero no es una superficie determinista verificada |
-| **TernaryOS User Environment** | ✅ Beta | Gobernado no DCP / beta: implementado y limitado por políticas, pero no se presenta actualmente como una superficie determinista verificada |
-| **Axion OS** | ✅ Alpha | Gobernado no DCP / alpha: arquitectura de gobernanza activa, pero aún no es una superficie determinista verificada promovida en su totalidad |
+Esto crea posibilidades interesantes para la aritmética con signo, la representación numérica, la codificación de estados, los sistemas de decisión y la arquitectura computacional.
+
+Por ejemplo:
+
+| Propiedad | Relación matemática |
+| --- | --- |
+| Un trit | Tres estados posibles |
+| Cuatro trits | $3^4 = 81$ estados |
+| Seis trits | $3^6 = 729$ estados |
+| Información por trit | $\log_2 3 \approx 1.585$ bits |
+| Dígito en base 81 | Cuatro trits agrupados |
+
+Estas relaciones son hechos matemáticos.
+
+**No** establecen que los procesadores ternarios sean más rápidos, que la memoria ternaria sea físicamente más densa o que los algoritmos ternarios consuman menos energía.
+
+Esas son cuestiones de ingeniería separadas que requieren comparaciones adecuadas.
+
+T81 investiga esta distinción.
 
 ---
 
-## Descripción General de Arquitectura y Ecosistema
+## ¿Qué hemos aprendido?
+
+La investigación es valiosa cuando identifica tanto oportunidades como limitaciones.
+
+**Resultado principal — una comparación desfavorable con binario optimizado:** En el experimento histórico de matriz-vector AVX2 que se muestra a continuación, el INT8 nativo alcanzó **17.15 GFLOP/s**, frente a los **12.91 GFLOP/s** del ternario empaquetado de 2 bits (aproximadamente **un 32.8 % más de rendimiento** para la implementación INT8 nativa). Este es un resultado específico de la carga de trabajo, no una clasificación universal de bases numéricas; T81 lo publica de manera destacada porque un resultado desfavorable es evidencia, no un defecto que deba ocultarse.
+
+La trayectoria experimental de T81 ha producido varios hallazgos importantes.
+
+### 1. Resultado negativo en AVX2: la densidad de representación no es velocidad de ejecución
+
+Los datos ternarios empaquetados pueden reducir los requisitos de almacenamiento.
+
+Sin embargo, el software todavía debe decodificar, manipular y ejecutar esas representaciones en hardware binario convencional.
+
+En un experimento histórico de matriz-vector AVX2:
+
+| Implementación | Rendimiento informado |
+| --- | --- |
+| INT8 nativo AVX2 | 17.15 GFLOP/s |
+| Ternario empaquetado de 2 bits AVX2 | 12.91 GFLOP/s |
+
+La representación ternaria compacta no superó a la implementación INT8 convencional en esa carga de trabajo.
+
+Este es un resultado experimental acotado, no una prueba de que la computación ternaria sea universalmente más lenta.
+
+[Explorar la investigación sobre ternario empaquetado](https://www.google.com/search?q=docs/research/PACKED_TERNARY_MATVEC_PERFORMANCE_REPORT.md)
+
+### 2. Las representaciones adaptativas pueden tener ventajas condicionales
+
+La investigación sobre la jerarquización adaptativa de representaciones ha identificado configuraciones en las que una representación ternaria tiene un costo modelado menor que una alternativa binaria equivalente.
+
+Esas ventajas dependen de las suposiciones de la carga de trabajo, los metadatos, los costos de conversión y los límites de representación.
+
+La investigación corregida H04-R02 preserva estos hallazgos condicionales mientras deja explícitamente sin resolver el rendimiento físico.
+
+[Leer los hallazgos corregidos de H04-R02](https://www.google.com/search?q=experiments/h04_r02_adaptive_representation/RESULTS.md)
+
+### 3. La corrección no establece la optimización
+
+Una investigación experimental reciente, T81-AIOPT-001, examinó múltiples representaciones de coincidencia de patrones de cuatro trits.
+
+Su implementación M1 superó amplias comprobaciones de corrección local, pero la carga de trabajo experimental se pudo reducir a una simple comparación ordinal.
+
+El resultado demuestra por qué una prueba de corrección exhaustiva aún puede ser insuficiente para evaluar la ventaja computacional.
+
+La siguiente pregunta no es simplemente si otra representación funciona.
+
+Es si la carga de trabajo elegida puede distinguir diferencias significativas entre algoritmos competidores.
+
+[Explorar T81-AIOPT-001](https://www.google.com/search?q=docs/research/aiopt/)
+
+### 4. Instantánea del estado de H04-R03 (2026-11-02): la corrección antes que el rendimiento
+
+El programa de códecs emparejados H04-R03 compara alternativas acotadas de representación y acceso, incluido un candidato B729-µ5. Su protocolo pre-registrado y la implementación/revisión del Candidato A se rastrean en el [PR #677](https://github.com/t81dev/t81-foundation/pull/677), [PR #679](https://github.com/t81dev/t81-foundation/pull/679) y [PR #680](https://github.com/t81dev/t81-foundation/pull/680). Los informes de revisión independiente certifican únicamente la corrección y la aceptación del protocolo; a fecha del 2 de noviembre de 2026, los PRs #679 y #680 permanecen abiertos, y la medición de rendimiento de la Fase C no está autorizada ni reportada. El estado del PR debe actualizarse antes de confiar en esta instantánea.
+
+La igualdad en la longitud de las cargas útiles es una propiedad matemática, no una latencia demostrada, ni un beneficio energético o de extremo a extremo. No se reivindica ninguna ventaja de rendimiento en H04-R03.
+
+### 5. Demostración de ejecución acotada entre perfiles (CPA-004/CPA-005)
+
+**Clasificación de la evidencia: determinismo acotado y portabilidad, no rendimiento comparativo ni madurez de todo el sistema.** Los resultados a continuación se refieren a un programa congelado y a entornos de ejecución especificados; no califican instrucciones no probadas, cargas de trabajo, hardware físico ni la arquitectura general.
+
+Investigaciones recientes en el programa de Arquitectura Entre Perfiles (CPA) demostraron que el núcleo computacional de T81 se ejecuta de manera consistente a través de entornos de ejecución divergentes:
+
+* **Artefacto de Programa Canónico:** Un programa canónico congelado de 351 bytes que comprende 27 registros canónicos de 13 bytes (SHA-256 `b0649777cfa1c9e0fa1febb8bdfb1191c5cd3deea0d313791a4a32d5f207c80b`) ejerció un subconjunto admitido de 17 instrucciones TISC.
+* **Equivalencia entre Perfiles:** Ejecuciones recientes a través de tres procesos de T81VM alojados y tres arranques limpios *bare-metal* en AArch64 QEMU (después de UEFI `ExitBootServices`) coincidieron con un oráculo matemático derivado de forma independiente en **los 25 límites de observación** (estado inicial + 24 pasos de instrucción).
+* **Coincidencia Integral de Límites:** Se verificó la equivalencia en los 81 valores de registros y etiquetas, 1,563 palabras de memoria lógica y etiquetas, indicadores y registros del sistema (R75–R80), deteniéndose de manera determinista en PC=27, SP=283.
+* **Alcance e Instantánea:** Probado en la instantánea base del repositorio `803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4` (con evaluador independiente e informe de aceptación comprometidos en la rama `origin/experiment/cpa004-freestanding` en el commit `b803bf916a1b1e44129f3a07abf96fa6103c51fc`, y registros de continuidad locales CPA-005).
+* **Distinción:** Demostrar la corrección de la ejecución entre perfiles prueba que la arquitectura computacional funciona según lo diseñado; **no** es evidencia de rendimiento ternario, energía o superioridad de hardware sobre las líneas base binarias.
+
+### 6. La computación ternaria física sigue siendo una pregunta abierta
+
+La computación ternaria emulada por software no es equivalente a la computación en hardware ternario nativo.
+
+La evaluación de dispositivos físicos requiere evidencia emparejada sobre área, energía, latencia, fiabilidad, detección, codificación y costos periféricos.
+
+La evaluación física actual sigue bloqueada allí donde no se dispone de evidencia adecuada sobre la caracterización de los dispositivos.
+
+T81 no interpreta la falta de evidencia como prueba de imposibilidad.
+
+---
+
+## La arquitectura de investigación de T81
+
+El repositorio contiene varios subsistemas experimentales desarrollados para investigar las representaciones computacionales y la ejecución controlada.
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│  Interfaces                                                 │
-│  t81 studio (Human TUI)   t81 agent (AI-Native TUI)  CLI    │
-├─────────────────────────────────────────────────────────────┤
-│  T81Lang Compiler                                           │
-│  Lexer → Parser → Typed AST → Semantic Analyzer → IRGen     │
-│  agent/behavior (RFC-0015)  ·  foreign {} (RFC-0036)        │
-├─────────────────────────────────────────────────────────────┤
-│  Axion Governance Kernel                                    │
-│  PolicyEngine · CanonFS · Audit Trail · Ethics Gate         │
-├──────────────────────────────┬──────────────────────────────┤
-│  T81 Virtual Machine         │  DPE Task Graph Runtime      │
-│  TISC interpreter            │  EpochGraph · DeltaBuffer    │
-│  (deterministic)             │  (RFC-DPE-0002)              │
-├──────────────────────────────┴──────────────────────────────┤
-│  TISC ISA v1.9.0  ❄️ Frozen  +  Data Types  ❄️ Frozen       │
-│  Deterministic substrate — CanonHash81 bit-exact traces     │
-├─────────────────────────────────────────────────────────────┤
-│  Governed FFI (RFC-00B8)  ·  Ternary-Native Inference       │
-│  FFIDispatcher · FFILibraryRegistry                         │
-│  TWMATMUL · TQUANT · TATTN · TWEMBED · TERNACCUM · TACT     │
-└─────────────────────────────────────────────────────────────┘
-  Experimental: TernaryOS · Cognitive Tiers
+                     T81 FOUNDATION
+                Arquitectura e Investigación Implementadas
+                             |
+          +------------------+------------------+
+          |                  |                  |
+    REPRESENTACIÓN       EJECUCIÓN          GARANTÍA
+          |                  |                  |
+    Ternario equilibrado TISC ISA (Contrato) Axion Policy
+    Base-81 / Base-243   +-- T81VM (Alojado)  CanonFS
+    Datos empaquetados   +-- Axion (Baremetal) Evidence
+    Jerarquía adaptativa T81Lang Frontend    Provenance
+          |                  |                  |
+          +------------------+------------------+
+                             |
+                  EXPERIMENTOS CONTROLADOS
+                             |
+                Líneas base binarias convencionales
+                             |
+                 Verificación y comparación
+                             |
+                  Conclusiones de investigación
+
 ```
 
-### Componentes Clave
+### Contrato Computacional y Perfiles de Ejecución
 
-**TISC ISA v1.9.0** — Arquitectura de Conjunto de Instrucciones Ternarias. Congelado bajo v1.x; el contrato de ejecución inmutable para toda la pila.
+En la arquitectura T81:
 
-**T81VM** — Intérprete TISC determinista. Garantiza salidas idénticas en bits entre plataformas; el aislamiento previo al despacho de Axion mantiene los ganchos de gobernanza fuera de la ruta de ejecución principal.
+* **TISC (Ternary Instruction Set Computer):** Sirve como el contrato central de instrucciones computacionales, definiendo la semántica de los opcodes, vectores de estado de 64 bits y reglas de transición deterministas.
+* **T81VM Alojada:** Sirve como perfil de ejecución alojado para el desarrollo en espacio de usuario, herramientas, pruebas y reproducción determinista en sistemas operativos anfitriones convencionales (Linux, macOS, Windows).
+* **Axion OS / TernaryOS Aislado (*Freestanding*):** Sirve como perfil de ejecución *bare-metal* que se ejecuta directamente sobre hardware o hipervisores (por ejemplo, AArch64 QEMU), ejecutando TISC sin dependencias de un SO en espacio de usuario.
+* **DAIOS (Deterministic AI OS):** Permanece como una dirección de investigación experimental independiente y orientada al futuro para la gobernanza del tiempo de ejecución de agentes autónomos de alta IA, distinta del motor de ejecución TISC de bajo nivel implementado.
 
-**Axion Governance Kernel** — Motor de políticas que intercepta `AXREAD`, `AXSET`, `AXVERIFY`, opcodes de IA y llamadas FFI antes de cualquier efecto secundario. Falla cerrada (fail-closed) en caso de fallo de análisis de política.
+### Componentes principales
 
-**CanonFS** — Sistema de archivos direccionado por contenido. Almacena todos los objetos de código, pesos del modelo y artefactos de tiempo de ejecución como objetos inmutables identificados por hash. Proporciona procedencia para las auditorías de determinismo.
+| Componente | Rol de investigación y arquitectónico |
+| --- | --- |
+| **TISC** | El contrato de instrucciones computacionales que rige la semántica de ejecución |
+| **T81VM** | Perfil de ejecución alojado para la ejecución en máquina virtual y determinismo (acotado por el [Registro de Superficie de Determinismo](https://www.google.com/search?q=docs/governance/DETERMINISM_SURFACE_REGISTRY.md)) |
+| **Axion / TernaryOS** | Perfil de ejecución aislado (micronúcleo HAL / bare-metal AArch64) y autorización de políticas previa a los efectos secundarios |
+| **T81Lang** | Interfaz de lenguaje e infraestructura de compilación orientada a TISC |
+| **T81 Core** | Tipos numéricos, contenedores y primitivas de representación |
+| **CanonFS** | Artefactos direccionados por contenido y mecanismos de integridad |
+| **DAIOS** | Propuesta de arquitectura de destino independiente para sistemas operativos de IA deterministas |
+| **Experimentos de investigación** | Pruebas de hipótesis, validación de corrección y mediciones comparativas |
 
-**T81Lang** — Lenguaje de alto nivel dirigido al código de bytes TISC. Tipos nativos: `BigInt`, `Fraction`, `Float`, `Complex`, `Tensor`, `Map`, `Set`. Canalización del compilador: lexer → parser → AST tipado → análisis semántico → generación IR.
-
-**Ternary-Native Inference (RFC-0034)** — Seis opcodes TISC para inferencia de IA sin multiplicación utilizando pesos ternarios equilibrados {−1, 0, +1}: `TWMATMUL` (matmul), `TQUANT` (cuantificar a trit), `TATTN` (atención ternaria), `TWEMBED` (incrustación de peso), `TERNACCUM` (producto punto escalar), `TACT` (activación con puerta de techo Axion). Formato de peso T81WTN. Frontend T81Lang `foreign {}` completo a través de RFC-0036.
-
-**Governed FFI (RFC-00B8 + RFC-0036)** — Interfaz de función foránea gobernada de pila completa. Capa VM (RFC-00B8 Fase 1): `FFIDispatcher` impone comprobaciones de políticas, cuotas de recursos y pistas de auditoría antes de cualquier llamada foránea; `FFILibraryRegistry` rastrea las bibliotecas registradas por nombre y hash de versión; tres opcodes VM (`FFICall`, `FFIRegister`, `FFIPolicySet`). Capa de lenguaje (RFC-0036): `foreign deterministic { fn sin(x: T81Float) -> T81Float; }` declara firmas; `foreign.sin(angle)` en los sitios de llamada se reduce a `FFI_CALL` con el nombre de la función llevado en `text_literal`.
-
-**TUI Frontends** — Dos interfaces de terminal complementarias construidas sobre FTXUI v5.0.0:
-- `t81 studio` — barra lateral de navegación, navegador CanonFS, panel Axion, visualizador de rastreo de determinismo, paleta de comandos (`Ctrl+P`)
-- `t81 agent` — sesión JSONL persistente, comandos de barra diagonal (`/compile`, `/run`, `/hash`, `/allow`, `/infer`, `/trits`, …), barra de probabilidad trit
-
-**DPE (Deterministic Parallel Execution)** — Modelo de gráfico de tareas sobre TISC ISA congelado. Las tareas declaran entradas inmutables y regiones de salida almacenadas en búfer; la VM confirma todas las escrituras atómicamente al final de la época. No se requieren nuevos opcodes.
-
----
-
-## Inicio Rápido
-
-### Construir desde la fuente
-
-```bash
-# Clone the repository
-git clone https://github.com/t81dev/t81-foundation.git
-cd t81-foundation
-
-# Configure and build (Release mode)
-cmake --preset default -DCMAKE_BUILD_TYPE=Release
-cmake --build build
-
-# Run the test suite (369 tests)
-ctest --test-dir build --output-on-failure
-```
-
-### CLI e Interfaces
-
-```bash
-# Compile a T81Lang program
-./build/t81 code build examples/hello.t81 -o hello.tisc
-
-# Execute with Axion governance
-./build/t81 vm run hello.tisc
-
-# Launch the human operator TUI
-./build/t81 studio
-
-# Launch the AI-native TUI
-./build/t81 agent
-```
+Estos componentes tienen diferentes niveles de madurez. Una implementación funcional no constituye automáticamente una ventaja de rendimiento validada.
 
 ---
 
-## Verificación de Determinismo
+## Ejecución adaptativa consciente de la representación: una línea de investigación abierta
 
-Las superficies deterministas verificadas se comprueban para la reproducibilidad multiplataforma exacta de bits.
+Los manuscritos históricos de T81 describen una ambición integrada: tipos de datos numéricos, semántica de ejecución TISC, T81Lang/T81VM y decisiones mediadas por Axion sobre el uso de recursos. La [colección histórica de PDFs](https://www.google.com/search?q=docs/pdf/) preserva estas propuestas; las cifras de rendimiento reportadas en ellos son **afirmaciones históricas no verificadas**, no resultados experimentales actuales.
 
-```bash
-./scripts/ci/run_determinism_slice.sh
-```
+Una versión falsificable moderna de esta ambición se pregunta si un sistema puede seleccionar entre representaciones exactas, de punto flotante, de baja cantidad de bits, ternarias empaquetadas y binarias convencionales para una **carga de trabajo real**, logrando un beneficio neto después de contabilizar la precisión, la codificación/decodificación, el tráfico de memoria, la planificación y la sobrecarga de decisiones. El proyecto debe distinguir:
 
-Plataformas verificadas para la superficie central actual: **Linux x86_64**, **macOS ARM64**. Cualquier divergencia en una superficie determinista verificada es un defecto crítico.
+* **T — mecanismo específico del ternario:** una ventaja atribuible a la semántica ternaria o a un sustrato ternario físico, no meramente a una codificación diferente.
+* **S — elección de representación por software:** una ventaja derivada de seleccionar una representación, potencialmente reproducible con codificaciones binarias.
+* **A — encaminamiento de algoritmos:** una ventaja derivada de elegir un mejor algoritmo o ruta de ejecución, independientemente de la base numérica.
 
----
+Los resultados positivos de S o A son útiles pero **no** establecen T. T81-AIOPT-001 M2 sigue siendo un problema de diseño de investigación más que una prueba autorizada de la superioridad ternaria adaptativa. Para consultar el alcance autorizado y los límites, acuda al [contexto de investigación de IA](https://www.google.com/search?q=docs/ai-context/) y a los protocolos subyacentes de los experimentos.
 
-## Documentación
+## Tres líneas de investigación
 
-| Tema | Ubicación |
-| :--- | :--- |
-| Primeros pasos (C++) | `docs/user-guide/getting-started/cpp-quickstart.md` |
-| Primeros pasos (IA) | `docs/user-guide/getting-started/ai-quickstart.md` |
-| Guía TUI | `docs/user-guide/how-to/tui-guide.md` |
-| Especificación ISA | `spec/tisc-spec.md` |
-| Manual de Política de Axion | `docs/user-guide/tutorials/axion-policy-manual.md` |
-| Referencia Stdlib T81Lang | `docs/user-guide/reference/T81LANG_STDLIB_REFERENCE.md` |
-| Descripción General de Arquitectura | `docs/architecture/OVERVIEW.md` |
-| Carta de Gobernanza | `docs/governance/README.md` |
-| Centro de Control del Proyecto | `docs/status/PROJECT_CONTROL_CENTER.md` |
+T81 organiza su trabajo en tres líneas complementarias.
 
----
+### Línea R — Investigación computacional
 
-## Gobernanza
+Investigar si las representaciones alternativas o las arquitecturas computacionales producen ventajas útiles.
 
-La Fundación T81 opera bajo un modelo de **Gobernanza Continua (C2)**. Todas las contribuciones deben mantener:
+Los temas incluyen:
 
-- **paridad de ejecución determinista** — los hashes de rastreo deben coincidir en las plataformas compatibles
-- **coherencia arquitectónica** — los cambios que tocan la superficie determinista requieren revisión formal
-- **garantías de reproducibilidad** — ningún no determinismo de punto flotante o específico de la plataforma en la superficie DCP
+* Aritmética y representación en ternario equilibrado.
+* Base-81 y agrupamiento de orden superior.
+* Selección adaptativa de representación.
+* Computación empaquetada de bajo número de bits.
+* Costos de memoria y movimiento de datos.
+* Hipótesis de hardware ternario nativo.
+* Inferencia de IA ternaria y representaciones de modelos.
 
-La superficie determinista está definida en `docs/governance/DETERMINISM_SURFACE_REGISTRY.md`. Los cambios a las superficies congeladas (TISC ISA, Tipos de Datos) requieren un incremento de versión principal.
+**El éxito significa establecer un resultado defendible, incluido un resultado negativo.**
 
-> **Nota de límite:** Las clasificaciones DCP, gobernadas no DCP, experimentales y fuera del alcance se definen constitucionalmente en RFC-0048. Los documentos públicos no deben presentar superficies gobernadas no DCP o experimentales como componentes deterministas verificados.
+### Línea F — Ingeniería de cimientos
 
----
+Desarrollar las herramientas necesarias para realizar experimentos confiables y evaluar la computación determinista.
 
-## La Ventaja Ternaria
+Esto incluye máquinas virtuales, herramientas de lenguaje, identidad de artefactos, autorización, reproducción e infraestructura de verificación.
 
-Si bien el hardware binario moderno está altamente optimizado para la computación de propósito general, la **Fundación T81** explota las propiedades matemáticas y estructurales únicas del **ternario equilibrado** ({−1, 0, +1}) para ofrecer ventajas que son difíciles o imposibles de lograr en los sistemas binarios convencionales — especialmente en la ejecución determinista, la inferencia de IA gobernada y las cargas de trabajo neuronales de baja complejidad.
+Estas capacidades pueden ser útiles independientemente de la computación ternaria.
 
-### 1. Simetría Computacional O(1) — Negación Sin Acarreo
+Su valor de ingeniería debe evaluarse por separado de las afirmaciones de superioridad específica de la base numérica.
 
-En el binario de complemento a dos, la negación requiere un NOT bit a bit seguido de +1, lo que puede desencadenar largas cadenas de acarreo. En el ternario equilibrado, la negación es simplemente invertir el signo de cada trit distinto de cero (+1 ↔ −1, 0 se mantiene 0) — **propagación de acarreo cero**, tiempo constante.
+### Línea M — Memoria de investigación
 
-- **Rendimiento medido**: La negación de PackedCell alcanza **~49.9 G-ops/s** en hardware x86_64 reciente, superando la negación entera optimizada de 64 bits por **~10.9×** (benchmarks verificados en Linux x86_64 y macOS ARM64).
-- Esta simetría se extiende naturalmente a muchos patrones aritméticos, reduciendo la latencia y la potencia en operaciones pesadas de signos.
+Preservar la evidencia detrás de cada conclusión.
 
-### 2. Economía de Base Superior y Densidad Teórica
+Esto incluye el historial de fuentes, protocolos experimentales, intentos fallidos, correcciones, registros de reproducibilidad y preguntas sin resolver.
 
-La base óptima de la teoría de la información para los sistemas de números posicionales está cerca de *e ≈ 2.718*. El ternario (base 3) está matemáticamente más cerca que el binario (base 2), entregando **~1.585 bits de información por trit** (log₂(3)).
+Un resultado superado sigue formando parte del registro histórico.
 
-- En la práctica, esto permite una mayor entropía por dígito y una representación más compacta de los rangos simétricos — especialmente valioso para pesos de redes neuronales, incrustaciones, sistemas de coordenadas y tensores dispersos a gran escala.
+Un modelo matemático no se promueve silenciosamente a medición física.
 
-### 3. Determinismo Inherente de Bits Exactos y Redondeo Independiente de la Plataforma
+Una evaluación generada por IA no constituye automáticamente una verificación independiente.
 
-El punto flotante IEEE 754 sufre modos de redondeo específicos de la plataforma, diferencias de asociatividad y manejo subnormal que rompen la reproducibilidad. La aritmética ternaria equilibrada es naturalmente simétrica alrededor de cero:
-
-- El redondeo usa un simple truncamiento — ningún sesgo dependiente de la dirección.
-- Cada ruta de ejecución produce **hashes de rastreo idénticos** en las plataformas compatibles (actualmente Linux x86_64 + macOS ARM64 verificado al 100% de paridad).
-- Esto proporciona una reproducibilidad sólida como una roca para la computación científica, la auditoría de inferencia de IA y las ejecuciones de agentes gobernados.
-
-### 4. Inferencia Neuronal Sin Multiplicación
-
-Los pesos ternarios equilibrados {−1, 0, +1} permiten **productos punto sin multiplicación** — reemplazar MUL con ADD/SUB condicional (o acumulación pura al omitir los ceros). Combinado con los opcodes TISC personalizados (`TWMATMUL`, `TQUANT`, `TATTN`, `TWEMBED`, `TERNACCUM`, `TACT`):
-
-- Permite una potencia drásticamente menor y un mayor rendimiento para la inferencia de IA.
-- Se alinea con las tendencias de 2024-2026 en modelos extremos de bits bajos (BitNet b1.58, xTern, transformadores ternarios), ofreciendo una reducción de energía de 15-60× y un aumento de rendimiento de 4-90× frente a las líneas de base FP16/FP32 con una pérdida mínima de precisión.
-- Formato de peso T81WTN + operaciones nativas ternarias hacen que esta ventaja esté lista para la producción en la pila.
-
-### 5. Gobernanza Arquitectónica y Ganchos de Seguridad
-
-Dado que todo el TISC ISA es nativo ternario, el **Axion Governance Kernel** puede interceptar y auditar las transiciones de estado a **nivel de trit de granularidad** antes de que ocurra cualquier efecto secundario. Esto permite:
-
-- Aplicación de políticas con falla cerrada en operaciones privilegiadas (invocaciones de IA, llamadas FFI, comportamientos de agentes).
-- Puertas éticas de grano fino, seguimiento de procedencia a través de CanonFS y pistas de auditoría deterministas.
-- Un modelo de seguridad que es fundamentalmente más inspeccionable que la ejecución binaria de caja negra.
-
-Estas ventajas se combinan en dominios donde **la reproducibilidad**, **la inferencia de baja complejidad**, **la ejecución gobernada** y **la simetría matemática** importan más — exactamente los casos de uso objetivo de la arquitectura T81.
+[Leer la Carta de Continuidad Maestra](https://www.google.com/search?q=docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md)
 
 ---
 
-## Licencia
+## Metodología de investigación
 
-Licencia Apache 2.0.
+T81 sigue un enfoque basado primero en la evidencia.
+
+Cada experimento comparativo debe responder a cinco preguntas:
+
+1. **¿Cuál es la hipótesis?** Definir una proposición falsificable.
+2. **¿Cuál es la línea base?** Comparar con una alternativa convencional funcionalmente equivalente y optimizada de manera adecuada.
+3. **¿Qué se mide?** Separar la corrección, el almacenamiento, la latencia, el rendimiento, la energía y otros costos relevantes.
+4. **¿Cuáles son las limitaciones?** Identificar suposiciones, hardware, alcance de la carga de trabajo, incertidumbre y dependencias sin resolver.
+5. **¿Qué conclusión está justificada?** Distinguir resultados respaldados, no respaldados, inconclusos, bloqueados y no probados.
+
+El proyecto también distingue entre:
+
+**Implementado → Probado → Medido → Establecido comparativamente**
+
+Estos son diferentes niveles de evidencia, no etiquetas intercambiables.
+
+Un resultado experimental no debe afirmar más de lo que su evidencia respalda.
+
+---
+
+## La visión original y los manuscritos históricos
+
+El [archivo histórico de PDFs](https://www.google.com/search?q=docs/pdf/) contiene exploraciones tempranas de Base-81, tipos de datos, T81Lang, TISC, Axion, IA/ML y aplicaciones propuestas. Estos documentos preservan el linaje intelectual y las hipótesis de diseño; **no** son especificaciones actuales ni informes de pruebas comparativas verificados. Una revisión futura debería conciliar las afirmaciones con los experimentos principales sin sobrescribir los originales.
+
+### Hanoi
+
+La historia de T81 es anterior al actual repositorio de la Fundación.
+
+Su precursor conocido más antiguo, **Hanoi**, exploró la computación recursiva, las estructuras de máquinas virtuales ternarias, el despacho simbólico y los niveles de representación dependientes de la carga de trabajo utilizando la programación literaria CWEB.
+
+El proyecto surgió de investigaciones en matemáticas discretas, algoritmos, modelos computacionales y el trabajo de Donald Knuth.
+
+Con el tiempo, la investigación se expandió hacia bibliotecas aritméticas, herramientas de lenguaje, máquinas virtuales, computación de IA con pocos bits, ejecución determinista, gobernanza y hardware experimental.
+
+Algunos diseños históricos estaban incompletos. Algunas suposiciones resultaron ser incorrectas. Otras siguen sin explorarse.
+
+El propósito de preservar este linaje no es validar cada propuesta anterior.
+
+Es recuperar las preguntas que las motivaron y poner a prueba esas preguntas con mejores herramientas.
+
+[Explorar el repositorio original de Hanoi](https://github.com/t81dev/Hanoi) · [Archivo de continuidad de investigación](https://www.google.com/search?q=docs/research/continuity/)
+
+---
+
+## Prioridades actuales de investigación
+
+Las prioridades inmediatas del programa son:
+
+**1. Establecer líneas base experimentales confiables.**
+
+Verificar una semántica equivalente y un comportamiento reproducible de forma independiente antes de interpretar las diferencias de rendimiento.
+
+**2. Identificar cargas de trabajo discriminatorias.**
+
+Seleccionar experimentos en los que las representaciones alternativas tengan una consecuencia plausible y medible más allá de los cambios ordinarios de codificación.
+
+**3. Investigar ventajas condicionales y cargas de trabajo de IA/ML.**
+
+Estudiar las circunstancias bajo las cuales la densidad de representación, los patrones de acceso, los costos de conversión, la precisión del modelo o las estrategias adaptativas cambian el resultado. Comparar con líneas base binarias e de enrutamiento de algoritmos igualmente optimizadas.
+
+**4. Preservar las preguntas sobre el hardware físico.**
+
+Separar las limitaciones de la emulación por software del costo y la viabilidad de los dispositivos multivaluados nativos.
+
+**5. Mantener la base experimental.**
+
+Mantener las herramientas, especificaciones, pruebas, registros de procedencia y mecanismos de gobernanza lo suficientemente confiables como para respaldar la investigación.
+
+Las propuestas activas y su estado de aceptación pertenecen a los registros de investigación y a las solicitudes de extracción (*pull requests*). Su aparición en el repositorio no implica su aprobación formal.
+
+[Leer la hoja de ruta para colaboradores](https://www.google.com/search?q=docs/ROADMAP.md)
+
+---
+
+## Explora el repositorio
+
+| Punto de partida | Qué encontrarás |
+| --- | --- |
+| [`docs/research/`](https://www.google.com/search?q=docs/research/) | Investigaciones científicas y conclusiones experimentales |
+| [`experiments/`](https://www.google.com/search?q=experiments/) | Implementaciones experimentales y artefactos de reproducibilidad |
+| [`spec/`](https://www.google.com/search?q=spec/) | Especificaciones del conjunto de instrucciones y RFCs |
+| [`include/t81/`](https://www.google.com/search?q=include/t81/) | Bibliotecas centrales e interfaces públicas |
+| [`vm/`](https://www.google.com/search?q=vm/) | Implementación de la máquina virtual |
+| [`lang/`](https://www.google.com/search?q=lang/) | Herramientas de lenguaje |
+| [`kernel/axion/`](https://www.google.com/search?q=kernel/axion/) | Componentes de autorización y políticas |
+| [`fs/`](https://www.google.com/search?q=fs/) | Identidad de artefactos y mecanismos de almacenamiento |
+| [`docs/ai-context/`](https://www.google.com/search?q=docs/ai-context/) | Material de continuidad para colaboradores de investigación en IA |
+| [`docs/pdf/`](https://www.google.com/search?q=docs/pdf/) | Manuscritos históricos y sus hipótesis de investigación originales |
+
+Para instrucciones de compilación, dependencias de desarrollo y objetivos de prueba disponibles, consulta la documentación para colaboradores del repositorio y la configuración de CMake. Los resultados de la investigación deben reproducirse utilizando el entorno y los comandos especificados por sus respectivos protocolos individuales.
+
+---
+
+## Contribuir
+
+T81 agradece las contribuciones que mejoren la comprensión científica, la corrección de la implementación, la reproducibilidad o la documentación.
+
+Entre las contribuciones especialmente valiosas se incluyen:
+
+* Reproducción independiente de experimentos existentes.
+* Líneas base binarias convencionales más sólidas.
+* Contraejemplos matemáticos y correcciones de pruebas.
+* Protocolos experimentales más pequeños y discriminatorios.
+* Validación de corrección multiplataforma.
+* Correcciones respaldadas por evidencia a afirmaciones históricas.
+* Mejoras con alcance claro en la infraestructura de investigación.
+
+Antes de proponer un nuevo subsistema, identifica a qué pregunta de investigación responde y qué evidencia establecería su utilidad.
+
+Lee la [hoja de ruta para colaboradores](https://www.google.com/search?q=docs/ROADMAP.md), las instrucciones de gobernanza del repositorio y los protocolos de experimentos relevantes antes de modificar los artefactos de investigación.
+
+---
+
+## Lo que T81 no afirma
+
+Actualmente, T81 no afirma:
+
+* La superioridad universal de la computación ternaria sobre la binaria.
+* La superioridad demostrada del silicio ternario nativo.
+* Una ventaja general de rendimiento para la arquitectura integrada T81.
+* Un optimizador de IA adaptativo validado que supere a las líneas base sólidas de política fija o de selección de algoritmos.
+* Que las cifras de los casos de estudio de los PDFs históricos constituyan mediciones reproducidas independientemente.
+* Que los pesos de los modelos ternarios aceleren inherentemente la inferencia de IA.
+* Que la ejecución determinista o la aplicación de políticas requiera una máquina virtual ternaria.
+* Que un experimento generado por IA esté validado de forma independiente meramente porque sus pruebas pasen.
+
+Estos límites son esenciales para la investigación.
+
+Dejan espacio para futuros descubrimientos sin tergiversar lo que ya se ha establecido.
+
+---
+
+## La pregunta sigue abierta
+
+La computación binaria domina la infraestructura física y de software actual por razones de ingeniería convincentes.
+
+Dicho dominio no elimina el valor de investigar representaciones alternativas, modelos computacionales o futuros sustratos de hardware.
+
+El propósito de T81 es determinar dónde son útiles esas alternativas, y dónde no lo son.
+
+**No estamos construyendo una conclusión y buscando evidencia para respaldarla.**
+
+**Estamos construyendo la base experimental necesaria para descubrir la conclusión.**
+
+---
+
+**T81 Foundation** — Arquitectura Informática Experimental e Investigación de Sistemas
+
+[Licencia: Apache 2.0](https://www.google.com/search?q=LICENSE) · [GitHub](https://github.com/t81dev/t81-foundation)
