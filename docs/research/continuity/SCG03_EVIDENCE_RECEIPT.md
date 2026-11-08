@@ -2,9 +2,9 @@
 
 **Document:** `docs/research/continuity/SCG03_EVIDENCE_RECEIPT.md`
 **Date:** 2026-11-08
-**Task Anchor:** SCG-03 Correctness Repair for C05 and C11
-**Authoritative Baseline:** Current `origin/main` pinned to `64941caff9372f2e76dd3a0fb79aa6711a48b171`
-**Base Commit SHA:** `64941caff9372f2e76dd3a0fb79aa6711a48b171`
+**Task Anchor:** SCG-03 Correctness Repair for C05 and C11 (Post-Merge Reconciliation)
+**Authoritative Baseline:** Current `origin/main` pinned to `2c3501e2807bb893076c5037231c3126b7f2bc72`
+**Base Commit SHA:** `2c3501e2807bb893076c5037231c3126b7f2bc72` (merged PR #729)
 **Overall Disposition:** **READY FOR INDEPENDENT REVIEW**
 **Phase C Authorization Status:** **STRICTLY FROZEN / UNAUTHORIZED**
 **Verification Label:** **AUTHOR-REPORTED (EXECUTED IN-ENVIRONMENT BY JULES; NOT INDEPENDENT THIRD-PARTY REPRODUCTION)**
@@ -13,7 +13,7 @@
 
 ## 1. Executive Summary & Root Cause Analysis
 
-This evidence receipt documents the corrective implementation resolving contradiction items C05 and C11 from the SCG-01 contradiction register and SCG-02 reproduction report, pinned to baseline `64941caff9372f2e76dd3a0fb79aa6711a48b171`.
+This evidence receipt documents the corrective implementation resolving contradiction items C05 and C11 from the SCG-01 contradiction register and SCG-02 reproduction report, reconciled atop merged PR #729 (`2c3501e2807bb893076c5037231c3126b7f2bc72`).
 
 ### 1.1 Contradiction C05: Intermediate Truncation and False Overflow in `T81Int<N>` Multiplication
 - **Root Cause:** In `include/t81/types/T81Int.hpp`, `operator*` formerly evaluated partial products via in-place shift-and-add on `T81Int<N>` (`T81Int tmp = a; tmp <<= i;`). The shift operator `shift_left(k)` dropped high trits beyond `N`. Consequently:
@@ -28,6 +28,11 @@ This evidence receipt documents the corrective implementation resolving contradi
 - **Repair:** Replaced all test assertions with always-active fail-closed checks (`require(...)` calling `std::abort()` on false condition).
 - **Injected Failure Verification:** Verified with injected failures under `-DNDEBUG` that `require(...)` actively aborts (SIGABRT, exit code 134), while preserving all existing effective checks.
 
+### 1.3 Post-Merge Formatting Reconciliation
+- Reconciled clang-format-18 compliance across all modified C++ files (`include/t81/types/T81Int.hpp`, `tests/cpp/test_t81int.cpp`, `tests/cpp/test_bitwise.cpp`, and `tests/cpp/test_tritwise_backend_equivalence.cpp`).
+- Verified via `clang-format-18 --dry-run --Werror` that zero formatting violations exist.
+- Verified via `git diff -w` that modifications are strictly formatting/whitespace adjustments with zero semantic changes.
+
 ---
 
 ## 2. Inventory of Changed Files and Cryptographic Hashes
@@ -35,9 +40,9 @@ This evidence receipt documents the corrective implementation resolving contradi
 | File | Change Description | SHA-256 Digest |
 |---|---|---|
 | `include/t81/types/T81Int.hpp` | Repaired `operator*` via full $2N$-trit convolution and balanced ternary normalization; clang-formatted | `42a666a422d10e157b5a9f508c854182478f8d6cef80722a322c78c95913256b` |
-| `tests/cpp/test_bitwise.cpp` | Replaced `assert()` with always-active fail-closed `require()` | `286019d1e392826786c8cc84b792eac3493425992d5ceb2cc0781b9bb2d0dd2d` |
+| `tests/cpp/test_bitwise.cpp` | Replaced `assert()` with always-active fail-closed `require()`; clang-formatted | `286019d1e392826786c8cc84b792eac3493425992d5ceb2cc0781b9bb2d0dd2d` |
 | `tests/cpp/test_t81int.cpp` | Added C05 regression cases, boundary tests, exhaustive $N=1..4$ oracle checks, and `consteval` static_assert; clang-formatted | `43bdbed129af3804e4058e527dcc72eda3b7a6adfe6e31cce4c433f4ba2ed5f4` |
-| `tests/cpp/test_tritwise_backend_equivalence.cpp` | Replaced all test `assert()` calls with always-active `require()` | `88c1110b56d7a698724918856dbf353bf0d7eeb95068e55452a2c844f8907016` |
+| `tests/cpp/test_tritwise_backend_equivalence.cpp` | Replaced all test `assert()` calls with always-active `require()`; clang-formatted | `88c1110b56d7a698724918856dbf353bf0d7eeb95068e55452a2c844f8907016` |
 | `docs/research/continuity/SCG03_EVIDENCE_RECEIPT.md` | This SHA-pinned evidence receipt | Pinned upon commit |
 
 ---
@@ -64,6 +69,11 @@ All affected correctness tests pass without regressions:
   Aborted (core dumped) -> exit code 134
   ```
   Confirms that test verdicts are guaranteed active in both Debug and Release configurations.
+
+### 3.3 Post-Merge CI Observations
+- **CodeQL autobuild failure:** Attributed to external dependency download timeout for FTXUI (`HTTP 504 Gateway Timeout` when fetching `https://github.com/ArthurSonzogni/FTXUI`).
+- **Documentation-link (lychee) failure:** Attributed to external GitHub Actions run link transient errors (`HTTP 503 Service Unavailable` on run `39644888844`).
+- These external infrastructure events are recorded as unresolved external factors rather than codebase defects.
 
 ---
 
