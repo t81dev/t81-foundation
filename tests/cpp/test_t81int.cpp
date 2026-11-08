@@ -122,7 +122,8 @@ int main() {
     assert((neg_two * neg_two).to_int64() == 4);
   }
 
-  // 2. T81Int<2>(3) * T81Int<2>(3) == 9 (unrepresentable in N=2 [-4, 4], must throw std::overflow_error)
+  // 2. T81Int<2>(3) * T81Int<2>(3) == 9 (unrepresentable in N=2 [-4, 4], must throw
+  // std::overflow_error)
   {
     T81Int<2> three(3);
     bool threw_overflow = false;
@@ -221,11 +222,11 @@ int main() {
     constexpr auto test_constexpr_mul = []() consteval {
       T81Int<2> a;
       a[0] = Trit::N;
-      a[1] = Trit::P; // 2
+      a[1] = Trit::P;  // 2
       T81Int<2> b;
       b[0] = Trit::N;
-      b[1] = Trit::P; // 2
-      T81Int<2> c = a * b; // 4
+      b[1] = Trit::P;       // 2
+      T81Int<2> c = a * b;  // 4
       return (c[0] == Trit::P && c[1] == Trit::P);
     };
     static_assert(test_constexpr_mul(), "constexpr multiplication failed");
