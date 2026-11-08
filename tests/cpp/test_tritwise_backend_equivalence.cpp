@@ -1,5 +1,5 @@
 #include <algorithm>
-#include <cassert>
+#include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <random>
@@ -70,10 +70,10 @@ void test_backend_equivalence() {
     auto ref_not_cv = va.t_not_ref().value();
     auto ref_xor_cv = va.t_xor_ref(vb).value();
 
-    assert(check_vec(ref_and_cv.to_trits().value(), ref_and));
-    assert(check_vec(ref_or_cv.to_trits().value(), ref_or));
-    assert(check_vec(ref_not_cv.to_trits().value(), ref_not));
-    assert(check_vec(ref_xor_cv.to_trits().value(), ref_xor));
+    require(check_vec(ref_and_cv.to_trits().value(), ref_and));
+    require(check_vec(ref_or_cv.to_trits().value(), ref_or));
+    require(check_vec(ref_not_cv.to_trits().value(), ref_not));
+    require(check_vec(ref_xor_cv.to_trits().value(), ref_xor));
 
     // Best-backend dispatch
     auto res_and = va.t_and(vb).value();
@@ -81,14 +81,14 @@ void test_backend_equivalence() {
     auto res_not = va.t_not().value();
     auto res_xor = va.t_xor(vb).value();
 
-    assert(check_vec(res_and.to_trits().value(), ref_and));
-    assert(check_vec(res_or.to_trits().value(), ref_or));
-    assert(check_vec(res_not.to_trits().value(), ref_not));
-    assert(check_vec(res_xor.to_trits().value(), ref_xor));
-    assert(check_bytes(res_and.data(), ref_and_cv.data()));
-    assert(check_bytes(res_or.data(), ref_or_cv.data()));
-    assert(check_bytes(res_not.data(), ref_not_cv.data()));
-    assert(check_bytes(res_xor.data(), ref_xor_cv.data()));
+    require(check_vec(res_and.to_trits().value(), ref_and));
+    require(check_vec(res_or.to_trits().value(), ref_or));
+    require(check_vec(res_not.to_trits().value(), ref_not));
+    require(check_vec(res_xor.to_trits().value(), ref_xor));
+    require(check_bytes(res_and.data(), ref_and_cv.data()));
+    require(check_bytes(res_or.data(), ref_or_cv.data()));
+    require(check_bytes(res_not.data(), ref_not_cv.data()));
+    require(check_bytes(res_xor.data(), ref_xor_cv.data()));
 
     // Explicit backend validation against the scalar packed-byte oracle.
     size_t byte_len = va.data().size();
@@ -108,9 +108,9 @@ void test_backend_equivalence() {
       swar_or.back() &= mask;
     }
 
-    assert(check_bytes(swar_not, ref_not_cv.data()));
-    assert(check_bytes(swar_and, ref_and_cv.data()));
-    assert(check_bytes(swar_or, ref_or_cv.data()));
+    require(check_bytes(swar_not, ref_not_cv.data()));
+    require(check_bytes(swar_and, ref_and_cv.data()));
+    require(check_bytes(swar_or, ref_or_cv.data()));
 
 #if defined(__x86_64__) && defined(__AVX2__)
     ComputeTritVector::kernel_not_avx2(raw_a, simd_not.data(), byte_len);
@@ -123,12 +123,12 @@ void test_backend_equivalence() {
       simd_or.back() &= mask;
     }
 
-    assert(check_bytes(simd_not, ref_not_cv.data()));
-    assert(check_bytes(simd_and, ref_and_cv.data()));
-    assert(check_bytes(simd_or, ref_or_cv.data()));
-    assert(check_bytes(swar_not, simd_not));
-    assert(check_bytes(swar_and, simd_and));
-    assert(check_bytes(swar_or, simd_or));
+    require(check_bytes(simd_not, ref_not_cv.data()));
+    require(check_bytes(simd_and, ref_and_cv.data()));
+    require(check_bytes(simd_or, ref_or_cv.data()));
+    require(check_bytes(swar_not, simd_not));
+    require(check_bytes(swar_and, simd_and));
+    require(check_bytes(swar_or, simd_or));
 #endif
 
 #if defined(__aarch64__) && defined(__ARM_NEON)
@@ -142,12 +142,12 @@ void test_backend_equivalence() {
       simd_or.back() &= mask;
     }
 
-    assert(check_bytes(simd_not, ref_not_cv.data()));
-    assert(check_bytes(simd_and, ref_and_cv.data()));
-    assert(check_bytes(simd_or, ref_or_cv.data()));
-    assert(check_bytes(swar_not, simd_not));
-    assert(check_bytes(swar_and, simd_and));
-    assert(check_bytes(swar_or, simd_or));
+    require(check_bytes(simd_not, ref_not_cv.data()));
+    require(check_bytes(simd_and, ref_and_cv.data()));
+    require(check_bytes(simd_or, ref_or_cv.data()));
+    require(check_bytes(swar_not, simd_not));
+    require(check_bytes(swar_and, simd_and));
+    require(check_bytes(swar_or, simd_or));
 #endif
   }
 }
@@ -172,10 +172,10 @@ void test_txor_fallback_routing() {
     auto cb = ComputeTritVector::from_trits(vb).value();
 
     // In-place API
-    assert(tritwise_xor(ca, cb).is_ok());
+    require(tritwise_xor(ca, cb).is_ok());
 
     auto res = ca.to_trits().value();
-    assert(res[0] == c.expected);
+    require(res[0] == c.expected);
   }
 }
 
