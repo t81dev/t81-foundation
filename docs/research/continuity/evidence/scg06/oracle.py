@@ -60,3 +60,12 @@ def exact_add(val_a, val_b):
 
 def exact_sub(val_a, val_b):
     return val_a - val_b
+
+def trits_to_int_allow_nontrits(digits):
+    """Compute mathematical value sum(d_i * 3^i) without asserting balanced ternary canonical range."""
+    val = 0
+    p = 1
+    for d in digits:
+        val += d * p
+        p *= 3
+    return val

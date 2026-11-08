@@ -3,9 +3,10 @@ set -euo pipefail
 
 # SCG-06 Automated Reproduction Runner
 # Bootstraps isolated worktrees on-the-fly and executes the full F1-F7 battery.
+# Designed to be executed from any working directory.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/../../../../" && pwd)"
+REPO_ROOT="$(git -C "${SCRIPT_DIR}" rev-parse --show-toplevel)"
 WORKTREE_BASE="${REPO_ROOT}/.scg06_worktrees"
 PRE_COMMIT="64941caff9372f2e76dd3a0fb79aa6711a48b171"
 POST_COMMIT="2c3501e2807bb893076c5037231c3126b7f2bc72"

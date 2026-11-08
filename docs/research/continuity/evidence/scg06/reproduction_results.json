@@ -8,14 +8,22 @@
     },
     "F2": {
       "total_tested": 300,
-      "produced_nontrits": 300,
+      "produced_nontrits": 130,
       "max_abs_digit": 3,
-      "exact_integer_mismatches": 300
+      "mathematical_value_mismatches": 141
     },
     "F3": {
       "total_tested": 300,
-      "intermediate_carries_discarded": 100,
-      "end_to_end_exact_integer_mismatches": 300
+      "cohort_with_carry_loss": {
+        "cases": 68,
+        "exact_mismatches": 68
+      },
+      "cohort_without_carry_loss": {
+        "cases": 232,
+        "exact_mismatches": 231,
+        "explanation": "Karatsuba fails even without radical carry loss due to underlying T81Limb27::operator* Booth table defect F1"
+      },
+      "total_exact_mismatches": 299
     },
     "F4": {
       "compiled": true,
@@ -57,14 +65,22 @@
     },
     "F2": {
       "total_tested": 300,
-      "produced_nontrits": 300,
+      "produced_nontrits": 130,
       "max_abs_digit": 3,
-      "exact_integer_mismatches": 300
+      "mathematical_value_mismatches": 141
     },
     "F3": {
       "total_tested": 300,
-      "intermediate_carries_discarded": 100,
-      "end_to_end_exact_integer_mismatches": 300
+      "cohort_with_carry_loss": {
+        "cases": 68,
+        "exact_mismatches": 68
+      },
+      "cohort_without_carry_loss": {
+        "cases": 232,
+        "exact_mismatches": 231,
+        "explanation": "Karatsuba fails even without radical carry loss due to underlying T81Limb27::operator* Booth table defect F1"
+      },
+      "total_exact_mismatches": 299
     },
     "F4": {
       "compiled": true,

@@ -4,7 +4,7 @@
     "pr_729_head": {
       "commit_sha": "a35bd4d707b6d1ef4f8d7a65a9e492f4cd1d1962",
       "check_runs_total": 40,
-      "non_passing_checks": [
+      "failed_checks": [
         {
           "check_run_id": 128719937822,
           "name": "format / clang-format",
@@ -42,13 +42,24 @@
           "root_cause": "CMake configure step failed during third-party FTXUI download with HTTP 504 Gateway Timeout. Zero determinism tests were executed."
         },
         {
-          "check_run_id": 128720571913,
-          "name": "CodeQL",
-          "conclusion": "neutral",
+          "check_run_id": 128719937512,
+          "name": "Analyze (cpp)",
+          "conclusion": "failure",
           "workflow_run_id": 42476826904,
           "failed_step": "Autobuild",
           "classification": "EXTERNAL_INFRASTRUCTURE_FAILURE",
           "root_cause": "FTXUI download HTTP 504 Gateway Timeout during CodeQL Autobuild."
+        }
+      ],
+      "neutral_checks": [
+        {
+          "check_run_id": 128720571913,
+          "name": "CodeQL",
+          "conclusion": "neutral",
+          "workflow_run_id": 42476826904,
+          "failed_step": "CodeQL workflow conclusion check",
+          "classification": "EXTERNAL_INFRASTRUCTURE_NEUTRAL",
+          "root_cause": "CodeQL workflow summary check reported neutral following Analyze (cpp) failure."
         }
       ]
     },
@@ -106,6 +117,6 @@
   },
   "nine_checks_reconciliation_verdict": {
     "status": "UNRESOLVED_HISTORICAL_BASIS",
-    "details": "Direct GitHub API check-run and job inspection identifies exactly 5 non-passing checks on PR #729 head (4 failures + 1 neutral) and exactly 5 failed jobs across workflow runs on merge commit 2c3501e. The external reviewer's count of 'nine failing checks' cannot be reconstructed from individual failed jobs alone. Possible origins include: (a) combining distinct non-passing checks across both commits, (b) counting skipped/cancelled matrix sub-jobs triggered by dependent failures, or (c) inspecting an intermediate push state prior to head a35bd4d. Because no authoritative 9-check failure ledger exists in the GitHub API record, the 'nine failing checks' claim is formally classified as having an UNRESOLVED historical basis."
+    "details": "Direct GitHub API check-run and job inspection identifies exactly 5 failures on PR #729 head (with 1 additional neutral check) and exactly 5 failed jobs across workflow runs on merge commit 2c3501e. The external reviewer's count of 'nine failing checks' cannot be reconstructed from individual failed jobs alone. Possible origins include: (a) combining distinct non-passing checks across both commits, (b) counting skipped/cancelled matrix sub-jobs triggered by dependent failures, or (c) inspecting an intermediate push state prior to head a35bd4d. Because no authoritative 9-check failure ledger exists in the GitHub API record, the 'nine failing checks' claim is formally classified as having an UNRESOLVED historical basis."
   }
 }

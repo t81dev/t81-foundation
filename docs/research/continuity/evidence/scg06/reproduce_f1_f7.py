@@ -1,6 +1,7 @@
 """
 Complete reproduction suite for F1–F7 across Pre-SCG-03 and Post-SCG-03 baselines.
 All operations are tested against an independent exact-integer mathematical oracle.
+Uses deterministic SplitMix64 pseudo-random generation with diverse operand profiles.
 """
 
 import os
@@ -9,8 +10,16 @@ import json
 import subprocess
 import oracle
 
-PRE_INC = "/tmp/scg06_worktrees/pre_scg03/include"
-POST_INC = "/tmp/scg06_worktrees/post_scg03/include"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "../../../../"))
+WORKTREE_BASE = os.path.join(REPO_ROOT, ".scg06_worktrees")
+PRE_INC = os.path.join(WORKTREE_BASE, "pre_scg03/include")
+POST_INC = os.path.join(WORKTREE_BASE, "post_scg03/include")
+# Fallback to /tmp/scg06_worktrees if local worktree base not present
+if not os.path.exists(PRE_INC) and os.path.exists("/tmp/scg06_worktrees/pre_scg03/include"):
+    PRE_INC = "/tmp/scg06_worktrees/pre_scg03/include"
+    POST_INC = "/tmp/scg06_worktrees/post_scg03/include"
+
 BIN_DIR = "/tmp/scg06_bin"
 os.makedirs(BIN_DIR, exist_ok=True)
 
@@ -63,24 +72,54 @@ int main() {
     return run_isolated(cpp, inc_dir)
 
 def test_f2_and_f3(inc_dir):
-    # F2: T81Limb54::reference_mul non-trits and exact-integer oracle comparison
-    # F3: T81Limb54::karatsuba 28th-trit carry loss and exact-integer oracle comparison
+    # F2: T81Limb54::reference_mul non-trits vs exact value mismatches
+    # F3: T81Limb54::karatsuba carry discard vs other component defects
     cpp = """
 #include <iostream>
 #include <array>
+#include <cstdint>
 #include "t81/types/T81Limb.hpp"
+
 using t81::core::T81Limb27;
 using t81::core::T81Limb54;
 
+struct SplitMix64 {
+    uint64_t state;
+    uint64_t next() {
+        uint64_t z = (state += 0x9e3779b97f4a7c15ULL);
+        z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9ULL;
+        z = (z ^ (z >> 27)) * 0x94d049bb133111ebULL;
+        return z ^ (z >> 31);
+    }
+};
+
 int main() {
+    SplitMix64 rng{0x123456789abcdef0ULL};
     int total = 300;
     std::cout << total << "\\n";
-    for (int k = 1; k <= total; ++k) {
+    for (int k = 0; k < total; ++k) {
         std::array<int8_t, 54> ta{}, tb{};
+        int mode = k % 5;
         for (int i = 0; i < 54; ++i) {
-            ta[i] = ((k * 31 + i * 17) % 3) - 1;
-            tb[i] = ((k * 43 + i * 29) % 3) - 1;
+            uint64_t r = rng.next();
+            if (mode == 0) { // sparse
+                ta[i] = (r % 7 == 0) ? ((r >> 4) % 3 - 1) : 0;
+                tb[i] = ((r >> 8) % 7 == 0) ? ((r >> 12) % 3 - 1) : 0;
+            } else if (mode == 1) { // small width
+                ta[i] = (i < 20) ? (r % 3 - 1) : 0;
+                tb[i] = (i < 20) ? ((r >> 8) % 3 - 1) : 0;
+            } else if (mode == 2) { // dense
+                ta[i] = r % 3 - 1;
+                tb[i] = (r >> 8) % 3 - 1;
+            } else if (mode == 3) { // alternating
+                ta[i] = (i % 2 == 0) ? 1 : -1;
+                tb[i] = ((r >> 4) % 3 - 1);
+            } else { // boundary
+                ta[i] = (i < 27) ? 1 : -1;
+                tb[i] = ((r >> 4) % 3 - 1);
+            }
         }
+
         auto la = T81Limb54::from_trits(ta);
         auto lb = T81Limb54::from_trits(tb);
 
@@ -89,8 +128,13 @@ int main() {
 
         auto x0 = T81Limb27::from_low_27(la);
         auto x1 = T81Limb27::from_high_27(la);
-        auto addc_res = x0.addc(x1);
-        int discarded_carry = (int)addc_res.second;
+        auto y0 = T81Limb27::from_low_27(lb);
+        auto y1 = T81Limb27::from_high_27(lb);
+
+        auto add_x = x0.addc(x1);
+        auto add_y = y0.addc(y1);
+        int carry_x = (int)add_x.second;
+        int carry_y = (int)add_y.second;
 
         auto p_karat = T81Limb54::karatsuba(la, lb);
         auto tr_karat = p_karat.to_trits();
@@ -98,7 +142,7 @@ int main() {
         for (int i = 0; i < 54; ++i) std::cout << (int)ta[i] << (i + 1 == 54 ? "\\n" : " ");
         for (int i = 0; i < 54; ++i) std::cout << (int)tb[i] << (i + 1 == 54 ? "\\n" : " ");
         for (int i = 0; i < 54; ++i) std::cout << (int)tr_ref[i] << (i + 1 == 54 ? "\\n" : " ");
-        std::cout << discarded_carry << "\\n";
+        std::cout << carry_x << " " << carry_y << "\\n";
         for (int i = 0; i < 54; ++i) std::cout << (int)tr_karat[i] << (i + 1 == 54 ? "\\n" : " ");
     }
     return 0;
@@ -114,16 +158,20 @@ int main() {
 
     f2_nontrits_count = 0
     f2_max_abs_digit = 0
-    f2_exact_mismatches = 0
+    f2_value_mismatches = 0
 
-    f3_discarded_carries = 0
-    f3_exact_mismatches = 0
+    f3_carry_loss_cases = 0
+    f3_carry_loss_mismatches = 0
+    f3_no_carry_loss_cases = 0
+    f3_no_carry_loss_mismatches = 0
+
+    mod54 = 3**54
 
     for k in range(total):
         ta = [int(x) for x in lines[line_idx].split()]
         tb = [int(x) for x in lines[line_idx+1].split()]
         tr_ref = [int(x) for x in lines[line_idx+2].split()]
-        discarded_carry = int(lines[line_idx+3])
+        cx, cy = [int(x) for x in lines[line_idx+3].split()]
         tr_karat = [int(x) for x in lines[line_idx+4].split()]
         line_idx += 5
 
@@ -133,39 +181,52 @@ int main() {
         expected_trits, _ = oracle.int_to_trits(expected_prod, 54)
         expected_val_54 = oracle.trits_to_int(expected_trits)
 
-        # F2 evaluation
+        # F2 evaluation: invalid non-trit outputs
         has_nontrit = any(d < -1 or d > 1 for d in tr_ref)
         if has_nontrit:
             f2_nontrits_count += 1
             max_d = max(abs(d) for d in tr_ref)
             if max_d > f2_max_abs_digit:
                 f2_max_abs_digit = max_d
-            f2_exact_mismatches += 1
-        else:
-            if oracle.trits_to_int(tr_ref) != expected_val_54:
-                f2_exact_mismatches += 1
 
-        # F3 evaluation
-        if discarded_carry != 0:
-            f3_discarded_carries += 1
-        has_nontrit_k = any(d < -1 or d > 1 for d in tr_karat)
-        if has_nontrit_k:
-            f3_exact_mismatches += 1
+        # F2 evaluation: true mathematical value comparison
+        actual_ref_val = oracle.trits_to_int_allow_nontrits(tr_ref)
+        if (actual_ref_val - expected_val_54) % mod54 != 0:
+            f2_value_mismatches += 1
+
+        # F3 evaluation: causal carry loss vs other errors
+        has_carry_loss = (cx != 0 or cy != 0)
+        actual_karat_val = oracle.trits_to_int_allow_nontrits(tr_karat)
+        karat_mismatch = ((actual_karat_val - expected_val_54) % mod54 != 0)
+
+        if has_carry_loss:
+            f3_carry_loss_cases += 1
+            if karat_mismatch:
+                f3_carry_loss_mismatches += 1
         else:
-            if oracle.trits_to_int(tr_karat) != expected_val_54:
-                f3_exact_mismatches += 1
+            f3_no_carry_loss_cases += 1
+            if karat_mismatch:
+                f3_no_carry_loss_mismatches += 1
 
     return {
         "F2": {
             "total_tested": total,
             "produced_nontrits": f2_nontrits_count,
             "max_abs_digit": f2_max_abs_digit,
-            "exact_integer_mismatches": f2_exact_mismatches
+            "mathematical_value_mismatches": f2_value_mismatches
         },
         "F3": {
             "total_tested": total,
-            "intermediate_carries_discarded": f3_discarded_carries,
-            "end_to_end_exact_integer_mismatches": f3_exact_mismatches
+            "cohort_with_carry_loss": {
+                "cases": f3_carry_loss_cases,
+                "exact_mismatches": f3_carry_loss_mismatches
+            },
+            "cohort_without_carry_loss": {
+                "cases": f3_no_carry_loss_cases,
+                "exact_mismatches": f3_no_carry_loss_mismatches,
+                "explanation": "Karatsuba fails even without radical carry loss due to underlying T81Limb27::operator* Booth table defect F1"
+            },
+            "total_exact_mismatches": f3_carry_loss_mismatches + f3_no_carry_loss_mismatches
         }
     }
 
@@ -284,7 +345,7 @@ def main():
         results[baseline]["F6"] = test_f6(inc)
         results[baseline]["F7"] = test_f7(inc)
 
-    out_file = "docs/research/continuity/evidence/scg06/reproduction_results.json"
+    out_file = os.path.join(SCRIPT_DIR, "reproduction_results.json")
     with open(out_file, "w") as f:
         json.dump(results, f, indent=2)
     print(f"Reproduction results written to {out_file}")
