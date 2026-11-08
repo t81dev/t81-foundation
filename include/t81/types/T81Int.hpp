@@ -633,7 +633,8 @@ struct hash<t81::T81Int<N>> {
     const auto& data = val.raw_data();
     size_t seed = 0;
     for (const auto& byte : data)
-      seed ^= t81::CanonHash<std::uint8_t>{}(static_cast<std::uint8_t>(byte)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+      seed ^= t81::CanonHash<std::uint8_t>{}(static_cast<std::uint8_t>(byte)) + 0x9e3779b9 +
+              (seed << 6) + (seed >> 2);
     return seed;
   }
 };
