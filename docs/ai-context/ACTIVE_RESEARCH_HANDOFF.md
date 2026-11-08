@@ -307,3 +307,40 @@ Draft a **versioned authoritative TISC state-transition RFC** with exact operand
 
 ### Handoff rules
 Do not restart feasibility experiments, silently resolve the spec, claim merged-to-main status from PR #710, overwrite negative research, or confuse verified content hashes with independently replicated execution. Refresh GitHub PR tips and main before any subsequent action.
+
+---
+
+## 2026-11-08 CURRENT HANDOFF — H04-R03-FC1 Correctness & Retention Closure Merged; Phase C Strictly Frozen
+
+**This is the newest operational handoff.** It updates the post-merge status of study EXP-H04-R03 following the integration of PR #724, PR #726, and PR #727, while preserving earlier research lineage and constraints.
+
+### Authoritative Main Baseline & PR Integration Status
+- **Authoritative main baseline:** `64941caff9372f2e76dd3a0fb79aa6711a48b171` (merging PR #727).
+- **PR #724 (`50087972e078a09d7aff79cf6d8ae15db45c17ba`):** Merged into main. Resolved Finding 1 (defensive CI validation hardening in `_is_valid_ci`, removal of fallback tuples) and Finding 2 (admission boundary `ValidatedFrame` and `admitted_random_access()`).
+- **PR #726 (`0a547536649edf311ffbc1b85ebafccfb73604bb`):** Merged into main. Reconciled PR #722 documentation atop PR #724.
+- **PR #727 (`64941caff9372f2e76dd3a0fb79aa6711a48b171`):** Merged into main. Finalized Phase 4 wire-frame retention enforcement atop PR #724 & PR #726.
+- **Superseded open PRs:**
+  - **PR #722 (`origin/jules-docs-pr722-h04-r03-fc1-reconciliation-6939746679087544973` at commit `73358777`):** Has exact 0 diff against PR #726 (`0a547536`). Recommended for closure as superseded by PR #726.
+  - **PR #725 (`origin/fix/h04-r03-fc1-phase4-retention-enforcement-18418959090866697848` at commit `ce6b02ff`):** Contains identical functional files (`benchmark_harness.py`, `retention.py`, `test_harness.py`, `H04_R03_FC1_EVIDENCE_RECEIPT.md`) to PR #727 (`64941caf`), differing only in lacking PR #726 documentation. Recommended for closure as superseded by PR #727.
+- **Issue #723:** Closed; all three Codex findings are resolved and verified.
+
+### Verification Boundaries & Scope Distinctions
+1. **Implemented Correctness vs Independent Reproduction:**
+   - Author-reported 82/82 tests pass (`Ran 82 tests in 24.703s ... OK`) across unit, harness, measurement engine, and infrastructure suites.
+   - Executed in-environment by Jules in Linux x86_64 container.
+   - Clean code review was achieved.
+   - Independent third-party reproduction has not been conducted.
+2. **Software Retention Scope vs Physical Memory Reclamation:**
+   - Wire-frame retention is enforced via Python weak references (`OwnedSymbols`, `OwnedBuffer`) and mandatory native C11 ordering fences (`retention_fence.c`).
+   - The retention boundary is verified **only within its registered-object scope**.
+   - Undiscovered aliases, external closures, allocator heap retention (e.g. ptmalloc arena caches), and OS-level physical page reclamation are **not established or guaranteed**.
+3. **Phase C Performance Measurement Freeze:**
+   - Phase C performance measurement remains **strictly FROZEN and unauthorized**.
+   - No benchmark, timing run, comparative speedup, or hardware advantage claim is authorized.
+
+### Next Research Decision from H01–H08 Register
+Without launching unauthorized benchmarks or experiments, the next research decisions from the canonical hypothesis register are:
+1. **H04 (Adaptive Representation Policy):** Evaluate whether to proceed with independent third-party reproduction of Candidate A FC1 correctness artifacts, or evaluate protocol conditions for future Phase C benchmarking authorization.
+2. **H05 (CMP3 Decision Advantage):** Maintain measurement block (`PMU_UNAVAILABLE`). Awaiting dedicated physical PMU host qualification and maintainer signature of M1–M4/r1 approval records before candidate execution.
+3. **H01 (Physical Storage Feasibility):** Remains `PHYSICAL EVALUATION BLOCKED — MATCHED CHARACTERIZATION DATA UNAVAILABLE` per Investigation 10A.
+4. **H07 / ISA Reconciliation:** Await maintainer decision on T81-ISA-002 / RFC-00D6 versioned TISC state-transition contract before authorizing follow-on conformance expansions.
