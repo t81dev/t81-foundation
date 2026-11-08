@@ -402,16 +402,55 @@ public:
   }
 
   friend constexpr T81Int operator*(const T81Int& a, const T81Int& b) {
-    T81Int r;
+    if (a.is_zero() || b.is_zero()) {
+      return T81Int();
+    }
+    // Scratch storage sized for full convolution across 2 * N positions.
+    // Each conv[k] is the sum of at most N terms in {-1, 0, 1}, so |conv[k]| <= N <= 2048.
+    // Accumulation in std::int64_t prevents any signed integer overflow.
+    std::array<std::int64_t, 2 * kNumTrits> conv{};
     for (size_type i = 0; i < kNumTrits; ++i) {
-      Trit tb = b.get_trit(i);
-      if (tb == Trit::Z) continue;
-      T81Int tmp = a;
-      tmp <<= i;
-      if (tb == Trit::P)
-        r += tmp;
-      else
-        r -= tmp;
+      const int ai = trit_to_int(a.get_trit(i));
+      if (ai == 0) continue;
+      for (size_type j = 0; j < kNumTrits; ++j) {
+        const int bj = trit_to_int(b.get_trit(j));
+        if (bj == 0) continue;
+        conv[i + j] += static_cast<std::int64_t>(ai) * static_cast<std::int64_t>(bj);
+      }
+    }
+
+    // Complete normalization of the full 2N-trit mathematical product
+    std::array<std::int8_t, 2 * kNumTrits> prod_digits{};
+    std::int64_t carry = 0;
+    for (size_type k = 0; k < 2 * kNumTrits; ++k) {
+      const std::int64_t sum = conv[k] + carry;
+      const std::int64_t rem = sum % 3;
+      std::int64_t digit = rem;
+      if (rem == 2) {
+        digit = -1;
+      } else if (rem == -2) {
+        digit = 1;
+      }
+      carry = (sum - digit) / 3;
+      prod_digits[k] = static_cast<std::int8_t>(digit);
+    }
+
+    // Check if the normalized complete product fits the signed N-trit range
+    bool overflow = (carry != 0);
+    for (size_type k = kNumTrits; k < 2 * kNumTrits; ++k) {
+      if (prod_digits[k] != 0) {
+        overflow = true;
+        break;
+      }
+    }
+
+    if (overflow) {
+      axion::trap_overflow("T81Int overflow");
+    }
+
+    T81Int r;
+    for (size_type k = 0; k < kNumTrits; ++k) {
+      r.set_trit(k, int_to_trit(prod_digits[k]));
     }
     return r;
   }
