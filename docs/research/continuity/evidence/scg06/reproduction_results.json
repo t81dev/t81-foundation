@@ -1,0 +1,102 @@
+{
+  "pre_scg03": {
+    "F1": {
+      "compiled": true,
+      "returncode": 0,
+      "stdout": "t1_0=1 t1_1=0\nt2_0=0 t2_1=0 t2_2=0 t2_3=1",
+      "stderr": ""
+    },
+    "F2": {
+      "compiled": true,
+      "returncode": 0,
+      "stdout": "total=300 produced_nontrits=300 max_abs=3",
+      "stderr": ""
+    },
+    "F3": {
+      "compiled": true,
+      "returncode": 0,
+      "stdout": "total=200 discarded_carries=66",
+      "stderr": ""
+    },
+    "F4": {
+      "compiled": true,
+      "returncode": 0,
+      "stdout": "VAL:0",
+      "stderr": ""
+    },
+    "F5_debug": {
+      "compiled": true,
+      "returncode": -6,
+      "stdout": "",
+      "stderr": "terminate called without an active exception"
+    },
+    "F5_release": {
+      "compiled": true,
+      "returncode": 0,
+      "stdout": "NORMAL:EXCEPTION:to_std_chunks: borrow beyond MSB (input effectively negative)",
+      "stderr": ""
+    },
+    "F6": {
+      "compiled": true,
+      "returncode": 0,
+      "stdout": "NORMAL:is_zero=1",
+      "stderr": ""
+    },
+    "F7": {
+      "compiled": true,
+      "returncode": -6,
+      "stdout": "",
+      "stderr": "terminate called after throwing an instance of 'std::overflow_error'\n  what():  T81Int::to_int64(): value out of range (trits > 40)"
+    }
+  },
+  "post_scg03": {
+    "F1": {
+      "compiled": true,
+      "returncode": 0,
+      "stdout": "t1_0=1 t1_1=0\nt2_0=0 t2_1=0 t2_2=0 t2_3=1",
+      "stderr": ""
+    },
+    "F2": {
+      "compiled": true,
+      "returncode": 0,
+      "stdout": "total=300 produced_nontrits=300 max_abs=3",
+      "stderr": ""
+    },
+    "F3": {
+      "compiled": true,
+      "returncode": 0,
+      "stdout": "total=200 discarded_carries=66",
+      "stderr": ""
+    },
+    "F4": {
+      "compiled": true,
+      "returncode": 0,
+      "stdout": "TRAP:T81Int overflow",
+      "stderr": "Axion trap: T81Int overflow"
+    },
+    "F5_debug": {
+      "compiled": true,
+      "returncode": -6,
+      "stdout": "",
+      "stderr": "terminate called without an active exception"
+    },
+    "F5_release": {
+      "compiled": true,
+      "returncode": 0,
+      "stdout": "NORMAL:EXCEPTION:to_std_chunks: borrow beyond MSB (input effectively negative)",
+      "stderr": ""
+    },
+    "F6": {
+      "compiled": true,
+      "returncode": -6,
+      "stdout": "",
+      "stderr": "Axion trap: T81Int overflow\nterminate called after throwing an instance of 'std::overflow_error'\n  what():  T81Int overflow"
+    },
+    "F7": {
+      "compiled": true,
+      "returncode": -6,
+      "stdout": "",
+      "stderr": "terminate called after throwing an instance of 'std::overflow_error'\n  what():  T81Int::to_int64(): value out of range (trits > 40)"
+    }
+  }
+}

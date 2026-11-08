@@ -1,0 +1,71 @@
+{
+  "commit": "2c3501e2807bb893076c5037231c3126b7f2bc72",
+  "pr_729_head": "a35bd4d707b6d1ef4f8d7a65a9e492f4cd1d1962",
+  "workflow_runs": [
+    {
+      "workflow_name": "Format Check",
+      "run_id": 42476947531,
+      "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/42476947531",
+      "failed_job": {
+        "job_id": 128720301538,
+        "job_name": "format / clang-format",
+        "failed_step": "Step 4: Run clang-format",
+        "classification": "INDEPENDENT_CODE_FORMATTING_FAILURE",
+        "root_cause": "Unformatted lines in include/t81/types/T81Int.hpp and tests/cpp/test_t81int.cpp; resolved in subsequent commit b6ed9322."
+      }
+    },
+    {
+      "workflow_name": "T81 Foundation CI",
+      "run_id": 42476947508,
+      "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/42476947508",
+      "failed_jobs": [
+        {
+          "job_id": 128720301959,
+          "job_name": "lint / spec & docs",
+          "failed_step": "Step 6: Check Markdown links (lychee)",
+          "classification": "EXTERNAL_INFRASTRUCTURE_FAILURE",
+          "root_cause": "Transient HTTP 503 Service Unavailable when resolving historical GitHub Actions run URLs (e.g. actions/runs/39644888844) in docs/status/."
+        },
+        {
+          "job_id": 128720364984,
+          "job_name": "quality gate / required",
+          "failed_step": "Gate evaluation",
+          "classification": "DEPENDENT_GATE_FAILURE",
+          "root_cause": "Required check failed because dependent required job 'lint / spec & docs' failed."
+        }
+      ]
+    },
+    {
+      "workflow_name": "CodeQL",
+      "run_id": 42476947461,
+      "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/42476947461",
+      "failed_job": {
+        "job_id": 128720301336,
+        "job_name": "Analyze (cpp)",
+        "failed_step": "Step 4: Autobuild",
+        "classification": "EXTERNAL_INFRASTRUCTURE_FAILURE",
+        "root_cause": "Network gateway timeout (HTTP 504) fetching third-party FTXUI repository archive during CMake configuration step."
+      }
+    },
+    {
+      "workflow_name": "Cross-Platform Determinism Verification",
+      "run_id": 42476947469,
+      "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/42476947469",
+      "failed_job": {
+        "job_id": 128720301586,
+        "job_name": "determinism / linux-x86_64",
+        "failed_step": "Step 5: Configure",
+        "classification": "ENVIRONMENT_OR_BASELINE_CONFIGURE_FAILURE",
+        "root_cause": "CMake configuration failed in workflow runner prior to build or test execution."
+      }
+    }
+  ],
+  "reconciliation_summary": {
+    "total_workflow_runs_evaluated": 6,
+    "failed_workflows": 4,
+    "successful_workflows": 2,
+    "total_failed_jobs_on_merge_commit": 5,
+    "pr_729_pre_merge_failed_jobs": 5,
+    "explanation_of_nine_checks_claim": "The reviewer's query regarding 'nine failing checks' arose from conflating check-run records across PR head a35bd4d and merge commit 2c3501e (e.g., CodeQL, clang-format, lint/spec & docs, quality gate, determinism/linux-x86_64, plus dependent skipped/cancelled checks in matrix configurations). In reality, there were exactly 4 independent root failures (1 clang-format, 2 external HTTP 503/504 timeouts, 1 linux configure failure) and 1 dependent quality gate failure, totaling 5 failed jobs."
+  }
+}
