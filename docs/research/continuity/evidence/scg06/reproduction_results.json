@@ -7,16 +7,15 @@
       "stderr": ""
     },
     "F2": {
-      "compiled": true,
-      "returncode": 0,
-      "stdout": "total=300 produced_nontrits=300 max_abs=3",
-      "stderr": ""
+      "total_tested": 300,
+      "produced_nontrits": 300,
+      "max_abs_digit": 3,
+      "exact_integer_mismatches": 300
     },
     "F3": {
-      "compiled": true,
-      "returncode": 0,
-      "stdout": "total=200 discarded_carries=66",
-      "stderr": ""
+      "total_tested": 300,
+      "intermediate_carries_discarded": 100,
+      "end_to_end_exact_integer_mismatches": 300
     },
     "F4": {
       "compiled": true,
@@ -57,16 +56,15 @@
       "stderr": ""
     },
     "F2": {
-      "compiled": true,
-      "returncode": 0,
-      "stdout": "total=300 produced_nontrits=300 max_abs=3",
-      "stderr": ""
+      "total_tested": 300,
+      "produced_nontrits": 300,
+      "max_abs_digit": 3,
+      "exact_integer_mismatches": 300
     },
     "F3": {
-      "compiled": true,
-      "returncode": 0,
-      "stdout": "total=200 discarded_carries=66",
-      "stderr": ""
+      "total_tested": 300,
+      "intermediate_carries_discarded": 100,
+      "end_to_end_exact_integer_mismatches": 300
     },
     "F4": {
       "compiled": true,

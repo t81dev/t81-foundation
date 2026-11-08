@@ -1,7 +1,7 @@
 """
 Exhaustive verification of F1: T81Limb27 Booth table scaling against exact integers.
 """
-import docs.research.continuity.evidence.scg06.oracle as oracle
+import oracle
 
 def build_booth27_table_ref():
     table = {}

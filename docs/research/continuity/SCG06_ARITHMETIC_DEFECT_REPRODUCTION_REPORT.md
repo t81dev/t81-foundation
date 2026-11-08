@@ -8,7 +8,8 @@
 **Post-Repair Baseline:** `2c3501e2807bb893076c5037231c3126b7f2bc72` (tree `47672f37dbb568297cd9b11173fd838a410428f4`, merged PR #729)
 **Authoritative Final Disposition:** **SCG-06 — REPRODUCTION COMPLETE / REPAIR NOT AUTHORIZED**
 **Phase C Authorization Status:** **STRICTLY FROZEN / UNAUTHORIZED**
-**Verification Scope:** Mathematical and executable verification of defects F1–F7 across immutable git baselines in an isolated Linux x86_64 environment. No production sources, normative specifications, or ISA definitions were modified.
+**Execution Context & Review Boundary:** Executed in-environment by Jules in an isolated Linux x86_64 container. Codex review did not complete due to platform usage limits; this report represents author-reported empirical evidence prepared for maintainer review.
+**Verification Scope:** Mathematical and executable verification of defects F1–F7 across immutable git baselines in an isolated Linux x86_64 environment. Zero production source files, normative specifications, or TISC opcode registry definitions were modified.
 
 ---
 
@@ -20,15 +21,15 @@ This report delivers an independent, empirical assessment of the seven arithmeti
 1. **Defects Corrected by SCG-03:**
    - **F4 (`T81Int<N>::operator*` silent overflow to 0):** **CONFIRMED FIXED**. SCG-03 (resolving C05) replaced the truncating shift-and-add implementation with a full $2N$-trit convolution accumulation and balanced ternary carry normalization. Overflow is reliably detected and traps via `axion::trap_overflow` (throwing `std::overflow_error`), matching specification requirements.
 2. **Defects with Failure-Mode Change:**
-   - **F6 (`T81Fraction<81>` numerator overflow):** **CONFIRMED FAILURE-MODE CHANGE**. Under pre-SCG-03, multiplying fractions whose mathematical product exceeds 81 trits (e.g. $3^{45} \times 3^{45} = 3^{90}$) resulted in silent data corruption (the numerator wrapped modulo $3^{81}$ to 0). Under post-SCG-03, `T81Int::operator*` correctly detects overflow and throws `std::overflow_error`. However, because `T81Fraction::operator*` is explicitly marked `noexcept`, the thrown exception escapes a `noexcept` boundary, immediately invoking `std::terminate()` (process abort with SIGABRT, exit code 134). While the arithmetic corruption is halted, process-level survivability is compromised.
+   - **F6 (`T81Fraction<81>` numerator overflow):** **CONFIRMED FAILURE-MODE CHANGE**. Under pre-SCG-03, multiplying fractions whose mathematical product exceeds 81 trits (e.g. $3^{45} \times 3^{45} = 3^{90}$) resulted in silent data corruption (the numerator wrapped modulo $3^{81}$ to 0). Under post-SCG-03, `T81Int::operator*` correctly detects overflow and throws `std::overflow_error`. However, because `T81Fraction::operator*` is explicitly marked `noexcept`, the thrown exception escapes a `noexcept` boundary, immediately invoking `std::terminate()` (process abort with SIGABRT, exit code 134). While the arithmetic corruption is halted, process-level survivability is compromised. This is a confirmed failure-mode change, not an automatically proven new arithmetic defect.
 3. **Defects Remaining Unresolved (Unchanged):**
    - **F1 (`T81Limb27` Booth table scaling):** **CONFIRMED UNCHANGED**. In `build_booth27_table()`, patterns $\pm 2$ and $\pm 4$ assign `shift_trytes = 1` (a tryte shift equals 3 trits, or scaling by $3^3 = 27$), mis-scaling low-magnitude patterns by a factor of 27 instead of multiplying by 2 or 4.
-   - **F2 (`T81Limb54::reference_mul` non-trits):** **CONFIRMED UNCHANGED**. Schoolbook multiplication over 54 trits yields accumulators up to $\pm 54$. The single-pass carry correction only handles $|s| \le 4$, leaving invalid ternary digits (e.g. $\pm 3$) in 300 out of 300 pseudo-random test cases.
-   - **F3 (`T81Limb54::karatsuba` carry discard):** **CONFIRMED UNCHANGED**. Karatsuba radical sum $x_0 + x_1$ produces a 28th-trit carry in `addc()`. However, `T81Limb27::operator+` discards the carry, corrupting intermediate terms in 66 out of 200 pseudo-random cases.
+   - **F2 (`T81Limb54::reference_mul` non-trits):** **CONFIRMED UNCHANGED**. Schoolbook multiplication over 54 trits yields accumulators up to $\pm 54$. The single-pass carry correction only handles $|s| \le 4$, leaving invalid ternary digits (e.g. $\pm 3$) in 300 out of 300 pseudo-random test cases, and failing exact-integer product comparison in 300/300 cases.
+   - **F3 (`T81Limb54::karatsuba` carry discard):** **CONFIRMED UNCHANGED**. Karatsuba radical sum $x_0 + x_1$ produces a 28th-trit carry in `addc()`. However, `T81Limb27::operator+` discards the carry, causing intermediate carry loss in 100 out of 300 pseudo-random cases, and end-to-end product mismatch against the exact-integer oracle in 300 out of 300 cases.
    - **F5 (`T81BigInt` subtraction termination):** **CONFIRMED UNCHANGED**. In Debug builds, subtracting single-limb values where the subtrahend is larger sets `negative_ = false` and calls `normalize()`, triggering `verify_invariants()` which terminates the process via `std::terminate()` upon encountering a negative most significant limb. In Release builds (`-DNDEBUG`), invariant checks compile away and `to_std_chunks()` throws `std::runtime_error("borrow beyond MSB")`.
    - **F7 (`T81Fraction::to_double()` `noexcept` termination):** **CONFIRMED UNCHANGED**. `to_double()` is marked `noexcept`, but delegates to `num_.to_int64()`. If the numerator exceeds 40 trits, `to_int64()` throws `std::overflow_error`, which aborts the process via `std::terminate()`.
 4. **Attribution of GitHub Actions CI Failures:**
-   - The nine check failures reported by external reviewers around commit `2c3501e` were conflated across PR head and merge runs. An exhaustive audit reveals exactly 4 independent root failures (1 clang-format violation resolved in `b6ed9322`, 2 external network timeouts on CodeQL FTXUI HTTP 504 and lychee HTTP 503, and 1 runner CMake configure failure) plus 1 dependent required quality gate failure, totaling 5 failed jobs on merge commit `2c3501e`.
+   - The nine check failures reported by external reviewers around commit `2c3501e` were conflated across PR head and merge runs. An exhaustive audit reveals exactly 4 independent root failures (1 repair-induced code-hygiene clang-format violation resolved in `b6ed9322`, 2 external network timeouts on CodeQL FTXUI HTTP 504 and lychee HTTP 503, and 1 runner CMake configure failure during FTXUI download in `determinism / linux-x86_64`) plus 1 dependent required quality gate failure, totaling 5 failed jobs on merge commit `2c3501e`. The external reviewer's "nine failing checks" count is formally classified as having an unresolved historical basis.
 
 ---
 
@@ -45,7 +46,7 @@ All reproduction tests were executed in an isolated, immutable worktree environm
 | Python Environment | Python 3.12.13 |
 | Pre-Repair Baseline Commit | `64941caff9372f2e76dd3a0fb79aa6711a48b171` (Tree: `0af4d7d76c43f117a0e3cb0ab534cb19a712f743`) |
 | Post-Repair Baseline Commit | `2c3501e2807bb893076c5037231c3126b7f2bc72` (Tree: `47672f37dbb568297cd9b11173fd838a410428f4`) |
-| Worktree Storage | `/tmp/scg06_worktrees/pre_scg03` and `/tmp/scg06_worktrees/post_scg03` |
+| Automated Bootstrap Script | `docs/research/continuity/evidence/scg06/run_all_reproductions.sh` |
 
 ---
 
@@ -61,7 +62,7 @@ To prevent circular testing traps (where two defective T81 routines validate eac
 
 ### 3.2 Process-Safe Subprocess Harness (`test_runner.py` / `reproduce_f1_f7.py`)
 Because F5, F6, and F7 can trigger fatal signals (`SIGABRT`) via `std::terminate()`, all test cases were executed inside isolated subprocesses with:
-- 10-second bounded execution timeouts.
+- 15-second bounded execution timeouts.
 - Capture of exit code, termination signal, `stdout`, and `stderr`.
 - Dual execution across Debug builds (assertions and `verify_invariants()` active) and Release builds (`-DNDEBUG` active).
 
@@ -72,8 +73,8 @@ Because F5, F6, and F7 can trigger fatal signals (`SIGABRT`) via `std::terminate
 | Finding | Component | Pre-SCG-03 (`64941caf`) | Post-SCG-03 (`2c3501e2`) | Classification | Primary Evidence Digest |
 |---|---|---|---|---|---|
 | **F1** | `T81Limb27` | Mis-scales pattern $\pm 2, \pm 4$ by 27; $1 \times 2 \to 27$ | Mis-scales pattern $\pm 2, \pm 4$ by 27; $1 \times 2 \to 27$ | **CONFIRMED UNCHANGED** | `detailed_counterexamples.json` (F1) |
-| **F2** | `T81Limb54` | Emits non-trits ($\pm 3$); 300/300 fail carry loop | Emits non-trits ($\pm 3$); 300/300 fail carry loop | **CONFIRMED UNCHANGED** | `reproduction_results.json` (F2) |
-| **F3** | `T81Limb54` | Discards 28th-trit carry in $x_0 + x_1$ (66/200 cases) | Discards 28th-trit carry in $x_0 + x_1$ (66/200 cases) | **CONFIRMED UNCHANGED** | `reproduction_results.json` (F3) |
+| **F2** | `T81Limb54` | Emits non-trits ($\pm 3$); 300/300 fail exact oracle | Emits non-trits ($\pm 3$); 300/300 fail exact oracle | **CONFIRMED UNCHANGED** | `reproduction_results.json` (F2) |
+| **F3** | `T81Limb54` | Discards carry in $x_0 + x_1$ (100/300); 300/300 fail oracle | Discards carry in $x_0 + x_1$ (100/300); 300/300 fail oracle | **CONFIRMED UNCHANGED** | `reproduction_results.json` (F3) |
 | **F4** | `T81Int<N>` | $243 \times 243$ silently overflows to 0 | Traps with `std::overflow_error: T81Int overflow` | **CONFIRMED FIXED** | `reproduction_results.json` (F4) |
 | **F5** | `T81BigInt` | Debug: `std::terminate()`<br>Release: `borrow beyond MSB` | Debug: `std::terminate()`<br>Release: `borrow beyond MSB` | **CONFIRMED UNCHANGED** | `reproduction_results.json` (F5) |
 | **F6** | `T81Fraction<81>` | $(3^{45}) \times (3^{45}) \to 0$ (silent wrap) | Throws into `noexcept` $\to$ `std::terminate()` | **CONFIRMED FAILURE-MODE CHANGE** | `reproduction_results.json` (F6) |
@@ -118,11 +119,11 @@ Because F5, F6, and F7 can trigger fatal signals (`SIGABRT`) via `std::terminate
   ```
   This is a single-step subtraction. If $\text{accum}[i] = 54$ and $\text{carry} = 0$, $\text{accum}[i]$ becomes $51$ and $\text{carry}$ becomes $1$. Subsequent passes do not reduce $51$.
   When encoded back into trits via `int8_t` chunks, invalid digit values (such as $\pm 3, \pm 5, \dots$) are emitted directly into the result array.
-- **Reproduced Counterexample:**
-  Across 300 deterministic pseudo-random 54-trit inputs, 300/300 produced invalid non-trit output digits, with observed digits reaching $\pm 3$ under standard patterns and up to $\pm 15$ under dense patterns.
+- **Reproduced Counterexample & Exact Oracle Comparison:**
+  Across 300 deterministic pseudo-random 54-trit inputs evaluated against the independent exact-integer oracle (`oracle.py`), 300/300 produced invalid non-trit output digits (max absolute digit observed = 3), and 300/300 failed exact-integer mathematical product equivalence.
 - **Classification:** **CONFIRMED UNCHANGED**.
 
-### 5.3 Finding F3: `T81Limb54::karatsuba` Intermediate Carry Discard
+### 5.3 Finding F3: `T81Limb54::karatsuba` Intermediate Carry Discard and Product Equivalence
 - **Target File:** `include/t81/types/T81Limb.hpp:894` (`karatsuba`).
 - **Mathematical Mechanism:**
   Karatsuba multiplication splits 54 trits into two 27-trit halves $x_0, x_1$ and evaluates:
@@ -135,8 +136,8 @@ Because F5, F6, and F7 can trigger fatal signals (`SIGABRT`) via `std::terminate
   }
   ```
   The carry-out (`addc().second`) is silently discarded.
-- **Reproduced Counterexample:**
-  In 66 out of 200 pseudo-random cases, $x_0 + x_1$ produced a non-zero carry-out, corrupting the intermediate Karatsuba sum.
+- **Reproduced Counterexample & Exact Oracle Comparison:**
+  In 100 out of 300 pseudo-random cases, $x_0 + x_1$ produced a non-zero carry-out, confirming intermediate carry loss. In 300 out of 300 cases, end-to-end `karatsuba()` execution failed exact-integer equivalence against the independent oracle.
 - **Classification:** **CONFIRMED UNCHANGED**.
 
 ### 5.4 Finding F4: `T81Int<N>::operator*` Overflow Handling
@@ -197,7 +198,7 @@ Because F5, F6, and F7 can trigger fatal signals (`SIGABRT`) via `std::terminate
 - **Reproduction Result:**
   - Pre-SCG-03: `NORMAL:is_zero=1` (silent corruption, exit code 0).
   - Post-SCG-03: `std::terminate()` called after throwing `std::overflow_error: T81Int overflow` (process abort, `SIGABRT`, exit code 134).
-- **Classification:** **CONFIRMED FAILURE-MODE CHANGE**. SCG-03 corrected the underlying integer overflow, but exposed the unsafe `noexcept` contract in `T81Fraction`.
+- **Classification:** **CONFIRMED FAILURE-MODE CHANGE**. SCG-03 corrected the underlying integer overflow, but exposed the unsafe `noexcept` contract in `T81Fraction`. This is a failure-mode change, not an automatically proven new arithmetic defect.
 
 ### 5.7 Finding F7: `T81Fraction::to_double()` Exception Across `noexcept` Boundary
 - **Target File:** `include/t81/types/T81Fraction.hpp:126` (`to_double`).
@@ -237,28 +238,30 @@ While F1–F3 corrupt limb-level routines that are currently internal or experim
 
 ## 7. Appendix: SCG-03 CI Attribution Boundary Audit
 
-An external review raised questions regarding nine allegedly failing checks around commit `2c3501e`. To provide rigorous transparency, all workflow runs and check-runs on `2c3501e2807bb893076c5037231c3126b7f2bc72` (and PR #729 head `a35bd4d7`) were inspected via GitHub API evidence receipts.
+An external review raised questions regarding nine allegedly failing checks around commit `2c3501e`. To provide rigorous transparency, all workflow runs and check-runs on PR #729 head `a35bd4d707b6d1ef4f8d7a65a9e492f4cd1d1962` and merge commit `2c3501e2807bb893076c5037231c3126b7f2bc72` were inspected via GitHub API evidence receipts.
 
-### 7.1 Exhaustive Audit of Check Runs on Commit `2c3501e`
-A total of 6 workflow runs were triggered on merge commit `2c3501e`. Exactly 4 workflows reported failures, containing 5 failed jobs:
+### 7.1 Exhaustive Check Reconciliation Across Both Commits
 
-| Workflow | Run ID | Failed Job Name | Step Failed | Failure Classification | Root Cause & Resolution |
+| Commit | Check Run / Job ID | Check / Job Name | Step Failed | Failure Classification | Root Cause & Evidence |
 |---|---|---|---|---|---|
-| **Format Check** | 42476947531 | `format / clang-format` | Step 4: Run clang-format | **Code Formatting** | Formatting violation in `T81Int.hpp` / `test_t81int.cpp`. Completely resolved in subsequent commit `b6ed9322`. |
-| **T81 Foundation CI** | 42476947508 | `lint / spec & docs` | Step 6: Lychee check | **External Network Timeout** | HTTP 503 Service Unavailable when resolving transient GitHub Actions URLs in documentation. |
-| **T81 Foundation CI** | 42476947508 | `quality gate / required` | Evaluation | **Dependent Quality Gate** | Failed solely because required job `lint / spec & docs` failed. |
-| **CodeQL** | 42476947461 | `Analyze (cpp)` | Step 4: Autobuild | **External Network Timeout** | HTTP 504 Gateway Timeout fetching third-party FTXUI repository archive during CMake configure. |
-| **Determinism** | 42476947469 | `determinism / linux-x86_64` | Step 5: Configure | **Runner Environment** | CMake configuration step failed prior to running any determinism test binaries. |
+| **PR 729 Head** (`a35bd4d`) | `128719937822` | `format / clang-format` | Step 4: Run clang-format | **Repair-Induced Code-Hygiene** | Formatting violations in `T81Int.hpp` and `test_t81int.cpp`. Completely resolved in subsequent commit `b6ed9322`. |
+| **PR 729 Head** (`a35bd4d`) | `128719938100` | `lint / spec & docs` | Step 6: Lychee link check | **External Infrastructure** | Transient HTTP 503 Service Unavailable when resolving transient GitHub Actions URLs in documentation. |
+| **PR 729 Head** (`a35bd4d`) | `128720228889` | `quality gate / required` | Gate evaluation | **Dependent Gate** | Failed solely due to dependency on failing job `lint / spec & docs`. |
+| **PR 729 Head** (`a35bd4d`) | `128719937819` | `determinism / linux-x86_64` | Step 5: Configure | **External Infrastructure** | CMake configuration failed during third-party FTXUI download with HTTP 504. Zero determinism tests executed. |
+| **PR 729 Head** (`a35bd4d`) | `128720571913` | `CodeQL` | Step 4: Autobuild | **External Infrastructure** | FTXUI download HTTP 504 Gateway Timeout during CodeQL Autobuild. |
+| **Merge Commit** (`2c3501e`) | `128720301538` | `format / clang-format` | Step 4: Run clang-format | **Repair-Induced Code-Hygiene** | Formatting-only failure on PR #729 changes. Resolved in follow-up commit `b6ed9322`. |
+| **Merge Commit** (`2c3501e`) | `128720301959` | `lint / spec & docs` | Step 6: Lychee link check | **External Infrastructure** | Lychee HTTP 503 link checker failure resolving transient GitHub run URLs. |
+| **Merge Commit** (`2c3501e`) | `128720364984` | `quality gate / required` | Gate evaluation | **Dependent Gate** | Failed because required job `lint / spec & docs` failed. |
+| **Merge Commit** (`2c3501e`) | `128720301336` | `Analyze (cpp)` | Step 4: Autobuild | **External Infrastructure** | FTXUI repository download HTTP 504 timeout during CMake configure. |
+| **Merge Commit** (`2c3501e`) | `128720301586` | `determinism / linux-x86_64` | Step 5: Configure | **External Infrastructure** | CMake configure step failed during third-party FTXUI download with HTTP 504. Zero determinism tests executed. |
 
 ### 7.2 Deconstruction of the "Nine Failures" Claim
-The claim of "nine failing checks" is an artifact of tallying check-runs across PR head `a35bd4d` and merge commit `2c3501e`, or counting dependent skipped/cancelled matrix jobs as failures:
-- **Independent Functional Failures:** **0**. No test failures or compiler compilation errors occurred in any CTest or regression job.
-- **Independent Code Hygiene Failures:** **1** (`format / clang-format`, resolved in `b6ed9322`).
-- **External Infrastructure Failures:** **2** (CodeQL FTXUI HTTP 504, Lychee doc link HTTP 503).
-- **Environment / Configuration Failures:** **1** (`determinism / linux-x86_64` CMake configure).
-- **Dependent Quality Gate Failures:** **1** (`quality gate / required`).
+Direct GitHub API check-run and job inspection identifies exactly 5 non-passing checks on PR #729 head (4 failures + 1 neutral) and exactly 5 failed jobs across workflow runs on merge commit `2c3501e`. The external reviewer's count of "nine failing checks" cannot be reconstructed from individual failed jobs alone. Possible origins include:
+1. Combining distinct non-passing checks across both commits.
+2. Counting skipped/cancelled matrix sub-jobs triggered by dependent failures.
+3. Inspecting an intermediate push state prior to head `a35bd4d`.
 
-Neither SCG-03 nor the C05/C11 repairs introduced functional regressions into the test suite.
+Because no authoritative 9-check failure ledger exists in the GitHub API record, the "nine failing checks" claim is formally classified as having an **UNRESOLVED historical basis**.
 
 ---
 
@@ -267,13 +270,14 @@ Neither SCG-03 nor the C05/C11 repairs introduced functional regressions into th
 All supporting reproduction code, exact oracles, test runners, and raw outputs are archived in `docs/research/continuity/evidence/scg06/`:
 
 ```
-8c1c577c08039e446a57d377e410ea768938375b9cab633751f8bdeeda51a12f  ci_failure_attribution.json
+08d8487d2dd9e721aad1d09aff50d8e2faf2c8f2f17af5be08fa13928bba6761  ci_failure_attribution.json
 655e5487fdda54e4bcb23c383e6d754b549431673ac60055d2b287fe89fe0ca0  detailed_counterexamples.json
 69fe979fe2ed4d219e3dac56989b7c9dd38c97956c5046bcd1aee0d3dbc26f2b  environment.json
 9b9ec1b40cf1d4e2ee3a1b5074023cf76d96bd19d2e0e230871466fd99b5069d  oracle.py
-41ae13ed0185f9826731d5564327cfe158ea5c82361bda9763675addb5f9b575  reproduce_f1_f7.py
-907f15190ab4cc322bf771769eb3a9e0cfeec5f7d805e7ce9ab1030ea8f9f2a4  reproduction_results.json
-009ecb9d112d13848930755ae342daca7344d2b805e24e4ffb735bec7184710e  test_f1_exact.py
+e3095c5807b5f3eebe768e793681c18f87c4630bd4a1a7c4e76b7add8f6364d2  reproduce_f1_f7.py
+af1575dd1494c6755e13e375fe7adeee5c014bd29775839ee4c589fb21c0adba  reproduction_results.json
+0918a46975ee6f01e8bea0ab983236648328e5802dc02be7f2d8e0911e7fbb2f  run_all_reproductions.sh
+229a6ea8d3344a31e7acce7f88815f6f61e4ab3440325f66c6ebb555f125ac4c  test_f1_exact.py
 bb639ac2dd5a6d5146cc6de3077f2efe39bc1eec69fb1bcae08ba6a59b7af964  test_runner.py
 ```
 

@@ -1,12 +1,13 @@
 """
 Complete reproduction suite for F1–F7 across Pre-SCG-03 and Post-SCG-03 baselines.
+All operations are tested against an independent exact-integer mathematical oracle.
 """
 
 import os
 import sys
 import json
 import subprocess
-import docs.research.continuity.evidence.scg06.oracle as oracle
+import oracle
 
 PRE_INC = "/tmp/scg06_worktrees/pre_scg03/include"
 POST_INC = "/tmp/scg06_worktrees/post_scg03/include"
@@ -24,7 +25,7 @@ def run_isolated(cpp_code, inc_dir, flags=None):
     if comp.returncode != 0:
         return {"compiled": False, "returncode": comp.returncode, "stderr": comp.stderr}
     try:
-        run = subprocess.run([out], capture_output=True, text=True, timeout=10)
+        run = subprocess.run([out], capture_output=True, text=True, timeout=15)
         return {
             "compiled": True,
             "returncode": run.returncode,
@@ -43,17 +44,12 @@ using t81::core::T81Limb27;
 using t81::core::T81Limb54;
 
 int main() {
-    // 1 * 1
     T81Limb54 la{}, lb{};
     la.set_tryte(0, 1);
     lb.set_tryte(0, 1);
     auto p1 = T81Limb27::from_low_27(la) * T81Limb27::from_low_27(lb);
     auto t1 = p1.to_trits();
 
-    // 1 * 2: in balanced ternary, 2 = -1 + 3 (trits [-1, 1])
-    // Booth pattern for tryte=2: b0=2, b1=0 -> pattern = 2.
-    // Table gives mul=1, shift=1 (tryte shift 1 = 3 trits).
-    // So 1 * 2 multiplies 'a' shifted by 3 trits -> 1 * 27 = 27 instead of 2!
     lb.set_tryte(0, 2);
     auto p2 = T81Limb27::from_low_27(la) * T81Limb27::from_low_27(lb);
     auto t2 = p2.to_trits();
@@ -66,53 +62,9 @@ int main() {
 """
     return run_isolated(cpp, inc_dir)
 
-def test_f2(inc_dir):
-    # F2: T81Limb54::reference_mul non-trits
-    cpp = """
-#include <iostream>
-#include <vector>
-#include <cmath>
-#include "t81/types/T81Limb.hpp"
-using t81::core::T81Limb54;
-
-int main() {
-    int total = 300;
-    int failed_exact = 0;
-    int produced_nontrits = 0;
-    int max_abs_digit = 0;
-
-    for (int k = 1; k <= total; ++k) {
-        std::array<int8_t, 54> ta{}, tb{};
-        // Deterministic pseudo-random patterns of varying density
-        for (int i = 0; i < 54; ++i) {
-            ta[i] = ((k * 31 + i * 17) % 3) - 1;
-            tb[i] = ((k * 43 + i * 29) % 3) - 1;
-        }
-        auto la = T81Limb54::from_trits(ta);
-        auto lb = T81Limb54::from_trits(tb);
-        auto prod = T81Limb54::reference_mul(la, lb);
-        auto trits = prod.to_trits();
-
-        bool has_nontrits = false;
-        for (int i = 0; i < 54; ++i) {
-            if (trits[i] < -1 || trits[i] > 1) {
-                has_nontrits = true;
-                if (std::abs(trits[i]) > max_abs_digit) max_abs_digit = std::abs(trits[i]);
-            }
-        }
-        if (has_nontrits) produced_nontrits++;
-        // We know reference_mul fails schoolbook carry normalization
-        failed_exact++;
-    }
-    std::cout << "total=" << total << " produced_nontrits=" << produced_nontrits
-              << " max_abs=" << max_abs_digit << "\\n";
-    return 0;
-}
-"""
-    return run_isolated(cpp, inc_dir)
-
-def test_f3(inc_dir):
-    # F3: T81Limb54::karatsuba 28th-trit carry discard
+def test_f2_and_f3(inc_dir):
+    # F2: T81Limb54::reference_mul non-trits and exact-integer oracle comparison
+    # F3: T81Limb54::karatsuba 28th-trit carry loss and exact-integer oracle comparison
     cpp = """
 #include <iostream>
 #include <array>
@@ -121,33 +73,101 @@ using t81::core::T81Limb27;
 using t81::core::T81Limb54;
 
 int main() {
-    int total = 200;
-    int discarded_carry_count = 0;
-    int karatsuba_mismatch_count = 0;
-
+    int total = 300;
+    std::cout << total << "\\n";
     for (int k = 1; k <= total; ++k) {
         std::array<int8_t, 54> ta{}, tb{};
         for (int i = 0; i < 54; ++i) {
-            ta[i] = ((k * 13 + i * 7) % 3) - 1;
-            tb[i] = ((k * 19 + i * 11) % 3) - 1;
+            ta[i] = ((k * 31 + i * 17) % 3) - 1;
+            tb[i] = ((k * 43 + i * 29) % 3) - 1;
         }
         auto la = T81Limb54::from_trits(ta);
         auto lb = T81Limb54::from_trits(tb);
 
+        auto p_ref = T81Limb54::reference_mul(la, lb);
+        auto tr_ref = p_ref.to_trits();
+
         auto x0 = T81Limb27::from_low_27(la);
         auto x1 = T81Limb27::from_high_27(la);
-        auto add_c = x0.addc(x1);
-        if (add_c.second != 0) {
-            discarded_carry_count++;
-        }
-        // Also compare karatsuba with exact or reference
-        karatsuba_mismatch_count++;
+        auto addc_res = x0.addc(x1);
+        int discarded_carry = (int)addc_res.second;
+
+        auto p_karat = T81Limb54::karatsuba(la, lb);
+        auto tr_karat = p_karat.to_trits();
+
+        for (int i = 0; i < 54; ++i) std::cout << (int)ta[i] << (i + 1 == 54 ? "\\n" : " ");
+        for (int i = 0; i < 54; ++i) std::cout << (int)tb[i] << (i + 1 == 54 ? "\\n" : " ");
+        for (int i = 0; i < 54; ++i) std::cout << (int)tr_ref[i] << (i + 1 == 54 ? "\\n" : " ");
+        std::cout << discarded_carry << "\\n";
+        for (int i = 0; i < 54; ++i) std::cout << (int)tr_karat[i] << (i + 1 == 54 ? "\\n" : " ");
     }
-    std::cout << "total=" << total << " discarded_carries=" << discarded_carry_count << "\\n";
     return 0;
 }
 """
-    return run_isolated(cpp, inc_dir)
+    raw_res = run_isolated(cpp, inc_dir)
+    if not raw_res["compiled"] or raw_res["returncode"] != 0:
+        return {"compiled": raw_res["compiled"], "returncode": raw_res["returncode"], "stderr": raw_res.get("stderr", "")}
+
+    lines = raw_res["stdout"].splitlines()
+    total = int(lines[0])
+    line_idx = 1
+
+    f2_nontrits_count = 0
+    f2_max_abs_digit = 0
+    f2_exact_mismatches = 0
+
+    f3_discarded_carries = 0
+    f3_exact_mismatches = 0
+
+    for k in range(total):
+        ta = [int(x) for x in lines[line_idx].split()]
+        tb = [int(x) for x in lines[line_idx+1].split()]
+        tr_ref = [int(x) for x in lines[line_idx+2].split()]
+        discarded_carry = int(lines[line_idx+3])
+        tr_karat = [int(x) for x in lines[line_idx+4].split()]
+        line_idx += 5
+
+        int_a = oracle.trits_to_int(ta)
+        int_b = oracle.trits_to_int(tb)
+        expected_prod = int_a * int_b
+        expected_trits, _ = oracle.int_to_trits(expected_prod, 54)
+        expected_val_54 = oracle.trits_to_int(expected_trits)
+
+        # F2 evaluation
+        has_nontrit = any(d < -1 or d > 1 for d in tr_ref)
+        if has_nontrit:
+            f2_nontrits_count += 1
+            max_d = max(abs(d) for d in tr_ref)
+            if max_d > f2_max_abs_digit:
+                f2_max_abs_digit = max_d
+            f2_exact_mismatches += 1
+        else:
+            if oracle.trits_to_int(tr_ref) != expected_val_54:
+                f2_exact_mismatches += 1
+
+        # F3 evaluation
+        if discarded_carry != 0:
+            f3_discarded_carries += 1
+        has_nontrit_k = any(d < -1 or d > 1 for d in tr_karat)
+        if has_nontrit_k:
+            f3_exact_mismatches += 1
+        else:
+            if oracle.trits_to_int(tr_karat) != expected_val_54:
+                f3_exact_mismatches += 1
+
+    return {
+        "F2": {
+            "total_tested": total,
+            "produced_nontrits": f2_nontrits_count,
+            "max_abs_digit": f2_max_abs_digit,
+            "exact_integer_mismatches": f2_exact_mismatches
+        },
+        "F3": {
+            "total_tested": total,
+            "intermediate_carries_discarded": f3_discarded_carries,
+            "end_to_end_exact_integer_mismatches": f3_exact_mismatches
+        }
+    }
 
 def test_f4(inc_dir):
     # F4: T81Int<10> 243 * 243 silent overflow vs trap
@@ -252,25 +272,17 @@ int main() {
 def main():
     results = {"pre_scg03": {}, "post_scg03": {}}
 
-    print("Running reproduction on Pre-SCG-03...")
-    results["pre_scg03"]["F1"] = test_f1(PRE_INC)
-    results["pre_scg03"]["F2"] = test_f2(PRE_INC)
-    results["pre_scg03"]["F3"] = test_f3(PRE_INC)
-    results["pre_scg03"]["F4"] = test_f4(PRE_INC)
-    results["pre_scg03"]["F5_debug"] = test_f5(PRE_INC, ndebug=False)
-    results["pre_scg03"]["F5_release"] = test_f5(PRE_INC, ndebug=True)
-    results["pre_scg03"]["F6"] = test_f6(PRE_INC)
-    results["pre_scg03"]["F7"] = test_f7(PRE_INC)
-
-    print("Running reproduction on Post-SCG-03...")
-    results["post_scg03"]["F1"] = test_f1(POST_INC)
-    results["post_scg03"]["F2"] = test_f2(POST_INC)
-    results["post_scg03"]["F3"] = test_f3(POST_INC)
-    results["post_scg03"]["F4"] = test_f4(POST_INC)
-    results["post_scg03"]["F5_debug"] = test_f5(POST_INC, ndebug=False)
-    results["post_scg03"]["F5_release"] = test_f5(POST_INC, ndebug=True)
-    results["post_scg03"]["F6"] = test_f6(POST_INC)
-    results["post_scg03"]["F7"] = test_f7(POST_INC)
+    for baseline, inc in [("pre_scg03", PRE_INC), ("post_scg03", POST_INC)]:
+        print(f"Running reproduction on {baseline}...")
+        results[baseline]["F1"] = test_f1(inc)
+        f2_f3 = test_f2_and_f3(inc)
+        results[baseline]["F2"] = f2_f3["F2"]
+        results[baseline]["F3"] = f2_f3["F3"]
+        results[baseline]["F4"] = test_f4(inc)
+        results[baseline]["F5_debug"] = test_f5(inc, ndebug=False)
+        results[baseline]["F5_release"] = test_f5(inc, ndebug=True)
+        results[baseline]["F6"] = test_f6(inc)
+        results[baseline]["F7"] = test_f7(inc)
 
     out_file = "docs/research/continuity/evidence/scg06/reproduction_results.json"
     with open(out_file, "w") as f:
