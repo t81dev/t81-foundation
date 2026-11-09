@@ -371,10 +371,14 @@ In evaluating the C++ arithmetic implementations, we distinguish actual struct m
   - **Host Size:** `sizeof(T81Limb54) == 32` bytes (256 bits).
   - **Host Information Density:** $\frac{85.59\text{ bits}}{256\text{ bits allocated}} \approx 33.43\%$.
 
-- **Temporary Wide Accumulators:**
-  During multiplication, `T81Limb27::operator*` decodes trytes into trits and accumulates into a temporary stack array:
-  `std::array<int, 96> acc{}` (384 bytes on 64-bit systems), which is normalized across 54 trits and repacked into `T81Limb54`.
-  This temporary accumulator layout is transient and must not be confused with the persistent limb object layout.
+- **Temporary Multiplication Accumulators:**
+  In `T81Limb27::operator*(const T81Limb27&)` (`include/t81/types/T81Limb.hpp:725`), multiplication decodes the two 9-tryte operands into decoded trits and accumulates partial products into a 54-element array:
+  ```cpp
+  std::array<int, T81Limb54::TRITS> accum{}; // 54 int elements (216 bytes on 64-bit hosts)
+  ```
+  which is carry-normalized across 54 trits into `std::array<int8_t, T81Limb54::TRITS>` and packed into `T81Limb54`.
+  By contrast, the 96-element wide accumulator (`std::array<int, detail::WIDE_TRITS>` where `WIDE_TRITS = 96`, 384 bytes) belongs to other limb operations, specifically `T81Limb::booth_mul_trits` (48-trit core limb), `T81Limb54::karatsuba` intermediate accumulation, and `T81Limb27::operator*` for 48-trit conversions (`T81Limb.hpp:297, 632, 792`).
+  These transient stack accumulator arrays must be clearly distinguished from persistent limb struct storage.
 
 #### 2. Hypothetical Scalar-Packed Limb Layouts (Not Currently Implemented)
 If 27 trits were packed as scalar integers using base-3 positional encoding:
@@ -408,7 +412,9 @@ The following confounding factors have historically distorted ternary research a
 1. **Host Word-Size and Struct Padding Taxes:**
    `T81Limb27` incurs 7 bytes of padding per 16-byte struct, and `T81Limb54` incurs 14 bytes per 32-byte struct. Experiments must not attribute host binary struct alignment penalties to inherent radix properties.
 2. **Tryte-Level Composition vs Digit-Level Models:**
-   The T81 library groups 3 trits into a tryte (range $[-13, 13]$), using table lookups (`ADD_TABLE`, `COMPOSITION_TABLE`) for Kogge-Stone carry lookahead. This tryte-level composition behaves differently from the scalar digit-level Markov chain, as carries across trytes occur with probability $P(|c_{\text{out}}| = 1 \mid c_{\text{in}} = 0) = \frac{2}{27} \approx 0.0741$.
+   The T81 library groups 3 trits into a tryte (range $[-13, 13]$), using table lookups (`ADD_TABLE`, `COMPOSITION_TABLE`) for Kogge-Stone carry lookahead. Under independent uniform balanced-ternary operand digits and quiescent initial carry $c_0 = 0$, the probability of an active outgoing carry after one tryte (3 trits) is evaluated via the Markov transient transition probability:
+   $$P(c_3 \neq 0 \mid c_0 = 0) = \frac{1}{4} \left(1 - \left(\frac{1}{9}\right)^3\right) = \frac{182}{729} \approx 0.249657$$
+   (or $0.2500$ at the stationary limit), which accounts for all internal carry generation, propagation, and cancellation paths across the 3 digit positions within the tryte. This must not be confused with unconditioned single-digit or tryte-index bounds.
 3. **Compiler Optimization Discrepancies:**
    Compilers optimize binary bit-shifts (`x >> 2`, `x & 3`) aggressively, but generate multi-instruction reciprocal routines or slow division for ternary modulo operations.
 4. **QEMU & Emulation Overhead:**
