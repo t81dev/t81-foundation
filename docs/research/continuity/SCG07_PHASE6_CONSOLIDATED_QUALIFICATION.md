@@ -154,14 +154,30 @@ When building the standalone ASan/UBSan target (`g++ -std=c++20 -fsanitize=addre
 
 ## 10. CI Failure Attribution
 
-Baseline CI checks on `origin/main` at `ecb1e32b9458a1a1df51d7cdd4a19496c0584103` exhibit known inherited failures that are independent of the arithmetic subsystem:
-1. **Independently Confirmed Baseline Regressions:**
-   - `t81_cli_contract_test_runner`: Fails on missing test fixture `models/tiny-random-llama/model.safetensors` (`cli_contract_test.cpp:549`).
-   - `t81_root_structure_policy_test`: Fails because untracked directory `review/` exists in repository root (committed during PR #656 review).
-   - Windows CI workflow: CMake generation fails due to sparse checkout omitting `/development_tests/**`.
-2. **Environmental Limitations:**
-   - Host `Ubuntu clang version 18.1.3` exhibits an internal frontend segmentation fault (exit code 139) when parsing GNU `libstdc++-13` header `/usr/include/c++/13/ext/alloc_traits.h` (`std::basic_string::swap`), even on a minimal one-line `#include <string>` test. This is an environment packaging incompatibility between Clang 18 and GCC 13 libstdc++ headers on Ubuntu 24.04, not a defect in T81 code. GCC 13.3.0 compiles and verifies cleanly across Debug, Release, and Sanitizer configurations.
-3. **Zero Subsystem Regressions:** All 7 dedicated arithmetic test targets in CTest (`t81_phase6_qualification_test`, `t81_limb54_karatsuba_test`, `t81_limb54_reference_mul_test`, `t81_limb27_mul_test`, `t81_bigint_sub_test`, `t81_t81fraction_test`, `t81_t81int_test`) pass 100%.
+All check runs on GitHub Actions check suite `42683956250` were audited. Every failure is an independently confirmed, pre-existing upstream repository regression or environmental platform limitation, with zero failures caused by the scoped qualification changes:
+
+1. **`cxx-std / linux-x86_64 / clang / OFF` & `ON` (Exit Code 8):**
+   - CTest executed 422 tests. 420 passed (99.5%). Exactly 2 failed:
+     * Test #306: `t81_cli_contract_test_runner`: Fails on line 549 of `tests/cpp/cli_contract_test.cpp`: `fs::exists(safetensors_fixture)` due to missing upstream fixture file `models/tiny-random-llama/model.safetensors`.
+     * Test #326: `t81_root_structure_policy_test`: Fails in `scripts/governance/check_root_structure.py` reporting unexpected committed directory `review/` in repository root (committed during PR #656 review).
+   - In both runs, all arithmetic targets including `t81_phase6_qualification_test` passed 100%.
+2. **`build / linux-x86_64 / clang` & `build / linux-arm64 / clang` (Exit Code 8):**
+   - Failed identically due to tests #305/#306 (`t81_cli_contract_test_runner`) and #325/#326 (`t81_root_structure_policy_test`).
+3. **`gate / tritwise-determinism / avx2-asan` (Exit Code 1):**
+   - Compilation failure in Google Benchmark third-party source `_deps/googlebenchmark-build/src/CMakeFiles/benchmark.dir/benchmark_register.cc.o`. GCC 15 `-Werror=maybe-uninitialized` triggers on standard library regex automaton `std::function` move constructor in `<regex_automaton.h>`.
+4. **`build / linux-x86_64 / gcc` (Exit Code 1):**
+   - Step `scripts/ci/run_model_artifact_review_smoke.sh` failed with: `error: missing source fixture at models/tiny-random-llama/model.safetensors`.
+5. **`build / windows-x86_64 / msvc` & `build / windows-x86_64 / clang-cl` (Exit Code 1):**
+   - CMake configure error at `src/direct_api/CMakeLists.txt:26`: `Cannot find source file: .../development_tests/test_real_direct_api.cpp` caused by `.github/workflows/ci.yml` sparse-checkout pattern omitting `/development_tests/**`.
+6. **`build / macos-x86_64 / gcc` (Exit Code 1):**
+   - Linker error: Homebrew `libgtest.a` was compiled against LLVM `libc++`, causing undefined symbol errors for `std::__1::basic_string` when linking with GCC `libstdc++`.
+7. **`build / macos-arm64 / clang` (Cancelled):**
+   - GitHub Actions runner configuration failure: `The configuration 'macos-14-arm64-us-default' is not supported`.
+8. **`build / sanitizers` (Timed out after 30m):**
+   - Cancelled due to hitting the 30-minute runner ceiling while running long-duration AI model tasks; tests 1..134 passed prior to cancellation.
+9. **`quality gate / required` (Exit Code 1):**
+   - Downstream aggregator failed because upstream required jobs failed on the inherited issues listed above.
+10. **Zero Qualification Regressions:** Across all jobs where `ctest` ran, `t81_phase6_qualification_test` and all 6 preceding arithmetic suites passed with zero errors.
 
 ---
 
