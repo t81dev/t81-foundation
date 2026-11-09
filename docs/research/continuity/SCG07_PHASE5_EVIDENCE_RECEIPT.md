@@ -4,7 +4,7 @@
 **Date:** 2026-11-09
 **Repository Baseline Anchor:** `8497ffb8742266d499e0cf8c826857776238db98` (`origin/main`, merging PR #738 and PR #739)
 **Task Classification:** Correctness Verification & Test Suite Integration (SCG-07 Phase 5, Finding F3)
-**Final Disposition:** `F3 RESOLVED BY F1 — independently verified`
+**Final Disposition:** `F3 CORRECT ON CURRENT BASELINE — historical causal attribution incomplete`
 
 ---
 
@@ -17,7 +17,7 @@ In Phase 5 of SCG-07:
 2. **Current Observation:** On baseline `8497ffb8742266d499e0cf8c826857776238db98` (which incorporates Phase 3 F1 repair `ca7a6b7a` and Phase 4 F2 repair `e4e32244`), the exact historical 300-trial battery was rerun with zero failures (300/300 passed, 0 non-canonical trits, 0 mathematical mismatches).
 3. **Independent Verification:** A focused regression test suite (`tests/cpp/test_t81_limb54_karatsuba.cpp`) evaluated `T81Limb54::karatsuba` against an independent base-$10^9$ arbitrary-precision integer oracle (`ExactBigIntOracle`) across 10,000 randomized trials and comprehensive deterministic edge cases, achieving 100% agreement and strict canonicality.
 4. **Mathematical Explanation:** Under the established 54-trit modular multiplication contract ($A \times B \pmod{3^{54}}$), intermediate 28th-trit carries in $x_0 + x_1$ and $y_0 + y_1$ carry weight $\ge 3^{27}$. When multiplied in $Z_1$ and shifted left by 27 trits ($3^{27}$), their positional weight is $\ge 3^{54} \equiv 0 \pmod{3^{54}}$. Therefore, the discarded 28th-trit carry does not affect the canonical result modulo $3^{54}$. This mathematical invariance applies strictly to the 54-trit modular contract and is not generalized to full-precision multiplication ($108$ trits) or wider contexts.
-5. **Causal Attribution:** The historical 299/300 failures in SCG-06 were caused by the un-repaired F1 defect in `T81Limb27::operator*` ($1 \times 2 = 27$ due to Booth table scaling). The repair of F1 in Phase 3 completely and independently resolved F3 without requiring changes to Karatsuba arithmetic.
+5. **Causal Attribution:** While the 299/300 historical failures and 0/300 current failures are established, asserting exclusive causal attribution to F1 requires an isolated F1-only before/after experiment. Without that isolated evidence, historical causal attribution remains incomplete, though F1 is the leading explanation for historical failures.
 
 ---
 
@@ -91,7 +91,7 @@ $$Z (s_x \times s_y) \equiv Z (x_0 + x_1)(y_0 + y_1) \pmod{3^{54}}$$
 In SCG-06:
 - 68/68 carry-loss cases failed.
 - 231/232 non-carry-loss cases failed.
-Both cohorts failed because `T81Limb27::operator*` mis-scaled low patterns ($\pm 2, \pm 4$) by 27 due to defective Booth table scaling (F1). Once F1 was repaired in Phase 3, Karatsuba immediately passed all 300 cases.
+Both cohorts exhibited mathematical mismatches. F1 (`T81Limb27::operator*` Booth table scaling error) was present and is the leading explanation for the historical failures. However, because multiple components were updated between pre-repair baselines and the current baseline, exclusive causal attribution to F1 is not asserted without an isolated F1-only before/after experiment.
 
 ---
 
@@ -145,4 +145,4 @@ Both cohorts failed because `T81Limb27::operator*` mis-scaled low patterns ($\pm
 1. **Inherited Baseline CI Regressions:** Known baseline regressions on `origin/main` at `8497ffb8742266d499e0cf8c826857776238db98` remain unchanged and independent of this change (missing `models/tiny-random-llama/model.safetensors`, committed `review/pr-656/`, Windows sparse checkout omitting `/development_tests/**`, and runner/toolchain warnings in GCC 15 / macOS).
 2. **Contract Specificity:** The proof of carry-loss invariance is strictly bound to the 54-trit modular multiplication contract ($A \times B \pmod{3^{54}}$). For a wide $108$-trit full-precision product, intermediate carries would contribute to trits 54..80 and could not be discarded.
 3. **Defect Findings:** Findings F1, F2, F4, F5, F6, and F7 remain in their closed/verified state.
-4. **Final Disposition:** `F3 RESOLVED BY F1 — independently verified`.
+4. **Final Disposition:** `F3 CORRECT ON CURRENT BASELINE — historical causal attribution incomplete`.
