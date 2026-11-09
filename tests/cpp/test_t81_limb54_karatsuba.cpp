@@ -51,13 +51,18 @@ struct ExactBigIntOracle {
   ExactBigIntOracle() = default;
 
   explicit ExactBigIntOracle(int64_t val) {
+    uint64_t uval = 0;
     if (val < 0) {
       negative = true;
-      val = -val;
+      // Safe unsigned magnitude negation, robust even for INT64_MIN (-2^63)
+      uval = 0ULL - static_cast<uint64_t>(val);
+    } else {
+      negative = false;
+      uval = static_cast<uint64_t>(val);
     }
-    while (val > 0) {
-      chunks.push_back(static_cast<uint32_t>(val % BASE));
-      val /= BASE;
+    while (uval > 0) {
+      chunks.push_back(static_cast<uint32_t>(uval % BASE));
+      uval /= BASE;
     }
   }
 
@@ -386,8 +391,16 @@ void test_scg06_f3_reproducers() {
 
   std::cout << "SCG-06 historical 300 trials verified: " << carry_loss_cases
             << " carry-loss cases, " << no_carry_loss_cases << " no-carry-loss cases." << std::endl;
-  assert(carry_loss_cases == 68);
-  assert(no_carry_loss_cases == 232);
+  if (carry_loss_cases != 68) {
+    std::cerr << "Assertion failed: expected 68 carry_loss_cases, got " << carry_loss_cases
+              << std::endl;
+    std::abort();
+  }
+  if (no_carry_loss_cases != 232) {
+    std::cerr << "Assertion failed: expected 232 no_carry_loss_cases, got " << no_carry_loss_cases
+              << std::endl;
+    std::abort();
+  }
 }
 
 void test_small_values_and_sign_combinations() {
