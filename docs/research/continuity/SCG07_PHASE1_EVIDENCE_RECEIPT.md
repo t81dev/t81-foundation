@@ -24,7 +24,7 @@ The PR diff is strictly isolated to the following 4 files against the merged PR 
 | File | Change Description |
 |---|---|
 | `include/t81/types/T81Fraction.hpp` | Replaced throwing `noexcept` declarations on arithmetic operators (`+`, `-`, `*`, `/`, unary `-`), constructors, `canonicalize()`, and `operator<=>` with standard exception-propagating declarations. Replaced `to_double()` dependency on truncated `to_int64()` with safe wide-range `int_to_double()` accumulator. |
-| `tests/cpp/test_t81fraction.cpp` | Added standalone regression test suite verifying F6 overflow catchability requiring strictly `std::overflow_error` without process abort, F7 wide-range conversion accuracy against independent rational references across widths 13..324, and normal rational arithmetic. |
+| `tests/cpp/test_t81fraction.cpp` | Added standalone regression test suite verifying F6 overflow catchability requiring strictly `std::overflow_error` without process abort, F7 wide-range conversion evaluated against an independent exact-integer rational oracle across widths 13..324, and normal rational arithmetic. |
 | `CMakeLists.txt` | Registered `t81_t81fraction_test` executable and test runner in CMake build configuration. |
 | `docs/research/continuity/SCG07_PHASE1_EVIDENCE_RECEIPT.md` | Published formal receipt and verification findings for independent audit. |
 
@@ -40,21 +40,21 @@ The PR diff is strictly isolated to the following 4 files against the merged PR 
   - `T81Fraction(const Int&, const Int&)` and `explicit T81Fraction(I)`
   - `operator<=>` (cross-multiplication can overflow `T81Int<N>`)
   - `from_double()` (continued fraction accumulation can overflow `T81Int<N>`)
-- **Regression Assertion Tightening:** Test assertions in `tests/cpp/test_t81fraction.cpp` strictly require `std::overflow_error` (and `std::domain_error` on zero-divisor paths) without catch-all generic fallback.
+- **Regression Assertion Tightening:** Test assertions in `tests/cpp/test_t81fraction.cpp` strictly require `std::overflow_error` without catch-all generic `std::exception` fallback.
 - **Disposition:** **REPAIRED (EXCEPTION CONTRACT RECONCILED)**. Exceptions are catchable at the caller level across Debug and Release configurations without invoking `std::terminate()`.
 
 ### 3.2 Finding F7: `T81Fraction::to_double()` Large-Width Truncation and Abort
 - **Pre-Repair Defect Mechanism:** `T81Fraction::to_double()` converted `num_` and `den_` by calling `to_int64()`. Because `to_int64()` throws `std::overflow_error` whenever $|x| > \frac{3^{40}-1}{2}$ (> 40 trits), calling `to_double()` on supported large-width fractions (e.g. `T81Fraction<81>`) with > 40 trits threw an uncaught exception out of a `noexcept` function, causing `std::terminate()`.
-- **Phase 1 Resolution:** Implemented exact wide-width conversion helper `int_to_double(const Int& val) noexcept`:
-  - Accumulates balanced ternary digits directly using `long double` weighted powers ($3^i$).
+- **Phase 1 Resolution:** Implemented direct trit accumulator helper `int_to_double(const Int& val) noexcept`:
+  - Accumulates balanced ternary digits directly into IEEE-754 binary64 float range.
   - Does not invoke `to_int64()`, eliminating the 40-trit barrier.
   - Successfully evaluates all admitted widths $13 \le \text{TotalTrits} \le 324$ within IEEE-754 binary64 range (since $3^{324} \approx 10^{154} < \text{DBL_MAX} \approx 1.8 \times 10^{308}$).
   - `to_double() const noexcept` is preserved as `noexcept` because `int_to_double` does not throw.
-- **Precision Delineation:**
-  - Exception safety is completely restored (zero aborts).
-  - High-precision validation compares against an independent long double accumulator reference (`compute_independent_rational_reference`) within declared IEEE-754 precision tolerance ($10^{-12}$).
-  - We explicitly test finite-range floating point approximation; we do **NOT** claim universally correctly-rounded binary64 output for all arbitrary rational representations.
-- **Disposition:** **REPAIRED (WIDE CONVERSION BOUNDARY RESTORED)**. Validated against independent rational references across widths 13, 40, 41, 81, and 324, including non-trivial ratios and mixed-sign representations.
+- **Accuracy and Scope Clarification:**
+  - **Exception Safety Boundary:** Completely restored. Unconditional crashes and `std::terminate()` aborts are eliminated for all supported fraction widths up to 324 trits.
+  - **Numerical Precision Limits:** Evaluated against an independent arbitrary-precision exact-integer rational oracle (`ExactBigIntOracle`, using base-$10^9$ limb vector arithmetic decoupled from T81 internal types) and analytical powers. Accuracy is bounded by standard IEEE-754 binary64 precision (~53 bits of mantissa, relative tolerance $10^{-12}$).
+  - We explicitly document this as a finite-range floating-point approximation; we do **NOT** claim universally correct rounding for arbitrary balanced ternary rationals (which remains governed by future RFC-00D5 / SCG-04 D2 work).
+- **Disposition:** **REPAIRED (EXCEPTION-SAFETY BOUNDARY RESTORED / NUMERICAL CONVERSION APPROXIMATION BOUNDED)**.
 
 ---
 
@@ -66,7 +66,7 @@ The dedicated regression suite `t81_t81fraction_test` was compiled and executed 
 - **Debug Build (`CMAKE_BUILD_TYPE=Debug`):**
   - `test_f6_multiplication_overflow_catchable`: PASSED. Caught strictly `std::overflow_error` (`T81Int overflow`) from $3^{45} \times 3^{45} > 81\text{ trits}$ without process abort. Validated normal product $3^{20} \times 3^{20} = 3^{40}$ succeeds.
   - `test_f6_addition_subtraction_overflow`: PASSED. Caught strictly `std::overflow_error` on $(3^{80}/1) + (3^{80}/1)$ and $- (3^{80}/1) - (3^{80}/1)$.
-  - `test_f7_to_double_boundary_widths`: PASSED. Verified against high-precision mathematical references ($10^{-12}$ relative tolerance):
+  - `test_f7_to_double_boundary_widths`: PASSED. Verified against both analytical values and the independent exact-integer rational oracle (`ExactBigIntOracle`) within IEEE-754 precision tolerance ($10^{-12}$):
     - Width 13: 0.0, 13.5, -13.5.
     - Width 40: $3^{39} \approx 4.05256 \times 10^{18}$.
     - Width 41: $3^{40} \approx 1.21577 \times 10^{19}$ and $-3^{40}$.
