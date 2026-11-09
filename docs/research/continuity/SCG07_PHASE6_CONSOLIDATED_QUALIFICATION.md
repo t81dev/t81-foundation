@@ -16,7 +16,7 @@ The T81 arithmetic subsystem (`T81Int`, `T81Limb27`, `T81Limb54`, `T81BigInt`, a
 
 The qualification is subject to two explicitly documented scope limitations that do not invalidate the accepted contracts:
 1. **F3 Causal Attribution Boundary:** Finding F3 (`T81Limb54::karatsuba`) is mathematically and empirically verified correct under the 54-trit modular residue contract ($A \times B \pmod{3^{54}}$). Intermediate 28th-trit carry discard produces zero numerical error modulo $3^{54}$. However, historical causal attribution of the 299/300 SCG-06 failures remains incomplete; F1 Booth table scaling is the leading explanation, but exclusive attribution cannot be asserted without an isolated before/after experiment.
-2. **F7 Floating-Point Precision Boundary:** Finding F7 (`T81Fraction::to_double()`) is verified exception-safe and numerically bounded across all supported fraction widths (13..324 trits) within binary64 floating-point precision (~53 bits mantissa, relative error tolerance $10^{-12}$). Correctly-rounded binary64 conversion remains deferred to RFC-00D5 / SCG-04 D2 and is not claimed under the existing contract.
+2. **F7 Floating-Point Precision Boundary:** Finding F7 (`T81Fraction::to_double()`) is verified exception-safe and numerically bounded across evaluated fraction widths (13, 40, 41, 81, 324 trits) and positive/negative rational ratios within binary64 floating-point precision (~53 bits mantissa, relative error tolerance $10^{-12}$). Correctly-rounded binary64 conversion remains deferred to RFC-00D5 / SCG-04 D2 and is not claimed under the existing contract.
 
 ---
 
@@ -67,13 +67,13 @@ Zero production source files, ISA opcode tables, or normative specifications wer
 
 | Finding | Original Defect & Reproducer | Historical Failure Count (SCG-06) | Repair PR & Baseline Commit | Current Implementation & Contract | Independent Oracle Methodology | Multi-Configuration Coverage | Current Status | Remaining Limitations | Qualification Disposition |
 |---|---|---|---|---|---|---|---|---|---|
-| **F1** | `T81Limb27` Booth table patterns $\pm 2, \pm 4$ set `shift_trytes = 1` ($3^3 = 27$). Reproducer: $1 \times 2 = 27$. | Pre-repair: 100% on affected patterns. | PR #738 (`5cc8d945`) | Direct balanced ternary convolution + carry normalization. Contract: $A \times B \in [-(3^{54}-1)/2, (3^{54}-1)/2]$. | `ExactBigIntOracle` arbitrary-precision multiplication. | Debug, Release (`-DNDEBUG`), ASan/UBSan. | 10,000 randomized trials + edge cases: 100% pass. | None within 27-trit domain. | **QUALIFIED** |
-| **F2** | `T81Limb54::reference_mul` single-step subtraction carry loop emitted non-trits ($\pm 2, \pm 3$) and value mismatches. | 130/300 non-trits; 141/300 value mismatches. | PR #739 (`8497ffb8`) | Exact balanced ternary carry normalization across 54 trits. Contract: $A \times B \pmod{3^{54}}$. | `ExactBigIntOracle` exact product + balanced ternary modulo $3^{54}$. | Debug, Release (`-DNDEBUG`), ASan/UBSan. | 10,000 randomized trials + edge cases: 100% pass. | None within 54-trit modular residue contract. | **QUALIFIED** |
-| **F3** | `T81Limb54::karatsuba` intermediate sum $x_0 + x_1$ 28th-trit carry discard. | 299/300 trials failed (68/68 carry-loss, 231/232 no-carry-loss). | PR #740 (`ecb1e32b`) | Mathematical analysis proves intermediate carry contributes $3^{54} \equiv 0 \pmod{3^{54}}$. Zero logic changes. | `ExactBigIntOracle` exact product modulo $3^{54}$ + differential check vs `reference_mul`. | Debug, Release (`-DNDEBUG`), ASan/UBSan. | 300/300 historical cases pass; 10,000 randomized trials pass. | Applies strictly to 54-trit modular contract, not 108-trit full product. Causal attribution incomplete. | **QUALIFIED WITH LIMITATIONS** |
-| **F4** | `T81Int<N>::operator*` silent truncation/wrapping to 0 on overflow. | 100% silent data corruption on overflow. | PR #729 (`2c3501e2`) | Full $2N$-trit convolution accumulation and carry normalization before range check; throws `std::overflow_error`. | Exact integer comparison and `try/catch` exception assertion. | Debug, Release (`-DNDEBUG`), constexpr. | Small widths, boundary widths, exhaustive $N=1..4$: pass. | None within fixed-width integer specification. | **QUALIFIED** |
-| **F5** | `T81BigInt` signed subtraction stored negative limbs with `negative_ = false`, causing `std::terminate()` in Debug or `std::logic_error` in Release. | 100% on $X - Y$ ($X < Y$). | PR #737 (`1604fd20`) | Single-limb fallback inspects `sign_trit() == Trit::N`, setting `negative_ = true` and storing `-val`. | `ExactBigIntOracle` arbitrary-precision signed subtraction. | Debug, Release (`-DNDEBUG`), ASan/UBSan. | 1,200 trials (800 oracle comparisons + 400 properties): 100% pass. | None within multi-precision integer specification. | **QUALIFIED** |
-| **F6** | `T81Fraction` arithmetic operators were `noexcept`, converting `T81Int` `std::overflow_error` into `std::terminate()`. | Process abort (exit code 134) on numerator/denominator overflow. | PR #736 (`e24eba72`) | Removed `noexcept` from throwing operators, constructors, and `canonicalize()`. | Exception-safety assertions requiring strictly `std::overflow_error`. | Debug, Release (`-DNDEBUG`), ASan/UBSan. | Multi-width boundary checks: 100% catchable. | Exceptions must be handled by callers. | **QUALIFIED** |
-| **F7** | `T81Fraction::to_double()` delegated to `to_int64()`, throwing `std::overflow_error` on $> 40$ trits out of a `noexcept` function. | Process abort (exit code 134) on fractions with $> 40$ trits. | PR #736 (`e24eba72`) | Implemented direct balanced-ternary accumulator `int_to_double() noexcept` across all widths 13..324. | `ExactBigIntOracle` rational conversion to `double` and analytical comparison. | Debug, Release (`-DNDEBUG`), ASan/UBSan. | Multi-width checks (13, 40, 41, 81, 324 trits): 100% pass. | Finite-range IEEE-754 binary64 approximation (~53-bit mantissa); correct rounding deferred to RFC-00D5. | **QUALIFIED WITH LIMITATIONS** |
+| **F1** | `T81Limb27` Booth table patterns $\pm 2, \pm 4$ set `shift_trytes = 1` ($3^3 = 27$). Reproducer: $1 \times 2 = 27$. | Pre-repair: 100% on affected patterns. | PR #738 (`5cc8d945`) | Direct balanced ternary convolution + carry normalization. Contract: $A \times B \in [-(3^{54}-1)/2, (3^{54}-1)/2]$. | `ExactBigIntOracle` arbitrary-precision multiplication. | Debug, Release (`-DNDEBUG`), ASan/UBSan. | Phase 6 executed: 2,000 random trials + reproducer. Historical: 10,000 trials. 100% pass. | None within 27-trit domain. | **QUALIFIED** |
+| **F2** | `T81Limb54::reference_mul` single-step subtraction carry loop emitted non-trits ($\pm 2, \pm 3$) and value mismatches. | 130/300 non-trits; 141/300 value mismatches. | PR #739 (`8497ffb8`) | Exact balanced ternary carry normalization across 54 trits. Contract: $A \times B \pmod{3^{54}}$. | `ExactBigIntOracle` exact product + balanced ternary modulo $3^{54}$. | Debug, Release (`-DNDEBUG`), ASan/UBSan. | Phase 6 executed: exact 300 historical cases + 2,500 random trials. Historical: 10,000 trials. 100% pass. | None within 54-trit modular residue contract. | **QUALIFIED** |
+| **F3** | `T81Limb54::karatsuba` intermediate sum $x_0 + x_1$ 28th-trit carry discard. | 299/300 trials failed (68/68 carry-loss, 231/232 no-carry-loss). | PR #740 (`ecb1e32b`) | Mathematical analysis proves intermediate carry contributes $3^{54} \equiv 0 \pmod{3^{54}}$. Zero logic changes. | `ExactBigIntOracle` exact product modulo $3^{54}$ + differential check vs `reference_mul`. | Debug, Release (`-DNDEBUG`), ASan/UBSan. | Phase 6 executed: exact 300 historical cases (68/232 split verified) + 2,500 random trials. 100% pass. | Applies strictly to 54-trit modular contract, not 108-trit full product. Causal attribution incomplete. | **QUALIFIED WITH LIMITATIONS** |
+| **F4** | `T81Int<N>::operator*` silent truncation/wrapping to 0 on overflow. | 100% silent data corruption on overflow. | PR #729 (`2c3501e2`) | Full $2N$-trit convolution accumulation and carry normalization before range check; throws `std::overflow_error`. | Exact integer comparison and `try/catch` exception assertion. | Debug, Release (`-DNDEBUG`), constexpr. | Phase 6 executed: width 2 boundary & overflow cases. Historical: $N=1..4$ exhaustive. | Standard assert() in test_t81int.cpp compiles away under -DNDEBUG. | **QUALIFIED** |
+| **F5** | `T81BigInt` signed subtraction stored negative limbs with `negative_ = false`, causing `std::terminate()` in Debug or `std::logic_error` in Release. | 100% on $X - Y$ ($X < Y$). | PR #737 (`1604fd20`) | Single-limb fallback inspects `sign_trit() == Trit::N`, setting `negative_ = true` and storing `-val`. | `ExactBigIntOracle` arbitrary-precision signed subtraction. | Debug, Release (`-DNDEBUG`), ASan/UBSan. | Phase 6 executed: 800 random trials + 3 boundary/cancellation cases. Historical: 1,200 trials. 100% pass. | None within multi-precision integer specification. | **QUALIFIED** |
+| **F6** | `T81Fraction` arithmetic operators were `noexcept`, converting `T81Int` `std::overflow_error` into `std::terminate()`. | Process abort (exit code 134) on numerator/denominator overflow. | PR #736 (`e24eba72`) | Removed `noexcept` from throwing operators, constructors, and `canonicalize()`. | Exception-safety assertions requiring strictly `std::overflow_error`. | Debug, Release (`-DNDEBUG`), ASan/UBSan. | Phase 6 executed: 81-trit overflow catchability. 100% catchable. | Exceptions must be handled by callers. | **QUALIFIED** |
+| **F7** | `T81Fraction::to_double()` delegated to `to_int64()`, throwing `std::overflow_error` on $> 40$ trits out of a `noexcept` function. | Process abort (exit code 134) on fractions with $> 40$ trits. | PR #736 (`e24eba72`) | Implemented direct balanced-ternary accumulator `int_to_double() noexcept` across all widths 13..324. | `ExactBigIntOracle` rational conversion to `double` and analytical comparison. | Debug, Release (`-DNDEBUG`), ASan/UBSan. | Phase 6 executed: widths 13, 40, 41, 81, 324 and non-trivial positive/negative rational ratios. 100% pass. | Finite-range IEEE-754 binary64 approximation (~53-bit mantissa); correct rounding deferred to RFC-00D5. | **QUALIFIED WITH LIMITATIONS** |
 
 ---
 
@@ -93,20 +93,17 @@ Zero production source files, ISA opcode tables, or normative specifications wer
 
 ## 6. Historical versus Current Results Comparison
 
-| Scope / Test Battery | Historical Baseline (SCG-06, `2c3501e2`) | Current Baseline (Phase 6, `ecb1e32b`) | Delta / Resolution |
-|---|---|---|---|
-| F1 Reproducer ($1 \times 2$) | Output: 27 (FAIL) | Output: 2 (PASS) | Fixed by PR #738 |
-| F2 SplitMix64 300 Trials | 130 non-canonical trits, 141 value mismatches | 0 non-canonical trits, 0 value mismatches (300/300 PASS) | Fixed by PR #739 |
-| F3 SplitMix64 300 Trials | 299/300 failures (68 carry-loss, 231 no-carry-loss) | 300/300 PASS (0 failures across both cohorts) | Verified by PR #740 |
-| F4 Small-Width Overflow | Silent wrap to 0 (FAIL) | Throws `std::overflow_error` (PASS) | Fixed by PR #729 |
-| F5 Subtraction ($X < Y$) | `std::terminate()` (Debug) / `logic_error` (Release) | Exact signed difference: -985392... (PASS) | Fixed by PR #737 |
-| F6 Fraction Mul Overflow | `std::terminate()` process abort (FAIL) | Throws catchable `std::overflow_error` (PASS) | Fixed by PR #736 |
-| F7 Fraction $> 40$ Trits | `std::terminate()` process abort (FAIL) | Evaluates double approximation safely (PASS) | Fixed by PR #736 |
-| Limb27 Randomized Tests | Not tested | 10,000 trials vs `ExactBigIntOracle` (100% PASS) | Verified |
-| Limb54 Ref Randomized Tests | Not tested | 10,000 trials vs `ExactBigIntOracle` (100% PASS) | Verified |
-| Limb54 Karatsuba Randomized | Not tested | 10,000 trials vs `ExactBigIntOracle` (100% PASS) | Verified |
-| BigInt Subtraction Randomized| Not tested | 1,200 trials vs `ExactBigIntOracle` (100% PASS) | Verified |
-| Phase 6 Consolidated Battery | Not existing | 100% PASS across all F1–F7 tests unconditionally | Verified |
+| Scope / Test Battery | Historical Baseline (SCG-06, `2c3501e2`) | Previously Established Receipts (PRs #729-#740) | Phase 6 Re-execution (`t81_phase6_qualification_test`) | Delta / Resolution |
+|---|---|---|---|---|
+| F1 Reproducer ($1 \times 2$) | Output: 27 (FAIL) | Output: 2 (PR #738) | Output: 2 (PASS) | Fixed by PR #738 |
+| F1 Random Trials | Not tested | 10,000 trials (PR #738) | 2,000 trials against `ExactBigIntOracle` | Verified in Phase 6 |
+| F2/F3 Historical 300 Trials | 130 non-canonical trits, 141 mismatches (F2); 299/300 failed (F3) | 300/300 passed (PR #739, #740) | 300/300 passed (68 carry-loss, 232 no-carry-loss) | Replayed identically in Phase 6 |
+| F2/F3 Random Trials | Not tested | 10,000 trials (PR #739, #740) | 2,500 trials against `ExactBigIntOracle` | Verified in Phase 6 |
+| F4 Overflow / Trapping | Silent wrap to 0 (FAIL) | Throws `std::overflow_error` (PR #729) | Throws `std::overflow_error` (PASS) | Verified in Phase 6 |
+| F5 Subtraction ($X < Y$) | `std::terminate()` (Debug) / `logic_error` (Release) | Exact signed diff (PR #737) | Exact signed diff: -985392... (PASS) | Verified in Phase 6 |
+| F5 Random Trials | Not tested | 1,200 trials (PR #737) | 800 trials against `ExactBigIntOracle` | Verified in Phase 6 |
+| F6 Fraction Mul Overflow | `std::terminate()` process abort (FAIL) | Throws `std::overflow_error` (PR #736) | Throws `std::overflow_error` (PASS) | Verified in Phase 6 |
+| F7 Fraction Conversion | `std::terminate()` on $> 40$ trits (FAIL) | Evaluates double safely (PR #736) | Evaluates widths 13, 40, 41, 81, 324 & ratios | Verified in Phase 6 |
 
 ---
 
@@ -125,8 +122,8 @@ To prevent circular dependencies where defective T81 routines validate each othe
 ## 8. Cross-Component Integration Verification
 
 The components of the arithmetic subsystem were verified working in composition:
-1. **Limb27 $\to$ Limb54 Karatsuba:** `T81Limb54::karatsuba` decomposes operands into 27-trit limbs, calls `T81Limb27::operator*` for low, high, and middle cross-products, and shifts/accumulates into 54 trits. Tested directly against `ExactBigIntOracle` across 10,000 randomized trials with zero discrepancies.
-2. **Karatsuba vs Reference Multiplication Differential Check:** Across 10,000 randomized 54-trit pairs and dense carry chains, `karatsuba(a, b) == reference_mul(a, b)` with 100% bitwise trit identity.
+1. **Limb27 $\to$ Limb54 Karatsuba:** `T81Limb54::karatsuba` decomposes operands into 27-trit limbs, calls `T81Limb27::operator*` for low, high, and middle cross-products, and shifts/accumulates into 54 trits. Tested directly against `ExactBigIntOracle` across 2,500 randomized trials and 300 historical cases with zero discrepancies.
+2. **Karatsuba vs Reference Multiplication Differential Check:** Across 2,500 randomized 54-trit pairs and 300 historical cases, `karatsuba(a, b) == reference_mul(a, b)` with 100% bitwise trit identity.
 3. **BigInt Subtraction $\to$ Addition Single-Limb Fallback:** `T81BigInt::operator-(a, b)` negates `b` and invokes `operator+(a, -b)`. In single-limb cases where $a < b$, the fallback block properly captures negative limbs, sets `negative_ = true`, and stores non-negative limb magnitudes, preserving invariants across multi-limb borrow chains.
 4. **Fraction $\to$ T81Int Throwing Propagation:** Rational multiplication $f_1 \times f_2$ exercises underlying `T81Int<N>::operator*`. When the mathematical product exceeds $N$ trits, the thrown `std::overflow_error` unwinds cleanly across `T81Fraction` without catching or converting to `std::terminate()`.
 
@@ -134,20 +131,24 @@ The components of the arithmetic subsystem were verified working in composition:
 
 ## 9. Configuration Validation Matrix
 
-| Target / Suite | Configuration | Compiler | Flags | Test Count | Result |
+| Target / Suite | Configuration | Compiler | Flags | Actual Phase 6 Test Count | Result |
 |---|---|---|---|---|---|
-| `t81_phase6_qualification_test` | Debug | GCC 13.3.0 | `-O0 -g` | 5,300+ checks | **PASS (100%)** |
-| `t81_phase6_qualification_test` | Release | GCC 13.3.0 | `-O3 -DNDEBUG` | 5,300+ checks | **PASS (100%)** |
-| `t81_phase6_qualification_test` | ASan + UBSan | GCC 13.3.0 | `-fsanitize=address,undefined -g` | 5,300+ checks | **PASS (0 errors, 0 leaks)** |
-| `t81_limb54_karatsuba_test` | Debug / Release | GCC 13.3.0 | Default / CTest | 10,300+ checks | **PASS (100%)** |
-| `t81_limb54_reference_mul_test` | Debug / Release | GCC 13.3.0 | Default / CTest | 10,300+ checks | **PASS (100%)** |
-| `t81_limb27_mul_test` | Debug / Release | GCC 13.3.0 | Default / CTest | 10,000+ checks | **PASS (100%)** |
-| `t81_bigint_sub_test` | Debug / Release | GCC 13.3.0 | Default / CTest | 1,200+ checks | **PASS (100%)** |
-| `t81_t81fraction_test` | Debug / Release | GCC 13.3.0 | Default / CTest | Standalone | **PASS (100%)** |
-| `t81_t81int_test` | Debug / Release | GCC 13.3.0 | Default / CTest | Exhaustive $N=1..4$ | **PASS (100%)** |
+| `t81_phase6_qualification_test` | Debug | GCC 13.3.0 | `-O0 -g` | 5,600+ checks | **PASS (100%)** |
+| `t81_phase6_qualification_test` | Release | GCC 13.3.0 | `-O3 -DNDEBUG` | 5,600+ checks | **PASS (100%)** |
+| `t81_phase6_qualification_test` | ASan + UBSan | GCC 13.3.0 | `-fsanitize=address,undefined -g` | 5,600+ checks | **PASS (0 errors, 0 leaks)** |
+| `t81_limb54_karatsuba_test` | Debug / Release | GCC 13.3.0 | Default / CTest | 10,300+ checks (PR #740 suite) | **PASS (100%)** |
+| `t81_limb54_reference_mul_test` | Debug / Release | GCC 13.3.0 | Default / CTest | 10,300+ checks (PR #739 suite) | **PASS (100%)** |
+| `t81_limb27_mul_test` | Debug / Release | GCC 13.3.0 | Default / CTest | 10,000+ checks (PR #738 suite) | **PASS (100%)** |
+| `t81_bigint_sub_test` | Debug / Release | GCC 13.3.0 | Default / CTest | 1,200+ checks (PR #737 suite) | **PASS (100%)** |
+| `t81_t81fraction_test` | Debug / Release | GCC 13.3.0 | Default / CTest | Standalone (PR #736 suite) | **PASS (100%)** |
+| `t81_t81int_test` | Debug / Release | GCC 13.3.0 | Default / CTest | Exhaustive $N=1..4$ (PR #729 suite) | **PASS (100%)** |
 
 ### Assertion Effectiveness Under `-DNDEBUG`
-All qualification assertions in `tests/cpp/test_scg07_phase6_qualification.cpp` and preceding SCG-07 regression suites use explicit, fail-closed `QUAL_REQUIRE` / `require` macros calling `std::abort()` upon failure. No standard `<cassert>` `assert()` macros are used in the qualification path, guaranteeing 100% active enforcement under `-DNDEBUG`.
+All qualification assertions in `tests/cpp/test_scg07_phase6_qualification.cpp` and preceding SCG-07 regression suites (Phases 1–5) use explicit, fail-closed `QUAL_REQUIRE` / `require` macros calling `std::abort()` upon failure.
+**Important Assertion Boundary Clarification:** The inherited `tests/cpp/test_t81int.cpp` suite from SCG-03 uses standard `<cassert>` `assert()` macros. Consequently, under Release builds compiled with `-DNDEBUG`, those assertions are disabled by the preprocessor and do not execute. Active Release-mode qualification of `T81Int` multiplication and overflow trapping is provided independently by `test_f4_t81int_arithmetic_and_overflow()` within `test_scg07_phase6_qualification.cpp`, where `QUAL_REQUIRE` remains unconditionally active.
+
+### Sanitizer Instrumentation Boundary Clarification
+When building the standalone ASan/UBSan target (`g++ -std=c++20 -fsanitize=address,undefined -g -Iinclude tests/cpp/test_scg07_phase6_qualification.cpp build/libt81_core.a -o /tmp/qual_asan`), sanitizer instrumentation applies directly to the translation unit `test_scg07_phase6_qualification.cpp` and all header-defined template implementations (`T81Int`, `T81Limb`, `T81BigInt`, `T81Fraction`). Pre-compiled static archive `libt81_core.a` was built under standard Debug mode without sanitizer flags. Sanitizer diagnostics and leak-checking are therefore strictly verified for the harness and header-inlined execution paths.
 
 ---
 
@@ -204,7 +205,8 @@ clang-format-18 --dry-run --Werror tests/cpp/test_scg07_phase6_qualification.cpp
 
 ### Deterministic Pseudo-Random Seeds
 - **F1 (T81Limb27 multiplication):** `SplitMix64(0xDEADBEEF01ULL)` (2,000 trials).
-- **F2 & F3 (T81Limb54 multiplication):** `SplitMix64(0xCAFEBABEF00DULL)` (2,500 trials).
+- **F2 & F3 Historical Replay:** `SplitMix64(0x123456789abcdef0ULL)` (300 trials, 68 carry-loss / 232 no-carry-loss).
+- **F2 & F3 Random Sampling:** `SplitMix64(0xCAFEBABEF00DULL)` (2,500 trials).
 - **F5 (T81BigInt signed subtraction):** `SplitMix64(0x8899AABBCCDDEEFFULL)` (800 trials).
 
 ---
