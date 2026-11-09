@@ -504,33 +504,14 @@ inline T81Limb54 T81Limb54::reference_mul(const T81Limb54& a, const T81Limb54& b
     }
   }
   int carry = 0;
-  for (int i = 0; i < TRITS; ++i) {
-    int sum = accum[i] + carry;
-    if (sum >= 2) {
-      accum[i] = sum - 3;
-      carry = 1;
-    } else if (sum <= -2) {
-      accum[i] = sum + 3;
-      carry = -1;
-    } else {
-      accum[i] = sum;
-      carry = 0;
-    }
-  }
-  carry = 0;
   std::array<int8_t, TRITS> result{};
   for (int i = 0; i < TRITS; ++i) {
     int sum = accum[i] + carry;
-    if (sum == 2) {
-      result[i] = -1;
-      carry = 1;
-    } else if (sum == -2) {
-      result[i] = 1;
-      carry = -1;
-    } else {
-      result[i] = static_cast<int8_t>(sum);
-      carry = 0;
-    }
+    int rem = (sum + 1) % 3;
+    if (rem < 0) rem += 3;
+    rem -= 1;
+    carry = (sum - rem) / 3;
+    result[i] = static_cast<int8_t>(rem);
   }
   return from_trits(result);
 }
