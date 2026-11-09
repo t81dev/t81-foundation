@@ -1,3 +1,5 @@
+> **2026-11-09 operational overlay:** [T81_RESEARCH_STATUS_2026-11-09.md](T81_RESEARCH_STATUS_2026-11-09.md) supersedes the 2026-11-08 SCG-06/07 *next-action* wording below. SCG-07 Phase 6 PR #741 is merged; arithmetic F1–F7 are qualified within explicitly bounded contracts and test coverage. Next proposed work is SCG-08 Phase 0 research design only, pending Jules and independent review. Preserve older CPA/ISA/BASE findings and negative experiments.
+
 > **2026-11-08 operational overlay:** [T81_COMPLETE_STATUS_2026-11-08.md](T81_COMPLETE_STATUS_2026-11-08.md) is the newest verified cross-program handoff. Its SCG-03–06 and PR #732/#733 status supersedes dated 'next action' wording below; preserve CPA/ISA/BASE historical findings. Immediate action is bounded SCG-06 evidence correction and review, not unauthorized arithmetic implementation or benchmarking.
 
 # T81 Research Continuity — ACTIVE_RESEARCH_HANDOFF
