@@ -201,7 +201,7 @@ T81Limb27 make_limb27_from_trits(const std::array<int8_t, 27>& trits) {
   return T81Limb27::from_trits_window(trits48, 0);
 }
 
-T81Limb27 make_limb27_from_int(int64_t val) {
+std::array<int8_t, 27> int_to_trits27(int64_t val) {
   std::array<int8_t, 27> trits{};
   int64_t rem = val;
   for (int i = 0; i < 27; ++i) {
@@ -217,32 +217,17 @@ T81Limb27 make_limb27_from_int(int64_t val) {
       rem /= 3;
     }
   }
-  return make_limb27_from_trits(trits);
+  return trits;
 }
 
-void verify_product(const T81Limb27& a, const T81Limb27& b, const char* context_label) {
+void verify_product_from_trits(const std::array<int8_t, 27>& ta, const std::array<int8_t, 27>& tb,
+                               const char* context_label) {
+  auto a = make_limb27_from_trits(ta);
+  auto b = make_limb27_from_trits(tb);
   T81Limb54 prod = a * b;
-  auto a_limb = a;
-  auto b_limb = b;
 
-  // Extract 27 trits for A and B
-  T81Limb54 la{}, lb{};
-  for (int i = 0; i < T81Limb27::TRYTES; ++i) {
-    int8_t at = 0, bt = 0;
-    std::memcpy(&at, reinterpret_cast<const char*>(&a_limb) + i, 1);
-    std::memcpy(&bt, reinterpret_cast<const char*>(&b_limb) + i, 1);
-    la.set_tryte(i, at);
-    lb.set_tryte(i, bt);
-  }
-
-  auto ta = la.to_trits();
-  auto tb = lb.to_trits();
-  std::array<int8_t, 27> ta27{}, tb27{};
-  std::copy_n(ta.begin(), 27, ta27.begin());
-  std::copy_n(tb.begin(), 27, tb27.begin());
-
-  auto oa = trits_to_oracle(ta27);
-  auto ob = trits_to_oracle(tb27);
+  auto oa = trits_to_oracle(ta);
+  auto ob = trits_to_oracle(tb);
   auto expected = ExactBigIntOracle::mul(oa, ob);
   auto observed = trits_to_oracle(prod.to_trits());
 
@@ -288,7 +273,11 @@ void test_original_f1_reproducer() {
     }
   }
 
-  verify_product(a, b, "F1 Reproducer (1 * 2)");
+  std::array<int8_t, 27> ta{}, tb{};
+  ta[0] = 1;
+  tb[0] = -1;
+  tb[1] = 1;
+  verify_product_from_trits(ta, tb, "F1 Reproducer (1 * 2)");
 }
 
 void test_small_values_and_sign_combinations() {
@@ -296,9 +285,9 @@ void test_small_values_and_sign_combinations() {
   const std::vector<int64_t> values = {0, 1, -1, 2, -2, 3, -3, 9, -9, 27, -27};
   for (int64_t va : values) {
     for (int64_t vb : values) {
-      auto a = make_limb27_from_int(va);
-      auto b = make_limb27_from_int(vb);
-      verify_product(a, b, "Small values / sign combinations");
+      auto ta = int_to_trits27(va);
+      auto tb = int_to_trits27(vb);
+      verify_product_from_trits(ta, tb, "Small values / sign combinations");
     }
   }
 }
@@ -333,7 +322,7 @@ void test_powers_of_three() {
               }
             }
           }
-          verify_product(a, b, "Powers of three");
+          verify_product_from_trits(t1, t2, "Powers of three");
         }
       }
     }
@@ -363,16 +352,14 @@ void test_alternating_patterns_and_boundaries() {
     alt2[i] = (i % 2 == 0) ? -1 : 1;
   }
 
-  std::vector<T81Limb27> test_limbs = {
-      make_limb27_from_trits(max_val), make_limb27_from_trits(min_val),
-      make_limb27_from_trits(alt1),    make_limb27_from_trits(alt2),
-      make_limb27_from_int(1),         make_limb27_from_int(-1),
-      make_limb27_from_int(0),
+  std::vector<std::array<int8_t, 27>> test_trit_arrays = {
+      max_val, min_val, alt1, alt2, int_to_trits27(1), int_to_trits27(-1), int_to_trits27(0),
   };
 
-  for (size_t i = 0; i < test_limbs.size(); ++i) {
-    for (size_t j = 0; j < test_limbs.size(); ++j) {
-      verify_product(test_limbs[i], test_limbs[j], "Alternating patterns and boundary values");
+  for (size_t i = 0; i < test_trit_arrays.size(); ++i) {
+    for (size_t j = 0; j < test_trit_arrays.size(); ++j) {
+      verify_product_from_trits(test_trit_arrays[i], test_trit_arrays[j],
+                                "Alternating patterns and boundary values");
     }
   }
 }
@@ -386,15 +373,12 @@ void test_carry_propagation_dense_chains() {
       t1[i] = 1;
       t2[i] = 1;
     }
-    auto a = make_limb27_from_trits(t1);
-    auto b = make_limb27_from_trits(t2);
-    verify_product(a, b, "Dense carry chain");
+    verify_product_from_trits(t1, t2, "Dense carry chain");
 
     for (int i = 0; i < len; ++i) {
       t2[i] = -1;
     }
-    b = make_limb27_from_trits(t2);
-    verify_product(a, b, "Dense carry chain opposite signs");
+    verify_product_from_trits(t1, t2, "Dense carry chain opposite signs");
   }
 }
 
@@ -435,9 +419,7 @@ void test_randomized_oracle_comparison(int num_trials) {
       }
     }
 
-    auto a = make_limb27_from_trits(at);
-    auto b = make_limb27_from_trits(bt);
-    verify_product(a, b, "Randomized oracle comparison");
+    verify_product_from_trits(at, bt, "Randomized oracle comparison");
   }
   std::cout << "All " << num_trials << " randomized oracle checks passed!" << std::endl;
 }

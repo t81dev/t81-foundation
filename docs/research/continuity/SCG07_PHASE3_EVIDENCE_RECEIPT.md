@@ -24,7 +24,7 @@ The PR diff is strictly isolated to the following 4 files against the merged PR 
 | File | Change Description |
 |---|---|
 | `include/t81/types/T81Limb.hpp` | Repaired `T81Limb27::operator*(const T81Limb27& rhs)` to perform direct balanced-ternary multiply-accumulate across decoded trits into `accum`, followed by exact balanced-ternary carry normalization. Removed obsolete `Booth27Decision` and `BOOTH27_TABLE` whose sole consumer was the defective `T81Limb27::operator*`. |
-| `tests/cpp/test_t81_limb27_mul.cpp` | Standalone regression test suite verifying: original F1 reproducer ($1 \times 2 = 2$); small values and complete sign-combination matrix ($\pm 1, \pm 2, \pm 3, \pm 9, \pm 27, 0$); powers-of-three multiplication; alternating balanced-ternary digit patterns; 27-trit boundary values ($\pm(3^{27}-1)/2$); dense carry-propagation chains; commutativity ($a \times b = b \times a$); and 10,000 randomized trials evaluated against an independent exact-integer arbitrary-precision oracle (`ExactBigIntOracle`, base $10^9$). |
+| `tests/cpp/test_t81_limb27_mul.cpp` | Standalone regression test suite verifying: original F1 reproducer ($1 \times 2 = 2$); small values and complete sign-combination matrix ($\pm 1, \pm 2, \pm 3, \pm 9, \pm 27, 0$); powers-of-three multiplication; alternating balanced-ternary digit patterns; 27-trit boundary values ($\pm(3^{27}-1)/2$); dense carry-propagation chains; commutativity ($a \times b = b \times a$); and 10,000 randomized trials evaluated against an independent exact-integer arbitrary-precision oracle (`ExactBigIntOracle`, base $10^9$) using operands passed directly as explicit 27-trit digit vectors (without raw object-memory reinterpretation). |
 | `CMakeLists.txt` | Registered `t81_limb27_mul_test` executable and test runner in CMake build configuration and added to `T81_TEST_TARGETS`. |
 | `docs/research/continuity/SCG07_PHASE3_EVIDENCE_RECEIPT.md` | Formal receipt and verification report for independent audit. |
 
@@ -140,6 +140,7 @@ This ensures:
 
 ### 4.3 Independent Oracle Comparison
 The randomized test suite in `tests/cpp/test_t81_limb27_mul.cpp` executes 10,000 trials evaluated directly against an independent base-$10^9$ arbitrary-precision integer oracle (`ExactBigIntOracle`).
+All operand test vectors are provided as explicit 27-trit arrays (`std::array<int8_t, 27>`) directly converted to oracle inputs via `trits_to_oracle()`, completely decoupled from T81Limb internals and eliminating raw object-memory inspection.
 Across all test distributions (uniform random, sparse operands, dense non-zero, high/low boundary biased, and mixed trytes), 10,000/10,000 trials passed with 0 discrepancies and verified commutativity ($a \times b = b \times a$).
 
 ---
