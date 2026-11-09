@@ -20,10 +20,7 @@ except Exception:
 WORKTREE_BASE = os.path.join(REPO_ROOT, ".scg06_worktrees")
 PRE_INC = os.path.join(WORKTREE_BASE, "pre_scg03/include")
 POST_INC = os.path.join(WORKTREE_BASE, "post_scg03/include")
-if not os.path.exists(PRE_INC) and os.path.exists("/tmp/scg06_worktrees/pre_scg03/include"):
-    PRE_INC = "/tmp/scg06_worktrees/pre_scg03/include"
-    POST_INC = "/tmp/scg06_worktrees/post_scg03/include"
-TMP_DIR = "/tmp/scg06_bin"
+TMP_DIR = os.path.join(WORKTREE_BASE, "bin")
 os.makedirs(TMP_DIR, exist_ok=True)
 
 def compile_and_run(src_code, include_dir, extra_flags=None, timeout_sec=5):

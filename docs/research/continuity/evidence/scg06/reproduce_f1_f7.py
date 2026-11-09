@@ -22,12 +22,8 @@ except Exception:
 WORKTREE_BASE = os.path.join(REPO_ROOT, ".scg06_worktrees")
 PRE_INC = os.path.join(WORKTREE_BASE, "pre_scg03/include")
 POST_INC = os.path.join(WORKTREE_BASE, "post_scg03/include")
-# Fallback to /tmp/scg06_worktrees if worktree base is elsewhere
-if not os.path.exists(PRE_INC) and os.path.exists("/tmp/scg06_worktrees/pre_scg03/include"):
-    PRE_INC = "/tmp/scg06_worktrees/pre_scg03/include"
-    POST_INC = "/tmp/scg06_worktrees/post_scg03/include"
 
-BIN_DIR = "/tmp/scg06_bin"
+BIN_DIR = os.path.join(WORKTREE_BASE, "bin")
 os.makedirs(BIN_DIR, exist_ok=True)
 
 def run_isolated(cpp_code, inc_dir, flags=None):
@@ -252,7 +248,7 @@ int main() {
             "cohort_without_carry_loss": {
                 "cases": f3_no_carry_loss_cases,
                 "exact_mismatches": f3_no_carry_loss_mismatches,
-                "explanation": "Karatsuba fails even without radical carry loss due to underlying T81Limb27::operator* Booth table defect F1"
+                "explanation": "Karatsuba fails even without radical carry loss due to cascading multi-component defects, including the demonstrated T81Limb27::operator* Booth table scaling defect (F1) alongside intermediate subtraction and shift-addition errors"
             },
             "total_exact_mismatches": f3_carry_loss_mismatches + f3_no_carry_loss_mismatches
         }

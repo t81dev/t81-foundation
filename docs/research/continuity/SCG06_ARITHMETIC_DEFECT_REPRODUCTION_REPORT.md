@@ -27,7 +27,7 @@ This report delivers an independent, empirical assessment of the seven arithmeti
    - **F2 (`T81Limb54::reference_mul` non-trits vs value mismatches):** **CONFIRMED UNCHANGED**. Schoolbook multiplication over 54 trits yields accumulators up to $\pm 54$. The single-pass carry correction only handles $|s| \le 4$. Across 300 diverse SplitMix64 pseudo-random trials, 130 cases emit non-canonical trits (reaching $\pm 3$), and 141 cases produce mathematical value mismatches against the exact-integer oracle $\sum d_i 3^i \pmod{3^{54}}$.
    - **F3 (`T81Limb54::karatsuba` carry discard and component errors):** **CONFIRMED UNCHANGED**. Karatsuba radical sum $x_0 + x_1$ produces a 28th-trit carry in `addc()`. However, `T81Limb27::operator+` discards the carry. When partitioned into cohorts:
      - Cohort with carry loss: 68/68 cases fail exact product comparison.
-     - Cohort without carry loss: 231/232 cases also fail exact product comparison due to underlying `T81Limb27::operator*` Booth table scaling defects (F1).
+     - Cohort without carry loss: 231/232 cases also fail exact product comparison due to cascading multi-component defects, including the demonstrated `T81Limb27::operator*` Booth table scaling defect (F1) alongside intermediate subtraction and shift-addition errors.
    - **F5 (`T81BigInt` subtraction termination):** **CONFIRMED UNCHANGED**. In Debug builds, subtracting single-limb values where the subtrahend is larger sets `negative_ = false` and calls `normalize()`, triggering `verify_invariants()` which terminates the process via `std::terminate()` upon encountering a negative most significant limb. In Release builds (`-DNDEBUG`), invariant checks compile away and `to_std_chunks()` throws `std::runtime_error("borrow beyond MSB")`.
    - **F7 (`T81Fraction::to_double()` `noexcept` termination):** **CONFIRMED UNCHANGED**. `to_double()` is marked `noexcept`, but delegates to `num_.to_int64()`. If the numerator exceeds 40 trits, `to_int64()` throws `std::overflow_error`, which aborts the process via `std::terminate()`.
 4. **Attribution of GitHub Actions CI Failures:**
@@ -286,11 +286,11 @@ d5a21464ea47ac3d9f88babc4e39e6b3ee376d5eee899d1bcd8ff0c7a0c16e85  ci_failure_att
 655e5487fdda54e4bcb23c383e6d754b549431673ac60055d2b287fe89fe0ca0  detailed_counterexamples.json
 69fe979fe2ed4d219e3dac56989b7c9dd38c97956c5046bcd1aee0d3dbc26f2b  environment.json
 ecedbf416d232448630cd2a5528c807681abeca58f7eb51e9dcf2ab189e639b6  oracle.py
-e6655bd9415c32f77678859f71c7e1aba6a59f8c057fe2167fc4585f97b06fdd  reproduce_f1_f7.py
-b31d2f4cd32fc09b660b184977d58cbe7595d35104944abb593dcd1a51b2b0f6  reproduction_results.json
-1c3dde70346517cb38018e489f55404f6f4624ceca64f164b88f966388a4210a  run_all_reproductions.sh
+13902f5730bb047156774ac1ab65774670ab672275540709939e8423ef1ea950  reproduce_f1_f7.py
+d65d7ed7449fe795e26857d76cc208fe00a95f51e25c1c2d6e67ad7d48a874ed  reproduction_results.json
+b38ce1b1109a405d257dae721d4b34a3538f7c87a97b4ae14722d05e975dc705  run_all_reproductions.sh
 12f4cabb3ae8b95da6bb63030e384270e2a82068f637d2da7dab4accf7b52999  test_f1_exact.py
-b8687f9df76122646069a2e13eae6ec9af9281035ca1fcccb1b796a4f4203236  test_runner.py
+add1162e667e24ab6e8ba6570a4c10128aa06f5ea22cd7101dd508cf60bfb047  test_runner.py
 ```
 
 ---
