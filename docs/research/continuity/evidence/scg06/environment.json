@@ -1,0 +1,26 @@
+{
+  "system": {
+    "os": "Linux",
+    "kernel": "6.8.0 #1 SMP PREEMPT_DYNAMIC Fri Feb 20 20:38:43 UTC 2026",
+    "arch": "x86_64",
+    "compiler_gcc": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "compiler_clang": "Ubuntu clang version 18.1.3 (1ubuntu1)",
+    "python": "Python 3.12.13"
+  },
+  "baselines": {
+    "pre_scg03": {
+      "commit_sha": "64941caff9372f2e76dd3a0fb79aa6711a48b171",
+      "tree_sha": "0af4d7d76c43f117a0e3cb0ab534cb19a712f743",
+      "description": "Pre-repair baseline (PR #727, Phase 4 wire-frame retention)"
+    },
+    "post_scg03": {
+      "commit_sha": "2c3501e2807bb893076c5037231c3126b7f2bc72",
+      "tree_sha": "47672f37dbb568297cd9b11173fd838a410428f4",
+      "description": "Post-repair baseline (PR #729, SCG-03 C05/C11 repair)"
+    },
+    "current_head": {
+      "commit_sha": "e45c5435aa47d4ccb8f343798214eb917352c871",
+      "tree_sha": "77f3957eb0515152a4e26ceee737a2416f4e24ef"
+    }
+  }
+}

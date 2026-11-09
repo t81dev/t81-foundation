@@ -35,9 +35,9 @@ private:
   Int num_{0};
   Int den_{1};  // always positive, reduced
 
-  static Int abs_int(const Int& x) noexcept { return (x.sign_trit() == Trit::N) ? -x : x; }
+  static Int abs_int(const Int& x) { return (x.sign_trit() == Trit::N) ? -x : x; }
 
-  static Int gcd(Int a, Int b) noexcept {
+  static Int gcd(Int a, Int b) {
     while (!b.is_zero()) {
       Int t = b;
       b = a % b;
@@ -46,8 +46,24 @@ private:
     return a;
   }
 
+  // Safely converts balanced ternary integer to IEEE-754 double without
+  // depending on to_int64() range limits (which throws on > 40 trits).
+  static double int_to_double(const Int& val) noexcept {
+    if (val.is_zero()) return 0.0;
+    long double sum = 0.0L;
+    long double p = 1.0L;
+    for (size_type i = 0; i < kTrits; ++i) {
+      int t = trit_to_int(val[i]);
+      if (t != 0) {
+        sum += static_cast<long double>(t) * p;
+      }
+      p *= 3.0L;
+    }
+    return static_cast<double>(sum);
+  }
+
   // Reduce fraction and ensure positive denominator.
-  void canonicalize() noexcept {
+  void canonicalize() {
     // Normalize zero denominator to 0/1 deterministically.
     if (den_.is_zero()) {
       num_ = Int(0);
@@ -83,16 +99,16 @@ public:
 
   template <typename I>
     requires(std::integral<I> || std::same_as<I, Int>)
-  explicit T81Fraction(I n) noexcept : num_(static_cast<std::int64_t>(n)), den_(1) {}
+  explicit T81Fraction(I n) : num_(static_cast<std::int64_t>(n)), den_(1) {}
 
-  T81Fraction(const Int& n, const Int& d) noexcept : num_(n), den_(d) { canonicalize(); }
+  T81Fraction(const Int& n, const Int& d) : num_(n), den_(d) { canonicalize(); }
 
   // ------------------------------------------------------------------
   // Conversions
   // ------------------------------------------------------------------
 
   // Best-effort conversion from double using continued fractions.
-  static T81Fraction from_double(double x, int max_iterations = 64) noexcept {
+  static T81Fraction from_double(double x, int max_iterations = 64) {
     if (x == 0.0) {
       return T81Fraction{};
     }
@@ -127,8 +143,8 @@ public:
   }
 
   [[nodiscard]] double to_double() const noexcept {
-    const double n = static_cast<double>(num_.to_int64());
-    const double d = static_cast<double>(den_.to_int64());
+    const double n = int_to_double(num_);
+    const double d = int_to_double(den_);
     return n / d;
   }
 
@@ -149,29 +165,29 @@ public:
   // Arithmetic — exact (within Int's range)
   // ------------------------------------------------------------------
 
-  [[nodiscard]] T81Fraction operator+(const T81Fraction& o) const noexcept {
+  [[nodiscard]] T81Fraction operator+(const T81Fraction& o) const {
     return T81Fraction(num_ * o.den_ + o.num_ * den_, den_ * o.den_);
   }
 
-  [[nodiscard]] T81Fraction operator-(const T81Fraction& o) const noexcept {
+  [[nodiscard]] T81Fraction operator-(const T81Fraction& o) const {
     return T81Fraction(num_ * o.den_ - o.num_ * den_, den_ * o.den_);
   }
 
-  [[nodiscard]] T81Fraction operator*(const T81Fraction& o) const noexcept {
+  [[nodiscard]] T81Fraction operator*(const T81Fraction& o) const {
     return T81Fraction(num_ * o.num_, den_ * o.den_);
   }
 
-  [[nodiscard]] T81Fraction operator/(const T81Fraction& o) const noexcept {
+  [[nodiscard]] T81Fraction operator/(const T81Fraction& o) const {
     return T81Fraction(num_ * o.den_, den_ * o.num_);
   }
 
-  [[nodiscard]] T81Fraction operator-() const noexcept { return T81Fraction(-num_, den_); }
+  [[nodiscard]] T81Fraction operator-() const { return T81Fraction(-num_, den_); }
 
   // ------------------------------------------------------------------
   // Comparison
   // ------------------------------------------------------------------
 
-  [[nodiscard]] constexpr std::strong_ordering operator<=>(const T81Fraction& o) const noexcept {
+  [[nodiscard]] constexpr std::strong_ordering operator<=>(const T81Fraction& o) const {
     // Cross multiply: num_ * o.den_ <=> o.num_ * den_
     // Since den_ > 0 always, we don't need to flip signs.
     return (num_ * o.den_) <=> (o.num_ * den_);
