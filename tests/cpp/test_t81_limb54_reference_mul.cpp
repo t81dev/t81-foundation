@@ -235,20 +235,14 @@ ExactBigIntOracle trits_to_oracle(std::span<const int8_t> trits) {
 }
 
 // Converts an arbitrary-precision exact integer to 54-trit balanced-ternary residue modulo 3^54.
-// Also returns the quotient after 54 trits (representing the carry out of the 54-trit window).
-std::pair<std::array<int8_t, 54>, ExactBigIntOracle> oracle_to_canonical_trits54_with_carry(
-    ExactBigIntOracle val) {
+std::array<int8_t, 54> oracle_to_canonical_trits54(ExactBigIntOracle val) {
   std::array<int8_t, 54> trits{};
   for (int i = 0; i < 54; ++i) {
     auto [next_val, rem] = ExactBigIntOracle::div_rem3_balanced(val);
     trits[i] = rem;
     val = next_val;
   }
-  return {trits, val};
-}
-
-[[maybe_unused]] std::array<int8_t, 54> oracle_to_canonical_trits54(ExactBigIntOracle val) {
-  return oracle_to_canonical_trits54_with_carry(val).first;
+  return trits;
 }
 
 std::array<int8_t, 54> int_to_trits54(int64_t val) {
@@ -291,7 +285,7 @@ void verify_product_from_trits(const std::array<int8_t, 54>& ta, const std::arra
   auto oa = trits_to_oracle(ta);
   auto ob = trits_to_oracle(tb);
   auto expected_exact = ExactBigIntOracle::mul(oa, ob);
-  auto [expected_trits54, carry_out] = oracle_to_canonical_trits54_with_carry(expected_exact);
+  auto expected_trits54 = oracle_to_canonical_trits54(expected_exact);
 
   if (prod_trits != expected_trits54) {
     std::cerr << "Assertion failed in " << context_label
@@ -501,10 +495,12 @@ void test_final_carry_and_truncation_overflow() {
 
   // Explicitly test positive and negative overflow where the mathematical product exceeds 54 trits.
   // We verify that:
-  // 1. The emitted 54 trits are strictly canonical.
-  // 2. The reconstructed 54-trit value equals the canonical balanced residue modulo 3^54.
-  // 3. The final carry out of the 54-trit boundary matches the high-order quotient of the exact
-  // product.
+  // 1. The emitted 54 trits are strictly canonical: {-1, 0, +1}.
+  // 2. The reconstructed 54-trit value equals the canonical balanced residue modulo 3^54
+  // independently
+  //    derived from the arbitrary-precision integer oracle.
+  // 3. Positive and negative overflow cases behave consistently with documented 54-trit truncation
+  // semantics.
   // 4. No carry is silently lost inside the 54-trit window.
 
   // Case 1: Max positive product ((3^54 - 1)/2) * ((3^54 - 1)/2)
