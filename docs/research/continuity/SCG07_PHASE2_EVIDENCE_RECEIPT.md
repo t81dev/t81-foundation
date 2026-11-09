@@ -24,7 +24,7 @@ The PR diff is strictly isolated to the following 4 files against the merged PR 
 | File | Change Description |
 |---|---|
 | `include/t81/types/T81BigInt.hpp` | Repaired single-limb fallback path in `operator+(const T81BigInt&, const T81BigInt&)` to inspect `val.sign_trit() == Trit::N`, inverting `negative_ = true` and storing `-val` so the limb magnitude remains non-negative in canonical form. |
-| `tests/cpp/test_t81bigint_sub.cpp` | Standalone regression test suite verifying: original F5 reproducer ($(3^{79}+7) - (3^{80}+11)$); F5 single-limb cancellation ($(3^{79}+7) - (3^{79}+11) = -4$); complete sign-combination matrix (+-+, +- -, - -+, - - -); zero and integer boundaries; multi-limb borrow propagation (160 and 243 trits); and 1,200 randomized trials evaluated against an independent exact-integer arbitrary-precision oracle (`ExactBigIntOracle`, base $10^9$). |
+| `tests/cpp/test_t81bigint_sub.cpp` | Standalone regression test suite verifying: original F5 reproducer ($(3^{79}+7) - (3^{80}+11)$); F5 single-limb cancellation ($(3^{79}+7) - (3^{79}+11) = -4$); complete sign-combination matrix (+-+, +- -, - -+, - - -); zero and integer boundaries; multi-limb borrow propagation (160 and 243 trits); and 1,200 randomized trials (800 comparisons against an independent exact-integer arbitrary-precision oracle `ExactBigIntOracle`, base $10^9$, plus 400 algebraic property and involution checks). |
 | `CMakeLists.txt` | Registered `t81_bigint_sub_test` executable and test runner in CMake build configuration. |
 | `docs/research/continuity/SCG07_PHASE2_EVIDENCE_RECEIPT.md` | Formal receipt and verification report for independent audit. |
 
@@ -98,12 +98,34 @@ If `val` is negative, `res.negative_` is set to `true` and the magnitude is stor
 | `t81_t81fraction_test` | Phase 1 rational test suite | `./build/t81_t81fraction_test` | **PASS** |
 | `clang-format-18` | Style conformance | `clang-format-18 --dry-run --Werror include/t81/types/T81BigInt.hpp tests/cpp/test_t81bigint_sub.cpp` | **PASS (0 violations)** |
 
-### 4.2 Independent Oracle Comparison
-The regression test compares all 1,200 randomized test vectors against an independent base-$10^9$ arbitrary-precision integer oracle (`ExactBigIntOracle`). All test cohorts (Cohort A: arbitrary 64-bit integers; Cohort B: multi-limb power-of-three boundaries 40..120 trits; Cohort C: sign-inversion and involution) match with 0 discrepancies.
+### 4.2 Independent Oracle Comparison & Algebraic Property Verification
+The randomized test suite in `tests/cpp/test_t81bigint_sub.cpp` executes a total of 1,200 trials partitioned into two distinct verification methods:
+1. **Independent Oracle Comparisons (800 trials):**
+   - **Cohort A (400 trials):** Arbitrary 64-bit integer operands generated via deterministic SplitMix64 PRNG compared directly against the independent base-$10^9$ `ExactBigIntOracle`.
+   - **Cohort B (400 trials):** High-magnitude powers of three (40 to 120 trits) with limb-boundary perturbations, spanning single-limb, boundary, and multi-limb configurations, compared directly against `ExactBigIntOracle`.
+   - *Result:* 800/800 trials matched with 0 discrepancies.
+2. **Algebraic Property and Involution Checks (400 trials):**
+   - **Cohort C (400 trials):** Direct verification of fundamental algebraic invariants across arbitrary values:
+     * Negation involution: `-(-b) == b`
+     * Self-subtraction: `b - b == 0`
+     * Zero-identity: `b - 0 == b` and `0 - b == -b`
+   - *Result:* 400/400 trials passed with 0 failures.
 
 ---
 
-## 5. Scope Constraints & Remaining Limitations
+## 5. CI Attribution & Inherited Baseline Failures
+
+The current baseline (`origin/main` at `e24eba723c221dc895e20307d41a8c4ba97405d6`) exhibits known baseline failures in CI that are pre-existing and independent of this change:
+1. **Missing Fixture Regressions:** Missing `models/tiny-random-llama/model.safetensors` causes failures in `t81_cli_contract_test_runner` and `run_model_artifact_review_smoke.sh`.
+2. **Repository Governance Structure:** Committed directory `review/pr-656/` causes `scripts/governance/check_root_structure.py` (`t81_root_structure_policy_test`) to fail.
+3. **Sparse Checkout Discrepancies:** Windows sparse checkout in `.github/workflows/ci.yml:476-505` omits `/development_tests/**`, failing CMake generation on missing `development_tests/test_real_direct_api.cpp`.
+4. **External Environment Incompatibilities:** GCC 15 `std::function` regex automaton `-Werror=maybe-uninitialized` warning in Google Benchmark; macOS x86_64 GCC 14 libgtest ABI mismatch; and macOS ARM64 clang unsupported runner label `macos-14-arm64-us-default`.
+
+Zero new failures or regressions are introduced by the changes in this PR.
+
+---
+
+## 6. Scope Constraints & Remaining Limitations
 
 1. **Defect Scope:** Only finding F5 (`T81BigInt` signed subtraction) is addressed in Phase 2. Core limb multiplication defects (F1 Booth table scaling, F2 `reference_mul` carry normalization, and F3 Karatsuba carry discard) remain untouched for Phase 3 and Phase 4.
 2. **Normative Stability:** No changes have been made to normative specifications under `spec/` or ISA opcode allocations.
