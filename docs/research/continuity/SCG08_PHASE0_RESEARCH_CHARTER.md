@@ -118,22 +118,27 @@ To avoid repeating unpromising CPU kernel micro-optimizations, SCG-08 selects th
      $$E[L_{\text{ternary\_run}}] = \sum_{k=1}^\infty k \left(\frac{1}{3}\right)^{k-1} \left(\frac{2}{3}\right) = \frac{1}{1 - 1/3} = \frac{3}{2} = 1.500 \text{ trits}$$
      In contrast, in binary addition, an active carry continues whenever $a_i + b_i \ge 1$, which occurs with probability $P(c_{\text{out}} = 1 \mid c_{\text{in}} = 1) = \frac{3}{4} = 0.7500$, yielding an expected continuous carry run length of:
      $$E[L_{\text{binary\_run}}] = \frac{1}{1 - 3/4} = 4.000 \text{ bits}$$
-  5. The unconditional expected carry-propagation contribution per digit position initialized with $c_0 = 0$ over an $N$-digit sequence is:
-     $$E[L_{\text{ternary}}] = \sum_{k=1}^N P(c_k \neq 0 \mid c_0 = 0) = \frac{1}{4} N - \frac{1}{36} \left(1 - \left(-\frac{1}{9}\right)^N\right) \approx \frac{1}{4} N$$
-     compared to $E[L_{\text{binary}}] = \frac{1}{2} N - \frac{1}{4} \left(1 - \left(-\frac{1}{2}\right)^N\right) \approx \frac{1}{2} N$ in binary.
+  5. The total expected number of active non-zero carry events $E[N_{\text{active}}]$ over an $N$-digit addition sequence initialized with quiescent carry $c_0 = 0$ is:
+     $$E[N_{\text{active, ternary}}] = \sum_{k=1}^N P(c_k \neq 0 \mid c_0 = 0) = \frac{1}{4} N - \frac{1}{32} \left(1 - \left(\frac{1}{9}\right)^N\right)$$
+     In contrast, for an $N$-bit binary addition initialized with $c_0 = 0$:
+     $$E[N_{\text{active, binary}}] = \sum_{k=1}^N P(c_k = 1 \mid c_0 = 0) = \frac{1}{2} N - \frac{1}{2} \left(1 - \left(\frac{1}{2}\right)^N\right)$$
 - **Independent Binary Baseline:** Standard multi-precision binary addition operating on 64-bit limbs and bit-level carry-propagation chains.
 - **Balanced-Ternary Treatment:** Multi-precision addition evaluated on balanced-ternary digit sequences, utilizing the qualified `T81Limb27` and `T81Limb54` digit normalization logic.
 - **Controlled Variables:** Total information capacity in bits ($M = 2^k$, for $k \in \{64, 128, 256, 512, 1024\}$), operand distribution (uniform random over range $[-(M-1)/2, (M-1)/2]$), and deterministic PRNG seeds.
-- **Primary Outcome Metric:**
-  1. Empirical carry generation frequency $f_{\text{gen}} = \frac{N_{\text{gen}}}{N_{\text{digits}}}$.
-  2. Stationary carry occurrence frequency $f_{\text{occ}} = \frac{N_{\text{active}}}{N_{\text{digits}}}$.
-  3. Conditional carry run-length distribution and average length $\bar{L}_{\text{run}}$.
-- **Explicit Success Threshold:**
-  - $f_{\text{gen}} = \frac{2}{9} \pm 0.005$ ($\approx 0.222$).
-  - $f_{\text{occ}} = \frac{1}{4} \pm 0.005$ ($0.250$).
-  - $\bar{L}_{\text{run}} = 1.500 \pm 0.05$ trits.
-- **Explicit Failure Threshold:**
-  - Carry occurrence frequency exceeds $0.300$.
+- **Primary Outcome Metrics & Exact Experimental Counters:**
+  1. **Conditional Carry Generation Probability ($P_{\text{gen}|0}$):** Measured as $f_{\text{gen}|0} = \frac{N(\text{quiescent-to-active transitions})}{N(\text{digits with incoming carry } c_{\text{in}} = 0)}$. Evaluates the conditional transition probability $P(c_{\text{out}} \neq 0 \mid c_{\text{in}} = 0)$.
+  2. **Stationary Quiescent-to-Active Transition Frequency ($f_{\text{trans}}$):** Measured as $f_{\text{trans}} = \frac{N(\text{quiescent-to-active transitions})}{N(\text{total digits})}$. Theoretical expectation is $\pi(0) \cdot P_{\text{gen}|0} = \frac{3}{4} \cdot \frac{2}{9} = \frac{1}{6} \approx 0.1667$ for ternary, compared to $\pi(0) \cdot P_{\text{gen}|0} = \frac{1}{2} \cdot \frac{1}{4} = \frac{1}{8} = 0.1250$ for binary.
+  3. **Stationary Active-Carry Occurrence Frequency ($f_{\text{occ}}$):** Measured as $f_{\text{occ}} = \frac{N(\text{digits with active outgoing carry } |c_{\text{out}}| = 1)}{N(\text{total digits})}$. Theoretical expectation is $\pi(\text{carry} \neq 0) = \frac{1}{4} = 0.2500$ for ternary, compared to $\frac{1}{2} = 0.5000$ for binary.
+  4. **Conditional Carry Continuation Probability ($P_{\text{cont}|\text{act}}$):** Measured as $f_{\text{cont}|\text{act}} = \frac{N(\text{active-to-active continuations } c_{\text{out}} = c_{\text{in}})}{N(\text{digits with incoming active carry } |c_{\text{in}}| = 1)}$. Theoretical expectation is $\frac{1}{3} \approx 0.3333$ for ternary, compared to $\frac{3}{4} = 0.7500$ for binary.
+  5. **Average Conditional Carry Run Length ($\bar{L}_{\text{run}}$):** Measured as $\bar{L}_{\text{run}} = \frac{\sum \text{run lengths}}{N(\text{carry runs})}$. Theoretical expectation is $1.500$ trits for ternary, compared to $4.000$ bits for binary.
+- **Explicit Success Thresholds:**
+  - $f_{\text{gen}|0} = \frac{2}{9} \pm 0.005$ ($[0.217, 0.227]$).
+  - $f_{\text{trans}} = \frac{1}{6} \pm 0.005$ ($[0.161, 0.172]$).
+  - $f_{\text{occ}} = \frac{1}{4} \pm 0.005$ ($[0.245, 0.255]$).
+  - $f_{\text{cont}|\text{act}} = \frac{1}{3} \pm 0.005$ ($[0.328, 0.338]$).
+  - $\bar{L}_{\text{run}} = 1.500 \pm 0.05$ trits ($[1.450, 1.550]$).
+- **Explicit Failure Thresholds:**
+  - Stationary carry occurrence frequency $f_{\text{occ}}$ exceeds $0.300$.
   - Carry occurrence per bit of information ($\frac{f_{\text{occ}}}{\log_2 3} = \frac{0.250}{1.585} \approx 0.1577$) is found to exceed or match binary carry occurrence per bit ($0.500$).
 - **Confounding Factors:**
   - Non-uniform operand distributions (e.g., dense zero trytes).
@@ -231,6 +236,16 @@ Let $\Sigma_{a,b} = a_i + b_i$. The 9 equiprobable input pairs $(a_i, b_i)$ have
 - $\Sigma_{a,b} = 0$: 3 pairs $(-1, 1), (0, 0), (1, -1)$ (prob $3/9$)
 - $\Sigma_{a,b} = +1$: 2 pairs $(0, 1), (1, 0)$ (prob $2/9$)
 - $\Sigma_{a,b} = +2$: 1 pair $(1, 1)$ (prob $1/9$)
+
+**Transition Dynamics Summary Table:**
+| Metric | Balanced Ternary | Binary Unsigned | Analytical Interpretation |
+| :--- | :---: | :---: | :--- |
+| **Conditional Generation: $P(c_{\text{out}} \neq 0 \mid c_{\text{in}} = 0)$** | $\mathbf{2/9} \approx 0.2222$ | $\mathbf{1/4} = 0.2500$ | Probability of triggering a new carry from a quiescent digit |
+| **Stationary Zero-to-Active Transition Frequency** | $\mathbf{1/6} \approx 0.1667$ | $\mathbf{1/8} = 0.1250$ | Unconditional per-digit frequency of quiescent $\to$ active transitions: $\pi(0) \cdot P_{\text{gen}|0}$ |
+| **Stationary Active Carry Occurrence: $\pi(c \neq 0)$** | $\mathbf{1/4} = 0.2500$ | $\mathbf{1/2} = 0.5000$ | Steady-state fraction of digits emitting an active carry |
+| **Conditional Continuation: $P(c_{\text{out}} = c_{\text{in}} \mid c_{\text{in}} \neq 0)$** | $\mathbf{1/3} \approx 0.3333$ | $\mathbf{3/4} = 0.7500$ | Probability that an existing carry propagates past current digit |
+| **Conditional Carry Cancellation / Absorption** | $\mathbf{2/3} \approx 0.6667$ | $\mathbf{1/4} = 0.2500$ | Probability that an existing carry is absorbed: $1 - P_{\text{cont}}$ |
+| **Expected Conditional Carry Run Length** | $\mathbf{1.500} \text{ trits}$ | $\mathbf{4.000} \text{ bits}$ | Mean run length once generated: $1 / (1 - P_{\text{cont}})$ |
 
 **Case 1: Quiescent State ($c_{\text{in}} = 0$)**
 - $s_i = \Sigma_{a,b} \in \{-2, -1, 0, 1, 2\}$.
@@ -443,11 +458,16 @@ To avoid conflating mathematical carry dynamics with host CPU microarchitecture 
 
 #### Tier 1: Primary Mathematical Carry-Propagation Evaluation
 - **Goal:** Directly validate the mathematical 3-state carry Markov chain on pure digit-level sequences.
-- **Method:** Instrument scalar digit addition across $10^7$ independent uniformly distributed balanced-ternary digit pairs and binary bit pairs.
-- **Metrics:** Empirical carry generation frequency $f_{\text{gen}}$, stationary occurrence frequency $f_{\text{occ}}$, and average conditional run length $\bar{L}_{\text{run}}$.
+- **Method:** Instrument scalar digit addition across $10^7$ independent uniformly distributed balanced-ternary digit pairs and binary bit pairs using decoupled event counters.
+- **Instrumented Experimental Counters:**
+  1. $f_{\text{gen}|0} = \frac{N(\text{quiescent-to-active transitions})}{N(\text{digits with incoming carry } c_{\text{in}} = 0)}$: Conditional carry generation probability.
+  2. $f_{\text{trans}} = \frac{N(\text{quiescent-to-active transitions})}{N(\text{total digits})}$: Stationary zero-to-active transition frequency per digit.
+  3. $f_{\text{occ}} = \frac{N(\text{digits with active outgoing carry } |c_{\text{out}}| = 1)}{N(\text{total digits})}$: Stationary active-carry occurrence frequency.
+  4. $f_{\text{cont}|\text{act}} = \frac{N(\text{active-to-active continuations } c_{\text{out}} = c_{\text{in}})}{N(\text{digits with incoming active carry } |c_{\text{in}}| = 1)}$: Conditional carry continuation probability.
+  5. $\bar{L}_{\text{run}} = \frac{\sum \text{run lengths}}{N(\text{carry runs})}$: Average conditional carry run length.
 - **Expected Theoretical Outcomes:**
-  - Ternary: $f_{\text{gen}} \approx 0.2222$, $f_{\text{occ}} \approx 0.2500$, $\bar{L}_{\text{run}} \approx 1.500$ trits.
-  - Binary: $f_{\text{gen}} \approx 0.2500$, $f_{\text{occ}} \approx 0.5000$, $\bar{L}_{\text{run}} \approx 4.000$ bits.
+  - Ternary: $f_{\text{gen}|0} = \frac{2}{9} \approx 0.2222$, $f_{\text{trans}} = \frac{1}{6} \approx 0.1667$, $f_{\text{occ}} = \frac{1}{4} = 0.2500$, $f_{\text{cont}|\text{act}} = \frac{1}{3} \approx 0.3333$, $\bar{L}_{\text{run}} = 1.500$ trits.
+  - Binary: $f_{\text{gen}|0} = \frac{1}{4} = 0.2500$, $f_{\text{trans}} = \frac{1}{8} = 0.1250$, $f_{\text{occ}} = \frac{1}{2} = 0.5000$, $f_{\text{cont}|\text{act}} = \frac{3}{4} = 0.7500$, $\bar{L}_{\text{run}} = 4.000$ bits.
 
 #### Tier 2: Secondary Implementation Operation-Count Comparison
 - **Goal:** Measure the algorithmic operation work required to perform multi-precision addition and multiplication on actual limb data structures.
@@ -469,7 +489,12 @@ Evaluated across 5 matched information capacity tiers:
 5. **Tier 5 (1024-bit equivalent):** Binary $B = 1024$ bits (16 limbs); Ternary $T = 648$ trits (24 limbs of 27 trits).
 
 ### 10.5 Preregistered Success & Failure Criteria
-- **Tier 1 Success (Mathematical Carry Parity):** Empirical carry generation $f_{\text{gen}} \in [0.217, 0.227]$, stationary occurrence $f_{\text{occ}} \in [0.245, 0.255]$, and average run length $\bar{L}_{\text{run}} \in [1.45, 1.55]$ trits.
+- **Tier 1 Success (Mathematical Carry Parity):**
+  - Conditional carry generation: $f_{\text{gen}|0} \in [0.217, 0.227]$ (theoretical $2/9 \approx 0.2222$).
+  - Zero-to-active transition frequency: $f_{\text{trans}} \in [0.161, 0.172]$ (theoretical $1/6 \approx 0.1667$).
+  - Stationary active occurrence: $f_{\text{occ}} \in [0.245, 0.255]$ (theoretical $1/4 = 0.2500$).
+  - Conditional carry continuation: $f_{\text{cont}|\text{act}} \in [0.328, 0.338]$ (theoretical $1/3 \approx 0.3333$).
+  - Average conditional run length: $\bar{L}_{\text{run}} \in [1.450, 1.550]$ trits (theoretical $1.500$).
 - **Tier 2 Success (Algorithmic Operation Work):** For wide multi-precision multiplication ($\ge 512$ bits equivalent), balanced-ternary limb convolution requires $\le 1.10\times$ total operations per bit compared to binary.
 - **Falsification Threshold (Immediate Closure):** If the total elementary operations per bit for balanced ternary exceeds that of binary by $> 2.0\times$ across all evaluated bands, the hypothesis of software multi-precision advantage is formally **FALSIFIED**.
 
