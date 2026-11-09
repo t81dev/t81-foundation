@@ -86,13 +86,35 @@ The dedicated regression suite `t81_t81fraction_test` was compiled and executed 
 
 ---
 
-## 5. Compatibility and Residual-Risk Assessment
+## 5. Baseline CI Comparison and Attribution
 
-1. **Source Compatibility:**
-   - Existing caller code using `T81Fraction` arithmetic continues to compile without changes.
-   - Removing `noexcept` allows callers to wrap fraction arithmetic in `try { ... } catch (const std::overflow_error&)` blocks to handle overflows gracefully, whereas previously any overflow caused unrecoverable process termination.
-2. **ABI / Exception Specification Compatibility:**
-   - In C++17 and later, exception specifications are part of the function type. An audit confirms no function pointers or templates requiring `noexcept` arithmetic operator signatures exist for `T81Fraction`.
-3. **Residual Numerical Conversion Decisions (SCG-04 D2 / RFC-00D5):**
-   - Phase 1 repairs `to_double()` for balanced ternary fractions up to the maximum template width 324, which fits within the IEEE-754 binary64 range ($\le 10^{308}$).
-   - Any wider arbitrary-precision conversion beyond 324 trits or into ternary float formats is governed by RFC-00D5 and will be evaluated in subsequent SCG-07 phases.
+To verify that PR #736 introduces zero regressions against the exact merged baseline `7ba82e033d072e421b4851d156989203e503047e` (PR #735), all CI check run failures on check suite `42548303909` were analyzed and attributed across two distinct categories:
+
+### 5.1 Category A: Independently Verified Codebase Regressions (Inherited from Baseline)
+These failures stem from verifiable defects in checked-in test scripts, missing fixture files, or workflow configurations already present on `origin/main`:
+1. `cli_contract_test_runner` (line 549): Asserts existence of `safetensors_fixture` (`models/tiny-random-llama-exported.safetensors` or `models/tiny-random-llama/model.safetensors`). Both directories and fixtures are absent from the git repository.
+2. `run_model_artifact_review_smoke.sh`: Exits with code 1 due to `missing source fixture at models/tiny-random-llama/model.safetensors`.
+3. `t81_root_structure_policy_test`: `tests/ci/check_root_structure_test.py` calls `scripts/governance/check_root_structure.py`, which fails because an untracked/unrecognized directory `review/` exists in the repo root on `origin/main` (committed in earlier PR #656 review).
+4. `build / windows-x86_64 / clang-cl` and `build / windows-x86_64 / msvc`: CMake generation fails at `src/direct_api/CMakeLists.txt:26` because `development_tests/test_real_direct_api.cpp` is missing under the sparse checkout path defined at `.github/workflows/ci.yml:476-505`.
+
+### 5.2 Category B: Environmental and Runner-Infrastructure Failures
+These failures are triggered by external toolchain versions, platform ABI mismatches, or deprecated runner labels on GitHub Actions:
+1. `gate / tritwise-determinism / avx2-asan`: GCC 15 `-Werror=maybe-uninitialized` false-positive in libstdc++ `regex_automaton.h` / `std_function.h` when compiling Google Benchmark v1.9.5 (`benchmark_register.cc.o`).
+2. `build / macos-x86_64 / gcc`: Linker symbol resolution failure on macOS x86_64 caused by an ABI mismatch between Homebrew's LLVM libc++ (used when building `libgtest.a`) and GCC 14's libstdc++.
+3. `build / macos-arm64 / clang`: Cancelled immediately upon job startup because runner label `macos-14-arm64-us-default` is no longer supported by GitHub Actions.
+
+In all jobs where test execution proceeded, `t81_t81fraction_test` and all fraction-related arithmetic tests passed 100%.
+
+---
+
+## 6. Merge-Policy Blockers and Residual Risks
+
+1. **Required Quality Gate Policy Blocker:**
+   - The repository quality gate workflow `.github/workflows/ci.yml` mandates that required check runs (`gate / tritwise-determinism / avx2-asan`, `build / sanitizers`, `build / linux-x86_64 / clang`, etc.) pass before automatic merging.
+   - Because these jobs fail due to inherited upstream baseline defects (missing fixtures, root directory structure violation, Windows sparse checkout omission, and GCC 15 Google Benchmark warnings), PR #736 **CANNOT** pass the required quality gate aggregator without maintainer waivers or upstream baseline repairs.
+   - **Resolution Policy:** Maintainers must either (a) merge baseline fixes for the fixture, structure, and sparse checkout defects, or (b) apply administrative branch-protection waivers for PR #736 based on this independent attribution evidence.
+2. **F7 Numerical Conversion Approximation Bounds:**
+   - Exception safety is completely restored: `to_double() const noexcept` will never throw or call `std::terminate()` for any admitted width $13 \le \text{TotalTrits} \le 324$.
+   - Numerical precision is explicitly bounded by standard IEEE-754 binary64 limits (~53 bits of mantissa). Values with $>53$ significant bits are rounded according to host floating-point arithmetic. Universal correct rounding for balanced ternary rationals remains unaddressed and reserved for RFC-00D5 / SCG-04 D2.
+3. **Zero Scope Expansion:**
+   - PR #736 strictly modifies only the 4 authorized files. No ISA changes, OS kernel modifications, or unrelated arithmetic changes have been introduced.
