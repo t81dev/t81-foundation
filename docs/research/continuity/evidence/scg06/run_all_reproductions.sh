@@ -19,7 +19,9 @@ clean_worktrees() {
     git -C "${REPO_ROOT}" worktree remove --force "${WORKTREE_BASE}/pre_scg03" 2>/dev/null || true
     git -C "${REPO_ROOT}" worktree remove --force "${WORKTREE_BASE}/post_scg03" 2>/dev/null || true
     git -C "${REPO_ROOT}" worktree prune 2>/dev/null || true
-    rm -rf "${WORKTREE_BASE}" /tmp/scg06_bin /tmp/scg06_worktrees
+    if [ -d "${WORKTREE_BASE}" ]; then
+        rm -rf "${WORKTREE_BASE}"
+    fi
 }
 trap clean_worktrees EXIT
 
@@ -28,11 +30,6 @@ git -C "${REPO_ROOT}" fetch origin "${PRE_COMMIT}" "${POST_COMMIT}" || true
 rm -rf "${WORKTREE_BASE}/pre_scg03" "${WORKTREE_BASE}/post_scg03"
 git -C "${REPO_ROOT}" worktree add --detach "${WORKTREE_BASE}/pre_scg03" "${PRE_COMMIT}"
 git -C "${REPO_ROOT}" worktree add --detach "${WORKTREE_BASE}/post_scg03" "${POST_COMMIT}"
-
-# Symlink to /tmp/scg06_worktrees for reproducible path consistency
-mkdir -p /tmp/scg06_worktrees
-ln -sfn "${WORKTREE_BASE}/pre_scg03" /tmp/scg06_worktrees/pre_scg03
-ln -sfn "${WORKTREE_BASE}/post_scg03" /tmp/scg06_worktrees/post_scg03
 
 echo "=== Running Python Oracle & Reproduction Suite ==="
 export PYTHONPATH="${SCRIPT_DIR}:${REPO_ROOT}"

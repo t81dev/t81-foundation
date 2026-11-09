@@ -27,7 +27,7 @@
       "cohort_without_carry_loss": {
         "cases": 232,
         "exact_mismatches": 231,
-        "explanation": "Karatsuba fails even without radical carry loss due to underlying T81Limb27::operator* Booth table defect F1"
+        "explanation": "Karatsuba fails even without radical carry loss due to cascading multi-component defects, including the demonstrated T81Limb27::operator* Booth table scaling defect (F1) alongside intermediate subtraction and shift-addition errors"
       },
       "total_exact_mismatches": 299
     },
@@ -90,7 +90,7 @@
       "cohort_without_carry_loss": {
         "cases": 232,
         "exact_mismatches": 231,
-        "explanation": "Karatsuba fails even without radical carry loss due to underlying T81Limb27::operator* Booth table defect F1"
+        "explanation": "Karatsuba fails even without radical carry loss due to cascading multi-component defects, including the demonstrated T81Limb27::operator* Booth table scaling defect (F1) alongside intermediate subtraction and shift-addition errors"
       },
       "total_exact_mismatches": 299
     },
