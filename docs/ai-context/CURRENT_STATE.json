@@ -563,5 +563,5 @@
     "performance_measurement": false,
     "production_activation": false
   },
-  "next_gate": "2026-11-08 non-normative overlay: read T81_COMPLETE_STATUS_2026-11-08.md first. Main observed e45c5435aa47d4ccb8f343798214eb917352c871; SCG-03/04 merged, SCG-05 PR #732 and SCG-06 PR #733 open. PR #733 requires F2/F3 exact-oracle evidence corrections and nine-check CI count qualification; F6 documents a fraction noexcept termination failure-mode change. Do not implement, merge, or benchmark by implication. selected_view intentionally remains the 2026-11-02 dated partial inventory; this field is an index pointer, not a newly verified operational view."
+  "next_gate": "2026-11-05 research gate: ISA-001 read-only semantic audit is READY FOR MAINTAINER DECISION. Draft T81-ISA-002 versioned TISC state-transition RFC and decision matrix only; do not change implementation, frozen CPA artifacts, or authorize performance measurement. CPA-006 reports 19/19 frozen-oracle cases with 57 hosted and 57 AArch64 QEMU executions and 1,190 validated state records; PR #710 merged to experimental integration branch, not main. selected_view intentionally remains 2026-11-02-reconciled as a dated partial operational inventory; read START_HERE.md section 13 and ACTIVE_RESEARCH_HANDOFF.md latest addendum for the 2026-11-05 research gate. Refresh all live PR/branch states."
 }

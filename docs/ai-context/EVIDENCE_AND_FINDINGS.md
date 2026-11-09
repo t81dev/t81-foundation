@@ -1,5 +1,3 @@
-> **2026-11-08 evidence overlay:** See [T81_COMPLETE_STATUS_2026-11-08.md](T81_COMPLETE_STATUS_2026-11-08.md) for SCG-06 F1–F7 reproduction boundaries and direct CI job-log attribution. F4 is a bounded repair; F6 changes from silent fraction corruption to `noexcept` termination; F2/F3 scripts do not yet prove exact-product mismatch counts. Historical performance/negative evidence below remains valid only within its original tested scope. No tests were independently rerun by this context update.
-
 # T81 Research Continuity — EVIDENCE_AND_FINDINGS
 
 **Document ID:** `docs/ai-context/EVIDENCE_AND_FINDINGS.md`

@@ -1,5 +1,3 @@
-> **2026-11-08 operational overlay:** [T81_COMPLETE_STATUS_2026-11-08.md](T81_COMPLETE_STATUS_2026-11-08.md) is the newest verified cross-program handoff. Its SCG-03–06 and PR #732/#733 status supersedes dated 'next action' wording below; preserve CPA/ISA/BASE historical findings. Immediate action is bounded SCG-06 evidence correction and review, not unauthorized arithmetic implementation or benchmarking.
-
 # T81 Research Continuity — ACTIVE_RESEARCH_HANDOFF
 
 **Document ID:** `docs/ai-context/ACTIVE_RESEARCH_HANDOFF.md`
