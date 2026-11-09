@@ -1037,10 +1037,16 @@ public:
         try {
           T81BigInt res;
           res.limbs_.clear();
-          res.limbs_.push_back(a.negative_ ? -a.limbs_[0] : a.limbs_[0]);
+          Limb lhs = a.negative_ ? -a.limbs_[0] : a.limbs_[0];
           Limb rhs = b.negative_ ? -b.limbs_[0] : b.limbs_[0];
-          res.limbs_[0] = res.limbs_[0] + rhs;
-          res.negative_ = false;
+          Limb val = lhs + rhs;
+          if (val.sign_trit() == Trit::N) {
+            res.negative_ = true;
+            res.limbs_.push_back(-val);
+          } else {
+            res.negative_ = false;
+            res.limbs_.push_back(val);
+          }
           res.normalize();
           return res;
         } catch (const std::overflow_error&) {
