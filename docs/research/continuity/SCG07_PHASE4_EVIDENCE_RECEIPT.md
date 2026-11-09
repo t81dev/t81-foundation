@@ -122,7 +122,7 @@ This ensures:
 
 ### 4.1 Before and After Results for SCG-06 Reproducer (300 Trials)
 
-In the empirical reproduction conducted in SCG-06 across 300 diverse pseudo-random trials, failures were classified into four disjoint categories. The post-repair results demonstrate complete resolution:
+In the empirical reproduction conducted in SCG-06 across 300 diverse pseudo-random trials using the exact historical seed (`0x123456789abcdef0ULL`), generator (`SplitMix64`), ordering, and 5 operand distribution modes (sparse, small width, dense, alternating, boundary), failures were classified into four disjoint categories. The post-repair results on this exact 300-case reproducer suite demonstrate complete resolution:
 
 | Metric / Cohort | Pre-Repair (`5cc8d94`) | Post-Repair (Phase 4) | Disposition |
 |---|---|---|---|
@@ -143,8 +143,8 @@ where $r_i \in \{-1, 0, 1\}$ and $|R| \le \frac{3^{54}-1}{2}$.
 The test confirms:
 1. Every emitted digit belongs strictly to $\{-1, 0, 1\}$.
 2. The reconstructed 54-trit limb value equals the independently computed residue $R$.
-3. Both positive and negative overflow cases yield exact residues matching the mathematical contract.
-4. Carries propagate without loss across all 54 positions, with carry-out beyond the 54th trit matching the quotient $Q$.
+3. Both positive and negative overflow cases yield exact residues matching the documented 54-trit truncation contract.
+4. Carries propagate without loss across all 54 positions, with truncation outside the 54-trit window discarding high-order multiples of $3^{54}$ while retaining the exact canonical residue. (Note: the implementation contract returns a 54-trit limb and does not expose an implementation carry-out/quotient return value; verification is performed on the canonical 54-trit residue).
 
 ### 4.3 Test Execution Matrix
 
