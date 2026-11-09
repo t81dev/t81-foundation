@@ -1,25 +1,27 @@
 # SCG-08 Phase 0: Architectural Advantage Research Charter
 
-**Document ID:** `T81-SCG-08-PHASE0-CHARTER-001-R1`
+**Document ID:** `T81-SCG-08-PHASE0-CHARTER-001-R2`
 **Classification:** RESEARCH CHARTER & EVIDENCE RECONCILIATION
 **Task Classification:** Research Design, Evidence Harmonization & Experiment Preregistration
 **Target Repository:** T81 Foundation (`t81dev/t81-foundation`)
 **Pinned Baseline Commit SHA:** `cfd60998fb0b55d8c2b56529cf4e3fb0a4c78ac3` (`origin/main`)
-**Preceding Milestone:** SCG-07 Phase 6 Consolidated Arithmetic Qualification (`8dec43ac2a9a702c9ae54229cf6891ee63f285c0`, PR #741)
+**Preceding Milestones:** SCG-07 Phase 6 Consolidated Arithmetic Qualification (`8dec43ac2a9a702c9ae54229cf6891ee63f285c0`, PR #741); AI Context Continuity Refresh (`cfd60998fb0b55d8c2b56529cf4e3fb0a4c78ac3`, PR #742)
 **Status:** COMPLETE — READY FOR MAINTAINER DECISION
 
 ---
 
 ## 1. Executive Research Objective
 
-The primary objective of SCG-08 Phase 0 is to formulate a rigorous, falsifiable, and evidence-grounded research charter investigating whether balanced-ternary representation and arithmetic can offer measurable computational, architectural, or structural advantages over conventional binary computation.
+The primary objective of SCG-08 Phase 0 is to establish a rigorous, falsifiable, and evidence-grounded research charter investigating whether balanced-ternary representation and arithmetic can offer measurable computational, architectural, or structural advantages over conventional binary computation.
 
-Following the successful completion of the SCG-07 arithmetic qualification program (Phases 1 through 6, culminating in PR #741), the T81 core numeric foundation (`T81Int`, `T81Limb27`, `T81Limb54`, `T81BigInt`, and `T81Fraction`) has been verified correct under documented contracts. However, correctness does not establish architectural superiority. This charter establishes:
+Following the successful completion of the SCG-07 arithmetic qualification program (Phases 1 through 6, culminating in PR #741), the T81 core numeric foundation (`T81Int`, `T81Limb27`, `T81Limb54`, `T81BigInt`, and `T81Fraction`) has been verified correct under documented contracts. However, arithmetic correctness does not establish architectural superiority. This charter establishes:
 1. An adversarial reconciliation of all prior experimental findings and negative dispositions across the T81 project lineage.
-2. A representation-neutral mathematical cost model that cleanly separates mathematical identities (such as radix economy $\log_2 3 \approx 1.585$) from binary CPU instruction overhead and physical semiconductor scaling realities.
-3. Explicit mapping to the authoritative `H01`–`H08` central hypothesis register without introducing conflicting renumbering.
-4. A small set of prioritized, genuinely unresolved research questions with matched binary controls and preregistered falsification criteria.
-5. Recommendation and full preregistration specification for one narrowly scoped next experiment (`EXP-SCG08-01`) executable with available repository resources.
+2. A representation-neutral mathematical cost model that cleanly separates mathematical identities (such as radix economy $\log_2 3 \approx 1.58496$) from binary CPU instruction overhead and physical semiconductor scaling realities.
+3. Explicit derivation of the complete 3-state balanced-ternary carry Markov chain, distinguishing carry generation, occurrence, continuation, cancellation, conditional run length, and stationary carry distribution from binary addition dynamics.
+4. An accurate implementation cost model distinguishing actual C++ class memory layouts (`alignas(16) int8_t trytes_[TRYTES]`) from logical digit capacity and temporary accumulators.
+5. Explicit mapping to the authoritative `H01`–`H08` central hypothesis register without introducing conflicting renumbering.
+6. A small set of prioritized, genuinely unresolved research questions with matched binary controls and preregistered falsification criteria.
+7. Recommendation and full preregistration specification for one narrowly scoped next experiment (`EXP-SCG08-01`) executable with available repository resources.
 
 This charter operates strictly within research-design boundaries: no production arithmetic modifications, no ISA changes, no unapproved benchmark executions, and no speculative hardware claims are authorized.
 
@@ -29,7 +31,9 @@ This charter operates strictly within research-design boundaries: no production 
 
 ### 2.1 Pinned Commit SHA
 - **Baseline Git Commit SHA:** `cfd60998fb0b55d8c2b56529cf4e3fb0a4c78ac3` (`origin/main` as of 2026-11-09).
-- **Merge Point of SCG-07 Phase 6:** Commit `8dec43ac2a9a702c9ae54229cf6891ee63f285c0` (PR #741, merging head `3e471695b15a5ee5e969f15c04df1a801c99b7b7` amending base `ecb1e32b9458a1a1df51d7cdd4a19496c0584103`).
+- **Integrated Pull Requests on Baseline:**
+  - **PR #741:** Commit `8dec43ac2a9a702c9ae54229cf6891ee63f285c0` (SCG-07 Phase 6 consolidated arithmetic qualification).
+  - **PR #742:** Commit `cfd60998fb0b55d8c2b56529cf4e3fb0a4c78ac3` (AI Context status and handoff refresh for 2026-11-09).
 
 ### 2.2 Preceding SCG-07 Remediation & Qualification Sequence
 The foundation baseline integrates the full sequence of SCG-03 and SCG-07 arithmetic defect repairs and verifications:
@@ -88,7 +92,7 @@ This charter adheres strictly to the central hypothesis register (`HYPOTHESIS_RE
 
 ### Hypotheses Dispositions in SCG-08 Context:
 - **H01 (Physical Storage):** BLOCKED from physical claims due to missing matched 3-state device data (Inv 10A). Retained as an analytical boundary model only.
-- **H02 (Arithmetic Advantage):** Core focus of SCG-08. Prior software tryte benchmarks were FALSIFIED on single-word ALU additions. However, multi-precision carry-propagation behavior and balanced-ternary carry-chain lengths across wide limb representations (`T81Limb27`, `T81Limb54`, `T81BigInt`) remain mathematically distinct and require precise qualification.
+- **H02 (Arithmetic Advantage):** Core focus of SCG-08. Prior software tryte benchmarks were FALSIFIED on single-word ALU additions. However, multi-precision carry-propagation dynamics across balanced-ternary digit chains vs binary carry chains remain mathematically distinct and require precise qualification.
 - **H03 (Grouping & Code Compactness):** FALSIFIED for general ISA code density vs Wasm (Inv 09-E1). Retained strictly for memory compression (75% savings in 2-bit packing) and structured mathematical limb groupings ($3^{27}$ and $3^{54}$).
 - **H04 (Adaptive Representation):** Formally refined to H04-R03 (matched codec and retention enforcement). Phase B deterministic correctness verified; Phase C performance measurement remains frozen.
 - **H05 (Three-State Primitives):** Theoretical and RTL inspection only; CMP3 instruction protocol frozen pending PMU hardware.
@@ -106,59 +110,81 @@ To avoid repeating unpromising CPU kernel micro-optimizations, SCG-08 selects th
 
 ### Hypothesis H02-A: Balanced-Ternary Multi-Precision Carry-Chain Length and Propagation Density
 
-- **Formal Mathematical Claim:** In balanced-ternary integer addition $A + B$ where digit positions $d_i \in \{-1, 0, +1\}$ are independent and uniformly distributed, the probability of an active carry out of any single digit position is $P(\text{carry} \neq 0) = \frac{7}{27} \approx 0.2593$, compared to $P(\text{carry} = 1) = 0.5000$ in conventional unsigned binary addition and $0.5000$ in two's complement binary addition. Consequently, the expected length of a continuous carry-propagation chain across an $N$-trit balanced-ternary addition is strictly bounded by $E[L_{\text{ternary}}] = \sum_{k=1}^N \left(\frac{7}{27}\right)^k < \frac{7}{20} = 0.3500$, compared to $E[L_{\text{binary}}] = \sum_{k=1}^N \left(\frac{1}{2}\right)^k \to 1.0000$ in binary.
-- **Independent Binary Baseline:** Standard binary multi-precision arithmetic addition and carry-chain simulation operating on 64-bit limbs and bit-level carry-propagation chains.
-- **Balanced-Ternary Treatment:** Multi-precision addition evaluated on balanced-ternary representations, utilizing the qualified `T81Limb27` and `T81Limb54` digit carry normalization routines.
+- **Formal Mathematical Claim:** In balanced-ternary integer addition $A + B$ where digit positions $a_i, b_i \in \{-1, 0, +1\}$ are independent and uniformly distributed:
+  1. The carry generation probability from a quiescent state ($c_{\text{in}} = 0$) is $P(c_{\text{out}} \neq 0 \mid c_{\text{in}} = 0) = \frac{2}{9} \approx 0.2222$.
+  2. The carry continuation probability given an active carry ($c_{\text{in}} = \pm 1$) is $P(c_{\text{out}} = \pm 1 \mid c_{\text{in}} = \pm 1) = \frac{1}{3} \approx 0.3333$.
+  3. The stationary carry occurrence probability under the complete 3-state Markov transition matrix is $\pi(\text{carry} \neq 0) = \frac{1}{4} = 0.2500$, compared to a stationary carry occurrence probability of $\frac{1}{2} = 0.5000$ in binary addition.
+  4. Conditioned on carry generation at digit position $i$, the expected length of a continuous non-zero carry run before absorption ($c_{\text{out}} = 0$) is geometrically distributed with parameter $p = 1 - \frac{1}{3} = \frac{2}{3}$, yielding expected run length:
+     $$E[L_{\text{ternary\_run}}] = \sum_{k=1}^\infty k \left(\frac{1}{3}\right)^{k-1} \left(\frac{2}{3}\right) = \frac{1}{1 - 1/3} = \frac{3}{2} = 1.500 \text{ trits}$$
+     In contrast, in binary addition, an active carry continues whenever $a_i + b_i \ge 1$, which occurs with probability $P(c_{\text{out}} = 1 \mid c_{\text{in}} = 1) = \frac{3}{4} = 0.7500$, yielding an expected continuous carry run length of:
+     $$E[L_{\text{binary\_run}}] = \frac{1}{1 - 3/4} = 4.000 \text{ bits}$$
+  5. The unconditional expected carry-propagation contribution per digit position initialized with $c_0 = 0$ over an $N$-digit sequence is:
+     $$E[L_{\text{ternary}}] = \sum_{k=1}^N P(c_k \neq 0 \mid c_0 = 0) = \frac{1}{4} N - \frac{1}{36} \left(1 - \left(-\frac{1}{9}\right)^N\right) \approx \frac{1}{4} N$$
+     compared to $E[L_{\text{binary}}] = \frac{1}{2} N - \frac{1}{4} \left(1 - \left(-\frac{1}{2}\right)^N\right) \approx \frac{1}{2} N$ in binary.
+- **Independent Binary Baseline:** Standard multi-precision binary addition operating on 64-bit limbs and bit-level carry-propagation chains.
+- **Balanced-Ternary Treatment:** Multi-precision addition evaluated on balanced-ternary digit sequences, utilizing the qualified `T81Limb27` and `T81Limb54` digit normalization logic.
 - **Controlled Variables:** Total information capacity in bits ($M = 2^k$, for $k \in \{64, 128, 256, 512, 1024\}$), operand distribution (uniform random over range $[-(M-1)/2, (M-1)/2]$), and deterministic PRNG seeds.
 - **Primary Outcome Metric:**
-  1. Empirical carry generation frequency $f_{\text{carry}} = \frac{N_{\text{carries}}}{N_{\text{digits}}}$.
-  2. Maximum and average carry propagation length across $10^6$ independent addition trials.
-  3. Total carry-resolution operations required per unit of information.
-- **Explicit Success Threshold:** Empirical carry generation frequency matches theoretical $\frac{7}{27} \pm 0.005$, and average carry chain length is $\le 0.360$ (demonstrating a $>2.7\times$ reduction in carry propagation events per digit relative to binary).
-- **Explicit Failure Threshold:** Carry generation frequency exceeds $0.300$, or the number of carry events per equivalent bit of information ($\frac{f_{\text{carry}}}{\log_2 3}$) is greater than or equal to binary carry frequency ($0.500$).
+  1. Empirical carry generation frequency $f_{\text{gen}} = \frac{N_{\text{gen}}}{N_{\text{digits}}}$.
+  2. Stationary carry occurrence frequency $f_{\text{occ}} = \frac{N_{\text{active}}}{N_{\text{digits}}}$.
+  3. Conditional carry run-length distribution and average length $\bar{L}_{\text{run}}$.
+- **Explicit Success Threshold:**
+  - $f_{\text{gen}} = \frac{2}{9} \pm 0.005$ ($\approx 0.222$).
+  - $f_{\text{occ}} = \frac{1}{4} \pm 0.005$ ($0.250$).
+  - $\bar{L}_{\text{run}} = 1.500 \pm 0.05$ trits.
+- **Explicit Failure Threshold:**
+  - Carry occurrence frequency exceeds $0.300$.
+  - Carry occurrence per bit of information ($\frac{f_{\text{occ}}}{\log_2 3} = \frac{0.250}{1.585} \approx 0.1577$) is found to exceed or match binary carry occurrence per bit ($0.500$).
 - **Confounding Factors:**
-  - Non-uniform operand distributions (e.g., localized zero digits).
-  - Software emulation overhead on binary CPUs (which masks algorithmic carry savings behind bit-masking loops).
-- **Required Instrumentation:** Hardware-independent exact carry-counter harness tracking digit-level carry generation and propagation events without host CPU cycle timers.
+  - Non-uniform operand distributions (e.g., dense zero trytes).
+  - Tryte-level composition vs digit-level scalar carry transitions.
+- **Required Instrumentation:** Hardware-independent exact carry-event counter tracking digit-level transition states.
 - **Scientific Value of Either Outcome:**
-  - *Positive Outcome:* Quantifies the exact mathematical carry-reduction advantage of balanced ternary, providing the theoretical foundation for asynchronous or carry-skip arithmetic architectures.
-  - *Negative Outcome:* Proves that when normalized per bit of information ($\log_2 3 \approx 1.585$), the carry reduction is insufficient to justify balanced-ternary representations even in ideal mathematical models.
+  - *Positive Outcome:* Rigorously validates the theoretical Markov carry-reduction bound for balanced ternary.
+  - *Negative Outcome:* Demonstrates that carry-cancellation dynamics in practical multi-precision implementations fail to deliver the modeled reduction.
 
 ---
 
-### Hypothesis H03-A: Tryte Limb Boundary Alignment and Modular Convolution Complexity
+### Hypothesis H03-A: Tryte Limb Memory Organization vs Binary 64-Bit Host Efficiency
 
-- **Formal Mathematical Claim:** Multi-limb balanced-ternary multiplication utilizing 27-trit limbs (`T81Limb27`, capacity $3^{27} \approx 7.625 \times 10^{12} < 2^{43}$) and 54-trit accumulators (`T81Limb54`, capacity $3^{54} \approx 5.815 \times 10^{25} < 2^{86}$) achieves exact digit convolution without intermediate carry truncation error modulo $3^{54}$, requiring strictly fewer limb cross-multiplications than binary multi-precision multiplication for equivalent information capacities that align with powers of $3^{27}$.
-- **Independent Binary Baseline:** Exact multi-precision integer multiplication implemented on standard 64-bit binary limbs (e.g., using 64-bit $\times$ 64-bit $\to$ 128-bit hardware widening multipliers).
-- **Balanced-Ternary Treatment:** The qualified SCG-07 `T81Limb27::operator*` and `T81Limb54::reference_mul` / `karatsuba` convolution engines.
-- **Controlled Variables:** Information domain width (equivalent to $N \in \{128, 256, 512, 1024\}$ bits), test operand distributions, multiplication algorithm (Schoolbook $O(K^2)$ vs Karatsuba $O(K^{1.585})$).
+- **Formal Mathematical Claim:** In multi-precision balanced-ternary arithmetic implemented via tryte-based limbs (`T81Limb27` with 9 trytes, and `T81Limb54` with 18 trytes stored as `alignas(16) int8_t trytes_[]`), the host memory storage footprint and memory-bus traffic exceed those of equivalent-capacity binary multi-precision limbs on 64-bit microprocessors, creating a structural host impedance mismatch that cannot be eliminated by algorithmic optimizations alone.
+- **Independent Binary Baseline:** Standard multi-precision integer limbs stored as packed arrays of 64-bit unsigned words (`std::uint64_t`).
+- **Balanced-Ternary Treatment:** The qualified SCG-07 `T81Limb27` (16 bytes footprint for 27 trits $\approx 42.79$ bits) and `T81Limb54` (32 bytes footprint for 54 trits $\approx 85.59$ bits).
+- **Controlled Variables:** Equivalent mathematical value domains ($N \in \{128, 256, 512, 1024\}$ bits equivalent), cache line boundary alignments, memory access patterns.
 - **Primary Outcome Metric:**
-  1. Total number of scalar limb multiply-accumulate operations required to evaluate an $N$-bit equivalent product.
-  2. Total normalization operations required per product.
-- **Explicit Success Threshold:** For arbitrary-precision integer sizes where $\lceil \log_3(2^N) \rceil$ creates natural limb alignment, balanced-ternary limb multiplication requires fewer or equal primitive multiplications than 64-bit binary multiplication.
-- **Explicit Failure Threshold:** The fractional information waste ($\frac{64 - \log_2(3^{27})}{64} \approx 33.1\%$ capacity underutilization per 64-bit host word) causes the limb count $K_{\text{ternary}} = \lceil \frac{N \log_2 2}{42.79} \rceil$ to exceed binary limb count $K_{\text{binary}} = \lceil \frac{N}{64} \rceil$ such that total scalar operations are $>1.5\times$ higher across all tested widths $N \le 1024$.
-- **Confounding Factors:** Host 64-bit word size mismatch; register utilization inefficiencies on x86_64/AArch64 architectures.
-- **Required Instrumentation:** Operation-counting execution proxy counting scalar multiplications, additions, and normalization steps.
+  1. Storage expansion ratio: $\rho_{\text{storage}} = \frac{\text{Bytes}_{\text{T81Limb}}}{\text{Bytes}_{\text{Binary64}}}$.
+  2. Measured cache misses and memory traffic per multi-precision arithmetic pass.
+- **Explicit Success Threshold:** $\rho_{\text{storage}}$ matches the theoretical analytical expectation:
+  $$\rho_{\text{storage}}(27\text{ trits}) = \frac{16\text{ bytes}}{8\text{ bytes}} = 2.00\times \text{ (relative to 64-bit capacity)}$$
+  $$\text{Effective bit density: } \frac{42.79\text{ bits}}{128\text{ bits allocated}} \approx 33.43\%$$
+- **Explicit Failure Threshold:** If software packing schemes claim memory density advantages without accounting for 16-byte SIMD structure alignment padding.
+- **Confounding Factors:** SIMD register loading alignment; compiler padding.
+- **Required Instrumentation:** Binary struct sizeof audit and memory access instrumentation.
 - **Scientific Value of Either Outcome:**
-  - *Positive Outcome:* Identifies specific operand width regimes where ternary limb structures minimize algorithmic complexity.
-  - *Negative Outcome:* Demonstrates that binary word-size impedance mismatch fundamentally penalizes emulated ternary BigInt arithmetic regardless of radix properties.
+  - *Positive Outcome:* Documents the exact structural cost of tryte-array storage on byte-addressable microprocessors.
+  - *Negative Outcome:* Shows whether alternative scalar-packed limb designs could mitigate storage overhead.
 
 ---
 
-### Hypothesis H01/H05-A: Device Parameter Thresholds for Native-Ternary Energy-Delay Product Advantage
+### Hypothesis H01/H05-A: Device Parameterized Energy-Delay Product Sensitivity Model
 
-- **Formal Mathematical Claim:** A native three-state logic cell (operating at states $\{-V_{dd}, 0, +V_{dd}\}$ or tri-level voltages $\{0, V_{dd}/2, V_{dd}\}$) can achieve a superior Energy-Delay Product ($\text{EDP} = \text{Energy} \times \text{Delay}$) over binary CMOS if and only if the physical cell area ratio satisfies $A_3 / A_2 < \log_2 3 \approx 1.585$ and the effective switching energy per state transition satisfies $E_3 / E_2 < \frac{2}{3} \log_2 3 \approx 1.056$ under equivalent signal-to-noise margins (SNM).
-- **Independent Binary Baseline:** Standard binary CMOS inverter and full-adder cells at established technology nodes (e.g., 7nm / 14nm FinFET / GAAFET) with standard static noise margins ($\text{SNM} \ge V_{dd}/5$).
-- **Balanced-Ternary Treatment:** Analytical SPICE / device-level models of Standard Ternary Inverter (STI) and ternary full adders (TFA) reported in peer-reviewed literature (e.g., CNTFET or multi-threshold CMOS).
-- **Controlled Variables:** Technology node feature size, operating temperature ($300\text{ K}$), interconnect parasitics, target reliability/error rate.
-- **Primary Outcome Metric:** Theoretical Energy-Delay Product ratio $\text{EDP}_3 / \text{EDP}_2$ as a function of the ternary noise-margin degradation factor $\alpha = \frac{\text{SNM}_3}{\text{SNM}_2}$.
-- **Explicit Success Threshold:** Identification of an empirically plausible device parameter regime ($\alpha \ge 0.70$, $A_3/A_2 \le 1.40$) where $\text{EDP}_3 < \text{EDP}_2$.
-- **Explicit Failure Threshold:** If maintaining equal reliability requires higher supply voltage $V_{dd}$ such that dynamic switching energy $E \propto C V_{dd}^2$ causes $\text{EDP}_3 > \text{EDP}_2$ everywhere in the realistic parameter space.
-- **Confounding Factors:** Non-silicon substrate assumptions (e.g., CNTFETs vs silicon CMOS); speculative fabrication yields.
-- **Required Instrumentation:** Mathematical sensitivity analysis and parameter sweep scripts; literature meta-analysis.
+- **Formal Mathematical Claim:** The Energy-Delay Product ($\text{EDP} = E_{\text{cycle}} \times \tau_{\text{delay}}$) of a hypothetical native 3-state logic cell operating at voltage levels $\{0, V_{dd}/2, V_{dd}\}$ is governed by the multi-parameter system:
+  $$\text{EDP}_3 = \left( \alpha_3 C_{\text{eff},3} V_{dd,3}^2 + I_{\text{leak},3} V_{dd,3} \tau_3 + E_{\text{periph},3} \right) \times \left( \frac{C_{\text{load},3} V_{dd,3}}{I_{\text{on},3}} + \tau_{\text{sensing},3} \right)$$
+  compared to the binary CMOS baseline:
+  $$\text{EDP}_2 = \left( \alpha_2 C_{\text{eff},2} V_{dd,2}^2 + I_{\text{leak},2} V_{dd,2} \tau_2 \right) \times \left( \frac{C_{\text{load},2} V_{dd,2}}{I_{\text{on},2}} \right)$$
+  A native ternary advantage ($\text{EDP}_3 < \text{EDP}_2$) cannot be asserted from radix economy alone, because maintaining identical static noise margin ($\text{SNM} \ge V_{\text{noise}}$) in a 3-state system requires dividing the available supply rail into multiple transition windows $\Delta V = V_{dd}/2$, which degrades switching overdrive $(V_{gs} - V_{\text{th}})$ and increases sensing delay.
+- **Independent Binary Baseline:** Standard binary CMOS inverter and full-adder cells at established technology nodes (e.g., 7nm / 14nm FinFET) with standard static noise margins ($\text{SNM}_2 \approx V_{dd}/5$).
+- **Balanced-Ternary Treatment:** Parameterized multi-threshold ternary logic models reported in device literature (e.g., CNTFET or multi-threshold CMOS).
+- **Controlled Variables:** Technology feature size, operating temperature ($300\text{ K}$), target bit-error-rate (BER).
+- **Primary Outcome Metric:** Ratio $\frac{\text{EDP}_3}{\text{EDP}_2}$ across a multi-dimensional parameter sweep over device capacitance ratio $\kappa_C = C_3/C_2$, intermediate threshold degradation factor $\beta = \Delta V_{\text{th}}/V_{dd}$, and peripheral sensing overhead $E_{\text{periph}}$.
+- **Explicit Falsification Threshold:** If maintaining equal noise margins requires supply voltage scaling or sensing delays such that $\text{EDP}_3 > \text{EDP}_2$ across the entire physically realizable parameter space ($\kappa_C \ge 1.0, \beta \ge 0.3$), the claim of native ternary circuit advantage is formally **UNSUPPORTED**.
+- **Confounding Factors & Assumptions:**
+  - Assumption 1: Planar/FinFET CMOS scaling behaviors apply to multi-threshold devices.
+  - Assumption 2: Interconnect parasitics scale with cell area.
+  - Unsupported Parameter: Exact 3-state device switching energy is unmeasured in T81 repositories.
 - **Scientific Value of Either Outcome:**
-  - *Positive Outcome:* Establishes rigorous physical requirements for any future hardware or silicon initiative.
-  - *Negative Outcome:* Decisively closes speculative claims of native hardware advantage, directing project resources exclusively to software and protocol governance.
+  - *Positive Outcome:* Identifies the boundary conditions required for non-silicon devices (e.g., CNTFETs or memristors) to compete with CMOS.
+  - *Negative Outcome:* Formally closes speculative hardware advantage claims within the project.
 
 ---
 
@@ -174,101 +200,172 @@ Let $M \in \mathbb{N}$ be the number of distinct representable states.
 2. **Required Digit Counts:**
    $$\text{Binary Bits: } B = \lceil \log_2 M \rceil$$
    $$\text{Ternary Trits: } T = \lceil \log_3 M \rceil$$
-   $$\text{Base-81 Trytes (4 trits): } Y = \lceil T / 4 \rceil = \lceil \frac{1}{4} \lceil \log_3 M \rceil \rceil$$
-3. **Radix Economy:**
-   The complexity or hardware cost of an $R$-state digit system is often modeled as $C(R, M) = k \cdot R \cdot \lceil \log_R M \rceil$.
-   Taking the continuous derivative of $f(R) = R / \ln R$ yields a minimum at $R = e \approx 2.718$.
-   Evaluating integers:
+   $$\text{Base-81 Trytes (4 trits): } Y = \lceil T / 4 \rceil$$
+3. **Theoretical Radix Economy:**
+   The complexity of an $R$-state digit system is modeled as $C(R, M) = k \cdot R \cdot \lceil \log_R M \rceil$.
+   Evaluating the continuous function $f(R) = R / \ln R$:
    $$f(2) = \frac{2}{\ln 2} \approx 2.8854$$
    $$f(3) = \frac{3}{\ln 3} \approx 2.7307 \quad (\approx 5.36\% \text{ lower than binary})$$
    $$f(4) = \frac{4}{\ln 4} \approx 2.8854$$
-   *Mathematical Invariant:* Base 3 is the integer radix with the highest theoretical radix economy. However, this theoretical optimum assumes that an $R$-state physical device has cost proportional to $R$, which is false in planar binary CMOS.
+   *Mathematical Invariant:* Base 3 is the integer radix with the highest theoretical radix economy. However, this optimum assumes that an $R$-state physical device has cost strictly proportional to $R$, which does not hold in planar binary CMOS.
 
 4. **Balanced-Ternary Value Representation:**
    For digits $d_i \in \{-1, 0, +1\}$:
    $$V = \sum_{i=0}^{T-1} d_i \cdot 3^i, \quad V \in \left[ -\frac{3^T - 1}{2}, \, +\frac{3^T - 1}{2} \right]$$
    - *Inherent Sign Representation:* Negation is strictly componentwise with zero carry propagation: $-V = \sum_{i=0}^{T-1} (-d_i) \cdot 3^i$.
-   - *Absence of Sign Asymmetry:* Range is perfectly symmetric around zero; no counterpart to binary two's complement asymmetry (where $-\text{INT\_MIN}$ overflows).
+   - *Absence of Sign Asymmetry:* Range is perfectly symmetric around zero; no counterpart to binary two's complement asymmetry ($-\text{INT\_MIN}$ overflow).
 
-### 6.2 Carry Generation & Propagation Analysis
+### 6.2 Complete Three-State Carry Markov Chain Derivation
 
-In single-digit balanced-ternary addition $s_i = a_i + b_i + c_{\text{in}}$, where $a_i, b_i \in \{-1, 0, +1\}$ and $c_{\text{in}} \in \{-1, 0, +1\}$:
-The input sum lies in $\Sigma = a_i + b_i + c_{\text{in}} \in \{-3, -2, -1, 0, 1, 2, 3\}$.
-The balanced ternary carry $c_{\text{out}}$ and sum digit $r_i$ are uniquely defined by:
-$$\Sigma = 3 \cdot c_{\text{out}} + r_i, \quad r_i \in \{-1, 0, +1\}, \, c_{\text{out}} \in \{-1, 0, +1\}$$
+In single-digit balanced-ternary addition:
+$$s_i = a_i + b_i + c_{\text{in}}$$
+where inputs $a_i, b_i \in \{-1, 0, +1\}$ are independent, identically distributed uniform random variables with $P(a_i = k) = \frac{1}{3}$ and $P(b_i = k) = \frac{1}{3}$ for $k \in \{-1, 0, +1\}$, and $c_{\text{in}} \in \{-1, 0, +1\}$.
+The balanced-ternary carry $c_{\text{out}}$ and canonical sum digit $r_i$ are uniquely defined by:
+$$s_i = 3 \cdot c_{\text{out}} + r_i, \quad r_i \in \{-1, 0, +1\}, \, c_{\text{out}} \in \{-1, 0, +1\}$$
 
-| $\Sigma$ | $c_{\text{out}}$ | $r_i$ | Description |
-| :---: | :---: | :---: | :--- |
-| $-3$ | $-1$ | $0$ | Negative carry generation |
-| $-2$ | $-1$ | $+1$ | Negative carry generation |
-| $-1$ | $0$ | $-1$ | Zero carry |
-| $0$ | $0$ | $0$ | Zero carry |
-| $+1$ | $0$ | $+1$ | Zero carry |
-| $+2$ | $+1$ | $-1$ | Positive carry generation |
-| $+3$ | $+1$ | $0$ | Positive carry generation |
+#### 1. Transition Probabilities by Incoming State
 
-**Carry Generation Probability (Zero Initial Carry $c_{\text{in}} = 0$):**
-Assuming independent uniform inputs $P(a_i = k) = \frac{1}{3}$, $P(b_i = k) = \frac{1}{3}$ for $k \in \{-1, 0, 1\}$:
-- $\Sigma = a_i + b_i \in \{-2, -1, 0, 1, 2\}$.
-- Out of 9 equiprobable input pairs $(a_i, b_i)$:
-  - $\Sigma = -2$: pair $(-1, -1) \implies c_{\text{out}} = -1$ (1 case).
-  - $\Sigma = +2$: pair $(+1, +1) \implies c_{\text{out}} = +1$ (1 case).
-  - $\Sigma \in \{-1, 0, 1\}$: 7 cases $\implies c_{\text{out}} = 0$ (7 cases).
-- **Probability of non-zero carry generation:**
-  $$P(|c_{\text{out}}| = 1 \mid c_{\text{in}} = 0) = \frac{2}{9} \approx 0.2222$$
+Let $\Sigma_{a,b} = a_i + b_i$. The 9 equiprobable input pairs $(a_i, b_i)$ have the sum distribution:
+- $\Sigma_{a,b} = -2$: 1 pair $(-1, -1)$ (prob $1/9$)
+- $\Sigma_{a,b} = -1$: 2 pairs $(-1, 0), (0, -1)$ (prob $2/9$)
+- $\Sigma_{a,b} = 0$: 3 pairs $(-1, 1), (0, 0), (1, -1)$ (prob $3/9$)
+- $\Sigma_{a,b} = +1$: 2 pairs $(0, 1), (1, 0)$ (prob $2/9$)
+- $\Sigma_{a,b} = +2$: 1 pair $(1, 1)$ (prob $1/9$)
 
-**Carry Propagation Probability ($c_{\text{in}} \neq 0$):**
-- A carry propagates ($|c_{\text{out}}| = 1$) if $\Sigma = a_i + b_i + c_{\text{in}} \in \{\pm 2, \pm 3\}$.
-- If $c_{\text{in}} = +1$:
-  - $a_i + b_i \in \{+1, +2\} \implies \Sigma \in \{+2, +3\} \implies c_{\text{out}} = +1$.
-  - Number of pairs with $a_i + b_i \ge 1$ is 3 (pairs $(0,1), (1,0), (1,1)$).
-  - Thus, $P(c_{\text{out}} = +1 \mid c_{\text{in}} = +1) = \frac{3}{9} = \frac{1}{3} \approx 0.3333$.
-  - For pairs with $a_i + b_i = -2$ (pair $(-1, -1)$), $\Sigma = -1 \implies c_{\text{out}} = 0$.
-  - Consequently, **carry cancellation** occurs naturally when carries meet opposing digit sums.
+**Case 1: Quiescent State ($c_{\text{in}} = 0$)**
+- $s_i = \Sigma_{a,b} \in \{-2, -1, 0, 1, 2\}$.
+- $s_i = -2 \implies c_{\text{out}} = -1, r_i = +1$ (prob $1/9$).
+- $s_i \in \{-1, 0, 1\} \implies c_{\text{out}} = 0, r_i = s_i$ (prob $7/9$).
+- $s_i = +2 \implies c_{\text{out}} = +1, r_i = -1$ (prob $1/9$).
+- **Carry Generation Probability:**
+  $$P(c_{\text{out}} \neq 0 \mid c_{\text{in}} = 0) = P(c_{\text{out}} = -1) + P(c_{\text{out}} = +1) = \frac{1}{9} + \frac{1}{9} = \frac{2}{9} \approx 0.2222$$
 
-**Comparison with Binary Carry Behavior:**
-- Binary unsigned addition: $P(c_{\text{out}} = 1 \mid c_{\text{in}} = 0) = \frac{1}{4} = 0.2500$; $P(c_{\text{out}} = 1 \mid c_{\text{in}} = 1) = \frac{3}{4} = 0.7500$.
-- Average binary carry propagation probability: $0.5000$.
-- Expected carry chain length:
-  $$E[L_{\text{binary}}] = \sum_{k=1}^\infty \left(\frac{1}{2}\right)^k = 1.000$$
-  $$E[L_{\text{ternary}}] \le \sum_{k=1}^\infty \left(\frac{1}{3}\right)^k = 0.500$$
-*Mathematical Finding:* Balanced ternary intrinsically reduces carry-propagation probability and chain length compared to binary addition.
+**Case 2: Positive Active Carry ($c_{\text{in}} = +1$)**
+- $s_i = \Sigma_{a,b} + 1 \in \{-1, 0, 1, 2, 3\}$.
+- $s_i \in \{-1, 0, 1\} \implies c_{\text{out}} = 0$ (occurs when $\Sigma_{a,b} \in \{-2, -1, 0\}$, prob $\frac{1 + 2 + 3}{9} = \frac{6}{9} = \frac{2}{3}$).
+- $s_i \in \{2, 3\} \implies c_{\text{out}} = +1$ (occurs when $\Sigma_{a,b} \in \{+1, +2\}$, prob $\frac{2 + 1}{9} = \frac{3}{9} = \frac{1}{3}$).
+- $c_{\text{out}} = -1$ is impossible (prob $0$).
+- **Carry Continuation Probability:**
+  $$P(c_{\text{out}} = +1 \mid c_{\text{in}} = +1) = \frac{1}{3} \approx 0.3333$$
+- **Carry Cancellation / Absorption Probability:**
+  $$P(c_{\text{out}} = 0 \mid c_{\text{in}} = +1) = \frac{2}{3} \approx 0.6667$$
 
-### 6.3 Physical Storage and Decoding Overhead Models
+**Case 3: Negative Active Carry ($c_{\text{in}} = -1$)**
+- By sign symmetry:
+  $$P(c_{\text{out}} = -1 \mid c_{\text{in}} = -1) = \frac{1}{3}, \quad P(c_{\text{out}} = 0 \mid c_{\text{in}} = -1) = \frac{2}{3}, \quad P(c_{\text{out}} = +1 \mid c_{\text{in}} = -1) = 0$$
 
-When mapped to physical computing systems, we distinguish three execution regimes:
+#### 2. Complete Transition Probability Matrix
+Mapping states to ordered index $\{-1, 0, +1\}$:
+$$\mathbf{P} = \begin{pmatrix}
+P(-1 \mid -1) & P(0 \mid -1) & P(+1 \mid -1) \\
+P(-1 \mid 0)  & P(0 \mid 0)  & P(+1 \mid 0) \\
+P(-1 \mid +1) & P(0 \mid +1) & P(+1 \mid +1)
+\end{pmatrix} = \begin{pmatrix}
+1/3 & 2/3 & 0 \\
+1/9 & 7/9 & 1/9 \\
+0   & 2/3 & 1/3
+\end{pmatrix}$$
 
-#### Regime 1: Software Emulation on Binary CPUs (Current Reality)
-- **Packed 2-Bit Representation:** 4 trits per byte.
-  - Storage: $S_{\text{packed}} = \lceil T/4 \rceil$ bytes.
-  - Information Density: $\frac{4 \log_2 3}{8} = \frac{6.33985}{8} \approx 79.25\%$ bit efficiency (20.75% storage waste vs binary).
-- **Instruction Overhead:**
-  To extract trit $i$ from byte $B$:
-  $$\text{trit}_i = ((B \gg (2i)) \ \& \ 3) - 1$$
-  On x86/ARM, this requires 1 shift, 1 mask, and 1 subtraction, or a vector lookup table instruction (`VPSHUFB` / `tbl`).
-- **Inner Loop Cost Function:**
-  $$T_{\text{op}} = T_{\text{arith}} + T_{\text{decode}} + T_{\text{normalize}}$$
-  Empirical measurements in `experiments/packed_ternary_matvec/` demonstrated that $T_{\text{decode}} \approx 3 \times T_{\text{arith}}$, which overwhelms any cache bandwidth reduction.
+#### 3. Stationary Distribution
+The stationary probability vector $\boldsymbol{\pi} = (\pi_{-1}, \pi_0, \pi_{+1})$ satisfies $\boldsymbol{\pi} \mathbf{P} = \boldsymbol{\pi}$ and $\sum \pi_j = 1$.
+By sign symmetry, $\pi_{-1} = \pi_{+1} = p$, and $\pi_0 = 1 - 2p$.
+Substituting into the equation for state $-1$:
+$$p \cdot \frac{1}{3} + (1 - 2p) \cdot \frac{1}{9} + p \cdot 0 = p$$
+$$\frac{1}{3} p + \frac{1}{9} - \frac{2}{9} p = p \implies \frac{1}{9} p + \frac{1}{9} = p \implies \frac{8}{9} p = \frac{1}{9} \implies p = \frac{1}{8}$$
+Thus:
+$$\pi_{-1} = \frac{1}{8}, \quad \pi_0 = \frac{3}{4}, \quad \pi_{+1} = \frac{1}{8}$$
+- **Stationary Non-Zero Carry Occurrence Probability:**
+  $$\pi(\text{carry} \neq 0) = \pi_{-1} + \pi_{+1} = \frac{1}{8} + \frac{1}{8} = \frac{1}{4} = 0.2500$$
 
-#### Regime 2: Host Multi-Limb Representation (Qualified SCG-07 Subsystem)
-- **`T81Limb27`:** 27 trits stored in a 64-bit unsigned integer (`std::uint64_t`).
-  - Maximum value: $(3^{27} - 1)/2 \approx 3.81 \times 10^{12} < 2^{42}$.
-  - Storage efficiency: $\frac{27 \log_2 3}{64} = \frac{42.79}{64} \approx 66.86\%$ bit efficiency (33.14% headroom).
-  - Normalization: Balanced ternary carry normalization requires division/modulo by 3 or balanced Booth carry sweeps:
-    $$r_i = ((s_i + 1) \pmod 3 + 3) \pmod 3 - 1, \quad c_{i+1} = (s_i - r_i) / 3$$
-- **`T81Limb54`:** 54 trits stored in an unsigned 128-bit integer (`unsigned __int128`).
-  - Maximum value: $(3^{54} - 1)/2 \approx 2.91 \times 10^{25} < 2^{85}$.
-  - Storage efficiency: $\frac{54 \log_2 3}{128} = \frac{85.59}{128} \approx 66.86\%$ bit efficiency.
-  - Headroom: The 42 unused bits in `__int128` guarantee that limb additions and intermediate multiply-accumulations never overflow host machine words prior to normalization.
+#### 4. Transient Dynamics and Expected Chain Lengths
 
-#### Regime 3: Hypothetical Native Ternary Hardware (Theoretical Model)
-- Let $C_3$ be the physical silicon area of a 3-state memory cell, and $C_2$ be that of a 2-state cell.
-- For equal information $M$:
-  $$\text{Cost}_{\text{ternary}} = C_3 \cdot \lceil \log_3 M \rceil$$
-  $$\text{Cost}_{\text{binary}} = C_2 \cdot \lceil \log_2 M \rceil$$
-- Breakeven requires:
-  $$\frac{C_3}{C_2} \le \frac{\lceil \log_2 M \rceil}{\lceil \log_3 M \rceil} \approx \log_2 3 \approx 1.585$$
-- In modern planar and 3D FinFET CMOS, multi-valued voltage storage degrades static noise margin by $\ge 50\%$, requiring higher signal-to-noise ratios, charge-pump complexity, or multi-level sensing amplifiers that drive $C_3 / C_2 > 2.0$. Consequently, native ternary memory is economically unviable in standard CMOS unless non-volatile multi-state resistive switching (RRAM/PCM) achieves native 3-state stability without peripheral circuit penalties.
+Let addition start from the quiescent initial condition $c_0 = 0$, represented by initial distribution $\mathbf{p}^{(0)} = (0, 1, 0)$.
+The eigenvalues of $\mathbf{P}$ are $\lambda_1 = 1$, $\lambda_2 = \frac{1}{3}$, and $\lambda_3 = \frac{1}{9}$.
+The transient non-zero carry probability at digit step $k \ge 1$ initialized with $c_0 = 0$ is:
+$$P(c_k \neq 0 \mid c_0 = 0) = \frac{1}{4} \left(1 - \left(\frac{1}{9}\right)^k\right)$$
+Evaluating exact steps:
+- For $k=1$: $P(c_1 \neq 0) = \frac{1}{4} \left(1 - \frac{1}{9}\right) = \frac{1}{4} \cdot \frac{8}{9} = \frac{2}{9} \approx 0.2222$ (matching the quiescent generation probability).
+- For $k=2$: $P(c_2 \neq 0) = \frac{1}{4} \left(1 - \frac{1}{81}\right) = \frac{20}{81} \approx 0.2469$.
+- For $k=3$: $P(c_3 \neq 0) = \frac{1}{4} \left(1 - \frac{1}{729}\right) = \frac{182}{729} \approx 0.2497$.
+- As $k \to \infty$: $P(c_k \neq 0) \to \frac{1}{4} = 0.2500$ (converging monotonically and rapidly to the stationary distribution).
+
+For an $N$-digit balanced ternary addition initialized with $c_0 = 0$, the expected total number of active non-zero carries across all $N$ positions is:
+$$E[N_{\text{carries}}] = \sum_{k=1}^N P(c_k \neq 0 \mid c_0 = 0) = \frac{1}{4} N - \frac{1}{32} \left(1 - \left(\frac{1}{9}\right)^N\right) \approx \frac{1}{4} N$$
+
+**Conditional Carry Run Length:**
+When a carry is generated at digit position $i$ ($c_i = +1$), it continues to propagate as $c_{i+1} = +1$ with constant probability $P(c_{\text{out}} = +1 \mid c_{\text{in}} = +1) = \frac{1}{3}$, and terminates ($c_{\text{out}} = 0$) with probability $\frac{2}{3}$.
+The number of digits $L$ over which this specific carry persists is geometrically distributed with stopping probability $p_{\text{stop}} = \frac{2}{3}$:
+$$E[L_{\text{ternary\_run}}] = \sum_{k=1}^\infty k \left(\frac{1}{3}\right)^{k-1} \left(\frac{2}{3}\right) = \frac{1}{2/3} = \frac{3}{2} = 1.500 \text{ trits}$$
+
+#### 5. Comparison with Binary Carry Mechanics
+
+In conventional binary addition $a_i + b_i + c_{\text{in}}$ with independent uniform bits $a_i, b_i \in \{0, 1\}$:
+- States: $c \in \{0, 1\}$.
+- From $c_{\text{in}} = 0$: $c_{\text{out}} = 1$ only if $a_i = 1, b_i = 1$ (prob $1/4$). Thus, carry generation probability is $0.2500$.
+- From $c_{\text{in}} = 1$: $c_{\text{out}} = 1$ if $a_i + b_i \ge 1$ (prob $3/4$). Thus, carry continuation probability is $0.7500$.
+- Binary transition matrix:
+  $$\mathbf{P}_{\text{bin}} = \begin{pmatrix} 3/4 & 1/4 \\ 1/4 & 3/4 \end{pmatrix}$$
+- Stationary distribution: $\pi_{\text{bin}}(c = 1) = \frac{1}{2} = 0.5000$.
+- Conditional carry run length given an active carry:
+  $$E[L_{\text{binary\_run}}] = \frac{1}{1 - 3/4} = 4.000 \text{ bits}$$
+
+**Summary Comparison:**
+| Metric | Balanced Ternary | Binary Unsigned | Ratio (Ternary / Binary) |
+| :--- | :---: | :---: | :---: |
+| Carry Generation $P(c_{\text{out}} \neq 0 \mid c_{\text{in}} = 0)$ | $2/9 \approx 0.2222$ | $1/4 = 0.2500$ | $0.889\times$ |
+| Carry Continuation $P(c_{\text{out}} \neq 0 \mid c_{\text{in}} \neq 0)$ | $1/3 \approx 0.3333$ | $3/4 = 0.7500$ | $0.444\times$ |
+| Stationary Carry Occurrence $\pi(c \neq 0)$ | $1/4 = 0.2500$ | $1/2 = 0.5000$ | $0.500\times$ |
+| Conditional Run Length $E[L_{\text{run}}]$ | $1.500$ trits | $4.000$ bits | $0.375\times$ |
+| Stationary Occurrence per Bit ($\pi / \log_2 R$) | $0.250 / 1.585 \approx 0.1577$ | $0.500 / 1.000 = 0.5000$ | $0.315\times$ |
+
+*Mathematical Finding:* Balanced ternary reduces stationary carry occurrence by $50\%$ per digit and by $68.5\%$ per equivalent bit of information, while shortening conditional carry runs from $4.0$ bits down to $1.5$ trits.
+
+---
+
+### 6.3 Implementation Memory Layout and Cost Models
+
+In evaluating the C++ arithmetic implementations, we distinguish actual struct memory layouts, logical digit capacity, host storage footprint, temporary accumulators, and hypothetical scalar-packed formats.
+
+#### 1. Actual Implemented C++ Class Layouts (`include/t81/types/T81Limb.hpp`)
+
+- **`T81Limb27` (27 trits):**
+  ```cpp
+  class T81Limb27 {
+    static constexpr int TRITS = 27;
+    static constexpr int TRYTES = 9;
+  private:
+    alignas(16) int8_t trytes_[TRYTES]{}; // 9 bytes + 7 bytes padding
+  };
+  ```
+  - **Memory Layout:** Aligned to 16 bytes via `alignas(16)`. Contains 9 `int8_t` tryte values followed by 7 bytes of compiler padding.
+  - **Logical Capacity:** $3^{27}$ values ($\approx 7.625 \times 10^{12} \approx 42.79$ bits of information).
+  - **Host Size:** `sizeof(T81Limb27) == 16` bytes (128 bits).
+  - **Host Information Density:** $\frac{42.79\text{ bits}}{128\text{ bits allocated}} \approx 33.43\%$.
+
+- **`T81Limb54` (54 trits):**
+  ```cpp
+  class T81Limb54 {
+    static constexpr int TRITS = 54;
+    static constexpr int TRYTES = 18;
+  private:
+    alignas(16) int8_t trytes_[TRYTES]{}; // 18 bytes + 14 bytes padding
+  };
+  ```
+  - **Memory Layout:** Aligned to 16 bytes. Contains 18 `int8_t` tryte values followed by 14 bytes of compiler padding.
+  - **Logical Capacity:** $3^{54}$ values ($\approx 5.815 \times 10^{25} \approx 85.59$ bits of information).
+  - **Host Size:** `sizeof(T81Limb54) == 32` bytes (256 bits).
+  - **Host Information Density:** $\frac{85.59\text{ bits}}{256\text{ bits allocated}} \approx 33.43\%$.
+
+- **Temporary Wide Accumulators:**
+  During multiplication, `T81Limb27::operator*` decodes trytes into trits and accumulates into a temporary stack array:
+  `std::array<int, 96> acc{}` (384 bytes on 64-bit systems), which is normalized across 54 trits and repacked into `T81Limb54`.
+  This temporary accumulator layout is transient and must not be confused with the persistent limb object layout.
+
+#### 2. Hypothetical Scalar-Packed Limb Layouts (Not Currently Implemented)
+If 27 trits were packed as scalar integers using base-3 positional encoding:
+- $3^{27} < 2^{43} \implies$ fits within a single 64-bit unsigned integer (`std::uint64_t`).
+- Packing 54 trits requires $3^{54} < 2^{86} \implies$ fits within an unsigned 128-bit integer (`unsigned __int128`).
+- Such scalar layouts would achieve $\frac{42.79}{64} \approx 66.86\%$ host word efficiency, but would require software division/modulo by 3 or balanced Booth multiplication, losing the parallel tryte lookups provided by the current `trytes_[]` Kogge-Stone adder.
 
 ---
 
@@ -293,16 +390,14 @@ To prevent unfair comparisons that favor balanced ternary through strawman basel
 
 The following confounding factors have historically distorted ternary research and must be explicitly controlled:
 
-1. **Host Word-Size Quantization Tax:**
-   Implementing 27-trit or 54-trit limbs on 64-bit and 128-bit binary microprocessors incurs an inherent $33.1\%$ capacity waste. Experiments must not attribute host binary register mismatches to inherent radix properties.
-2. **Compiler Optimization Discrepancies:**
-   Modern compilers (GCC, Clang) have decades of pattern-matching optimization for binary bit-shifts (`x >> 2`, `x & 3`), but generate slow integer division routines (`idiv` or multi-instruction reciprocal multiplication) for ternary modulo operations (`% 3`, `/ 3`).
-3. **Cache-Resident Microbenchmark Distortions:**
-   In small microbenchmarks fitting within L1 cache, memory bandwidth is not the bottleneck, so memory-footprint reductions (e.g., 2-bit packing) will appear disadvantageous due to ALU unpacking overhead. Conversely, in DRAM-bound regimes, memory savings can improve throughput only if decode pipelining matches memory streaming rates.
+1. **Host Word-Size and Struct Padding Taxes:**
+   `T81Limb27` incurs 7 bytes of padding per 16-byte struct, and `T81Limb54` incurs 14 bytes per 32-byte struct. Experiments must not attribute host binary struct alignment penalties to inherent radix properties.
+2. **Tryte-Level Composition vs Digit-Level Models:**
+   The T81 library groups 3 trits into a tryte (range $[-13, 13]$), using table lookups (`ADD_TABLE`, `COMPOSITION_TABLE`) for Kogge-Stone carry lookahead. This tryte-level composition behaves differently from the scalar digit-level Markov chain, as carries across trytes occur with probability $P(|c_{\text{out}}| = 1 \mid c_{\text{in}} = 0) = \frac{2}{27} \approx 0.0741$.
+3. **Compiler Optimization Discrepancies:**
+   Compilers optimize binary bit-shifts (`x >> 2`, `x & 3`) aggressively, but generate multi-instruction reciprocal routines or slow division for ternary modulo operations.
 4. **QEMU & Emulation Overhead:**
-   Benchmarking under instruction-set emulators (such as `qemu-aarch64`) measures the translation efficiency of the emulator's dynamic binary recompiler (TCG), not physical microarchitectural cycle counts.
-5. **Algorithmic Aliasing:**
-   Changes in representation often coincide with unintentional changes in algorithm (e.g., comparing Horner polynomial evaluation with sparse indexing, or comparing schoolbook multiplication with Karatsuba). Algorithmic structure must be held strictly invariant.
+   Instruction-set emulators measure emulator JIT overhead, not physical silicon cycle counts.
 
 ---
 
@@ -338,23 +433,34 @@ A research hypothesis is scientifically worthless without explicit falsification
 **EXP-SCG08-01: Multi-Precision Balanced-Ternary vs. Binary Carry-Propagation and Arithmetic Work Evaluation**
 
 ### 10.2 Objective & Scope
-The purpose of EXP-SCG08-01 is to evaluate whether the theoretical carry-reduction advantage of balanced ternary ($P(\text{carry} \neq 0) \approx 0.2593$ vs $0.5000$) can be realized as a net reduction in arithmetic work (operation count and carry resolution complexity) in multi-precision integer addition and multiplication, when compared against an exact binary control operating over identical information domains.
+The purpose of EXP-SCG08-01 is to evaluate whether the theoretical carry-reduction advantage of balanced ternary ($\pi(\text{carry} \neq 0) = 0.2500$ vs $0.5000$) can be realized as a net reduction in arithmetic work (operation count and carry resolution complexity) in multi-precision integer addition and multiplication, when compared against an exact binary control operating over identical information domains.
 
 This experiment operates on software algorithms using the qualified SCG-07 arithmetic implementations (`T81Limb27`, `T81Limb54`, `T81BigInt`) and an independent binary arbitrary-precision implementation. It requires **no speculative hardware** and executes using standard Linux x86_64 host resources.
 
-### 10.3 Experimental Design & Controls
+### 10.3 Three-Tier Experimental Architecture
 
-#### Arm A: Balanced-Ternary Treatment
-- Multi-precision operand representation: $K$ limbs of 27 trits each (`T81Limb27`), normalized via exact balanced-ternary carry resolution.
-- Addition: Parallel limb add followed by sequential 27-trit carry normalization.
-- Multiplication: Pairwise $K \times K$ limb cross-multiplication via `T81Limb27::operator*` accumulating into wide 54-trit limbs (`T81Limb54`), followed by multi-limb carry resolution.
+To avoid conflating mathematical carry dynamics with host CPU microarchitecture quirks, EXP-SCG08-01 is structured into three strictly decoupled evaluation tiers:
 
-#### Arm B: Matched Binary Control
-- Multi-precision operand representation: $M$ limbs of 64 bits each (`std::uint64_t`), normalized via standard two's complement carry propagation (`_addcarry_u64`).
-- Addition: Multi-limb add with standard carry chain.
-- Multiplication: $M \times M$ limb multiplication using 64-bit $\times$ 64-bit $\to$ 128-bit unsigned hardware products (`unsigned __int128`), with 64-bit carry propagation.
+#### Tier 1: Primary Mathematical Carry-Propagation Evaluation
+- **Goal:** Directly validate the mathematical 3-state carry Markov chain on pure digit-level sequences.
+- **Method:** Instrument scalar digit addition across $10^7$ independent uniformly distributed balanced-ternary digit pairs and binary bit pairs.
+- **Metrics:** Empirical carry generation frequency $f_{\text{gen}}$, stationary occurrence frequency $f_{\text{occ}}$, and average conditional run length $\bar{L}_{\text{run}}$.
+- **Expected Theoretical Outcomes:**
+  - Ternary: $f_{\text{gen}} \approx 0.2222$, $f_{\text{occ}} \approx 0.2500$, $\bar{L}_{\text{run}} \approx 1.500$ trits.
+  - Binary: $f_{\text{gen}} \approx 0.2500$, $f_{\text{occ}} \approx 0.5000$, $\bar{L}_{\text{run}} \approx 4.000$ bits.
 
-#### Matched Evaluation Bands
+#### Tier 2: Secondary Implementation Operation-Count Comparison
+- **Goal:** Measure the algorithmic operation work required to perform multi-precision addition and multiplication on actual limb data structures.
+- **Ternary Treatment:** Multi-limb addition and convolution multiplication using `T81Limb27` and `T81Limb54` (9-tryte and 18-tryte aligned arrays).
+- **Binary Control:** Multi-limb addition and convolution multiplication using standard 64-bit binary limbs (`std::uint64_t`).
+- **Metrics:** Count of primitive additions, table lookups, carry propagation steps, and normalizations normalized per bit of information.
+
+#### Tier 3: Exploratory Host Timing Comparison
+- **Goal:** Quantify the execution latency on a modern binary CPU (Intel Xeon / AMD EPYC x86_64).
+- **Caveat:** Explicitly labeled exploratory; does not measure native ternary silicon speed.
+- **Metrics:** Nanoseconds per multi-precision addition and multiplication pass.
+
+### 10.4 Matched Evaluation Bands
 Evaluated across 5 matched information capacity tiers:
 1. **Tier 1 (64-bit equivalent):** Binary $B = 64$ bits (1 limb); Ternary $T = 41$ trits (2 limbs of 27 trits).
 2. **Tier 2 (128-bit equivalent):** Binary $B = 128$ bits (2 limbs); Ternary $T = 81$ trits (3 limbs of 27 trits).
@@ -362,17 +468,10 @@ Evaluated across 5 matched information capacity tiers:
 4. **Tier 4 (512-bit equivalent):** Binary $B = 512$ bits (8 limbs); Ternary $T = 324$ trits (12 limbs of 27 trits).
 5. **Tier 5 (1024-bit equivalent):** Binary $B = 1024$ bits (16 limbs); Ternary $T = 648$ trits (24 limbs of 27 trits).
 
-### 10.4 Primary Metrics & Measurements
-1. **Carry Event Count ($N_{\text{carry}}$):** Exact count of non-zero carries generated during $10^6$ uniform random additions per tier.
-2. **Carry Propagation Run-Length ($L_{\text{run}}$):** Distribution and maximum length of continuous carry propagation chains.
-3. **Normalized Operation Workload ($W_{\text{norm}}$):** Total number of elemental operations (additions, shifts, masks, normalization steps) required per bit of information:
-   $$W_{\text{norm}} = \frac{\text{Total Elementary Operations}}{\text{Information Capacity (bits)}}$$
-4. **Host Execution Latency:** Median and 99th-percentile execution time (measured in nanoseconds via steady-state monotonic clock) across $10^6$ runs.
-
 ### 10.5 Preregistered Success & Failure Criteria
-- **Success Criterion 1 (Mathematical Carry Verification):** Empirical carry generation frequency in Arm A matches theoretical expectation $\frac{7}{27} \approx 0.2593 \pm 0.005$, and average carry run-length is $\le 0.360$.
-- **Success Criterion 2 (Computational Advantage):** For wide operands ($\ge 512$ bits equivalent), balanced-ternary multi-limb addition achieves fewer total normalization operations per bit than binary carry propagation.
-- **Falsification Threshold (Immediate Closure):** If the total elementary operations per bit $W_{\text{norm}}$ for balanced ternary exceeds that of binary by $> 2.0\times$ across all evaluated tiers, the hypothesis that balanced ternary provides an algorithmic or carry-propagation advantage on multi-precision arithmetic is formally **FALSIFIED**.
+- **Tier 1 Success (Mathematical Carry Parity):** Empirical carry generation $f_{\text{gen}} \in [0.217, 0.227]$, stationary occurrence $f_{\text{occ}} \in [0.245, 0.255]$, and average run length $\bar{L}_{\text{run}} \in [1.45, 1.55]$ trits.
+- **Tier 2 Success (Algorithmic Operation Work):** For wide multi-precision multiplication ($\ge 512$ bits equivalent), balanced-ternary limb convolution requires $\le 1.10\times$ total operations per bit compared to binary.
+- **Falsification Threshold (Immediate Closure):** If the total elementary operations per bit for balanced ternary exceeds that of binary by $> 2.0\times$ across all evaluated bands, the hypothesis of software multi-precision advantage is formally **FALSIFIED**.
 
 ---
 
@@ -383,7 +482,7 @@ To ensure complete scientific auditability, the implementation of EXP-SCG08-01 (
 1. **Independent Verification Oracle:**
    The experiment harness must link the decoupled arbitrary-precision `ExactBigIntOracle` (base $10^9$) established in SCG-07 Phase 6 to verify the mathematical correctness of every computed product and sum independently of both candidate arms.
 2. **Deterministic PRNG Seeding:**
-   All pseudo-random operand vectors must be generated using an explicit, seeded PRNG (`std::mt19937_64` with fixed seed `0x5C608_001ULL`), ensuring 100% reproducible test vectors across independent platforms.
+   All pseudo-random operand vectors must be generated using an explicit, seeded PRNG (`std::mt19937_64` with valid literal seed `0x5C608001ULL`), ensuring 100% reproducible test vectors across independent platforms.
 3. **Machine-Readable JSON Evidence Schema:**
    All measured metrics, carry distributions, and cycle measurements must be emitted to a validated JSON artifact conforming to schema `t81.scg08.carry-experiment.v1`.
 4. **Build & Test Isolation:**
