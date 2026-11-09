@@ -151,6 +151,7 @@ The current baseline (`origin/main` at `1604fd204346c0ca09d14abe6be6f2417170f741
 2. **Repository Governance Structure:** Committed directory `review/pr-656/` causes `scripts/governance/check_root_structure.py` (`t81_root_structure_policy_test`) to fail.
 3. **Sparse Checkout Discrepancies:** Windows sparse checkout in `.github/workflows/ci.yml:476-505` omits `/development_tests/**`, failing CMake generation on missing `development_tests/test_real_direct_api.cpp`.
 4. **External Environment Incompatibilities:** GCC 15 `std::function` regex automaton `-Werror=maybe-uninitialized` warning in Google Benchmark; macOS x86_64 GCC 14 libgtest ABI mismatch; and macOS ARM64 clang unsupported runner label `macos-14-arm64-us-default`.
+5. **Transient External Infrastructure Failures:** Transient GitHub HTTP 504 Gateway Timeout or HTTP 503 errors during `lychee` markdown link resolution in `lint / spec & docs` (failing the aggregate `quality gate / required` job).
 
 Zero new failures or regressions are introduced by the changes in this PR.
 
