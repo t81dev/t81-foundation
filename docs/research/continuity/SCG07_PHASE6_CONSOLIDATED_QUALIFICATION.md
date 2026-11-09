@@ -154,7 +154,7 @@ When building the standalone ASan/UBSan target (`g++ -std=c++20 -fsanitize=addre
 
 ## 10. CI Failure Attribution
 
-All check runs on GitHub Actions check suite `42683956250` were audited. Every failure is an independently confirmed, pre-existing upstream repository regression or environmental platform limitation, with zero failures caused by the scoped qualification changes:
+All check runs on GitHub Actions check suites `42683956250` and `42686920364` (PR #741) were audited. Every failure is an independently confirmed, pre-existing upstream repository regression or environmental platform limitation, with zero failures caused by the scoped qualification changes:
 
 1. **`cxx-std / linux-x86_64 / clang / OFF` & `ON` (Exit Code 8):**
    - CTest executed 422 tests. 420 passed (99.5%). Exactly 2 failed:
@@ -173,8 +173,8 @@ All check runs on GitHub Actions check suite `42683956250` were audited. Every f
    - Linker error: Homebrew `libgtest.a` was compiled against LLVM `libc++`, causing undefined symbol errors for `std::__1::basic_string` when linking with GCC `libstdc++`.
 7. **`build / macos-arm64 / clang` (Cancelled):**
    - GitHub Actions runner configuration failure: `The configuration 'macos-14-arm64-us-default' is not supported`.
-8. **`build / sanitizers` (Timed out after 30m):**
-   - Cancelled due to hitting the 30-minute runner ceiling while running long-duration AI model tasks; tests 1..134 passed prior to cancellation.
+8. **`build / sanitizers` (Exit Code 8):**
+   - Completed CTest with 420/422 passing; failed on inherited tests #306 and #326.
 9. **`quality gate / required` (Exit Code 1):**
    - Downstream aggregator failed because upstream required jobs failed on the inherited issues listed above.
 10. **Zero Qualification Regressions:** Across all jobs where `ctest` ran, `t81_phase6_qualification_test` and all 6 preceding arithmetic suites passed with zero errors.
