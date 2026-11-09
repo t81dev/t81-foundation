@@ -1,9 +1,9 @@
 # T81 Foundation — AI Research Continuity Update (2026-11-09)
 
-**Class:** Non-normative, dated handoff; not an independent rerun, experiment authorization, or normative amendment.
-**Repository:** https://github.com/t81dev/t81-foundation
-**Observed `main`:** `8dec43ac2a9a702c9ae54229cf6891ee63f285c0` (GitHub branch inspection, 2026-11-09).
-**Primary evidence:** [SCG-07 Phase 6 qualification](../research/continuity/SCG07_PHASE6_CONSOLIDATED_QUALIFICATION.md), [PR #741](https://github.com/t81dev/t81-foundation/pull/741), preceding SCG-07 receipts and [SCG-06 reproduction](../research/continuity/SCG06_ARITHMETIC_DEFECT_REPRODUCTION_REPORT.md).
+**Class:** Non-normative, dated handoff; not an independent rerun, experiment authorization, or normative amendment.  
+**Repository:** https://github.com/t81dev/t81-foundation  
+**Observed `main`:** `8dec43ac2a9a702c9ae54229cf6891ee63f285c0` (GitHub branch inspection, 2026-11-09).  
+**Primary evidence:** [SCG-07 Phase 6 qualification](../research/continuity/SCG07_PHASE6_CONSOLIDATED_QUALIFICATION.md), [PR #741](https://github.com/t81dev/t81-foundation/pull/741), preceding SCG-07 receipts and [SCG-06 reproduction](../research/continuity/SCG06_ARITHMETIC_DEFECT_REPRODUCTION_REPORT.md).  
 **Freshness rule:** Recheck current main, relevant PRs, authorization, and experiment documents before acting. This document supersedes older *operational next-step* instructions, not historical evidence.
 
 ## Executive handoff
