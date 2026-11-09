@@ -46,8 +46,10 @@ private:
     return a;
   }
 
-  // Safely converts balanced ternary integer to IEEE-754 double without
-  // depending on to_int64() range limits (which throws on > 40 trits).
+  // Direct trit-by-trit conversion of balanced ternary integer to IEEE-754 binary64 double.
+  // Restores exception safety across all supported widths (13..324 trits) by eliminating
+  // dependency on to_int64() range limits (which throws std::overflow_error on > 40 trits).
+  // Precision is governed by standard IEEE-754 binary64 limits (~53 bits mantissa).
   static double int_to_double(const Int& val) noexcept {
     if (val.is_zero()) return 0.0;
     long double sum = 0.0L;
