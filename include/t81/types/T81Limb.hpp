@@ -818,12 +818,20 @@ inline std::pair<T81Limb, T81Limb> T81Limb::mul_wide(const T81Limb& a, const T81
 }
 
 inline T81Limb54 T81Limb54::karatsuba(const T81Limb54& x, const T81Limb54& y) noexcept {
-  constexpr int SPLIT = 9;
+  constexpr int SPLIT = 9;  // 9 trytes = 27 trits
   auto x0 = T81Limb27::from_low_27(x);
   auto x1 = T81Limb27::from_high_27(x);
   auto y0 = T81Limb27::from_low_27(y);
   auto y1 = T81Limb27::from_high_27(y);
 
+  // Karatsuba components:
+  // z0 = x0 * y0
+  // z2 = x1 * y1
+  // mid = (x0 + x1) * (y0 + y1)
+  // z1 = mid - z0 - z2 = x0 * y1 + x1 * y0
+  // Note: (x0 + x1) intermediate carry at trit 27 scales by 3^27 in z1, which when
+  // shifted by 3^27 (SHIFT=9 trytes) has weight >= 3^54 = 0 (mod 3^54). Hence 27-trit
+  // modular addition for (x0 + x1) introduces zero error in the 54-trit modular product.
   auto z0 = T81Limb54(x0 * y0);
   auto z2 = T81Limb54(x1 * y1);
   auto mid = T81Limb54((x0 + x1) * (y0 + y1));
@@ -832,7 +840,8 @@ inline T81Limb54 T81Limb54::karatsuba(const T81Limb54& x, const T81Limb54& y) no
   T81Limb54 result = z0;
   constexpr int SHIFT = SPLIT;
   result = result + z1.shift_left_trytes(SHIFT);
-  result = result + z2.shift_left_trytes(SHIFT * 2);
+  result =
+      result + z2.shift_left_trytes(SHIFT * 2);  // shifts >= 18 trytes (54 trits) evaluate to 0
   return result;
 }
 

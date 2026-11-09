@@ -1194,6 +1194,9 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   add_executable(t81_limb54_reference_mul_test tests/cpp/test_t81_limb54_reference_mul.cpp)
   target_link_libraries(t81_limb54_reference_mul_test PRIVATE t81_core)
 
+  add_executable(t81_limb54_karatsuba_test tests/cpp/test_t81_limb54_karatsuba.cpp)
+  target_link_libraries(t81_limb54_karatsuba_test PRIVATE t81_core)
+
   add_executable(t81_t81int_generic_div_test tests/cpp/test_t81int_generic_div.cpp)
   target_link_libraries(t81_t81int_generic_div_test PRIVATE t81_core)
 
@@ -1427,6 +1430,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_bigint_sub_test
     t81_limb27_mul_test
     t81_limb54_reference_mul_test
+    t81_limb54_karatsuba_test
     t81_t81int_generic_div_test
     t81_int_sign_trit_test
     t81_bigint_test
