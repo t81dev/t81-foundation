@@ -297,7 +297,7 @@ void test_f1_limb27_multiplication() {
     auto prod = l1 * l2;
     auto prod_trits = prod.to_trits();
     QUAL_REQUIRE(prod_trits[0] == -1 && prod_trits[1] == 1, "F1 reproducer: 1 * 2 must be 2");
-    for (size_t i = 2; i < 27; ++i) {
+    for (size_t i = 2; i < 54; ++i) {
       QUAL_REQUIRE(prod_trits[i] == 0, "F1 reproducer: upper trits must be zero");
     }
   }
@@ -326,7 +326,8 @@ void test_f1_limb27_multiplication() {
 }
 
 void test_f2_and_f3_limb54_multiplication() {
-  std::cout << "[QUAL] Running F2 & F3 (T81Limb54 reference_mul & karatsuba) checks...\n";
+  std::cout << "[QUAL] Running F2 & F3 (T81Limb54 reference_mul & karatsuba) "
+               "checks...\n";
 
   // 1. Original F2 reproducers: dense all-ones 54-trit vectors
   {
@@ -346,7 +347,77 @@ void test_f2_and_f3_limb54_multiplication() {
                  "F2 vs F3 differential mismatch on all-ones");
   }
 
-  // 2. Randomized trials: 2,500 trials against independent exact oracle + differential check
+  // 2. Exact historical SCG-06 300-case reproduction battery from reproduce_f1_f7.py
+  {
+    std::cout << "[QUAL] Replaying exact SCG-06 historical 300-case battery "
+                 "(seed 0x123456789abcdef0ULL)...\n";
+    SplitMix64 scg06_rng(0x123456789abcdef0ULL);
+    int carry_loss_count = 0;
+    int no_carry_loss_count = 0;
+
+    for (int k = 0; k < 300; ++k) {
+      std::array<int8_t, 54> ta{}, tb{};
+      int mode = k % 5;
+      for (int i = 0; i < 54; ++i) {
+        uint64_t r = scg06_rng.next();
+        if (mode == 0) {  // sparse
+          ta[i] = (r % 7 == 0) ? static_cast<int8_t>((r >> 4) % 3 - 1) : 0;
+          tb[i] = ((r >> 8) % 7 == 0) ? static_cast<int8_t>((r >> 12) % 3 - 1) : 0;
+        } else if (mode == 1) {  // small width
+          ta[i] = (i < 20) ? static_cast<int8_t>(r % 3 - 1) : 0;
+          tb[i] = (i < 20) ? static_cast<int8_t>((r >> 8) % 3 - 1) : 0;
+        } else if (mode == 2) {  // dense
+          ta[i] = static_cast<int8_t>(r % 3 - 1);
+          tb[i] = static_cast<int8_t>((r >> 8) % 3 - 1);
+        } else if (mode == 3) {  // alternating
+          ta[i] = (i % 2 == 0) ? 1 : -1;
+          tb[i] = static_cast<int8_t>((r >> 4) % 3 - 1);
+        } else {  // boundary
+          ta[i] = (i < 27) ? 1 : -1;
+          tb[i] = static_cast<int8_t>((r >> 4) % 3 - 1);
+        }
+      }
+
+      auto la = T81Limb54::from_trits(ta);
+      auto lb = T81Limb54::from_trits(tb);
+
+      // Verify intermediate 28th-trit carry split definition
+      auto x0 = T81Limb27::from_low_27(la);
+      auto x1 = T81Limb27::from_high_27(la);
+      auto y0 = T81Limb27::from_low_27(lb);
+      auto y1 = T81Limb27::from_high_27(lb);
+      auto add_x = x0.addc(x1);
+      auto add_y = y0.addc(y1);
+      bool has_carry = (add_x.second != 0 || add_y.second != 0);
+      if (has_carry) {
+        carry_loss_count++;
+      } else {
+        no_carry_loss_count++;
+      }
+
+      auto p_ref = T81Limb54::reference_mul(la, lb);
+      auto p_kar = T81Limb54::karatsuba(la, lb);
+      QUAL_REQUIRE(p_ref.to_trits() == p_kar.to_trits(),
+                   "SCG-06 historical case: reference_mul != karatsuba");
+
+      auto oa = trits_to_oracle(ta);
+      auto ob = trits_to_oracle(tb);
+      auto expected_prod = ExactBigIntOracle::mul(oa, ob);
+      auto expected_trits = oracle_to_canonical_trits<54>(expected_prod);
+
+      QUAL_REQUIRE(p_kar.to_trits() == expected_trits,
+                   "SCG-06 historical case: karatsuba != ExactBigIntOracle");
+    }
+
+    QUAL_REQUIRE(carry_loss_count == 68,
+                 "SCG-06 historical replay must yield exactly 68 carry-loss cases");
+    QUAL_REQUIRE(no_carry_loss_count == 232,
+                 "SCG-06 historical replay must yield exactly 232 no-carry-loss cases");
+    std::cout << "[QUAL] SCG-06 historical 300 trials verified: 68 carry-loss "
+                 "and 232 no-carry-loss cases passed 100%!\n";
+  }
+
+  // 3. Randomized trials: 2,500 trials against independent exact oracle + differential check
   SplitMix64 rng(0xCAFEBABEF00DULL);
   for (size_t trial = 0; trial < 2500; ++trial) {
     std::array<int8_t, 54> a_trits{}, b_trits{};
@@ -476,6 +547,37 @@ void test_f6_and_f7_t81fraction() {
   }
 
   // 2. F7: to_double() across boundary widths (13, 40, 41, 81, 324 trits)
+  // and non-trivial genuinely fractional positive/negative rational examples.
+  {
+    // Width 13 (minimum admitted width)
+    using Frac13 = T81Fraction<13>;
+    Frac13 f13_p(Frac13::Int(7), Frac13::Int(11));
+    double d13_p = f13_p.to_double();
+    double expected13_p = 7.0 / 11.0;
+    QUAL_REQUIRE(std::abs(d13_p - expected13_p) < 1e-12,
+                 "F7: Frac13 7/11 conversion error out of tolerance");
+
+    Frac13 f13_n(Frac13::Int(-7), Frac13::Int(11));
+    double d13_n = f13_n.to_double();
+    double expected13_n = -7.0 / 11.0;
+    QUAL_REQUIRE(std::abs(d13_n - expected13_n) < 1e-12,
+                 "F7: Frac13 -7/11 conversion error out of tolerance");
+  }
+
+  {
+    // Width 40 (int64 boundary limit)
+    using Frac40 = T81Fraction<40>;
+    Frac40::Int p39(1);
+    for (int i = 0; i < 39; ++i) {
+      p39 = p39 * Frac40::Int(3);
+    }
+    Frac40 f40(p39, Frac40::Int(2));  // 3^39 / 2
+    double d40 = f40.to_double();
+    double expected40 = std::pow(3.0, 39) / 2.0;
+    double rel_err = std::abs(d40 - expected40) / expected40;
+    QUAL_REQUIRE(rel_err < 1e-12, "F7: Frac40 3^39/2 conversion error out of tolerance");
+  }
+
   {
     // Width 41 (> 40 trits previously aborted in to_int64())
     using Frac41 = T81Fraction<41>;
@@ -502,10 +604,19 @@ void test_f6_and_f7_t81fraction() {
     double expected = std::pow(3.0, 80);
     double rel_err = std::abs(d_val - expected) / expected;
     QUAL_REQUIRE(rel_err < 1e-12, "F7: Frac81 to_double() precision out of tolerance");
+
+    // Non-trivial fractional ratios: positive & negative
+    Frac81 f_frac_pos(Frac81::Int(2), Frac81::Int(3));
+    QUAL_REQUIRE(std::abs(f_frac_pos.to_double() - (2.0 / 3.0)) < 1e-12,
+                 "F7: Frac81 2/3 conversion error out of tolerance");
+
+    Frac81 f_frac_neg(Frac81::Int(-2), Frac81::Int(3));
+    QUAL_REQUIRE(std::abs(f_frac_neg.to_double() - (-2.0 / 3.0)) < 1e-12,
+                 "F7: Frac81 -2/3 conversion error out of tolerance");
   }
 
   {
-    // Width 324
+    // Width 324 (maximum supported width)
     using Frac324 = T81Fraction<324>;
     Frac324::Int p300(1);
     for (int i = 0; i < 300; ++i) {
