@@ -216,4 +216,3 @@ Python verification script successfully asserted all modeled discrete quantities
 
 **Final Review Disposition:** **`READY FOR REVIEW`**
 
-```
