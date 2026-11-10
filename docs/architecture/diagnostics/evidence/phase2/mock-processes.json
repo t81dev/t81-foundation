@@ -1,0 +1,296 @@
+[
+  {
+    "mode": "pass",
+    "entry": "ternaryos/automated_verification.sh",
+    "exit": 0,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-ftrg808h/results with spaces/ternaryos-verification-1x6y0kj7\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nboot_sequence_test: CHECK COMPLETED\nhardware_test: CHECK COMPLETED\nintegration_test: CHECK COMPLETED\nTests Completed: 5/5\nQEMU exit and final evidence: PASSED\nStatus: VERIFICATION SUCCESSFUL\nDetail: \n",
+    "stderr": ""
+  },
+  {
+    "mode": "exit",
+    "entry": "ternaryos/automated_verification.sh",
+    "exit": 37,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-ftrg808h/results with spaces/ternaryos-verification-s_vlwgb6\nTernaryOS bounded QEMU verification (not OS qualification)\nTests Completed: 0/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: QEMU exit status 37\n",
+    "stderr": ""
+  },
+  {
+    "mode": "pass",
+    "entry": "drivers/qemu/scripts/verify_production.sh",
+    "exit": 0,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-ftrg808h/results with spaces/ternaryos-verification-zf_6j7l4\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nboot_sequence_test: CHECK COMPLETED\nhardware_test: CHECK COMPLETED\nintegration_test: CHECK COMPLETED\nTests Completed: 5/5\nQEMU exit and final evidence: PASSED\nStatus: VERIFICATION SUCCESSFUL\nDetail: \n",
+    "stderr": ""
+  },
+  {
+    "mode": "exit",
+    "entry": "drivers/qemu/scripts/verify_production.sh",
+    "exit": 37,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-ftrg808h/results with spaces/ternaryos-verification-icvnp1ey\nTernaryOS bounded QEMU verification (not OS qualification)\nTests Completed: 0/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: QEMU exit status 37\n",
+    "stderr": ""
+  },
+  {
+    "mode": "pass",
+    "entry": "/private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q4hbye77/deployment/scripts/verify_production.sh",
+    "exit": 0,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q4hbye77/results with spaces/ternaryos-verification-xbnnivuw\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nboot_sequence_test: CHECK COMPLETED\nhardware_test: CHECK COMPLETED\nintegration_test: CHECK COMPLETED\nTests Completed: 5/5\nQEMU exit and final evidence: PASSED\nStatus: VERIFICATION SUCCESSFUL\nDetail: \n",
+    "stderr": ""
+  },
+  {
+    "mode": "exit",
+    "entry": "/private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q4hbye77/deployment/scripts/verify_production.sh",
+    "exit": 37,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q4hbye77/results with spaces/ternaryos-verification-thbahhyq\nTernaryOS bounded QEMU verification (not OS qualification)\nTests Completed: 0/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: QEMU exit status 37\n",
+    "stderr": ""
+  },
+  {
+    "mode": "pass",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 1,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-hgm48klq/results with spaces/ternaryos-verification-wgeh52zs\nTernaryOS bounded QEMU verification (not OS qualification)\nTests Completed: 0/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: QEMU executable unavailable\n",
+    "stderr": ""
+  },
+  {
+    "mode": "pass",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 1,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-hgm48klq/results with spaces/ternaryos-verification-rzp9ujbi\nTernaryOS bounded QEMU verification (not OS qualification)\nTests Completed: 0/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: image missing or empty: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-hgm48klq/absent\n",
+    "stderr": ""
+  },
+  {
+    "mode": "pass",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 1,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-hgm48klq/results with spaces/ternaryos-verification-nqzeedia\nTernaryOS bounded QEMU verification (not OS qualification)\nTests Completed: 0/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: EDK2 AArch64 firmware unavailable; set BIOS\n",
+    "stderr": ""
+  },
+  {
+    "mode": "pass",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 1,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-hgm48klq/results with spaces/ternaryos-verification-u6ejwas7\nTernaryOS bounded QEMU verification (not OS qualification)\nTests Completed: 0/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: QEMU executable unavailable\n",
+    "stderr": ""
+  },
+  {
+    "mode": "pass",
+    "entry": "/private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-qoelc44k/nonexistent.sh",
+    "exit": 127,
+    "stdout": "",
+    "stderr": "bash: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-qoelc44k/nonexistent.sh: No such file or directory\n"
+  },
+  {
+    "mode": "exit",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 37,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-qoelc44k/results with spaces/ternaryos-verification-y0vp0ewe\nTernaryOS bounded QEMU verification (not OS qualification)\nTests Completed: 0/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: QEMU exit status 37\n",
+    "stderr": ""
+  },
+  {
+    "mode": "missing",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 124,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q166yhv5/results with spaces/ternaryos-verification-fntrsnvj\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nTests Completed: 2/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: timeout: verification wall-clock deadline exceeded\n",
+    "stderr": ""
+  },
+  {
+    "mode": "empty",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 124,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q166yhv5/results with spaces/ternaryos-verification-961o2wpk\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nTests Completed: 2/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: timeout: verification wall-clock deadline exceeded\n",
+    "stderr": ""
+  },
+  {
+    "mode": "exit",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 37,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q166yhv5/results with spaces/ternaryos-verification-_dwl61ep\nTernaryOS bounded QEMU verification (not OS qualification)\nTests Completed: 0/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: QEMU exit status 37\n",
+    "stderr": ""
+  },
+  {
+    "mode": "signal",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 143,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q166yhv5/results with spaces/ternaryos-verification-5g8n4psv\nTernaryOS bounded QEMU verification (not OS qualification)\nTests Completed: 0/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: QEMU exit status -15\n",
+    "stderr": ""
+  },
+  {
+    "mode": "hang",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 124,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q166yhv5/results with spaces/ternaryos-verification-08g_ljx1\nTernaryOS bounded QEMU verification (not OS qualification)\nTests Completed: 0/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: timeout: verification deadline exceeded\n",
+    "stderr": ""
+  },
+  {
+    "mode": "failure",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 1,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q166yhv5/results with spaces/ternaryos-verification-5f1ht7ch\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nTests Completed: 2/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: failure output in serial.log\n",
+    "stderr": ""
+  },
+  {
+    "mode": "incomplete",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 124,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q166yhv5/results with spaces/ternaryos-verification-ulgoe8y3\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nTests Completed: 2/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: timeout: verification deadline exceeded\n",
+    "stderr": ""
+  },
+  {
+    "mode": "qmp_error",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 1,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q166yhv5/results with spaces/ternaryos-verification-pah4vpfg\nTernaryOS bounded QEMU verification (not OS qualification)\nTests Completed: 0/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: QMP command failed: {'error': {'desc': 'fixture failure'}}\n",
+    "stderr": ""
+  },
+  {
+    "mode": "stopped",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 1,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q166yhv5/results with spaces/ternaryos-verification-_j9zsn2p\nTernaryOS bounded QEMU verification (not OS qualification)\nTests Completed: 0/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: QEMU is not running\n",
+    "stderr": ""
+  },
+  {
+    "mode": "missing_dump",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 1,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q166yhv5/results with spaces/ternaryos-verification-7jaa3j0m\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nTests Completed: 1/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: missing, empty or incomplete RAM sample\n",
+    "stderr": ""
+  },
+  {
+    "mode": "empty_dump",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 1,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q166yhv5/results with spaces/ternaryos-verification-k7adwez7\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nTests Completed: 1/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: missing, empty or incomplete RAM sample\n",
+    "stderr": ""
+  },
+  {
+    "mode": "bad_cpu",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 1,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q166yhv5/results with spaces/ternaryos-verification-8kniq32n\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nboot_sequence_test: CHECK COMPLETED\nTests Completed: 3/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: unexpected CPU configuration\n",
+    "stderr": ""
+  },
+  {
+    "mode": "bad_block",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 1,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q166yhv5/results with spaces/ternaryos-verification-izen64k7\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nboot_sequence_test: CHECK COMPLETED\nTests Completed: 3/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: boot block device not inserted\n",
+    "stderr": ""
+  },
+  {
+    "mode": "missing_help",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 124,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q166yhv5/results with spaces/ternaryos-verification-_weeqj2q\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nboot_sequence_test: CHECK COMPLETED\nhardware_test: CHECK COMPLETED\nTests Completed: 4/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: timeout: verification wall-clock deadline exceeded\n",
+    "stderr": ""
+  },
+  {
+    "mode": "late_failure",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 1,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q166yhv5/results with spaces/ternaryos-verification-18ck_jmr\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nboot_sequence_test: CHECK COMPLETED\nhardware_test: CHECK COMPLETED\nTests Completed: 4/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: failure output in serial.log\n",
+    "stderr": ""
+  },
+  {
+    "mode": "hang_shutdown",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 124,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q166yhv5/results with spaces/ternaryos-verification-a_kfn5kc\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nboot_sequence_test: CHECK COMPLETED\nhardware_test: CHECK COMPLETED\nintegration_test: CHECK COMPLETED\nTests Completed: 5/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: timeout: verification wall-clock deadline exceeded\n",
+    "stderr": ""
+  },
+  {
+    "mode": "exit_shutdown",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 23,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q166yhv5/results with spaces/ternaryos-verification-pzsymkqd\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nboot_sequence_test: CHECK COMPLETED\nhardware_test: CHECK COMPLETED\nintegration_test: CHECK COMPLETED\nTests Completed: 5/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: QEMU exit status 23\n",
+    "stderr": ""
+  },
+  {
+    "mode": "dribble",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 124,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q166yhv5/results with spaces/ternaryos-verification-un9ib2fq\nTernaryOS bounded QEMU verification (not OS qualification)\nTests Completed: 0/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: timeout: verification wall-clock deadline exceeded\n",
+    "stderr": ""
+  },
+  {
+    "mode": "ignore_term",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 124,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q166yhv5/results with spaces/ternaryos-verification-jyhxtiah\nTernaryOS bounded QEMU verification (not OS qualification)\nTests Completed: 0/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: timeout: verification deadline exceeded\n",
+    "stderr": ""
+  },
+  {
+    "mode": "early_help",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 124,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-q166yhv5/results with spaces/ternaryos-verification-ykd9gvdv\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nboot_sequence_test: CHECK COMPLETED\nhardware_test: CHECK COMPLETED\nTests Completed: 4/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: timeout: verification deadline exceeded\n",
+    "stderr": ""
+  },
+  {
+    "mode": "pass",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 0,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-g4d_a8fe/ternaryos-verification-z_2y7vy5\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nboot_sequence_test: CHECK COMPLETED\nhardware_test: CHECK COMPLETED\nintegration_test: CHECK COMPLETED\nTests Completed: 5/5\nQEMU exit and final evidence: PASSED\nStatus: VERIFICATION SUCCESSFUL\nDetail: \n",
+    "stderr": ""
+  },
+  {
+    "mode": "pass",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 0,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-g4d_a8fe/ternaryos-verification-lf0q90ak\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nboot_sequence_test: CHECK COMPLETED\nhardware_test: CHECK COMPLETED\nintegration_test: CHECK COMPLETED\nTests Completed: 5/5\nQEMU exit and final evidence: PASSED\nStatus: VERIFICATION SUCCESSFUL\nDetail: \n",
+    "stderr": ""
+  },
+  {
+    "mode": "pass",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 0,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-g4d_a8fe/relative-results/ternaryos-verification-hnkk95u2\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nboot_sequence_test: CHECK COMPLETED\nhardware_test: CHECK COMPLETED\nintegration_test: CHECK COMPLETED\nTests Completed: 5/5\nQEMU exit and final evidence: PASSED\nStatus: VERIFICATION SUCCESSFUL\nDetail: \n",
+    "stderr": ""
+  },
+  {
+    "mode": "pass",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 1,
+    "stdout": "TernaryOS bounded QEMU verification (not OS qualification)\nTests Completed: 0/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: [Errno 17] File exists: '/private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-g4d_a8fe/image'\n",
+    "stderr": ""
+  },
+  {
+    "mode": "pass",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 0,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-2e3q32iv/results with spaces/ternaryos-verification-4haezan7\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nboot_sequence_test: CHECK COMPLETED\nhardware_test: CHECK COMPLETED\nintegration_test: CHECK COMPLETED\nTests Completed: 5/5\nQEMU exit and final evidence: PASSED\nStatus: VERIFICATION SUCCESSFUL\nDetail: \n",
+    "stderr": ""
+  },
+  {
+    "mode": "pass",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 0,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-2e3q32iv/results with spaces/ternaryos-verification-kn0k39vn\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nboot_sequence_test: CHECK COMPLETED\nhardware_test: CHECK COMPLETED\nintegration_test: CHECK COMPLETED\nTests Completed: 5/5\nQEMU exit and final evidence: PASSED\nStatus: VERIFICATION SUCCESSFUL\nDetail: \n",
+    "stderr": ""
+  },
+  {
+    "mode": "pass",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 0,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-hwd7onbr/results with spaces/ternaryos-verification-q55cqeip\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nboot_sequence_test: CHECK COMPLETED\nhardware_test: CHECK COMPLETED\nintegration_test: CHECK COMPLETED\nTests Completed: 5/5\nQEMU exit and final evidence: PASSED\nStatus: VERIFICATION SUCCESSFUL\nDetail: \n",
+    "stderr": ""
+  },
+  {
+    "mode": "incomplete",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 124,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-hwd7onbr/results with spaces/ternaryos-verification-gsurx1jp\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nTests Completed: 2/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: timeout: verification wall-clock deadline exceeded\n",
+    "stderr": ""
+  },
+  {
+    "mode": "hang",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 124,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-4x4ch0vk/results with spaces/ternaryos-verification-zw09agoy\nTernaryOS bounded QEMU verification (not OS qualification)\nTests Completed: 0/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: timeout: verification deadline exceeded\n",
+    "stderr": ""
+  },
+  {
+    "mode": "hang_shutdown",
+    "entry": "drivers/qemu/scripts/automated_verification.sh",
+    "exit": 124,
+    "stdout": "Results: /private/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-verification-test-4x4ch0vk/results with spaces/ternaryos-verification-5zopwofk\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nboot_sequence_test: CHECK COMPLETED\nhardware_test: CHECK COMPLETED\nintegration_test: CHECK COMPLETED\nTests Completed: 5/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: timeout: verification wall-clock deadline exceeded\n",
+    "stderr": ""
+  }
+]
