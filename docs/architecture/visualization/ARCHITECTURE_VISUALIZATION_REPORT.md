@@ -35,6 +35,12 @@ A repository-wide audit revealed 500 executable declarations and 54 library decl
 
 
 
+
+### 2.6 Semantic Definition of Production and Qualification Classifications
+To prevent conflating software presence with external deployment certification:
+- **`PRODUCTION_CORE`:** Identifies an implemented, fully compiled, and test-covered architectural subsystem integrated into the primary platform source tree (e.g. `t81_core`, `t81_vm`, `t81_lang_frontend`). It does **not** signify commercial, enterprise, or independently certified production readiness.
+- **`QUALIFIED` / `QUALIFIED_WITH_LIMITATIONS`:** Strictly reserved for components with authoritative research receipts and mathematical qualification reports (specifically SCG-07 Phase 6 for balanced ternary arithmetic types, and CPA-004 for freestanding QEMU runtime). Components lacking such continuity receipts remain `UNVERIFIED` for formal qualification regardless of implementation maturity.
+
 ### 2.5 Scoped Qualification Boundaries
 In strict accordance with T81 research receipts:
 - **SCG-07 Phase 6:** Formally qualifies balanced ternary arithmetic primitives under limitations (`T81Limb27/54`, `T81Int`, `T81BigInt`, `T81Fraction`). Unrelated subsystems (compiler frontend, CLI driver, VM interpreter, Axion governance kernel, CanonFS storage, tensors, SIMD routines) lack continuity qualification receipts and are strictly classified as `UNVERIFIED` for formal qualification.
@@ -44,6 +50,15 @@ In strict accordance with T81 research receipts:
 - **Top-Level Directory Representation:** 18 of 35 repository top-level directories (51.43%) are mapped to architectural components in `coverage_manifest.json`. Unmapped directories (e.g. experimental benchmarks, customer tools, logs) are explicitly cataloged.
 - **Relationship Derivation:** Every edge is categorized as either `STATICALLY_EXTRACTED` (source code includes, symbol references, CMake links) or `MANUALLY_CURATED` (subsystem containment, RFC intent, continuity evidence).
 - **Maturity Audit:** Governance artifacts and continuity documents are classified under `GOVERNANCE_AND_ASSURANCE` rather than `PRODUCTION_CORE`.
+
+
+### 2.7 Corrective Review Diff Composition (PR #749)
+The final change set relative to baseline `e5c30560aa77c31184a14b03ed152a6deef5c1a3` exhibits a net line delta of +2,961 / −746 across 10 files:
+1. **Generator Refactoring (`generate_architecture_visualization.py`, +2,333 / −744):** Transitioned dataset generation from monolithic/single-line representations to clean, maintainable multiline dictionaries and incorporated the new `coverage_manifest.json` builder. Zero architectural coverage was removed or lost.
+2. **Dataset Evidence Enrichment (`architecture_nodes.json`, `architecture_edges.json`, `execution_paths.json`, `subsystem_summary.json`):** Enriched reference metadata with `reference_type` and line bounds, added structured `maturity_evidence` citations, categorized edge `derivation_method`, and scoped execution path observation steps.
+3. **Coverage Manifest Introduction (`coverage_manifest.json`, +76 lines):** Added authoritative manifest mapping 18 represented and 17 unmapped top-level directories and 9 relationship categories.
+4. **Validation Hardening (`validate_architecture_visualization.py`, +222 lines):** Replaced assertion checks with unconditional `ValueError` / `FileNotFoundError` exceptions for `python -O` safety, closed trace validation bypasses, and added semantic compatibility and anti-tautology enforcement.
+5. **Negative Test Suite Expansion (`test_architecture_visualization.py`, +180 lines):** Added 12 fail-closed negative regression tests covering out-of-bounds line numbers, nonexistent files/nodes, trace hash mismatches, tautological evidence, and optimized-mode execution.
 
 ### 2.3 Test Suite Reconciliation
 - **Test Source Files:** 419 C++ test files located under `tests/cpp/`.

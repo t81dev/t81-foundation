@@ -1252,7 +1252,8 @@ def build_nodes():
                 "production_evidence": "Assurance artifact sub.layer.7_assurance.ci_governance maintained for repository verification, CI governance, and research continuity."
             }
         }
-    ]
+    ],
+    "description": "Comprehensive inventory of architectural subsystems and modules across the 7-layer T81 model. Note on classification: 'PRODUCTION_CORE' designates an implemented, fully compiled, and test-covered architectural subsystem within the repository source tree, not an independently certified enterprise or commercial production-readiness claim. Formal qualification is tracked separately under the 'qualification' property."
 }
 
 def build_edges():
@@ -1467,7 +1468,7 @@ def build_edges():
                 "source_file": "vm/vm.cpp",
                 "line": 1612,
                 "notes": "Interpreter switch executes 244 opcodes defined in TISC specification.",
-                "reference_type": "FUNCTION_DEFINITION"
+                "reference_type": "CALL_SITE"
             },
             "derivation_method": "STATICALLY_EXTRACTED"
         },
@@ -2004,7 +2005,7 @@ def build_execution_paths():
                     "line": 1612,
                     "action": "Opcode switch dispatches specific operation (e.g. Add, Mul, MatMul)",
                     "observation_status": "STATICALLY_SUPPORTED",
-                    "reference_type": "FUNCTION_DEFINITION"
+                    "reference_type": "CALL_SITE"
                 },
                 {
                     "step_number": 4,

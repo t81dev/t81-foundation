@@ -186,3 +186,18 @@ def test_negative_python_optimized_mode_manifest_census_mismatch(temp_dataset):
     res = subprocess.run([sys.executable, "-O", "-c", code], capture_output=True, text=True)
     assert res.returncode != 0
     assert "Directory census mismatch" in res.stderr
+
+def test_negative_opcode_switch_not_function_def(temp_dataset):
+    """Negative regression test: opcode switch statement cannot be classified as FUNCTION_DEFINITION."""
+    paths_path = os.path.join(temp_dataset, "execution_paths.json")
+    with open(paths_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    for p in data["paths"]:
+        if p["id"] == "path.02_tisc_decode_and_exec":
+            for s in p["steps"]:
+                if s["line"] == 1612:
+                    s["reference_type"] = "FUNCTION_DEFINITION"
+    with open(paths_path, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+    with pytest.raises(ValueError, match="switch statement cannot be classified as FUNCTION_DEFINITION"):
+        run_validation_in_dir(temp_dataset)

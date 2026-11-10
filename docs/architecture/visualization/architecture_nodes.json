@@ -1170,5 +1170,6 @@
         "production_evidence": "Assurance artifact sub.layer.7_assurance.ci_governance maintained for repository verification, CI governance, and research continuity."
       }
     }
-  ]
+  ],
+  "description": "Comprehensive inventory of architectural subsystems and modules across the 7-layer T81 model. Note on classification: 'PRODUCTION_CORE' designates an implemented, fully compiled, and test-covered architectural subsystem within the repository source tree, not an independently certified enterprise or commercial production-readiness claim. Formal qualification is tracked separately under the 'qualification' property."
 }

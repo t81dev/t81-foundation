@@ -209,7 +209,7 @@
         "source_file": "vm/vm.cpp",
         "line": 1612,
         "notes": "Interpreter switch executes 244 opcodes defined in TISC specification.",
-        "reference_type": "FUNCTION_DEFINITION"
+        "reference_type": "CALL_SITE"
       },
       "derivation_method": "STATICALLY_EXTRACTED"
     },

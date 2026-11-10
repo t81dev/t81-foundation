@@ -234,6 +234,13 @@ def validate(data_dir=DATA_DIR):
                 raise ValueError(f"Execution path step references unknown node: {s['module']}")
             check_file_and_line(s["file"], s.get("line"), f"Path {p['id']} Step {s.get('step_number')}")
 
+            # Opcode switch statement in vm.cpp cannot be classified as FUNCTION_DEFINITION
+            if s.get("file") == "vm/vm.cpp" and s.get("line") == 1612 and s.get("reference_type") == "FUNCTION_DEFINITION":
+                raise ValueError(
+                    f"Path {p['id']} Step {s.get('step_number')}: vm.cpp:1612 opcode switch statement cannot be classified as FUNCTION_DEFINITION"
+                )
+
+
             # Do not allow COMMENT to serve as an executable path step anchor
             s_reftype = s.get("reference_type")
             if s_reftype == "COMMENT":
