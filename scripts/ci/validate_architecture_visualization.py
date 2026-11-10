@@ -22,10 +22,7 @@ REQUIRED_FILES = [
     "architecture_evidence.json",
     "visualization_layout.json",
     "subsystem_summary.json",
-    "coverage_manifest.json"
-]
-
-OPTIONAL_FILES = [
+    "coverage_manifest.json",
     "component_evidence_index.json"
 ]
 
@@ -91,12 +88,13 @@ def check_file_and_line(filepath, line, context_desc):
         if line > total_lines:
             raise ValueError(f"{context_desc}: Line {line} out of bounds for {filepath} (total lines: {total_lines})")
 
-def validate(data_dir=DATA_DIR):
+def validate(data_dir=DATA_DIR, allow_missing_evidence_index=False):
     print(f"== Validating Architecture Visualization Datasets ({data_dir}) ==")
 
     # 1. Check all required files exist and parse as valid JSON
     data = {}
-    for rf in REQUIRED_FILES:
+    files_to_check = [f for f in REQUIRED_FILES if not (f == "component_evidence_index.json" and allow_missing_evidence_index)]
+    for rf in files_to_check:
         data[rf] = load_json(rf, base_dir=data_dir)
         print(f" [PASS] Loaded {rf}")
 
@@ -292,17 +290,23 @@ def validate(data_dir=DATA_DIR):
 
     print(f" [PASS] Validated coverage manifest ({len(mapped)} mapped, {len(unmapped)} unmapped directories).")
 
-    # 8. Validate Component Evidence Index (if present)
+    # 8. Validate Component Evidence Index (Mandatory by default)
     evidence_index_file = "component_evidence_index.json"
     evidence_path = os.path.join(data_dir, evidence_index_file)
-    if os.path.exists(evidence_path):
+    if not os.path.exists(evidence_path):
+        if not allow_missing_evidence_index:
+            raise FileNotFoundError(
+                f"Missing mandatory evidence index: {evidence_path}. "
+                "Phase 1 requires component_evidence_index.json. Use --allow-missing-evidence-index for legacy mode."
+            )
+    else:
         ev_data = load_json(evidence_index_file, base_dir=data_dir)
-        validate_component_evidence_index(ev_data, node_ids)
-        print(" [PASS] Validated component evidence index and relationship classifications.")
+        validate_component_evidence_index(ev_data, nodes_data.get("nodes", []), layer_ids)
+        print(" [PASS] Validated component evidence index, summary reconciliation, and relationship classifications.")
 
     print("== All Visualization Data Invariants Verified Successfully! ==")
 
-def validate_component_evidence_index(data, node_ids):
+def validate_component_evidence_index(data, nodes, layer_ids):
     if not isinstance(data, dict):
         raise ValueError("component_evidence_index.json must be a JSON object")
     if "components" not in data:
@@ -311,6 +315,22 @@ def validate_component_evidence_index(data, node_ids):
     comps = data["components"]
     if not isinstance(comps, list):
         raise ValueError("'components' field must be a list")
+
+    node_map = {n["id"]: n for n in nodes}
+    node_ids = set(node_map.keys())
+
+    # Summary reconciliation
+    total_components = data.get("total_components")
+    if total_components != len(comps):
+        raise ValueError(
+            f"Census mismatch in component_evidence_index.json: total_components={total_components} does not match len(components)={len(comps)}"
+        )
+
+    summary = data.get("classification_summary")
+    if not isinstance(summary, dict):
+        raise ValueError("component_evidence_index.json missing or invalid 'classification_summary' dictionary")
+
+    recomputed_counts = {rel: 0 for rel in VALID_EVIDENCE_RELATIONSHIPS}
 
     seen_ids = set()
     for c in comps:
@@ -323,17 +343,56 @@ def validate_component_evidence_index(data, node_ids):
         if cid not in node_ids:
             raise ValueError(f"Component evidence references unknown node_id: {cid}")
 
+        # Validate layer_id against layers
+        layer_id = c.get("layer_id")
+        if layer_id not in layer_ids:
+            raise ValueError(f"Component {cid} references invalid layer_id: {layer_id}")
+        if layer_id != node_map[cid]["layer_id"]:
+            raise ValueError(f"Component {cid} layer_id mismatch: expected {node_map[cid]['layer_id']}, got {layer_id}")
+
         rel = c.get("relationship_classification")
         if rel not in VALID_EVIDENCE_RELATIONSHIPS:
             raise ValueError(f"Component {cid} has invalid relationship_classification: {rel}")
+        recomputed_counts[rel] += 1
+
+        test_files = c.get("test_files", [])
+        receipt_files = c.get("receipt_files", [])
 
         # Check files referenced in evidence exist
-        for tf in c.get("test_files", []):
+        for tf in test_files:
             if not os.path.exists(tf):
                 raise FileNotFoundError(f"Component {cid}: test file does not exist: {tf}")
-        for rf in c.get("receipt_files", []):
+        for rf in receipt_files:
             if not os.path.exists(rf):
                 raise FileNotFoundError(f"Component {cid}: receipt file does not exist: {rf}")
+
+        # Classification Integrity: Enforce prerequisites for VERIFIED promotion
+        # VERIFIED requires:
+        # 1. Non-empty receipt_files citing authoritative qualification receipts
+        # 2. Non-empty test_files demonstrating executable test coverage
+        # 3. Corresponding node maturity qualification must be QUALIFIED or QUALIFIED_WITH_LIMITATIONS
+        if rel == "VERIFIED":
+            if not receipt_files:
+                raise ValueError(
+                    f"Component {cid}: VERIFIED classification requires at least one authoritative qualification receipt in receipt_files"
+                )
+            if not test_files:
+                raise ValueError(
+                    f"Component {cid}: VERIFIED classification requires executable test verification in test_files"
+                )
+            node_qual = node_map[cid].get("maturity", {}).get("qualification")
+            if node_qual not in ["QUALIFIED", "QUALIFIED_WITH_LIMITATIONS"]:
+                raise ValueError(
+                    f"Component {cid}: Unsupported promotion to VERIFIED. Node maturity qualification is '{node_qual}', must be QUALIFIED or QUALIFIED_WITH_LIMITATIONS"
+                )
+
+    # Reconcile summary counts
+    for rel, expected_count in recomputed_counts.items():
+        declared_count = summary.get(rel, 0)
+        if declared_count != expected_count:
+            raise ValueError(
+                f"Summary reconciliation discrepancy for {rel}: declared {declared_count}, recomputed {expected_count}"
+            )
 
     # Enforce all node_ids are accounted for in the evidence index
     missing_nodes = node_ids - seen_ids
@@ -497,9 +556,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Validate Architecture Visualization Datasets and Detect Drift")
     parser.add_argument("--data-dir", default=DATA_DIR, help="Path to visualization dataset directory")
     parser.add_argument("--drift-check", action="store_true", help="Perform architecture drift detection")
+    parser.add_argument("--allow-missing-evidence-index", action="store_true", help="Explicit legacy mode permitting omitted component_evidence_index.json")
     args = parser.parse_args()
 
-    validate(args.data_dir)
+    validate(args.data_dir, allow_missing_evidence_index=args.allow_missing_evidence_index)
     if args.drift_check:
         drift = detect_drift(args.data_dir)
         total_anomalies = sum(len(v) for v in drift.values())

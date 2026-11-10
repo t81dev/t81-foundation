@@ -9,12 +9,13 @@
 
 ## 1. Executive Summary
 
-This report establishes Phase 1 of the **Architecture-Guided Engineering Diagnostics System** (T81-ARCH-ENG-002), extending the visualization datasets introduced in T81-ARCH-VIZ-001 and T81-ARCH-VIZ-002 into an automated diagnostic and drift detection foundation.
+This report establishes Phase 1 of the **Architecture-Guided Engineering Diagnostics System** (T81-ARCH-ENG-002), extending the visualization datasets introduced in T81-ARCH-VIZ-001 and T81-ARCH-VIZ-002 into an automated diagnostic, evidence audit, and drift detection foundation.
 
 The objectives achieved in this phase include:
 1. **Deterministic Architecture Drift Detection:** Implemented automated drift analysis in `scripts/ci/validate_architecture_visualization.py` verifying source file existence, line bounds, reference type compliance, and referential integrity against the pinned repository baseline (`9a3e307ad21135749d35a4f1a6a0d5820d0cc698`).
-2. **Machine-Readable Component-to-Test Evidence Index:** Created `docs/architecture/visualization/component_evidence_index.json` covering all 35 architectural nodes, mapping components to concrete test files, CMake targets, and documented continuity receipts with four mutually exclusive relationship classifications: `VERIFIED`, `STATICALLY_SUPPORTED`, `UNVERIFIED`, and `NOT_MAPPED`.
-3. **QEMU Case Study Audit:** Conducted an in-depth empirical audit of the TernaryOS QEMU verification harness scripts (`drivers/qemu/scripts/verify_production.sh`, `drivers/qemu/scripts/automated_verification.sh`, `ternaryos/production_qemu_setup.sh`, and `ternaryos/automated_verification.sh`), documenting critical defects including the `((COMPLETED_TESTS++))` arithmetic trap under `set -e`, directory mismatches, missing script dependencies, and invalid verification assertions. A corrective blueprint is provided for separate implementation.
+2. **Mandatory Component-to-Test Evidence Index:** Created and mandated `docs/architecture/visualization/component_evidence_index.json` covering all 35 architectural nodes, mapping components to concrete test files, CMake targets, and documented continuity receipts with four mutually exclusive relationship classifications: `VERIFIED`, `STATICALLY_SUPPORTED`, `UNVERIFIED`, and `NOT_MAPPED`. Summary reconciliation and strict classification prerequisites are enforced programmatically.
+3. **Formal Classification Integrity:** Defined enforceable prerequisites for `VERIFIED` claims, distinguishing machine-checkable evidence presence from independent qualification. No receipts or scopes are invented.
+4. **QEMU Case Study Audit:** Conducted an in-depth empirical audit of the TernaryOS QEMU verification harness scripts (`drivers/qemu/scripts/verify_production.sh`, `drivers/qemu/scripts/automated_verification.sh`, `ternaryos/production_qemu_setup.sh`, and `ternaryos/automated_verification.sh`), documenting critical defects including the `((COMPLETED_TESTS++))` arithmetic trap under `set -e`, directory mismatches, missing script dependencies, and invalid verification assertions. A corrective blueprint is provided for separate, subsequent follow-on engineering repair.
 
 ---
 
@@ -31,13 +32,28 @@ Drift detection was executed across all components of the architecture dataset:
 | **Execution Paths** | 9 Pathways (33 steps) | 0 stale lines, 0 missing files | PASSED |
 | **Architecture Gaps** | 4 Gaps | 0 stale references | PASSED |
 | **Coverage Manifest** | 35 Top-Level Dirs (18 mapped, 17 unmapped) | 0 census mismatches | PASSED |
-| **Evidence Index** | 35 Components mapped | 0 schema or reference errors | PASSED |
+| **Evidence Index** | 35 Components mapped | 0 schema, census, or reference errors | PASSED |
 
 **Total Drift Anomalies Detected:** `0`. All references resolve deterministically against the pinned tree.
 
+### 2.1. Boundaries of Static Drift Detection (What It Establishes vs. What It Cannot)
+
+It is vital to explicitly define the epistemological boundaries of static drift checking:
+- **What Static Drift Checking Establishes:**
+  1. *Physical Existence:* Confirms that every cited source file, test file, and receipt exists in the repository tree.
+  2. *Structural Bounds:* Confirms line numbers fall within the total line count of existing files.
+  3. *Taxonomy Compliance:* Ensures structural reference types strictly belong to `VALID_REFERENCE_TYPES` (`FUNCTION_DEFINITION`, `CALL_SITE`, `DISPATCH_SITE`, `DECLARATION`, `COMMENT`, `DESCRIPTIVE_FILE`).
+  4. *Referential Integrity:* Verifies that parent/child containment, interface providers/consumers, and path modules resolve to valid architectural nodes.
+  5. *Classification Soundness:* Reconciles component census and enforces that any `VERIFIED` claim is backed by declared test files, qualification receipts, and qualified node maturity.
+- **What Static Drift Checking Cannot Establish:**
+  1. *Runtime Execution Correctness:* Static presence of a function or line reference does not prove that the code executes correctly, terminates, or conforms to mathematical invariants at runtime.
+  2. *Dynamic Control Flow:* A `CALL_SITE` reference demonstrates that a call expression exists in source text, but does not guarantee the code path is reached under arbitrary runtime inputs.
+  3. *Semantic Opcode Parity:* Static tracing does not verify dynamic CPU register state transitions or hardware peripheral responses.
+  4. *Test Pass/Fail Status:* Referencing a test file proves test implementation exists, but does not guarantee the test binary compiles or passes without running the test suite.
+
 ---
 
-## 3. Component Evidence Index Distribution
+## 3. Component Evidence Index Distribution & Summary Reconciliation
 
 From `docs/architecture/visualization/component_evidence_index.json`, the 35 architectural components are partitioned strictly into four mutually exclusive evidence relationship categories:
 
@@ -57,6 +73,10 @@ From `docs/architecture/visualization/component_evidence_index.json`, the 35 arc
 ### Classification Criteria & Governance Rules:
 1. **`VERIFIED` (9 Components):**
    - Components certified by formal, independent mathematical oracles and signed continuity receipts.
+   - *Prerequisites enforced programmatically:*
+     - Non-empty `receipt_files` citing authoritative qualification receipts.
+     - Non-empty `test_files` demonstrating executable test verification.
+     - Corresponding node maturity qualification must be `QUALIFIED` or `QUALIFIED_WITH_LIMITATIONS`.
    - *Components:*
      - `sub.layer.2_exec.freestanding_runtime` (CPA-004 cross-profile conformance receipt)
      - `sub.layer.3_num.balanced_ternary_limbs` (SCG-07 Phases 3, 4, 5, 6 qualification receipts)
@@ -157,7 +177,7 @@ As mandated by T81-ARCH-ENG-002, the TernaryOS QEMU verification harness was sub
 
 ## 5. Corrective Recommendation Blueprint (For Follow-On Repair PR)
 
-In accordance with T81-ARCH-ENG-002 constraints, no production or runtime harness changes are made in this diagnostic PR. The following corrective blueprint is provided for the dedicated repair task:
+In accordance with T81-ARCH-ENG-002 constraints, no production or runtime harness changes are made in this diagnostic PR. The following corrective blueprint is provided for separate, dedicated engineering repair:
 
 1. **Arithmetic Increment Repair:**
    Replace the arithmetic post-increment idiom:
