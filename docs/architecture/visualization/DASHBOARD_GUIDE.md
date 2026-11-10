@@ -1,8 +1,8 @@
 # T81 Architecture & Research Status Dashboard Guide (`T81-ARCH-VIZ-003`)
 
-**Document ID:** `T81-ARCH-VIZ-003-GUIDE-R1`
-**Authoritative Baseline:** `6c9eaf1a2fc8368cd06f6dddbbdcd78e6606c0ce` (`origin/main`, post-PR #757)
-**Status:** Complete / Verified under Pinned Baseline
+**Document ID:** `T81-ARCH-VIZ-003-GUIDE-R2`
+**Authoritative Baseline:** `8e6918fa98e19ee1476f91c97e82989b051a02e7` (`origin/main`, post-PR #759)
+**Status:** Corrected & Verified under Pinned Baseline
 **Audience:** Maintainers, Researchers, System Integrators, and External Auditors
 
 ---
@@ -13,10 +13,10 @@ The **T81 Architecture & Research Status Dashboard** is an evidence-grounded, br
 
 It provides an interactive interface to explore:
 1. **Repository Components & Structure:** All 35 architectural components across the 7 established architectural layers.
-2. **Relationships & Interfaces:** 32 technical dependency edges, 6 public subsystem interfaces, and 9 statically supported execution pathways.
+2. **Relationships & Interfaces:** 32 technical dependency edges, 6 public subsystem interfaces, and 9 statically supported execution pathways (rendered via canonical `paths` and `step.module`).
 3. **Evidence Classifications:** Real-time inspection of source code files, CMake test targets, and formal scientific receipts (`VERIFIED`, `STATICALLY_SUPPORTED`, `UNVERIFIED`, `NOT_MAPPED`).
 4. **Independent Status Overlays:** Multi-dimensional tracking separating Implementation Maturity, Research Qualification, and Engineering Activity.
-5. **Research Program Tracking:** Direct traceability to SCG-01..08, TernaryOS ARCH-ENG-002 Phases 1..3, TISC v1.1.0/v2.0, CanonFS, Hardware/RTL feasibility, and empirical hypothesis register H01–H08.
+5. **Research Program Tracking:** Direct traceability to SCG-01..08, TernaryOS ARCH-ENG-002 Phases 1..4, TISC v1.1.0/v2.0, CanonFS, Hardware/RTL feasibility, and empirical hypothesis register H01–H08.
 6. **Pull Request Subsystem Activity:** Deterministic tracking of open and recently merged pull requests affecting specific subsystems.
 
 ```
@@ -130,12 +130,19 @@ Click **"Research Programs"** in the top header to inspect the comprehensive pro
 ### 5.2 TernaryOS & ARCH-ENG-002 Boundaries
 - **Phase 1 (PR #755):** Audited `((COMPLETED_TESTS++))` arithmetic defect under `set -e`.
 - **Phase 2 (PR #756):** Consolidated QEMU verifier in Python with fail-closed QMP sockets; 11/11 mock tests pass; real QEMU halts and safely rejects failed attempts.
-- **Phase 3 (PR #757):** Distinguishes stale tracked EFI probe (5,120 bytes) from working fresh EFI shell (75,264 bytes). **Firmware diagnostic barriers prevent native 5-check qualification; native verification remains NOT QUALIFIED.**
+- **Phase 3 (PR #757):** Distinguishes stale tracked EFI probe (5,120 bytes) from working fresh EFI shell (75,264 bytes). Firmware diagnostic barriers prevent native 5-check qualification; native verification remains NOT QUALIFIED.
+- **Phase 4 (PR #758):** Evaluated 2-firmware / 2-launch matrix across original and matched configurations; fail-closed verifier confirmed rejecting 4/4 rows (exit status 1); stage-0 TRNG query unsupported. Matched debug launch reaches real shell but retains firmware errors. **All four native configurations remain failed at 2/5; native 5-check verification remains NOT QUALIFIED.**
 
-### 5.3 Hypothesis Register H01–H08 Dispositions
-- **H01 (Elementary Representation):** Historical negative result on scalar addition ($10.6\times$ software instruction overhead).
-- **H02 (Multi-Precision Addition):** Theoretically supported carry advantage ($1/4$ vs $1/2$ active carries); empirical Tier 2 benchmark preregistered.
-- **H04 (Radix Adaptation):** H04-R03 Candidate A correctness and weak-reference retention verified; Phase C performance measurement frozen.
+### 5.3 Hypothesis Register H01–H08 Dispositions & Linked Studies
+All eight empirical hypotheses preserve their exact formal claims, source citations, evidence tiers, and canonical results from `docs/research/continuity/HYPOTHESIS_REGISTER_v1.json`:
+- **H01 (Tiers B, D):** "Equal-information ternary storage can have lower total physical cost than binary storage under stated device and overhead assumptions." Linked historical finding: software scalar tryte addition incurred 10.6x instruction overhead compared to native 64-bit Boolean addition (closed for scalar software; multi-precision re-evaluated in SCG-08).
+- **H02 (Tiers A, B):** "Balanced ternary can improve a specified signed arithmetic or rounding task at equal semantics and cost accounting." Linked findings: SCG-07 qualified arithmetic primitives with limitations; SCG-08 derived 3-state carry Markov chain (1/4 non-zero carry occurrence vs 1/2 in binary); Tier 2 benchmark preregistered.
+- **H03 (Tiers B, D):** "Grouping four trits as base-81 can provide a workload-specific interface or execution benefit beyond equivalent binary packing." Linked status: Base-81 grouping established; execution advantage unverified.
+- **H04 (Tier B):** "An explicitly defined adaptive ternary representation policy can beat fixed ternary and an equally capable adaptive binary policy on a specified workload." Linked refinements: H04-R01 specification; EXP-H04-R03 Candidate A correctness and weak-reference wire-frame retention verified (PR #727); Phase C performance measurement frozen.
+- **H05 (Tier B):** "A specified three-state primitive can reduce circuit or system cost against an equivalent Boolean implementation." Linked status: Verilog RTL simulation models 2-bit-per-trit dot product; comparative Boolean synthesis unperformed.
+- **H06 (Tiers B, C):** "Ternary weights or activations can improve accuracy-constrained inference versus equally optimized binary low-bit alternatives." Linked status: Prior reports exist; independent accuracy-constrained benchmarks unperformed.
+- **H07 (Tiers B, C):** "Representation-independent governed execution can improve a defined auditability property." Linked status: Axion PolicyEngine active; security certification pending independent protocol completion.
+- **H08 (Tiers C, E):** "AI-assisted iteration improves research trustworthiness or discovery under an independently auditable process." Linked status: Audited via continuous session handoffs, negative result preservation, and mathematical oracle qualification.
 
 ---
 
@@ -169,4 +176,4 @@ When refreshing PR status:
 1. **No System Completion Percentage:** The dashboard strictly does not calculate or display an overall "project completion %". Such metrics are scientifically invalid because software existence, test coverage, and formal qualification operate across independent dimensions.
 2. **Local Browser Isolation:** The dashboard operates offline from static JSON files and does not issue external network requests.
 3. **No Dynamic Execution Verification:** Viewing a component in the dashboard does not imply that its C++ code has executed in your browser session.
-4. **Firmware Qualification Boundary:** Real QEMU execution of TernaryOS is currently diagnosed under PR #757 and must not be represented as an accepted native pass.
+4. **Firmware Qualification Boundary:** Real QEMU execution of TernaryOS is currently diagnosed under PR #757 and PR #758 (all four matrix configurations failed at 2/5) and must not be represented as an accepted native pass.
