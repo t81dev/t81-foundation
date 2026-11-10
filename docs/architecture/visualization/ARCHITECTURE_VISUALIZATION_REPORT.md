@@ -95,7 +95,7 @@ The repository is reconstructed into 7 logical architectural layers:
 | ID | Pathway Name | Status | Method | Entry Point | Exit Point |
 |---|---|---|---|---|---|
 | `path.01` | T81Lang Source to Executable | `STATICALLY_TRACED` | Static Source Trace | `main.cpp:10799` | `ir_generator.cpp:8` |
-| `path.02` | TISC Decode & VM Execution | `STATICALLY_TRACED` | Step-Level Dynamic Trace | `vm.cpp:435` | `runtime_state_helpers.cpp:80` |
+| `path.02` | TISC Decode & VM Execution | `STATICALLY_TRACED` | Static Source Trace (Trace-Supported) | `vm.cpp:435` | `runtime_state_helpers.cpp:80` |
 | `path.03` | Balanced Ternary Limb Mul | `STATICALLY_TRACED` | Static Source Trace | `T81Limb.hpp:173` | `T81Limb.hpp:624` |
 | `path.04` | Multi-Precision BigInt Invariant | `STATICALLY_TRACED` | Static Source Trace | `T81BigInt.hpp:1005` | `T81BigInt.hpp:1018` |
 | `path.05` | Safetensors Weight Import/Export | `STATICALLY_TRACED` | Static Source Trace | `main.cpp:3884` | `main.cpp:4400` |
@@ -104,7 +104,7 @@ The repository is reconstructed into 7 logical architectural layers:
 | `path.08` | Freestanding AArch64 Boot | `STATICALLY_TRACED` | Static Source Trace | `qemu_slice6_bare_kernel.c:101`| `qemu_slice6_cpp_bridge.cpp:1823` |
 | `path.09` | Hardware RTL Simulation | `STATICALLY_TRACED` | Static Source Trace | `tb_dot_product.v:1` | `design_c_ht1_ternary.v:55` |
 
-*Note on Tracing Provenance:* In accordance with T81-ARCH-VIZ-002, pathways default to `STATICALLY_TRACED` unless end-to-end dynamic observation is established. For `path.02`, step-level instruction stepping and opcode switch execution are demonstrated by the golden runtime trace `tests/fixtures/canonical_traces/01_bigint_add.trace` (SHA-256 `a00b67b1d76124d4a247a54a737d369dfc3e8326ca5f0d5a99fc0adbd93efbf0`), while peripheral steps remain statically supported.
+*Note on Tracing Provenance:* In accordance with T81-ARCH-VIZ-002, all 9 execution pathways and 33 steps are classified as `STATICALLY_TRACED` / `STATICALLY_SUPPORTED`. The canonical VM trace `tests/fixtures/canonical_traces/01_bigint_add.trace` (SHA-256 `a00b67b1d76124d4a247a54a737d369dfc3e8326ca5f0d5a99fc0adbd93efbf0`) explicitly proves the emitted instruction stepping PC/opcode sequence, while C++ source-line execution (`vm.cpp:435`, `vm.cpp:1612`) and policy/state transitions are statically supported without direct binary instrumentation.
 
 ---
 

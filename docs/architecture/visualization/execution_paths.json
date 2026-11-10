@@ -73,7 +73,7 @@
           "file": "vm/vm.cpp",
           "line": 435,
           "action": "VM step() initiates instruction fetch for current context PC",
-          "observation_status": "DYNAMICALLY_OBSERVED",
+          "observation_status": "STATICALLY_SUPPORTED",
           "reference_type": "FUNCTION_DEFINITION"
         },
         {
@@ -91,7 +91,7 @@
           "file": "vm/vm.cpp",
           "line": 1612,
           "action": "Opcode switch dispatches specific operation (e.g. Add, Mul, MatMul)",
-          "observation_status": "DYNAMICALLY_OBSERVED",
+          "observation_status": "STATICALLY_SUPPORTED",
           "reference_type": "FUNCTION_DEFINITION"
         },
         {
@@ -111,7 +111,7 @@
         "producing_command": "t81 vm run <file.tisc> --trace -o <trace.txt>",
         "producing_test": "scripts/ci/trace_repro_gate.py",
         "pinned_baseline": "4f96cb24358bfd260e67387b2c4db2797b01236f",
-        "observation_scope": "Golden trace explicitly demonstrates instruction stepping (PC) and opcode sequence (LoadImm, Call, Pop, Add, Ret, Halt). Internal C++ IVirtualMachine::step() dispatch, Axion hook invocation, and system register synchronization remain statically supported."
+        "observation_scope": "Golden trace explicitly proves emitted VM PC/opcode sequence (LoadImm, Call, Pop, Add, Ret, Halt). Internal C++ function execution at vm.cpp:435 (step()) and opcode switch dispatch at vm.cpp:1612 are statically supported without direct binary instrumentation evidence."
       }
     },
     {

@@ -81,7 +81,7 @@ def test_negative_unsupported_maturity_claim(temp_dataset):
     data["nodes"][0]["maturity_evidence"]["qualification_evidence"] = ""
     with open(nodes_path, "w", encoding="utf-8") as f:
         json.dump(data, f)
-    with pytest.raises(ValueError, match="claims qualification without qualification_evidence"):
+    with pytest.raises(ValueError, match="claims qualification without concrete inspectable qualification_evidence citation"):
         run_validation_in_dir(temp_dataset)
 
 def test_negative_trace_hash_mismatch(temp_dataset):
@@ -143,3 +143,46 @@ def test_negative_missing_trace_provenance_field(temp_dataset):
         json.dump(data, f)
     with pytest.raises(ValueError, match="missing required field: observation_scope"):
         run_validation_in_dir(temp_dataset)
+
+def test_negative_tautological_production_evidence(temp_dataset):
+    """Negative test: node containing self-referential tautological production_evidence fails."""
+    nodes_path = os.path.join(temp_dataset, "architecture_nodes.json")
+    with open(nodes_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    data["nodes"][0]["maturity_evidence"]["production_evidence"] = "Audited production_status: PRODUCTION_CORE"
+    with open(nodes_path, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+    with pytest.raises(ValueError, match="self-referential or tautological production_evidence"):
+        run_validation_in_dir(temp_dataset)
+
+def test_negative_python_optimized_mode_layer_count(temp_dataset):
+    """Negative test: python -O mode rejects invalid layer count without depending on assert."""
+    layers_path = os.path.join(temp_dataset, "architecture_layers.json")
+    with open(layers_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    # Remove one layer
+    data["layers"].pop()
+    with open(layers_path, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+
+    # Run validator via python3 -O subprocess
+    # Point validator to temp_dataset by running inline command with -O
+    code = f"import sys; sys.path.insert(0, 'scripts/ci'); import validate_architecture_visualization as v; v.validate('{temp_dataset}')"
+    res = subprocess.run([sys.executable, "-O", "-c", code], capture_output=True, text=True)
+    assert res.returncode != 0
+    assert "Expected 7 layers" in res.stderr
+
+def test_negative_python_optimized_mode_manifest_census_mismatch(temp_dataset):
+    """Negative test: python -O mode rejects coverage manifest directory census mismatch."""
+    manifest_path = os.path.join(temp_dataset, "coverage_manifest.json")
+    with open(manifest_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    # Alter total_top_level_directories to induce mismatch
+    data["repository_directories"]["total_top_level_directories"] = 999
+    with open(manifest_path, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+
+    code = f"import sys; sys.path.insert(0, 'scripts/ci'); import validate_architecture_visualization as v; v.validate('{temp_dataset}')"
+    res = subprocess.run([sys.executable, "-O", "-c", code], capture_output=True, text=True)
+    assert res.returncode != 0
+    assert "Directory census mismatch" in res.stderr

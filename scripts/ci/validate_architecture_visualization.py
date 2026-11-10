@@ -107,7 +107,8 @@ def validate(data_dir=DATA_DIR):
         if lid in layer_ids:
             raise ValueError(f"Duplicate layer ID: {lid}")
         layer_ids.add(lid)
-    assert len(layer_ids) == 7, f"Expected 7 layers, found {len(layer_ids)}"
+    if len(layer_ids) != 7:
+        raise ValueError(f"Expected 7 layers, found {len(layer_ids)}")
 
     # 2. Validate Nodes
     node_ids = set()
@@ -130,14 +131,19 @@ def validate(data_dir=DATA_DIR):
         if mat.get("production_status") not in VALID_PRODUCTION_STATUS:
             raise ValueError(f"Node {nid} has invalid production status: {mat.get('production_status')}")
 
-        # Check maturity evidence presence
+# Check maturity evidence presence and reject tautological claims
         ev_mat = n.get("maturity_evidence", {})
         if not ev_mat:
             raise ValueError(f"Node {nid} missing maturity_evidence dictionary")
+
+        prod_ev = ev_mat.get("production_evidence", "").strip()
+        if not prod_ev or prod_ev.lower().startswith("audited production_status:"):
+            raise ValueError(f"Node {nid} contains self-referential or tautological production_evidence: '{prod_ev}'")
+
+        qual_ev = ev_mat.get("qualification_evidence", "").strip()
         if mat.get("qualification") in ["QUALIFIED", "QUALIFIED_WITH_LIMITATIONS"]:
-            qual_ev = ev_mat.get("qualification_evidence", "").strip()
-            if not qual_ev:
-                raise ValueError(f"Node {nid} claims qualification without qualification_evidence citation")
+            if not qual_ev or qual_ev.lower() in ["qualified", "qualified with limitations", "unverified", "exploratory"]:
+                raise ValueError(f"Node {nid} claims qualification without concrete inspectable qualification_evidence citation")
 
         # Validate that cited source files exist and have bounds
         for sp in n.get("source_paths", []):
@@ -203,7 +209,7 @@ def validate(data_dir=DATA_DIR):
         has_dynamic_step = any(s.get("observation_status") == "DYNAMICALLY_OBSERVED" for s in p.get("steps", []))
 
         # Enforce trace validation whenever either the pathway OR any step claims DYNAMICALLY_OBSERVED
-        if tmethod == "DYNAMICALLY_OBSERVED" or has_dynamic_step:
+        if tmethod == "DYNAMICALLY_OBSERVED" or has_dynamic_step or p.get("runtime_trace_evidence"):
             rtev = p.get("runtime_trace_evidence")
             if not rtev:
                 raise ValueError(
@@ -253,7 +259,8 @@ def validate(data_dir=DATA_DIR):
     rep_dirs = manifest_data.get("repository_directories", {})
     mapped = rep_dirs.get("mapped", {})
     unmapped = rep_dirs.get("unmapped", {})
-    assert len(mapped) + len(unmapped) == rep_dirs.get("total_top_level_directories"), "Directory census mismatch in coverage manifest"
+    if len(mapped) + len(unmapped) != rep_dirs.get("total_top_level_directories"):
+        raise ValueError("Directory census mismatch in coverage manifest")
     cov_metrics = manifest_data.get("coverage_metrics", {})
     if "source_code_coverage_percentage" in cov_metrics:
         raise ValueError("Coverage manifest uses incorrect key 'source_code_coverage_percentage'; must be 'top_level_directory_representation_percentage'")
