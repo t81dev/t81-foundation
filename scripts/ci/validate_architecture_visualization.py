@@ -25,6 +25,10 @@ REQUIRED_FILES = [
     "coverage_manifest.json"
 ]
 
+OPTIONAL_FILES = [
+    "component_evidence_index.json"
+]
+
 VALID_REFERENCE_TYPES = {
     "FUNCTION_DEFINITION",
     "CALL_SITE",
@@ -55,6 +59,8 @@ VALID_EXECUTION_PROFILES = {"HOSTED", "FREESTANDING", "EMULATED", "NONE"}
 VALID_TEST_COVERAGE = {"DEDICATED_SUITE", "SMOKE_ONLY", "NONE"}
 VALID_QUALIFICATION = {"QUALIFIED", "QUALIFIED_WITH_LIMITATIONS", "EXPLORATORY", "UNVERIFIED"}
 VALID_PRODUCTION_STATUS = {"PRODUCTION_CORE", "EXPERIMENTAL_FRONTIER", "RESEARCH_PROTOTYPE", "DESIGN_ONLY", "GOVERNANCE_AND_ASSURANCE"}
+
+VALID_EVIDENCE_RELATIONSHIPS = {"VERIFIED", "STATICALLY_SUPPORTED", "UNVERIFIED", "NOT_MAPPED"}
 
 RUNTIME_RELATIONSHIPS = {"function_invocation", "runtime_data_flow"}
 
@@ -285,7 +291,230 @@ def validate(data_dir=DATA_DIR):
         raise ValueError("Coverage manifest missing 'top_level_directory_representation_percentage'")
 
     print(f" [PASS] Validated coverage manifest ({len(mapped)} mapped, {len(unmapped)} unmapped directories).")
+
+    # 8. Validate Component Evidence Index (if present)
+    evidence_index_file = "component_evidence_index.json"
+    evidence_path = os.path.join(data_dir, evidence_index_file)
+    if os.path.exists(evidence_path):
+        ev_data = load_json(evidence_index_file, base_dir=data_dir)
+        validate_component_evidence_index(ev_data, node_ids)
+        print(" [PASS] Validated component evidence index and relationship classifications.")
+
     print("== All Visualization Data Invariants Verified Successfully! ==")
 
+def validate_component_evidence_index(data, node_ids):
+    if not isinstance(data, dict):
+        raise ValueError("component_evidence_index.json must be a JSON object")
+    if "components" not in data:
+        raise ValueError("component_evidence_index.json missing 'components' field")
+
+    comps = data["components"]
+    if not isinstance(comps, list):
+        raise ValueError("'components' field must be a list")
+
+    seen_ids = set()
+    for c in comps:
+        cid = c.get("component_id")
+        if not cid:
+            raise ValueError("Component evidence entry missing 'component_id'")
+        if cid in seen_ids:
+            raise ValueError(f"Duplicate component_id in evidence index: {cid}")
+        seen_ids.add(cid)
+        if cid not in node_ids:
+            raise ValueError(f"Component evidence references unknown node_id: {cid}")
+
+        rel = c.get("relationship_classification")
+        if rel not in VALID_EVIDENCE_RELATIONSHIPS:
+            raise ValueError(f"Component {cid} has invalid relationship_classification: {rel}")
+
+        # Check files referenced in evidence exist
+        for tf in c.get("test_files", []):
+            if not os.path.exists(tf):
+                raise FileNotFoundError(f"Component {cid}: test file does not exist: {tf}")
+        for rf in c.get("receipt_files", []):
+            if not os.path.exists(rf):
+                raise FileNotFoundError(f"Component {cid}: receipt file does not exist: {rf}")
+
+    # Enforce all node_ids are accounted for in the evidence index
+    missing_nodes = node_ids - seen_ids
+    if missing_nodes:
+        raise ValueError(f"Component evidence index missing entries for nodes: {sorted(missing_nodes)}")
+
+def detect_drift(data_dir=DATA_DIR):
+    """
+    Performs deterministic architecture drift detection against the current repository tree.
+    Returns a dictionary of drift anomalies:
+      - missing_source_paths
+      - stale_line_references
+      - unsupported_reference_types
+      - record_inconsistencies
+    """
+    anomalies = {
+        "missing_source_paths": [],
+        "stale_line_references": [],
+        "unsupported_reference_types": [],
+        "record_inconsistencies": []
+    }
+
+    nodes_data = load_json("architecture_nodes.json", base_dir=data_dir)
+    edges_data = load_json("architecture_edges.json", base_dir=data_dir)
+    paths_data = load_json("execution_paths.json", base_dir=data_dir)
+    gaps_data = load_json("architecture_gaps.json", base_dir=data_dir)
+    ifaces_data = load_json("architecture_interfaces.json", base_dir=data_dir)
+
+    node_ids = {n["id"]: n for n in nodes_data.get("nodes", [])}
+
+    # 1. Check Node source paths
+    for nid, node in node_ids.items():
+        for sp in node.get("source_paths", []):
+            if not os.path.exists(sp):
+                anomalies["missing_source_paths"].append({
+                    "context": f"Node {nid}",
+                    "path": sp
+                })
+
+    # 2. Check Edge references
+    for e in edges_data.get("edges", []):
+        eid = e["id"]
+        ev = e.get("evidence", {})
+        sf = ev.get("source_file")
+        if sf:
+            if not os.path.exists(sf):
+                anomalies["missing_source_paths"].append({
+                    "context": f"Edge {eid}",
+                    "path": sf
+                })
+            else:
+                reftype = ev.get("reference_type")
+                if reftype not in VALID_REFERENCE_TYPES:
+                    anomalies["unsupported_reference_types"].append({
+                        "context": f"Edge {eid}",
+                        "reference_type": reftype,
+                        "file": sf
+                    })
+                lstart = ev.get("line_start")
+                lend = ev.get("line_end")
+                with open(sf, "r", encoding="utf-8", errors="replace") as f:
+                    total_lines = sum(1 for _ in f)
+                if lstart is not None and (lstart < 1 or lstart > total_lines):
+                    anomalies["stale_line_references"].append({
+                        "context": f"Edge {eid}",
+                        "file": sf,
+                        "line": lstart,
+                        "total_lines": total_lines
+                    })
+                if lend is not None and (lend < 1 or lend > total_lines):
+                    anomalies["stale_line_references"].append({
+                        "context": f"Edge {eid}",
+                        "file": sf,
+                        "line": lend,
+                        "total_lines": total_lines
+                    })
+
+    # 3. Check Execution Paths
+    for p in paths_data.get("paths", []):
+        pid = p["id"]
+        for s in p.get("steps", []):
+            snum = s.get("step_number")
+            sf = s.get("file")
+            line = s.get("line")
+            reftype = s.get("reference_type")
+            ctx = f"Path {pid} Step {snum}"
+
+            if not os.path.exists(sf):
+                anomalies["missing_source_paths"].append({
+                    "context": ctx,
+                    "path": sf
+                })
+            else:
+                with open(sf, "r", encoding="utf-8", errors="replace") as f:
+                    total_lines = sum(1 for _ in f)
+                if line is not None and (line < 1 or line > total_lines):
+                    anomalies["stale_line_references"].append({
+                        "context": ctx,
+                        "file": sf,
+                        "line": line,
+                        "total_lines": total_lines
+                    })
+
+            if reftype not in VALID_REFERENCE_TYPES:
+                anomalies["unsupported_reference_types"].append({
+                    "context": ctx,
+                    "reference_type": reftype,
+                    "file": sf
+                })
+
+            if s.get("module") not in node_ids:
+                anomalies["record_inconsistencies"].append({
+                    "context": ctx,
+                    "issue": f"Referenced module {s.get('module')} not found in nodes"
+                })
+
+    # 4. Check Gaps
+    for g in gaps_data.get("gaps", []):
+        gid = g["id"]
+        ev = g.get("evidence", {})
+        sf = ev.get("source_file")
+        line = ev.get("line")
+        ctx = f"Gap {gid}"
+        if sf:
+            if not os.path.exists(sf):
+                anomalies["missing_source_paths"].append({
+                    "context": ctx,
+                    "path": sf
+                })
+            elif line is not None:
+                with open(sf, "r", encoding="utf-8", errors="replace") as f:
+                    total_lines = sum(1 for _ in f)
+                if line < 1 or line > total_lines:
+                    anomalies["stale_line_references"].append({
+                        "context": ctx,
+                        "file": sf,
+                        "line": line,
+                        "total_lines": total_lines
+                    })
+
+    # 5. Check Interfaces
+    for iface in ifaces_data.get("interfaces", []):
+        iid = iface["id"]
+        prov = iface.get("provider_node_id")
+        if prov not in node_ids:
+            anomalies["record_inconsistencies"].append({
+                "context": f"Interface {iid}",
+                "issue": f"Provider node {prov} not found in nodes"
+            })
+        for c in iface.get("consumer_node_ids", []):
+            if c not in node_ids:
+                anomalies["record_inconsistencies"].append({
+                    "context": f"Interface {iid}",
+                    "issue": f"Consumer node {c} not found in nodes"
+                })
+
+    return anomalies
+
 if __name__ == "__main__":
-    validate()
+    import argparse
+    parser = argparse.ArgumentParser(description="Validate Architecture Visualization Datasets and Detect Drift")
+    parser.add_argument("--data-dir", default=DATA_DIR, help="Path to visualization dataset directory")
+    parser.add_argument("--drift-check", action="store_true", help="Perform architecture drift detection")
+    args = parser.parse_args()
+
+    validate(args.data_dir)
+    if args.drift_check:
+        drift = detect_drift(args.data_dir)
+        total_anomalies = sum(len(v) for v in drift.values())
+        print(f"\n== Architecture Drift Detection Results ==")
+        print(f"Missing source paths: {len(drift['missing_source_paths'])}")
+        print(f"Stale line references: {len(drift['stale_line_references'])}")
+        print(f"Unsupported reference types: {len(drift['unsupported_reference_types'])}")
+        print(f"Record inconsistencies: {len(drift['record_inconsistencies'])}")
+        if total_anomalies > 0:
+            print("\nDrift detected:")
+            for category, items in drift.items():
+                if items:
+                    print(f"  {category}:")
+                    for item in items:
+                        print(f"    - {item}")
+            sys.exit(1)
+        else:
+            print(" [PASS] Zero drift detected against repository tree.")
