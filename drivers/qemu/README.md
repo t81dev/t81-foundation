@@ -1,7 +1,7 @@
 # Local Production QEMU TernaryOS
 
 ## Overview
-This is a local production-ready QEMU TernaryOS installation for deterministic ternary computing development.
+This directory contains QEMU launch and verification tooling for TernaryOS development. Verification is a bounded smoke check; see [verification scope and usage](scripts/VERIFICATION.md).
 
 ## Quick Start
 
