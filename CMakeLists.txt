@@ -40,6 +40,14 @@ if(T81_BUILD_ARCHITECTURE_CHALLENGE)
   target_link_libraries(t81_architecture_arm_a PRIVATE t81_vm t81_axion t81_core)
 endif()
 
+# Opt-in research experiment harness; no production arithmetic or decoder changes.
+option(T81_BUILD_EXPERIMENTS "Build isolated research experiments" OFF)
+if(T81_BUILD_EXPERIMENTS)
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/experiments/scg08_arithmetic_work/CMakeLists.txt")
+    add_subdirectory(experiments/scg08_arithmetic_work)
+  endif()
+endif()
+
 if(T81_BUILD_PROVENANCE_EXPERIMENT)
   if(NOT T81_STRICT_DETERMINISTIC_FLOAT)
     message(FATAL_ERROR "Provenance experiment requires T81_STRICT_DETERMINISTIC_FLOAT=ON")
