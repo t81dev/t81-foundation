@@ -1,0 +1,18 @@
+test_alternate_entrypoints_and_working_directory (__main__.VerificationTests.test_alternate_entrypoints_and_working_directory) ... ok
+test_baseline_arithmetic_and_safe_increment (__main__.VerificationTests.test_baseline_arithmetic_and_safe_increment) ... ok
+test_generated_production_verifier (__main__.VerificationTests.test_generated_production_verifier) ... ok
+test_interrupted_harness (__main__.VerificationTests.test_interrupted_harness) ... ok
+test_missing_executable_image_firmware (__main__.VerificationTests.test_missing_executable_image_firmware) ... ok
+test_missing_script_and_summary_ignored (__main__.VerificationTests.test_missing_script_and_summary_ignored) ... ok
+test_negative_matrix (__main__.VerificationTests.test_negative_matrix) ... ok
+test_output_directory_unset_empty_relative_and_invalid (__main__.VerificationTests.test_output_directory_unset_empty_relative_and_invalid) ... ok
+test_positive_repeat_counts_and_paths (__main__.VerificationTests.test_positive_repeat_counts_and_paths) ... ok
+test_stale_success_cannot_satisfy_new_attempt (__main__.VerificationTests.test_stale_success_cannot_satisfy_new_attempt) ... ok
+test_timeout_exit_status (__main__.VerificationTests.test_timeout_exit_status) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 34.060s
+
+OK
+baseline arithmetic: exit=0, stdout='REACHED'
+entrypoint process receipts: 42
