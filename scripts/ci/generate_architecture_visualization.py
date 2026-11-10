@@ -1468,7 +1468,7 @@ def build_edges():
                 "source_file": "vm/vm.cpp",
                 "line": 1612,
                 "notes": "Interpreter switch executes 244 opcodes defined in TISC specification.",
-                "reference_type": "CALL_SITE"
+                "reference_type": "DISPATCH_SITE"
             },
             "derivation_method": "STATICALLY_EXTRACTED"
         },
@@ -2005,7 +2005,7 @@ def build_execution_paths():
                     "line": 1612,
                     "action": "Opcode switch dispatches specific operation (e.g. Add, Mul, MatMul)",
                     "observation_status": "STATICALLY_SUPPORTED",
-                    "reference_type": "CALL_SITE"
+                    "reference_type": "DISPATCH_SITE"
                 },
                 {
                     "step_number": 4,

@@ -187,17 +187,33 @@ def test_negative_python_optimized_mode_manifest_census_mismatch(temp_dataset):
     assert res.returncode != 0
     assert "Directory census mismatch" in res.stderr
 
-def test_negative_opcode_switch_not_function_def(temp_dataset):
-    """Negative regression test: opcode switch statement cannot be classified as FUNCTION_DEFINITION."""
+def test_dispatch_site_semantic_enforcement(temp_dataset):
+    """Positively enforce DISPATCH_SITE on switch/dispatch statements and verify rejection of invalid classifications."""
     paths_path = os.path.join(temp_dataset, "execution_paths.json")
     with open(paths_path, "r", encoding="utf-8") as f:
         data = json.load(f)
+
+    # 1. Positively verify that the authentic dataset classifies vm.cpp:1612 as DISPATCH_SITE
+    step_1612 = None
     for p in data["paths"]:
         if p["id"] == "path.02_tisc_decode_and_exec":
             for s in p["steps"]:
-                if s["line"] == 1612:
-                    s["reference_type"] = "FUNCTION_DEFINITION"
+                if s.get("file") == "vm/vm.cpp" and s.get("line") == 1612:
+                    step_1612 = s
+                    break
+    assert step_1612 is not None
+    assert step_1612["reference_type"] == "DISPATCH_SITE"
+
+    # 2. Reject FUNCTION_DEFINITION on dispatch switch statement
+    step_1612["reference_type"] = "FUNCTION_DEFINITION"
     with open(paths_path, "w", encoding="utf-8") as f:
         json.dump(data, f)
-    with pytest.raises(ValueError, match="switch statement cannot be classified as FUNCTION_DEFINITION"):
+    with pytest.raises(ValueError, match="must be classified as DISPATCH_SITE, not FUNCTION_DEFINITION"):
+        run_validation_in_dir(temp_dataset)
+
+    # 3. Reject CALL_SITE on dispatch switch statement
+    step_1612["reference_type"] = "CALL_SITE"
+    with open(paths_path, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+    with pytest.raises(ValueError, match="must be classified as DISPATCH_SITE, not CALL_SITE"):
         run_validation_in_dir(temp_dataset)

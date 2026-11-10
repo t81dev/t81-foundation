@@ -92,7 +92,7 @@
           "line": 1612,
           "action": "Opcode switch dispatches specific operation (e.g. Add, Mul, MatMul)",
           "observation_status": "STATICALLY_SUPPORTED",
-          "reference_type": "CALL_SITE"
+          "reference_type": "DISPATCH_SITE"
         },
         {
           "step_number": 4,

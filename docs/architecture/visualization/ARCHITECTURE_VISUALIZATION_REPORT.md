@@ -46,14 +46,22 @@ In strict accordance with T81 research receipts:
 - **SCG-07 Phase 6:** Formally qualifies balanced ternary arithmetic primitives under limitations (`T81Limb27/54`, `T81Int`, `T81BigInt`, `T81Fraction`). Unrelated subsystems (compiler frontend, CLI driver, VM interpreter, Axion governance kernel, CanonFS storage, tensors, SIMD routines) lack continuity qualification receipts and are strictly classified as `UNVERIFIED` for formal qualification.
 - **CPA-004 Evaluator:** Qualifies the bounded freestanding execution profile under limitations (351-byte program, 17 opcodes on AArch64 QEMU).
 
-### 2.4 Coverage Manifest & Evidence Hardening (T81-ARCH-VIZ-002)
+### 2.4 Structural Source Reference Typing & Evidence Hardening (T81-ARCH-VIZ-002)
+To reconcile source references against the pinned codebase without turning unverified claims into established implementation facts:
+- **Reference Taxonomy:** Every line-level source reference is categorized into one of six explicit reference types:
+  - `FUNCTION_DEFINITION`: Entry point or body of a C/C++ function.
+  - `CALL_SITE`: Specific line where a function or method invocation occurs.
+  - `DISPATCH_SITE`: Control flow branching construct (e.g. `switch (insn.opcode)` at `vm/vm.cpp:1612`) that dispatches execution based on opcode or event, distinct from a function call or definition.
+  - `DECLARATION`: Struct, class, typedef, or function prototype declaration.
+  - `COMMENT`: Non-executable explanatory comments or docstrings.
+  - `DESCRIPTIVE_FILE`: Whole-file descriptive anchors without single executable line semantics.
 - **Top-Level Directory Representation:** 18 of 35 repository top-level directories (51.43%) are mapped to architectural components in `coverage_manifest.json`. Unmapped directories (e.g. experimental benchmarks, customer tools, logs) are explicitly cataloged.
 - **Relationship Derivation:** Every edge is categorized as either `STATICALLY_EXTRACTED` (source code includes, symbol references, CMake links) or `MANUALLY_CURATED` (subsystem containment, RFC intent, continuity evidence).
 - **Maturity Audit:** Governance artifacts and continuity documents are classified under `GOVERNANCE_AND_ASSURANCE` rather than `PRODUCTION_CORE`.
 
 
 ### 2.7 Corrective Review Diff Composition (PR #749)
-The final change set relative to baseline `e5c30560aa77c31184a14b03ed152a6deef5c1a3` exhibits a net line delta of +2,961 / −746 across 10 files:
+The final change set relative to baseline `e5c30560aa77c31184a14b03ed152a6deef5c1a3` exhibits a net line delta of +2,995 / −746 across 10 files:
 1. **Generator Refactoring (`generate_architecture_visualization.py`, +2,333 / −744):** Transitioned dataset generation from monolithic/single-line representations to clean, maintainable multiline dictionaries and incorporated the new `coverage_manifest.json` builder. Zero architectural coverage was removed or lost.
 2. **Dataset Evidence Enrichment (`architecture_nodes.json`, `architecture_edges.json`, `execution_paths.json`, `subsystem_summary.json`):** Enriched reference metadata with `reference_type` and line bounds, added structured `maturity_evidence` citations, categorized edge `derivation_method`, and scoped execution path observation steps.
 3. **Coverage Manifest Introduction (`coverage_manifest.json`, +76 lines):** Added authoritative manifest mapping 18 represented and 17 unmapped top-level directories and 9 relationship categories.

@@ -28,6 +28,7 @@ REQUIRED_FILES = [
 VALID_REFERENCE_TYPES = {
     "FUNCTION_DEFINITION",
     "CALL_SITE",
+    "DISPATCH_SITE",
     "DECLARATION",
     "COMMENT",
     "DESCRIPTIVE_FILE"
@@ -234,11 +235,20 @@ def validate(data_dir=DATA_DIR):
                 raise ValueError(f"Execution path step references unknown node: {s['module']}")
             check_file_and_line(s["file"], s.get("line"), f"Path {p['id']} Step {s.get('step_number')}")
 
-            # Opcode switch statement in vm.cpp cannot be classified as FUNCTION_DEFINITION
-            if s.get("file") == "vm/vm.cpp" and s.get("line") == 1612 and s.get("reference_type") == "FUNCTION_DEFINITION":
-                raise ValueError(
-                    f"Path {p['id']} Step {s.get('step_number')}: vm.cpp:1612 opcode switch statement cannot be classified as FUNCTION_DEFINITION"
-                )
+            # Dispatch action semantics: control-flow switch/dispatch sites must be classified as DISPATCH_SITE
+            action_lower = s.get("action", "").lower()
+            if ("switch" in action_lower or "dispatch" in action_lower) and s.get("reference_type") in {"FUNCTION_DEFINITION", "CALL_SITE"}:
+                # Verify if target line is a switch/dispatch statement in source
+                try:
+                    with open(s["file"], "r", encoding="utf-8") as src_f:
+                        src_lines = src_f.readlines()
+                    target_line = src_lines[s["line"] - 1].strip()
+                    if target_line.startswith("switch") or "switch " in target_line:
+                        raise ValueError(
+                            f"Path {p['id']} Step {s.get('step_number')}: control flow dispatch switch statement at {s['file']}:{s['line']} must be classified as DISPATCH_SITE, not {s.get('reference_type')}"
+                        )
+                except (IndexError, FileNotFoundError):
+                    pass
 
 
             # Do not allow COMMENT to serve as an executable path step anchor
