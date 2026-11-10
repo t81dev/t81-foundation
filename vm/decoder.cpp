@@ -29,7 +29,7 @@ bool tensors_are_matmul_compatible(const t81::weights::NativeTensor& lhs,
 
 std::size_t native_tensor_shape_complexity(const t81::weights::NativeTensor& tensor) {
   std::size_t product = 1;
-  for (std::uint32_t dim : tensor.shape) {
+  for (const auto dim : tensor.shape) {
     if (dim == 0) {
       return 0;
     }
