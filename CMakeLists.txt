@@ -1725,7 +1725,10 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
       --t81-bin $<TARGET_FILE:t81>)
   set_tests_properties(t81_cli_execution_policy_test PROPERTIES TIMEOUT 90)
   if(UNIX)
-    find_program(T81_SKILL_TEST_BASH NAMES bash REQUIRED)
+    find_program(T81_SKILL_TEST_BASH NAMES bash)
+    if(NOT T81_SKILL_TEST_BASH)
+      message(FATAL_ERROR "Bash is required for the skill policy boundary test")
+    endif()
     add_test(NAME t81_skill_policy_boundary_test
       COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tests/python/test_skill_policy_boundary.py
         --bash ${T81_SKILL_TEST_BASH} --t81-bin $<TARGET_FILE:t81>)
