@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
   "total_nodes": 35,
   "nodes": [
@@ -14,7 +14,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -30,7 +30,14 @@
         "t81::frontend::SemanticAnalyzer",
         "t81::frontend::IRGenerator"
       ],
-      "description": "Lexing, recursive descent parsing, semantic analysis, and TISC IR code generation for T81Lang programs."
+      "description": "Lexing, recursive descent parsing, semantic analysis, and TISC IR code generation for T81Lang programs.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Unverified for formal qualification; implements T81Lang Compiler Frontend with automated test coverage but no continuity qualification receipt.",
+        "production_evidence": "Linked into core compiler pipeline via lang/CMakeLists.txt (t81_lang_frontend) and driven by tools/cli/core/main.cpp."
+      }
     },
     {
       "id": "mod.frontend.lexer",
@@ -43,7 +50,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -54,7 +61,14 @@
         "t81::frontend::Lexer::next_token()",
         "t81::frontend::Token"
       ],
-      "description": "Tokenizer supporting balanced ternary literals, keywords, identifiers, and symbols."
+      "description": "Tokenizer supporting balanced ternary literals, keywords, identifiers, and symbols.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Unverified for formal qualification; implements T81Lang Lexer with automated test coverage but no continuity qualification receipt.",
+        "production_evidence": "Linked into core compiler pipeline via lang/CMakeLists.txt (t81_lang_frontend) and driven by tools/cli/core/main.cpp."
+      }
     },
     {
       "id": "mod.frontend.parser",
@@ -67,7 +81,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -78,7 +92,14 @@
       "public_interfaces": [
         "t81::frontend::Parser::parse_program()"
       ],
-      "description": "AST constructor translating token sequences into typed statement and expression nodes."
+      "description": "AST constructor translating token sequences into typed statement and expression nodes.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Unverified for formal qualification; implements T81Lang Parser with automated test coverage but no continuity qualification receipt.",
+        "production_evidence": "Linked into core compiler pipeline via lang/CMakeLists.txt (t81_lang_frontend) and driven by tools/cli/core/main.cpp."
+      }
     },
     {
       "id": "mod.frontend.semantic_analyzer",
@@ -91,7 +112,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -101,7 +122,14 @@
       "public_interfaces": [
         "t81::frontend::SemanticAnalyzer::analyze()"
       ],
-      "description": "Type checking, symbol scope resolution, loop bound verification, and policy requirement validation."
+      "description": "Type checking, symbol scope resolution, loop bound verification, and policy requirement validation.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Unverified for formal qualification; implements T81Lang Semantic Analyzer with automated test coverage but no continuity qualification receipt.",
+        "production_evidence": "Linked into core compiler pipeline via lang/CMakeLists.txt (t81_lang_frontend) and driven by tools/cli/core/main.cpp."
+      }
     },
     {
       "id": "mod.frontend.ir_generator",
@@ -114,7 +142,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -124,7 +152,14 @@
       "public_interfaces": [
         "t81::frontend::IRGenerator::generate()"
       ],
-      "description": "Linearizes AST constructs into deterministic TISC intermediate representation instructions."
+      "description": "Linearizes AST constructs into deterministic TISC intermediate representation instructions.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Unverified for formal qualification; implements T81Lang IR Generator with automated test coverage but no continuity qualification receipt.",
+        "production_evidence": "Linked into core compiler pipeline via lang/CMakeLists.txt (t81_lang_frontend) and driven by tools/cli/core/main.cpp."
+      }
     },
     {
       "id": "sub.layer.1_lang.cli",
@@ -137,7 +172,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -149,7 +184,14 @@
         "int main(int argc, char* argv[])",
         "t81::cli::execute_command()"
       ],
-      "description": "Unified entry point for compilation, VM execution, tensor canonization, CanonFS operations, and weight importing."
+      "description": "Unified entry point for compilation, VM execution, tensor canonization, CanonFS operations, and weight importing.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Unverified for formal qualification; implements T81 Unified CLI Driver with automated test coverage but no continuity qualification receipt.",
+        "production_evidence": "Main CLI driver entry point in tools/cli/core/main.cpp compiled as executable target t81."
+      }
     },
     {
       "id": "mod.cli.weights_tool",
@@ -162,7 +204,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -175,7 +217,14 @@
         "run_weights_export()",
         "t81::weights::load_t81w()"
       ],
-      "description": "Safetensors and GGUF weight parser, ternary quantizer, and .t81w model file serializer."
+      "description": "Safetensors and GGUF weight parser, ternary quantizer, and .t81w model file serializer.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Unverified for formal qualification; implements Weights & Model Interchange CLI with automated test coverage but no continuity qualification receipt.",
+        "production_evidence": "Main CLI driver entry point in tools/cli/core/main.cpp compiled as executable target t81."
+      }
     },
     {
       "id": "sub.layer.1_lang.toolchain_bridges",
@@ -200,7 +249,14 @@
         "t81::llvm::translate_tisc_to_llvm()",
         "mlir::t81::registerT81Dialect()"
       ],
-      "description": "Exploratory translation bridges mapping TISC bytecode into LLVM IR and MLIR dialect representations."
+      "description": "Exploratory translation bridges mapping TISC bytecode into LLVM IR and MLIR dialect representations.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage SMOKE_ONLY",
+        "qualification_evidence": "Exploratory bridge/JIT prototype without formal qualification receipt.",
+        "production_evidence": "Experimental feature sub.layer.1_lang.toolchain_bridges maintained for frontier research (e.g. freestanding QEMU boot, JIT compiler)."
+      }
     },
     {
       "id": "sub.layer.2_exec.tisc_isa",
@@ -213,7 +269,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -229,7 +285,14 @@
         "t81::tisc::Program",
         "t81::tisc::encode_instruction()"
       ],
-      "description": "TISC v1.1.0 specification defining balanced-ternary arithmetic, AI tensor opcodes, and Axion governance primitives."
+      "description": "TISC v1.1.0 specification defining balanced-ternary arithmetic, AI tensor opcodes, and Axion governance primitives.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Unverified for formal qualification; implements TISC Instruction Set Computer with automated test coverage but no continuity qualification receipt.",
+        "production_evidence": "Core execution engine in src/vm/CMakeLists.txt (t81_vm) and instruction contract in src/isa/CMakeLists.txt (t81_isa)."
+      }
     },
     {
       "id": "sub.layer.2_exec.t81vm",
@@ -242,7 +305,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -258,7 +321,14 @@
         "t81::vm::IVirtualMachine::step()",
         "t81::vm::IVirtualMachine::run_to_halt()"
       ],
-      "description": "Interpreter executing TISC programs with round-robin multi-context scheduling, fault injection, and Axion policy checks."
+      "description": "Interpreter executing TISC programs with round-robin multi-context scheduling, fault injection, and Axion policy checks.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Unverified for formal qualification; implements T81 Deterministic Virtual Machine with automated test coverage but no continuity qualification receipt.",
+        "production_evidence": "Core execution engine in src/vm/CMakeLists.txt (t81_vm) and instruction contract in src/isa/CMakeLists.txt (t81_isa)."
+      }
     },
     {
       "id": "mod.vm.interpreter_core",
@@ -271,7 +341,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -282,7 +352,14 @@
         "t81::vm::IVirtualMachine::step()",
         "eval_axion_call()"
       ],
-      "description": "Primary switch statement dispatching 244 TISC opcodes, updating program counter, registers, and memory."
+      "description": "Primary switch statement dispatching 244 TISC opcodes, updating program counter, registers, and memory.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Unverified for formal qualification; implements T81VM Interpreter Dispatch Loop with automated test coverage but no continuity qualification receipt.",
+        "production_evidence": "Core execution engine in src/vm/CMakeLists.txt (t81_vm) and instruction contract in src/isa/CMakeLists.txt (t81_isa)."
+      }
     },
     {
       "id": "mod.vm.system_registers",
@@ -295,7 +372,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -307,7 +384,14 @@
         "compute_lineage_signature()",
         "compute_constitutional_mask()"
       ],
-      "description": "Maintains deterministic architectural registers R75 (tick), R76 (lineage hash), R77 (entropy), R78 (constitutional mask), R79 (call depth), R80 (liveness)."
+      "description": "Maintains deterministic architectural registers R75 (tick), R76 (lineage hash), R77 (entropy), R78 (constitutional mask), R79 (call depth), R80 (liveness).",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Unverified for formal qualification; implements T81VM System Registers & Entropy Tracking with automated test coverage but no continuity qualification receipt.",
+        "production_evidence": "Core execution engine in src/vm/CMakeLists.txt (t81_vm) and instruction contract in src/isa/CMakeLists.txt (t81_isa)."
+      }
     },
     {
       "id": "sub.layer.2_exec.jit_engine",
@@ -332,7 +416,14 @@
         "t81::jit::JitCompiler",
         "t81::jit::JitTraceCache"
       ],
-      "description": "Hot trace detection, native code compilation, and guard deoptimization cache for repetitive loop blocks."
+      "description": "Hot trace detection, native code compilation, and guard deoptimization cache for repetitive loop blocks.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage SMOKE_ONLY",
+        "qualification_evidence": "Exploratory bridge/JIT prototype without formal qualification receipt.",
+        "production_evidence": "Experimental feature sub.layer.2_exec.jit_engine maintained for frontier research (e.g. freestanding QEMU boot, JIT compiler)."
+      }
     },
     {
       "id": "sub.layer.2_exec.freestanding_runtime",
@@ -357,7 +448,14 @@
         "bare_pl011_putchar()",
         "qemu_slice6_bare_kernel_entry()"
       ],
-      "description": "Post-ExitBootServices bare-metal execution environment evaluated under CPA-004 on QEMU AArch64."
+      "description": "Post-ExitBootServices bare-metal execution environment evaluated under CPA-004 on QEMU AArch64.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in FREESTANDING execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "CPA-004 bounded cross-profile campaign (351-byte program, 17 opcodes on AArch64 QEMU).",
+        "production_evidence": "Experimental feature sub.layer.2_exec.freestanding_runtime maintained for frontier research (e.g. freestanding QEMU boot, JIT compiler)."
+      }
     },
     {
       "id": "sub.layer.3_num.balanced_ternary_limbs",
@@ -386,7 +484,14 @@
         "T81Limb54::karatsuba()",
         "T81Limb54::reference_mul()"
       ],
-      "description": "Elementary 27-trit and 54-trit balanced ternary arithmetic primitives repaired under SCG-07 Phases 3, 4, 5."
+      "description": "Elementary 27-trit and 54-trit balanced ternary arithmetic primitives repaired under SCG-07 Phases 3, 4, 5.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "SCG-07 Phase 6 (Document ID: T81-SCG-07-PHASE6-QUALIFICATION-001-R1) qualifies F1/F2/F3 under limitations.",
+        "production_evidence": "Foundational arithmetic types in include/t81/types/ linked across t81_core and verified by SCG regression suites."
+      }
     },
     {
       "id": "sub.layer.3_num.fixed_width_integers",
@@ -412,7 +517,14 @@
         "T81Int::operator*",
         "T81Int::to_int64()"
       ],
-      "description": "Template-based balanced ternary integer with full 2N convolution multiplication and overflow trapping."
+      "description": "Template-based balanced ternary integer with full 2N convolution multiplication and overflow trapping.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "SCG-07 Phase 6 qualifies T81Int operator* convolution and carry normalization (F4).",
+        "production_evidence": "Foundational arithmetic types in include/t81/types/ linked across t81_core and verified by SCG regression suites."
+      }
     },
     {
       "id": "sub.layer.3_num.multi_precision_bigint",
@@ -439,7 +551,14 @@
         "T81BigInt::operator-",
         "T81BigInt::verify_invariants()"
       ],
-      "description": "Arbitrary precision integer representation backed by limbs with invariant magnitude enforcement repaired under SCG-07 Phase 2."
+      "description": "Arbitrary precision integer representation backed by limbs with invariant magnitude enforcement repaired under SCG-07 Phase 2.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "SCG-07 Phase 6 qualifies T81BigInt signed subtraction invariant repair (F5).",
+        "production_evidence": "Foundational arithmetic types in include/t81/types/ linked across t81_core and verified by SCG regression suites."
+      }
     },
     {
       "id": "sub.layer.3_num.rational_fractions",
@@ -465,7 +584,14 @@
         "T81Fraction::canonicalize()",
         "T81Fraction::to_double()"
       ],
-      "description": "Exact rational arithmetic without floating-point drift, featuring unwound exception propagation and bounded binary64 conversion."
+      "description": "Exact rational arithmetic without floating-point drift, featuring unwound exception propagation and bounded binary64 conversion.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "SCG-07 Phase 6 qualifies T81Fraction overflow unwinding and to_double() bounds (F6/F7).",
+        "production_evidence": "Foundational arithmetic types in include/t81/types/ linked across t81_core and verified by SCG regression suites."
+      }
     },
     {
       "id": "sub.layer.3_num.ternary_tensors",
@@ -478,7 +604,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -492,7 +618,14 @@
         "t81::weights::NativeTensor",
         "t81::tensor::matmul()"
       ],
-      "description": "Packed ternary weight representations, shapes, multiplication-free ternary-binary matrix multiplication, and lattice crypto helpers."
+      "description": "Packed ternary weight representations, shapes, multiplication-free ternary-binary matrix multiplication, and lattice crypto helpers.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Unverified for formal qualification; implements Ternary Native Tensors & Linear Algebra with automated test coverage but no continuity qualification receipt.",
+        "production_evidence": "Core data structures and acceleration primitives compiled directly into t81_core static library."
+      }
     },
     {
       "id": "sub.layer.3_num.soft_math",
@@ -505,7 +638,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -517,7 +650,14 @@
         "t81::math::soft_cos()",
         "t81::math::soft_exp()"
       ],
-      "description": "Cross-platform bit-exact transcendental approximations eliminating host FPU rounding variance."
+      "description": "Cross-platform bit-exact transcendental approximations eliminating host FPU rounding variance.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Unverified for formal qualification; implements Deterministic Soft Math Tables with automated test coverage but no continuity qualification receipt.",
+        "production_evidence": "Core data structures and acceleration primitives compiled directly into t81_core static library."
+      }
     },
     {
       "id": "sub.layer.4_services.axion_kernel",
@@ -530,7 +670,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -546,7 +686,14 @@
         "t81::axion::PolicyEngine::evaluate()",
         "t81::axion::check_ethics()"
       ],
-      "description": "Mandatory policy arbiter enforcing ethical constraints Theta-1..9, loop bound limits, memory quotas, and tensor hash allowlists."
+      "description": "Mandatory policy arbiter enforcing ethical constraints Theta-1..9, loop bound limits, memory quotas, and tensor hash allowlists.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Unverified for formal qualification; implements Axion Governance Kernel with automated test coverage but no continuity qualification receipt.",
+        "production_evidence": "Axion governance kernel in src/axion/CMakeLists.txt (t81_axion) enforcing constitutional policy on system calls."
+      }
     },
     {
       "id": "sub.layer.4_services.canonfs",
@@ -559,7 +706,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -576,7 +723,14 @@
         "storage_key_v1()",
         "snapshot_storage_key_v1()"
       ],
-      "description": "Cryptographically verifiable immutable storage mapping content to Base-81 / portable hex keys (objects/h1-<hash>.blk)."
+      "description": "Cryptographically verifiable immutable storage mapping content to Base-81 / portable hex keys (objects/h1-<hash>.blk).",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Unverified for formal qualification; implements CanonFS Content-Addressed Storage Subsystem with automated test coverage but no continuity qualification receipt.",
+        "production_evidence": "CanonFS content-addressed storage implementation in fs/persistent_driver.cpp linked into t81_core."
+      }
     },
     {
       "id": "sub.layer.4_services.codecs",
@@ -589,7 +743,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -602,7 +756,14 @@
         "t81::codec::encode_base81()",
         "t81::codec::decode_base81()"
       ],
-      "description": "Efficient serialization routines grouping trits into 4-trit Base-81 and 5-trit Base-243 characters."
+      "description": "Efficient serialization routines grouping trits into 4-trit Base-81 and 5-trit Base-243 characters.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Unverified for formal qualification; implements Base-81 & Base-243 Stream Codecs with automated test coverage but no continuity qualification receipt.",
+        "production_evidence": "Core data structures and acceleration primitives compiled directly into t81_core static library."
+      }
     },
     {
       "id": "sub.layer.4_services.crypto",
@@ -615,7 +776,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -627,7 +788,14 @@
         "t81::crypto::sha3_256()",
         "t81::CanonHash81"
       ],
-      "description": "Cryptographic digest routines providing root hashes for model weights, storage objects, and execution traces."
+      "description": "Cryptographic digest routines providing root hashes for model weights, storage objects, and execution traces.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Unverified for formal qualification; implements Deterministic Hash & Cryptographic Engine with automated test coverage but no continuity qualification receipt.",
+        "production_evidence": "Core data structures and acceleration primitives compiled directly into t81_core static library."
+      }
     },
     {
       "id": "sub.layer.5_os.ternaryos_kernel",
@@ -653,7 +821,14 @@
         "t81::ternaryos::hal::init()",
         "t81::ternaryos::kernel::KernelRuntime"
       ],
-      "description": "Hardware abstraction layer, interrupt handlers, and kernel services booting on QEMU AArch64 and x86_64."
+      "description": "Hardware abstraction layer, interrupt handlers, and kernel services booting on QEMU AArch64 and x86_64.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in FREESTANDING execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "CPA-004 bounded freestanding evaluation post-ExitBootServices under QEMU.",
+        "production_evidence": "Experimental feature sub.layer.5_os.ternaryos_kernel maintained for frontier research (e.g. freestanding QEMU boot, JIT compiler)."
+      }
     },
     {
       "id": "mod.ternaryos.scheduler",
@@ -678,7 +853,14 @@
         "t81::ternaryos::sched::Scheduler::schedule()",
         "t81::ternaryos::sched::context_switch()"
       ],
-      "description": "Deterministic thread scheduling and register context save/restore across execution epochs."
+      "description": "Deterministic thread scheduling and register context save/restore across execution epochs.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in FREESTANDING execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "CPA-004 bare-metal timer interrupt cooperative schedule tick under QEMU.",
+        "production_evidence": "Experimental feature mod.ternaryos.scheduler maintained for frontier research (e.g. freestanding QEMU boot, JIT compiler)."
+      }
     },
     {
       "id": "mod.ternaryos.mmu",
@@ -703,7 +885,14 @@
         "t81::ternaryos::mmu::TernaryPageAllocator",
         "t81::ternaryos::mmu::map_page()"
       ],
-      "description": "Physical frame allocator and AArch64 TTBR0 translation table management."
+      "description": "Physical frame allocator and AArch64 TTBR0 translation table management.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in FREESTANDING execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "CPA-004 TTBR0 page-table translation and physical memory map under QEMU.",
+        "production_evidence": "Experimental feature mod.ternaryos.mmu maintained for frontier research (e.g. freestanding QEMU boot, JIT compiler)."
+      }
     },
     {
       "id": "sub.layer.5_os.daios_proposal",
@@ -723,7 +912,14 @@
         "spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md"
       ],
       "public_interfaces": [],
-      "description": "Unimplemented architectural target specification outlining end-state autonomous decision operating system sequencing."
+      "description": "Unimplemented architectural target specification outlining end-state autonomous decision operating system sequencing.",
+      "maturity_evidence": {
+        "compilation_evidence": "Not compiled (documentation / design specification)",
+        "execution_evidence": "Specification / charter only, no runtime execution",
+        "test_evidence": "No dedicated automated test suite",
+        "qualification_evidence": "Unverified architectural proposal (RFC-00D2).",
+        "production_evidence": "Design proposal sub.layer.5_os.daios_proposal documented in normative RFCs without production code activation."
+      }
     },
     {
       "id": "sub.layer.6_hw.rtl_feasibility",
@@ -750,7 +946,14 @@
         "design_a_general_mac",
         "design_b_optimized_binary"
       ],
-      "description": "Verilog hardware description modules comparing dual-bitplane unpacked ternary dot products against binary MAC designs."
+      "description": "Verilog hardware description modules comparing dual-bitplane unpacked ternary dot products against binary MAC designs.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in EMULATED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Exploratory Verilog simulation without physical hardware qualification.",
+        "production_evidence": "Research prototype sub.layer.6_hw.rtl_feasibility evaluated under exploratory simulation without production promotion."
+      }
     },
     {
       "id": "sub.layer.6_hw.simd_primitives",
@@ -763,7 +966,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -773,7 +976,14 @@
       "public_interfaces": [
         "t81::simd::unpack_base81_avx2()"
       ],
-      "description": "Vectorized 256-bit SIMD intrinsics for accelerated Base-81 digit decoding on x86-64 host processors."
+      "description": "Vectorized 256-bit SIMD intrinsics for accelerated Base-81 digit decoding on x86-64 host processors.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Unverified for formal qualification; implements Host SIMD Acceleration Primitives (AVX2) with automated test coverage but no continuity qualification receipt.",
+        "production_evidence": "Core data structures and acceleration primitives compiled directly into t81_core static library."
+      }
     },
     {
       "id": "sub.layer.6_hw.qemu_drivers",
@@ -800,7 +1010,14 @@
         "t81::ternaryos::dev::GicV3",
         "t81::ternaryos::dev::VirtioBlkMmio"
       ],
-      "description": "Device drivers interfacing with QEMU ARM virt peripherals (PL011 UART, GICv3 interrupt distributor, VirtIO block storage)."
+      "description": "Device drivers interfacing with QEMU ARM virt peripherals (PL011 UART, GICv3 interrupt distributor, VirtIO block storage).",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in FREESTANDING execution profile",
+        "test_evidence": "Verified under test_coverage SMOKE_ONLY",
+        "qualification_evidence": "CPA-004 PL011 UART and GICv3 interrupt controller drivers under QEMU.",
+        "production_evidence": "Experimental feature sub.layer.6_hw.qemu_drivers maintained for frontier research (e.g. freestanding QEMU boot, JIT compiler)."
+      }
     },
     {
       "id": "sub.layer.7_assurance.hypothesis_register",
@@ -813,8 +1030,8 @@
         "compilation": false,
         "execution": "NONE",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
-        "production_status": "PRODUCTION_CORE"
+        "qualification": "UNVERIFIED",
+        "production_status": "GOVERNANCE_AND_ASSURANCE"
       },
       "source_paths": [
         "docs/research/continuity/HYPOTHESIS_REGISTER_v1.json"
@@ -829,7 +1046,14 @@
         "H07",
         "H08"
       ],
-      "description": "Central evidence register defining 8 canonical scientific claims, falsifiers, baselines, and qualification tiers."
+      "description": "Central evidence register defining 8 canonical scientific claims, falsifiers, baselines, and qualification tiers.",
+      "maturity_evidence": {
+        "compilation_evidence": "Not compiled (documentation / design specification)",
+        "execution_evidence": "Specification / charter only, no runtime execution",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Governance / research assurance artifact; not a qualified software subsystem.",
+        "production_evidence": "Assurance artifact sub.layer.7_assurance.hypothesis_register maintained for repository verification, CI governance, and research continuity."
+      }
     },
     {
       "id": "sub.layer.7_assurance.scg_continuity",
@@ -842,8 +1066,8 @@
         "compilation": false,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
-        "production_status": "PRODUCTION_CORE"
+        "qualification": "UNVERIFIED",
+        "production_status": "GOVERNANCE_AND_ASSURANCE"
       },
       "source_paths": [
         "docs/research/continuity/SCG03_EVIDENCE_RECEIPT.md",
@@ -866,7 +1090,14 @@
         "SCG-07",
         "SCG-08"
       ],
-      "description": "Chain of reproducible evidence receipts recording mathematical proofs, defect reproductions (F1..F7), and repair qualification."
+      "description": "Chain of reproducible evidence receipts recording mathematical proofs, defect reproductions (F1..F7), and repair qualification.",
+      "maturity_evidence": {
+        "compilation_evidence": "Not compiled (documentation / design specification)",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Governance / research assurance artifact; not a qualified software subsystem.",
+        "production_evidence": "Assurance artifact sub.layer.7_assurance.scg_continuity maintained for repository verification, CI governance, and research continuity."
+      }
     },
     {
       "id": "sub.layer.7_assurance.cpp_test_suite",
@@ -879,8 +1110,8 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
-        "production_status": "PRODUCTION_CORE"
+        "qualification": "UNVERIFIED",
+        "production_status": "GOVERNANCE_AND_ASSURANCE"
       },
       "source_paths": [
         "tests/cpp/test_scg07_phase6_qualification.cpp",
@@ -896,7 +1127,14 @@
         "t81_bigint_sub_test",
         "t81_cli_contract_test"
       ],
-      "description": "Over 400 test drivers executing unconditional fail-closed validation under both Debug and Release (-DNDEBUG) modes."
+      "description": "Over 400 test drivers executing unconditional fail-closed validation under both Debug and Release (-DNDEBUG) modes.",
+      "maturity_evidence": {
+        "compilation_evidence": "CMake target / build system verification",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Test harness infrastructure (419 test files); acts as verifier, not qualified subject.",
+        "production_evidence": "Assurance artifact sub.layer.7_assurance.cpp_test_suite maintained for repository verification, CI governance, and research continuity."
+      }
     },
     {
       "id": "sub.layer.7_assurance.ci_governance",
@@ -909,8 +1147,8 @@
         "compilation": false,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
-        "production_status": "PRODUCTION_CORE"
+        "qualification": "UNVERIFIED",
+        "production_status": "GOVERNANCE_AND_ASSURANCE"
       },
       "source_paths": [
         ".github/workflows/ci.yml",
@@ -923,7 +1161,15 @@
         "check_tisc_freeze_integrity.py",
         "validate_current_state.py"
       ],
-      "description": "Automated gates enforcing root directory structure integrity, TISC opcode freeze invariance, and multi-compiler conformance."
+      "description": "Automated gates enforcing root directory structure integrity, TISC opcode freeze invariance, and multi-compiler conformance.",
+      "maturity_evidence": {
+        "compilation_evidence": "Not compiled (documentation / design specification)",
+        "execution_evidence": "Demonstrated in HOSTED execution profile",
+        "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+        "qualification_evidence": "Governance / research assurance artifact; not a qualified software subsystem.",
+        "production_evidence": "Assurance artifact sub.layer.7_assurance.ci_governance maintained for repository verification, CI governance, and research continuity."
+      }
     }
-  ]
+  ],
+  "description": "Comprehensive inventory of architectural subsystems and modules across the 7-layer T81 model. Note on classification: 'PRODUCTION_CORE' designates an implemented, fully compiled, and test-covered architectural subsystem within the repository source tree, not an independently certified enterprise or commercial production-readiness claim. Formal qualification is tracked separately under the 'qualification' property."
 }

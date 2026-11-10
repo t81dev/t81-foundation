@@ -1,6 +1,6 @@
-# T81 Internal Architecture Mapping & Visualization Data Foundation (`T81-ARCH-VIZ-001`)
+# T81 Internal Architecture Mapping & Visualization Data Foundation (`T81-ARCH-VIZ-002`)
 
-**Document ID:** `T81-ARCH-VIZ-001-REPORT-R1`
+**Document ID:** `T81-ARCH-VIZ-002-REPORT-R1`
 **Baseline Anchor Commit:** `4f96cb24358bfd260e67387b2c4db2797b01236f`
 **Classification:** Source-grounded internal architecture model, dependency graph, and 3D visualization data foundation
 **Status:** Complete / Verified under Pinned Baseline
@@ -32,6 +32,41 @@ A repository-wide audit revealed 500 executable declarations and 54 library decl
 - **Executable Targets:** 500 declarations (498 unique target names). Of these, 388 are standalone C++ test executables registered for CTest.
 - **Library Targets:** 54 declarations across root and `src/` modular libraries (`t81_core`, `t81_vm`, `t81_axion`, `t81_isa`, `t81_lang_frontend`, `t81_ternaryos_hal`, etc.).
 - **CTest Invocations:** 170 `add_test()` declarations mapping test targets to CI check gates.
+
+
+
+
+### 2.6 Semantic Definition of Production and Qualification Classifications
+To prevent conflating software presence with external deployment certification:
+- **`PRODUCTION_CORE`:** Identifies an implemented, fully compiled, and test-covered architectural subsystem integrated into the primary platform source tree (e.g. `t81_core`, `t81_vm`, `t81_lang_frontend`). It does **not** signify commercial, enterprise, or independently certified production readiness.
+- **`QUALIFIED` / `QUALIFIED_WITH_LIMITATIONS`:** Strictly reserved for components with authoritative research receipts and mathematical qualification reports (specifically SCG-07 Phase 6 for balanced ternary arithmetic types, and CPA-004 for freestanding QEMU runtime). Components lacking such continuity receipts remain `UNVERIFIED` for formal qualification regardless of implementation maturity.
+
+### 2.5 Scoped Qualification Boundaries
+In strict accordance with T81 research receipts:
+- **SCG-07 Phase 6:** Formally qualifies balanced ternary arithmetic primitives under limitations (`T81Limb27/54`, `T81Int`, `T81BigInt`, `T81Fraction`). Unrelated subsystems (compiler frontend, CLI driver, VM interpreter, Axion governance kernel, CanonFS storage, tensors, SIMD routines) lack continuity qualification receipts and are strictly classified as `UNVERIFIED` for formal qualification.
+- **CPA-004 Evaluator:** Qualifies the bounded freestanding execution profile under limitations (351-byte program, 17 opcodes on AArch64 QEMU).
+
+### 2.4 Structural Source Reference Typing & Evidence Hardening (T81-ARCH-VIZ-002)
+To reconcile source references against the pinned codebase without turning unverified claims into established implementation facts:
+- **Reference Taxonomy:** Every line-level source reference is categorized into one of six explicit reference types:
+  - `FUNCTION_DEFINITION`: Entry point or body of a C/C++ function.
+  - `CALL_SITE`: Specific line where a function or method invocation occurs.
+  - `DISPATCH_SITE`: Control flow branching construct (e.g. `switch (insn.opcode)` at `vm/vm.cpp:1612`) that dispatches execution based on opcode or event, distinct from a function call or definition.
+  - `DECLARATION`: Struct, class, typedef, or function prototype declaration.
+  - `COMMENT`: Non-executable explanatory comments or docstrings.
+  - `DESCRIPTIVE_FILE`: Whole-file descriptive anchors without single executable line semantics.
+- **Top-Level Directory Representation:** 18 of 35 repository top-level directories (51.43%) are mapped to architectural components in `coverage_manifest.json`. Unmapped directories (e.g. experimental benchmarks, customer tools, logs) are explicitly cataloged.
+- **Relationship Derivation:** Every edge is categorized as either `STATICALLY_EXTRACTED` (source code includes, symbol references, CMake links) or `MANUALLY_CURATED` (subsystem containment, RFC intent, continuity evidence).
+- **Maturity Audit:** Governance artifacts and continuity documents are classified under `GOVERNANCE_AND_ASSURANCE` rather than `PRODUCTION_CORE`.
+
+
+### 2.7 Corrective Review Diff Composition (PR #749)
+The final change set relative to baseline `e5c30560aa77c31184a14b03ed152a6deef5c1a3` exhibits a net line delta of +2,995 / −746 across 10 files:
+1. **Generator Refactoring (`generate_architecture_visualization.py`, +2,333 / −744):** Transitioned dataset generation from monolithic/single-line representations to clean, maintainable multiline dictionaries and incorporated the new `coverage_manifest.json` builder. Zero architectural coverage was removed or lost.
+2. **Dataset Evidence Enrichment (`architecture_nodes.json`, `architecture_edges.json`, `execution_paths.json`, `subsystem_summary.json`):** Enriched reference metadata with `reference_type` and line bounds, added structured `maturity_evidence` citations, categorized edge `derivation_method`, and scoped execution path observation steps.
+3. **Coverage Manifest Introduction (`coverage_manifest.json`, +76 lines):** Added authoritative manifest mapping 18 represented and 17 unmapped top-level directories and 9 relationship categories.
+4. **Validation Hardening (`validate_architecture_visualization.py`, +222 lines):** Replaced assertion checks with unconditional `ValueError` / `FileNotFoundError` exceptions for `python -O` safety, closed trace validation bypasses, and added semantic compatibility and anti-tautology enforcement.
+5. **Negative Test Suite Expansion (`test_architecture_visualization.py`, +180 lines):** Added 12 fail-closed negative regression tests covering out-of-bounds line numbers, nonexistent files/nodes, trace hash mismatches, tautological evidence, and optimized-mode execution.
 
 ### 2.3 Test Suite Reconciliation
 - **Test Source Files:** 419 C++ test files located under `tests/cpp/`.
@@ -82,15 +117,17 @@ The repository is reconstructed into 7 logical architectural layers:
 
 | ID | Pathway Name | Status | Method | Entry Point | Exit Point |
 |---|---|---|---|---|---|
-| `path.01` | T81Lang Source to Executable | `VERIFIED_IMPLEMENTED` | Dynamic | `main.cpp:10799` | `ir_generator.cpp:8` |
-| `path.02` | TISC Decode & VM Execution | `VERIFIED_IMPLEMENTED` | Dynamic | `vm.cpp:435` | `runtime_state_helpers.cpp:80` |
-| `path.03` | Balanced Ternary Limb Mul | `VERIFIED_IMPLEMENTED` | Dynamic | `T81Limb.hpp:173` | `T81Limb.hpp:624` |
-| `path.04` | Multi-Precision BigInt Invariant | `VERIFIED_IMPLEMENTED` | Dynamic | `T81BigInt.hpp:1005` | `T81BigInt.hpp:1020` |
-| `path.05` | Safetensors Weight Import/Export | `VERIFIED_IMPLEMENTED` | Dynamic | `main.cpp:3884` | `main.cpp:4355` |
-| `path.06` | Axion Policy & Ethics Gate Check | `VERIFIED_IMPLEMENTED` | Dynamic | `policy_engine.cpp:217` | `policy_engine.cpp:242` |
-| `path.07` | CanonFS Object Storage | `VERIFIED_IMPLEMENTED` | Dynamic | `persistent_driver.cpp:193`| `storage_key.hpp:1` |
-| `path.08` | Freestanding AArch64 Boot | `VERIFIED_IMPLEMENTED` | Dynamic | `qemu_slice6_bare_kernel.c:1`| `qemu_slice6_bare_kernel.c:16` |
-| `path.09` | Hardware RTL Simulation | `EXPERIMENTAL` | Static | `tb_dot_product.v:1` | `design_c_ht1_ternary.v:14` |
+| `path.01` | T81Lang Source to Executable | `STATICALLY_TRACED` | Static Source Trace | `main.cpp:10799` | `ir_generator.cpp:8` |
+| `path.02` | TISC Decode & VM Execution | `STATICALLY_TRACED` | Static Source Trace (Trace-Supported) | `vm.cpp:435` | `runtime_state_helpers.cpp:80` |
+| `path.03` | Balanced Ternary Limb Mul | `STATICALLY_TRACED` | Static Source Trace | `T81Limb.hpp:173` | `T81Limb.hpp:624` |
+| `path.04` | Multi-Precision BigInt Invariant | `STATICALLY_TRACED` | Static Source Trace | `T81BigInt.hpp:1005` | `T81BigInt.hpp:1018` |
+| `path.05` | Safetensors Weight Import/Export | `STATICALLY_TRACED` | Static Source Trace | `main.cpp:3884` | `main.cpp:4400` |
+| `path.06` | Axion Policy & Ethics Gate Check | `STATICALLY_TRACED` | Static Source Trace | `policy_engine.cpp:217` | `policy_engine.cpp:242` |
+| `path.07` | CanonFS Object Storage | `STATICALLY_TRACED` | Static Source Trace | `persistent_driver.cpp:193`| `persistent_driver.cpp:200` |
+| `path.08` | Freestanding AArch64 Boot | `STATICALLY_TRACED` | Static Source Trace | `qemu_slice6_bare_kernel.c:101`| `qemu_slice6_cpp_bridge.cpp:1823` |
+| `path.09` | Hardware RTL Simulation | `STATICALLY_TRACED` | Static Source Trace | `tb_dot_product.v:1` | `design_c_ht1_ternary.v:55` |
+
+*Note on Tracing Provenance:* In accordance with T81-ARCH-VIZ-002, all 9 execution pathways and 33 steps are classified as `STATICALLY_TRACED` / `STATICALLY_SUPPORTED`. The canonical VM trace `tests/fixtures/canonical_traces/01_bigint_add.trace` (SHA-256 `a00b67b1d76124d4a247a54a737d369dfc3e8326ca5f0d5a99fc0adbd93efbf0`) explicitly proves the emitted instruction stepping PC/opcode sequence, while C++ source-line execution (`vm.cpp:435`, `vm.cpp:1612`) and policy/state transitions are statically supported without direct binary instrumentation.
 
 ---
 

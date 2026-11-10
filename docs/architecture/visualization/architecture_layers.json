@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
   "description": "7-layer architectural taxonomy of the T81 Foundation platform",
   "layers": [

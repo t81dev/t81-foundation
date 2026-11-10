@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
   "description": "High-level subsystem summary graph for scalable 3D macro-navigation",
   "subsystem_count": 26,
@@ -14,7 +14,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -27,7 +27,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -53,7 +53,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -66,7 +66,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -157,7 +157,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -170,7 +170,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -183,7 +183,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -196,7 +196,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -209,7 +209,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -222,7 +222,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -274,7 +274,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -300,8 +300,8 @@
         "compilation": false,
         "execution": "NONE",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
-        "production_status": "PRODUCTION_CORE"
+        "qualification": "UNVERIFIED",
+        "production_status": "GOVERNANCE_AND_ASSURANCE"
       }
     },
     {
@@ -313,8 +313,8 @@
         "compilation": false,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
-        "production_status": "PRODUCTION_CORE"
+        "qualification": "UNVERIFIED",
+        "production_status": "GOVERNANCE_AND_ASSURANCE"
       }
     },
     {
@@ -326,8 +326,8 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
-        "production_status": "PRODUCTION_CORE"
+        "qualification": "UNVERIFIED",
+        "production_status": "GOVERNANCE_AND_ASSURANCE"
       }
     },
     {
@@ -339,8 +339,8 @@
         "compilation": false,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
-        "production_status": "PRODUCTION_CORE"
+        "qualification": "UNVERIFIED",
+        "production_status": "GOVERNANCE_AND_ASSURANCE"
       }
     }
   ],

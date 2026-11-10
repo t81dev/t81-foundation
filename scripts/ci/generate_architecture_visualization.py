@@ -16,72 +16,75 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def build_layers():
     return {
-        "schema_version": "1.0.0",
-        "baseline_commit": BASELINE_COMMIT,
-        "description": "7-layer architectural taxonomy of the T81 Foundation platform",
-        "layers": [
-            {
-                "id": "layer.1_lang",
-                "index": 1,
-                "name": "Language and Development",
-                "description": "T81Lang source parsing, AST construction, semantic analysis, IR generation, CLI interface, and toolchain bridges.",
-                "y_level": 600,
-                "color_theme": "#4A90E2"
-            },
-            {
-                "id": "layer.2_exec",
-                "index": 2,
-                "name": "Instruction and Execution",
-                "description": "TISC instruction set computer contract, bytecode decoding, T81VM deterministic interpreter, round-robin scheduler, and JIT/trace cache.",
-                "y_level": 500,
-                "color_theme": "#50E3C2"
-            },
-            {
-                "id": "layer.3_num",
-                "index": 3,
-                "name": "Numerical and Computational Foundations",
-                "description": "Balanced ternary arithmetic, multi-precision types (T81Limb27/54, T81Int, T81BigInt, T81Fraction), soft math tables, and tensor representations.",
-                "y_level": 400,
-                "color_theme": "#F5A623"
-            },
-            {
-                "id": "layer.4_services",
-                "index": 4,
-                "name": "System Services",
-                "description": "Axion governance kernel (policy engine, ethics Theta-1..9, nondeterminism detection) and CanonFS immutable content-addressed storage.",
-                "y_level": 300,
-                "color_theme": "#BD10E0"
-            },
-            {
-                "id": "layer.5_os",
-                "index": 5,
-                "name": "Operating-System Architecture",
-                "description": "TernaryOS standalone guest kernel, HAL, GICv3/PL011/VirtIO drivers, page allocation MMU, and DAIOS (RFC-00D2) target architecture.",
-                "y_level": 200,
-                "color_theme": "#B8E986"
-            },
-            {
-                "id": "layer.6_hw",
-                "index": 6,
-                "name": "Hardware and Acceleration",
-                "description": "Physical ternary feasibility research, Verilog RTL models, SIMD AVX2 acceleration primitives, and QEMU hardware emulation.",
-                "y_level": 100,
-                "color_theme": "#E02020"
-            },
-            {
-                "id": "layer.7_assurance",
-                "index": 7,
-                "name": "Research and Assurance",
-                "description": "Empirical hypothesis register H01–H08, SCG continuity evidence receipts, regression suites, determinism registries, and CI gates.",
-                "y_level": 0,
-                "color_theme": "#9013FE"
-            }
-        ]
-    }
+    "schema_version": "1.1.0",
+    "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
+    "description": "7-layer architectural taxonomy of the T81 Foundation platform",
+    "layers": [
+        {
+            "id": "layer.1_lang",
+            "index": 1,
+            "name": "Language and Development",
+            "description": "T81Lang source parsing, AST construction, semantic analysis, IR generation, CLI interface, and toolchain bridges.",
+            "y_level": 600,
+            "color_theme": "#4A90E2"
+        },
+        {
+            "id": "layer.2_exec",
+            "index": 2,
+            "name": "Instruction and Execution",
+            "description": "TISC instruction set computer contract, bytecode decoding, T81VM deterministic interpreter, round-robin scheduler, and JIT/trace cache.",
+            "y_level": 500,
+            "color_theme": "#50E3C2"
+        },
+        {
+            "id": "layer.3_num",
+            "index": 3,
+            "name": "Numerical and Computational Foundations",
+            "description": "Balanced ternary arithmetic, multi-precision types (T81Limb27/54, T81Int, T81BigInt, T81Fraction), soft math tables, and tensor representations.",
+            "y_level": 400,
+            "color_theme": "#F5A623"
+        },
+        {
+            "id": "layer.4_services",
+            "index": 4,
+            "name": "System Services",
+            "description": "Axion governance kernel (policy engine, ethics Theta-1..9, nondeterminism detection) and CanonFS immutable content-addressed storage.",
+            "y_level": 300,
+            "color_theme": "#BD10E0"
+        },
+        {
+            "id": "layer.5_os",
+            "index": 5,
+            "name": "Operating-System Architecture",
+            "description": "TernaryOS standalone guest kernel, HAL, GICv3/PL011/VirtIO drivers, page allocation MMU, and DAIOS (RFC-00D2) target architecture.",
+            "y_level": 200,
+            "color_theme": "#B8E986"
+        },
+        {
+            "id": "layer.6_hw",
+            "index": 6,
+            "name": "Hardware and Acceleration",
+            "description": "Physical ternary feasibility research, Verilog RTL models, SIMD AVX2 acceleration primitives, and QEMU hardware emulation.",
+            "y_level": 100,
+            "color_theme": "#E02020"
+        },
+        {
+            "id": "layer.7_assurance",
+            "index": 7,
+            "name": "Research and Assurance",
+            "description": "Empirical hypothesis register H01\u2013H08, SCG continuity evidence receipts, regression suites, determinism registries, and CI gates.",
+            "y_level": 0,
+            "color_theme": "#9013FE"
+        }
+    ]
+}
 
 def build_nodes():
-    nodes = [
-        # --- LAYER 1: Language and Development ---
+    return {
+    "schema_version": "1.1.0",
+    "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
+    "total_nodes": 35,
+    "nodes": [
         {
             "id": "sub.layer.1_lang.frontend",
             "name": "T81Lang Compiler Frontend",
@@ -93,12 +96,30 @@ def build_nodes():
                 "compilation": True,
                 "execution": "HOSTED",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
+                "qualification": "UNVERIFIED",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["lang/frontend/lexer.cpp", "lang/frontend/parser.cpp", "lang/frontend/semantic_analyzer.cpp", "lang/frontend/ir_generator.cpp", "include/t81/frontend/ast.hpp"],
-            "public_interfaces": ["t81::frontend::Lexer", "t81::frontend::Parser", "t81::frontend::SemanticAnalyzer", "t81::frontend::IRGenerator"],
-            "description": "Lexing, recursive descent parsing, semantic analysis, and TISC IR code generation for T81Lang programs."
+            "source_paths": [
+                "lang/frontend/lexer.cpp",
+                "lang/frontend/parser.cpp",
+                "lang/frontend/semantic_analyzer.cpp",
+                "lang/frontend/ir_generator.cpp",
+                "include/t81/frontend/ast.hpp"
+            ],
+            "public_interfaces": [
+                "t81::frontend::Lexer",
+                "t81::frontend::Parser",
+                "t81::frontend::SemanticAnalyzer",
+                "t81::frontend::IRGenerator"
+            ],
+            "description": "Lexing, recursive descent parsing, semantic analysis, and TISC IR code generation for T81Lang programs.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Unverified for formal qualification; implements T81Lang Compiler Frontend with automated test coverage but no continuity qualification receipt.",
+                "production_evidence": "Linked into core compiler pipeline via lang/CMakeLists.txt (t81_lang_frontend) and driven by tools/cli/core/main.cpp."
+            }
         },
         {
             "id": "mod.frontend.lexer",
@@ -111,12 +132,25 @@ def build_nodes():
                 "compilation": True,
                 "execution": "HOSTED",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
+                "qualification": "UNVERIFIED",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["lang/frontend/lexer.cpp", "include/t81/frontend/lexer.hpp"],
-            "public_interfaces": ["t81::frontend::Lexer::next_token()", "t81::frontend::Token"],
-            "description": "Tokenizer supporting balanced ternary literals, keywords, identifiers, and symbols."
+            "source_paths": [
+                "lang/frontend/lexer.cpp",
+                "include/t81/frontend/lexer.hpp"
+            ],
+            "public_interfaces": [
+                "t81::frontend::Lexer::next_token()",
+                "t81::frontend::Token"
+            ],
+            "description": "Tokenizer supporting balanced ternary literals, keywords, identifiers, and symbols.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Unverified for formal qualification; implements T81Lang Lexer with automated test coverage but no continuity qualification receipt.",
+                "production_evidence": "Linked into core compiler pipeline via lang/CMakeLists.txt (t81_lang_frontend) and driven by tools/cli/core/main.cpp."
+            }
         },
         {
             "id": "mod.frontend.parser",
@@ -129,12 +163,25 @@ def build_nodes():
                 "compilation": True,
                 "execution": "HOSTED",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
+                "qualification": "UNVERIFIED",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["lang/frontend/parser.cpp", "include/t81/frontend/parser.hpp", "include/t81/frontend/ast.hpp"],
-            "public_interfaces": ["t81::frontend::Parser::parse_program()"],
-            "description": "AST constructor translating token sequences into typed statement and expression nodes."
+            "source_paths": [
+                "lang/frontend/parser.cpp",
+                "include/t81/frontend/parser.hpp",
+                "include/t81/frontend/ast.hpp"
+            ],
+            "public_interfaces": [
+                "t81::frontend::Parser::parse_program()"
+            ],
+            "description": "AST constructor translating token sequences into typed statement and expression nodes.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Unverified for formal qualification; implements T81Lang Parser with automated test coverage but no continuity qualification receipt.",
+                "production_evidence": "Linked into core compiler pipeline via lang/CMakeLists.txt (t81_lang_frontend) and driven by tools/cli/core/main.cpp."
+            }
         },
         {
             "id": "mod.frontend.semantic_analyzer",
@@ -147,12 +194,24 @@ def build_nodes():
                 "compilation": True,
                 "execution": "HOSTED",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
+                "qualification": "UNVERIFIED",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["lang/frontend/semantic_analyzer.cpp", "include/t81/frontend/semantic_analyzer.hpp"],
-            "public_interfaces": ["t81::frontend::SemanticAnalyzer::analyze()"],
-            "description": "Type checking, symbol scope resolution, loop bound verification, and policy requirement validation."
+            "source_paths": [
+                "lang/frontend/semantic_analyzer.cpp",
+                "include/t81/frontend/semantic_analyzer.hpp"
+            ],
+            "public_interfaces": [
+                "t81::frontend::SemanticAnalyzer::analyze()"
+            ],
+            "description": "Type checking, symbol scope resolution, loop bound verification, and policy requirement validation.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Unverified for formal qualification; implements T81Lang Semantic Analyzer with automated test coverage but no continuity qualification receipt.",
+                "production_evidence": "Linked into core compiler pipeline via lang/CMakeLists.txt (t81_lang_frontend) and driven by tools/cli/core/main.cpp."
+            }
         },
         {
             "id": "mod.frontend.ir_generator",
@@ -165,12 +224,24 @@ def build_nodes():
                 "compilation": True,
                 "execution": "HOSTED",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
+                "qualification": "UNVERIFIED",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["lang/frontend/ir_generator.cpp", "include/t81/frontend/ir_generator.hpp"],
-            "public_interfaces": ["t81::frontend::IRGenerator::generate()"],
-            "description": "Linearizes AST constructs into deterministic TISC intermediate representation instructions."
+            "source_paths": [
+                "lang/frontend/ir_generator.cpp",
+                "include/t81/frontend/ir_generator.hpp"
+            ],
+            "public_interfaces": [
+                "t81::frontend::IRGenerator::generate()"
+            ],
+            "description": "Linearizes AST constructs into deterministic TISC intermediate representation instructions.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Unverified for formal qualification; implements T81Lang IR Generator with automated test coverage but no continuity qualification receipt.",
+                "production_evidence": "Linked into core compiler pipeline via lang/CMakeLists.txt (t81_lang_frontend) and driven by tools/cli/core/main.cpp."
+            }
         },
         {
             "id": "sub.layer.1_lang.cli",
@@ -183,12 +254,26 @@ def build_nodes():
                 "compilation": True,
                 "execution": "HOSTED",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
+                "qualification": "UNVERIFIED",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["tools/cli/core/main.cpp", "tools/cli/core/driver.cpp", "include/t81/cli/driver.hpp"],
-            "public_interfaces": ["int main(int argc, char* argv[])", "t81::cli::execute_command()"],
-            "description": "Unified entry point for compilation, VM execution, tensor canonization, CanonFS operations, and weight importing."
+            "source_paths": [
+                "tools/cli/core/main.cpp",
+                "tools/cli/core/driver.cpp",
+                "include/t81/cli/driver.hpp"
+            ],
+            "public_interfaces": [
+                "int main(int argc, char* argv[])",
+                "t81::cli::execute_command()"
+            ],
+            "description": "Unified entry point for compilation, VM execution, tensor canonization, CanonFS operations, and weight importing.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Unverified for formal qualification; implements T81 Unified CLI Driver with automated test coverage but no continuity qualification receipt.",
+                "production_evidence": "Main CLI driver entry point in tools/cli/core/main.cpp compiled as executable target t81."
+            }
         },
         {
             "id": "mod.cli.weights_tool",
@@ -201,12 +286,27 @@ def build_nodes():
                 "compilation": True,
                 "execution": "HOSTED",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
+                "qualification": "UNVERIFIED",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["tools/cli/core/main.cpp", "tools/model/weights.cpp", "include/t81/weights.hpp"],
-            "public_interfaces": ["run_weights_import()", "run_weights_export()", "t81::weights::load_t81w()"],
-            "description": "Safetensors and GGUF weight parser, ternary quantizer, and .t81w model file serializer."
+            "source_paths": [
+                "tools/cli/core/main.cpp",
+                "tools/model/weights.cpp",
+                "include/t81/weights.hpp"
+            ],
+            "public_interfaces": [
+                "run_weights_import()",
+                "run_weights_export()",
+                "t81::weights::load_t81w()"
+            ],
+            "description": "Safetensors and GGUF weight parser, ternary quantizer, and .t81w model file serializer.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Unverified for formal qualification; implements Weights & Model Interchange CLI with automated test coverage but no continuity qualification receipt.",
+                "production_evidence": "Main CLI driver entry point in tools/cli/core/main.cpp compiled as executable target t81."
+            }
         },
         {
             "id": "sub.layer.1_lang.toolchain_bridges",
@@ -222,12 +322,24 @@ def build_nodes():
                 "qualification": "EXPLORATORY",
                 "production_status": "EXPERIMENTAL_FRONTIER"
             },
-            "source_paths": ["lang/llvm/tisc_to_llvm.cpp", "lang/mlir/t81_dialect.cpp", "lang/mlir/tisc_to_mlir.cpp"],
-            "public_interfaces": ["t81::llvm::translate_tisc_to_llvm()", "mlir::t81::registerT81Dialect()"],
-            "description": "Exploratory translation bridges mapping TISC bytecode into LLVM IR and MLIR dialect representations."
+            "source_paths": [
+                "lang/llvm/tisc_to_llvm.cpp",
+                "lang/mlir/t81_dialect.cpp",
+                "lang/mlir/tisc_to_mlir.cpp"
+            ],
+            "public_interfaces": [
+                "t81::llvm::translate_tisc_to_llvm()",
+                "mlir::t81::registerT81Dialect()"
+            ],
+            "description": "Exploratory translation bridges mapping TISC bytecode into LLVM IR and MLIR dialect representations.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage SMOKE_ONLY",
+                "qualification_evidence": "Exploratory bridge/JIT prototype without formal qualification receipt.",
+                "production_evidence": "Experimental feature sub.layer.1_lang.toolchain_bridges maintained for frontier research (e.g. freestanding QEMU boot, JIT compiler)."
+            }
         },
-
-        # --- LAYER 2: Instruction and Execution ---
         {
             "id": "sub.layer.2_exec.tisc_isa",
             "name": "TISC Instruction Set Computer",
@@ -239,12 +351,30 @@ def build_nodes():
                 "compilation": True,
                 "execution": "HOSTED",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
+                "qualification": "UNVERIFIED",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["isa/encoding.cpp", "isa/binary_io.cpp", "include/t81/isa/opcodes.hpp", "include/t81/isa/program.hpp", "spec/tisc/opcode-registry.md"],
-            "public_interfaces": ["t81::tisc::Opcode", "t81::tisc::Instruction", "t81::tisc::Program", "t81::tisc::encode_instruction()"],
-            "description": "TISC v1.1.0 specification defining balanced-ternary arithmetic, AI tensor opcodes, and Axion governance primitives."
+            "source_paths": [
+                "isa/encoding.cpp",
+                "isa/binary_io.cpp",
+                "include/t81/isa/opcodes.hpp",
+                "include/t81/isa/program.hpp",
+                "spec/tisc/opcode-registry.md"
+            ],
+            "public_interfaces": [
+                "t81::tisc::Opcode",
+                "t81::tisc::Instruction",
+                "t81::tisc::Program",
+                "t81::tisc::encode_instruction()"
+            ],
+            "description": "TISC v1.1.0 specification defining balanced-ternary arithmetic, AI tensor opcodes, and Axion governance primitives.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Unverified for formal qualification; implements TISC Instruction Set Computer with automated test coverage but no continuity qualification receipt.",
+                "production_evidence": "Core execution engine in src/vm/CMakeLists.txt (t81_vm) and instruction contract in src/isa/CMakeLists.txt (t81_isa)."
+            }
         },
         {
             "id": "sub.layer.2_exec.t81vm",
@@ -257,12 +387,30 @@ def build_nodes():
                 "compilation": True,
                 "execution": "HOSTED",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
+                "qualification": "UNVERIFIED",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["vm/vm.cpp", "vm/runtime_state_helpers.cpp", "vm/memory_segments.cpp", "include/t81/vm/vm.hpp", "include/t81/vm/state.hpp"],
-            "public_interfaces": ["t81::vm::IVirtualMachine", "t81::vm::State", "t81::vm::IVirtualMachine::step()", "t81::vm::IVirtualMachine::run_to_halt()"],
-            "description": "Interpreter executing TISC programs with round-robin multi-context scheduling, fault injection, and Axion policy checks."
+            "source_paths": [
+                "vm/vm.cpp",
+                "vm/runtime_state_helpers.cpp",
+                "vm/memory_segments.cpp",
+                "include/t81/vm/vm.hpp",
+                "include/t81/vm/state.hpp"
+            ],
+            "public_interfaces": [
+                "t81::vm::IVirtualMachine",
+                "t81::vm::State",
+                "t81::vm::IVirtualMachine::step()",
+                "t81::vm::IVirtualMachine::run_to_halt()"
+            ],
+            "description": "Interpreter executing TISC programs with round-robin multi-context scheduling, fault injection, and Axion policy checks.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Unverified for formal qualification; implements T81 Deterministic Virtual Machine with automated test coverage but no continuity qualification receipt.",
+                "production_evidence": "Core execution engine in src/vm/CMakeLists.txt (t81_vm) and instruction contract in src/isa/CMakeLists.txt (t81_isa)."
+            }
         },
         {
             "id": "mod.vm.interpreter_core",
@@ -275,12 +423,25 @@ def build_nodes():
                 "compilation": True,
                 "execution": "HOSTED",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
+                "qualification": "UNVERIFIED",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["vm/vm.cpp", "include/t81/vm/vm.hpp"],
-            "public_interfaces": ["t81::vm::IVirtualMachine::step()", "eval_axion_call()"],
-            "description": "Primary switch statement dispatching 244 TISC opcodes, updating program counter, registers, and memory."
+            "source_paths": [
+                "vm/vm.cpp",
+                "include/t81/vm/vm.hpp"
+            ],
+            "public_interfaces": [
+                "t81::vm::IVirtualMachine::step()",
+                "eval_axion_call()"
+            ],
+            "description": "Primary switch statement dispatching 244 TISC opcodes, updating program counter, registers, and memory.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Unverified for formal qualification; implements T81VM Interpreter Dispatch Loop with automated test coverage but no continuity qualification receipt.",
+                "production_evidence": "Core execution engine in src/vm/CMakeLists.txt (t81_vm) and instruction contract in src/isa/CMakeLists.txt (t81_isa)."
+            }
         },
         {
             "id": "mod.vm.system_registers",
@@ -293,12 +454,26 @@ def build_nodes():
                 "compilation": True,
                 "execution": "HOSTED",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
+                "qualification": "UNVERIFIED",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["vm/runtime_state_helpers.cpp", "include/t81/vm/state.hpp"],
-            "public_interfaces": ["sync_system_registers()", "compute_lineage_signature()", "compute_constitutional_mask()"],
-            "description": "Maintains deterministic architectural registers R75 (tick), R76 (lineage hash), R77 (entropy), R78 (constitutional mask), R79 (call depth), R80 (liveness)."
+            "source_paths": [
+                "vm/runtime_state_helpers.cpp",
+                "include/t81/vm/state.hpp"
+            ],
+            "public_interfaces": [
+                "sync_system_registers()",
+                "compute_lineage_signature()",
+                "compute_constitutional_mask()"
+            ],
+            "description": "Maintains deterministic architectural registers R75 (tick), R76 (lineage hash), R77 (entropy), R78 (constitutional mask), R79 (call depth), R80 (liveness).",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Unverified for formal qualification; implements T81VM System Registers & Entropy Tracking with automated test coverage but no continuity qualification receipt.",
+                "production_evidence": "Core execution engine in src/vm/CMakeLists.txt (t81_vm) and instruction contract in src/isa/CMakeLists.txt (t81_isa)."
+            }
         },
         {
             "id": "sub.layer.2_exec.jit_engine",
@@ -314,9 +489,23 @@ def build_nodes():
                 "qualification": "EXPLORATORY",
                 "production_status": "EXPERIMENTAL_FRONTIER"
             },
-            "source_paths": ["vm/jit/jit_compiler.cpp", "include/t81/jit/jit.hpp", "include/t81/jit/jit_trace_cache.hpp"],
-            "public_interfaces": ["t81::jit::JitCompiler", "t81::jit::JitTraceCache"],
-            "description": "Hot trace detection, native code compilation, and guard deoptimization cache for repetitive loop blocks."
+            "source_paths": [
+                "vm/jit/jit_compiler.cpp",
+                "include/t81/jit/jit.hpp",
+                "include/t81/jit/jit_trace_cache.hpp"
+            ],
+            "public_interfaces": [
+                "t81::jit::JitCompiler",
+                "t81::jit::JitTraceCache"
+            ],
+            "description": "Hot trace detection, native code compilation, and guard deoptimization cache for repetitive loop blocks.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage SMOKE_ONLY",
+                "qualification_evidence": "Exploratory bridge/JIT prototype without formal qualification receipt.",
+                "production_evidence": "Experimental feature sub.layer.2_exec.jit_engine maintained for frontier research (e.g. freestanding QEMU boot, JIT compiler)."
+            }
         },
         {
             "id": "sub.layer.2_exec.freestanding_runtime",
@@ -332,12 +521,24 @@ def build_nodes():
                 "qualification": "QUALIFIED_WITH_LIMITATIONS",
                 "production_status": "EXPERIMENTAL_FRONTIER"
             },
-            "source_paths": ["ternaryos/hal/qemu_slice6_bare_kernel.c", "ternaryos/hal/qemu_armv8_efi_stub.c", "ternaryos/hal/aarch64_exception_vectors.S"],
-            "public_interfaces": ["bare_pl011_putchar()", "qemu_slice6_bare_kernel_entry()"],
-            "description": "Post-ExitBootServices bare-metal execution environment evaluated under CPA-004 on QEMU AArch64."
+            "source_paths": [
+                "ternaryos/hal/qemu_slice6_bare_kernel.c",
+                "ternaryos/hal/qemu_armv8_efi_stub.c",
+                "ternaryos/hal/aarch64_exception_vectors.S"
+            ],
+            "public_interfaces": [
+                "bare_pl011_putchar()",
+                "qemu_slice6_bare_kernel_entry()"
+            ],
+            "description": "Post-ExitBootServices bare-metal execution environment evaluated under CPA-004 on QEMU AArch64.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in FREESTANDING execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "CPA-004 bounded cross-profile campaign (351-byte program, 17 opcodes on AArch64 QEMU).",
+                "production_evidence": "Experimental feature sub.layer.2_exec.freestanding_runtime maintained for frontier research (e.g. freestanding QEMU boot, JIT compiler)."
+            }
         },
-
-        # --- LAYER 3: Numerical and Computational Foundations ---
         {
             "id": "sub.layer.3_num.balanced_ternary_limbs",
             "name": "Balanced Ternary Limbs (T81Limb27 / T81Limb54)",
@@ -352,9 +553,27 @@ def build_nodes():
                 "qualification": "QUALIFIED_WITH_LIMITATIONS",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["include/t81/types/T81Limb.hpp", "tests/cpp/test_t81_limb27_mul.cpp", "tests/cpp/test_t81_limb54_karatsuba.cpp", "tests/cpp/test_t81_limb54_reference_mul.cpp"],
-            "public_interfaces": ["t81::T81Limb27", "t81::T81Limb54", "T81Limb27::operator*", "T81Limb54::karatsuba()", "T81Limb54::reference_mul()"],
-            "description": "Elementary 27-trit and 54-trit balanced ternary arithmetic primitives repaired under SCG-07 Phases 3, 4, 5."
+            "source_paths": [
+                "include/t81/types/T81Limb.hpp",
+                "tests/cpp/test_t81_limb27_mul.cpp",
+                "tests/cpp/test_t81_limb54_karatsuba.cpp",
+                "tests/cpp/test_t81_limb54_reference_mul.cpp"
+            ],
+            "public_interfaces": [
+                "t81::T81Limb27",
+                "t81::T81Limb54",
+                "T81Limb27::operator*",
+                "T81Limb54::karatsuba()",
+                "T81Limb54::reference_mul()"
+            ],
+            "description": "Elementary 27-trit and 54-trit balanced ternary arithmetic primitives repaired under SCG-07 Phases 3, 4, 5.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "SCG-07 Phase 6 (Document ID: T81-SCG-07-PHASE6-QUALIFICATION-001-R1) qualifies F1/F2/F3 under limitations.",
+                "production_evidence": "Foundational arithmetic types in include/t81/types/ linked across t81_core and verified by SCG regression suites."
+            }
         },
         {
             "id": "sub.layer.3_num.fixed_width_integers",
@@ -370,9 +589,24 @@ def build_nodes():
                 "qualification": "QUALIFIED",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["include/t81/types/T81Int.hpp", "tests/cpp/test_t81int.cpp"],
-            "public_interfaces": ["t81::T81Int<N>", "T81Int::operator+", "T81Int::operator*", "T81Int::to_int64()"],
-            "description": "Template-based balanced ternary integer with full 2N convolution multiplication and overflow trapping."
+            "source_paths": [
+                "include/t81/types/T81Int.hpp",
+                "tests/cpp/test_t81int.cpp"
+            ],
+            "public_interfaces": [
+                "t81::T81Int<N>",
+                "T81Int::operator+",
+                "T81Int::operator*",
+                "T81Int::to_int64()"
+            ],
+            "description": "Template-based balanced ternary integer with full 2N convolution multiplication and overflow trapping.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "SCG-07 Phase 6 qualifies T81Int operator* convolution and carry normalization (F4).",
+                "production_evidence": "Foundational arithmetic types in include/t81/types/ linked across t81_core and verified by SCG regression suites."
+            }
         },
         {
             "id": "sub.layer.3_num.multi_precision_bigint",
@@ -388,9 +622,25 @@ def build_nodes():
                 "qualification": "QUALIFIED",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["include/t81/types/T81BigInt.hpp", "isa/types/bigint.cpp", "tests/cpp/test_t81bigint_sub.cpp"],
-            "public_interfaces": ["t81::T81BigInt", "T81BigInt::operator+", "T81BigInt::operator-", "T81BigInt::verify_invariants()"],
-            "description": "Arbitrary precision integer representation backed by limbs with invariant magnitude enforcement repaired under SCG-07 Phase 2."
+            "source_paths": [
+                "include/t81/types/T81BigInt.hpp",
+                "isa/types/bigint.cpp",
+                "tests/cpp/test_t81bigint_sub.cpp"
+            ],
+            "public_interfaces": [
+                "t81::T81BigInt",
+                "T81BigInt::operator+",
+                "T81BigInt::operator-",
+                "T81BigInt::verify_invariants()"
+            ],
+            "description": "Arbitrary precision integer representation backed by limbs with invariant magnitude enforcement repaired under SCG-07 Phase 2.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "SCG-07 Phase 6 qualifies T81BigInt signed subtraction invariant repair (F5).",
+                "production_evidence": "Foundational arithmetic types in include/t81/types/ linked across t81_core and verified by SCG regression suites."
+            }
         },
         {
             "id": "sub.layer.3_num.rational_fractions",
@@ -406,9 +656,24 @@ def build_nodes():
                 "qualification": "QUALIFIED",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["include/t81/types/T81Fraction.hpp", "isa/types/fraction.cpp", "tests/cpp/test_t81fraction.cpp"],
-            "public_interfaces": ["t81::T81Fraction", "T81Fraction::canonicalize()", "T81Fraction::to_double()"],
-            "description": "Exact rational arithmetic without floating-point drift, featuring unwound exception propagation and bounded binary64 conversion."
+            "source_paths": [
+                "include/t81/types/T81Fraction.hpp",
+                "isa/types/fraction.cpp",
+                "tests/cpp/test_t81fraction.cpp"
+            ],
+            "public_interfaces": [
+                "t81::T81Fraction",
+                "T81Fraction::canonicalize()",
+                "T81Fraction::to_double()"
+            ],
+            "description": "Exact rational arithmetic without floating-point drift, featuring unwound exception propagation and bounded binary64 conversion.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "SCG-07 Phase 6 qualifies T81Fraction overflow unwinding and to_double() bounds (F6/F7).",
+                "production_evidence": "Foundational arithmetic types in include/t81/types/ linked across t81_core and verified by SCG regression suites."
+            }
         },
         {
             "id": "sub.layer.3_num.ternary_tensors",
@@ -421,12 +686,28 @@ def build_nodes():
                 "compilation": True,
                 "execution": "HOSTED",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
+                "qualification": "UNVERIFIED",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["include/t81/tensor.hpp", "include/t81/tensor/matmul.hpp", "include/t81/tensor/ternary_native.hpp", "vm/tensor_helpers.cpp"],
-            "public_interfaces": ["t81::T81Tensor", "t81::weights::NativeTensor", "t81::tensor::matmul()"],
-            "description": "Packed ternary weight representations, shapes, multiplication-free ternary-binary matrix multiplication, and lattice crypto helpers."
+            "source_paths": [
+                "include/t81/tensor.hpp",
+                "include/t81/tensor/matmul.hpp",
+                "include/t81/tensor/ternary_native.hpp",
+                "vm/tensor_helpers.cpp"
+            ],
+            "public_interfaces": [
+                "t81::T81Tensor",
+                "t81::weights::NativeTensor",
+                "t81::tensor::matmul()"
+            ],
+            "description": "Packed ternary weight representations, shapes, multiplication-free ternary-binary matrix multiplication, and lattice crypto helpers.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Unverified for formal qualification; implements Ternary Native Tensors & Linear Algebra with automated test coverage but no continuity qualification receipt.",
+                "production_evidence": "Core data structures and acceleration primitives compiled directly into t81_core static library."
+            }
         },
         {
             "id": "sub.layer.3_num.soft_math",
@@ -439,15 +720,27 @@ def build_nodes():
                 "compilation": True,
                 "execution": "HOSTED",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
+                "qualification": "UNVERIFIED",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["isa/math/t81_soft_math/t81_soft_math.cpp", "include/t81/math/t81_soft_math/t81_soft_math.hpp"],
-            "public_interfaces": ["t81::math::soft_sin()", "t81::math::soft_cos()", "t81::math::soft_exp()"],
-            "description": "Cross-platform bit-exact transcendental approximations eliminating host FPU rounding variance."
+            "source_paths": [
+                "isa/math/t81_soft_math/t81_soft_math.cpp",
+                "include/t81/math/t81_soft_math/t81_soft_math.hpp"
+            ],
+            "public_interfaces": [
+                "t81::math::soft_sin()",
+                "t81::math::soft_cos()",
+                "t81::math::soft_exp()"
+            ],
+            "description": "Cross-platform bit-exact transcendental approximations eliminating host FPU rounding variance.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Unverified for formal qualification; implements Deterministic Soft Math Tables with automated test coverage but no continuity qualification receipt.",
+                "production_evidence": "Core data structures and acceleration primitives compiled directly into t81_core static library."
+            }
         },
-
-        # --- LAYER 4: System Services ---
         {
             "id": "sub.layer.4_services.axion_kernel",
             "name": "Axion Governance Kernel",
@@ -459,12 +752,30 @@ def build_nodes():
                 "compilation": True,
                 "execution": "HOSTED",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
+                "qualification": "UNVERIFIED",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["kernel/axion/policy_engine.cpp", "kernel/axion/policy_validator.cpp", "kernel/axion/ethics.cpp", "include/t81/axion/policy_engine.hpp", "include/t81/axion/ethics.hpp"],
-            "public_interfaces": ["t81::axion::PolicyEngine", "t81::axion::Verdict", "t81::axion::PolicyEngine::evaluate()", "t81::axion::check_ethics()"],
-            "description": "Mandatory policy arbiter enforcing ethical constraints Theta-1..9, loop bound limits, memory quotas, and tensor hash allowlists."
+            "source_paths": [
+                "kernel/axion/policy_engine.cpp",
+                "kernel/axion/policy_validator.cpp",
+                "kernel/axion/ethics.cpp",
+                "include/t81/axion/policy_engine.hpp",
+                "include/t81/axion/ethics.hpp"
+            ],
+            "public_interfaces": [
+                "t81::axion::PolicyEngine",
+                "t81::axion::Verdict",
+                "t81::axion::PolicyEngine::evaluate()",
+                "t81::axion::check_ethics()"
+            ],
+            "description": "Mandatory policy arbiter enforcing ethical constraints Theta-1..9, loop bound limits, memory quotas, and tensor hash allowlists.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Unverified for formal qualification; implements Axion Governance Kernel with automated test coverage but no continuity qualification receipt.",
+                "production_evidence": "Axion governance kernel in src/axion/CMakeLists.txt (t81_axion) enforcing constitutional policy on system calls."
+            }
         },
         {
             "id": "sub.layer.4_services.canonfs",
@@ -477,12 +788,31 @@ def build_nodes():
                 "compilation": True,
                 "execution": "HOSTED",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
+                "qualification": "UNVERIFIED",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["fs/persistent_driver.cpp", "fs/in_memory_driver.cpp", "fs/canonfs_interchange.cpp", "include/t81/canonfs/canon_driver.hpp", "include/t81/canonfs/storage_key.hpp"],
-            "public_interfaces": ["t81::canonfs::Driver", "t81::canonfs::PersistentDriver", "t81::canonfs::CanonRef", "storage_key_v1()", "snapshot_storage_key_v1()"],
-            "description": "Cryptographically verifiable immutable storage mapping content to Base-81 / portable hex keys (objects/h1-<hash>.blk)."
+            "source_paths": [
+                "fs/persistent_driver.cpp",
+                "fs/in_memory_driver.cpp",
+                "fs/canonfs_interchange.cpp",
+                "include/t81/canonfs/canon_driver.hpp",
+                "include/t81/canonfs/storage_key.hpp"
+            ],
+            "public_interfaces": [
+                "t81::canonfs::Driver",
+                "t81::canonfs::PersistentDriver",
+                "t81::canonfs::CanonRef",
+                "storage_key_v1()",
+                "snapshot_storage_key_v1()"
+            ],
+            "description": "Cryptographically verifiable immutable storage mapping content to Base-81 / portable hex keys (objects/h1-<hash>.blk).",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Unverified for formal qualification; implements CanonFS Content-Addressed Storage Subsystem with automated test coverage but no continuity qualification receipt.",
+                "production_evidence": "CanonFS content-addressed storage implementation in fs/persistent_driver.cpp linked into t81_core."
+            }
         },
         {
             "id": "sub.layer.4_services.codecs",
@@ -495,12 +825,27 @@ def build_nodes():
                 "compilation": True,
                 "execution": "HOSTED",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
+                "qualification": "UNVERIFIED",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["codec/base81.cpp", "codec/base81_packed.cpp", "codec/base243.cpp", "include/t81/codec/base81.hpp"],
-            "public_interfaces": ["t81::codec::encode_base81()", "t81::codec::decode_base81()"],
-            "description": "Efficient serialization routines grouping trits into 4-trit Base-81 and 5-trit Base-243 characters."
+            "source_paths": [
+                "codec/base81.cpp",
+                "codec/base81_packed.cpp",
+                "codec/base243.cpp",
+                "include/t81/codec/base81.hpp"
+            ],
+            "public_interfaces": [
+                "t81::codec::encode_base81()",
+                "t81::codec::decode_base81()"
+            ],
+            "description": "Efficient serialization routines grouping trits into 4-trit Base-81 and 5-trit Base-243 characters.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Unverified for formal qualification; implements Base-81 & Base-243 Stream Codecs with automated test coverage but no continuity qualification receipt.",
+                "production_evidence": "Core data structures and acceleration primitives compiled directly into t81_core static library."
+            }
         },
         {
             "id": "sub.layer.4_services.crypto",
@@ -513,15 +858,27 @@ def build_nodes():
                 "compilation": True,
                 "execution": "HOSTED",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
+                "qualification": "UNVERIFIED",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["crypto/sha3.cpp", "include/t81/crypto/sha3.hpp", "vm/determinism/canon_hash81.cpp"],
-            "public_interfaces": ["t81::crypto::sha3_256()", "t81::CanonHash81"],
-            "description": "Cryptographic digest routines providing root hashes for model weights, storage objects, and execution traces."
+            "source_paths": [
+                "crypto/sha3.cpp",
+                "include/t81/crypto/sha3.hpp",
+                "vm/determinism/canon_hash81.cpp"
+            ],
+            "public_interfaces": [
+                "t81::crypto::sha3_256()",
+                "t81::CanonHash81"
+            ],
+            "description": "Cryptographic digest routines providing root hashes for model weights, storage objects, and execution traces.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Unverified for formal qualification; implements Deterministic Hash & Cryptographic Engine with automated test coverage but no continuity qualification receipt.",
+                "production_evidence": "Core data structures and acceleration primitives compiled directly into t81_core static library."
+            }
         },
-
-        # --- LAYER 5: Operating-System Architecture ---
         {
             "id": "sub.layer.5_os.ternaryos_kernel",
             "name": "TernaryOS Research Microkernel & HAL",
@@ -536,9 +893,24 @@ def build_nodes():
                 "qualification": "QUALIFIED_WITH_LIMITATIONS",
                 "production_status": "EXPERIMENTAL_FRONTIER"
             },
-            "source_paths": ["ternaryos/hal/hal_main.cpp", "ternaryos/kernel/kernel_runtime.cpp", "ternaryos/hal/qemu_platform.cpp", "ternaryos/hal/hal.hpp"],
-            "public_interfaces": ["t81::ternaryos::hal::init()", "t81::ternaryos::kernel::KernelRuntime"],
-            "description": "Hardware abstraction layer, interrupt handlers, and kernel services booting on QEMU AArch64 and x86_64."
+            "source_paths": [
+                "ternaryos/hal/hal_main.cpp",
+                "ternaryos/kernel/kernel_runtime.cpp",
+                "ternaryos/hal/qemu_platform.cpp",
+                "ternaryos/hal/hal.hpp"
+            ],
+            "public_interfaces": [
+                "t81::ternaryos::hal::init()",
+                "t81::ternaryos::kernel::KernelRuntime"
+            ],
+            "description": "Hardware abstraction layer, interrupt handlers, and kernel services booting on QEMU AArch64 and x86_64.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in FREESTANDING execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "CPA-004 bounded freestanding evaluation post-ExitBootServices under QEMU.",
+                "production_evidence": "Experimental feature sub.layer.5_os.ternaryos_kernel maintained for frontier research (e.g. freestanding QEMU boot, JIT compiler)."
+            }
         },
         {
             "id": "mod.ternaryos.scheduler",
@@ -554,9 +926,23 @@ def build_nodes():
                 "qualification": "QUALIFIED_WITH_LIMITATIONS",
                 "production_status": "EXPERIMENTAL_FRONTIER"
             },
-            "source_paths": ["ternaryos/sched/scheduler.cpp", "ternaryos/sched/context_switch.cpp", "ternaryos/sched/scheduler.hpp"],
-            "public_interfaces": ["t81::ternaryos::sched::Scheduler::schedule()", "t81::ternaryos::sched::context_switch()"],
-            "description": "Deterministic thread scheduling and register context save/restore across execution epochs."
+            "source_paths": [
+                "ternaryos/sched/scheduler.cpp",
+                "ternaryos/sched/context_switch.cpp",
+                "ternaryos/sched/scheduler.hpp"
+            ],
+            "public_interfaces": [
+                "t81::ternaryos::sched::Scheduler::schedule()",
+                "t81::ternaryos::sched::context_switch()"
+            ],
+            "description": "Deterministic thread scheduling and register context save/restore across execution epochs.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in FREESTANDING execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "CPA-004 bare-metal timer interrupt cooperative schedule tick under QEMU.",
+                "production_evidence": "Experimental feature mod.ternaryos.scheduler maintained for frontier research (e.g. freestanding QEMU boot, JIT compiler)."
+            }
         },
         {
             "id": "mod.ternaryos.mmu",
@@ -572,9 +958,23 @@ def build_nodes():
                 "qualification": "QUALIFIED_WITH_LIMITATIONS",
                 "production_status": "EXPERIMENTAL_FRONTIER"
             },
-            "source_paths": ["ternaryos/mmu/ternary_page_alloc.cpp", "ternaryos/mmu/page_table.cpp", "ternaryos/mmu/page_table.hpp"],
-            "public_interfaces": ["t81::ternaryos::mmu::TernaryPageAllocator", "t81::ternaryos::mmu::map_page()"],
-            "description": "Physical frame allocator and AArch64 TTBR0 translation table management."
+            "source_paths": [
+                "ternaryos/mmu/ternary_page_alloc.cpp",
+                "ternaryos/mmu/page_table.cpp",
+                "ternaryos/mmu/page_table.hpp"
+            ],
+            "public_interfaces": [
+                "t81::ternaryos::mmu::TernaryPageAllocator",
+                "t81::ternaryos::mmu::map_page()"
+            ],
+            "description": "Physical frame allocator and AArch64 TTBR0 translation table management.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in FREESTANDING execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "CPA-004 TTBR0 page-table translation and physical memory map under QEMU.",
+                "production_evidence": "Experimental feature mod.ternaryos.mmu maintained for frontier research (e.g. freestanding QEMU boot, JIT compiler)."
+            }
         },
         {
             "id": "sub.layer.5_os.daios_proposal",
@@ -590,12 +990,19 @@ def build_nodes():
                 "qualification": "UNVERIFIED",
                 "production_status": "DESIGN_ONLY"
             },
-            "source_paths": ["spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md"],
+            "source_paths": [
+                "spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md"
+            ],
             "public_interfaces": [],
-            "description": "Unimplemented architectural target specification outlining end-state autonomous decision operating system sequencing."
+            "description": "Unimplemented architectural target specification outlining end-state autonomous decision operating system sequencing.",
+            "maturity_evidence": {
+                "compilation_evidence": "Not compiled (documentation / design specification)",
+                "execution_evidence": "Specification / charter only, no runtime execution",
+                "test_evidence": "No dedicated automated test suite",
+                "qualification_evidence": "Unverified architectural proposal (RFC-00D2).",
+                "production_evidence": "Design proposal sub.layer.5_os.daios_proposal documented in normative RFCs without production code activation."
+            }
         },
-
-        # --- LAYER 6: Hardware and Acceleration ---
         {
             "id": "sub.layer.6_hw.rtl_feasibility",
             "name": "Ternary RTL Hardware Feasibility Models",
@@ -616,8 +1023,19 @@ def build_nodes():
                 "experiments/ternary_hardware_feasibility/design_b_optimized_binary.v",
                 "experiments/ternary_hardware_feasibility/tb_dot_product.v"
             ],
-            "public_interfaces": ["design_c_ht1_ternary", "design_a_general_mac", "design_b_optimized_binary"],
-            "description": "Verilog hardware description modules comparing dual-bitplane unpacked ternary dot products against binary MAC designs."
+            "public_interfaces": [
+                "design_c_ht1_ternary",
+                "design_a_general_mac",
+                "design_b_optimized_binary"
+            ],
+            "description": "Verilog hardware description modules comparing dual-bitplane unpacked ternary dot products against binary MAC designs.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in EMULATED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Exploratory Verilog simulation without physical hardware qualification.",
+                "production_evidence": "Research prototype sub.layer.6_hw.rtl_feasibility evaluated under exploratory simulation without production promotion."
+            }
         },
         {
             "id": "sub.layer.6_hw.simd_primitives",
@@ -630,12 +1048,24 @@ def build_nodes():
                 "compilation": True,
                 "execution": "HOSTED",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
+                "qualification": "UNVERIFIED",
                 "production_status": "PRODUCTION_CORE"
             },
-            "source_paths": ["inference/simd/base81_digits_avx2.cpp", "include/t81/simd/simd.hpp"],
-            "public_interfaces": ["t81::simd::unpack_base81_avx2()"],
-            "description": "Vectorized 256-bit SIMD intrinsics for accelerated Base-81 digit decoding on x86-64 host processors."
+            "source_paths": [
+                "inference/simd/base81_digits_avx2.cpp",
+                "include/t81/simd/simd.hpp"
+            ],
+            "public_interfaces": [
+                "t81::simd::unpack_base81_avx2()"
+            ],
+            "description": "Vectorized 256-bit SIMD intrinsics for accelerated Base-81 digit decoding on x86-64 host processors.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Unverified for formal qualification; implements Host SIMD Acceleration Primitives (AVX2) with automated test coverage but no continuity qualification receipt.",
+                "production_evidence": "Core data structures and acceleration primitives compiled directly into t81_core static library."
+            }
         },
         {
             "id": "sub.layer.6_hw.qemu_drivers",
@@ -651,15 +1081,29 @@ def build_nodes():
                 "qualification": "QUALIFIED_WITH_LIMITATIONS",
                 "production_status": "EXPERIMENTAL_FRONTIER"
             },
-            "source_paths": ["ternaryos/dev/pl011_uart.cpp", "ternaryos/dev/gicv3.cpp", "ternaryos/dev/virtio_blk_mmio.cpp", "drivers/qemu/scripts/boot_demo.sh"],
-            "public_interfaces": ["t81::ternaryos::dev::PL011Uart", "t81::ternaryos::dev::GicV3", "t81::ternaryos::dev::VirtioBlkMmio"],
-            "description": "Device drivers interfacing with QEMU ARM virt peripherals (PL011 UART, GICv3 interrupt distributor, VirtIO block storage)."
+            "source_paths": [
+                "ternaryos/dev/pl011_uart.cpp",
+                "ternaryos/dev/gicv3.cpp",
+                "ternaryos/dev/virtio_blk_mmio.cpp",
+                "drivers/qemu/scripts/boot_demo.sh"
+            ],
+            "public_interfaces": [
+                "t81::ternaryos::dev::PL011Uart",
+                "t81::ternaryos::dev::GicV3",
+                "t81::ternaryos::dev::VirtioBlkMmio"
+            ],
+            "description": "Device drivers interfacing with QEMU ARM virt peripherals (PL011 UART, GICv3 interrupt distributor, VirtIO block storage).",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in FREESTANDING execution profile",
+                "test_evidence": "Verified under test_coverage SMOKE_ONLY",
+                "qualification_evidence": "CPA-004 PL011 UART and GICv3 interrupt controller drivers under QEMU.",
+                "production_evidence": "Experimental feature sub.layer.6_hw.qemu_drivers maintained for frontier research (e.g. freestanding QEMU boot, JIT compiler)."
+            }
         },
-
-        # --- LAYER 7: Research and Assurance ---
         {
             "id": "sub.layer.7_assurance.hypothesis_register",
-            "name": "Empirical Research Hypothesis Register (H01–H08)",
+            "name": "Empirical Research Hypothesis Register (H01\u2013H08)",
             "layer_id": "layer.7_assurance",
             "category": "subsystem",
             "parent_id": None,
@@ -668,12 +1112,30 @@ def build_nodes():
                 "compilation": False,
                 "execution": "NONE",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
-                "production_status": "PRODUCTION_CORE"
+                "qualification": "UNVERIFIED",
+                "production_status": "GOVERNANCE_AND_ASSURANCE"
             },
-            "source_paths": ["docs/research/continuity/HYPOTHESIS_REGISTER_v1.json"],
-            "public_interfaces": ["H01", "H02", "H03", "H04", "H05", "H06", "H07", "H08"],
-            "description": "Central evidence register defining 8 canonical scientific claims, falsifiers, baselines, and qualification tiers."
+            "source_paths": [
+                "docs/research/continuity/HYPOTHESIS_REGISTER_v1.json"
+            ],
+            "public_interfaces": [
+                "H01",
+                "H02",
+                "H03",
+                "H04",
+                "H05",
+                "H06",
+                "H07",
+                "H08"
+            ],
+            "description": "Central evidence register defining 8 canonical scientific claims, falsifiers, baselines, and qualification tiers.",
+            "maturity_evidence": {
+                "compilation_evidence": "Not compiled (documentation / design specification)",
+                "execution_evidence": "Specification / charter only, no runtime execution",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Governance / research assurance artifact; not a qualified software subsystem.",
+                "production_evidence": "Assurance artifact sub.layer.7_assurance.hypothesis_register maintained for repository verification, CI governance, and research continuity."
+            }
         },
         {
             "id": "sub.layer.7_assurance.scg_continuity",
@@ -686,8 +1148,8 @@ def build_nodes():
                 "compilation": False,
                 "execution": "HOSTED",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
-                "production_status": "PRODUCTION_CORE"
+                "qualification": "UNVERIFIED",
+                "production_status": "GOVERNANCE_AND_ASSURANCE"
             },
             "source_paths": [
                 "docs/research/continuity/SCG03_EVIDENCE_RECEIPT.md",
@@ -700,8 +1162,24 @@ def build_nodes():
                 "docs/research/continuity/SCG07_PHASE6_CONSOLIDATED_QUALIFICATION.md",
                 "docs/research/continuity/SCG04_MAINTAINER_DECISION_RECORD.md"
             ],
-            "public_interfaces": ["SCG-01", "SCG-02", "SCG-03", "SCG-04", "SCG-05", "SCG-06", "SCG-07", "SCG-08"],
-            "description": "Chain of reproducible evidence receipts recording mathematical proofs, defect reproductions (F1..F7), and repair qualification."
+            "public_interfaces": [
+                "SCG-01",
+                "SCG-02",
+                "SCG-03",
+                "SCG-04",
+                "SCG-05",
+                "SCG-06",
+                "SCG-07",
+                "SCG-08"
+            ],
+            "description": "Chain of reproducible evidence receipts recording mathematical proofs, defect reproductions (F1..F7), and repair qualification.",
+            "maturity_evidence": {
+                "compilation_evidence": "Not compiled (documentation / design specification)",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Governance / research assurance artifact; not a qualified software subsystem.",
+                "production_evidence": "Assurance artifact sub.layer.7_assurance.scg_continuity maintained for repository verification, CI governance, and research continuity."
+            }
         },
         {
             "id": "sub.layer.7_assurance.cpp_test_suite",
@@ -714,12 +1192,31 @@ def build_nodes():
                 "compilation": True,
                 "execution": "HOSTED",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
-                "production_status": "PRODUCTION_CORE"
+                "qualification": "UNVERIFIED",
+                "production_status": "GOVERNANCE_AND_ASSURANCE"
             },
-            "source_paths": ["tests/cpp/test_scg07_phase6_qualification.cpp", "tests/cpp/test_t81int.cpp", "tests/cpp/test_t81fraction.cpp", "tests/cpp/test_t81bigint_sub.cpp", "tests/cpp/cli_contract_test.cpp"],
-            "public_interfaces": ["t81_phase6_qualification_test", "t81_int_test", "t81_t81fraction_test", "t81_bigint_sub_test", "t81_cli_contract_test"],
-            "description": "Over 400 test drivers executing unconditional fail-closed validation under both Debug and Release (-DNDEBUG) modes."
+            "source_paths": [
+                "tests/cpp/test_scg07_phase6_qualification.cpp",
+                "tests/cpp/test_t81int.cpp",
+                "tests/cpp/test_t81fraction.cpp",
+                "tests/cpp/test_t81bigint_sub.cpp",
+                "tests/cpp/cli_contract_test.cpp"
+            ],
+            "public_interfaces": [
+                "t81_phase6_qualification_test",
+                "t81_int_test",
+                "t81_t81fraction_test",
+                "t81_bigint_sub_test",
+                "t81_cli_contract_test"
+            ],
+            "description": "Over 400 test drivers executing unconditional fail-closed validation under both Debug and Release (-DNDEBUG) modes.",
+            "maturity_evidence": {
+                "compilation_evidence": "CMake target / build system verification",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Test harness infrastructure (419 test files); acts as verifier, not qualified subject.",
+                "production_evidence": "Assurance artifact sub.layer.7_assurance.cpp_test_suite maintained for repository verification, CI governance, and research continuity."
+            }
         },
         {
             "id": "sub.layer.7_assurance.ci_governance",
@@ -732,26 +1229,39 @@ def build_nodes():
                 "compilation": False,
                 "execution": "HOSTED",
                 "test_coverage": "DEDICATED_SUITE",
-                "qualification": "QUALIFIED",
-                "production_status": "PRODUCTION_CORE"
+                "qualification": "UNVERIFIED",
+                "production_status": "GOVERNANCE_AND_ASSURANCE"
             },
-            "source_paths": [".github/workflows/ci.yml", "scripts/governance/check_root_structure.py", "scripts/ci/check_tisc_freeze_integrity.py", "scripts/ci/provision_model_fixtures.sh"],
-            "public_interfaces": ["check_root_structure.py", "check_tisc_freeze_integrity.py", "validate_current_state.py"],
-            "description": "Automated gates enforcing root directory structure integrity, TISC opcode freeze invariance, and multi-compiler conformance."
+            "source_paths": [
+                ".github/workflows/ci.yml",
+                "scripts/governance/check_root_structure.py",
+                "scripts/ci/check_tisc_freeze_integrity.py",
+                "scripts/ci/provision_model_fixtures.sh"
+            ],
+            "public_interfaces": [
+                "check_root_structure.py",
+                "check_tisc_freeze_integrity.py",
+                "validate_current_state.py"
+            ],
+            "description": "Automated gates enforcing root directory structure integrity, TISC opcode freeze invariance, and multi-compiler conformance.",
+            "maturity_evidence": {
+                "compilation_evidence": "Not compiled (documentation / design specification)",
+                "execution_evidence": "Demonstrated in HOSTED execution profile",
+                "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
+                "qualification_evidence": "Governance / research assurance artifact; not a qualified software subsystem.",
+                "production_evidence": "Assurance artifact sub.layer.7_assurance.ci_governance maintained for repository verification, CI governance, and research continuity."
+            }
         }
-    ]
-    return {
-        "schema_version": "1.0.0",
-        "baseline_commit": BASELINE_COMMIT,
-        "total_nodes": len(nodes),
-        "nodes": nodes
-    }
-
-print("Layer and node builder defined")
+    ],
+    "description": "Comprehensive inventory of architectural subsystems and modules across the 7-layer T81 model. Note on classification: 'PRODUCTION_CORE' designates an implemented, fully compiled, and test-covered architectural subsystem within the repository source tree, not an independently certified enterprise or commercial production-readiness claim. Formal qualification is tracked separately under the 'qualification' property."
+}
 
 def build_edges():
-    edges = [
-        # --- Containment Edges (Parent -> Child) ---
+    return {
+    "schema_version": "1.1.0",
+    "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
+    "total_edges": 32,
+    "edges": [
         {
             "id": "edge.contain.sub.frontend_to_mod.lexer",
             "source_id": "sub.layer.1_lang.frontend",
@@ -760,10 +1270,12 @@ def build_edges():
             "direction": "source_to_dest",
             "verification_status": "VERIFIED_IMPLEMENTED",
             "evidence": {
-                "source_file": "lang/frontend/parser.cpp",
-                "line": 4,
-                "notes": "Frontend subsystem physically contains and coordinates the Lexer module."
-            }
+                "source_file": "lang/frontend/lexer.cpp",
+                "line": 92,
+                "notes": "Frontend subsystem physically contains and coordinates the Lexer module.",
+                "reference_type": "FUNCTION_DEFINITION"
+            },
+            "derivation_method": "MANUALLY_CURATED"
         },
         {
             "id": "edge.contain.sub.frontend_to_mod.parser",
@@ -774,9 +1286,11 @@ def build_edges():
             "verification_status": "VERIFIED_IMPLEMENTED",
             "evidence": {
                 "source_file": "lang/frontend/parser.cpp",
-                "line": 1,
-                "notes": "Frontend subsystem contains the Parser AST generator."
-            }
+                "line": 341,
+                "notes": "Frontend subsystem contains the Parser AST generator.",
+                "reference_type": "FUNCTION_DEFINITION"
+            },
+            "derivation_method": "MANUALLY_CURATED"
         },
         {
             "id": "edge.contain.sub.frontend_to_mod.semantic_analyzer",
@@ -787,9 +1301,11 @@ def build_edges():
             "verification_status": "VERIFIED_IMPLEMENTED",
             "evidence": {
                 "source_file": "lang/frontend/semantic_analyzer.cpp",
-                "line": 1,
-                "notes": "Frontend subsystem contains the Semantic Analyzer."
-            }
+                "line": 394,
+                "notes": "Frontend subsystem contains the Semantic Analyzer.",
+                "reference_type": "FUNCTION_DEFINITION"
+            },
+            "derivation_method": "MANUALLY_CURATED"
         },
         {
             "id": "edge.contain.sub.frontend_to_mod.ir_generator",
@@ -800,9 +1316,11 @@ def build_edges():
             "verification_status": "VERIFIED_IMPLEMENTED",
             "evidence": {
                 "source_file": "lang/frontend/ir_generator.cpp",
-                "line": 4,
-                "notes": "Frontend subsystem contains the IRGenerator."
-            }
+                "line": 8,
+                "notes": "Frontend subsystem contains the IRGenerator.",
+                "reference_type": "FUNCTION_DEFINITION"
+            },
+            "derivation_method": "MANUALLY_CURATED"
         },
         {
             "id": "edge.contain.sub.cli_to_mod.weights_tool",
@@ -814,8 +1332,10 @@ def build_edges():
             "evidence": {
                 "source_file": "tools/cli/core/main.cpp",
                 "line": 4471,
-                "notes": "CLI driver delegates 'weights' subcommands to the weights module."
-            }
+                "notes": "CLI driver delegates 'weights' subcommands to the weights module.",
+                "reference_type": "FUNCTION_DEFINITION"
+            },
+            "derivation_method": "MANUALLY_CURATED"
         },
         {
             "id": "edge.contain.sub.t81vm_to_mod.interpreter",
@@ -827,8 +1347,10 @@ def build_edges():
             "evidence": {
                 "source_file": "vm/vm.cpp",
                 "line": 435,
-                "notes": "T81VM encapsulates the core instruction stepping interpreter."
-            }
+                "notes": "T81VM encapsulates the core instruction stepping interpreter.",
+                "reference_type": "FUNCTION_DEFINITION"
+            },
+            "derivation_method": "MANUALLY_CURATED"
         },
         {
             "id": "edge.contain.sub.t81vm_to_mod.sys_regs",
@@ -840,8 +1362,10 @@ def build_edges():
             "evidence": {
                 "source_file": "vm/runtime_state_helpers.cpp",
                 "line": 80,
-                "notes": "T81VM encapsulates R75..R80 system register maintenance."
-            }
+                "notes": "T81VM encapsulates R75..R80 system register maintenance.",
+                "reference_type": "FUNCTION_DEFINITION"
+            },
+            "derivation_method": "MANUALLY_CURATED"
         },
         {
             "id": "edge.contain.sub.ternaryos_to_mod.sched",
@@ -853,8 +1377,10 @@ def build_edges():
             "evidence": {
                 "source_file": "ternaryos/sched/scheduler.cpp",
                 "line": 1,
-                "notes": "TernaryOS kernel encapsulates the cooperative scheduler."
-            }
+                "notes": "TernaryOS kernel encapsulates the cooperative scheduler.",
+                "reference_type": "DESCRIPTIVE_FILE"
+            },
+            "derivation_method": "MANUALLY_CURATED"
         },
         {
             "id": "edge.contain.sub.ternaryos_to_mod.mmu",
@@ -866,11 +1392,11 @@ def build_edges():
             "evidence": {
                 "source_file": "ternaryos/mmu/ternary_page_alloc.cpp",
                 "line": 1,
-                "notes": "TernaryOS kernel encapsulates page allocator and TTBR0 MMU tables."
-            }
+                "notes": "TernaryOS kernel encapsulates page allocator and TTBR0 MMU tables.",
+                "reference_type": "DESCRIPTIVE_FILE"
+            },
+            "derivation_method": "MANUALLY_CURATED"
         },
-
-        # --- Technical Dependencies (Inclusion, Invocation, Link, Data Flow) ---
         {
             "id": "edge.dep.parser_to_lexer_invoke",
             "source_id": "mod.frontend.parser",
@@ -880,9 +1406,11 @@ def build_edges():
             "verification_status": "VERIFIED_IMPLEMENTED",
             "evidence": {
                 "source_file": "lang/frontend/parser.cpp",
-                "line": 34,
-                "notes": "Parser calls lexer.next_token() to consume balanced ternary tokens."
-            }
+                "line": 327,
+                "notes": "Parser calls lexer.next_token() to consume balanced ternary tokens.",
+                "reference_type": "CALL_SITE"
+            },
+            "derivation_method": "STATICALLY_EXTRACTED"
         },
         {
             "id": "edge.dep.ir_generator_to_tisc_isa_invoke",
@@ -893,9 +1421,11 @@ def build_edges():
             "verification_status": "VERIFIED_IMPLEMENTED",
             "evidence": {
                 "source_file": "lang/frontend/ir_generator.cpp",
-                "line": 28,
-                "notes": "IRGenerator emits t81::tisc::Instruction instances with target opcodes."
-            }
+                "line": 5644,
+                "notes": "IRGenerator emits t81::tisc::Instruction instances with target opcodes.",
+                "reference_type": "FUNCTION_DEFINITION"
+            },
+            "derivation_method": "STATICALLY_EXTRACTED"
         },
         {
             "id": "edge.dep.cli_to_frontend_invoke",
@@ -907,8 +1437,10 @@ def build_edges():
             "evidence": {
                 "source_file": "tools/cli/core/main.cpp",
                 "line": 10799,
-                "notes": "CLI 'compile' command invokes frontend Lexer, Parser, and IRGenerator pipeline."
-            }
+                "notes": "CLI 'compile' command invokes frontend Lexer, Parser, and IRGenerator pipeline.",
+                "reference_type": "CALL_SITE"
+            },
+            "derivation_method": "STATICALLY_EXTRACTED"
         },
         {
             "id": "edge.dep.cli_to_vm_invoke",
@@ -920,8 +1452,10 @@ def build_edges():
             "evidence": {
                 "source_file": "tools/cli/core/main.cpp",
                 "line": 10826,
-                "notes": "CLI 'run' command instantiates VirtualMachine and calls run_to_halt()."
-            }
+                "notes": "CLI 'run' command instantiates VirtualMachine and calls run_to_halt().",
+                "reference_type": "CALL_SITE"
+            },
+            "derivation_method": "STATICALLY_EXTRACTED"
         },
         {
             "id": "edge.dep.interpreter_to_tisc_isa_dispatch",
@@ -933,8 +1467,10 @@ def build_edges():
             "evidence": {
                 "source_file": "vm/vm.cpp",
                 "line": 1612,
-                "notes": "Interpreter switch executes 244 opcodes defined in TISC specification."
-            }
+                "notes": "Interpreter switch executes 244 opcodes defined in TISC specification.",
+                "reference_type": "DISPATCH_SITE"
+            },
+            "derivation_method": "STATICALLY_EXTRACTED"
         },
         {
             "id": "edge.dep.interpreter_to_axion_invoke",
@@ -946,8 +1482,10 @@ def build_edges():
             "evidence": {
                 "source_file": "vm/vm.cpp",
                 "line": 7364,
-                "notes": "eval_axion_call() routes syscall context to PolicyEngine::evaluate()."
-            }
+                "notes": "eval_axion_call() routes syscall context to PolicyEngine::evaluate().",
+                "reference_type": "CALL_SITE"
+            },
+            "derivation_method": "STATICALLY_EXTRACTED"
         },
         {
             "id": "edge.dep.interpreter_to_sysregs_invoke",
@@ -958,9 +1496,11 @@ def build_edges():
             "verification_status": "VERIFIED_IMPLEMENTED",
             "evidence": {
                 "source_file": "vm/vm.cpp",
-                "line": 435,
-                "notes": "Interpreter step() invokes sync_system_registers() on each execution cycle."
-            }
+                "line": 369,
+                "notes": "Interpreter step() invokes sync_system_registers() on each execution cycle.",
+                "reference_type": "CALL_SITE"
+            },
+            "derivation_method": "STATICALLY_EXTRACTED"
         },
         {
             "id": "edge.dep.interpreter_to_jit_invoke",
@@ -972,8 +1512,10 @@ def build_edges():
             "evidence": {
                 "source_file": "vm/vm.cpp",
                 "line": 482,
-                "notes": "step() checks compiled_traces_ cache before falling back to interpreter dispatch."
-            }
+                "notes": "step() checks compiled_traces_ cache before falling back to interpreter dispatch.",
+                "reference_type": "CALL_SITE"
+            },
+            "derivation_method": "STATICALLY_EXTRACTED"
         },
         {
             "id": "edge.dep.interpreter_to_canonfs_dataflow",
@@ -984,9 +1526,11 @@ def build_edges():
             "verification_status": "VERIFIED_IMPLEMENTED",
             "evidence": {
                 "source_file": "vm/vm.cpp",
-                "line": 53,
-                "notes": "VM loads model weights and artifacts directly from attached CanonFS driver."
-            }
+                "line": 1883,
+                "notes": "VM loads model weights and artifacts directly from attached CanonFS driver.",
+                "reference_type": "CALL_SITE"
+            },
+            "derivation_method": "STATICALLY_EXTRACTED"
         },
         {
             "id": "edge.dep.weights_tool_to_tensors_invoke",
@@ -998,8 +1542,10 @@ def build_edges():
             "evidence": {
                 "source_file": "tools/cli/core/main.cpp",
                 "line": 4384,
-                "notes": "weights export invokes t81::weights::load_t81w() to unpack NativeTensor."
-            }
+                "notes": "weights export invokes t81::weights::load_t81w() to unpack NativeTensor.",
+                "reference_type": "CALL_SITE"
+            },
+            "derivation_method": "STATICALLY_EXTRACTED"
         },
         {
             "id": "edge.dep.bigint_to_limbs_include",
@@ -1010,9 +1556,11 @@ def build_edges():
             "verification_status": "VERIFIED_IMPLEMENTED",
             "evidence": {
                 "source_file": "include/t81/types/T81BigInt.hpp",
-                "line": 15,
-                "notes": "T81BigInt composes T81Limb / T81Limb27 / T81Limb54 as its underlying representation."
-            }
+                "line": 17,
+                "notes": "T81BigInt composes T81Limb / T81Limb27 / T81Limb54 as its underlying representation.",
+                "reference_type": "DECLARATION"
+            },
+            "derivation_method": "STATICALLY_EXTRACTED"
         },
         {
             "id": "edge.dep.fraction_to_int_include",
@@ -1023,9 +1571,11 @@ def build_edges():
             "verification_status": "VERIFIED_IMPLEMENTED",
             "evidence": {
                 "source_file": "include/t81/types/T81Fraction.hpp",
-                "line": 18,
-                "notes": "T81Fraction numerator and denominator are parameterized over T81Int<N>."
-            }
+                "line": 15,
+                "notes": "T81Fraction numerator and denominator are parameterized over T81Int<N>.",
+                "reference_type": "DECLARATION"
+            },
+            "derivation_method": "STATICALLY_EXTRACTED"
         },
         {
             "id": "edge.dep.canonfs_to_crypto_invoke",
@@ -1037,8 +1587,10 @@ def build_edges():
             "evidence": {
                 "source_file": "fs/persistent_driver.cpp",
                 "line": 194,
-                "notes": "write_object calculates content hash via t81::hash::hash_bytes()."
-            }
+                "notes": "write_object calculates content hash via t81::hash::hash_bytes().",
+                "reference_type": "CALL_SITE"
+            },
+            "derivation_method": "STATICALLY_EXTRACTED"
         },
         {
             "id": "edge.dep.canonfs_to_axion_invoke",
@@ -1049,9 +1601,11 @@ def build_edges():
             "verification_status": "VERIFIED_IMPLEMENTED",
             "evidence": {
                 "source_file": "fs/persistent_driver.cpp",
-                "line": 190,
-                "notes": "CanonFS queries Axion hook before admitting storage mutations."
-            }
+                "line": 384,
+                "notes": "CanonFS queries Axion hook before admitting storage mutations.",
+                "reference_type": "CALL_SITE"
+            },
+            "derivation_method": "STATICALLY_EXTRACTED"
         },
         {
             "id": "edge.dep.ternaryos_to_qemu_drivers_link",
@@ -1062,9 +1616,11 @@ def build_edges():
             "verification_status": "VERIFIED_IMPLEMENTED",
             "evidence": {
                 "source_file": "ternaryos/CMakeLists.txt",
-                "line": 1,
-                "notes": "t81_ternaryos_hal links PL011 UART, GICv3, and VirtIO MMU drivers."
-            }
+                "line": 40,
+                "notes": "t81_ternaryos_hal links PL011 UART, GICv3, and VirtIO MMU drivers.",
+                "reference_type": "DECLARATION"
+            },
+            "derivation_method": "STATICALLY_EXTRACTED"
         },
         {
             "id": "edge.dep.ternaryos_to_daios_intent",
@@ -1076,21 +1632,25 @@ def build_edges():
             "evidence": {
                 "source_file": "spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md",
                 "line": 15,
-                "notes": "DAIOS RFC-00D2 identifies TernaryOS as an exploratory precursor substrate."
-            }
+                "notes": "DAIOS RFC-00D2 identifies TernaryOS as an exploratory precursor substrate.",
+                "reference_type": "DESCRIPTIVE_FILE"
+            },
+            "derivation_method": "MANUALLY_CURATED"
         },
         {
             "id": "edge.dep.tensors_to_simd_invoke",
             "source_id": "sub.layer.3_num.ternary_tensors",
             "dest_id": "sub.layer.6_hw.simd_primitives",
-            "relationship_type": "function_invocation",
+            "relationship_type": "compile_time_dependency",
             "direction": "source_to_dest",
             "verification_status": "VERIFIED_IMPLEMENTED",
             "evidence": {
                 "source_file": "src/core/CMakeLists.txt",
-                "line": 34,
-                "notes": "AVX2 SIMD routines compiled conditionally into t81_core on x86_64."
-            }
+                "line": 46,
+                "notes": "AVX2 SIMD routines compiled conditionally into t81_core on x86_64.",
+                "reference_type": "DECLARATION"
+            },
+            "derivation_method": "STATICALLY_EXTRACTED"
         },
         {
             "id": "edge.dep.tests_to_scg_evidence",
@@ -1102,8 +1662,10 @@ def build_edges():
             "evidence": {
                 "source_file": "tests/cpp/test_scg07_phase6_qualification.cpp",
                 "line": 1,
-                "notes": "Phase 6 harness qualifies historical SCG-06 F1..F7 arithmetic reproducers."
-            }
+                "notes": "Phase 6 harness qualifies historical SCG-06 F1..F7 arithmetic reproducers.",
+                "reference_type": "DESCRIPTIVE_FILE"
+            },
+            "derivation_method": "MANUALLY_CURATED"
         },
         {
             "id": "edge.dep.tests_to_limbs_test",
@@ -1115,8 +1677,10 @@ def build_edges():
             "evidence": {
                 "source_file": "tests/cpp/test_t81_limb27_mul.cpp",
                 "line": 1,
-                "notes": "10,000 randomized test cases verify T81Limb27 multiplication."
-            }
+                "notes": "10,000 randomized test cases verify T81Limb27 multiplication.",
+                "reference_type": "DESCRIPTIVE_FILE"
+            },
+            "derivation_method": "STATICALLY_EXTRACTED"
         },
         {
             "id": "edge.dep.tests_to_bigint_test",
@@ -1128,8 +1692,10 @@ def build_edges():
             "evidence": {
                 "source_file": "tests/cpp/test_t81bigint_sub.cpp",
                 "line": 1,
-                "notes": "1,200 randomized checks verify T81BigInt subtraction invariants."
-            }
+                "notes": "1,200 randomized checks verify T81BigInt subtraction invariants.",
+                "reference_type": "DESCRIPTIVE_FILE"
+            },
+            "derivation_method": "STATICALLY_EXTRACTED"
         },
         {
             "id": "edge.dep.tests_to_fraction_test",
@@ -1141,8 +1707,10 @@ def build_edges():
             "evidence": {
                 "source_file": "tests/cpp/test_t81fraction.cpp",
                 "line": 1,
-                "notes": "Regression tests verify exception unwinding and to_double() precision."
-            }
+                "notes": "Regression tests verify exception unwinding and to_double() precision.",
+                "reference_type": "DESCRIPTIVE_FILE"
+            },
+            "derivation_method": "STATICALLY_EXTRACTED"
         },
         {
             "id": "edge.dep.scg_to_hypotheses_evidence",
@@ -1154,8 +1722,10 @@ def build_edges():
             "evidence": {
                 "source_file": "docs/research/continuity/SCG04_MAINTAINER_DECISION_RECORD.md",
                 "line": 45,
-                "notes": "SCG-08 maps mathematical findings directly to hypotheses H01, H02, H04, H05, H06."
-            }
+                "notes": "SCG-08 maps mathematical findings directly to hypotheses H01, H02, H04, H05, H06.",
+                "reference_type": "DESCRIPTIVE_FILE"
+            },
+            "derivation_method": "MANUALLY_CURATED"
         },
         {
             "id": "edge.dep.rtl_to_hypotheses_evidence",
@@ -1167,26 +1737,27 @@ def build_edges():
             "evidence": {
                 "source_file": "docs/research/continuity/HYPOTHESIS_REGISTER_v1.json",
                 "line": 10,
-                "notes": "H01 and H06 cite experiments/ternary_hardware_feasibility for unpacked ternary comparison."
-            }
+                "notes": "H01 and H06 cite experiments/ternary_hardware_feasibility for unpacked ternary comparison.",
+                "reference_type": "DESCRIPTIVE_FILE"
+            },
+            "derivation_method": "MANUALLY_CURATED"
         }
     ]
-    return {
-        "schema_version": "1.0.0",
-        "baseline_commit": BASELINE_COMMIT,
-        "total_edges": len(edges),
-        "edges": edges
-    }
-
-print("Edge builder defined")
+}
 
 def build_interfaces():
-    interfaces = [
+    return {
+    "schema_version": "1.0.0",
+    "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
+    "total_interfaces": 6,
+    "interfaces": [
         {
             "id": "iface.frontend.ir_generator",
             "name": "IRGenerator::generate",
             "provider_node_id": "mod.frontend.ir_generator",
-            "consumer_node_ids": ["sub.layer.1_lang.cli"],
+            "consumer_node_ids": [
+                "sub.layer.1_lang.cli"
+            ],
             "entry_point": "t81::frontend::IRGenerator::generate(const std::vector<std::unique_ptr<Stmt>>&)",
             "contract": "Transforms validated AST statements into a linear t81::tisc::ir::IntermediateProgram.",
             "inputs": "AST statement vector",
@@ -1199,7 +1770,10 @@ def build_interfaces():
             "id": "iface.vm.step",
             "name": "IVirtualMachine::step",
             "provider_node_id": "mod.vm.interpreter_core",
-            "consumer_node_ids": ["sub.layer.1_lang.cli", "sub.layer.7_assurance.cpp_test_suite"],
+            "consumer_node_ids": [
+                "sub.layer.1_lang.cli",
+                "sub.layer.7_assurance.cpp_test_suite"
+            ],
             "entry_point": "t81::vm::IVirtualMachine::step()",
             "contract": "Executes exactly one TISC instruction in the current active context, checking Axion policy before side effects.",
             "inputs": "None (internal VM state and PC)",
@@ -1212,7 +1786,10 @@ def build_interfaces():
             "id": "iface.num.limb27_mul",
             "name": "T81Limb27::operator*",
             "provider_node_id": "sub.layer.3_num.balanced_ternary_limbs",
-            "consumer_node_ids": ["sub.layer.3_num.multi_precision_bigint", "sub.layer.7_assurance.cpp_test_suite"],
+            "consumer_node_ids": [
+                "sub.layer.3_num.multi_precision_bigint",
+                "sub.layer.7_assurance.cpp_test_suite"
+            ],
             "entry_point": "t81::T81Limb27::operator*(const T81Limb27&) const noexcept",
             "contract": "Computes exact balanced ternary product of two 27-trit limbs, normalized to 54 trits.",
             "inputs": "Two 27-trit limbs (trytes_[9])",
@@ -1225,7 +1802,10 @@ def build_interfaces():
             "id": "iface.num.bigint_add",
             "name": "T81BigInt::operator+",
             "provider_node_id": "sub.layer.3_num.multi_precision_bigint",
-            "consumer_node_ids": ["sub.layer.2_exec.t81vm", "sub.layer.7_assurance.cpp_test_suite"],
+            "consumer_node_ids": [
+                "sub.layer.2_exec.t81vm",
+                "sub.layer.7_assurance.cpp_test_suite"
+            ],
             "entry_point": "t81::operator+(const T81BigInt&, const T81BigInt&)",
             "contract": "Arbitrary precision balanced ternary addition preserving non-negative limb magnitude invariants.",
             "inputs": "Two T81BigInt operands",
@@ -1238,7 +1818,10 @@ def build_interfaces():
             "id": "iface.axion.evaluate",
             "name": "PolicyEngine::evaluate",
             "provider_node_id": "sub.layer.4_services.axion_kernel",
-            "consumer_node_ids": ["mod.vm.interpreter_core", "sub.layer.4_services.canonfs"],
+            "consumer_node_ids": [
+                "mod.vm.interpreter_core",
+                "sub.layer.4_services.canonfs"
+            ],
             "entry_point": "t81::axion::PolicyEngine::evaluate(const SyscallContext&)",
             "contract": "Evaluates mandatory ethical principles Theta-1..9 and user policy bytecode against system calls.",
             "inputs": "SyscallContext containing caller, opcode, memory segment, and arguments",
@@ -1251,7 +1834,10 @@ def build_interfaces():
             "id": "iface.canonfs.write_object",
             "name": "PersistentDriver::write_object",
             "provider_node_id": "sub.layer.4_services.canonfs",
-            "consumer_node_ids": ["mod.cli.weights_tool", "sub.layer.2_exec.t81vm"],
+            "consumer_node_ids": [
+                "mod.cli.weights_tool",
+                "sub.layer.2_exec.t81vm"
+            ],
             "entry_point": "t81::canonfs::PersistentDriver::write_object(ObjectType, std::span<const std::byte>)",
             "contract": "Stores payload under immutable SHA-256 digest with portable hex filename (objects/h1-<hash>.blk).",
             "inputs": "ObjectType tag and raw byte span",
@@ -1261,15 +1847,14 @@ def build_interfaces():
             "test_evidence": "tests/cpp/test_canonfs.cpp"
         }
     ]
-    return {
-        "schema_version": "1.0.0",
-        "baseline_commit": BASELINE_COMMIT,
-        "total_interfaces": len(interfaces),
-        "interfaces": interfaces
-    }
+}
 
 def build_gaps():
-    gaps = [
+    return {
+    "schema_version": "1.0.0",
+    "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
+    "total_gaps": 4,
+    "gaps": [
         {
             "id": "gap.daios_full_kernel",
             "name": "DAIOS Autonomous Operating System Kernel",
@@ -1318,25 +1903,24 @@ def build_gaps():
             "evidence": {
                 "source_file": "docs/research/continuity/SCG07_PHASE5_EVIDENCE_RECEIPT.md",
                 "line": 18,
-                "notes": "Receipt explicitly dispositioned as 'F3 CORRECT ON CURRENT BASELINE — historical causal attribution incomplete'."
+                "notes": "Receipt explicitly dispositioned as 'F3 CORRECT ON CURRENT BASELINE \u2014 historical causal attribution incomplete'."
             },
             "unresolved_questions": "Did F1 Booth table scaling fully account for intermediate Karatsuba carry failures on historical baselines?"
         }
     ]
-    return {
-        "schema_version": "1.0.0",
-        "baseline_commit": BASELINE_COMMIT,
-        "total_gaps": len(gaps),
-        "gaps": gaps
-    }
+}
 
 def build_execution_paths():
-    paths = [
+    return {
+    "schema_version": "1.1.0",
+    "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
+    "total_paths": 9,
+    "paths": [
         {
             "id": "path.01_t81lang_to_artifact",
             "name": "T81Lang Source to Executable Artifact",
             "classification": "VERIFIED_IMPLEMENTED",
-            "tracing_method": "DYNAMICALLY_OBSERVED",
+            "tracing_method": "STATICALLY_TRACED",
             "entry_point": "tools/cli/core/main.cpp:10799 (run_compile)",
             "exit_point": "lang/frontend/ir_generator.cpp:8 (tisc::ir::IntermediateProgram)",
             "steps": [
@@ -1345,35 +1929,45 @@ def build_execution_paths():
                     "module": "sub.layer.1_lang.cli",
                     "file": "tools/cli/core/main.cpp",
                     "line": 10799,
-                    "action": "User invokes 't81 compile <source.t81> -o <out.tisc>'"
+                    "action": "User invokes 't81 compile <source.t81> -o <out.tisc>'",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 },
                 {
                     "step_number": 2,
                     "module": "mod.frontend.lexer",
                     "file": "lang/frontend/lexer.cpp",
                     "line": 1,
-                    "action": "Lexer converts source text into balanced ternary token stream"
+                    "action": "Lexer converts source text into balanced ternary token stream",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 },
                 {
                     "step_number": 3,
                     "module": "mod.frontend.parser",
                     "file": "lang/frontend/parser.cpp",
                     "line": 1,
-                    "action": "Parser performs recursive descent, producing Abstract Syntax Tree"
+                    "action": "Parser performs recursive descent, producing Abstract Syntax Tree",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 },
                 {
                     "step_number": 4,
                     "module": "mod.frontend.semantic_analyzer",
                     "file": "lang/frontend/semantic_analyzer.cpp",
                     "line": 1,
-                    "action": "Semantic analyzer validates symbol scopes and loop bounds"
+                    "action": "Semantic analyzer validates symbol scopes and loop bounds",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 },
                 {
                     "step_number": 5,
                     "module": "mod.frontend.ir_generator",
                     "file": "lang/frontend/ir_generator.cpp",
                     "line": 8,
-                    "action": "IRGenerator linearizes AST into TISC IntermediateProgram binary"
+                    "action": "IRGenerator linearizes AST into TISC IntermediateProgram binary",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 }
             ],
             "unresolved_transitions": "None"
@@ -1382,7 +1976,7 @@ def build_execution_paths():
             "id": "path.02_tisc_decode_and_exec",
             "name": "TISC Instruction Decoding and VM Execution",
             "classification": "VERIFIED_IMPLEMENTED",
-            "tracing_method": "DYNAMICALLY_OBSERVED",
+            "tracing_method": "STATICALLY_TRACED",
             "entry_point": "vm/vm.cpp:435 (IVirtualMachine::step)",
             "exit_point": "vm/runtime_state_helpers.cpp:80 (sync_system_registers)",
             "steps": [
@@ -1391,37 +1985,53 @@ def build_execution_paths():
                     "module": "mod.vm.interpreter_core",
                     "file": "vm/vm.cpp",
                     "line": 435,
-                    "action": "VM step() initiates instruction fetch for current context PC"
+                    "action": "VM step() initiates instruction fetch for current context PC",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "FUNCTION_DEFINITION"
                 },
                 {
                     "step_number": 2,
                     "module": "sub.layer.4_services.axion_kernel",
                     "file": "vm/vm.cpp",
                     "line": 509,
-                    "action": "eval_axion_call checks Axion policy engine before instruction execution"
+                    "action": "eval_axion_call checks Axion policy engine before instruction execution",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 },
                 {
                     "step_number": 3,
                     "module": "mod.vm.interpreter_core",
                     "file": "vm/vm.cpp",
                     "line": 1612,
-                    "action": "Opcode switch dispatches specific operation (e.g. Add, Mul, MatMul)"
+                    "action": "Opcode switch dispatches specific operation (e.g. Add, Mul, MatMul)",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "DISPATCH_SITE"
                 },
                 {
                     "step_number": 4,
                     "module": "mod.vm.system_registers",
                     "file": "vm/runtime_state_helpers.cpp",
                     "line": 80,
-                    "action": "sync_system_registers updates tick R75, entropy R77, and liveness R80"
+                    "action": "sync_system_registers updates tick R75, entropy R77, and liveness R80",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 }
             ],
-            "unresolved_transitions": "None"
+            "unresolved_transitions": "None",
+            "runtime_trace_evidence": {
+                "trace_identity": "tests/fixtures/canonical_traces/01_bigint_add.trace",
+                "sha256": "a00b67b1d76124d4a247a54a737d369dfc3e8326ca5f0d5a99fc0adbd93efbf0",
+                "producing_command": "t81 vm run <file.tisc> --trace -o <trace.txt>",
+                "producing_test": "scripts/ci/trace_repro_gate.py",
+                "pinned_baseline": "4f96cb24358bfd260e67387b2c4db2797b01236f",
+                "observation_scope": "Golden trace explicitly proves emitted VM PC/opcode sequence (LoadImm, Call, Pop, Add, Ret, Halt). Internal C++ function execution at vm.cpp:435 (step()) and opcode switch dispatch at vm.cpp:1612 are statically supported without direct binary instrumentation evidence."
+            }
         },
         {
             "id": "path.03_balanced_ternary_arithmetic",
             "name": "Balanced Ternary Limb Multiplication",
             "classification": "VERIFIED_IMPLEMENTED",
-            "tracing_method": "DYNAMICALLY_OBSERVED",
+            "tracing_method": "STATICALLY_TRACED",
             "entry_point": "include/t81/types/T81Limb.hpp:173 (T81Limb27::operator*)",
             "exit_point": "include/t81/types/T81Limb.hpp:624 (mul_booth_karatsuba)",
             "steps": [
@@ -1430,21 +2040,27 @@ def build_execution_paths():
                     "module": "sub.layer.3_num.balanced_ternary_limbs",
                     "file": "include/t81/types/T81Limb.hpp",
                     "line": 173,
-                    "action": "Caller invokes operator* on two 27-trit balanced limbs"
+                    "action": "Caller invokes operator* on two 27-trit balanced limbs",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 },
                 {
                     "step_number": 2,
                     "module": "sub.layer.3_num.balanced_ternary_limbs",
                     "file": "include/t81/types/T81Limb.hpp",
                     "line": 624,
-                    "action": "Decodes trits and accumulates partial products into 54-trit buffer"
+                    "action": "Decodes trits and accumulates partial products into 54-trit buffer",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 },
                 {
                     "step_number": 3,
                     "module": "sub.layer.3_num.balanced_ternary_limbs",
                     "file": "include/t81/types/T81Limb.hpp",
                     "line": 635,
-                    "action": "Performs exact balanced ternary carry normalization modulo 3^54"
+                    "action": "Performs exact balanced ternary carry normalization modulo 3^54",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 }
             ],
             "unresolved_transitions": "None"
@@ -1453,7 +2069,7 @@ def build_execution_paths():
             "id": "path.04_multi_precision_computation",
             "name": "Multi-Precision BigInt Addition & Invariant Check",
             "classification": "VERIFIED_IMPLEMENTED",
-            "tracing_method": "DYNAMICALLY_OBSERVED",
+            "tracing_method": "STATICALLY_TRACED",
             "entry_point": "include/t81/types/T81BigInt.hpp:1005 (operator+)",
             "exit_point": "include/t81/types/T81BigInt.hpp:1020 (verify_invariants)",
             "steps": [
@@ -1462,21 +2078,27 @@ def build_execution_paths():
                     "module": "sub.layer.3_num.multi_precision_bigint",
                     "file": "include/t81/types/T81BigInt.hpp",
                     "line": 1005,
-                    "action": "Caller adds two arbitrary-width T81BigInt operands"
+                    "action": "Caller adds two arbitrary-width T81BigInt operands",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 },
                 {
                     "step_number": 2,
                     "module": "sub.layer.3_num.multi_precision_bigint",
                     "file": "include/t81/types/T81BigInt.hpp",
                     "line": 1012,
-                    "action": "Evaluates single-limb sum or multi-limb carry chain"
+                    "action": "Evaluates single-limb sum or multi-limb carry chain",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 },
                 {
                     "step_number": 3,
                     "module": "sub.layer.3_num.multi_precision_bigint",
                     "file": "include/t81/types/T81BigInt.hpp",
                     "line": 1018,
-                    "action": "Sets negative_ flag and ensures stored limb magnitude is non-negative"
+                    "action": "Sets negative_ flag and ensures stored limb magnitude is non-negative",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 }
             ],
             "unresolved_transitions": "None"
@@ -1485,7 +2107,7 @@ def build_execution_paths():
             "id": "path.05_model_import_export",
             "name": "Safetensors Weight Import, Quantization, and Export",
             "classification": "VERIFIED_IMPLEMENTED",
-            "tracing_method": "DYNAMICALLY_OBSERVED",
+            "tracing_method": "STATICALLY_TRACED",
             "entry_point": "tools/cli/core/main.cpp:3884 (run_weights_import)",
             "exit_point": "tools/cli/core/main.cpp:4355 (run_weights_export)",
             "steps": [
@@ -1494,28 +2116,36 @@ def build_execution_paths():
                     "module": "mod.cli.weights_tool",
                     "file": "tools/cli/core/main.cpp",
                     "line": 3884,
-                    "action": "User runs 't81 weights import model.safetensors -o model.t81w'"
+                    "action": "User runs 't81 weights import model.safetensors -o model.t81w'",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 },
                 {
                     "step_number": 2,
                     "module": "sub.layer.3_num.ternary_tensors",
                     "file": "tools/cli/core/main.cpp",
                     "line": 3995,
-                    "action": "Parses safetensors headers and quantizes float tensors into ternary"
+                    "action": "Parses safetensors headers and quantizes float tensors into ternary",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 },
                 {
                     "step_number": 3,
                     "module": "mod.cli.weights_tool",
                     "file": "tools/cli/core/main.cpp",
                     "line": 4355,
-                    "action": "User runs 't81 weights export model.t81w --to-safetensors out.safetensors'"
+                    "action": "User runs 't81 weights export model.t81w --to-safetensors out.safetensors'",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 },
                 {
                     "step_number": 4,
                     "module": "sub.layer.4_services.canonfs",
                     "file": "tools/cli/core/main.cpp",
                     "line": 4400,
-                    "action": "Unpacks native trits into I8 safetensors tensor buffers"
+                    "action": "Unpacks native trits into I8 safetensors tensor buffers",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 }
             ],
             "unresolved_transitions": "None"
@@ -1524,7 +2154,7 @@ def build_execution_paths():
             "id": "path.06_axion_policy_evaluation",
             "name": "Axion Syscall Policy & Ethics Gate Check",
             "classification": "VERIFIED_IMPLEMENTED",
-            "tracing_method": "DYNAMICALLY_OBSERVED",
+            "tracing_method": "STATICALLY_TRACED",
             "entry_point": "kernel/axion/policy_engine.cpp:217 (PolicyEngine::evaluate)",
             "exit_point": "kernel/axion/policy_engine.cpp:242 (Verdict)",
             "steps": [
@@ -1533,28 +2163,36 @@ def build_execution_paths():
                     "module": "sub.layer.4_services.axion_kernel",
                     "file": "kernel/axion/policy_engine.cpp",
                     "line": 217,
-                    "action": "Receives SyscallContext from VM or subsystem invocation"
+                    "action": "Receives SyscallContext from VM or subsystem invocation",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 },
                 {
                     "step_number": 2,
                     "module": "sub.layer.4_services.axion_kernel",
                     "file": "kernel/axion/policy_engine.cpp",
                     "line": 227,
-                    "action": "Evaluates immutable Theta-1..Theta-9 ethics principles"
+                    "action": "Evaluates immutable Theta-1..Theta-9 ethics principles",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 },
                 {
                     "step_number": 3,
                     "module": "sub.layer.4_services.axion_kernel",
                     "file": "kernel/axion/policy_engine.cpp",
                     "line": 238,
-                    "action": "Executes user policy bytecode and checks tensor hash allowlists"
+                    "action": "Executes user policy bytecode and checks tensor hash allowlists",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 },
                 {
                     "step_number": 4,
                     "module": "sub.layer.4_services.axion_kernel",
                     "file": "kernel/axion/policy_engine.cpp",
                     "line": 242,
-                    "action": "Returns Allow/Deny Verdict to gate VM or storage execution"
+                    "action": "Returns Allow/Deny Verdict to gate VM or storage execution",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 }
             ],
             "unresolved_transitions": "None"
@@ -1563,7 +2201,7 @@ def build_execution_paths():
             "id": "path.07_canonfs_storage_operation",
             "name": "CanonFS Content-Addressed Object Storage",
             "classification": "VERIFIED_IMPLEMENTED",
-            "tracing_method": "DYNAMICALLY_OBSERVED",
+            "tracing_method": "STATICALLY_TRACED",
             "entry_point": "fs/persistent_driver.cpp:193 (write_object)",
             "exit_point": "include/t81/canonfs/storage_key.hpp:1 (storage_key_v1)",
             "steps": [
@@ -1572,21 +2210,27 @@ def build_execution_paths():
                     "module": "sub.layer.4_services.canonfs",
                     "file": "fs/persistent_driver.cpp",
                     "line": 193,
-                    "action": "Caller requests write_object with payload bytes"
+                    "action": "Caller requests write_object with payload bytes",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 },
                 {
                     "step_number": 2,
                     "module": "sub.layer.4_services.crypto",
                     "file": "fs/persistent_driver.cpp",
                     "line": 194,
-                    "action": "Hashes payload using SHA-256 to compute immutable content hash"
+                    "action": "Hashes payload using SHA-256 to compute immutable content hash",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 },
                 {
                     "step_number": 3,
                     "module": "sub.layer.4_services.canonfs",
                     "file": "fs/persistent_driver.cpp",
                     "line": 200,
-                    "action": "Writes object payload to objects/h1-<64-hex>.blk on disk"
+                    "action": "Writes object payload to objects/h1-<64-hex>.blk on disk",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 }
             ],
             "unresolved_transitions": "None"
@@ -1595,37 +2239,45 @@ def build_execution_paths():
             "id": "path.08_freestanding_execution",
             "name": "Bare-Metal Freestanding Boot & Timer Interrupt Loop",
             "classification": "VERIFIED_IMPLEMENTED",
-            "tracing_method": "DYNAMICALLY_OBSERVED",
-            "entry_point": "ternaryos/hal/qemu_slice6_bare_kernel.c:1",
-            "exit_point": "ternaryos/hal/qemu_slice6_bare_kernel.c:16 (WFI loop)",
+            "tracing_method": "STATICALLY_TRACED",
+            "entry_point": "ternaryos/hal/qemu_slice6_bare_kernel.c:101 (qemu_bare_kernel_entry)",
+            "exit_point": "ternaryos/hal/qemu_slice6_cpp_bridge.cpp:1823 (wfi)",
             "steps": [
                 {
                     "step_number": 1,
                     "module": "sub.layer.2_exec.freestanding_runtime",
                     "file": "ternaryos/hal/qemu_slice6_bare_kernel.c",
-                    "line": 9,
-                    "action": "Writes '[axion] bare-metal EL1 kernel entry' to PL011 UART MMIO"
+                    "line": 103,
+                    "action": "bare_pl011_puts confirms EL1 PL011 MMIO access post-ExitBootServices",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 },
                 {
                     "step_number": 2,
-                    "module": "sub.layer.6_hw.qemu_drivers",
+                    "module": "sub.layer.5_os.ternaryos_kernel",
                     "file": "ternaryos/hal/qemu_slice6_bare_kernel.c",
-                    "line": 11,
-                    "action": "Configures GICv3 CPU interface (ICC_SRE_EL1 + ICC_PMR_EL1)"
+                    "line": 108,
+                    "action": "Hands off execution to freestanding C++ bridge entry point",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 },
                 {
                     "step_number": 3,
-                    "module": "sub.layer.6_hw.qemu_drivers",
-                    "file": "ternaryos/hal/qemu_slice6_bare_kernel.c",
-                    "line": 13,
-                    "action": "Arms ARM generic timer physical countdown at CNTP_TVAL_EL0"
+                    "module": "mod.ternaryos.scheduler",
+                    "file": "ternaryos/hal/qemu_slice6_cpp_bridge.cpp",
+                    "line": 600,
+                    "action": "bridge_timer_irq_tick handles GICv3 PPI30 timer ticks to drive scheduler",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "FUNCTION_DEFINITION"
                 },
                 {
                     "step_number": 4,
-                    "module": "sub.layer.2_exec.freestanding_runtime",
-                    "file": "ternaryos/hal/qemu_slice6_bare_kernel.c",
-                    "line": 16,
-                    "action": "Enters infinite WFI loop waking on periodic timer interrupts"
+                    "module": "sub.layer.5_os.ternaryos_kernel",
+                    "file": "ternaryos/hal/qemu_slice6_cpp_bridge.cpp",
+                    "line": 1823,
+                    "action": "Executes inline WFI instruction awaiting hardware timer or serial interrupt",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 }
             ],
             "unresolved_transitions": "None"
@@ -1643,144 +2295,850 @@ def build_execution_paths():
                     "module": "sub.layer.6_hw.rtl_feasibility",
                     "file": "experiments/ternary_hardware_feasibility/tb_dot_product.v",
                     "line": 1,
-                    "action": "Testbench feeds INT8 activations and ternary sign/mask bitplanes"
+                    "action": "Testbench feeds INT8 activations and ternary sign/mask bitplanes",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "DECLARATION"
                 },
                 {
                     "step_number": 2,
                     "module": "sub.layer.6_hw.rtl_feasibility",
                     "file": "experiments/ternary_hardware_feasibility/design_c_ht1_ternary.v",
                     "line": 34,
-                    "action": "Sign extends activations and applies bit-parallel XOR mask"
+                    "action": "Sign extends activations and applies bit-parallel XOR mask",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 },
                 {
                     "step_number": 3,
                     "module": "sub.layer.6_hw.rtl_feasibility",
                     "file": "experiments/ternary_hardware_feasibility/design_c_ht1_ternary.v",
                     "line": 55,
-                    "action": "Accumulates products via binary adder reduction tree"
+                    "action": "Accumulates products via binary adder reduction tree",
+                    "observation_status": "STATICALLY_SUPPORTED",
+                    "reference_type": "CALL_SITE"
                 }
             ],
             "unresolved_transitions": "Hardware models are evaluated in Verilog simulation; physical ASIC fabrication unverified."
         }
     ]
-    return {
-        "schema_version": "1.0.0",
-        "baseline_commit": BASELINE_COMMIT,
-        "total_paths": len(paths),
-        "paths": paths
-    }
-
-print("Interfaces, gaps, and execution paths builders defined")
+}
 
 def build_evidence():
     return {
-        "schema_version": "1.0.0",
-        "baseline_commit": BASELINE_COMMIT,
-        "verification_timestamp": "2026-11-06",
-        "authoritative_references": [
-            {
-                "id": "ref.master_continuity_charter",
-                "path": "docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md",
-                "description": "Master charter governing empirical research integrity, protocol enforcement, and hypothesis preservation."
-            },
-            {
-                "id": "ref.hypothesis_register",
-                "path": "docs/research/continuity/HYPOTHESIS_REGISTER_v1.json",
-                "description": "Canonical definitions of scientific claims H01 through H08, baselines, and falsifiers."
-            },
-            {
-                "id": "ref.scg07_phase6_qualification",
-                "path": "docs/research/continuity/SCG07_PHASE6_CONSOLIDATED_QUALIFICATION.md",
-                "description": "Consolidated qualification report certifying balanced ternary arithmetic repair under limitations."
-            },
-            {
-                "id": "ref.tisc_opcode_registry",
-                "path": "spec/tisc/opcode-registry.md",
-                "description": "Normative register of 209 frozen opcodes and undefined opcode ranges."
-            }
-        ],
-        "unresolved_architectural_questions": [
-            "UQ-01: Scope and execution profile of DAIOS (RFC-00D2) relative to TernaryOS guest microkernel.",
-            "UQ-02: Historical multi-component failure causal attribution for Karatsuba F3 prior to F1 Booth table repair.",
-            "UQ-03: Viability and energy-delay scaling of native 3-state devices beyond binary-emulated bitplanes."
-        ]
-    }
+    "schema_version": "1.0.0",
+    "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
+    "verification_timestamp": "2026-11-06",
+    "authoritative_references": [
+        {
+            "id": "ref.master_continuity_charter",
+            "path": "docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md",
+            "description": "Master charter governing empirical research integrity, protocol enforcement, and hypothesis preservation."
+        },
+        {
+            "id": "ref.hypothesis_register",
+            "path": "docs/research/continuity/HYPOTHESIS_REGISTER_v1.json",
+            "description": "Canonical definitions of scientific claims H01 through H08, baselines, and falsifiers."
+        },
+        {
+            "id": "ref.scg07_phase6_qualification",
+            "path": "docs/research/continuity/SCG07_PHASE6_CONSOLIDATED_QUALIFICATION.md",
+            "description": "Consolidated qualification report certifying balanced ternary arithmetic repair under limitations."
+        },
+        {
+            "id": "ref.tisc_opcode_registry",
+            "path": "spec/tisc/opcode-registry.md",
+            "description": "Normative register of 209 frozen opcodes and undefined opcode ranges."
+        }
+    ],
+    "unresolved_architectural_questions": [
+        "UQ-01: Scope and execution profile of DAIOS (RFC-00D2) relative to TernaryOS guest microkernel.",
+        "UQ-02: Historical multi-component failure causal attribution for Karatsuba F3 prior to F1 Booth table repair.",
+        "UQ-03: Viability and energy-delay scaling of native 3-state devices beyond binary-emulated bitplanes."
+    ]
+}
 
 def build_layout(nodes):
-    layout = {
-        "schema_version": "1.0.0",
-        "baseline_commit": BASELINE_COMMIT,
-        "rendering_engine": "Three.js / WebGL",
-        "coordinate_system": "Cartesian (X: Subsystem spread, Y: Layer elevation, Z: Component depth)",
-        "layer_elevations": {
-            "layer.1_lang": 600,
-            "layer.2_exec": 500,
-            "layer.3_num": 400,
-            "layer.4_services": 300,
-            "layer.5_os": 200,
-            "layer.6_hw": 100,
-            "layer.7_assurance": 0
+    return {
+    "schema_version": "1.0.0",
+    "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
+    "rendering_engine": "Three.js / WebGL",
+    "coordinate_system": "Cartesian (X: Subsystem spread, Y: Layer elevation, Z: Component depth)",
+    "layer_elevations": {
+        "layer.1_lang": 600,
+        "layer.2_exec": 500,
+        "layer.3_num": 400,
+        "layer.4_services": 300,
+        "layer.5_os": 200,
+        "layer.6_hw": 100,
+        "layer.7_assurance": 0
+    },
+    "node_positions": {
+        "sub.layer.1_lang.frontend": {
+            "x": -375,
+            "y": 600,
+            "z": -100,
+            "color": "#4A90E2",
+            "cluster": "layer.1_lang"
         },
-        "node_positions": {}
-    }
-
-    # Deterministically calculate 3D coordinates
-    layer_counters = {}
-    for node in nodes["nodes"]:
-        lid = node["layer_id"]
-        idx = layer_counters.get(lid, 0)
-        layer_counters[lid] = idx + 1
-
-        y = layout["layer_elevations"].get(lid, 0)
-        x = (idx % 4) * 250 - 375
-        z = (idx // 4) * 200 - 100
-
-        layout["node_positions"][node["id"]] = {
-            "x": x,
-            "y": y,
-            "z": z,
-            "color": "#4A90E2" if "lang" in lid else "#50E3C2" if "exec" in lid else "#F5A623" if "num" in lid else "#BD10E0" if "services" in lid else "#B8E986" if "os" in lid else "#E02020" if "hw" in lid else "#9013FE",
-            "cluster": lid
+        "mod.frontend.lexer": {
+            "x": -125,
+            "y": 600,
+            "z": -100,
+            "color": "#4A90E2",
+            "cluster": "layer.1_lang"
+        },
+        "mod.frontend.parser": {
+            "x": 125,
+            "y": 600,
+            "z": -100,
+            "color": "#4A90E2",
+            "cluster": "layer.1_lang"
+        },
+        "mod.frontend.semantic_analyzer": {
+            "x": 375,
+            "y": 600,
+            "z": -100,
+            "color": "#4A90E2",
+            "cluster": "layer.1_lang"
+        },
+        "mod.frontend.ir_generator": {
+            "x": -375,
+            "y": 600,
+            "z": 100,
+            "color": "#4A90E2",
+            "cluster": "layer.1_lang"
+        },
+        "sub.layer.1_lang.cli": {
+            "x": -125,
+            "y": 600,
+            "z": 100,
+            "color": "#4A90E2",
+            "cluster": "layer.1_lang"
+        },
+        "mod.cli.weights_tool": {
+            "x": 125,
+            "y": 600,
+            "z": 100,
+            "color": "#4A90E2",
+            "cluster": "layer.1_lang"
+        },
+        "sub.layer.1_lang.toolchain_bridges": {
+            "x": 375,
+            "y": 600,
+            "z": 100,
+            "color": "#4A90E2",
+            "cluster": "layer.1_lang"
+        },
+        "sub.layer.2_exec.tisc_isa": {
+            "x": -375,
+            "y": 500,
+            "z": -100,
+            "color": "#50E3C2",
+            "cluster": "layer.2_exec"
+        },
+        "sub.layer.2_exec.t81vm": {
+            "x": -125,
+            "y": 500,
+            "z": -100,
+            "color": "#50E3C2",
+            "cluster": "layer.2_exec"
+        },
+        "mod.vm.interpreter_core": {
+            "x": 125,
+            "y": 500,
+            "z": -100,
+            "color": "#50E3C2",
+            "cluster": "layer.2_exec"
+        },
+        "mod.vm.system_registers": {
+            "x": 375,
+            "y": 500,
+            "z": -100,
+            "color": "#50E3C2",
+            "cluster": "layer.2_exec"
+        },
+        "sub.layer.2_exec.jit_engine": {
+            "x": -375,
+            "y": 500,
+            "z": 100,
+            "color": "#50E3C2",
+            "cluster": "layer.2_exec"
+        },
+        "sub.layer.2_exec.freestanding_runtime": {
+            "x": -125,
+            "y": 500,
+            "z": 100,
+            "color": "#50E3C2",
+            "cluster": "layer.2_exec"
+        },
+        "sub.layer.3_num.balanced_ternary_limbs": {
+            "x": -375,
+            "y": 400,
+            "z": -100,
+            "color": "#F5A623",
+            "cluster": "layer.3_num"
+        },
+        "sub.layer.3_num.fixed_width_integers": {
+            "x": -125,
+            "y": 400,
+            "z": -100,
+            "color": "#F5A623",
+            "cluster": "layer.3_num"
+        },
+        "sub.layer.3_num.multi_precision_bigint": {
+            "x": 125,
+            "y": 400,
+            "z": -100,
+            "color": "#F5A623",
+            "cluster": "layer.3_num"
+        },
+        "sub.layer.3_num.rational_fractions": {
+            "x": 375,
+            "y": 400,
+            "z": -100,
+            "color": "#F5A623",
+            "cluster": "layer.3_num"
+        },
+        "sub.layer.3_num.ternary_tensors": {
+            "x": -375,
+            "y": 400,
+            "z": 100,
+            "color": "#F5A623",
+            "cluster": "layer.3_num"
+        },
+        "sub.layer.3_num.soft_math": {
+            "x": -125,
+            "y": 400,
+            "z": 100,
+            "color": "#F5A623",
+            "cluster": "layer.3_num"
+        },
+        "sub.layer.4_services.axion_kernel": {
+            "x": -375,
+            "y": 300,
+            "z": -100,
+            "color": "#BD10E0",
+            "cluster": "layer.4_services"
+        },
+        "sub.layer.4_services.canonfs": {
+            "x": -125,
+            "y": 300,
+            "z": -100,
+            "color": "#BD10E0",
+            "cluster": "layer.4_services"
+        },
+        "sub.layer.4_services.codecs": {
+            "x": 125,
+            "y": 300,
+            "z": -100,
+            "color": "#BD10E0",
+            "cluster": "layer.4_services"
+        },
+        "sub.layer.4_services.crypto": {
+            "x": 375,
+            "y": 300,
+            "z": -100,
+            "color": "#BD10E0",
+            "cluster": "layer.4_services"
+        },
+        "sub.layer.5_os.ternaryos_kernel": {
+            "x": -375,
+            "y": 200,
+            "z": -100,
+            "color": "#B8E986",
+            "cluster": "layer.5_os"
+        },
+        "mod.ternaryos.scheduler": {
+            "x": -125,
+            "y": 200,
+            "z": -100,
+            "color": "#B8E986",
+            "cluster": "layer.5_os"
+        },
+        "mod.ternaryos.mmu": {
+            "x": 125,
+            "y": 200,
+            "z": -100,
+            "color": "#B8E986",
+            "cluster": "layer.5_os"
+        },
+        "sub.layer.5_os.daios_proposal": {
+            "x": 375,
+            "y": 200,
+            "z": -100,
+            "color": "#B8E986",
+            "cluster": "layer.5_os"
+        },
+        "sub.layer.6_hw.rtl_feasibility": {
+            "x": -375,
+            "y": 100,
+            "z": -100,
+            "color": "#E02020",
+            "cluster": "layer.6_hw"
+        },
+        "sub.layer.6_hw.simd_primitives": {
+            "x": -125,
+            "y": 100,
+            "z": -100,
+            "color": "#E02020",
+            "cluster": "layer.6_hw"
+        },
+        "sub.layer.6_hw.qemu_drivers": {
+            "x": 125,
+            "y": 100,
+            "z": -100,
+            "color": "#E02020",
+            "cluster": "layer.6_hw"
+        },
+        "sub.layer.7_assurance.hypothesis_register": {
+            "x": -375,
+            "y": 0,
+            "z": -100,
+            "color": "#9013FE",
+            "cluster": "layer.7_assurance"
+        },
+        "sub.layer.7_assurance.scg_continuity": {
+            "x": -125,
+            "y": 0,
+            "z": -100,
+            "color": "#9013FE",
+            "cluster": "layer.7_assurance"
+        },
+        "sub.layer.7_assurance.cpp_test_suite": {
+            "x": 125,
+            "y": 0,
+            "z": -100,
+            "color": "#9013FE",
+            "cluster": "layer.7_assurance"
+        },
+        "sub.layer.7_assurance.ci_governance": {
+            "x": 375,
+            "y": 0,
+            "z": -100,
+            "color": "#9013FE",
+            "cluster": "layer.7_assurance"
         }
-    return layout
+    }
+}
 
 def build_subsystem_summary(nodes, edges):
-    subsystems = [n for n in nodes["nodes"] if n["category"] == "subsystem"]
-    sub_ids = set(s["id"] for s in subsystems)
-
-    summary_edges = []
-    seen = set()
-    for e in edges["edges"]:
-        src = e["source_id"]
-        dst = e["dest_id"]
-        if src in sub_ids and dst in sub_ids and e["relationship_type"] != "containment":
-            pair = (src, dst, e["relationship_type"])
-            if pair not in seen:
-                seen.add(pair)
-                summary_edges.append({
-                    "source": src,
-                    "target": dst,
-                    "relationship_type": e["relationship_type"],
-                    "verification_status": e["verification_status"]
-                })
-
     return {
-        "schema_version": "1.0.0",
-        "baseline_commit": BASELINE_COMMIT,
-        "description": "High-level subsystem summary graph for scalable 3D macro-navigation",
-        "subsystem_count": len(subsystems),
-        "edge_count": len(summary_edges),
-        "subsystems": [
-            {
-                "id": s["id"],
-                "name": s["name"],
-                "layer_id": s["layer_id"],
-                "maturity": s["maturity"]
+    "schema_version": "1.1.0",
+    "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
+    "description": "High-level subsystem summary graph for scalable 3D macro-navigation",
+    "subsystem_count": 26,
+    "edge_count": 15,
+    "subsystems": [
+        {
+            "id": "sub.layer.1_lang.frontend",
+            "name": "T81Lang Compiler Frontend",
+            "layer_id": "layer.1_lang",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "HOSTED",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "UNVERIFIED",
+                "production_status": "PRODUCTION_CORE"
             }
-            for s in subsystems
+        },
+        {
+            "id": "sub.layer.1_lang.cli",
+            "name": "T81 Unified CLI Driver",
+            "layer_id": "layer.1_lang",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "HOSTED",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "UNVERIFIED",
+                "production_status": "PRODUCTION_CORE"
+            }
+        },
+        {
+            "id": "sub.layer.1_lang.toolchain_bridges",
+            "name": "External Compiler Bridges (LLVM / MLIR)",
+            "layer_id": "layer.1_lang",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "HOSTED",
+                "test_coverage": "SMOKE_ONLY",
+                "qualification": "EXPLORATORY",
+                "production_status": "EXPERIMENTAL_FRONTIER"
+            }
+        },
+        {
+            "id": "sub.layer.2_exec.tisc_isa",
+            "name": "TISC Instruction Set Computer",
+            "layer_id": "layer.2_exec",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "HOSTED",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "UNVERIFIED",
+                "production_status": "PRODUCTION_CORE"
+            }
+        },
+        {
+            "id": "sub.layer.2_exec.t81vm",
+            "name": "T81 Deterministic Virtual Machine",
+            "layer_id": "layer.2_exec",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "HOSTED",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "UNVERIFIED",
+                "production_status": "PRODUCTION_CORE"
+            }
+        },
+        {
+            "id": "sub.layer.2_exec.jit_engine",
+            "name": "Trace JIT Compiler & Acceleration Cache",
+            "layer_id": "layer.2_exec",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "HOSTED",
+                "test_coverage": "SMOKE_ONLY",
+                "qualification": "EXPLORATORY",
+                "production_status": "EXPERIMENTAL_FRONTIER"
+            }
+        },
+        {
+            "id": "sub.layer.2_exec.freestanding_runtime",
+            "name": "Bare-Metal AArch64 Freestanding Evaluator",
+            "layer_id": "layer.2_exec",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "FREESTANDING",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "QUALIFIED_WITH_LIMITATIONS",
+                "production_status": "EXPERIMENTAL_FRONTIER"
+            }
+        },
+        {
+            "id": "sub.layer.3_num.balanced_ternary_limbs",
+            "name": "Balanced Ternary Limbs (T81Limb27 / T81Limb54)",
+            "layer_id": "layer.3_num",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "HOSTED",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "QUALIFIED_WITH_LIMITATIONS",
+                "production_status": "PRODUCTION_CORE"
+            }
+        },
+        {
+            "id": "sub.layer.3_num.fixed_width_integers",
+            "name": "Fixed-Width Balanced Ternary Integer (T81Int<N>)",
+            "layer_id": "layer.3_num",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "HOSTED",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "QUALIFIED",
+                "production_status": "PRODUCTION_CORE"
+            }
+        },
+        {
+            "id": "sub.layer.3_num.multi_precision_bigint",
+            "name": "Multi-Precision Balanced Ternary BigInt",
+            "layer_id": "layer.3_num",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "HOSTED",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "QUALIFIED",
+                "production_status": "PRODUCTION_CORE"
+            }
+        },
+        {
+            "id": "sub.layer.3_num.rational_fractions",
+            "name": "Exact Rational Fractions (T81Fraction)",
+            "layer_id": "layer.3_num",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "HOSTED",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "QUALIFIED",
+                "production_status": "PRODUCTION_CORE"
+            }
+        },
+        {
+            "id": "sub.layer.3_num.ternary_tensors",
+            "name": "Ternary Native Tensors & Linear Algebra",
+            "layer_id": "layer.3_num",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "HOSTED",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "UNVERIFIED",
+                "production_status": "PRODUCTION_CORE"
+            }
+        },
+        {
+            "id": "sub.layer.3_num.soft_math",
+            "name": "Deterministic Soft Math Tables",
+            "layer_id": "layer.3_num",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "HOSTED",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "UNVERIFIED",
+                "production_status": "PRODUCTION_CORE"
+            }
+        },
+        {
+            "id": "sub.layer.4_services.axion_kernel",
+            "name": "Axion Governance Kernel",
+            "layer_id": "layer.4_services",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "HOSTED",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "UNVERIFIED",
+                "production_status": "PRODUCTION_CORE"
+            }
+        },
+        {
+            "id": "sub.layer.4_services.canonfs",
+            "name": "CanonFS Content-Addressed Storage Subsystem",
+            "layer_id": "layer.4_services",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "HOSTED",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "UNVERIFIED",
+                "production_status": "PRODUCTION_CORE"
+            }
+        },
+        {
+            "id": "sub.layer.4_services.codecs",
+            "name": "Base-81 & Base-243 Stream Codecs",
+            "layer_id": "layer.4_services",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "HOSTED",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "UNVERIFIED",
+                "production_status": "PRODUCTION_CORE"
+            }
+        },
+        {
+            "id": "sub.layer.4_services.crypto",
+            "name": "Deterministic Hash & Cryptographic Engine",
+            "layer_id": "layer.4_services",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "HOSTED",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "UNVERIFIED",
+                "production_status": "PRODUCTION_CORE"
+            }
+        },
+        {
+            "id": "sub.layer.5_os.ternaryos_kernel",
+            "name": "TernaryOS Research Microkernel & HAL",
+            "layer_id": "layer.5_os",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "FREESTANDING",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "QUALIFIED_WITH_LIMITATIONS",
+                "production_status": "EXPERIMENTAL_FRONTIER"
+            }
+        },
+        {
+            "id": "sub.layer.5_os.daios_proposal",
+            "name": "DAIOS Architecture Contract (RFC-00D2)",
+            "layer_id": "layer.5_os",
+            "maturity": {
+                "source_presence": True,
+                "compilation": False,
+                "execution": "NONE",
+                "test_coverage": "NONE",
+                "qualification": "UNVERIFIED",
+                "production_status": "DESIGN_ONLY"
+            }
+        },
+        {
+            "id": "sub.layer.6_hw.rtl_feasibility",
+            "name": "Ternary RTL Hardware Feasibility Models",
+            "layer_id": "layer.6_hw",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "EMULATED",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "EXPLORATORY",
+                "production_status": "RESEARCH_PROTOTYPE"
+            }
+        },
+        {
+            "id": "sub.layer.6_hw.simd_primitives",
+            "name": "Host SIMD Acceleration Primitives (AVX2)",
+            "layer_id": "layer.6_hw",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "HOSTED",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "UNVERIFIED",
+                "production_status": "PRODUCTION_CORE"
+            }
+        },
+        {
+            "id": "sub.layer.6_hw.qemu_drivers",
+            "name": "QEMU Virt Hardware Emulation Platform",
+            "layer_id": "layer.6_hw",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "FREESTANDING",
+                "test_coverage": "SMOKE_ONLY",
+                "qualification": "QUALIFIED_WITH_LIMITATIONS",
+                "production_status": "EXPERIMENTAL_FRONTIER"
+            }
+        },
+        {
+            "id": "sub.layer.7_assurance.hypothesis_register",
+            "name": "Empirical Research Hypothesis Register (H01\u2013H08)",
+            "layer_id": "layer.7_assurance",
+            "maturity": {
+                "source_presence": True,
+                "compilation": False,
+                "execution": "NONE",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "UNVERIFIED",
+                "production_status": "GOVERNANCE_AND_ASSURANCE"
+            }
+        },
+        {
+            "id": "sub.layer.7_assurance.scg_continuity",
+            "name": "Scientific Continuity Governance Evidence Receipts",
+            "layer_id": "layer.7_assurance",
+            "maturity": {
+                "source_presence": True,
+                "compilation": False,
+                "execution": "HOSTED",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "UNVERIFIED",
+                "production_status": "GOVERNANCE_AND_ASSURANCE"
+            }
+        },
+        {
+            "id": "sub.layer.7_assurance.cpp_test_suite",
+            "name": "Deterministic C++ Regression Test Suite",
+            "layer_id": "layer.7_assurance",
+            "maturity": {
+                "source_presence": True,
+                "compilation": True,
+                "execution": "HOSTED",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "UNVERIFIED",
+                "production_status": "GOVERNANCE_AND_ASSURANCE"
+            }
+        },
+        {
+            "id": "sub.layer.7_assurance.ci_governance",
+            "name": "CI Verification Pipeline & Root Governance",
+            "layer_id": "layer.7_assurance",
+            "maturity": {
+                "source_presence": True,
+                "compilation": False,
+                "execution": "HOSTED",
+                "test_coverage": "DEDICATED_SUITE",
+                "qualification": "UNVERIFIED",
+                "production_status": "GOVERNANCE_AND_ASSURANCE"
+            }
+        }
+    ],
+    "summary_edges": [
+        {
+            "source": "sub.layer.1_lang.cli",
+            "target": "sub.layer.1_lang.frontend",
+            "relationship_type": "function_invocation",
+            "verification_status": "VERIFIED_IMPLEMENTED"
+        },
+        {
+            "source": "sub.layer.1_lang.cli",
+            "target": "sub.layer.2_exec.t81vm",
+            "relationship_type": "function_invocation",
+            "verification_status": "VERIFIED_IMPLEMENTED"
+        },
+        {
+            "source": "sub.layer.3_num.multi_precision_bigint",
+            "target": "sub.layer.3_num.balanced_ternary_limbs",
+            "relationship_type": "compile_time_dependency",
+            "verification_status": "VERIFIED_IMPLEMENTED"
+        },
+        {
+            "source": "sub.layer.3_num.rational_fractions",
+            "target": "sub.layer.3_num.fixed_width_integers",
+            "relationship_type": "compile_time_dependency",
+            "verification_status": "VERIFIED_IMPLEMENTED"
+        },
+        {
+            "source": "sub.layer.4_services.canonfs",
+            "target": "sub.layer.4_services.crypto",
+            "relationship_type": "function_invocation",
+            "verification_status": "VERIFIED_IMPLEMENTED"
+        },
+        {
+            "source": "sub.layer.4_services.canonfs",
+            "target": "sub.layer.4_services.axion_kernel",
+            "relationship_type": "function_invocation",
+            "verification_status": "VERIFIED_IMPLEMENTED"
+        },
+        {
+            "source": "sub.layer.5_os.ternaryos_kernel",
+            "target": "sub.layer.6_hw.qemu_drivers",
+            "relationship_type": "link_dependency",
+            "verification_status": "VERIFIED_IMPLEMENTED"
+        },
+        {
+            "source": "sub.layer.5_os.ternaryos_kernel",
+            "target": "sub.layer.5_os.daios_proposal",
+            "relationship_type": "architectural_design_relationship",
+            "verification_status": "PROPOSED_INTEGRATION"
+        },
+        {
+            "source": "sub.layer.3_num.ternary_tensors",
+            "target": "sub.layer.6_hw.simd_primitives",
+            "relationship_type": "function_invocation",
+            "verification_status": "VERIFIED_IMPLEMENTED"
+        },
+        {
+            "source": "sub.layer.7_assurance.cpp_test_suite",
+            "target": "sub.layer.7_assurance.scg_continuity",
+            "relationship_type": "research_or_evidence_relationship",
+            "verification_status": "VERIFIED_IMPLEMENTED"
+        },
+        {
+            "source": "sub.layer.7_assurance.cpp_test_suite",
+            "target": "sub.layer.3_num.balanced_ternary_limbs",
+            "relationship_type": "test_coverage",
+            "verification_status": "VERIFIED_IMPLEMENTED"
+        },
+        {
+            "source": "sub.layer.7_assurance.cpp_test_suite",
+            "target": "sub.layer.3_num.multi_precision_bigint",
+            "relationship_type": "test_coverage",
+            "verification_status": "VERIFIED_IMPLEMENTED"
+        },
+        {
+            "source": "sub.layer.7_assurance.cpp_test_suite",
+            "target": "sub.layer.3_num.rational_fractions",
+            "relationship_type": "test_coverage",
+            "verification_status": "VERIFIED_IMPLEMENTED"
+        },
+        {
+            "source": "sub.layer.7_assurance.scg_continuity",
+            "target": "sub.layer.7_assurance.hypothesis_register",
+            "relationship_type": "research_or_evidence_relationship",
+            "verification_status": "VERIFIED_IMPLEMENTED"
+        },
+        {
+            "source": "sub.layer.6_hw.rtl_feasibility",
+            "target": "sub.layer.7_assurance.hypothesis_register",
+            "relationship_type": "research_or_evidence_relationship",
+            "verification_status": "VERIFIED_IMPLEMENTED"
+        }
+    ]
+}
+
+def build_coverage_manifest():
+    return {
+    "schema_version": "1.1.0",
+    "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
+    "description": "Coverage manifest identifying which repository components and relationship categories are represented versus not yet mapped.",
+    "repository_directories": {
+        "total_top_level_directories": 35,
+        "mapped_count": 18,
+        "unmapped_count": 17,
+        "mapped": {
+            "codec": "sub.layer.4_services.codecs",
+            "crypto": "sub.layer.4_services.crypto",
+            "docs": "sub.layer.7_assurance.hypothesis_register, sub.layer.7_assurance.scg_continuity",
+            "drivers": "sub.layer.6_hw.qemu_drivers",
+            "experiments": "sub.layer.6_hw.rtl_feasibility",
+            "fs": "sub.layer.4_services.canonfs",
+            "include": "sub.layer.3_num.*, sub.layer.4_services.*, sub.layer.2_exec.*",
+            "inference": "sub.layer.6_hw.simd_primitives",
+            "isa": "sub.layer.2_exec.tisc_isa, sub.layer.3_num.soft_math",
+            "kernel": "sub.layer.4_services.axion_kernel",
+            "lang": "sub.layer.1_lang.frontend, sub.layer.1_lang.toolchain_bridges",
+            "scripts": "sub.layer.7_assurance.ci_governance",
+            "spec": "sub.layer.2_exec.tisc_isa, sub.layer.5_os.daios_proposal",
+            "src": "sub.layer.6_hw.simd_primitives",
+            "ternaryos": "sub.layer.5_os.ternaryos_kernel, mod.ternaryos.scheduler, mod.ternaryos.mmu",
+            "tests": "sub.layer.7_assurance.cpp_test_suite",
+            "tools": "sub.layer.1_lang.cli, mod.cli.weights_tool",
+            "vm": "sub.layer.2_exec.t81vm, mod.vm.interpreter_core, mod.vm.system_registers, sub.layer.2_exec.jit_engine"
+        },
+        "unmapped": {
+            "artifacts": "Directory artifacts/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+            "benchmarks": "Directory benchmarks/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+            "cmake": "Directory cmake/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+            "contracts": "Directory contracts/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+            "customer_tools": "Directory customer_tools/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+            "development_tests": "Directory development_tests/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+            "examples": "Directory examples/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+            "execution_reports": "Directory execution_reports/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+            "experimental": "Directory experimental/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+            "ffi": "Directory ffi/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+            "logs": "Directory logs/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+            "market-demos": "Directory market-demos/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+            "market_analysis": "Directory market_analysis/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+            "review": "Directory review/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+            "skills": "Directory skills/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+            "strategic_docs": "Directory strategic_docs/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+            "third_party": "Directory third_party/ not yet explicitly modeled as standalone nodes in visualization dataset."
+        }
+    },
+    "relationship_categories": {
+        "represented": [
+            "containment",
+            "function_invocation",
+            "instruction_dispatch",
+            "runtime_data_flow",
+            "compile_time_dependency",
+            "link_dependency",
+            "test_coverage",
+            "research_or_evidence_relationship",
+            "architectural_design_relationship"
         ],
-        "summary_edges": summary_edges
+        "not_yet_mapped": [
+            "dynamic_ffi_binding",
+            "rpc_network_dispatch",
+            "memory_mapped_io_peripheral_bus",
+            "hardware_interrupt_routing",
+            "build_artifact_generation"
+        ]
+    },
+    "coverage_metrics": {
+        "total_nodes_defined": 35,
+        "total_edges_defined": 32,
+        "total_interfaces_defined": 6,
+        "total_execution_pathways_defined": 9,
+        "top_level_directory_representation_percentage": 51.43
     }
+}
 
 def main():
     layers = build_layers()
@@ -1792,6 +3150,7 @@ def main():
     evidence = build_evidence()
     layout = build_layout(nodes)
     summary = build_subsystem_summary(nodes, edges)
+    coverage = build_coverage_manifest()
 
     files = [
         ("architecture_layers.json", layers),
@@ -1802,12 +3161,13 @@ def main():
         ("execution_paths.json", paths),
         ("architecture_evidence.json", evidence),
         ("visualization_layout.json", layout),
-        ("subsystem_summary.json", summary)
+        ("subsystem_summary.json", summary),
+        ("coverage_manifest.json", coverage)
     ]
 
     for filename, data in files:
         target = os.path.join(OUTPUT_DIR, filename)
-        with open(target, "w") as f:
+        with open(target, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
             f.write("\n")
         print(f"Generated {target}")

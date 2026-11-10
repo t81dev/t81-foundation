@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
   "total_paths": 9,
   "paths": [
@@ -7,7 +7,7 @@
       "id": "path.01_t81lang_to_artifact",
       "name": "T81Lang Source to Executable Artifact",
       "classification": "VERIFIED_IMPLEMENTED",
-      "tracing_method": "DYNAMICALLY_OBSERVED",
+      "tracing_method": "STATICALLY_TRACED",
       "entry_point": "tools/cli/core/main.cpp:10799 (run_compile)",
       "exit_point": "lang/frontend/ir_generator.cpp:8 (tisc::ir::IntermediateProgram)",
       "steps": [
@@ -16,35 +16,45 @@
           "module": "sub.layer.1_lang.cli",
           "file": "tools/cli/core/main.cpp",
           "line": 10799,
-          "action": "User invokes 't81 compile <source.t81> -o <out.tisc>'"
+          "action": "User invokes 't81 compile <source.t81> -o <out.tisc>'",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         },
         {
           "step_number": 2,
           "module": "mod.frontend.lexer",
           "file": "lang/frontend/lexer.cpp",
           "line": 1,
-          "action": "Lexer converts source text into balanced ternary token stream"
+          "action": "Lexer converts source text into balanced ternary token stream",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         },
         {
           "step_number": 3,
           "module": "mod.frontend.parser",
           "file": "lang/frontend/parser.cpp",
           "line": 1,
-          "action": "Parser performs recursive descent, producing Abstract Syntax Tree"
+          "action": "Parser performs recursive descent, producing Abstract Syntax Tree",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         },
         {
           "step_number": 4,
           "module": "mod.frontend.semantic_analyzer",
           "file": "lang/frontend/semantic_analyzer.cpp",
           "line": 1,
-          "action": "Semantic analyzer validates symbol scopes and loop bounds"
+          "action": "Semantic analyzer validates symbol scopes and loop bounds",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         },
         {
           "step_number": 5,
           "module": "mod.frontend.ir_generator",
           "file": "lang/frontend/ir_generator.cpp",
           "line": 8,
-          "action": "IRGenerator linearizes AST into TISC IntermediateProgram binary"
+          "action": "IRGenerator linearizes AST into TISC IntermediateProgram binary",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         }
       ],
       "unresolved_transitions": "None"
@@ -53,7 +63,7 @@
       "id": "path.02_tisc_decode_and_exec",
       "name": "TISC Instruction Decoding and VM Execution",
       "classification": "VERIFIED_IMPLEMENTED",
-      "tracing_method": "DYNAMICALLY_OBSERVED",
+      "tracing_method": "STATICALLY_TRACED",
       "entry_point": "vm/vm.cpp:435 (IVirtualMachine::step)",
       "exit_point": "vm/runtime_state_helpers.cpp:80 (sync_system_registers)",
       "steps": [
@@ -62,37 +72,53 @@
           "module": "mod.vm.interpreter_core",
           "file": "vm/vm.cpp",
           "line": 435,
-          "action": "VM step() initiates instruction fetch for current context PC"
+          "action": "VM step() initiates instruction fetch for current context PC",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "FUNCTION_DEFINITION"
         },
         {
           "step_number": 2,
           "module": "sub.layer.4_services.axion_kernel",
           "file": "vm/vm.cpp",
           "line": 509,
-          "action": "eval_axion_call checks Axion policy engine before instruction execution"
+          "action": "eval_axion_call checks Axion policy engine before instruction execution",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         },
         {
           "step_number": 3,
           "module": "mod.vm.interpreter_core",
           "file": "vm/vm.cpp",
           "line": 1612,
-          "action": "Opcode switch dispatches specific operation (e.g. Add, Mul, MatMul)"
+          "action": "Opcode switch dispatches specific operation (e.g. Add, Mul, MatMul)",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "DISPATCH_SITE"
         },
         {
           "step_number": 4,
           "module": "mod.vm.system_registers",
           "file": "vm/runtime_state_helpers.cpp",
           "line": 80,
-          "action": "sync_system_registers updates tick R75, entropy R77, and liveness R80"
+          "action": "sync_system_registers updates tick R75, entropy R77, and liveness R80",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         }
       ],
-      "unresolved_transitions": "None"
+      "unresolved_transitions": "None",
+      "runtime_trace_evidence": {
+        "trace_identity": "tests/fixtures/canonical_traces/01_bigint_add.trace",
+        "sha256": "a00b67b1d76124d4a247a54a737d369dfc3e8326ca5f0d5a99fc0adbd93efbf0",
+        "producing_command": "t81 vm run <file.tisc> --trace -o <trace.txt>",
+        "producing_test": "scripts/ci/trace_repro_gate.py",
+        "pinned_baseline": "4f96cb24358bfd260e67387b2c4db2797b01236f",
+        "observation_scope": "Golden trace explicitly proves emitted VM PC/opcode sequence (LoadImm, Call, Pop, Add, Ret, Halt). Internal C++ function execution at vm.cpp:435 (step()) and opcode switch dispatch at vm.cpp:1612 are statically supported without direct binary instrumentation evidence."
+      }
     },
     {
       "id": "path.03_balanced_ternary_arithmetic",
       "name": "Balanced Ternary Limb Multiplication",
       "classification": "VERIFIED_IMPLEMENTED",
-      "tracing_method": "DYNAMICALLY_OBSERVED",
+      "tracing_method": "STATICALLY_TRACED",
       "entry_point": "include/t81/types/T81Limb.hpp:173 (T81Limb27::operator*)",
       "exit_point": "include/t81/types/T81Limb.hpp:624 (mul_booth_karatsuba)",
       "steps": [
@@ -101,21 +127,27 @@
           "module": "sub.layer.3_num.balanced_ternary_limbs",
           "file": "include/t81/types/T81Limb.hpp",
           "line": 173,
-          "action": "Caller invokes operator* on two 27-trit balanced limbs"
+          "action": "Caller invokes operator* on two 27-trit balanced limbs",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         },
         {
           "step_number": 2,
           "module": "sub.layer.3_num.balanced_ternary_limbs",
           "file": "include/t81/types/T81Limb.hpp",
           "line": 624,
-          "action": "Decodes trits and accumulates partial products into 54-trit buffer"
+          "action": "Decodes trits and accumulates partial products into 54-trit buffer",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         },
         {
           "step_number": 3,
           "module": "sub.layer.3_num.balanced_ternary_limbs",
           "file": "include/t81/types/T81Limb.hpp",
           "line": 635,
-          "action": "Performs exact balanced ternary carry normalization modulo 3^54"
+          "action": "Performs exact balanced ternary carry normalization modulo 3^54",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         }
       ],
       "unresolved_transitions": "None"
@@ -124,7 +156,7 @@
       "id": "path.04_multi_precision_computation",
       "name": "Multi-Precision BigInt Addition & Invariant Check",
       "classification": "VERIFIED_IMPLEMENTED",
-      "tracing_method": "DYNAMICALLY_OBSERVED",
+      "tracing_method": "STATICALLY_TRACED",
       "entry_point": "include/t81/types/T81BigInt.hpp:1005 (operator+)",
       "exit_point": "include/t81/types/T81BigInt.hpp:1020 (verify_invariants)",
       "steps": [
@@ -133,21 +165,27 @@
           "module": "sub.layer.3_num.multi_precision_bigint",
           "file": "include/t81/types/T81BigInt.hpp",
           "line": 1005,
-          "action": "Caller adds two arbitrary-width T81BigInt operands"
+          "action": "Caller adds two arbitrary-width T81BigInt operands",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         },
         {
           "step_number": 2,
           "module": "sub.layer.3_num.multi_precision_bigint",
           "file": "include/t81/types/T81BigInt.hpp",
           "line": 1012,
-          "action": "Evaluates single-limb sum or multi-limb carry chain"
+          "action": "Evaluates single-limb sum or multi-limb carry chain",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         },
         {
           "step_number": 3,
           "module": "sub.layer.3_num.multi_precision_bigint",
           "file": "include/t81/types/T81BigInt.hpp",
           "line": 1018,
-          "action": "Sets negative_ flag and ensures stored limb magnitude is non-negative"
+          "action": "Sets negative_ flag and ensures stored limb magnitude is non-negative",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         }
       ],
       "unresolved_transitions": "None"
@@ -156,7 +194,7 @@
       "id": "path.05_model_import_export",
       "name": "Safetensors Weight Import, Quantization, and Export",
       "classification": "VERIFIED_IMPLEMENTED",
-      "tracing_method": "DYNAMICALLY_OBSERVED",
+      "tracing_method": "STATICALLY_TRACED",
       "entry_point": "tools/cli/core/main.cpp:3884 (run_weights_import)",
       "exit_point": "tools/cli/core/main.cpp:4355 (run_weights_export)",
       "steps": [
@@ -165,28 +203,36 @@
           "module": "mod.cli.weights_tool",
           "file": "tools/cli/core/main.cpp",
           "line": 3884,
-          "action": "User runs 't81 weights import model.safetensors -o model.t81w'"
+          "action": "User runs 't81 weights import model.safetensors -o model.t81w'",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         },
         {
           "step_number": 2,
           "module": "sub.layer.3_num.ternary_tensors",
           "file": "tools/cli/core/main.cpp",
           "line": 3995,
-          "action": "Parses safetensors headers and quantizes float tensors into ternary"
+          "action": "Parses safetensors headers and quantizes float tensors into ternary",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         },
         {
           "step_number": 3,
           "module": "mod.cli.weights_tool",
           "file": "tools/cli/core/main.cpp",
           "line": 4355,
-          "action": "User runs 't81 weights export model.t81w --to-safetensors out.safetensors'"
+          "action": "User runs 't81 weights export model.t81w --to-safetensors out.safetensors'",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         },
         {
           "step_number": 4,
           "module": "sub.layer.4_services.canonfs",
           "file": "tools/cli/core/main.cpp",
           "line": 4400,
-          "action": "Unpacks native trits into I8 safetensors tensor buffers"
+          "action": "Unpacks native trits into I8 safetensors tensor buffers",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         }
       ],
       "unresolved_transitions": "None"
@@ -195,7 +241,7 @@
       "id": "path.06_axion_policy_evaluation",
       "name": "Axion Syscall Policy & Ethics Gate Check",
       "classification": "VERIFIED_IMPLEMENTED",
-      "tracing_method": "DYNAMICALLY_OBSERVED",
+      "tracing_method": "STATICALLY_TRACED",
       "entry_point": "kernel/axion/policy_engine.cpp:217 (PolicyEngine::evaluate)",
       "exit_point": "kernel/axion/policy_engine.cpp:242 (Verdict)",
       "steps": [
@@ -204,28 +250,36 @@
           "module": "sub.layer.4_services.axion_kernel",
           "file": "kernel/axion/policy_engine.cpp",
           "line": 217,
-          "action": "Receives SyscallContext from VM or subsystem invocation"
+          "action": "Receives SyscallContext from VM or subsystem invocation",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         },
         {
           "step_number": 2,
           "module": "sub.layer.4_services.axion_kernel",
           "file": "kernel/axion/policy_engine.cpp",
           "line": 227,
-          "action": "Evaluates immutable Theta-1..Theta-9 ethics principles"
+          "action": "Evaluates immutable Theta-1..Theta-9 ethics principles",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         },
         {
           "step_number": 3,
           "module": "sub.layer.4_services.axion_kernel",
           "file": "kernel/axion/policy_engine.cpp",
           "line": 238,
-          "action": "Executes user policy bytecode and checks tensor hash allowlists"
+          "action": "Executes user policy bytecode and checks tensor hash allowlists",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         },
         {
           "step_number": 4,
           "module": "sub.layer.4_services.axion_kernel",
           "file": "kernel/axion/policy_engine.cpp",
           "line": 242,
-          "action": "Returns Allow/Deny Verdict to gate VM or storage execution"
+          "action": "Returns Allow/Deny Verdict to gate VM or storage execution",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         }
       ],
       "unresolved_transitions": "None"
@@ -234,7 +288,7 @@
       "id": "path.07_canonfs_storage_operation",
       "name": "CanonFS Content-Addressed Object Storage",
       "classification": "VERIFIED_IMPLEMENTED",
-      "tracing_method": "DYNAMICALLY_OBSERVED",
+      "tracing_method": "STATICALLY_TRACED",
       "entry_point": "fs/persistent_driver.cpp:193 (write_object)",
       "exit_point": "include/t81/canonfs/storage_key.hpp:1 (storage_key_v1)",
       "steps": [
@@ -243,21 +297,27 @@
           "module": "sub.layer.4_services.canonfs",
           "file": "fs/persistent_driver.cpp",
           "line": 193,
-          "action": "Caller requests write_object with payload bytes"
+          "action": "Caller requests write_object with payload bytes",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         },
         {
           "step_number": 2,
           "module": "sub.layer.4_services.crypto",
           "file": "fs/persistent_driver.cpp",
           "line": 194,
-          "action": "Hashes payload using SHA-256 to compute immutable content hash"
+          "action": "Hashes payload using SHA-256 to compute immutable content hash",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         },
         {
           "step_number": 3,
           "module": "sub.layer.4_services.canonfs",
           "file": "fs/persistent_driver.cpp",
           "line": 200,
-          "action": "Writes object payload to objects/h1-<64-hex>.blk on disk"
+          "action": "Writes object payload to objects/h1-<64-hex>.blk on disk",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         }
       ],
       "unresolved_transitions": "None"
@@ -266,37 +326,45 @@
       "id": "path.08_freestanding_execution",
       "name": "Bare-Metal Freestanding Boot & Timer Interrupt Loop",
       "classification": "VERIFIED_IMPLEMENTED",
-      "tracing_method": "DYNAMICALLY_OBSERVED",
-      "entry_point": "ternaryos/hal/qemu_slice6_bare_kernel.c:1",
-      "exit_point": "ternaryos/hal/qemu_slice6_bare_kernel.c:16 (WFI loop)",
+      "tracing_method": "STATICALLY_TRACED",
+      "entry_point": "ternaryos/hal/qemu_slice6_bare_kernel.c:101 (qemu_bare_kernel_entry)",
+      "exit_point": "ternaryos/hal/qemu_slice6_cpp_bridge.cpp:1823 (wfi)",
       "steps": [
         {
           "step_number": 1,
           "module": "sub.layer.2_exec.freestanding_runtime",
           "file": "ternaryos/hal/qemu_slice6_bare_kernel.c",
-          "line": 9,
-          "action": "Writes '[axion] bare-metal EL1 kernel entry' to PL011 UART MMIO"
+          "line": 103,
+          "action": "bare_pl011_puts confirms EL1 PL011 MMIO access post-ExitBootServices",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         },
         {
           "step_number": 2,
-          "module": "sub.layer.6_hw.qemu_drivers",
+          "module": "sub.layer.5_os.ternaryos_kernel",
           "file": "ternaryos/hal/qemu_slice6_bare_kernel.c",
-          "line": 11,
-          "action": "Configures GICv3 CPU interface (ICC_SRE_EL1 + ICC_PMR_EL1)"
+          "line": 108,
+          "action": "Hands off execution to freestanding C++ bridge entry point",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         },
         {
           "step_number": 3,
-          "module": "sub.layer.6_hw.qemu_drivers",
-          "file": "ternaryos/hal/qemu_slice6_bare_kernel.c",
-          "line": 13,
-          "action": "Arms ARM generic timer physical countdown at CNTP_TVAL_EL0"
+          "module": "mod.ternaryos.scheduler",
+          "file": "ternaryos/hal/qemu_slice6_cpp_bridge.cpp",
+          "line": 600,
+          "action": "bridge_timer_irq_tick handles GICv3 PPI30 timer ticks to drive scheduler",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "FUNCTION_DEFINITION"
         },
         {
           "step_number": 4,
-          "module": "sub.layer.2_exec.freestanding_runtime",
-          "file": "ternaryos/hal/qemu_slice6_bare_kernel.c",
-          "line": 16,
-          "action": "Enters infinite WFI loop waking on periodic timer interrupts"
+          "module": "sub.layer.5_os.ternaryos_kernel",
+          "file": "ternaryos/hal/qemu_slice6_cpp_bridge.cpp",
+          "line": 1823,
+          "action": "Executes inline WFI instruction awaiting hardware timer or serial interrupt",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         }
       ],
       "unresolved_transitions": "None"
@@ -314,21 +382,27 @@
           "module": "sub.layer.6_hw.rtl_feasibility",
           "file": "experiments/ternary_hardware_feasibility/tb_dot_product.v",
           "line": 1,
-          "action": "Testbench feeds INT8 activations and ternary sign/mask bitplanes"
+          "action": "Testbench feeds INT8 activations and ternary sign/mask bitplanes",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "DECLARATION"
         },
         {
           "step_number": 2,
           "module": "sub.layer.6_hw.rtl_feasibility",
           "file": "experiments/ternary_hardware_feasibility/design_c_ht1_ternary.v",
           "line": 34,
-          "action": "Sign extends activations and applies bit-parallel XOR mask"
+          "action": "Sign extends activations and applies bit-parallel XOR mask",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         },
         {
           "step_number": 3,
           "module": "sub.layer.6_hw.rtl_feasibility",
           "file": "experiments/ternary_hardware_feasibility/design_c_ht1_ternary.v",
           "line": 55,
-          "action": "Accumulates products via binary adder reduction tree"
+          "action": "Accumulates products via binary adder reduction tree",
+          "observation_status": "STATICALLY_SUPPORTED",
+          "reference_type": "CALL_SITE"
         }
       ],
       "unresolved_transitions": "Hardware models are evaluated in Verilog simulation; physical ASIC fabrication unverified."
