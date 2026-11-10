@@ -67,10 +67,10 @@
     ]
   },
   "coverage_metrics": {
-    "source_code_coverage_percentage": 51.43,
     "total_nodes_defined": 35,
     "total_edges_defined": 32,
     "total_interfaces_defined": 6,
-    "total_execution_pathways_defined": 9
+    "total_execution_pathways_defined": 9,
+    "top_level_directory_representation_percentage": 51.43
   }
 }

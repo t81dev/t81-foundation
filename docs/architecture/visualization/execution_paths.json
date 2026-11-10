@@ -111,7 +111,7 @@
         "producing_command": "t81 vm run <file.tisc> --trace -o <trace.txt>",
         "producing_test": "scripts/ci/trace_repro_gate.py",
         "pinned_baseline": "4f96cb24358bfd260e67387b2c4db2797b01236f",
-        "observation_scope": "Instruction stepping execution and opcode dispatch demonstrated; system registers and axion checks statically supported."
+        "observation_scope": "Golden trace explicitly demonstrates instruction stepping (PC) and opcode sequence (LoadImm, Call, Pop, Add, Ret, Halt). Internal C++ IVirtualMachine::step() dispatch, Axion hook invocation, and system register synchronization remain statically supported."
       }
     },
     {
@@ -327,42 +327,42 @@
       "name": "Bare-Metal Freestanding Boot & Timer Interrupt Loop",
       "classification": "VERIFIED_IMPLEMENTED",
       "tracing_method": "STATICALLY_TRACED",
-      "entry_point": "ternaryos/hal/qemu_slice6_bare_kernel.c:1",
-      "exit_point": "ternaryos/hal/qemu_slice6_bare_kernel.c:16 (WFI loop)",
+      "entry_point": "ternaryos/hal/qemu_slice6_bare_kernel.c:101 (qemu_bare_kernel_entry)",
+      "exit_point": "ternaryos/hal/qemu_slice6_cpp_bridge.cpp:1823 (wfi)",
       "steps": [
         {
           "step_number": 1,
           "module": "sub.layer.2_exec.freestanding_runtime",
           "file": "ternaryos/hal/qemu_slice6_bare_kernel.c",
-          "line": 9,
-          "action": "Writes '[axion] bare-metal EL1 kernel entry' to PL011 UART MMIO",
+          "line": 103,
+          "action": "bare_pl011_puts confirms EL1 PL011 MMIO access post-ExitBootServices",
           "observation_status": "STATICALLY_SUPPORTED",
-          "reference_type": "FUNCTION_DEFINITION"
+          "reference_type": "CALL_SITE"
         },
         {
           "step_number": 2,
-          "module": "sub.layer.6_hw.qemu_drivers",
+          "module": "sub.layer.5_os.ternaryos_kernel",
           "file": "ternaryos/hal/qemu_slice6_bare_kernel.c",
-          "line": 11,
-          "action": "Configures GICv3 CPU interface (ICC_SRE_EL1 + ICC_PMR_EL1)",
+          "line": 108,
+          "action": "Hands off execution to freestanding C++ bridge entry point",
           "observation_status": "STATICALLY_SUPPORTED",
           "reference_type": "CALL_SITE"
         },
         {
           "step_number": 3,
-          "module": "sub.layer.6_hw.qemu_drivers",
-          "file": "ternaryos/hal/qemu_slice6_bare_kernel.c",
-          "line": 13,
-          "action": "Arms ARM generic timer physical countdown at CNTP_TVAL_EL0",
+          "module": "mod.ternaryos.scheduler",
+          "file": "ternaryos/hal/qemu_slice6_cpp_bridge.cpp",
+          "line": 600,
+          "action": "bridge_timer_irq_tick handles GICv3 PPI30 timer ticks to drive scheduler",
           "observation_status": "STATICALLY_SUPPORTED",
-          "reference_type": "CALL_SITE"
+          "reference_type": "FUNCTION_DEFINITION"
         },
         {
           "step_number": 4,
-          "module": "sub.layer.2_exec.freestanding_runtime",
-          "file": "ternaryos/hal/qemu_slice6_bare_kernel.c",
-          "line": 16,
-          "action": "Enters infinite WFI loop waking on periodic timer interrupts",
+          "module": "sub.layer.5_os.ternaryos_kernel",
+          "file": "ternaryos/hal/qemu_slice6_cpp_bridge.cpp",
+          "line": 1823,
+          "action": "Executes inline WFI instruction awaiting hardware timer or serial interrupt",
           "observation_status": "STATICALLY_SUPPORTED",
           "reference_type": "CALL_SITE"
         }

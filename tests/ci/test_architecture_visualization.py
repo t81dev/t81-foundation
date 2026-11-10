@@ -108,3 +108,38 @@ def test_negative_semantic_incompatibility(temp_dataset):
         json.dump(data, f)
     with pytest.raises(ValueError, match="Semantic incompatibility"):
         run_validation_in_dir(temp_dataset)
+
+def test_negative_pathway_dynamic_bypass_reproduction(temp_dataset):
+    """Negative test (reproducing Codex finding): pathway marked DYNAMICALLY_OBSERVED without runtime trace evidence fails."""
+    paths_path = os.path.join(temp_dataset, "execution_paths.json")
+    with open(paths_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    # Set pathway to DYNAMICALLY_OBSERVED but provide no runtime_trace_evidence
+    data["paths"][0]["tracing_method"] = "DYNAMICALLY_OBSERVED"
+    data["paths"][0].pop("runtime_trace_evidence", None)
+    with open(paths_path, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+    with pytest.raises(ValueError, match="claims dynamic trace observation.*lacks runtime_trace_evidence"):
+        run_validation_in_dir(temp_dataset)
+
+def test_negative_execution_path_comment_anchor(temp_dataset):
+    """Negative test: execution path step referencing a COMMENT is rejected."""
+    paths_path = os.path.join(temp_dataset, "execution_paths.json")
+    with open(paths_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    data["paths"][0]["steps"][0]["reference_type"] = "COMMENT"
+    with open(paths_path, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+    with pytest.raises(ValueError, match="COMMENT reference cannot serve as execution step anchor"):
+        run_validation_in_dir(temp_dataset)
+
+def test_negative_missing_trace_provenance_field(temp_dataset):
+    """Negative test: runtime_trace_evidence missing required provenance field is rejected."""
+    paths_path = os.path.join(temp_dataset, "execution_paths.json")
+    with open(paths_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    data["paths"][1]["runtime_trace_evidence"].pop("observation_scope", None)
+    with open(paths_path, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+    with pytest.raises(ValueError, match="missing required field: observation_scope"):
+        run_validation_in_dir(temp_dataset)

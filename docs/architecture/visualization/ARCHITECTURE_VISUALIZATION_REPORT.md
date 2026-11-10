@@ -34,8 +34,14 @@ A repository-wide audit revealed 500 executable declarations and 54 library decl
 - **CTest Invocations:** 170 `add_test()` declarations mapping test targets to CI check gates.
 
 
+
+### 2.5 Scoped Qualification Boundaries
+In strict accordance with T81 research receipts:
+- **SCG-07 Phase 6:** Formally qualifies balanced ternary arithmetic primitives under limitations (`T81Limb27/54`, `T81Int`, `T81BigInt`, `T81Fraction`). Unrelated subsystems (compiler frontend, CLI driver, VM interpreter, Axion governance kernel, CanonFS storage, tensors, SIMD routines) lack continuity qualification receipts and are strictly classified as `UNVERIFIED` for formal qualification.
+- **CPA-004 Evaluator:** Qualifies the bounded freestanding execution profile under limitations (351-byte program, 17 opcodes on AArch64 QEMU).
+
 ### 2.4 Coverage Manifest & Evidence Hardening (T81-ARCH-VIZ-002)
-- **Top-Level Coverage:** 18 of 35 repository top-level directories are mapped to architectural components. Unmapped directories (e.g. experimental benchmarks, customer tools, logs) are explicitly tracked in `coverage_manifest.json`.
+- **Top-Level Directory Representation:** 18 of 35 repository top-level directories (51.43%) are mapped to architectural components in `coverage_manifest.json`. Unmapped directories (e.g. experimental benchmarks, customer tools, logs) are explicitly cataloged.
 - **Relationship Derivation:** Every edge is categorized as either `STATICALLY_EXTRACTED` (source code includes, symbol references, CMake links) or `MANUALLY_CURATED` (subsystem containment, RFC intent, continuity evidence).
 - **Maturity Audit:** Governance artifacts and continuity documents are classified under `GOVERNANCE_AND_ASSURANCE` rather than `PRODUCTION_CORE`.
 
@@ -95,7 +101,7 @@ The repository is reconstructed into 7 logical architectural layers:
 | `path.05` | Safetensors Weight Import/Export | `STATICALLY_TRACED` | Static Source Trace | `main.cpp:3884` | `main.cpp:4400` |
 | `path.06` | Axion Policy & Ethics Gate Check | `STATICALLY_TRACED` | Static Source Trace | `policy_engine.cpp:217` | `policy_engine.cpp:242` |
 | `path.07` | CanonFS Object Storage | `STATICALLY_TRACED` | Static Source Trace | `persistent_driver.cpp:193`| `persistent_driver.cpp:200` |
-| `path.08` | Freestanding AArch64 Boot | `STATICALLY_TRACED` | Static Source Trace | `qemu_slice6_bare_kernel.c:9`| `qemu_slice6_bare_kernel.c:16` |
+| `path.08` | Freestanding AArch64 Boot | `STATICALLY_TRACED` | Static Source Trace | `qemu_slice6_bare_kernel.c:101`| `qemu_slice6_cpp_bridge.cpp:1823` |
 | `path.09` | Hardware RTL Simulation | `STATICALLY_TRACED` | Static Source Trace | `tb_dot_product.v:1` | `design_c_ht1_ternary.v:55` |
 
 *Note on Tracing Provenance:* In accordance with T81-ARCH-VIZ-002, pathways default to `STATICALLY_TRACED` unless end-to-end dynamic observation is established. For `path.02`, step-level instruction stepping and opcode switch execution are demonstrated by the golden runtime trace `tests/fixtures/canonical_traces/01_bigint_add.trace` (SHA-256 `a00b67b1d76124d4a247a54a737d369dfc3e8326ca5f0d5a99fc0adbd93efbf0`), while peripheral steps remain statically supported.

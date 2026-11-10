@@ -2,7 +2,8 @@
 """
 validate_architecture_visualization.py
 Deterministic validation script ensuring referential integrity, source existence,
-line bounds, semantic compatibility, and schema correctness for docs/architecture/visualization/ datasets.
+line bounds, semantic compatibility, trace provenance, and schema correctness
+for docs/architecture/visualization/ datasets.
 """
 
 import json
@@ -54,9 +55,16 @@ VALID_TEST_COVERAGE = {"DEDICATED_SUITE", "SMOKE_ONLY", "NONE"}
 VALID_QUALIFICATION = {"QUALIFIED", "QUALIFIED_WITH_LIMITATIONS", "EXPLORATORY", "UNVERIFIED"}
 VALID_PRODUCTION_STATUS = {"PRODUCTION_CORE", "EXPERIMENTAL_FRONTIER", "RESEARCH_PROTOTYPE", "DESIGN_ONLY", "GOVERNANCE_AND_ASSURANCE"}
 
-# Semantic compatibility check between reference_type and relationship_type
-# (e.g. COMMENT, DECLARATION, or DESCRIPTIVE_FILE cannot substantiate runtime function_invocation or runtime_data_flow)
 RUNTIME_RELATIONSHIPS = {"function_invocation", "runtime_data_flow"}
+
+REQUIRED_TRACE_PROVENANCE_FIELDS = [
+    "trace_identity",
+    "sha256",
+    "producing_command",
+    "producing_test",
+    "pinned_baseline",
+    "observation_scope"
+]
 
 def load_json(name, base_dir=DATA_DIR):
     path = os.path.join(base_dir, name)
@@ -127,7 +135,8 @@ def validate(data_dir=DATA_DIR):
         if not ev_mat:
             raise ValueError(f"Node {nid} missing maturity_evidence dictionary")
         if mat.get("qualification") in ["QUALIFIED", "QUALIFIED_WITH_LIMITATIONS"]:
-            if not ev_mat.get("qualification_evidence"):
+            qual_ev = ev_mat.get("qualification_evidence", "").strip()
+            if not qual_ev:
                 raise ValueError(f"Node {nid} claims qualification without qualification_evidence citation")
 
         # Validate that cited source files exist and have bounds
@@ -185,37 +194,50 @@ def validate(data_dir=DATA_DIR):
 
     print(f" [PASS] Validated {len(ifaces_data.get('interfaces', []))} interfaces.")
 
-    # 5. Validate Execution Paths
+    # 5. Validate Execution Paths (Strict Dynamic Trace Enforcement)
     for p in paths_data.get("paths", []):
         tmethod = p.get("tracing_method")
         if tmethod not in ["STATICALLY_TRACED", "DYNAMICALLY_OBSERVED"]:
             raise ValueError(f"Execution path {p['id']} has invalid tracing_method: {tmethod}")
 
-        # If pathway or step claims DYNAMICALLY_OBSERVED, require valid trace evidence
-        if tmethod == "DYNAMICALLY_OBSERVED":
+        has_dynamic_step = any(s.get("observation_status") == "DYNAMICALLY_OBSERVED" for s in p.get("steps", []))
+
+        # Enforce trace validation whenever either the pathway OR any step claims DYNAMICALLY_OBSERVED
+        if tmethod == "DYNAMICALLY_OBSERVED" or has_dynamic_step:
             rtev = p.get("runtime_trace_evidence")
             if not rtev:
-                raise ValueError(f"Path {p['id']} claims DYNAMICALLY_OBSERVED without runtime_trace_evidence")
+                raise ValueError(
+                    f"Path {p['id']} claims dynamic trace observation (pathway={tmethod}, has_dynamic_step={has_dynamic_step}) "
+                    "but lacks runtime_trace_evidence provenance block"
+                )
+            for req_field in REQUIRED_TRACE_PROVENANCE_FIELDS:
+                if req_field not in rtev or not str(rtev[req_field]).strip():
+                    raise ValueError(f"Path {p['id']} runtime_trace_evidence missing required field: {req_field}")
+
+            trace_file = rtev["trace_identity"]
+            if not os.path.exists(trace_file):
+                raise FileNotFoundError(f"Path {p['id']} trace file not found: {trace_file}")
+
+            expected_sha = rtev.get("sha256")
+            actual_sha = hashlib.sha256(open(trace_file, "rb").read()).hexdigest()
+            if expected_sha != actual_sha:
+                raise ValueError(f"Path {p['id']} trace SHA-256 mismatch: expected {expected_sha}, got {actual_sha}")
 
         for s in p.get("steps", []):
             if s["module"] not in node_ids:
                 raise ValueError(f"Execution path step references unknown node: {s['module']}")
             check_file_and_line(s["file"], s.get("line"), f"Path {p['id']} Step {s.get('step_number')}")
 
-            # Step observation status
+            # Do not allow COMMENT to serve as an executable path step anchor
+            s_reftype = s.get("reference_type")
+            if s_reftype == "COMMENT":
+                raise ValueError(
+                    f"Path {p['id']} Step {s.get('step_number')}: COMMENT reference cannot serve as execution step anchor"
+                )
+
             obs = s.get("observation_status")
             if obs not in ["STATICALLY_SUPPORTED", "DYNAMICALLY_OBSERVED", "NOT_ESTABLISHED"]:
                 raise ValueError(f"Path {p['id']} Step {s.get('step_number')} invalid observation_status: {obs}")
-            if obs == "DYNAMICALLY_OBSERVED":
-                rtev = p.get("runtime_trace_evidence")
-                if not rtev or not os.path.exists(rtev.get("trace_identity", "")):
-                    raise ValueError(f"Path {p['id']} step claims DYNAMICALLY_OBSERVED without verified trace evidence")
-                # Verify trace hash
-                trace_file = rtev["trace_identity"]
-                expected_sha = rtev.get("sha256")
-                actual_sha = hashlib.sha256(open(trace_file, "rb").read()).hexdigest()
-                if expected_sha != actual_sha:
-                    raise ValueError(f"Path {p['id']} trace SHA-256 mismatch: expected {expected_sha}, got {actual_sha}")
 
     print(f" [PASS] Validated {len(paths_data.get('paths', []))} execution pathways and trace provenance.")
 
@@ -232,8 +254,13 @@ def validate(data_dir=DATA_DIR):
     mapped = rep_dirs.get("mapped", {})
     unmapped = rep_dirs.get("unmapped", {})
     assert len(mapped) + len(unmapped) == rep_dirs.get("total_top_level_directories"), "Directory census mismatch in coverage manifest"
-    print(f" [PASS] Validated coverage manifest ({len(mapped)} mapped, {len(unmapped)} unmapped directories).")
+    cov_metrics = manifest_data.get("coverage_metrics", {})
+    if "source_code_coverage_percentage" in cov_metrics:
+        raise ValueError("Coverage manifest uses incorrect key 'source_code_coverage_percentage'; must be 'top_level_directory_representation_percentage'")
+    if "top_level_directory_representation_percentage" not in cov_metrics:
+        raise ValueError("Coverage manifest missing 'top_level_directory_representation_percentage'")
 
+    print(f" [PASS] Validated coverage manifest ({len(mapped)} mapped, {len(unmapped)} unmapped directories).")
     print("== All Visualization Data Invariants Verified Successfully! ==")
 
 if __name__ == "__main__":

@@ -14,7 +14,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -27,7 +27,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -53,7 +53,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -66,7 +66,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -157,7 +157,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -170,7 +170,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -183,7 +183,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -196,7 +196,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -209,7 +209,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -222,7 +222,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -274,7 +274,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       }
     },
@@ -300,7 +300,7 @@
         "compilation": false,
         "execution": "NONE",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "GOVERNANCE_AND_ASSURANCE"
       }
     },
@@ -313,7 +313,7 @@
         "compilation": false,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "GOVERNANCE_AND_ASSURANCE"
       }
     },
@@ -326,8 +326,8 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
-        "production_status": "PRODUCTION_CORE"
+        "qualification": "UNVERIFIED",
+        "production_status": "GOVERNANCE_AND_ASSURANCE"
       }
     },
     {
@@ -339,7 +339,7 @@
         "compilation": false,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "GOVERNANCE_AND_ASSURANCE"
       }
     }

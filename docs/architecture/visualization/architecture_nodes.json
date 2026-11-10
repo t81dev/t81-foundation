@@ -14,7 +14,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -35,7 +35,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Unverified for formal qualification; implements T81Lang Compiler Frontend with automated test coverage but no continuity qualification receipt.",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -50,7 +50,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -66,7 +66,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Unverified for formal qualification; implements T81Lang Lexer with automated test coverage but no continuity qualification receipt.",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -81,7 +81,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -97,7 +97,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Unverified for formal qualification; implements T81Lang Parser with automated test coverage but no continuity qualification receipt.",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -112,7 +112,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -127,7 +127,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Unverified for formal qualification; implements T81Lang Semantic Analyzer with automated test coverage but no continuity qualification receipt.",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -142,7 +142,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -157,7 +157,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Unverified for formal qualification; implements T81Lang IR Generator with automated test coverage but no continuity qualification receipt.",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -172,7 +172,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -189,7 +189,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Unverified for formal qualification; implements T81 Unified CLI Driver with automated test coverage but no continuity qualification receipt.",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -204,7 +204,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -222,7 +222,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Unverified for formal qualification; implements Weights & Model Interchange CLI with automated test coverage but no continuity qualification receipt.",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -254,7 +254,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage SMOKE_ONLY",
-        "qualification_evidence": "Exploratory / unverified",
+        "qualification_evidence": "Exploratory bridge/JIT prototype without formal qualification receipt.",
         "production_evidence": "Audited production_status: EXPERIMENTAL_FRONTIER"
       }
     },
@@ -269,7 +269,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -290,7 +290,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Unverified for formal qualification; implements TISC Instruction Set Computer with automated test coverage but no continuity qualification receipt.",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -305,7 +305,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -326,7 +326,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Unverified for formal qualification; implements T81 Deterministic Virtual Machine with automated test coverage but no continuity qualification receipt.",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -341,7 +341,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -357,7 +357,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Unverified for formal qualification; implements T81VM Interpreter Dispatch Loop with automated test coverage but no continuity qualification receipt.",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -372,7 +372,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -389,7 +389,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Unverified for formal qualification; implements T81VM System Registers & Entropy Tracking with automated test coverage but no continuity qualification receipt.",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -421,7 +421,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage SMOKE_ONLY",
-        "qualification_evidence": "Exploratory / unverified",
+        "qualification_evidence": "Exploratory bridge/JIT prototype without formal qualification receipt.",
         "production_evidence": "Audited production_status: EXPERIMENTAL_FRONTIER"
       }
     },
@@ -453,7 +453,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in FREESTANDING execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 qualification under limitations",
+        "qualification_evidence": "CPA-004 bounded cross-profile campaign (351-byte program, 17 opcodes on AArch64 QEMU).",
         "production_evidence": "Audited production_status: EXPERIMENTAL_FRONTIER"
       }
     },
@@ -489,7 +489,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 qualification under limitations",
+        "qualification_evidence": "SCG-07 Phase 6 (Document ID: T81-SCG-07-PHASE6-QUALIFICATION-001-R1) qualifies F1/F2/F3 under limitations.",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -522,7 +522,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "SCG-07 Phase 6 qualifies T81Int operator* convolution and carry normalization (F4).",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -556,7 +556,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "SCG-07 Phase 6 qualifies T81BigInt signed subtraction invariant repair (F5).",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -589,7 +589,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "SCG-07 Phase 6 qualifies T81Fraction overflow unwinding and to_double() bounds (F6/F7).",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -604,7 +604,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -623,7 +623,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Unverified for formal qualification; implements Ternary Native Tensors & Linear Algebra with automated test coverage but no continuity qualification receipt.",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -638,7 +638,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -655,7 +655,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Unverified for formal qualification; implements Deterministic Soft Math Tables with automated test coverage but no continuity qualification receipt.",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -670,7 +670,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -691,7 +691,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Unverified for formal qualification; implements Axion Governance Kernel with automated test coverage but no continuity qualification receipt.",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -706,7 +706,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -728,7 +728,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Unverified for formal qualification; implements CanonFS Content-Addressed Storage Subsystem with automated test coverage but no continuity qualification receipt.",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -743,7 +743,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -761,7 +761,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Unverified for formal qualification; implements Base-81 & Base-243 Stream Codecs with automated test coverage but no continuity qualification receipt.",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -776,7 +776,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -793,7 +793,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Unverified for formal qualification; implements Deterministic Hash & Cryptographic Engine with automated test coverage but no continuity qualification receipt.",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -826,7 +826,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in FREESTANDING execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 qualification under limitations",
+        "qualification_evidence": "CPA-004 bounded freestanding evaluation post-ExitBootServices under QEMU.",
         "production_evidence": "Audited production_status: EXPERIMENTAL_FRONTIER"
       }
     },
@@ -858,7 +858,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in FREESTANDING execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 qualification under limitations",
+        "qualification_evidence": "CPA-004 bare-metal timer interrupt cooperative schedule tick under QEMU.",
         "production_evidence": "Audited production_status: EXPERIMENTAL_FRONTIER"
       }
     },
@@ -890,7 +890,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in FREESTANDING execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 qualification under limitations",
+        "qualification_evidence": "CPA-004 TTBR0 page-table translation and physical memory map under QEMU.",
         "production_evidence": "Audited production_status: EXPERIMENTAL_FRONTIER"
       }
     },
@@ -917,7 +917,7 @@
         "compilation_evidence": "Not compiled (documentation / design specification)",
         "execution_evidence": "Specification / charter only, no runtime execution",
         "test_evidence": "No dedicated automated test suite",
-        "qualification_evidence": "Exploratory / unverified",
+        "qualification_evidence": "Unverified architectural proposal (RFC-00D2).",
         "production_evidence": "Audited production_status: DESIGN_ONLY"
       }
     },
@@ -951,7 +951,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in EMULATED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "Exploratory / unverified",
+        "qualification_evidence": "Exploratory Verilog simulation without physical hardware qualification.",
         "production_evidence": "Audited production_status: RESEARCH_PROTOTYPE"
       }
     },
@@ -966,7 +966,7 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "PRODUCTION_CORE"
       },
       "source_paths": [
@@ -981,7 +981,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Unverified for formal qualification; implements Host SIMD Acceleration Primitives (AVX2) with automated test coverage but no continuity qualification receipt.",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -1015,7 +1015,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in FREESTANDING execution profile",
         "test_evidence": "Verified under test_coverage SMOKE_ONLY",
-        "qualification_evidence": "SCG-07 Phase 6 qualification under limitations",
+        "qualification_evidence": "CPA-004 PL011 UART and GICv3 interrupt controller drivers under QEMU.",
         "production_evidence": "Audited production_status: EXPERIMENTAL_FRONTIER"
       }
     },
@@ -1030,7 +1030,7 @@
         "compilation": false,
         "execution": "NONE",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "GOVERNANCE_AND_ASSURANCE"
       },
       "source_paths": [
@@ -1051,7 +1051,7 @@
         "compilation_evidence": "Not compiled (documentation / design specification)",
         "execution_evidence": "Specification / charter only, no runtime execution",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Governance / research assurance artifact; not a qualified software subsystem.",
         "production_evidence": "Audited production_status: GOVERNANCE_AND_ASSURANCE"
       }
     },
@@ -1066,7 +1066,7 @@
         "compilation": false,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "GOVERNANCE_AND_ASSURANCE"
       },
       "source_paths": [
@@ -1095,7 +1095,7 @@
         "compilation_evidence": "Not compiled (documentation / design specification)",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Governance / research assurance artifact; not a qualified software subsystem.",
         "production_evidence": "Audited production_status: GOVERNANCE_AND_ASSURANCE"
       }
     },
@@ -1110,8 +1110,8 @@
         "compilation": true,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
-        "production_status": "PRODUCTION_CORE"
+        "qualification": "UNVERIFIED",
+        "production_status": "GOVERNANCE_AND_ASSURANCE"
       },
       "source_paths": [
         "tests/cpp/test_scg07_phase6_qualification.cpp",
@@ -1132,7 +1132,7 @@
         "compilation_evidence": "CMake target / build system verification",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Test harness infrastructure (419 test files); acts as verifier, not qualified subject.",
         "production_evidence": "Audited production_status: PRODUCTION_CORE"
       }
     },
@@ -1147,7 +1147,7 @@
         "compilation": false,
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
-        "qualification": "QUALIFIED",
+        "qualification": "UNVERIFIED",
         "production_status": "GOVERNANCE_AND_ASSURANCE"
       },
       "source_paths": [
@@ -1166,7 +1166,7 @@
         "compilation_evidence": "Not compiled (documentation / design specification)",
         "execution_evidence": "Demonstrated in HOSTED execution profile",
         "test_evidence": "Verified under test_coverage DEDICATED_SUITE",
-        "qualification_evidence": "SCG-07 Phase 6 / test harness qualified",
+        "qualification_evidence": "Governance / research assurance artifact; not a qualified software subsystem.",
         "production_evidence": "Audited production_status: GOVERNANCE_AND_ASSURANCE"
       }
     }
