@@ -1,0 +1,161 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SCG-08 Carry Propagation and Arithmetic Work Evidence Schema",
+  "$id": "t81.scg08.carry-experiment.v1",
+  "type": "object",
+  "required": [
+    "schema_id",
+    "experiment_id",
+    "specification_version",
+    "status",
+    "timestamp_utc",
+    "git_context",
+    "trial_budget",
+    "tier1_markov",
+    "tier2_work",
+    "oracle_verification"
+  ],
+  "properties": {
+    "schema_id": {
+      "type": "string",
+      "enum": ["t81.scg08.carry-experiment.v1"]
+    },
+    "experiment_id": {
+      "type": "string",
+      "enum": ["EXP-SCG08-01"]
+    },
+    "specification_version": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "READY_FOR_INDEPENDENT_GATE1_IMPLEMENTATION_REVIEW",
+        "CORRECTIONS_REQUIRED",
+        "BLOCKED"
+      ]
+    },
+    "timestamp_utc": {
+      "type": "string"
+    },
+    "git_context": {
+      "type": "object",
+      "required": ["baseline_sha", "head_sha"],
+      "properties": {
+        "baseline_sha": {"type": "string"},
+        "head_sha": {"type": "string"}
+      }
+    },
+    "trial_budget": {
+      "type": "object",
+      "required": [
+        "max_cumulative_trials_ceiling",
+        "actual_cumulative_trials_executed",
+        "budget_enforced_fail_closed"
+      ],
+      "properties": {
+        "max_cumulative_trials_ceiling": {"type": "integer"},
+        "actual_cumulative_trials_executed": {"type": "integer"},
+        "budget_enforced_fail_closed": {"type": "boolean"}
+      }
+    },
+    "tier1_markov": {
+      "type": "object",
+      "required": ["ternary", "binary"],
+      "properties": {
+        "ternary": {
+          "type": "object",
+          "required": [
+            "total_digits",
+            "f_gen_given_0",
+            "f_trans",
+            "f_occ",
+            "f_cont_given_act",
+            "mean_run_length"
+          ],
+          "properties": {
+            "total_digits": {"type": "integer"},
+            "f_gen_given_0": {"type": "number"},
+            "f_trans": {"type": "number"},
+            "f_occ": {"type": "number"},
+            "f_cont_given_act": {"type": "number"},
+            "mean_run_length": {"type": "number"}
+          }
+        },
+        "binary": {
+          "type": "object",
+          "required": [
+            "total_digits",
+            "f_gen_given_0",
+            "f_trans",
+            "f_occ",
+            "f_cont_given_act",
+            "mean_run_length"
+          ],
+          "properties": {
+            "total_digits": {"type": "integer"},
+            "f_gen_given_0": {"type": "number"},
+            "f_trans": {"type": "number"},
+            "f_occ": {"type": "number"},
+            "f_cont_given_act": {"type": "number"},
+            "mean_run_length": {"type": "number"}
+          }
+        }
+      }
+    },
+    "tier2_work": {
+      "type": "object",
+      "required": ["evaluated_bands"],
+      "properties": {
+        "evaluated_bands": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "bit_width",
+              "operand_trits",
+              "add_trits_min",
+              "mul_trits_min",
+              "ternary_limbs_op",
+              "ternary_limbs_add",
+              "ternary_limbs_mul",
+              "w_ops_add_ternary",
+              "w_ops_mul_ternary",
+              "w_ops_add_binary",
+              "w_ops_mul_binary"
+            ],
+            "properties": {
+              "bit_width": {"type": "integer"},
+              "operand_trits": {"type": "integer"},
+              "add_trits_min": {"type": "integer"},
+              "mul_trits_min": {"type": "integer"},
+              "ternary_limbs_op": {"type": "integer"},
+              "ternary_limbs_add": {"type": "integer"},
+              "ternary_limbs_mul": {"type": "integer"},
+              "w_ops_add_ternary": {"type": "integer"},
+              "w_ops_mul_ternary": {"type": "integer"},
+              "w_ops_add_binary": {"type": "integer"},
+              "w_ops_mul_binary": {"type": "integer"}
+            }
+          }
+        }
+      }
+    },
+    "oracle_verification": {
+      "type": "object",
+      "required": [
+        "oracle_type",
+        "dimensions_verified",
+        "all_dimensions_passed"
+      ],
+      "properties": {
+        "oracle_type": {"type": "string"},
+        "dimensions_verified": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "all_dimensions_passed": {"type": "boolean"}
+      }
+    }
+  }
+}

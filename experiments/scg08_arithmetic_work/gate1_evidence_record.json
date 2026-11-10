@@ -1,0 +1,114 @@
+{
+  "schema_id": "t81.scg08.carry-experiment.v1",
+  "experiment_id": "EXP-SCG08-01",
+  "specification_version": "T81-SCG-08-PHASE1-PROP-001-R3-ADDENDUM-06",
+  "status": "READY_FOR_INDEPENDENT_GATE1_IMPLEMENTATION_REVIEW",
+  "timestamp_utc": "2026-11-10T21:45:00Z",
+  "git_context": {
+    "baseline_sha": "cd490f5b5c0496350682542b56424dd77bea6963",
+    "head_sha": "1edded878a12f81fbd45049f19ff816675c50464"
+  },
+  "trial_budget": {
+    "max_cumulative_trials_ceiling": 1000,
+    "actual_cumulative_trials_executed": 30,
+    "budget_enforced_fail_closed": true
+  },
+  "tier1_markov": {
+    "ternary": {
+      "total_digits": 100,
+      "f_gen_given_0": 0.243243,
+      "f_trans": 0.180000,
+      "f_occ": 0.290000,
+      "f_cont_given_act": 0.423077,
+      "mean_run_length": 1.611111
+    },
+    "binary": {
+      "total_digits": 100,
+      "f_gen_given_0": 0.272727,
+      "f_trans": 0.150000,
+      "f_occ": 0.470000,
+      "f_cont_given_act": 0.711111,
+      "mean_run_length": 3.133333
+    }
+  },
+  "tier2_work": {
+    "evaluated_bands": [
+      {
+        "bit_width": 64,
+        "operand_trits": 41,
+        "add_trits_min": 42,
+        "mul_trits_min": 81,
+        "ternary_limbs_op": 2,
+        "ternary_limbs_add": 2,
+        "ternary_limbs_mul": 3,
+        "w_ops_add_ternary": 80,
+        "w_ops_mul_ternary": 5826,
+        "w_ops_add_binary": 4,
+        "w_ops_mul_binary": 9
+      },
+      {
+        "bit_width": 128,
+        "operand_trits": 81,
+        "add_trits_min": 82,
+        "mul_trits_min": 161,
+        "ternary_limbs_op": 3,
+        "ternary_limbs_add": 4,
+        "ternary_limbs_mul": 6,
+        "w_ops_add_ternary": 161,
+        "w_ops_mul_ternary": 17218,
+        "w_ops_add_binary": 6,
+        "w_ops_mul_binary": 31
+      },
+      {
+        "bit_width": 256,
+        "operand_trits": 162,
+        "add_trits_min": 163,
+        "mul_trits_min": 323,
+        "ternary_limbs_op": 6,
+        "ternary_limbs_add": 7,
+        "ternary_limbs_mul": 12,
+        "w_ops_add_ternary": 359,
+        "w_ops_mul_ternary": 79750,
+        "w_ops_add_binary": 10,
+        "w_ops_mul_binary": 111
+      },
+      {
+        "bit_width": 512,
+        "operand_trits": 324,
+        "add_trits_min": 324,
+        "mul_trits_min": 646,
+        "ternary_limbs_op": 12,
+        "ternary_limbs_add": 12,
+        "ternary_limbs_mul": 24,
+        "w_ops_add_ternary": 714,
+        "w_ops_mul_ternary": 296182,
+        "w_ops_add_binary": 18,
+        "w_ops_mul_binary": 415
+      },
+      {
+        "bit_width": 1024,
+        "operand_trits": 647,
+        "add_trits_min": 647,
+        "mul_trits_min": 1292,
+        "ternary_limbs_op": 24,
+        "ternary_limbs_add": 24,
+        "ternary_limbs_mul": 48,
+        "w_ops_add_ternary": 1350,
+        "w_ops_mul_ternary": 1208742,
+        "w_ops_add_binary": 34,
+        "w_ops_mul_binary": 1599
+      }
+    ]
+  },
+  "oracle_verification": {
+    "oracle_type": "ExactBigIntOracle (Arbitrary-precision base-10^9 decoupled integer oracle)",
+    "dimensions_verified": [
+      "Exact numerical equality between computed limbs and oracle arithmetic",
+      "Two-sided signed overflow classification in [-2^(B-1), 2^(B-1)-1]",
+      "Canonical balanced-ternary digit normalization (trits in {-1, 0, +1})",
+      "Correct sign handling and non-negative limb storage invariants",
+      "Absence of truncation in multi-precision addition and multiplication accumulators"
+    ],
+    "all_dimensions_passed": true
+  }
+}
