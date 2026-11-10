@@ -500,6 +500,7 @@ jobs:
             /benchmarks/**
             /spec/**
             /third_party/**
+            /development_tests/**
             /README.md
             /LICENSE
           sparse-checkout-cone-mode: false
@@ -535,6 +536,31 @@ jobs:
             choco install llvm
           fi
         shell: bash
+
+      # Homebrew's GoogleTest uses AppleClang/libc++; the GCC lane uses libstdc++.
+      - name: Checkout GoogleTest for macOS GCC
+        if: runner.os == 'macOS' && matrix.compiler == 'gcc'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          repository: google/googletest
+          ref: 52eb8108c5bdec04579160ae17225d66034bd723 # v1.17.0
+          path: .ci-deps/googletest
+          persist-credentials: false
+
+      - name: Build GoogleTest with the selected GCC toolchain
+        if: runner.os == 'macOS' && matrix.compiler == 'gcc'
+        shell: bash
+        run: |
+          set -eo pipefail
+          cmake -S .ci-deps/googletest -B .ci-deps/googletest-build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+            -DCMAKE_INSTALL_PREFIX="$PWD/.ci-deps/googletest-install" \
+            -DCMAKE_INSTALL_LIBDIR=lib \
+            -DBUILD_GMOCK=ON
+          cmake --build .ci-deps/googletest-build --parallel
+          cmake --install .ci-deps/googletest-build
 
       - name: Configure ccache
         run: |
@@ -574,7 +600,12 @@ jobs:
         shell: bash
         run: |
           set -eo pipefail
+          dependency_args=()
+          if [ "${{ runner.os }}" = "macOS" ] && [ "${{ matrix.compiler }}" = "gcc" ]; then
+            dependency_args+=("-DGTest_DIR=$PWD/.ci-deps/googletest-install/lib/cmake/GTest")
+          fi
           cmake -S . -B build -G Ninja \
+            "${dependency_args[@]}" \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
             -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
@@ -1441,7 +1472,8 @@ jobs:
       matrix:
         config:
           - name: "avx2-asan"
-            cmake_args: "-DCMAKE_BUILD_TYPE=Debug -DT81_BUILD_BENCHMARKS=ON -DT81_BUILD_TESTS=ON -DT81_ENABLE_ASAN=ON -DT81_ENABLE_UBSAN=ON -DCMAKE_CXX_FLAGS=\"-mavx2 -mfma\""
+            # Keep dependency warnings visible without treating them as T81 failures.
+            cmake_args: "-DCMAKE_BUILD_TYPE=Debug -DT81_BUILD_BENCHMARKS=ON -DBENCHMARK_ENABLE_WERROR=OFF -DT81_BUILD_TESTS=ON -DT81_ENABLE_ASAN=ON -DT81_ENABLE_UBSAN=ON -DCMAKE_CXX_FLAGS=\"-mavx2 -mfma\""
             build_targets: "t81_tritwise_backend_equivalence_test benchmark_runner"
             run_cmd: "./build/t81_tritwise_backend_equivalence_test"
             smoke_cmd: "./build/benchmarks/benchmark_runner --benchmark_filter=\"BM_MaskApply_Library/256\" --benchmark_min_time=0.01"
