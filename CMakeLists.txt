@@ -1726,6 +1726,16 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tests/python/test_cli_execution_policy.py
       --t81-bin $<TARGET_FILE:t81>)
   set_tests_properties(t81_cli_execution_policy_test PROPERTIES TIMEOUT 90)
+  if(UNIX)
+    find_program(T81_SKILL_TEST_BASH NAMES bash)
+    if(NOT T81_SKILL_TEST_BASH)
+      message(FATAL_ERROR "Bash is required for the skill policy boundary test")
+    endif()
+    add_test(NAME t81_skill_policy_boundary_test
+      COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tests/python/test_skill_policy_boundary.py
+        --bash ${T81_SKILL_TEST_BASH} --t81-bin $<TARGET_FILE:t81>)
+    set_tests_properties(t81_skill_policy_boundary_test PROPERTIES TIMEOUT 90)
+  endif()
   add_test(NAME t81_cli_repro_hash_test COMMAND $<TARGET_FILE:cli_repro_hash_test> $<TARGET_FILE:t81>)
   add_test(NAME canonfs_cli_portable_storage_test
     COMMAND ${Python3_EXECUTABLE}
