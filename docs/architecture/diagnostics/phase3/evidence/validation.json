@@ -1,0 +1,45 @@
+[
+  {
+    "argv": [
+      "python3",
+      "docs/architecture/diagnostics/phase3/check_evidence.py"
+    ],
+    "exit": 0,
+    "stdout": "109 evidence consistency checks passed; NOT a five-check native acceptance pass\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "python3",
+      "-O",
+      "docs/architecture/diagnostics/phase3/check_evidence.py"
+    ],
+    "exit": 0,
+    "stdout": "109 evidence consistency checks passed; NOT a five-check native acceptance pass\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "python3",
+      "-m",
+      "py_compile",
+      "docs/architecture/diagnostics/phase3/observe.py",
+      "docs/architecture/diagnostics/phase3/inspect_media.py",
+      "docs/architecture/diagnostics/phase3/substitute_efi.py",
+      "docs/architecture/diagnostics/phase3/check_evidence.py"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]
