@@ -105,11 +105,6 @@ static std::vector<uint16_t> make_fp16_weights(int n) {
   return h;
 }
 
-// T729DynamicTensor wrapper.
-static t81::T729DynamicTensor make_tensor(std::vector<int> shape, std::vector<float> data) {
-  return t81::T729DynamicTensor(std::move(shape), std::move(data));
-}
-
 }  // namespace
 
 // ============================================================================
