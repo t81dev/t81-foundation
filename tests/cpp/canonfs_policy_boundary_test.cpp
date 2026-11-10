@@ -1,9 +1,12 @@
+#include <array>
 #include <chrono>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <map>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 #include "dev/block_device.hpp"
 #include "t81/axion/policy_engine.hpp"
@@ -35,23 +38,148 @@ struct Cleanup {
     fs::remove_all(root, ec);
   }
 };
-// Instrument the actual block driver's device-write boundary, including its
-// noexcept callback path. No write should reach the device on evaluation error.
+// Retain real device bytes so tests observe effects on a populated store, not
+// just return codes. Counters also expose rejected flushes and index rebuilds.
 class CountedDevice final : public t81::ternaryos::dev::IBlockDevice {
 public:
+  std::array<t81::ternaryos::dev::BlockData, 16> blocks{};
+  mutable std::size_t reads{0};
   std::size_t writes{0};
+  std::size_t flushes{0};
   t81::ternaryos::dev::BlockDeviceInfo info() const noexcept override { return {}; }
-  uint64_t block_count() const noexcept override { return 16; }
-  bool read_block(uint64_t, t81::ternaryos::dev::BlockData& out) const override {
-    out.fill(0);
+  uint64_t block_count() const noexcept override { return blocks.size(); }
+  bool read_block(uint64_t lba, t81::ternaryos::dev::BlockData& out) const override {
+    ++reads;
+    if (lba >= blocks.size()) return false;
+    out = blocks[lba];
     return true;
   }
-  bool write_block(uint64_t, const t81::ternaryos::dev::BlockData&) override {
+  bool write_block(uint64_t lba, const t81::ternaryos::dev::BlockData& data) override {
     ++writes;
+    if (lba >= blocks.size()) return false;
+    blocks[lba] = data;
     return true;
   }
-  bool flush() override { return true; }
+  bool flush() override {
+    ++flushes;
+    return true;
+  }
 };
+
+enum class HookMode { Deny, Throw, MissingPolicy, InvalidPolicy, Allow, Bootstrap };
+
+void block_metadata_case(OpKind operation, HookMode mode) {
+  auto device = std::make_unique<CountedDevice>();
+  auto* counter = device.get();
+  auto driver = make_block_backed_driver(std::move(device), false);
+  const std::string payload = "seeded block policy boundary";
+  const auto bytes = std::as_bytes(std::span(payload.data(), payload.size()));
+  const auto seed = driver->write_object(ObjectType::RawBlock, bytes);
+  T81_TEST_CHECK(seed);
+  CapabilityGrant grant{};
+  grant.target = *seed;
+  grant.perms = CANON_PERM_READ;
+  T81_TEST_CHECK(driver->publish_capability(grant));
+
+  // The published grant follows the seeded payload at LBA 2. Derive its ref
+  // from the stored block without duplicating the driver's serialization.
+  CanonBlock capability_block{};
+  capability_block.trytes = counter->blocks[2];
+  const CanonRef capability_ref{capability_block.hash()};
+  const auto capability_bytes = driver->read_object_bytes(capability_ref);
+  T81_TEST_CHECK(capability_bytes && capability_bytes->size() == 106);
+  grant.perms = CANON_PERM_READ | CANON_PERM_WRITE;  // Publish must not deduplicate.
+  const CanonRef target = operation == OpKind::Revoke ? capability_ref : *seed;
+
+  const auto before_blocks = counter->blocks;
+  const auto before_reads = counter->reads;
+  const auto before_writes = counter->writes;
+  const auto before_flushes = counter->flushes;
+  std::size_t calls = 0;
+  auto production_hook = make_axion_policy_hook(mode == HookMode::MissingPolicy   ? ""
+                                                : mode == HookMode::InvalidPolicy ? "invalid-policy"
+                                                                                  : allow);
+  driver->set_axion_hook([&](OpKind kind, const CanonRef& ref) -> AxionVerdict {
+    ++calls;
+    T81_TEST_CHECK(kind == operation);
+    T81_TEST_CHECK(ref.hash == target.hash);
+    // Authorization precedes even index reads/flushes, not just payload writes.
+    T81_TEST_CHECK(counter->blocks == before_blocks);
+    T81_TEST_CHECK(counter->reads == before_reads);
+    T81_TEST_CHECK(counter->writes == before_writes);
+    T81_TEST_CHECK(counter->flushes == before_flushes);
+    if (mode == HookMode::Throw) throw std::runtime_error("metadata hook failed");
+    if (mode == HookMode::Deny) return AxionVerdict{false, "explicit deny"};
+    return production_hook(kind, ref);
+  });
+  if (mode == HookMode::Bootstrap) driver->set_axion_hook({});
+
+  const auto result = [&]() -> Result<void> {
+    switch (operation) {
+      case OpKind::Publish:
+        return driver->publish_capability(grant);
+      case OpKind::Revoke:
+        return driver->revoke_capability(capability_ref);
+      case OpKind::Repair:
+        return driver->parity_repair_subtree(*seed);
+      default:
+        throw std::runtime_error("unexpected metadata operation");
+    }
+  }();
+  T81_TEST_CHECK(calls == (mode == HookMode::Bootstrap ? 0u : 1u));
+  const bool permitted = mode == HookMode::Allow || mode == HookMode::Bootstrap;
+  if (!permitted) {
+    T81_TEST_CHECK(!result && result.error() == Error::CapabilityError);
+    T81_TEST_CHECK(counter->blocks == before_blocks);
+    T81_TEST_CHECK(counter->reads == before_reads);
+    T81_TEST_CHECK(counter->writes == before_writes);
+    T81_TEST_CHECK(counter->flushes == before_flushes);
+  } else {
+    T81_TEST_CHECK(result);
+    T81_TEST_CHECK(counter->reads > before_reads);
+    if (operation == OpKind::Repair) {
+      T81_TEST_CHECK(counter->blocks == before_blocks);
+      T81_TEST_CHECK(counter->writes == before_writes);
+      T81_TEST_CHECK(counter->flushes == before_flushes);
+    } else {
+      T81_TEST_CHECK(counter->blocks != before_blocks);
+      T81_TEST_CHECK(counter->writes > before_writes);
+      T81_TEST_CHECK(counter->flushes == before_flushes + 1);
+    }
+  }
+
+  driver->set_axion_hook({});
+  const auto reads_before_verify = counter->reads;
+  const auto surviving_seed = driver->read_object_bytes(*seed);
+  T81_TEST_CHECK(surviving_seed);
+  T81_TEST_CHECK(*surviving_seed == std::vector<std::byte>(bytes.begin(), bytes.end()));
+  T81_TEST_CHECK(counter->reads == reads_before_verify + 1);
+  const auto surviving_capability = driver->read_object_bytes(capability_ref);
+  if (permitted && operation == OpKind::Revoke) {
+    T81_TEST_CHECK(!surviving_capability && surviving_capability.error() == Error::NotFound);
+    T81_TEST_CHECK(counter->reads == reads_before_verify + 1);  // Removed from index.
+  } else {
+    T81_TEST_CHECK(surviving_capability && *surviving_capability == *capability_bytes);
+    T81_TEST_CHECK(counter->reads == reads_before_verify + 2);
+  }
+  if (permitted && operation == OpKind::Publish) {
+    CanonBlock published{};
+    published.trytes = counter->blocks[3];
+    const auto stored_grant = driver->read_object_bytes(CanonRef{published.hash()});
+    T81_TEST_CHECK(stored_grant && stored_grant->size() == 106);
+    T81_TEST_CHECK(*stored_grant != *capability_bytes);
+  }
+}
+
+void block_metadata_policy_matrix() {
+  for (const auto operation : {OpKind::Publish, OpKind::Revoke, OpKind::Repair}) {
+    for (const auto mode : {HookMode::Deny, HookMode::Throw, HookMode::MissingPolicy,
+                            HookMode::InvalidPolicy, HookMode::Allow, HookMode::Bootstrap}) {
+      block_metadata_case(operation, mode);
+    }
+  }
+  std::cout << "block metadata policy matrix: 12 negative cases and 6 positive controls passed\n";
+}
 }  // namespace
 
 int main() {
@@ -191,5 +319,6 @@ int main() {
   auto block_result = block->write_object(ObjectType::RawBlock, bytes);
   T81_TEST_CHECK(!block_result && block_result.error() == Error::CapabilityError);
   T81_TEST_CHECK(counter->writes == 0);
+  block_metadata_policy_matrix();
   return 0;
 }
