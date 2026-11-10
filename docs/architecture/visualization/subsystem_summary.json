@@ -1,0 +1,439 @@
+{
+  "schema_version": "1.0.0",
+  "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
+  "description": "High-level subsystem summary graph for scalable 3D macro-navigation",
+  "subsystem_count": 26,
+  "edge_count": 15,
+  "subsystems": [
+    {
+      "id": "sub.layer.1_lang.frontend",
+      "name": "T81Lang Compiler Frontend",
+      "layer_id": "layer.1_lang",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "HOSTED",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "QUALIFIED",
+        "production_status": "PRODUCTION_CORE"
+      }
+    },
+    {
+      "id": "sub.layer.1_lang.cli",
+      "name": "T81 Unified CLI Driver",
+      "layer_id": "layer.1_lang",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "HOSTED",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "QUALIFIED",
+        "production_status": "PRODUCTION_CORE"
+      }
+    },
+    {
+      "id": "sub.layer.1_lang.toolchain_bridges",
+      "name": "External Compiler Bridges (LLVM / MLIR)",
+      "layer_id": "layer.1_lang",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "HOSTED",
+        "test_coverage": "SMOKE_ONLY",
+        "qualification": "EXPLORATORY",
+        "production_status": "EXPERIMENTAL_FRONTIER"
+      }
+    },
+    {
+      "id": "sub.layer.2_exec.tisc_isa",
+      "name": "TISC Instruction Set Computer",
+      "layer_id": "layer.2_exec",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "HOSTED",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "QUALIFIED",
+        "production_status": "PRODUCTION_CORE"
+      }
+    },
+    {
+      "id": "sub.layer.2_exec.t81vm",
+      "name": "T81 Deterministic Virtual Machine",
+      "layer_id": "layer.2_exec",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "HOSTED",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "QUALIFIED",
+        "production_status": "PRODUCTION_CORE"
+      }
+    },
+    {
+      "id": "sub.layer.2_exec.jit_engine",
+      "name": "Trace JIT Compiler & Acceleration Cache",
+      "layer_id": "layer.2_exec",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "HOSTED",
+        "test_coverage": "SMOKE_ONLY",
+        "qualification": "EXPLORATORY",
+        "production_status": "EXPERIMENTAL_FRONTIER"
+      }
+    },
+    {
+      "id": "sub.layer.2_exec.freestanding_runtime",
+      "name": "Bare-Metal AArch64 Freestanding Evaluator",
+      "layer_id": "layer.2_exec",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "FREESTANDING",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "QUALIFIED_WITH_LIMITATIONS",
+        "production_status": "EXPERIMENTAL_FRONTIER"
+      }
+    },
+    {
+      "id": "sub.layer.3_num.balanced_ternary_limbs",
+      "name": "Balanced Ternary Limbs (T81Limb27 / T81Limb54)",
+      "layer_id": "layer.3_num",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "HOSTED",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "QUALIFIED_WITH_LIMITATIONS",
+        "production_status": "PRODUCTION_CORE"
+      }
+    },
+    {
+      "id": "sub.layer.3_num.fixed_width_integers",
+      "name": "Fixed-Width Balanced Ternary Integer (T81Int<N>)",
+      "layer_id": "layer.3_num",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "HOSTED",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "QUALIFIED",
+        "production_status": "PRODUCTION_CORE"
+      }
+    },
+    {
+      "id": "sub.layer.3_num.multi_precision_bigint",
+      "name": "Multi-Precision Balanced Ternary BigInt",
+      "layer_id": "layer.3_num",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "HOSTED",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "QUALIFIED",
+        "production_status": "PRODUCTION_CORE"
+      }
+    },
+    {
+      "id": "sub.layer.3_num.rational_fractions",
+      "name": "Exact Rational Fractions (T81Fraction)",
+      "layer_id": "layer.3_num",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "HOSTED",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "QUALIFIED",
+        "production_status": "PRODUCTION_CORE"
+      }
+    },
+    {
+      "id": "sub.layer.3_num.ternary_tensors",
+      "name": "Ternary Native Tensors & Linear Algebra",
+      "layer_id": "layer.3_num",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "HOSTED",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "QUALIFIED",
+        "production_status": "PRODUCTION_CORE"
+      }
+    },
+    {
+      "id": "sub.layer.3_num.soft_math",
+      "name": "Deterministic Soft Math Tables",
+      "layer_id": "layer.3_num",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "HOSTED",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "QUALIFIED",
+        "production_status": "PRODUCTION_CORE"
+      }
+    },
+    {
+      "id": "sub.layer.4_services.axion_kernel",
+      "name": "Axion Governance Kernel",
+      "layer_id": "layer.4_services",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "HOSTED",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "QUALIFIED",
+        "production_status": "PRODUCTION_CORE"
+      }
+    },
+    {
+      "id": "sub.layer.4_services.canonfs",
+      "name": "CanonFS Content-Addressed Storage Subsystem",
+      "layer_id": "layer.4_services",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "HOSTED",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "QUALIFIED",
+        "production_status": "PRODUCTION_CORE"
+      }
+    },
+    {
+      "id": "sub.layer.4_services.codecs",
+      "name": "Base-81 & Base-243 Stream Codecs",
+      "layer_id": "layer.4_services",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "HOSTED",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "QUALIFIED",
+        "production_status": "PRODUCTION_CORE"
+      }
+    },
+    {
+      "id": "sub.layer.4_services.crypto",
+      "name": "Deterministic Hash & Cryptographic Engine",
+      "layer_id": "layer.4_services",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "HOSTED",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "QUALIFIED",
+        "production_status": "PRODUCTION_CORE"
+      }
+    },
+    {
+      "id": "sub.layer.5_os.ternaryos_kernel",
+      "name": "TernaryOS Research Microkernel & HAL",
+      "layer_id": "layer.5_os",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "FREESTANDING",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "QUALIFIED_WITH_LIMITATIONS",
+        "production_status": "EXPERIMENTAL_FRONTIER"
+      }
+    },
+    {
+      "id": "sub.layer.5_os.daios_proposal",
+      "name": "DAIOS Architecture Contract (RFC-00D2)",
+      "layer_id": "layer.5_os",
+      "maturity": {
+        "source_presence": true,
+        "compilation": false,
+        "execution": "NONE",
+        "test_coverage": "NONE",
+        "qualification": "UNVERIFIED",
+        "production_status": "DESIGN_ONLY"
+      }
+    },
+    {
+      "id": "sub.layer.6_hw.rtl_feasibility",
+      "name": "Ternary RTL Hardware Feasibility Models",
+      "layer_id": "layer.6_hw",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "EMULATED",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "EXPLORATORY",
+        "production_status": "RESEARCH_PROTOTYPE"
+      }
+    },
+    {
+      "id": "sub.layer.6_hw.simd_primitives",
+      "name": "Host SIMD Acceleration Primitives (AVX2)",
+      "layer_id": "layer.6_hw",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "HOSTED",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "QUALIFIED",
+        "production_status": "PRODUCTION_CORE"
+      }
+    },
+    {
+      "id": "sub.layer.6_hw.qemu_drivers",
+      "name": "QEMU Virt Hardware Emulation Platform",
+      "layer_id": "layer.6_hw",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "FREESTANDING",
+        "test_coverage": "SMOKE_ONLY",
+        "qualification": "QUALIFIED_WITH_LIMITATIONS",
+        "production_status": "EXPERIMENTAL_FRONTIER"
+      }
+    },
+    {
+      "id": "sub.layer.7_assurance.hypothesis_register",
+      "name": "Empirical Research Hypothesis Register (H01\u2013H08)",
+      "layer_id": "layer.7_assurance",
+      "maturity": {
+        "source_presence": true,
+        "compilation": false,
+        "execution": "NONE",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "QUALIFIED",
+        "production_status": "PRODUCTION_CORE"
+      }
+    },
+    {
+      "id": "sub.layer.7_assurance.scg_continuity",
+      "name": "Scientific Continuity Governance Evidence Receipts",
+      "layer_id": "layer.7_assurance",
+      "maturity": {
+        "source_presence": true,
+        "compilation": false,
+        "execution": "HOSTED",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "QUALIFIED",
+        "production_status": "PRODUCTION_CORE"
+      }
+    },
+    {
+      "id": "sub.layer.7_assurance.cpp_test_suite",
+      "name": "Deterministic C++ Regression Test Suite",
+      "layer_id": "layer.7_assurance",
+      "maturity": {
+        "source_presence": true,
+        "compilation": true,
+        "execution": "HOSTED",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "QUALIFIED",
+        "production_status": "PRODUCTION_CORE"
+      }
+    },
+    {
+      "id": "sub.layer.7_assurance.ci_governance",
+      "name": "CI Verification Pipeline & Root Governance",
+      "layer_id": "layer.7_assurance",
+      "maturity": {
+        "source_presence": true,
+        "compilation": false,
+        "execution": "HOSTED",
+        "test_coverage": "DEDICATED_SUITE",
+        "qualification": "QUALIFIED",
+        "production_status": "PRODUCTION_CORE"
+      }
+    }
+  ],
+  "summary_edges": [
+    {
+      "source": "sub.layer.1_lang.cli",
+      "target": "sub.layer.1_lang.frontend",
+      "relationship_type": "function_invocation",
+      "verification_status": "VERIFIED_IMPLEMENTED"
+    },
+    {
+      "source": "sub.layer.1_lang.cli",
+      "target": "sub.layer.2_exec.t81vm",
+      "relationship_type": "function_invocation",
+      "verification_status": "VERIFIED_IMPLEMENTED"
+    },
+    {
+      "source": "sub.layer.3_num.multi_precision_bigint",
+      "target": "sub.layer.3_num.balanced_ternary_limbs",
+      "relationship_type": "compile_time_dependency",
+      "verification_status": "VERIFIED_IMPLEMENTED"
+    },
+    {
+      "source": "sub.layer.3_num.rational_fractions",
+      "target": "sub.layer.3_num.fixed_width_integers",
+      "relationship_type": "compile_time_dependency",
+      "verification_status": "VERIFIED_IMPLEMENTED"
+    },
+    {
+      "source": "sub.layer.4_services.canonfs",
+      "target": "sub.layer.4_services.crypto",
+      "relationship_type": "function_invocation",
+      "verification_status": "VERIFIED_IMPLEMENTED"
+    },
+    {
+      "source": "sub.layer.4_services.canonfs",
+      "target": "sub.layer.4_services.axion_kernel",
+      "relationship_type": "function_invocation",
+      "verification_status": "VERIFIED_IMPLEMENTED"
+    },
+    {
+      "source": "sub.layer.5_os.ternaryos_kernel",
+      "target": "sub.layer.6_hw.qemu_drivers",
+      "relationship_type": "link_dependency",
+      "verification_status": "VERIFIED_IMPLEMENTED"
+    },
+    {
+      "source": "sub.layer.5_os.ternaryos_kernel",
+      "target": "sub.layer.5_os.daios_proposal",
+      "relationship_type": "architectural_design_relationship",
+      "verification_status": "PROPOSED_INTEGRATION"
+    },
+    {
+      "source": "sub.layer.3_num.ternary_tensors",
+      "target": "sub.layer.6_hw.simd_primitives",
+      "relationship_type": "function_invocation",
+      "verification_status": "VERIFIED_IMPLEMENTED"
+    },
+    {
+      "source": "sub.layer.7_assurance.cpp_test_suite",
+      "target": "sub.layer.7_assurance.scg_continuity",
+      "relationship_type": "research_or_evidence_relationship",
+      "verification_status": "VERIFIED_IMPLEMENTED"
+    },
+    {
+      "source": "sub.layer.7_assurance.cpp_test_suite",
+      "target": "sub.layer.3_num.balanced_ternary_limbs",
+      "relationship_type": "test_coverage",
+      "verification_status": "VERIFIED_IMPLEMENTED"
+    },
+    {
+      "source": "sub.layer.7_assurance.cpp_test_suite",
+      "target": "sub.layer.3_num.multi_precision_bigint",
+      "relationship_type": "test_coverage",
+      "verification_status": "VERIFIED_IMPLEMENTED"
+    },
+    {
+      "source": "sub.layer.7_assurance.cpp_test_suite",
+      "target": "sub.layer.3_num.rational_fractions",
+      "relationship_type": "test_coverage",
+      "verification_status": "VERIFIED_IMPLEMENTED"
+    },
+    {
+      "source": "sub.layer.7_assurance.scg_continuity",
+      "target": "sub.layer.7_assurance.hypothesis_register",
+      "relationship_type": "research_or_evidence_relationship",
+      "verification_status": "VERIFIED_IMPLEMENTED"
+    },
+    {
+      "source": "sub.layer.6_hw.rtl_feasibility",
+      "target": "sub.layer.7_assurance.hypothesis_register",
+      "relationship_type": "research_or_evidence_relationship",
+      "verification_status": "VERIFIED_IMPLEMENTED"
+    }
+  ]
+}

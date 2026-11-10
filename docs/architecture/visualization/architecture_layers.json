@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
+  "description": "7-layer architectural taxonomy of the T81 Foundation platform",
+  "layers": [
+    {
+      "id": "layer.1_lang",
+      "index": 1,
+      "name": "Language and Development",
+      "description": "T81Lang source parsing, AST construction, semantic analysis, IR generation, CLI interface, and toolchain bridges.",
+      "y_level": 600,
+      "color_theme": "#4A90E2"
+    },
+    {
+      "id": "layer.2_exec",
+      "index": 2,
+      "name": "Instruction and Execution",
+      "description": "TISC instruction set computer contract, bytecode decoding, T81VM deterministic interpreter, round-robin scheduler, and JIT/trace cache.",
+      "y_level": 500,
+      "color_theme": "#50E3C2"
+    },
+    {
+      "id": "layer.3_num",
+      "index": 3,
+      "name": "Numerical and Computational Foundations",
+      "description": "Balanced ternary arithmetic, multi-precision types (T81Limb27/54, T81Int, T81BigInt, T81Fraction), soft math tables, and tensor representations.",
+      "y_level": 400,
+      "color_theme": "#F5A623"
+    },
+    {
+      "id": "layer.4_services",
+      "index": 4,
+      "name": "System Services",
+      "description": "Axion governance kernel (policy engine, ethics Theta-1..9, nondeterminism detection) and CanonFS immutable content-addressed storage.",
+      "y_level": 300,
+      "color_theme": "#BD10E0"
+    },
+    {
+      "id": "layer.5_os",
+      "index": 5,
+      "name": "Operating-System Architecture",
+      "description": "TernaryOS standalone guest kernel, HAL, GICv3/PL011/VirtIO drivers, page allocation MMU, and DAIOS (RFC-00D2) target architecture.",
+      "y_level": 200,
+      "color_theme": "#B8E986"
+    },
+    {
+      "id": "layer.6_hw",
+      "index": 6,
+      "name": "Hardware and Acceleration",
+      "description": "Physical ternary feasibility research, Verilog RTL models, SIMD AVX2 acceleration primitives, and QEMU hardware emulation.",
+      "y_level": 100,
+      "color_theme": "#E02020"
+    },
+    {
+      "id": "layer.7_assurance",
+      "index": 7,
+      "name": "Research and Assurance",
+      "description": "Empirical hypothesis register H01\u2013H08, SCG continuity evidence receipts, regression suites, determinism registries, and CI gates.",
+      "y_level": 0,
+      "color_theme": "#9013FE"
+    }
+  ]
+}
