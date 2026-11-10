@@ -1,0 +1,102 @@
+{
+  "schema_version": "1.0.0",
+  "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
+  "total_interfaces": 6,
+  "interfaces": [
+    {
+      "id": "iface.frontend.ir_generator",
+      "name": "IRGenerator::generate",
+      "provider_node_id": "mod.frontend.ir_generator",
+      "consumer_node_ids": [
+        "sub.layer.1_lang.cli"
+      ],
+      "entry_point": "t81::frontend::IRGenerator::generate(const std::vector<std::unique_ptr<Stmt>>&)",
+      "contract": "Transforms validated AST statements into a linear t81::tisc::ir::IntermediateProgram.",
+      "inputs": "AST statement vector",
+      "outputs": "TISC IntermediateProgram",
+      "error_handling": "Throws t81::frontend::CompileError on malformed AST nodes",
+      "determinism_requirements": "Deterministic symbol resolution and label indexing",
+      "test_evidence": "tests/cpp/test_t81lang_frontend.cpp"
+    },
+    {
+      "id": "iface.vm.step",
+      "name": "IVirtualMachine::step",
+      "provider_node_id": "mod.vm.interpreter_core",
+      "consumer_node_ids": [
+        "sub.layer.1_lang.cli",
+        "sub.layer.7_assurance.cpp_test_suite"
+      ],
+      "entry_point": "t81::vm::IVirtualMachine::step()",
+      "contract": "Executes exactly one TISC instruction in the current active context, checking Axion policy before side effects.",
+      "inputs": "None (internal VM state and PC)",
+      "outputs": "std::expected<void, Trap>",
+      "error_handling": "Returns std::unexpected(Trap) on faults or policy denials",
+      "determinism_requirements": "Bit-exact state progression, no unseeded randomness or unmapped system time",
+      "test_evidence": "tests/cpp/test_vm_execution.cpp"
+    },
+    {
+      "id": "iface.num.limb27_mul",
+      "name": "T81Limb27::operator*",
+      "provider_node_id": "sub.layer.3_num.balanced_ternary_limbs",
+      "consumer_node_ids": [
+        "sub.layer.3_num.multi_precision_bigint",
+        "sub.layer.7_assurance.cpp_test_suite"
+      ],
+      "entry_point": "t81::T81Limb27::operator*(const T81Limb27&) const noexcept",
+      "contract": "Computes exact balanced ternary product of two 27-trit limbs, normalized to 54 trits.",
+      "inputs": "Two 27-trit limbs (trytes_[9])",
+      "outputs": "Canonical 54-trit limb (T81Limb54)",
+      "error_handling": "noexcept (guaranteed non-throwing exact carry normalization)",
+      "determinism_requirements": "Strict balanced ternary residue modulo 3^54",
+      "test_evidence": "tests/cpp/test_t81_limb27_mul.cpp"
+    },
+    {
+      "id": "iface.num.bigint_add",
+      "name": "T81BigInt::operator+",
+      "provider_node_id": "sub.layer.3_num.multi_precision_bigint",
+      "consumer_node_ids": [
+        "sub.layer.2_exec.t81vm",
+        "sub.layer.7_assurance.cpp_test_suite"
+      ],
+      "entry_point": "t81::operator+(const T81BigInt&, const T81BigInt&)",
+      "contract": "Arbitrary precision balanced ternary addition preserving non-negative limb magnitude invariants.",
+      "inputs": "Two T81BigInt operands",
+      "outputs": "Sum T81BigInt",
+      "error_handling": "Throws std::runtime_error on invariant failure",
+      "determinism_requirements": "Bit-exact multi-limb borrow and carry propagation",
+      "test_evidence": "tests/cpp/test_t81bigint_sub.cpp"
+    },
+    {
+      "id": "iface.axion.evaluate",
+      "name": "PolicyEngine::evaluate",
+      "provider_node_id": "sub.layer.4_services.axion_kernel",
+      "consumer_node_ids": [
+        "mod.vm.interpreter_core",
+        "sub.layer.4_services.canonfs"
+      ],
+      "entry_point": "t81::axion::PolicyEngine::evaluate(const SyscallContext&)",
+      "contract": "Evaluates mandatory ethical principles Theta-1..9 and user policy bytecode against system calls.",
+      "inputs": "SyscallContext containing caller, opcode, memory segment, and arguments",
+      "outputs": "t81::axion::Verdict (Allow, Deny, Warn, Defer)",
+      "error_handling": "Fails closed returning VerdictKind::Deny with descriptive reason",
+      "determinism_requirements": "Bit-exact decision replay across all platforms",
+      "test_evidence": "tests/cpp/test_axion_policy.cpp"
+    },
+    {
+      "id": "iface.canonfs.write_object",
+      "name": "PersistentDriver::write_object",
+      "provider_node_id": "sub.layer.4_services.canonfs",
+      "consumer_node_ids": [
+        "mod.cli.weights_tool",
+        "sub.layer.2_exec.t81vm"
+      ],
+      "entry_point": "t81::canonfs::PersistentDriver::write_object(ObjectType, std::span<const std::byte>)",
+      "contract": "Stores payload under immutable SHA-256 digest with portable hex filename (objects/h1-<hash>.blk).",
+      "inputs": "ObjectType tag and raw byte span",
+      "outputs": "Result<CanonRef> containing 64-character hash",
+      "error_handling": "Returns Result error code on I/O failure or permission error",
+      "determinism_requirements": "Bit-exact canonical hash generation and fail-closed integrity verification",
+      "test_evidence": "tests/cpp/test_canonfs.cpp"
+    }
+  ]
+}
