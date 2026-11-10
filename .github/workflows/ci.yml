@@ -502,6 +502,11 @@ jobs:
             /spec/**
             /third_party/**
             /development_tests/**
+            /docs/reference/STABLE_BASELINE_CONTRACT.md
+            /docs/reference/AI_OS_OBJECT_BUNDLE_CONSUMPTION_CONTRACT.md
+            /docs/reference/AI_OS_OBJECT_BUNDLE_VERSIONING_BOUNDARY.md
+            /docs/reference/AI_OS_OBJECT_FAMILY_ADMISSION_CONTRACT.md
+            /docs/status/BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md
             /README.md
             /LICENSE
           sparse-checkout-cone-mode: false
@@ -661,13 +666,18 @@ jobs:
           set -eo pipefail
           bash scripts/ci/run_model_artifact_review_smoke.sh 2>&1 | tee -a .github/logs/build-and-test.log
 
-      - name: Verify stable baseline compliance surfaces are present
+      - name: Verify stable baseline docs and platform test surfaces
         shell: bash
         run: |
           set -eo pipefail
-          python3 scripts/ci/check_stable_baseline_compliance.py \
-            --repo-root . \
-            --build-dir build 2>&1 | tee -a .github/logs/build-and-test.log
+          baseline_args=(--repo-root . --build-dir build)
+          # CMake excludes the fork/wait-based baseline runners on Windows.
+          # Check the documents there without claiming runner or execution coverage.
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            baseline_args+=(--docs-only)
+          fi
+          python3 scripts/ci/check_stable_baseline_compliance.py "${baseline_args[@]}" \
+            2>&1 | tee -a .github/logs/build-and-test.log
 
       - name: Run stable baseline compliance tests (single matrix lane)
         if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
