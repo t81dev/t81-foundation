@@ -72,6 +72,7 @@ EXPECTED_TOP_LEVEL = {
     "market_analysis",
     "pyproject.toml",
     "record_hash.txt",
+    "review",
     "scripts",
     "skills",
     "spec",
