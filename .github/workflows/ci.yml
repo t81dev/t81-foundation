@@ -587,6 +587,12 @@ jobs:
           set -eo pipefail
           cmake --build build --parallel 2>&1 | tee -a .github/logs/build-and-test.log
 
+      - name: Provision model fixtures
+        shell: bash
+        run: |
+          set -eo pipefail
+          bash scripts/ci/provision_model_fixtures.sh --t81-bin build/t81 2>&1 | tee -a .github/logs/build-and-test.log
+
       - name: Verify CLI docs parity (single matrix lane)
         if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
         shell: bash
@@ -1113,6 +1119,12 @@ jobs:
           set -eo pipefail
           cmake --build build-cxxstd --parallel
 
+      - name: Provision model fixtures
+        shell: bash
+        run: |
+          set -eo pipefail
+          bash scripts/ci/provision_model_fixtures.sh --t81-bin build-cxxstd/t81
+
       - name: Test
         shell: bash
         run: |
@@ -1342,6 +1354,12 @@ jobs:
             -DT81_ENABLE_ASAN=ON \
             -DT81_ENABLE_UBSAN=ON
           cmake --build build --parallel
+
+      - name: Provision model fixtures
+        shell: bash
+        run: |
+          set -eo pipefail
+          bash scripts/ci/provision_model_fixtures.sh --t81-bin build/t81
 
       - name: Test
         run: |
