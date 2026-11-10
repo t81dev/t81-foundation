@@ -44,10 +44,10 @@ jobs:
             cibw_archs: aarch64
             qemu: true
           - name: macos-arm64
-            os: macos-14          # Apple Silicon runner — native arm64
+            os: macos-15          # Apple Silicon runner — native arm64
             cibw_archs: arm64
           - name: macos-x86_64
-            os: macos-13          # Intel runner — native x86_64
+            os: macos-15-intel    # Intel runner — native x86_64
             cibw_archs: x86_64
           - name: windows-amd64
             os: windows-latest
