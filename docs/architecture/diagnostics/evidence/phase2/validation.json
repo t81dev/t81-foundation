@@ -1,0 +1,105 @@
+[
+  {
+    "command": [
+      "bash",
+      "-n",
+      "drivers/qemu/scripts/automated_verification.sh",
+      "drivers/qemu/scripts/verify_production.sh",
+      "ternaryos/automated_verification.sh",
+      "ternaryos/production_qemu_setup.sh"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "-m",
+      "py_compile",
+      "drivers/qemu/scripts/verification.py",
+      "tests/qemu/test_verification.py",
+      "tests/qemu/fake_qemu.py",
+      "tests/qemu/reproduce_baseline.py"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/ci/validate_architecture_visualization.py",
+      "--drift-check"
+    ],
+    "exit": 0,
+    "stdout": "== Validating Architecture Visualization Datasets (docs/architecture/visualization) ==\n [PASS] Loaded architecture_layers.json\n [PASS] Loaded architecture_nodes.json\n [PASS] Loaded architecture_edges.json\n [PASS] Loaded architecture_interfaces.json\n [PASS] Loaded architecture_gaps.json\n [PASS] Loaded execution_paths.json\n [PASS] Loaded architecture_evidence.json\n [PASS] Loaded visualization_layout.json\n [PASS] Loaded subsystem_summary.json\n [PASS] Loaded coverage_manifest.json\n [PASS] Loaded component_evidence_index.json\n [PASS] Validated 35 nodes and their source file paths.\n [PASS] Validated 32 edges, derivation methods, and referential integrity.\n [PASS] Validated 6 interfaces.\n [PASS] Validated 9 execution pathways and trace provenance.\n [PASS] Validated 3D layout coordinates for all nodes.\n [PASS] Validated coverage manifest (18 mapped, 17 unmapped directories).\n [PASS] Validated component evidence index, summary reconciliation, and relationship classifications.\n== All Visualization Data Invariants Verified Successfully! ==\n\n== Architecture Drift Detection Results ==\nMissing source paths: 0\nStale line references: 0\nUnsupported reference types: 0\nRecord inconsistencies: 0\n [PASS] Zero drift detected against repository tree.\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "-m",
+      "pytest",
+      "-q",
+      "tests/ci/test_architecture_engineering_diagnostics.py",
+      "tests/ci/test_architecture_visualization.py"
+    ],
+    "exit": 1,
+    "stdout": "",
+    "stderr": "/opt/homebrew/opt/python@3.14/bin/python3.14: No module named pytest\n"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "uname",
+      "-a"
+    ],
+    "exit": 0,
+    "stdout": "Darwin Mac.lan 25.5.0 Darwin Kernel Version 25.5.0: Tue Jun  9 22:27:52 PDT 2026; root:xnu-12377.121.10~1/RELEASE_ARM64_T8112 arm64\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "--version"
+    ],
+    "exit": 0,
+    "stdout": "Python 3.14.3\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "qemu-system-aarch64",
+      "--version"
+    ],
+    "exit": 0,
+    "stdout": "QEMU emulator version 10.2.2\nCopyright (c) 2003-2025 Fabrice Bellard and the QEMU Project developers\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "status",
+      "--short"
+    ],
+    "exit": 0,
+    "stdout": " M drivers/qemu/README.md\n M drivers/qemu/scripts/automated_verification.sh\n M drivers/qemu/scripts/verify_production.sh\n M ternaryos/automated_verification.sh\n M ternaryos/production_qemu_setup.sh\n?? .github/workflows/qemu-verification.yml\n?? docs/architecture/diagnostics/evidence/\n?? drivers/qemu/scripts/VERIFICATION.md\n?? drivers/qemu/scripts/verification.py\n?? tests/qemu/\n",
+    "stderr": ""
+  },
+  {
+    "label": "maintainer checkout cleanliness (unchanged starting edits)",
+    "exit": 0,
+    "stdout": " M include/t81/types/T81Map.hpp\n M tests/cpp/test_deterministic_float_boundaries.cpp\n M tests/cpp/test_map_determinism.cpp\n M tests/cpp/test_sha3.cpp\n?? docs/research/T81_ARCHITECTURE_CONVERGENCE.md\n?? docs/research/binary-reference-audit-2026-11-02/\n?? docs/research/h01-binary-storage-reference-2026-11-02/\n?? docs/research/h02-r01-signed-rounding/\n?? docs/runbooks/\n?? experiments/arch003/\n?? experiments/cpa005/\n?? experiments/cpa006/\n",
+    "stderr": ""
+  }
+]
