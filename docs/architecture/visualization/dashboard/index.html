@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>T81 Architecture & Research Status Dashboard (T81-ARCH-VIZ-003)</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <div id="app" class="dashboard-container">
+    <!-- Top Header -->
+    <header class="dashboard-header">
+      <div class="header-left">
+        <h1 class="header-title">T81 Architecture &amp; Research Status Dashboard</h1>
+        <span class="badge badge-meta">T81-ARCH-VIZ-003</span>
+        <span class="badge badge-baseline" id="baseline-badge">Baseline: 6c9eaf1a (PR #757)</span>
+      </div>
+      <div class="header-right">
+        <!-- View Mode Switcher -->
+        <div class="view-mode-toggle" role="group" aria-label="Visualization Mode">
+          <button id="view-mode-3d" class="toggle-btn active" title="3D WebGL / Isometric Canvas View">3D Layout</button>
+          <button id="view-mode-2d" class="toggle-btn" title="Accessible 2D Structural Grid View">Accessible 2D</button>
+        </div>
+        <!-- Active Overlay Selector -->
+        <div class="overlay-select-wrapper">
+          <label for="overlay-select">Status Overlay:</label>
+          <select id="overlay-select" aria-label="Select status overlay">
+            <option value="evidence" selected>Evidence Classification (VERIFIED / STATIC / UNVERIFIED)</option>
+            <option value="maturity">Implementation Maturity (Implemented / Experimental / Proposed)</option>
+            <option value="qualification">Research Qualification (Qualified / Limitations / Blocked)</option>
+            <option value="activity">Engineering Activity (Active PR / Milestone / Blocked)</option>
+          </select>
+        </div>
+        <button id="summary-btn" class="header-action-btn" title="View Architecture & Research Summary">Summary Metrics</button>
+        <button id="research-btn" class="header-action-btn" title="View Research Programs & Hypotheses">Research Programs</button>
+        <button id="pr-panel-btn" class="header-action-btn" title="View Pull Request Activity">PR Activity</button>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="workspace">
+      <!-- Left Sidebar: Controls & Layer Filters -->
+      <aside class="sidebar-left" id="sidebar-left">
+        <!-- Search Box -->
+        <div class="search-section">
+          <label for="component-search" class="section-label">Component Search</label>
+          <div class="search-input-wrapper">
+            <input type="text" id="component-search" placeholder="Search by name, ID, or interface..." aria-label="Component search">
+            <button id="clear-search-btn" class="clear-btn" title="Clear search">&times;</button>
+          </div>
+          <div id="search-results-count" class="search-count-label"></div>
+        </div>
+
+        <!-- Evidence Filter -->
+        <div class="filter-section">
+          <span class="section-label">Evidence Filter</span>
+          <div class="filter-chips" id="evidence-filter-chips">
+            <button class="chip active" data-filter="ALL">All</button>
+            <button class="chip" data-filter="VERIFIED">Verified (9)</button>
+            <button class="chip" data-filter="STATICALLY_SUPPORTED">Static (22)</button>
+            <button class="chip" data-filter="UNVERIFIED">Unverified (3)</button>
+            <button class="chip" data-filter="NOT_MAPPED">Not Mapped (1)</button>
+          </div>
+        </div>
+
+        <!-- Layer Visibility Controls -->
+        <div class="layers-section">
+          <div class="section-header-row">
+            <span class="section-label">Architectural Layers (7)</span>
+            <div class="layer-toggle-all">
+              <button id="btn-layers-all" class="text-btn">All</button>
+              <button id="btn-layers-none" class="text-btn">None</button>
+            </div>
+          </div>
+          <div id="layers-list" class="layers-list" role="group" aria-label="Architectural layers">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Pathways & Gaps Inspector -->
+        <div class="inspectors-section">
+          <span class="section-label">Pathways &amp; Architecture Gaps</span>
+          <div class="inspector-controls">
+            <label for="pathway-select">Execution Pathway:</label>
+            <select id="pathway-select">
+              <option value="none">-- None selected --</option>
+            </select>
+          </div>
+          <div class="inspector-controls">
+            <label for="gap-select">Architecture Gap:</label>
+            <select id="gap-select">
+              <option value="none">-- None selected --</option>
+            </select>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center Viewport: 3D Canvas + 2D Accessible View Container -->
+      <main class="viewport-main" id="viewport-main">
+        <!-- 3D Canvas Container -->
+        <div id="canvas-container" class="canvas-container">
+          <canvas id="architecture-canvas" aria-label="3D Architecture Visualization"></canvas>
+          <div class="canvas-hint" id="canvas-hint">
+            <span>Left Click + Drag: Orbit &bull; Right Click + Drag: Pan &bull; Scroll: Zoom &bull; Click Node: Details</span>
+            <button id="reset-camera-btn" class="hint-btn">Reset View</button>
+          </div>
+        </div>
+
+        <!-- Accessible 2D Fallback Container -->
+        <div id="fallback-2d-container" class="fallback-2d-container hidden">
+          <div class="fallback-header">
+            <h2>Accessible 2D Architectural Structure</h2>
+            <p class="fallback-description">Hierarchical view of T81 Foundation components grouped by architectural layer with active status overlay.</p>
+          </div>
+          <div id="fallback-grid" class="fallback-grid">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </main>
+
+      <!-- Right Sidebar: Component Detail Panel -->
+      <aside class="sidebar-right" id="sidebar-right">
+        <div class="detail-header">
+          <h2 id="detail-title">Component Details</h2>
+          <button id="close-detail-btn" class="close-btn" title="Close details">&times;</button>
+        </div>
+        <div id="detail-empty" class="detail-empty-state">
+          <p>Select any component in the 3D canvas or 2D structural view to inspect implementation evidence, research qualification, tests, and source references.</p>
+        </div>
+        <div id="detail-content" class="detail-content hidden">
+          <!-- Populated dynamically -->
+        </div>
+      </aside>
+    </div>
+
+    <!-- Modal / Drawer: Summary Metrics -->
+    <div id="summary-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="summary-modal-title">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 id="summary-modal-title">Architecture &amp; Research Summary Metrics</h2>
+          <button id="close-summary-btn" class="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body" id="summary-modal-body">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal / Drawer: Research Programs -->
+    <div id="research-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="research-modal-title">
+      <div class="modal-card modal-large">
+        <div class="modal-header">
+          <h2 id="research-modal-title">Active &amp; Historical Research Programs</h2>
+          <button id="close-research-btn" class="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body" id="research-modal-body">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal / Drawer: Pull Request Activity Panel -->
+    <div id="pr-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="pr-modal-title">
+      <div class="modal-card modal-large">
+        <div class="modal-header">
+          <h2 id="pr-modal-title">Pull Request Activity &amp; Subsystem Mapping</h2>
+          <button id="close-pr-btn" class="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body" id="pr-modal-body">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Status Bar -->
+    <footer class="dashboard-footer">
+      <div class="footer-left">
+        <span>Components: <strong id="footer-component-count">35</strong></span>
+        <span class="sep">&bull;</span>
+        <span>Verified Primitives: <strong id="footer-verified-count">9</strong></span>
+        <span class="sep">&bull;</span>
+        <span>Coverage: <strong id="footer-coverage-metric">51.43%</strong> (18/35 dirs)</span>
+        <span class="sep">&bull;</span>
+        <span>Active Blocker: <strong>QEMU 5-check Native Qualification</strong></span>
+      </div>
+      <div class="footer-right">
+        <span class="semantic-warning">Notice: Evidence presence does not signify system-wide completion or physical hardware advantage.</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
