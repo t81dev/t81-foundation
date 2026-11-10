@@ -149,15 +149,10 @@ Based on source-grounded dependency tracing, the following non-normative integra
 
 ---
 
-## 6. Interactive Architecture & Research Status Dashboard (`T81-ARCH-VIZ-003`)
+## 6. How to Render the 3D Visualization in ChatGPT
 
-In task `T81-ARCH-VIZ-003`, the architectural dataset was upgraded into an interactive, browser-based dashboard application located at `docs/architecture/visualization/dashboard/` (with entry point `docs/architecture/visualization/index.html`):
-
-- **Interactive 3D Perspective:** Provides an orbit/pan/zoom canvas view rendering all 35 components and their dependency edges across vertical layer elevation planes using coordinates from `visualization_layout.json`.
-- **Accessible 2D Structural Fallback:** Provides an accessible layer-by-layer card grid with keyboard focus management and semantic equivalence, ensuring complete functionality even on headless or non-WebGL systems.
-- **Independent Status Overlays:** Separates evidence classifications (`VERIFIED`, `STATICALLY_SUPPORTED`, `UNVERIFIED`, `NOT_MAPPED`), implementation maturity (`IMPLEMENTED`, `EXPERIMENTAL`, `PROPOSED`), research qualification (`QUALIFIED`, `QUALIFIED_WITH_LIMITATIONS`, `BLOCKED`, `NOT EVALUATED`), and engineering pull-request activity.
-- **Research Programs Integration:** Directly embeds evidence-backed status for SCG-01..08, TernaryOS ARCH-ENG-002 Phases 1..3, TISC v1.1.0/v2.0, CanonFS, Hardware/RTL, and H01–H08 hypothesis register mappings (`research_programs.json`).
-- **PR Activity Snapshot:** Catalogs open and merged PRs with affected subsystem mappings and freshness timestamps (`pull_requests_snapshot.json`).
-- **Automated Validation:** Enforced via `scripts/ci/validate_architecture_visualization.py` and `tests/ci/test_architecture_dashboard.py` (including Playwright interaction testing).
-
-See [`DASHBOARD_GUIDE.md`](DASHBOARD_GUIDE.md) for full architecture details, local HTTP server launch instructions, snapshot refresh procedures, and strict governance boundaries.
+To render this architecture in an interactive 3D browser environment (e.g. Three.js / Canvas):
+1. Load `architecture_layers.json` to establish vertical Y planes (Layer 7 at $Y=0$ up to Layer 1 at $Y=600$).
+2. Load `architecture_nodes.json` and `visualization_layout.json` to position subsystem cubes/spheres in 3D space.
+3. Load `architecture_edges.json` to draw directional dependency curves between nodes, color-coded by relationship type (green for containment, cyan for invocation, purple for policy, orange for test coverage).
+4. Load `execution_paths.json` to animate particle pulses traveling along verified call steps (Pathways 1 through 9).
