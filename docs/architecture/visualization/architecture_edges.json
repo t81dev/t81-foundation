@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
   "total_edges": 32,
   "edges": [
@@ -11,10 +11,12 @@
       "direction": "source_to_dest",
       "verification_status": "VERIFIED_IMPLEMENTED",
       "evidence": {
-        "source_file": "lang/frontend/parser.cpp",
-        "line": 4,
-        "notes": "Frontend subsystem physically contains and coordinates the Lexer module."
-      }
+        "source_file": "lang/frontend/lexer.cpp",
+        "line": 92,
+        "notes": "Frontend subsystem physically contains and coordinates the Lexer module.",
+        "reference_type": "FUNCTION_DEFINITION"
+      },
+      "derivation_method": "MANUALLY_CURATED"
     },
     {
       "id": "edge.contain.sub.frontend_to_mod.parser",
@@ -25,9 +27,11 @@
       "verification_status": "VERIFIED_IMPLEMENTED",
       "evidence": {
         "source_file": "lang/frontend/parser.cpp",
-        "line": 1,
-        "notes": "Frontend subsystem contains the Parser AST generator."
-      }
+        "line": 341,
+        "notes": "Frontend subsystem contains the Parser AST generator.",
+        "reference_type": "FUNCTION_DEFINITION"
+      },
+      "derivation_method": "MANUALLY_CURATED"
     },
     {
       "id": "edge.contain.sub.frontend_to_mod.semantic_analyzer",
@@ -38,9 +42,11 @@
       "verification_status": "VERIFIED_IMPLEMENTED",
       "evidence": {
         "source_file": "lang/frontend/semantic_analyzer.cpp",
-        "line": 1,
-        "notes": "Frontend subsystem contains the Semantic Analyzer."
-      }
+        "line": 394,
+        "notes": "Frontend subsystem contains the Semantic Analyzer.",
+        "reference_type": "FUNCTION_DEFINITION"
+      },
+      "derivation_method": "MANUALLY_CURATED"
     },
     {
       "id": "edge.contain.sub.frontend_to_mod.ir_generator",
@@ -51,9 +57,11 @@
       "verification_status": "VERIFIED_IMPLEMENTED",
       "evidence": {
         "source_file": "lang/frontend/ir_generator.cpp",
-        "line": 4,
-        "notes": "Frontend subsystem contains the IRGenerator."
-      }
+        "line": 8,
+        "notes": "Frontend subsystem contains the IRGenerator.",
+        "reference_type": "FUNCTION_DEFINITION"
+      },
+      "derivation_method": "MANUALLY_CURATED"
     },
     {
       "id": "edge.contain.sub.cli_to_mod.weights_tool",
@@ -65,8 +73,10 @@
       "evidence": {
         "source_file": "tools/cli/core/main.cpp",
         "line": 4471,
-        "notes": "CLI driver delegates 'weights' subcommands to the weights module."
-      }
+        "notes": "CLI driver delegates 'weights' subcommands to the weights module.",
+        "reference_type": "FUNCTION_DEFINITION"
+      },
+      "derivation_method": "MANUALLY_CURATED"
     },
     {
       "id": "edge.contain.sub.t81vm_to_mod.interpreter",
@@ -78,8 +88,10 @@
       "evidence": {
         "source_file": "vm/vm.cpp",
         "line": 435,
-        "notes": "T81VM encapsulates the core instruction stepping interpreter."
-      }
+        "notes": "T81VM encapsulates the core instruction stepping interpreter.",
+        "reference_type": "FUNCTION_DEFINITION"
+      },
+      "derivation_method": "MANUALLY_CURATED"
     },
     {
       "id": "edge.contain.sub.t81vm_to_mod.sys_regs",
@@ -91,8 +103,10 @@
       "evidence": {
         "source_file": "vm/runtime_state_helpers.cpp",
         "line": 80,
-        "notes": "T81VM encapsulates R75..R80 system register maintenance."
-      }
+        "notes": "T81VM encapsulates R75..R80 system register maintenance.",
+        "reference_type": "FUNCTION_DEFINITION"
+      },
+      "derivation_method": "MANUALLY_CURATED"
     },
     {
       "id": "edge.contain.sub.ternaryos_to_mod.sched",
@@ -104,8 +118,10 @@
       "evidence": {
         "source_file": "ternaryos/sched/scheduler.cpp",
         "line": 1,
-        "notes": "TernaryOS kernel encapsulates the cooperative scheduler."
-      }
+        "notes": "TernaryOS kernel encapsulates the cooperative scheduler.",
+        "reference_type": "DESCRIPTIVE_FILE"
+      },
+      "derivation_method": "MANUALLY_CURATED"
     },
     {
       "id": "edge.contain.sub.ternaryos_to_mod.mmu",
@@ -117,8 +133,10 @@
       "evidence": {
         "source_file": "ternaryos/mmu/ternary_page_alloc.cpp",
         "line": 1,
-        "notes": "TernaryOS kernel encapsulates page allocator and TTBR0 MMU tables."
-      }
+        "notes": "TernaryOS kernel encapsulates page allocator and TTBR0 MMU tables.",
+        "reference_type": "DESCRIPTIVE_FILE"
+      },
+      "derivation_method": "MANUALLY_CURATED"
     },
     {
       "id": "edge.dep.parser_to_lexer_invoke",
@@ -129,9 +147,11 @@
       "verification_status": "VERIFIED_IMPLEMENTED",
       "evidence": {
         "source_file": "lang/frontend/parser.cpp",
-        "line": 34,
-        "notes": "Parser calls lexer.next_token() to consume balanced ternary tokens."
-      }
+        "line": 327,
+        "notes": "Parser calls lexer.next_token() to consume balanced ternary tokens.",
+        "reference_type": "CALL_SITE"
+      },
+      "derivation_method": "STATICALLY_EXTRACTED"
     },
     {
       "id": "edge.dep.ir_generator_to_tisc_isa_invoke",
@@ -142,9 +162,11 @@
       "verification_status": "VERIFIED_IMPLEMENTED",
       "evidence": {
         "source_file": "lang/frontend/ir_generator.cpp",
-        "line": 28,
-        "notes": "IRGenerator emits t81::tisc::Instruction instances with target opcodes."
-      }
+        "line": 5644,
+        "notes": "IRGenerator emits t81::tisc::Instruction instances with target opcodes.",
+        "reference_type": "FUNCTION_DEFINITION"
+      },
+      "derivation_method": "STATICALLY_EXTRACTED"
     },
     {
       "id": "edge.dep.cli_to_frontend_invoke",
@@ -156,8 +178,10 @@
       "evidence": {
         "source_file": "tools/cli/core/main.cpp",
         "line": 10799,
-        "notes": "CLI 'compile' command invokes frontend Lexer, Parser, and IRGenerator pipeline."
-      }
+        "notes": "CLI 'compile' command invokes frontend Lexer, Parser, and IRGenerator pipeline.",
+        "reference_type": "CALL_SITE"
+      },
+      "derivation_method": "STATICALLY_EXTRACTED"
     },
     {
       "id": "edge.dep.cli_to_vm_invoke",
@@ -169,8 +193,10 @@
       "evidence": {
         "source_file": "tools/cli/core/main.cpp",
         "line": 10826,
-        "notes": "CLI 'run' command instantiates VirtualMachine and calls run_to_halt()."
-      }
+        "notes": "CLI 'run' command instantiates VirtualMachine and calls run_to_halt().",
+        "reference_type": "CALL_SITE"
+      },
+      "derivation_method": "STATICALLY_EXTRACTED"
     },
     {
       "id": "edge.dep.interpreter_to_tisc_isa_dispatch",
@@ -182,8 +208,10 @@
       "evidence": {
         "source_file": "vm/vm.cpp",
         "line": 1612,
-        "notes": "Interpreter switch executes 244 opcodes defined in TISC specification."
-      }
+        "notes": "Interpreter switch executes 244 opcodes defined in TISC specification.",
+        "reference_type": "FUNCTION_DEFINITION"
+      },
+      "derivation_method": "STATICALLY_EXTRACTED"
     },
     {
       "id": "edge.dep.interpreter_to_axion_invoke",
@@ -195,8 +223,10 @@
       "evidence": {
         "source_file": "vm/vm.cpp",
         "line": 7364,
-        "notes": "eval_axion_call() routes syscall context to PolicyEngine::evaluate()."
-      }
+        "notes": "eval_axion_call() routes syscall context to PolicyEngine::evaluate().",
+        "reference_type": "CALL_SITE"
+      },
+      "derivation_method": "STATICALLY_EXTRACTED"
     },
     {
       "id": "edge.dep.interpreter_to_sysregs_invoke",
@@ -207,9 +237,11 @@
       "verification_status": "VERIFIED_IMPLEMENTED",
       "evidence": {
         "source_file": "vm/vm.cpp",
-        "line": 435,
-        "notes": "Interpreter step() invokes sync_system_registers() on each execution cycle."
-      }
+        "line": 369,
+        "notes": "Interpreter step() invokes sync_system_registers() on each execution cycle.",
+        "reference_type": "CALL_SITE"
+      },
+      "derivation_method": "STATICALLY_EXTRACTED"
     },
     {
       "id": "edge.dep.interpreter_to_jit_invoke",
@@ -221,8 +253,10 @@
       "evidence": {
         "source_file": "vm/vm.cpp",
         "line": 482,
-        "notes": "step() checks compiled_traces_ cache before falling back to interpreter dispatch."
-      }
+        "notes": "step() checks compiled_traces_ cache before falling back to interpreter dispatch.",
+        "reference_type": "CALL_SITE"
+      },
+      "derivation_method": "STATICALLY_EXTRACTED"
     },
     {
       "id": "edge.dep.interpreter_to_canonfs_dataflow",
@@ -233,9 +267,11 @@
       "verification_status": "VERIFIED_IMPLEMENTED",
       "evidence": {
         "source_file": "vm/vm.cpp",
-        "line": 53,
-        "notes": "VM loads model weights and artifacts directly from attached CanonFS driver."
-      }
+        "line": 1883,
+        "notes": "VM loads model weights and artifacts directly from attached CanonFS driver.",
+        "reference_type": "CALL_SITE"
+      },
+      "derivation_method": "STATICALLY_EXTRACTED"
     },
     {
       "id": "edge.dep.weights_tool_to_tensors_invoke",
@@ -247,8 +283,10 @@
       "evidence": {
         "source_file": "tools/cli/core/main.cpp",
         "line": 4384,
-        "notes": "weights export invokes t81::weights::load_t81w() to unpack NativeTensor."
-      }
+        "notes": "weights export invokes t81::weights::load_t81w() to unpack NativeTensor.",
+        "reference_type": "CALL_SITE"
+      },
+      "derivation_method": "STATICALLY_EXTRACTED"
     },
     {
       "id": "edge.dep.bigint_to_limbs_include",
@@ -259,9 +297,11 @@
       "verification_status": "VERIFIED_IMPLEMENTED",
       "evidence": {
         "source_file": "include/t81/types/T81BigInt.hpp",
-        "line": 15,
-        "notes": "T81BigInt composes T81Limb / T81Limb27 / T81Limb54 as its underlying representation."
-      }
+        "line": 17,
+        "notes": "T81BigInt composes T81Limb / T81Limb27 / T81Limb54 as its underlying representation.",
+        "reference_type": "DECLARATION"
+      },
+      "derivation_method": "STATICALLY_EXTRACTED"
     },
     {
       "id": "edge.dep.fraction_to_int_include",
@@ -272,9 +312,11 @@
       "verification_status": "VERIFIED_IMPLEMENTED",
       "evidence": {
         "source_file": "include/t81/types/T81Fraction.hpp",
-        "line": 18,
-        "notes": "T81Fraction numerator and denominator are parameterized over T81Int<N>."
-      }
+        "line": 15,
+        "notes": "T81Fraction numerator and denominator are parameterized over T81Int<N>.",
+        "reference_type": "DECLARATION"
+      },
+      "derivation_method": "STATICALLY_EXTRACTED"
     },
     {
       "id": "edge.dep.canonfs_to_crypto_invoke",
@@ -286,8 +328,10 @@
       "evidence": {
         "source_file": "fs/persistent_driver.cpp",
         "line": 194,
-        "notes": "write_object calculates content hash via t81::hash::hash_bytes()."
-      }
+        "notes": "write_object calculates content hash via t81::hash::hash_bytes().",
+        "reference_type": "CALL_SITE"
+      },
+      "derivation_method": "STATICALLY_EXTRACTED"
     },
     {
       "id": "edge.dep.canonfs_to_axion_invoke",
@@ -298,9 +342,11 @@
       "verification_status": "VERIFIED_IMPLEMENTED",
       "evidence": {
         "source_file": "fs/persistent_driver.cpp",
-        "line": 190,
-        "notes": "CanonFS queries Axion hook before admitting storage mutations."
-      }
+        "line": 384,
+        "notes": "CanonFS queries Axion hook before admitting storage mutations.",
+        "reference_type": "CALL_SITE"
+      },
+      "derivation_method": "STATICALLY_EXTRACTED"
     },
     {
       "id": "edge.dep.ternaryos_to_qemu_drivers_link",
@@ -311,9 +357,11 @@
       "verification_status": "VERIFIED_IMPLEMENTED",
       "evidence": {
         "source_file": "ternaryos/CMakeLists.txt",
-        "line": 1,
-        "notes": "t81_ternaryos_hal links PL011 UART, GICv3, and VirtIO MMU drivers."
-      }
+        "line": 40,
+        "notes": "t81_ternaryos_hal links PL011 UART, GICv3, and VirtIO MMU drivers.",
+        "reference_type": "DECLARATION"
+      },
+      "derivation_method": "STATICALLY_EXTRACTED"
     },
     {
       "id": "edge.dep.ternaryos_to_daios_intent",
@@ -325,21 +373,25 @@
       "evidence": {
         "source_file": "spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md",
         "line": 15,
-        "notes": "DAIOS RFC-00D2 identifies TernaryOS as an exploratory precursor substrate."
-      }
+        "notes": "DAIOS RFC-00D2 identifies TernaryOS as an exploratory precursor substrate.",
+        "reference_type": "DESCRIPTIVE_FILE"
+      },
+      "derivation_method": "MANUALLY_CURATED"
     },
     {
       "id": "edge.dep.tensors_to_simd_invoke",
       "source_id": "sub.layer.3_num.ternary_tensors",
       "dest_id": "sub.layer.6_hw.simd_primitives",
-      "relationship_type": "function_invocation",
+      "relationship_type": "compile_time_dependency",
       "direction": "source_to_dest",
       "verification_status": "VERIFIED_IMPLEMENTED",
       "evidence": {
         "source_file": "src/core/CMakeLists.txt",
-        "line": 34,
-        "notes": "AVX2 SIMD routines compiled conditionally into t81_core on x86_64."
-      }
+        "line": 46,
+        "notes": "AVX2 SIMD routines compiled conditionally into t81_core on x86_64.",
+        "reference_type": "DECLARATION"
+      },
+      "derivation_method": "STATICALLY_EXTRACTED"
     },
     {
       "id": "edge.dep.tests_to_scg_evidence",
@@ -351,8 +403,10 @@
       "evidence": {
         "source_file": "tests/cpp/test_scg07_phase6_qualification.cpp",
         "line": 1,
-        "notes": "Phase 6 harness qualifies historical SCG-06 F1..F7 arithmetic reproducers."
-      }
+        "notes": "Phase 6 harness qualifies historical SCG-06 F1..F7 arithmetic reproducers.",
+        "reference_type": "DESCRIPTIVE_FILE"
+      },
+      "derivation_method": "MANUALLY_CURATED"
     },
     {
       "id": "edge.dep.tests_to_limbs_test",
@@ -364,8 +418,10 @@
       "evidence": {
         "source_file": "tests/cpp/test_t81_limb27_mul.cpp",
         "line": 1,
-        "notes": "10,000 randomized test cases verify T81Limb27 multiplication."
-      }
+        "notes": "10,000 randomized test cases verify T81Limb27 multiplication.",
+        "reference_type": "DESCRIPTIVE_FILE"
+      },
+      "derivation_method": "STATICALLY_EXTRACTED"
     },
     {
       "id": "edge.dep.tests_to_bigint_test",
@@ -377,8 +433,10 @@
       "evidence": {
         "source_file": "tests/cpp/test_t81bigint_sub.cpp",
         "line": 1,
-        "notes": "1,200 randomized checks verify T81BigInt subtraction invariants."
-      }
+        "notes": "1,200 randomized checks verify T81BigInt subtraction invariants.",
+        "reference_type": "DESCRIPTIVE_FILE"
+      },
+      "derivation_method": "STATICALLY_EXTRACTED"
     },
     {
       "id": "edge.dep.tests_to_fraction_test",
@@ -390,8 +448,10 @@
       "evidence": {
         "source_file": "tests/cpp/test_t81fraction.cpp",
         "line": 1,
-        "notes": "Regression tests verify exception unwinding and to_double() precision."
-      }
+        "notes": "Regression tests verify exception unwinding and to_double() precision.",
+        "reference_type": "DESCRIPTIVE_FILE"
+      },
+      "derivation_method": "STATICALLY_EXTRACTED"
     },
     {
       "id": "edge.dep.scg_to_hypotheses_evidence",
@@ -403,8 +463,10 @@
       "evidence": {
         "source_file": "docs/research/continuity/SCG04_MAINTAINER_DECISION_RECORD.md",
         "line": 45,
-        "notes": "SCG-08 maps mathematical findings directly to hypotheses H01, H02, H04, H05, H06."
-      }
+        "notes": "SCG-08 maps mathematical findings directly to hypotheses H01, H02, H04, H05, H06.",
+        "reference_type": "DESCRIPTIVE_FILE"
+      },
+      "derivation_method": "MANUALLY_CURATED"
     },
     {
       "id": "edge.dep.rtl_to_hypotheses_evidence",
@@ -416,8 +478,10 @@
       "evidence": {
         "source_file": "docs/research/continuity/HYPOTHESIS_REGISTER_v1.json",
         "line": 10,
-        "notes": "H01 and H06 cite experiments/ternary_hardware_feasibility for unpacked ternary comparison."
-      }
+        "notes": "H01 and H06 cite experiments/ternary_hardware_feasibility for unpacked ternary comparison.",
+        "reference_type": "DESCRIPTIVE_FILE"
+      },
+      "derivation_method": "MANUALLY_CURATED"
     }
   ]
 }

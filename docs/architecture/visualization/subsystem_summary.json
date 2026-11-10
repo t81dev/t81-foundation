@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
   "description": "High-level subsystem summary graph for scalable 3D macro-navigation",
   "subsystem_count": 26,
@@ -301,7 +301,7 @@
         "execution": "NONE",
         "test_coverage": "DEDICATED_SUITE",
         "qualification": "QUALIFIED",
-        "production_status": "PRODUCTION_CORE"
+        "production_status": "GOVERNANCE_AND_ASSURANCE"
       }
     },
     {
@@ -314,7 +314,7 @@
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
         "qualification": "QUALIFIED",
-        "production_status": "PRODUCTION_CORE"
+        "production_status": "GOVERNANCE_AND_ASSURANCE"
       }
     },
     {
@@ -340,7 +340,7 @@
         "execution": "HOSTED",
         "test_coverage": "DEDICATED_SUITE",
         "qualification": "QUALIFIED",
-        "production_status": "PRODUCTION_CORE"
+        "production_status": "GOVERNANCE_AND_ASSURANCE"
       }
     }
   ],
