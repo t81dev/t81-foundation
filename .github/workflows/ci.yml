@@ -444,7 +444,7 @@ jobs:
             c_compiler: clang-18
             cpp_compiler: clang++-18
           - platform: macos-arm64
-            runs_on: macos-14
+            runs_on: macos-15
             compiler: clang
             c_compiler: clang
             cpp_compiler: clang++
@@ -580,10 +580,10 @@ jobs:
         with:
           path: build
           key: >-
-            cmake-build-${{ runner.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-
+            cmake-build-${{ runner.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-${{ matrix.runs_on }}-
             ${{ hashFiles('CMakeLists.txt', 'cmake/**', 'include/**', 'src/**', 'tests/**') }}
           restore-keys: |
-            cmake-build-${{ runner.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-
+            cmake-build-${{ runner.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-${{ matrix.runs_on }}-
 
       - name: Setup MSVC/cl environment (Windows)
         if: runner.os == 'Windows'
