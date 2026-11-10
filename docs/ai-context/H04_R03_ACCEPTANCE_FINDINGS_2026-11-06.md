@@ -1,5 +1,34 @@
 # H04-R03 — Dated Acceptance-Finding Reconciliation (2026-11-06; Reconciled 2026-11-07)
 
+## Operational overlay — 2026-11-10
+
+The historical snapshot below describes PR #724 at `50087972`. It predates
+the later Phase 4 implementation integrated by [PR #727](https://github.com/t81dev/t81-foundation/pull/727)
+at `64941caff9372f2e76dd3a0fb79aa6711a48b171`, which is present in the inspected
+`main` baseline `e5c30560aa77c31184a14b03ed152a6deef5c1a3`.
+
+Current source includes the registered-object retention boundary in
+[retention.py](../../experiments/h04_r03_matched_codec/retention.py) and the
+wire-frame-only handoff in
+[benchmark_harness.py](../../experiments/h04_r03_matched_codec/benchmark_harness.py).
+The [later FC1 receipt](../research/continuity/H04_R03_FC1_EVIDENCE_RECEIPT.md)
+reports 82 passing tests and the disposition
+`VERIFIED (CORRECTNESS & RETENTION BOUNDARY ENFORCED)`. These are the receipt
+author's reported results, not a new execution or independent reproduction by
+this overlay. The source was inspected; no research tests or measurements were run.
+
+Do not interpret the historical `UNIMPLEMENTED` / `OPEN` labels below as the
+current implementation inventory or restart that repair from this snapshot.
+The later boundary tracks registered Python-owned objects and checks a native
+ordering fence; it does not establish absence of untracked aliases, allocator
+page reclamation, physical erasure, or cache flushing. Those limits remain open.
+
+**Phase C measurement remains frozen and requires separate explicit human
+authorization.** This overlay changes neither the protocol nor historical
+receipts, canonical H01–H08 identities, or `CURRENT_STATE.json`.
+
+## Historical snapshot — PR #724 (`50087972`)
+
 > **Non-normative continuity addendum.** This is a repository/review-record observation, not an amendment to the accepted protocol, historical receipts, scientific measurements, or `CURRENT_STATE.json`. The three findings below were independently **reported by Codex on PR #679** and addressed via the H04-R03-FC1 corrective implementation merged at `50087972e078a09d7aff79cf6d8ae15db45c17ba` (PR #724). Overall milestone disposition is **FC1 PARTIAL**; Phase 4 retention enforcement remains unimplemented. Refresh current source and review state before acting.
 
 ## Exact repository and review identities
