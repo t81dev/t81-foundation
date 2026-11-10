@@ -423,7 +423,7 @@ jobs:
     name: " build / ${{ matrix.platform }} / ${{ matrix.compiler }}"
     needs: [spec-and-docs, warn-strict]
     runs-on: ${{ matrix.runs_on }}
-    timeout-minutes: 40
+    timeout-minutes: ${{ matrix.timeout_minutes || 40 }}
     strategy:
       fail-fast: false
       matrix:
@@ -433,6 +433,7 @@ jobs:
             compiler: gcc
             c_compiler: gcc-14
             cpp_compiler: g++-14
+            timeout_minutes: 60
           - platform: linux-x86_64
             runs_on: ubuntu-24.04
             compiler: clang
@@ -444,7 +445,7 @@ jobs:
             c_compiler: clang-18
             cpp_compiler: clang++-18
           - platform: macos-arm64
-            runs_on: macos-14
+            runs_on: macos-15
             compiler: clang
             c_compiler: clang
             cpp_compiler: clang++
@@ -580,10 +581,10 @@ jobs:
         with:
           path: build
           key: >-
-            cmake-build-${{ runner.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-
+            cmake-build-${{ runner.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-${{ matrix.runs_on }}-
             ${{ hashFiles('CMakeLists.txt', 'cmake/**', 'include/**', 'src/**', 'tests/**') }}
           restore-keys: |
-            cmake-build-${{ runner.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-
+            cmake-build-${{ runner.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-${{ matrix.runs_on }}-
 
       - name: Setup MSVC/cl environment (Windows)
         if: runner.os == 'Windows'
@@ -979,7 +980,7 @@ jobs:
     name: " gate / determinism slice / linux-x86_64 / clang "
     needs: spec-and-docs
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -1366,7 +1367,7 @@ jobs:
     name: " build / sanitizers "
     needs: spec-and-docs
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6

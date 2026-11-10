@@ -108,6 +108,6 @@ public:
 
 }  // namespace t81
 
-inline t81::T81Bytes operator"" _b(const char* str, std::size_t len) {
+inline t81::T81Bytes operator""_b(const char* str, std::size_t len) {
   return t81::T81Bytes(reinterpret_cast<const std::uint8_t*>(str), len);
 }
