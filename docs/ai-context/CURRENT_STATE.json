@@ -563,5 +563,5 @@
     "performance_measurement": false,
     "production_activation": false
   },
-  "next_gate": "2026-11-09 non-normative overlay: read T81_RESEARCH_STATUS_2026-11-09.md first. Main observed 8dec43ac2a9a702c9ae54229cf6891ee63f285c0; SCG-07 Phase 6 PR #741 merged with QUALIFIED WITH LIMITATIONS for F1–F7. SCG-08 Phase 0 is proposed documentation-only hypothesis and evidence reconciliation pending Jules; no benchmark, implementation, normative or measurement authorization. selected_view intentionally remains the 2026-11-02 historical partial inventory, not a live state."
+  "next_gate": "2026-11-10 non-normative overlay: read T81_RESEARCH_STATUS_2026-11-10.md first. SCG-08 Phase 0 PR #753 merged (0bd0817e4b9dc879fffce18c59ea9ff781f7acb3); superseded PR #745 closed without merge. SCG-07 remains QUALIFIED WITH LIMITATIONS. Open PR backlog includes stacked #747/#748/#750/#751/#752 requiring independent review and baseline reconciliation. SCG-08 Phase 1 signed-domain amendment and arithmetic-result contract require authoritative recording; Gate 1 implementation and Gate 2 execution are not granted by this index. selected_view remains the historical 2026-11-02 partial inventory."
 }
