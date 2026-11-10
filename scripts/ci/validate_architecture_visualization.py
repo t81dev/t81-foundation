@@ -23,7 +23,9 @@ REQUIRED_FILES = [
     "visualization_layout.json",
     "subsystem_summary.json",
     "coverage_manifest.json",
-    "component_evidence_index.json"
+    "component_evidence_index.json",
+    "research_programs.json",
+    "pull_requests_snapshot.json"
 ]
 
 VALID_REFERENCE_TYPES = {

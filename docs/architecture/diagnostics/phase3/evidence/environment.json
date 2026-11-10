@@ -1,0 +1,110 @@
+{
+  "base": "cd490f5b5c0496350682542b56424dd77bea6963",
+  "PR_756_merged": true,
+  "author": "Codex assistant, same implementation/test session; not independent-person review",
+  "sources_unchanged_during_execution": true,
+  "versions": [
+    {
+      "argv": [
+        "uname",
+        "-a"
+      ],
+      "exit": 0,
+      "stdout": "Darwin Mac.lan 25.5.0 Darwin Kernel Version 25.5.0: Tue Jun  9 22:27:52 PDT 2026; root:xnu-12377.121.10~1/RELEASE_ARM64_T8112 arm64\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/usr/bin/cc",
+        "--version"
+      ],
+      "exit": 0,
+      "stdout": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/usr/bin/c++",
+        "--version"
+      ],
+      "exit": 0,
+      "stdout": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/llvm/bin/clang",
+        "--version"
+      ],
+      "exit": 0,
+      "stdout": "Homebrew clang version 22.1.1\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /opt/homebrew/Cellar/llvm/22.1.1/bin\nConfiguration file: /opt/homebrew/Cellar/llvm/22.1.1/etc/clang/arm64-apple-darwin25.cfg\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/opt/homebrew/bin/lld-link",
+        "--version"
+      ],
+      "exit": 0,
+      "stdout": "Homebrew LLD 22.1.1\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "cmake",
+        "--version"
+      ],
+      "exit": 0,
+      "stdout": "cmake version 4.3.0\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "qemu-system-aarch64",
+        "--version"
+      ],
+      "exit": 0,
+      "stdout": "QEMU emulator version 10.2.2\nCopyright (c) 2003-2025 Fabrice Bellard and the QEMU Project developers\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "python3",
+        "--version"
+      ],
+      "exit": 0,
+      "stdout": "Python 3.14.3\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "bash",
+        "--version"
+      ],
+      "exit": 0,
+      "stdout": "GNU bash, version 3.2.57(1)-release (arm64-apple-darwin25)\nCopyright (C) 2007 Free Software Foundation, Inc.\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--short"
+      ],
+      "exit": 0,
+      "stdout": "?? docs/architecture/diagnostics/phase3/\n",
+      "stderr": ""
+    }
+  ],
+  "binary_sha256": {
+    "/opt/homebrew/bin/qemu-system-aarch64": "391e2408279adc383d36dd61bc4a820f62ec5ec9d2ed5b9e7dd8ad6b835a32ea",
+    "/opt/homebrew/opt/llvm/bin/clang": "7e5bc6170b8a2f2e6c9583e4544bdce89ad6a66e51be2d81e55dedd991bff19e",
+    "/opt/homebrew/bin/lld-link": "40dabccffe9f0ce63d0bc977ec15dcd9e67579faccdba65548ee0a6098a1322c",
+    "/opt/homebrew/share/qemu/edk2-aarch64-code.fd": "47765fe344818cbc464b1c14ae658fb4b854f5c2ceffa982411731eb4865594d",
+    "/opt/homebrew/share/qemu/edk2-arm-vars.fd": "b3b855c5a80310168051164986855692d1bdb06e67619856177965cd87c6774f"
+  },
+  "fresh_image_sha256": "7abf1b32a3f16f85e115e0dd8e8dd61b904651e40f2d5d51c3758a4180441718",
+  "fresh_efi_sha256": "e1067c8d95c31b31b50d7d02704ddf897a72a1738fcf0dd2082be1567127e3bc",
+  "fresh_image_archive": "fresh-image.img.gz",
+  "limits": "macOS ARM64, single supplied firmware binary, QEMU 10.2.2; diagnostic source tag read online is not a firmware rebuild/attestation"
+}

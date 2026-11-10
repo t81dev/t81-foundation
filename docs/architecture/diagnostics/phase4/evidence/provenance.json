@@ -1,0 +1,156 @@
+{
+  "baseline": "6c9eaf1a2fc8368cd06f6dddbbdcd78e6606c0ce",
+  "edk2_source": "b158dad150bf02879668f72ce306445250838201",
+  "acpica_source": "7dae72155bf06b0edda9f3aea713da1d48c1c418",
+  "versions": [
+    {
+      "argv": [
+        "uname",
+        "-a"
+      ],
+      "exit": 0,
+      "stdout": "Darwin Mac.lan 25.5.0 Darwin Kernel Version 25.5.0: Tue Jun  9 22:27:52 PDT 2026; root:xnu-12377.121.10~1/RELEASE_ARM64_T8112 arm64\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "qemu-system-aarch64",
+        "--version"
+      ],
+      "exit": 0,
+      "stdout": "QEMU emulator version 10.2.2\nCopyright (c) 2003-2025 Fabrice Bellard and the QEMU Project developers\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/llvm/bin/clang",
+        "--version"
+      ],
+      "exit": 0,
+      "stdout": "Homebrew clang version 22.1.1\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /opt/homebrew/Cellar/llvm/22.1.1/bin\nConfiguration file: /opt/homebrew/Cellar/llvm/22.1.1/etc/clang/arm64-apple-darwin25.cfg\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/opt/homebrew/bin/lld-link",
+        "--version"
+      ],
+      "exit": 0,
+      "stdout": "Homebrew LLD 22.1.1\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/usr/bin/cc",
+        "--version"
+      ],
+      "exit": 0,
+      "stdout": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "--version"
+      ],
+      "exit": 0,
+      "stdout": "Python 3.9.6\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "python3",
+        "--version"
+      ],
+      "exit": 0,
+      "stdout": "Python 3.14.3\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "cmake",
+        "--version"
+      ],
+      "exit": 0,
+      "stdout": "cmake version 4.3.0\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/private/tmp/t81-phase4/acpica/generate/unix/bin/iasl",
+        "-v"
+      ],
+      "exit": 0,
+      "stdout": "\nIntel ACPI Component Architecture\nASL+ Optimizing Compiler/Disassembler version 20241212\nCopyright (c) 2000 - 2023 Intel Corporation\n\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit": 0,
+      "stdout": "b158dad150bf02879668f72ce306445250838201\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "submodule",
+        "status"
+      ],
+      "exit": 0,
+      "stdout": "-b64af41c3276f97f0e181920400ee056b9c88037 ArmPkg/Library/ArmSoftFloatLib/berkeley-softfloat-3\n f4153a09f87cbb9c826d8fc12c74642bb2d879ea BaseTools/Source/C/BrotliCompress/brotli (f4153a0)\n 8c89224991adff88d53cd380f42a2baa36f91454 CryptoPkg/Library/MbedTlsLib/mbedtls (8c89224)\n de90e54bbe82e5be4fb9608b6f5c308bb837d355 CryptoPkg/Library/OpensslLib/openssl (de90e54b)\n f4153a09f87cbb9c826d8fc12c74642bb2d879ea MdeModulePkg/Library/BrotliCustomDecompressLib/brotli (f4153a0)\n-abfc8ff81df4067f309032467785e06975678f0d MdeModulePkg/Universal/RegularExpressionDxe/oniguruma\n cfff805481bdea27f900c32698171286542b8d3c MdePkg/Library/BaseFdtLib/libfdt (cfff805)\n 370b5944c046bab043dd8b133727b2135af7747a MdePkg/Library/MipiSysTLib/mipisyst (370b594)\n-e9ebfa7e77a6bee77df44e096b100e7131044059 RedfishPkg/Library/JsonLib/jansson\n 50924a4c8145fc721e17208f55814d2b38766fe6 SecurityPkg/DeviceSecurity/SpdmLib/libspdm (50924a4)\n-1cc9cde3448cdd2e000886a26acf1caac2db7cf1 UnitTestFrameworkPkg/Library/CmockaLib/cmocka\n-86add13493e5c881d7e4ba77fb91c1f57752b3a4 UnitTestFrameworkPkg/Library/GoogleTestLib/googletest\n-83d4e1ebef3588fae48b69a7352cc21801cb70bc UnitTestFrameworkPkg/Library/SubhookLib/subhook\n",
+      "stderr": ""
+    }
+  ],
+  "input_sha256": {
+    "/opt/homebrew/bin/qemu-system-aarch64": "391e2408279adc383d36dd61bc4a820f62ec5ec9d2ed5b9e7dd8ad6b835a32ea",
+    "/opt/homebrew/share/qemu/edk2-aarch64-code.fd": "47765fe344818cbc464b1c14ae658fb4b854f5c2ceffa982411731eb4865594d",
+    "/opt/homebrew/share/qemu/edk2-arm-vars.fd": "b3b855c5a80310168051164986855692d1bdb06e67619856177965cd87c6774f",
+    "/private/tmp/t81-phase4/firmware/diagnostic-code.fd": "af8cab573d31142187d9a70a895ab31409903018bfc73e9dc28ade03ec4661cd",
+    "/private/tmp/t81-phase4/firmware/diagnostic-vars.fd": "b3b855c5a80310168051164986855692d1bdb06e67619856177965cd87c6774f",
+    "/private/tmp/t81-phase4/guest-image/qemu_slice6_guest.img": "4eb7b30cfd60b5c8d78a92342c9645662ab8a5ded6d69d2e23e768a474c48d6c",
+    "/private/tmp/t81-phase4/guest-build/ternaryos/qemu_slice6/BOOTAA64.EFI": "dfdbdf134f407173476b9c6e6e1fb27f36b5a86919822d88815dfb0c73a336a0",
+    "/private/tmp/t81-phase4/acpica/generate/unix/bin/iasl": "ab46f70e859a84255283d2a8b5425181ea7713c3e0a1eb889e20d1178350eef6",
+    "/private/tmp/t81-phase4/edk2/BaseTools/Source/C/bin/GenFv": "9181ed41fea0fbec47925b37922293e6bc5f21bd76321e509caed6492aa84c3f",
+    "/private/tmp/t81-phase4/edk2/BaseTools/Source/C/bin/GenFw": "51002779b340de75f85826e66d06727953dbf5429d28a704673f75acb3b8a6b1",
+    "/private/tmp/t81-phase4/matched_qemu.py": "346acaefcba885b7086363d7f40179d592fd0a9a76c156d7997075f749daebc7"
+  },
+  "debug_error_level": "0x8000004F",
+  "debug_property_mask": "0x2f (upstream DEBUG default)",
+  "supplied_firmware_mapping": {
+    "description": "UEFI firmware for aarch64",
+    "interface-types": [
+      "uefi"
+    ],
+    "mapping": {
+      "device": "flash",
+      "executable": {
+        "filename": "/opt/homebrew/Cellar/qemu/10.2.2/share/qemu/edk2-aarch64-code.fd",
+        "format": "raw"
+      },
+      "nvram-template": {
+        "filename": "/opt/homebrew/Cellar/qemu/10.2.2/share/qemu/edk2-arm-vars.fd",
+        "format": "raw"
+      }
+    },
+    "targets": [
+      {
+        "architecture": "aarch64",
+        "machines": [
+          "virt-*"
+        ]
+      }
+    ],
+    "features": [
+      "verbose-static"
+    ],
+    "tags": []
+  },
+  "supplied_firmware_build_attested": false,
+  "source_patches": "instrumentation.json",
+  "author_relationship": "same Codex assistant with prior Phase 2/3 context; not independent-person validation",
+  "host_backend_limit": "QEMU lists only the emulator TPM backend; no live TPM emulator/backend was provisioned or tested. No general impossibility is claimed."
+}
