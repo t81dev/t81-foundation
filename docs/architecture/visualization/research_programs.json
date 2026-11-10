@@ -152,6 +152,14 @@
           "receipt": "docs/architecture/diagnostics/phase3/REPORT.md",
           "pr": "#757 (commit 6c9eaf1a)",
           "details": "Identified two distinct barriers: (1) verifier stops at firmware diagnostics before testing guest readiness; (2) tracked payload is a historical 5,120-byte probe WFI loop, while freshly compiled 75,264-byte EFI reaches real shell and replies to help. Native 5-check verification remains NOT QUALIFIED."
+        },
+        {
+          "phase_id": "ARCH-ENG-002_P4",
+          "title": "Phase 4: Native Firmware Compatibility & Diagnostic Continuity",
+          "disposition": "MERGED_INVESTIGATION_ONLY",
+          "receipt": "docs/architecture/diagnostics/phase4/REPORT.md",
+          "pr": "#758 (commit 4b550b4d)",
+          "details": "Evaluated 2-firmware / 2-launch matrix across original and matched configurations; fail-closed verifier confirmed rejecting 4/4 rows (exit status 1); stage-0 TRNG query unsupported. Matched debug launch reaches real shell but retains firmware errors. All four native configurations remain failed at 2/5; native 5-check verification remains NOT QUALIFIED."
         }
       ]
     },
@@ -287,51 +295,161 @@
   "hypothesis_mappings": [
     {
       "hypothesis_id": "H01",
-      "title": "Balanced Ternary Elementary Representation Advantage",
-      "current_disposition": "HISTORICAL_NEGATIVE_ON_SCALAR_ADD",
-      "governance_note": "Scalar tryte addition in software incurs 10.6x instruction overhead compared to native 64-bit Boolean addition. Closed for scalar software; multi-precision re-evaluated in SCG-08."
+      "formal_claim": "Equal-information ternary storage can have lower total physical cost than binary storage under stated device and overhead assumptions.",
+      "evidence_tiers": [
+        "B",
+        "D"
+      ],
+      "canonical_result": "D: ideal threshold derived; M=256 and C3/C2=1.5 gives ternary cost 9 vs binary 8. B: current RTL uses two binary bits per trit and supplies no measured three-state-device advantage.",
+      "confidence": "High for exact arithmetic/source facts; physical advantage open.",
+      "baseline": "Optimally packed binary representation of the same M states; same reliability, access and I/O requirements.",
+      "unresolved_limitations": "Use storage_boundary.py and selected factorial model; require independent device data before physical claims.",
+      "linked_studies": [
+        {
+          "study_id": "SCG-08",
+          "scope": "Phase 0 charter derived 3-state carry Markov chain; candidate experiment EXP-SCG08-01 preregistered; Gate 1/2 authorization withheld."
+        },
+        {
+          "study_id": "T81-SCALAR-ADD",
+          "scope": "Historical exploratory software scalar tryte addition incurred 10.6x instruction overhead compared to native 64-bit Boolean addition; closed for scalar software."
+        }
+      ]
     },
     {
       "hypothesis_id": "H02",
-      "title": "Multi-Precision Software Addition Carry Advantage",
-      "current_disposition": "THEORETICALLY_SUPPORTED_EMPIRICAL_TESTING_PENDING",
-      "governance_note": "Carry Markov chain proves 1/4 stationary non-zero occurrence vs 1/2 in binary. Tier 2 operation-count benchmark preregistered in SCG-08 Phase 0; Gate 1/2 authorization withheld."
+      "formal_claim": "Balanced ternary can improve a specified signed arithmetic or rounding task at equal semantics and cost accounting.",
+      "evidence_tiers": [
+        "A",
+        "B"
+      ],
+      "canonical_result": "A: isolated current CWEB routines fail balanced positional semantics: addition 422/547; multiplication 140/201; negation 0/27 failures. This rejects these routines as evidence, not balanced ternary mathematics. Multiplication is documented as componentwise; the oracle failure rules it out for positional-integer claims, not for a separately specified vector algebra.",
+      "confidence": "High for isolated reproduction; complete Hanoi integration untested.",
+      "baseline": "Exact integer oracle, competitive binary signed arithmetic and a correct ternary candidate.",
+      "unresolved_limitations": "Preserve failures; specify domain and correct oracle before any performance comparison; do not rewrite Hanoi.",
+      "linked_studies": [
+        {
+          "study_id": "SCG-07",
+          "scope": "Phases 1-6 arithmetic qualification; reproducers F1-F7 pass unconditionally against ExactBigIntOracle; executive disposition QUALIFIED WITH LIMITATIONS."
+        },
+        {
+          "study_id": "SCG-08",
+          "scope": "Markov carry propagation analysis proves 1/4 stationary non-zero occurrence vs 1/2 in binary; Tier 2 multi-precision software work benchmark preregistered."
+        }
+      ]
     },
     {
       "hypothesis_id": "H03",
-      "title": "TISC vs Wasm Artifact Density Advantage",
-      "current_disposition": "UNDER_SPECIFIED",
-      "governance_note": "Artifact size comparisons depend heavily on encoding format. No independent cross-compiler density advantage established."
+      "formal_claim": "Grouping four trits as base-81 can provide a workload-specific interface or execution benefit beyond equivalent binary packing.",
+      "evidence_tiers": [
+        "B",
+        "D"
+      ],
+      "canonical_result": "D: four-trit grouping established. B: grouped numeric/data surfaces exist; no grouping-specific performance advantage reproduced in this session.",
+      "confidence": "High for identity; benefit open.",
+      "baseline": "Ungrouped ternary, binary bit-packed and binary limb representations with equal value domains.",
+      "unresolved_limitations": "Keep mathematical grouping distinct from kernel speed and physical storage; isolate grouping in a later ablation.",
+      "linked_studies": [
+        {
+          "study_id": "TISC-SPEC",
+          "scope": "Grouping four trits as base-81 digit established in TISC specification and limb encodings; execution advantage unverified."
+        }
+      ]
     },
     {
       "hypothesis_id": "H04",
-      "title": "Dynamic Precision Adaptation Advantage",
-      "current_disposition": "REFINED_TO_H04_R01_AND_R03",
-      "governance_note": "H04-R03 Candidate A correctness and retention verified; Phase C performance benchmarks frozen."
+      "formal_claim": "An explicitly defined adaptive ternary representation policy can beat fixed ternary and an equally capable adaptive binary policy on a specified workload.",
+      "evidence_tiers": [
+        "B"
+      ],
+      "canonical_result": "B: scheduler thresholds >40/>100 and AI substring; promotion uses enum 0/1/2 with depth>10/tensor trigger. No verified mapping from tier_mode to mode or equivalent semantic domains; original H04 remains under-specified.",
+      "confidence": "High for source facts; optimization/integration unproven.",
+      "baseline": "Fixed binary, adaptive binary, fixed ternary, adaptive ternary; identical domains, predictor information and conversion accounting.",
+      "unresolved_limitations": "Select H04-R01 capacity-trace discriminator as a declared refinement, not a reconstruction of working Hanoi semantics.",
+      "linked_studies": [
+        {
+          "study_id": "H04-R01",
+          "scope": "Declared capacity-trace discriminator refinement specification; separated radix from adaptive precision without assuming historical VM scheduler semantics."
+        },
+        {
+          "study_id": "EXP-H04-R03",
+          "scope": "Candidate A codec correctness and Phase 4 weak-reference wire-frame retention verified (PR #727); Phase C performance measurement remains strictly frozen."
+        }
+      ]
     },
     {
       "hypothesis_id": "H05",
-      "title": "Three-State Circuit Cost Reduction vs Boolean",
-      "current_disposition": "OPEN_FEASIBILITY",
-      "governance_note": "RTL models signed two-bit signals; Boolean synthesis comparison under common process remains unperformed."
+      "formal_claim": "A specified three-state primitive can reduce circuit or system cost against an equivalent Boolean implementation.",
+      "evidence_tiers": [
+        "B"
+      ],
+      "canonical_result": "B: hardware repo implements eight operations over signed two-bit trit signals; CMP3 handler in the Hanoi table is null. No physical or synthesis comparison reproduced.",
+      "confidence": "Source inspection only; architectural benefit open.",
+      "baseline": "Boolean synthesis for exactly the same function, I/O states, throughput and reliability.",
+      "unresolved_limitations": "Formalize one operation truth table before any new ISA or hardware extension.",
+      "linked_studies": [
+        {
+          "study_id": "RTL-FEASIBILITY",
+          "scope": "Verilog simulation models ternary dot product using 2 bits per trit (design_c_ht1_ternary.v); comparative physical gate synthesis unperformed."
+        },
+        {
+          "study_id": "EXP-T81-COMP3-01",
+          "scope": "Candidate comparator benchmarking unapproved; blocked pending maintainer signature, protocol repairs R01-R11, and Ed25519 signing key custody."
+        }
+      ]
     },
     {
       "hypothesis_id": "H06",
-      "title": "Ternary Weights / Activations Inference Advantage",
-      "current_disposition": "NO_INDEPENDENT_EVIDENCE",
-      "governance_note": "No inference benchmark, model accuracy, or device energy independently reproduced. Prior claims classified as unverified."
+      "formal_claim": "Ternary weights or activations can improve accuracy-constrained inference versus equally optimized binary low-bit alternatives.",
+      "evidence_tiers": [
+        "B",
+        "C"
+      ],
+      "canonical_result": "B: implementations and C: prior reports exist. No inference benchmark, model accuracy or device energy independently reproduced here.",
+      "confidence": "No new performance confidence assigned.",
+      "baseline": "Matched INT8/low-bit kernels and models at equal task accuracy, bandwidth and batching.",
+      "unresolved_limitations": "Audit existing artifact/model provenance before designing a bounded kernel/model experiment.",
+      "linked_studies": [
+        {
+          "study_id": "MATVEC-REPORT",
+          "scope": "Historical report documented packed ternary MatVec; independent accuracy-constrained benchmarks comparing against optimized INT8 remain unexecuted."
+        }
+      ]
     },
     {
       "hypothesis_id": "H07",
-      "title": "Governed Execution Auditability Advantage",
-      "current_disposition": "ACTIVE_ENGINEERING_IN_AXION",
-      "governance_note": "Axion policy engine and nondeterminism detection active; security certification requires independent protocol completion."
+      "formal_claim": "Representation-independent governed execution can improve a defined auditability property.",
+      "evidence_tiers": [
+        "B",
+        "C"
+      ],
+      "canonical_result": "Separate engineering track. PRs #565/#566 remain open/draft: both CodeQL pass, required quality gate fails. Existing source/test reports are not a new independent security certification here.",
+      "confidence": "Current PR metadata checked; prior security tests not rerun in this session.",
+      "baseline": "Conventional runtime plus explicit authorization/evidence boundary; equal threat model and host trust.",
+      "unresolved_limitations": "Maintain the bounded CI/security investigation separately; Protocol 001 remains NOT READY.",
+      "linked_studies": [
+        {
+          "study_id": "AXION-POLICIES",
+          "scope": "Axion PolicyEngine implements Theta-1..Theta-9 ethics principles and user policy bytecode checks; standalone formal verification pending."
+        }
+      ]
     },
     {
       "hypothesis_id": "H08",
-      "title": "AI-Assisted Research Trustworthiness & Discovery",
-      "current_disposition": "CONTINUITY_PROCESS_GOVERNED",
-      "governance_note": "Audited via continuous session handoffs, negative result preservation, and mathematical oracle qualification."
+      "formal_claim": "AI-assisted iteration improves research trustworthiness or discovery under an independently auditable process.",
+      "evidence_tiers": [
+        "C",
+        "E"
+      ],
+      "canonical_result": "This session records source claims, independent extraction probes and mathematical derivation separately; it is not a controlled study of AI productivity.",
+      "confidence": "Researcher intent authoritative; comparative benefit untested.",
+      "baseline": "Human-only or alternative-assisted work under matched tasks and independent verification.",
+      "unresolved_limitations": "Append session handoffs and preserve failed claims rather than rewriting the narrative.",
+      "linked_studies": [
+        {
+          "study_id": "CONTINUITY-GOVERNANCE",
+          "scope": "Formal continuity receipts, fail-closed diagnostic gates, and ExactBigIntOracle verification enforced across SCG-03 through SCG-08."
+        }
+      ]
     }
   ]
 }

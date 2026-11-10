@@ -267,7 +267,7 @@
       state.edges = edges.edges;
       state.interfaces = ifaces.interfaces;
       state.gaps = gaps.gaps;
-      state.executionPaths = paths.execution_paths;
+      state.executionPaths = paths.paths || [];
       state.evidenceIndex = evidence;
       state.layout = layout;
       state.coverage = cov;
@@ -353,7 +353,9 @@
     state.gaps.forEach(g => {
       const opt = document.createElement('option');
       opt.value = g.id;
-      opt.textContent = `${g.id}: ${g.title} [${g.severity}]`;
+      const title = g.name || g.title || g.id;
+      const classification = g.gap_classification || g.severity || 'GAP';
+      opt.textContent = `${g.id}: ${title} [${classification}]`;
       els.gapSelect.appendChild(opt);
     });
 
@@ -363,7 +365,16 @@
       els.footerVerifiedCount.textContent = state.evidenceIndex.classification_summary.VERIFIED || 0;
     }
     if (state.coverage && els.footerCoverageMetric) {
-      els.footerCoverageMetric.textContent = `${state.coverage.top_level_directory_representation_percentage}% (${state.coverage.mapped_directories.length}/${state.coverage.total_top_level_directories} dirs)`;
+      const covMetrics = state.coverage.coverage_metrics || {};
+      const repoDirs = state.coverage.repository_directories || {};
+      const pct = covMetrics.top_level_directory_representation_percentage;
+      const mapped = repoDirs.mapped_count;
+      const total = repoDirs.total_top_level_directories;
+      if (pct !== undefined && mapped !== undefined && total !== undefined) {
+        els.footerCoverageMetric.textContent = `${pct}% (${mapped}/${total} dirs)`;
+      } else if (pct !== undefined) {
+        els.footerCoverageMetric.textContent = `${pct}%`;
+      }
     }
 
     resizeCanvas();
@@ -417,7 +428,7 @@
     if (state.activePathwayId !== 'none') {
       const path = state.executionPaths.find(p => p.id === state.activePathwayId);
       if (path) {
-        const inPath = path.steps.some(s => s.node_id === node.id);
+        const inPath = path.steps.some(s => s.module === node.id);
         if (!inPath) return false;
       }
     }
@@ -426,8 +437,9 @@
     if (state.activeGapId !== 'none') {
       const gap = state.gaps.find(g => g.id === state.activeGapId);
       if (gap) {
-        const inGap = (gap.affected_nodes && gap.affected_nodes.includes(node.id));
-        if (!inGap) return false;
+        const inLayer = gap.affected_layer && gap.affected_layer === node.layer_id;
+        const inNodes = gap.affected_nodes && gap.affected_nodes.includes(node.id);
+        if (!inLayer && !inNodes) return false;
       }
     }
 
@@ -1037,11 +1049,11 @@
       <div>
         <h3 style="font-size:0.95rem; margin-bottom:8px;">Repository Directory Coverage</h3>
         <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:6px;">
-          Top-Level Directory Representation: <strong>${cov.top_level_directory_representation_percentage}%</strong> (${cov.mapped_directories ? cov.mapped_directories.length : 0} of ${cov.total_top_level_directories || 35} directories mapped to architectural components).
+          Top-Level Directory Representation: <strong>${cov.coverage_metrics ? cov.coverage_metrics.top_level_directory_representation_percentage : 0}%</strong> (${cov.repository_directories ? cov.repository_directories.mapped_count : 0} of ${cov.repository_directories ? cov.repository_directories.total_top_level_directories : 0} directories mapped to architectural components).
         </p>
         <p style="font-size:0.75rem; color:var(--text-muted);">
           Unmapped directories represent tooling, CI configs, benchmarks, and external fixtures not part of runtime subsystems:
-          <br><code>${cov.unmapped_directories ? cov.unmapped_directories.join(', ') : ''}</code>
+          <br><code>${cov.repository_directories && cov.repository_directories.unmapped ? Object.keys(cov.repository_directories.unmapped).join(', ') : ''}</code>
         </p>
       </div>
 
@@ -1115,23 +1127,41 @@
 
       <!-- Hypothesis Register H01-H08 Mapping -->
       <div style="margin-top:20px;">
-        <h3 style="font-size:1rem; margin-bottom:10px;">Empirical Hypothesis Register (H01–H08) Current Dispositions</h3>
+        <h3 style="font-size:1rem; margin-bottom:10px;">Empirical Hypothesis Register (H01–H08) Canonical Status</h3>
         <table class="data-table">
           <thead>
             <tr>
-              <th style="width:10%;">ID</th>
-              <th style="width:30%;">Hypothesis Claim</th>
-              <th style="width:25%;">Current Disposition</th>
-              <th style="width:35%;">Governance Limitation</th>
+              <th style="width:8%;">ID</th>
+              <th style="width:8%;">Tiers</th>
+              <th style="width:34%;">Formal Claim</th>
+              <th style="width:25%;">Canonical Result &amp; Confidence</th>
+              <th style="width:25%;">Unresolved Limitations &amp; Linked Studies</th>
             </tr>
           </thead>
           <tbody>
             ${hyps.map(h => `
               <tr>
                 <td><strong>${h.hypothesis_id}</strong></td>
-                <td>${h.title}</td>
-                <td><span class="status-tag ${h.current_disposition.includes('NEGATIVE') ? 'tag-blocked' : (h.current_disposition.includes('THEORETICALLY') ? 'tag-static' : 'tag-unverified')}">${h.current_disposition}</span></td>
-                <td style="font-size:0.75rem; color:var(--text-secondary);">${h.governance_note}</td>
+                <td>
+                  ${(h.evidence_tiers || []).map(t => `<span class="status-tag tag-static" style="font-size:0.7rem; padding:1px 4px; margin-right:2px;">Tier ${t}</span>`).join('')}
+                </td>
+                <td style="font-size:0.8rem;">
+                  <div>${h.formal_claim || h.title}</div>
+                  ${h.baseline ? `<div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;"><strong>Baseline:</strong> ${h.baseline}</div>` : ''}
+                </td>
+                <td style="font-size:0.75rem;">
+                  <div>${h.canonical_result || (h.current_disposition ? `<span class="status-tag tag-static">${h.current_disposition}</span>` : '')}</div>
+                  <div style="color:var(--accent-hover); margin-top:4px; font-weight:500;">${h.confidence || ''}</div>
+                </td>
+                <td style="font-size:0.75rem; color:var(--text-secondary);">
+                  <div>${h.unresolved_limitations || h.governance_note || ''}</div>
+                  ${h.linked_studies && h.linked_studies.length > 0 ? `
+                    <div style="margin-top:4px; border-top:1px dashed var(--border-color); padding-top:4px;">
+                      <strong style="color:var(--text-primary);">Linked Studies:</strong>
+                      ${h.linked_studies.map(s => `<div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">• <em>${s.study_id}:</em> ${s.scope}</div>`).join('')}
+                    </div>
+                  ` : ''}
+                </td>
               </tr>
             `).join('')}
           </tbody>
