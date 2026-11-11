@@ -208,32 +208,46 @@ struct BinaryMultiLimb {
 };
 
 // Independent 64-bit binary limb helpers avoiding compiler warnings
-inline int cmp_binary_limbs(std::span<const uint64_t> a, std::span<const uint64_t> b) noexcept {
+inline int cmp_binary_limbs(std::span<const uint64_t> a, std::span<const uint64_t> b,
+                            OperationAccounting& acc) noexcept {
   size_t n = std::max(a.size(), b.size());
   for (size_t i = n; i-- > 0;) {
     uint64_t va = i < a.size() ? a[i] : 0;
     uint64_t vb = i < b.size() ? b[i] : 0;
-    if (va != vb) return va < vb ? -1 : 1;
+    acc.op_branch_cond++;  // Condition evaluation: va != vb
+    if (va != vb) {
+      acc.op_branch_cond++;  // Condition evaluation: va < vb
+      return va < vb ? -1 : 1;
+    }
   }
   return 0;
 }
 
-// 64x64 -> 128-bit multiplication using 32-bit halves
-inline void mul64(uint64_t u, uint64_t v, uint64_t& hi, uint64_t& lo) noexcept {
+// 64x64 -> 128-bit multiplication using 32-bit halves, accounting for primitive operations
+inline void mul64(uint64_t u, uint64_t v, uint64_t& hi, uint64_t& lo,
+                  OperationAccounting& acc) noexcept {
   uint64_t u0 = u & 0xFFFFFFFFULL;
   uint64_t u1 = u >> 32;
   uint64_t v0 = v & 0xFFFFFFFFULL;
   uint64_t v1 = v >> 32;
 
   uint64_t w0 = u0 * v0;
+  acc.op_alu_mul++;
   uint64_t t = u1 * v0 + (w0 >> 32);
+  acc.op_alu_mul++;
+  acc.op_alu_add_sub++;
   uint64_t w1 = t & 0xFFFFFFFFULL;
   uint64_t w2 = t >> 32;
   w1 += u0 * v1;
+  acc.op_alu_mul++;
+  acc.op_alu_add_sub++;
   w2 += (w1 >> 32);
+  acc.op_alu_add_sub++;
   w1 &= 0xFFFFFFFFULL;
 
   hi = u1 * v1 + w2;
+  acc.op_alu_mul++;
+  acc.op_alu_add_sub++;
   lo = (w1 << 32) | (w0 & 0xFFFFFFFFULL);
 }
 
@@ -394,22 +408,31 @@ public:
         acc.op_alu_add_sub++;
       }
     } else {
-      int c = cmp_binary_limbs(a.limbs, b.limbs);
+      int c = cmp_binary_limbs(a.limbs, b.limbs, acc);
       acc.op_branch_cond++;  // Condition evaluation: c == 0
       if (c == 0) {
         res.is_negative = false;
       } else {
+        acc.op_branch_cond++;  // Condition evaluation: c > 0
         const auto& larger = (c > 0) ? a : b;
         const auto& smaller = (c > 0) ? b : a;
         res.is_negative = larger.is_negative;
         uint64_t borrow = 0;
         for (size_t i = 0; i < InLimbs; ++i) {
           uint64_t sub = smaller.limbs[i] + borrow;
-          uint64_t new_borrow =
-              (smaller.limbs[i] + borrow < smaller.limbs[i] || larger.limbs[i] < sub) ? 1 : 0;
+          acc.op_alu_add_sub++;  // sub = smaller.limbs[i] + borrow
+          acc.op_branch_cond++;  // Condition evaluation: smaller.limbs[i] + borrow <
+                                 // smaller.limbs[i]
+          bool b1 = (smaller.limbs[i] + borrow < smaller.limbs[i]);
+          bool b2 = false;
+          if (!b1) {
+            acc.op_branch_cond++;  // Short-circuit condition evaluation: larger.limbs[i] < sub
+            b2 = (larger.limbs[i] < sub);
+          }
+          uint64_t new_borrow = (b1 || b2) ? 1 : 0;
           res.limbs[i] = larger.limbs[i] - sub;
           borrow = new_borrow;
-          acc.op_alu_add_sub++;
+          acc.op_alu_add_sub++;  // res = larger.limbs[i] - sub
         }
         for (size_t i = InLimbs; i < OutLimbs; ++i) {
           res.limbs[i] = 0;
@@ -448,24 +471,27 @@ public:
         acc.op_branch_cond++;  // Condition evaluation: i + j >= OutLimbs
         if (i + j >= OutLimbs) break;
         uint64_t hi = 0, lo = 0;
-        mul64(ai, bj, hi, lo);
-        acc.op_alu_mul++;
+        mul64(ai, bj, hi, lo, acc);
 
         // Add lo + carry + res.limbs[i+j]
         uint64_t cur = res.limbs[i + j];
         uint64_t sum1 = cur + lo;
+        acc.op_branch_cond++;  // Condition evaluation: sum1 < cur
         uint64_t c1 = (sum1 < cur) ? 1 : 0;
         uint64_t sum2 = sum1 + carry;
+        acc.op_branch_cond++;  // Condition evaluation: sum2 < sum1
         uint64_t c2 = (sum2 < sum1) ? 1 : 0;
         res.limbs[i + j] = sum2;
         carry = hi + c1 + c2;
-        acc.op_alu_add_sub += 2;
+        acc.op_alu_add_sub +=
+            4;  // sum1 = cur + lo; sum2 = sum1 + carry; carry = hi + c1; carry += c2
       }
       for (size_t k = i + InLimbs; k < OutLimbs; ++k) {
         acc.op_branch_cond++;  // Condition evaluation: carry != 0
         if (carry == 0) break;
         uint64_t cur = res.limbs[k];
         uint64_t sum = cur + carry;
+        acc.op_branch_cond++;  // Condition evaluation: sum < cur
         carry = (sum < cur) ? 1 : 0;
         res.limbs[k] = sum;
         acc.op_alu_add_sub++;
@@ -474,11 +500,13 @@ public:
 
     bool all_zero = true;
     for (size_t i = 0; i < OutLimbs; ++i) {
+      acc.op_branch_cond++;  // Condition evaluation: res.limbs[i] != 0
       if (res.limbs[i] != 0) {
         all_zero = false;
         break;
       }
     }
+    acc.op_branch_cond++;  // Condition evaluation: all_zero
     if (all_zero) res.is_negative = false;
 
     acc.mem_stores += OutLimbs;

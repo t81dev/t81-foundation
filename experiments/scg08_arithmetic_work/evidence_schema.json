@@ -119,6 +119,10 @@
               "ternary_limbs_op",
               "ternary_limbs_add",
               "ternary_limbs_mul",
+              "counters_add_ternary",
+              "counters_mul_ternary",
+              "counters_add_binary",
+              "counters_mul_binary",
               "w_ops_add_ternary",
               "w_ops_mul_ternary",
               "w_ops_add_binary",
@@ -132,6 +136,50 @@
               "ternary_limbs_op": {"type": "integer"},
               "ternary_limbs_add": {"type": "integer"},
               "ternary_limbs_mul": {"type": "integer"},
+              "counters_add_ternary": {
+                "type": "object",
+                "required": ["op_alu_add_sub", "op_alu_mul", "op_table_lookup", "op_branch_cond", "op_norm_pass"],
+                "properties": {
+                  "op_alu_add_sub": {"type": "integer"},
+                  "op_alu_mul": {"type": "integer"},
+                  "op_table_lookup": {"type": "integer"},
+                  "op_branch_cond": {"type": "integer"},
+                  "op_norm_pass": {"type": "integer"}
+                }
+              },
+              "counters_mul_ternary": {
+                "type": "object",
+                "required": ["op_alu_add_sub", "op_alu_mul", "op_table_lookup", "op_branch_cond", "op_norm_pass"],
+                "properties": {
+                  "op_alu_add_sub": {"type": "integer"},
+                  "op_alu_mul": {"type": "integer"},
+                  "op_table_lookup": {"type": "integer"},
+                  "op_branch_cond": {"type": "integer"},
+                  "op_norm_pass": {"type": "integer"}
+                }
+              },
+              "counters_add_binary": {
+                "type": "object",
+                "required": ["op_alu_add_sub", "op_alu_mul", "op_table_lookup", "op_branch_cond", "op_norm_pass"],
+                "properties": {
+                  "op_alu_add_sub": {"type": "integer"},
+                  "op_alu_mul": {"type": "integer"},
+                  "op_table_lookup": {"type": "integer"},
+                  "op_branch_cond": {"type": "integer"},
+                  "op_norm_pass": {"type": "integer"}
+                }
+              },
+              "counters_mul_binary": {
+                "type": "object",
+                "required": ["op_alu_add_sub", "op_alu_mul", "op_table_lookup", "op_branch_cond", "op_norm_pass"],
+                "properties": {
+                  "op_alu_add_sub": {"type": "integer"},
+                  "op_alu_mul": {"type": "integer"},
+                  "op_table_lookup": {"type": "integer"},
+                  "op_branch_cond": {"type": "integer"},
+                  "op_norm_pass": {"type": "integer"}
+                }
+              },
               "w_ops_add_ternary": {"type": "integer"},
               "w_ops_mul_ternary": {"type": "integer"},
               "w_ops_add_binary": {"type": "integer"},
