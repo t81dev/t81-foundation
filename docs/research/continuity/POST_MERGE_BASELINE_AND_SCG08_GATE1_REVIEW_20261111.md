@@ -19,7 +19,7 @@ Following the integration of Pull Requests **#770**, **#771**, and **#772** into
 | **Integrated Engineering Baseline** | **VERIFIED FOR EXECUTED LOCAL TESTS** | All local targeted CTest suites (semantic analyzer, frontend, VM decoder, DPE epoch DAG/parallel/thread pool, SCG-08 Gate 1) compiled cleanly and passed 100% (24/24 frontend/semantic tests, 35/35 DPE parallel tests, 30/30 DPE pool tests, 20/20 DPE DAG tests, decoder tests, and 5-width arithmetic tests). |
 | **Cross-Platform Hosted CI Matrix** | **PARTIALLY VERIFIED — WINDOWS TEST FAILURES REMAIN** | Ubuntu Linux (GCC/Clang, sanitizers, determinism slices, AVX2-ASan) and macOS runners pass build, configuration, and determinism gates. Windows runners (`build / windows-x86_64 / msvc` and `build / windows-x86_64 / clang-cl`) successfully checkout, configure CMake, and build all binaries, but fail during the CTest step with exit code 8 due to inherited upstream fixture and directory issues (`cli_contract_test` missing llama fixture and `check_root_structure` unexpected `review/` directory). |
 | **Semantic Analyzer Scope Lifetime** | **VERIFIED (DEFENSIVE STABILITY IMPROVEMENT)** | Switching `_scopes` from `std::vector<Scope>` to `std::deque<Scope>` prevents reallocation of the outer scope container during deep nesting. Because individual symbols are stored in `std::unordered_map` whose node addresses are node-allocated and remain stable across map operations, no prior bug of symbol pointer corruption was observed; the change is classified as a defensive scope-container stability improvement. |
-| **SCG-08 Phase 1 Gate 1 Readiness** | **ACCEPTANCE PENDING INDEPENDENT REVIEW** | Arithmetic correctness across all 5 bands ($B \in \{64, 128, 256, 512, 1024\}$), decoupled base-$10^9$ `ExactBigIntOracle` parity, digit canonicalization, fail-closed trial ceiling ($\le 1,000$), $W_{\text{ops}}$ formula reconciliation, and evidence schema (12 negative cases) are locally verified and documented. Independent review and formal maintainer sign-off remain required before Gate 1 closure. |
+| **SCG-08 Phase 1 Gate 1 Readiness** | **ACCEPTANCE PENDING INDEPENDENT REVIEW** | Available local verification supports readiness for independent technical review. Full compliance and formal acceptance remain unestablished pending that review. |
 | **SCG-08 Phase 2 (Experimental Campaign)** | **STRICT NO-GO — NOT AUTHORIZED** | Large-scale statistical benchmarks, carry-propagation timing campaigns, and hardware timing remain strictly withheld. Progression to Gate 2 requires a separate, dated maintainer authorization record. |
 
 ---
@@ -118,7 +118,8 @@ All 24 frontend CTest targets in the build system passed 100%.
 
 ## 4. Hosted CI Matrix & Windows Portability Audit
 
-### 4.1 GitHub Actions Run Audit (Commit `89223724038ff7dec349343469df4ea8389ede26`)
+### 4.1 Hosted GitHub Actions Check Suite Audit
+#### Baseline Commit `89223724038ff7dec349343469df4ea8389ede26` (Check Suite `43022879680`)
 All 28 jobs in GitHub Actions check suite `43022879680` were audited:
 
 | Matrix Job Name | Target Platform / Toolchain | Status | Conclusion | Details / Failing Step |
@@ -158,7 +159,23 @@ Process completed with **exit code 8**. Detailed investigation reveals that the 
 2. **`check_root_structure` (`scripts/governance/check_root_structure.py`):**
    - **Mechanism:** In `CMakeLists.txt:1800`, the test is registered as `COMMAND python3 ${CMAKE_SOURCE_DIR}/tests/ci/check_root_structure_test.py`.
    - **Root Cause:** On Windows runner environments, `python3` is frequently not present in the system `PATH` (only `python.exe` is registered), unlike Unix runners. In contrast, line 1806 uses `${Python3_EXECUTABLE}`. Additionally, `check_root_structure_test.py` itself invokes `["python3", str(script_path)]` in a subprocess, causing `FileNotFoundError` when spawning Python on Windows.
-   - **Isolation Boundary:** These failures reflect path conventions, sparse checkout filtering, and runner executable aliases. **There is no causal connection between these test fixture/structural issues and arithmetic or cross-profile execution semantics.**
+   - **Isolation Boundary:** These failures reflect path conventions, sparse checkout filtering, and runner executable aliases. **No causal connection between the identified Windows fixture, path, and Python executable failures and the bounded arithmetic or cross-profile execution-equivalence tests has been demonstrated.**
+
+### 4.4 Hosted CI Infrastructure Incident Audit (Check Suites `43045048496` and `43047703843`)
+During review submission runs on PR #773, multiple hosted Ubuntu jobs failed at the dependency provisioning step:
+1. **Package Mirror DNS Resolution Outage:**
+   - Jobs executing `sudo apt-get update -qq && sudo apt-get install ...` failed with exit code 100:
+     ```text
+     W: Failed to fetch mirror+file:/etc/apt/apt-mirrors.txt/dists/noble/InRelease
+        Temporary failure resolving 'azure.archive.ubuntu.com'
+     E: Failed to fetch https://security.ubuntu.com/...
+        Temporary failure resolving 'security.ubuntu.com'
+     Process completed with exit code 100.
+     ```
+   - These failures are classified as **infrastructure-related package provisioning failures** supported by runner network diagnostics.
+   - **Job Execution Distinction:** Jobs that failed during `apt-get` aborted prior to binary compilation or test execution; their corresponding test suites remain **unverified on those specific runs** rather than claimed as passing.
+2. **Frontend Fuzzing Timeout:**
+   - The job `fuzzing / frontend` timed out after exceeding its 15-minute execution limit. Because its failure log does not record an apt DNS error, it is classified separately as a **runner timeout / cancellation**, not conflated with mirror DNS failures.
 
 ---
 
@@ -251,7 +268,7 @@ To ensure historical fidelity without backdating, authorization dimensions are f
 
 ### 8.1 Gate 1 Readiness
 - **Status:** **`ACCEPTANCE PENDING INDEPENDENT REVIEW`**
-- **Basis:** The harness implementation meets all technical, mathematical, and schema validation requirements. Historical authorization is `NOT VERIFIED`, but prospective standard `RFC-00E1` formalizes the contract. Technical acceptance is ready for formal independent review and maintainer signature.
+- **Basis:** Available local verification supports readiness for independent technical review. Full compliance and formal acceptance remain unestablished pending that review. Historical Gate 1 authorization remains classified as `NOT VERIFIED`, historical Addendum 06 authority remains `NOT VERIFIED`, and prospective specification `RFC-00E1` is a draft awaiting formal ratification.
 
 ### 8.2 Gate 2 Disposition
 - **Status:** **`STRICT NO-GO — NOT AUTHORIZED`**
