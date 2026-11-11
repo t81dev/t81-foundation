@@ -117,12 +117,23 @@ Accounting guarantees enforced:
 
 ---
 
-## 6. Execution Budget Accounting
+## 6. Execution Budget Accounting & Evidence Provenance
 
 The executable code enforces a hard ceiling of **1,000 cumulative trials maximum** via `TrialBudgetEnforcer`:
 - **Allowed Ceiling:** 1,000 cumulative trials.
-- **Executed in Gate 1 Smoke Suite:** Exactly **179 trials** (10 Tier 1 sequences + 15 Tier 1 deterministic replay sequences + 140 Tier 2 band trials + 14 deterministic exact-count trials = 179 trials, well within the budget).
+- **Historical Recorded Output in Evidence Artifact:** Exactly **179 trials** (10 Tier 1 sequences + 15 Tier 1 deterministic replay sequences + 140 Tier 2 band trials + 14 deterministic exact-count trials = 179 trials, well within the budget).
 - **Enforcement Mechanism:** Exceeding 1,000 calls to `record_trial()` aborts execution fail-closed via `std::exit(1)`.
+
+### 6.1 Evidence Provenance & Historical Artifact Boundary
+- **Historical Output Designation:** The 179 cumulative trials and measured operation counters stored in `gate1_evidence_record.json` reflect the historical recorded output generated under commit `2dd3cc62e526942cdcbed6d100770c08c26ab2fe` (`evaluated_implementation_sha`). They are retained for schema conformance and non-normative review, not claimed as a newly executed full campaign.
+- **Exact Execution Command:**
+  ```bash
+  cmake -B build -S . -DT81_BUILD_EXPERIMENTS=ON -DCMAKE_BUILD_TYPE=Release
+  cmake --build build --target t81_exp_scg08_01_test
+  ./build/experiments/scg08_arithmetic_work/t81_exp_scg08_01_test
+  ```
+- **Environment:** Ubuntu Linux x86_64, GNU C++20 (GCC 13.3.0), Python 3.12.
+- **Non-Self-Referential Provenance:** The evidence artifact omits `evidence_publication_sha` to prevent circular self-referential hash cycles, binding strictly to `baseline_sha` and `evaluated_implementation_sha`.
 
 ---
 

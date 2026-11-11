@@ -99,8 +99,8 @@ def validate_dict(data: dict, schema: dict):
             fail(f"Invalid {sha_key}: {sha_val} (must be non-null 40-character hexadecimal SHA)")
     if "evidence_publication_sha" in gc:
         pub_sha = gc["evidence_publication_sha"]
-        if pub_sha is not None and (not isinstance(pub_sha, str) or not SHA_REGEX.match(pub_sha)):
-            fail(f"Invalid evidence_publication_sha: {pub_sha} (must be 40-character hexadecimal SHA or null)")
+        if not isinstance(pub_sha, str) or not SHA_REGEX.match(pub_sha):
+            fail(f"Invalid evidence_publication_sha: {pub_sha!r} (must be a non-null 40-character hexadecimal SHA)")
 
     # trial_budget
     tb = data.get("trial_budget")
@@ -316,6 +316,8 @@ def run_negative_tests(schema_path: Path):
     negative_cases = [
         ("null evaluated_implementation_sha", lambda d: d["git_context"].__setitem__("evaluated_implementation_sha", None)),
         ("invalid short evaluated_implementation_sha", lambda d: d["git_context"].__setitem__("evaluated_implementation_sha", "abc123")),
+        ("null evidence_publication_sha", lambda d: d["git_context"].__setitem__("evidence_publication_sha", None)),
+        ("non-string evidence_publication_sha", lambda d: d["git_context"].__setitem__("evidence_publication_sha", 12345)),
         ("invalid publication sha format", lambda d: d["git_context"].__setitem__("evidence_publication_sha", "invalid-sha")),
         ("malformed timestamp", lambda d: d.__setitem__("timestamp_utc", "invalid-time")),
         ("wrong specification version", lambda d: d.__setitem__("specification_version", "v1.0")),

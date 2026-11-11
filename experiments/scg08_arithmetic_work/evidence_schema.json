@@ -42,9 +42,18 @@
       "type": "object",
       "required": ["baseline_sha", "evaluated_implementation_sha"],
       "properties": {
-        "baseline_sha": {"type": "string"},
-        "evaluated_implementation_sha": {"type": "string"},
-        "evidence_publication_sha": {"type": "string"}
+        "baseline_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "evaluated_implementation_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "evidence_publication_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        }
       }
     },
     "trial_budget": {
