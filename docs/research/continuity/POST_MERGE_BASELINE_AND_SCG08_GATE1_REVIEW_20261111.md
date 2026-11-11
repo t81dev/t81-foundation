@@ -17,7 +17,7 @@ Following the integration of Pull Requests **#770**, **#771**, and **#772** into
 | Evaluated Dimension | Status Classification | Bounding Assessment & Justification |
 |:---|:---:|:---|
 | **Integrated Engineering Baseline** | **VERIFIED FOR EXECUTED LOCAL TESTS** | All local targeted CTest suites (semantic analyzer, frontend, VM decoder, DPE epoch DAG/parallel/thread pool, SCG-08 Gate 1) compiled cleanly and passed 100% (24/24 frontend/semantic tests, 35/35 DPE parallel tests, 30/30 DPE pool tests, 20/20 DPE DAG tests, decoder tests, and 5-width arithmetic tests). |
-| **Cross-Platform Hosted CI Matrix** | **PARTIALLY VERIFIED — WINDOWS TEST FAILURES REMAIN** | Ubuntu Linux (GCC/Clang, sanitizers, determinism slices, AVX2-ASan) and macOS runners pass build, configuration, and determinism gates. Windows runners (`build / windows-x86_64 / msvc` and `build / windows-x86_64 / clang-cl`) successfully checkout, configure CMake, and build all binaries, but fail during the CTest step with exit code 8 due to inherited upstream fixture and directory issues (`cli_contract_test` missing llama fixture and `check_root_structure` unexpected `review/` directory). |
+| **Cross-Platform Hosted CI Matrix** | **PARTIALLY VERIFIED — WINDOWS CTEST FAILURES REMAIN** | Linux (GCC/Clang, sanitizers, determinism slices, AVX2-ASan) and macOS runners pass all build, configuration, and determinism gates. Windows runners (`build / windows-x86_64 / msvc` and `build / windows-x86_64 / clang-cl`) successfully configure CMake and compile all targets, but exhibit remaining CTest execution failures with exit code 8 (3 failed under MSVC, 8 failed under clang-cl in check suite `43070255392`). |
 | **Semantic Analyzer Scope Lifetime** | **VERIFIED (DEFENSIVE STABILITY IMPROVEMENT)** | Switching `_scopes` from `std::vector<Scope>` to `std::deque<Scope>` prevents reallocation of the outer scope container during deep nesting. Because individual symbols are stored in `std::unordered_map` whose node addresses are node-allocated and remain stable across map operations, no prior bug of symbol pointer corruption was observed; the change is classified as a defensive scope-container stability improvement. |
 | **SCG-08 Phase 1 Gate 1 Readiness** | **ACCEPTANCE PENDING INDEPENDENT REVIEW** | Available local verification supports readiness for independent technical review. Full compliance and formal acceptance remain unestablished pending that review. |
 | **SCG-08 Phase 2 (Experimental Campaign)** | **STRICT NO-GO — NOT AUTHORIZED** | Large-scale statistical benchmarks, carry-propagation timing campaigns, and hardware timing remain strictly withheld. Progression to Gate 2 requires a separate, dated maintainer authorization record. |
@@ -146,36 +146,50 @@ The fixes integrated in PR #772 successfully addressed several previous blocking
 - **Docs-Only Compliance Check:** The step `Verify stable baseline docs and platform test surfaces` now properly passes with `--docs-only` on Windows (step 22), avoiding execution of non-portable fork/wait test runners.
 - **Compilation Clean:** Both MSVC and `clang-cl` successfully compiled all libraries and test executables (step 16).
 
-### 4.3 Deep Root Cause Analysis of Remaining Windows Failures (Step 25: CTest Exit Code 8)
-CTest executes in step 25:
+### 4.3 Windows CTest Execution Analysis (Check Suite `43070255392`)
+In check suite `43070255392` (PR #773 reviewed commit `bbfb74cc46`), CTest executed in Step 25:
 ```bash
 ctest --test-dir build --output-on-failure --verbose --output-junit build/ctest-results.xml
 ```
-Process completed with **exit code 8**. Detailed investigation reveals that the failures stem from environmental checkout omissions and path conventions rather than core execution defects:
-1. **`cli_contract_test` (`tests/cpp/cli_contract_test.cpp:549`):**
-   - **Mechanism:** Line 549 asserts `T81_TEST_CHECK(fs::exists(safetensors_fixture))`.
-   - **Root Cause:** In `.github/workflows/ci.yml`, the sparse-checkout patterns omit `/models/**`. Furthermore, `scripts/ci/provision_model_fixtures.sh` expects the executable `--t81-bin build/t81`, whereas on Windows the executable is created as `build/t81.exe` (or in multi-config builds `build/Release/t81.exe`), causing the fixture download and export step to be skipped or fail to find the binary.
-   - **Path Separators:** Line 560 checks for exact string matching of `"source_path": "` + safetensors_fixture.string() + `"`. On Windows, `safetensors_fixture.string()` contains Windows backslashes (`\`), whereas JSON serialization often normalizes to forward slashes (`/`), producing string comparison mismatches.
-2. **`check_root_structure` (`scripts/governance/check_root_structure.py`):**
-   - **Mechanism:** In `CMakeLists.txt:1800`, the test is registered as `COMMAND python3 ${CMAKE_SOURCE_DIR}/tests/ci/check_root_structure_test.py`.
-   - **Root Cause:** On Windows runner environments, `python3` is frequently not present in the system `PATH` (only `python.exe` is registered), unlike Unix runners. In contrast, line 1806 uses `${Python3_EXECUTABLE}`. Additionally, `check_root_structure_test.py` itself invokes `["python3", str(script_path)]` in a subprocess, causing `FileNotFoundError` when spawning Python on Windows.
-   - **Isolation Boundary:** These failures reflect path conventions, sparse checkout filtering, and runner executable aliases. **No causal connection between the identified Windows fixture, path, and Python executable failures and the bounded arithmetic or cross-profile execution-equivalence tests has been demonstrated.**
+Process completed with **exit code 8**. The actual executed test suites show distinct failure sets:
 
-### 4.4 Hosted CI Infrastructure Incident Audit (Check Suites `43045048496` and `43047703843`)
-During review submission runs on PR #773, multiple hosted Ubuntu jobs failed at the dependency provisioning step:
-1. **Package Mirror DNS Resolution Outage:**
-   - Jobs executing `sudo apt-get update -qq && sudo apt-get install ...` failed with exit code 100:
-     ```text
-     W: Failed to fetch mirror+file:/etc/apt/apt-mirrors.txt/dists/noble/InRelease
-        Temporary failure resolving 'azure.archive.ubuntu.com'
-     E: Failed to fetch https://security.ubuntu.com/...
-        Temporary failure resolving 'security.ubuntu.com'
-     Process completed with exit code 100.
-     ```
-   - These failures are classified as **infrastructure-related package provisioning failures** supported by runner network diagnostics.
-   - **Job Execution Distinction:** Jobs that failed during `apt-get` aborted prior to binary compilation or test execution; their corresponding test suites remain **unverified on those specific runs** rather than claimed as passing.
-2. **Frontend Fuzzing Timeout:**
-   - The job `fuzzing / frontend` timed out after exceeding its 15-minute execution limit. Because its failure log does not record an apt DNS error, it is classified separately as a **runner timeout / cancellation**, not conflated with mirror DNS failures.
+#### 1. MSVC Runner (`build / windows-x86_64 / msvc`)
+- **Total Tests:** 401
+- **Passed:** 398 (99.25%)
+- **Failed:** 3 tests
+  - Test #280: `vm_ffi_bridge_test` (Exit code `0xc0000409`)
+  - Test #306: `t81_cli_repro_hash_test` (Failed)
+  - Test #307: `canonfs_cli_portable_storage_test` (Failed)
+
+#### 2. Clang-cl Runner (`build / windows-x86_64 / clang-cl`)
+- **Total Tests:** 401
+- **Passed:** 393 (98.00%)
+- **Failed:** 8 tests
+  - Test #50: `t81_bigint_properties_test` (Failed)
+  - Test #53: `t81_bigint_division_edge_properties_test` (Exit code `0xc0000409`)
+  - Test #57: `fuzz_bigint_libfuzzer` (Exit code `0xc0000409`)
+  - Test #58: `t81_fraction_properties_test` (Exit code `0xc0000409`)
+  - Test #280: `vm_ffi_bridge_test` (Exit code `0xc0000409`)
+  - Test #306: `t81_cli_repro_hash_test` (Failed)
+  - Test #307: `canonfs_cli_portable_storage_test` (Failed)
+  - Test #345: `t81_std_test` (Failed)
+
+#### 3. Classification of Unresolved Windows Failures
+- **Status Classification:** **`WINDOWS TEST FAILURES — ROOT CAUSE NOT YET ESTABLISHED`**
+- **Available Diagnostics:** Multiple failures terminate with status code `0xc0000409` (`STATUS_STACK_BUFFER_OVERRUN` / fast-fail assertion), while CLI/CanonFS harness tests report assertion mismatches. Root causes have not been independently diagnosed or established under hosted Windows execution.
+- **Evidentiary Boundary:** **No causal connection between the identified Windows test failures and the bounded arithmetic or cross-profile execution-equivalence tests has been demonstrated.**
+
+#### 4. Historical Observations (Check Suite `43022879680` and Prior Runs)
+Earlier diagnostic investigations recorded failures in `cli_contract_test` (missing safetensors fixture / backslash path matching) and `check_root_structure` (raw `python3` command invocation without `${Python3_EXECUTABLE}`). These remain preserved as historical diagnostic records from prior runs and must not be conflated with the latest test results in check suite `43070255392`.
+
+### 4.4 Hosted CI Status & Historical Infrastructure Incidents
+#### Latest Check Suite `43070255392` Results
+- **Full Pass Across Non-Windows Targets:** Linux x86_64 (Clang 18 & GCC 14), Linux ARM64, macOS 14 ARM64, macOS 13 x86_64, ASan/UBSan sanitizers, AVX2-ASan, No-SIMD determinism, Axion epoch determinism, determinism slice & repeatability, frontend fuzzing, static analysis (clang-tidy), VM workload benchmarks, and C++20/C++23 conformance all completed with **Success**.
+- **Windows CTest Failures:** MSVC (3/401 failed) and Clang-cl (8/401 failed) failed in CTest step 25 as documented above.
+- **Final Matrix Disposition:** **`PARTIALLY VERIFIED — WINDOWS CTEST FAILURES REMAIN`**.
+
+#### Historical Package-Mirror DNS Incident (Check Suites `43045048496` and `43047703843`)
+During intermediate verification runs, an external Azure package-mirror resolution outage caused jobs to abort during `sudo apt-get update` with exit code 100 (`Temporary failure resolving azure.archive.ubuntu.com`). This incident was a transient infrastructure provisioning failure; unprovisioned jobs aborted prior to test execution and were not treated as passing. The incident has since fully cleared as evidenced by check suite `43070255392`.
 
 ---
 
@@ -274,6 +288,33 @@ To ensure historical fidelity without backdating, authorization dimensions are f
 - **Status:** **`STRICT NO-GO — NOT AUTHORIZED`**
 - **Basis:** No large-scale statistical campaigns, performance timing, or microarchitectural benchmarks may be executed until Gate 1 is formally accepted by repository maintainers.
 
-### 8.3 Exactly One Recommended Next Engineering Task
+### 8.3 Next Research Milestone — Independent Review Manifest
+To facilitate formal independent technical review of SCG-08 Phase 1 Gate 1, the following exact artifacts and commands constitute the review package:
+
+1. **Normative Evaluation Contract:**
+   - `spec/rfcs/RFC-00E1-balanced-ternary-multi-precision-arithmetic-contract.md` (§2 operand domains, §3 $W_{\text{ops}}$ accounting model, §4 decoupled base-$10^9$ oracle, §5 budget ceiling).
+2. **Implementation Sources:**
+   - `experiments/scg08_arithmetic_work/tier1_markov_harness.hpp` (Markov carry-dynamics transitions).
+   - `experiments/scg08_arithmetic_work/tier2_work_harness.hpp` (5-width multi-precision arithmetic, trial budget enforcer).
+   - `experiments/scg08_arithmetic_work/exact_oracle_adapter.hpp` (Decoupled base-$10^9$ `ExactBigIntOracle`).
+   - `experiments/scg08_arithmetic_work/test_exp_scg08_01.cpp` (Smoke and deterministic replay test suite).
+3. **Evidence Artifacts & Schemas:**
+   - `experiments/scg08_arithmetic_work/gate1_evidence_record.json` (179 executed trials).
+   - `experiments/scg08_arithmetic_work/evidence_schema.json` (JSON schema `t81.scg08.carry-experiment.v1`).
+   - `experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md` (Implementation report).
+4. **Independent Validation Commands:**
+   ```bash
+   # Build test harness
+   cmake -B build -G Ninja -DT81_BUILD_EXPERIMENTS=ON -DBENCHMARK_ENABLE_WERROR=OFF
+   ninja -C build t81_exp_scg08_01_test
+   # Execute arithmetic harness
+   ./build/experiments/scg08_arithmetic_work/t81_exp_scg08_01_test
+   # Validate schema and 12-case negative fail-closed rejection
+   python3 scripts/ci/validate_scg08_gate1_evidence.py
+   python3 scripts/ci/validate_scg08_gate1_evidence.py --test-negative
+   ```
+5. **Core Evaluation Question for Reviewers:** Determine whether prospective Gate 1 technical acceptance under `RFC-00E1` is justified on technical and mathematical merit despite the unresolved historical authorization provenance of `Addendum 06`.
+
+### 8.4 Exactly One Recommended Next Engineering Task
 **Recommendation:**
-Execute an independent maintainer review of the SCG-08 Gate 1 technical package (prospective RFC-00E1, `gate1_evidence_record.json`, and harness verification) to issue formal maintainer technical acceptance of Phase 1 Gate 1.
+Execute an independent maintainer review of the SCG-08 Gate 1 technical package (prospective RFC-00E1, `gate1_evidence_record.json`, and harness verification) to determine formal maintainer technical acceptance of Phase 1 Gate 1.
