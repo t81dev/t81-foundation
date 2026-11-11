@@ -52,7 +52,7 @@ Initial full four-file pytest invocation without `-k` returned **51 passed, 3 fa
 ```sh
 git archive dbf107fda83a3755fa21d6b95caa3eb8ac450dd3 tests/ci/test_architecture_engineering_diagnostics.py | tar -x -C /private/tmp/t81-scg08-correction
 /private/tmp/t81-continuity-venv/bin/python -m pytest -q /private/tmp/t81-scg08-correction/tests/ci/test_architecture_engineering_diagnostics.py -k bash_arithmetic_evaluation_defect_reproduction
-# FAIL: 1 failed, 19 deselected. Unchanged baseline test expects exit 1;
+# FAIL: 1 failed, 22 deselected. Unchanged baseline test expects exit 1;
 # local Bash 3.2 returns 0 / COMPLETED_REACHED (baseline-bash-reproduction.log).
 ```
 
