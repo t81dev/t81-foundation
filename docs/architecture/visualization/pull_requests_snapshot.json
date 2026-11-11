@@ -1,21 +1,119 @@
 {
   "schema_version": "1.0.0",
-  "snapshot_timestamp": "2026-11-10T21:00:00Z",
+  "snapshot_timestamp": "2026-11-11T00:26:00Z",
   "authoritative_baseline_commit": "6c9eaf1a2fc8368cd06f6dddbbdcd78e6606c0ce",
-  "provenance": "docs/ai-context/T81_RESEARCH_STATUS_2026-11-10.md and git log metadata",
-  "refresh_instructions": "To refresh this snapshot, inspect GitHub open PR inventory and git log on main, recheck mergeability, affected files, and subsystem mappings, then validate via scripts/ci/validate_architecture_visualization.py",
+  "provenance": "GitHub metadata retained in docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json; historical snapshot remains in parent git revision",
+  "refresh_instructions": "Dated metadata only; 69 open PRs before this draft publication. Refresh GitHub lifecycle, branch tips, review findings and exact-head checks before action. Historical architecture baseline preserved; lifecycle does not establish scientific acceptance.",
   "pr_inventory_summary": {
-    "total_open_prs_observed": 67,
-    "cataloged_prs": 18,
+    "total_open_prs_observed": 69,
+    "cataloged_prs": 24,
     "state_breakdown": {
-      "OPEN": 11,
-      "MERGED": 7
+      "MERGED": 10,
+      "DRAFT": 9,
+      "OPEN": 5
     }
   },
   "pull_requests": [
     {
+      "pr_number": 763,
+      "title": "SCG-08 Gate 1 (PR #760) Correctness and Evidence Repair",
+      "state": "MERGED",
+      "base_sha": "da656dee2fcb34da63b428fc7b3f827189431d00",
+      "head_sha": "93a3d1bc36e18395d6863d56a604506d108eac32",
+      "merge_commit": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3",
+      "affected_subsystems": [
+        "sub.layer.7_assurance.scg_continuity"
+      ],
+      "checks_status": "GITHUB_REPORTED_FAILURE",
+      "review_disposition": "4 unresolved returned threads. Publish a new corrective PR at an exact revision, repair remaining accounting/schema/provenance issues, then obtain independent Gate 1 review; Gate 2 withheld.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/763",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
+    },
+    {
+      "pr_number": 762,
+      "title": "fix(arch-viz): reconcile dashboard and research programs with canonical datasets",
+      "state": "MERGED",
+      "base_sha": "8e6918fa98e19ee1476f91c97e82989b051a02e7",
+      "head_sha": "37bf79375ad37035ca5ae1456bae1ac1453d02d7",
+      "merge_commit": "da656dee2fcb34da63b428fc7b3f827189431d00",
+      "affected_subsystems": [
+        "sub.layer.7_assurance.hypothesis_register"
+      ],
+      "checks_status": "GITHUB_REPORTED_FAILURE",
+      "review_disposition": "0 unresolved returned threads. Preserve canonical H01-H08 and historical coverage audit; review later status data independently.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/762",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
+    },
+    {
+      "pr_number": 761,
+      "title": "docs(scg08): publish Phase 0 independent acceptance review R2",
+      "state": "DRAFT",
+      "base_sha": "8e6918fa98e19ee1476f91c97e82989b051a02e7",
+      "head_sha": "5c69f11579b96686de1520aa45062b418c7c3bdd",
+      "merge_commit": null,
+      "affected_subsystems": [
+        "sub.layer.7_assurance.scg_continuity"
+      ],
+      "checks_status": "GITHUB_REPORTED_FAILURE",
+      "review_disposition": "0 unresolved returned threads. Review and publish Phase 0 acceptance report separately; reconcile 136,500 sequences against the 10^7-step criterion.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/761",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
+    },
+    {
+      "pr_number": 760,
+      "title": "SCG-08 Phase 1 Gate 1 Implementation: Carry Propagation & Arithmetic Work Harness",
+      "state": "OPEN",
+      "base_sha": "8e6918fa98e19ee1476f91c97e82989b051a02e7",
+      "head_sha": "dab59a63e4000f81799a6b2303bbfab26300d526",
+      "merge_commit": null,
+      "affected_subsystems": [
+        "sub.layer.7_assurance.scg_continuity"
+      ],
+      "checks_status": "NO_HEAD_WORKFLOW_RUNS_RETURNED",
+      "review_disposition": "3 unresolved returned threads. Reconcile obsolete/conflicting original branch with implementation integrated through #763; maintainer decides disposition. Do not merge the old tree blindly.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/760",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
+    },
+    {
+      "pr_number": 759,
+      "title": "T81-ARCH-VIZ-003: Interactive Architecture & Research Status Dashboard",
+      "state": "MERGED",
+      "base_sha": "e24614d9b87a3f4852d678810cbe371453690833",
+      "head_sha": "00ab93dcf385709302126e1018386e51238dd78a",
+      "merge_commit": "8e6918fa98e19ee1476f91c97e82989b051a02e7",
+      "affected_subsystems": [
+        "sub.layer.7_assurance.hypothesis_register"
+      ],
+      "checks_status": "GITHUB_REPORTED_FAILURE",
+      "review_disposition": "4 unresolved returned threads. Use #762 for integrated consumer corrections; historical review threads do not disappear on merge.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/759",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
+    },
+    {
+      "pr_number": 758,
+      "title": "docs(ternaryos): attribute firmware failures and bound native compatibility blockers",
+      "state": "MERGED",
+      "base_sha": "6c9eaf1a2fc8368cd06f6dddbbdcd78e6606c0ce",
+      "head_sha": "4b550b4d2f82ef3d0be2a001136d693cab1d7b0c",
+      "merge_commit": "e24614d9b87a3f4852d678810cbe371453690833",
+      "affected_subsystems": [
+        "sub.layer.5_os.ternaryos_kernel",
+        "sub.layer.6_hw.qemu_drivers"
+      ],
+      "checks_status": "GITHUB_REPORTED_FAILURE",
+      "review_disposition": "0 unresolved returned threads. Preserve failed native 2/5 qualification across all four configurations; separately scope firmware follow-up.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/758",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
+    },
+    {
       "pr_number": 757,
-      "title": "investigate(ternaryos): report stale EFI payload and independent firmware rejection",
+      "title": "docs(ternaryos): isolate stale EFI payload from firmware verification failures",
       "state": "MERGED",
       "base_sha": "cd490f5b5c0496350682542b56424dd77bea6963",
       "head_sha": "246ded7a3c962c2b6376eb37639325d2f5feb5cb",
@@ -24,101 +122,170 @@
         "sub.layer.5_os.ternaryos_kernel",
         "sub.layer.6_hw.qemu_drivers"
       ],
-      "checks_status": "PASSED_INVESTIGATION",
-      "review_disposition": "MERGED — Documents stale EFI probe vs working 75KB shell and firmware diagnostic barriers without claiming native 5-check qualification."
+      "checks_status": "GITHUB_REPORTED_FAILURE",
+      "review_disposition": "0 unresolved returned threads. Preserve stale-payload vs firmware distinction; do not claim native qualification.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/757",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
     },
     {
       "pr_number": 756,
-      "title": "fix(ternaryos): make bounded QEMU verification fail closed",
+      "title": "fix(ternaryos): restore fail-closed QEMU verification and trustworthy completion reporting",
       "state": "MERGED",
-      "base_sha": "ee0c7d903f0b2f5b8ec2919d1f3b39745ad5739c",
-      "head_sha": "5beffd4083d069da7f815456f91d2432924192b6",
+      "base_sha": "ee0c7d90537eaa2dc4b522c1624fcabebf6e999b",
+      "head_sha": "70d2c8654354a7d5e9efef0513bc171efbe4d4fb",
       "merge_commit": "cd490f5b5c0496350682542b56424dd77bea6963",
       "affected_subsystems": [
         "sub.layer.5_os.ternaryos_kernel",
         "sub.layer.6_hw.qemu_drivers"
       ],
-      "checks_status": "PASSED",
-      "review_disposition": "MERGED — Replaces duplicated shell orchestration with bounded Python QMP verifier; 11/11 mock tests pass; real QEMU halts and safely rejects failed boots."
+      "checks_status": "GITHUB_REPORTED_FAILURE",
+      "review_disposition": "0 unresolved returned threads. Preserve fail-closed verification boundary; no native qualification inferred.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/756",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
     },
     {
       "pr_number": 755,
-      "title": "feat(arch): ARCH-ENG-002 Phase 1 engineering diagnostics and evidence index",
+      "title": "feat(arch): ARCH-ENG-002 Phase 1 - Architecture-Guided Engineering Diagnostics",
       "state": "MERGED",
       "base_sha": "9a3e307ad21135749d35a4f1a6a0d5820d0cc698",
-      "head_sha": "fd2439b9868840bdfca0e65922097e35b71c4c1a",
-      "merge_commit": "ee0c7d903f0b2f5b8ec2919d1f3b39745ad5739c",
+      "head_sha": "fd2439b996d9ab44f363813136843f48729314a5",
+      "merge_commit": "ee0c7d90537eaa2dc4b522c1624fcabebf6e999b",
       "affected_subsystems": [
         "sub.layer.7_assurance.ci_governance",
         "sub.layer.5_os.ternaryos_kernel",
         "sub.layer.6_hw.qemu_drivers"
       ],
-      "checks_status": "PASSED",
-      "review_disposition": "MERGED — Implemented component evidence index (35 components), drift detection, and audited QEMU harness defects."
+      "checks_status": "GITHUB_REPORTED_FAILURE",
+      "review_disposition": "3 unresolved returned threads. Retain historical evidence and limits; merge or closure alone does not establish scientific acceptance.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/755",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
     },
     {
       "pr_number": 754,
-      "title": "docs(ai-context): 2026-11-10 PR and research continuity reconciliation",
+      "title": "docs(ai-context): reconcile November 10 PR backlog and SCG-08 Phase 0 integration",
       "state": "MERGED",
       "base_sha": "0bd0817e4b9dc879fffce18c59ea9ff781f7acb3",
-      "head_sha": "60fbfbc76ff583a0e69888d3eebccbf942e5fe6e",
+      "head_sha": "758244cd204a1beabb13e4fdb30885915fe6004b",
       "merge_commit": "9a3e307ad21135749d35a4f1a6a0d5820d0cc698",
       "affected_subsystems": [
         "sub.layer.7_assurance.ci_governance"
       ],
-      "checks_status": "PASSED",
-      "review_disposition": "MERGED — Non-normative triage of open PR backlog and SCG-08 contract status."
+      "checks_status": "GITHUB_REPORTED_FAILURE",
+      "review_disposition": "0 unresolved returned threads. Retain historical evidence and limits; merge or closure alone does not establish scientific acceptance.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/754",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
     },
     {
       "pr_number": 753,
-      "title": "docs(continuity): integrate SCG-08 Phase 0 research charter",
+      "title": "Reconcile SCG-08 Phase 0 Charter for PR #745 with post-PR749 baseline",
       "state": "MERGED",
       "base_sha": "f085e9d8b7455fa08e81ed2ab45de297b22fcfa8",
-      "head_sha": "09c666e3194beeb6b4d634db224483785121b659",
+      "head_sha": "09c666e36a9152371ba74c91adc117fd51dc95c7",
       "merge_commit": "0bd0817e4b9dc879fffce18c59ea9ff781f7acb3",
       "affected_subsystems": [
         "sub.layer.3_num.balanced_ternary_limbs",
         "sub.layer.7_assurance.scg_continuity",
         "sub.layer.7_assurance.hypothesis_register"
       ],
-      "checks_status": "PASSED",
-      "review_disposition": "MERGED — Integrated SCG-08 Phase 0 charter (546 lines); supercedes unmerged PR #745."
+      "checks_status": "GITHUB_REPORTED_FAILURE",
+      "review_disposition": "0 unresolved returned threads. Retain historical evidence and limits; merge or closure alone does not establish scientific acceptance.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/753",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
+    },
+    {
+      "pr_number": 752,
+      "title": "docs(h04-r03): separate current retention status from historical snapshot",
+      "state": "DRAFT",
+      "base_sha": "b18075ad6de93091f9aea30707ef5237d479c9d1",
+      "head_sha": "0d775fc0556805fe097b99c417116b0672116fee",
+      "merge_commit": null,
+      "affected_subsystems": [
+        "sub.layer.4_services.codecs",
+        "sub.layer.7_assurance.hypothesis_register"
+      ],
+      "checks_status": "NO_HEAD_WORKFLOW_RUNS_RETURNED",
+      "review_disposition": "0 unresolved returned threads. After #747, retarget documentation delta and preserve retention limits and Phase C freeze.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/752",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
+    },
+    {
+      "pr_number": 751,
+      "title": "fix(skills): constrain policy validation to literal argv",
+      "state": "DRAFT",
+      "base_sha": "1522f14aa1994d03af72441f2554718c9cfc11cb",
+      "head_sha": "b68853335264d0758124a359f705fb5fbb8dfdc3",
+      "merge_commit": null,
+      "affected_subsystems": [
+        "sub.layer.1_lang.cli",
+        "sub.layer.4_services.axion_kernel"
+      ],
+      "checks_status": "NO_HEAD_WORKFLOW_RUNS_RETURNED",
+      "review_disposition": "0 unresolved returned threads. Review #750 after #747, then retarget and verify literal-argv boundary and hosted checks.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/751",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
+    },
+    {
+      "pr_number": 750,
+      "title": "fix(cli): enforce explicitly requested execution policies",
+      "state": "DRAFT",
+      "base_sha": "b18075ad6de93091f9aea30707ef5237d479c9d1",
+      "head_sha": "1522f14aa1994d03af72441f2554718c9cfc11cb",
+      "merge_commit": null,
+      "affected_subsystems": [
+        "sub.layer.1_lang.cli",
+        "sub.layer.4_services.axion_kernel"
+      ],
+      "checks_status": "NO_HEAD_WORKFLOW_RUNS_RETURNED",
+      "review_disposition": "0 unresolved returned threads. Review #747 first, then retarget to main and verify explicit-policy regression evidence and hosted checks.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/750",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
     },
     {
       "pr_number": 749,
-      "title": "feat(arch): T81-ARCH-VIZ-002 comprehensive architecture mapping & graph dataset",
+      "title": "docs(architecture): harden visualization evidence and validation (T81-ARCH-VIZ-002)",
       "state": "MERGED",
-      "base_sha": "4f96cb24358bfd260e67387b2c4db2797b01236f",
-      "head_sha": "4bf8cb7f74811a221fbc65b2149b841793fa75f2",
+      "base_sha": "e5c30560aa77c31184a14b03ed152a6deef5c1a3",
+      "head_sha": "46d83c1fe3c4aa849071c041d268dbf5e31e86fd",
       "merge_commit": "f085e9d8b7455fa08e81ed2ab45de297b22fcfa8",
       "affected_subsystems": [
         "sub.layer.7_assurance.ci_governance"
       ],
-      "checks_status": "PASSED",
-      "review_disposition": "MERGED — Authoritative 7-layer architecture model, 35 nodes, 32 edges, 6 interfaces, 9 paths, coverage manifest, and validation suite."
+      "checks_status": "GITHUB_REPORTED_FAILURE",
+      "review_disposition": "3 unresolved returned threads. Retain historical evidence and limits; merge or closure alone does not establish scientific acceptance.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/749",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
     },
     {
-      "pr_number": 741,
-      "title": "feat(scg): SCG-07 Phase 6 consolidated arithmetic qualification",
-      "state": "MERGED",
-      "base_sha": "ecb1e32b9458a1a1df51d7cdd4a19496c0584103",
-      "head_sha": "9ef312be03cb5471a5390757a312ba30501f2156",
-      "merge_commit": "5cc8d9457fd19ff2d85a5bda1fc1678d8e0124d1",
+      "pr_number": 748,
+      "title": "fix(canonfs): authorize block metadata before side effects",
+      "state": "DRAFT",
+      "base_sha": "b18075ad6de93091f9aea30707ef5237d479c9d1",
+      "head_sha": "7a3cdf850a143758eb1355ebb8747368e6ca72cb",
+      "merge_commit": null,
       "affected_subsystems": [
-        "sub.layer.3_num.balanced_ternary_limbs",
-        "sub.layer.3_num.fixed_width_integers",
-        "sub.layer.3_num.multi_precision_bigint",
-        "sub.layer.3_num.rational_fractions",
-        "sub.layer.7_assurance.scg_continuity"
+        "sub.layer.4_services.canonfs",
+        "sub.layer.4_services.axion_kernel"
       ],
-      "checks_status": "PASSED_TESTS_POLICY_BLOCKED",
-      "review_disposition": "MERGED — Qualification outcome: QUALIFIED WITH LIMITATIONS under ExactBigIntOracle. F3 modular invariant established."
+      "checks_status": "NO_HEAD_WORKFLOW_RUNS_RETURNED",
+      "review_disposition": "0 unresolved returned threads. Review #747 first, then retarget to main and verify pre-side-effect policy tests and hosted checks.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/748",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
     },
     {
       "pr_number": 747,
-      "title": "fix(ci): cross-platform CI runner and portability backlog repair",
-      "state": "OPEN",
-      "base_sha": "9a3e307ad21135749d35a4f1a6a0d5820d0cc698",
+      "title": "fix(ci): restore supported runners and unblock portability builds",
+      "state": "DRAFT",
+      "base_sha": "e5c30560aa77c31184a14b03ed152a6deef5c1a3",
       "head_sha": "b18075ad6de93091f9aea30707ef5237d479c9d1",
       "merge_commit": null,
       "affected_subsystems": [
@@ -126,97 +293,66 @@
         "sub.layer.7_assurance.ci_governance",
         "sub.layer.1_lang.cli"
       ],
-      "checks_status": "PENDING_MERGE_CONFLICT_RESOLUTION",
-      "review_disposition": "OPEN — Foundational dependency for stacked PRs #748, #750, #751, #752. Reconciled cleanly against 9a3e307a across 26 files; requires independent review."
-    },
-    {
-      "pr_number": 748,
-      "title": "feat(canonfs): block metadata authorization boundary",
-      "state": "OPEN",
-      "base_sha": "Stacked on #747",
-      "head_sha": "Historical unmerged branch",
-      "merge_commit": null,
-      "affected_subsystems": [
-        "sub.layer.4_services.canonfs",
-        "sub.layer.4_services.axion_kernel"
-      ],
-      "checks_status": "BLOCKED_ON_PR_747",
-      "review_disposition": "OPEN — Stacked on #747. Independent policy boundary review and regression proof required."
-    },
-    {
-      "pr_number": 750,
-      "title": "feat(cli): explicit execution-policy enforcement",
-      "state": "OPEN",
-      "base_sha": "Stacked on #747",
-      "head_sha": "Historical unmerged branch",
-      "merge_commit": null,
-      "affected_subsystems": [
-        "sub.layer.1_lang.cli",
-        "sub.layer.4_services.axion_kernel"
-      ],
-      "checks_status": "BLOCKED_ON_PR_747",
-      "review_disposition": "OPEN — Stacked on #747. Fail-closed policy semantics require review."
-    },
-    {
-      "pr_number": 751,
-      "title": "hardening(skills): skills policy-validation argv hardening",
-      "state": "OPEN",
-      "base_sha": "Stacked on #750",
-      "head_sha": "Historical unmerged branch",
-      "merge_commit": null,
-      "affected_subsystems": [
-        "sub.layer.1_lang.cli",
-        "sub.layer.4_services.axion_kernel"
-      ],
-      "checks_status": "BLOCKED_ON_PR_750",
-      "review_disposition": "OPEN — Stacked on #750 and indirectly #747."
-    },
-    {
-      "pr_number": 752,
-      "title": "docs(h04-r03): retention historical/current status overlay",
-      "state": "OPEN",
-      "base_sha": "Stacked on #747",
-      "head_sha": "Historical unmerged branch",
-      "merge_commit": null,
-      "affected_subsystems": [
-        "sub.layer.4_services.codecs",
-        "sub.layer.7_assurance.hypothesis_register"
-      ],
-      "checks_status": "BLOCKED_ON_PR_747",
-      "review_disposition": "OPEN — Documentation-only overlay; preserves Phase C freeze and bounded registered-object retention claims."
+      "checks_status": "GITHUB_REPORTED_FAILURE",
+      "review_disposition": "0 unresolved returned threads. Reconcile current main conflicts and failed hosted Foundation CI; obtain independent portability review.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/747",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
     },
     {
       "pr_number": 732,
-      "title": "research(scg): SCG-05 generic Result<T,E> feasibility audit",
+      "title": "docs(continuity): SCG-05 generic Result contract feasibility assessment",
       "state": "OPEN",
-      "base_sha": "Historical e45c5435",
-      "head_sha": "Historical unmerged branch",
+      "base_sha": "e45c5435aa47d4ccb8f343798214eb917352c871",
+      "head_sha": "69b3b29447d827b50347fd4e2d3a140d9c174fcb",
       "merge_commit": null,
       "affected_subsystems": [
         "sub.layer.3_num.fixed_width_integers",
         "sub.layer.7_assurance.scg_continuity"
       ],
-      "checks_status": "NOT_MERGEABLE",
-      "review_disposition": "OPEN — Read-only feasibility proposal under maintainer decision D4=4B; SDK/API modification strictly not authorized."
+      "checks_status": "GITHUB_REPORTED_FAILURE",
+      "review_disposition": "0 unresolved returned threads. Reconcile conflicts and independently review feasibility scope; no generic Result implementation authorization.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/732",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
+    },
+    {
+      "pr_number": 719,
+      "title": "docs(arch003): resolve six review findings for R2 proposal",
+      "state": "OPEN",
+      "base_sha": "9654fd2b05f0abd1af4f0f3d14318d5213b7c8c8",
+      "head_sha": "f9dd69d3de30c3816f4aae652531da97d9fac68a",
+      "merge_commit": null,
+      "affected_subsystems": [
+        "sub.layer.7_assurance.hypothesis_register"
+      ],
+      "checks_status": "GITHUB_REPORTED_FAILURE",
+      "review_disposition": "3 unresolved returned threads. Resolve retained review findings and reconcile #718; no R2 activation.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/719",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
     },
     {
       "pr_number": 718,
-      "title": "proposal(arch): ARCH-003 R2 host watchdog & publication deadline specification",
+      "title": "docs(arch003): propose R2 external deadline authority amendment",
       "state": "OPEN",
-      "base_sha": "Historical base",
-      "head_sha": "origin/codex/arch003-r2",
+      "base_sha": "9654fd2b05f0abd1af4f0f3d14318d5213b7c8c8",
+      "head_sha": "c55b53a0d43a4d76e1aab1efe806ebfed175a99f",
       "merge_commit": null,
       "affected_subsystems": [
         "sub.layer.2_exec.t81vm",
         "sub.layer.7_assurance.ci_governance"
       ],
-      "checks_status": "NOT_MERGEABLE",
-      "review_disposition": "OPEN — Research proposal defining host role H to address clock enforcement finding H5. Do not activate R2 by implication."
+      "checks_status": "NO_HEAD_WORKFLOW_RUNS_RETURNED",
+      "review_disposition": "3 unresolved returned threads. Reconcile with #719 and obtain maintainer decision; R2 remains a proposal.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/718",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
     },
     {
       "pr_number": 716,
-      "title": "impl(arch): ARCH-003 correctness implementation draft (Linux ptrace)",
-      "state": "OPEN",
+      "title": "ARCH-003-I2: Linux accounting closure with bounded lifecycle evidence",
+      "state": "DRAFT",
       "base_sha": "1454bd63426d21686cfb5ef22dbaebc3c9cae94b",
       "head_sha": "f408f6fb27bd7516fb0b32f3645f9d53fbbd4b15",
       "merge_commit": null,
@@ -224,48 +360,61 @@
         "sub.layer.2_exec.t81vm",
         "sub.layer.7_assurance.ci_governance"
       ],
-      "checks_status": "OPEN_DRAFT",
-      "review_disposition": "OPEN — Bounded accounting evidence draft under experiments/arch003; correctness-core pass and independent acceptance explicitly withheld."
+      "checks_status": "NO_HEAD_WORKFLOW_RUNS_RETURNED",
+      "review_disposition": "0 unresolved returned threads. Review bounded Linux accounting evidence against #714; no correctness-core acceptance by implication.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/716",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
+    },
+    {
+      "pr_number": 714,
+      "title": "docs(research): preregister packed equality correctness protocol (ARCH-002)",
+      "state": "DRAFT",
+      "base_sha": "d134407ae1059c4d7f6a9418177e695e0e5d3b51",
+      "head_sha": "1454bd63426d21686cfb5ef22dbaebc3c9cae94b",
+      "merge_commit": null,
+      "affected_subsystems": [
+        "sub.layer.7_assurance.hypothesis_register"
+      ],
+      "checks_status": "NO_HEAD_WORKFLOW_RUNS_RETURNED",
+      "review_disposition": "0 unresolved returned threads. Review protocol and explicit execution authorization before any implementation/measurement.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/714",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
     },
     {
       "pr_number": 709,
-      "title": "exp(cpa): CPA-004 freestanding TISC bare-metal evaluation",
-      "state": "OPEN",
-      "base_sha": "803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4",
+      "title": "experiment(cpa004): execute frozen TISC profile after ExitBootServices",
+      "state": "DRAFT",
+      "base_sha": "ea6d031a8117341fe03013cc9d5473de1b07727d",
       "head_sha": "b803bf916a1b1e44129f3a07abf96fa6103c51fc",
       "merge_commit": null,
       "affected_subsystems": [
         "sub.layer.2_exec.freestanding_runtime",
         "sub.layer.5_os.ternaryos_kernel"
       ],
-      "checks_status": "OPEN_DRAFT",
-      "review_disposition": "OPEN — Evaluates canonical 351-byte program in freestanding AArch64 QEMU. Integration baseline tree pinned in CPA-005."
+      "checks_status": "GITHUB_REPORTED_FAILURE",
+      "review_disposition": "0 unresolved returned threads. Refresh exact revision, resolve retained findings/check failures and obtain applicable independent/maintainer review before disposition.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/709",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
     },
     {
       "pr_number": 698,
-      "title": "inquiry(base01): physical ternary hardware qualification budget and methodology",
+      "title": "BASE-01 Physical Linux Correctness-Only Qualification Report",
       "state": "OPEN",
-      "base_sha": "Historical base",
-      "head_sha": "Historical branch",
+      "base_sha": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "head_sha": "accebb20f4de25fddfe12e6152c356ff25cb6127",
       "merge_commit": null,
       "affected_subsystems": [
         "sub.layer.6_hw.rtl_feasibility"
       ],
-      "checks_status": "OPEN_DISCUSSION",
-      "review_disposition": "OPEN — Inquiry into physical hardware hosts; earlier physical-host-unavailable finding must not be rewritten as physical qualification."
-    },
-    {
-      "pr_number": 705,
-      "title": "fix(canonfs): portable snapshot directory paths & fail-closed legacy rejection",
-      "state": "OPEN",
-      "base_sha": "9bbc4453ca136251448201cf9166c2bd167e1f67",
-      "head_sha": "a9b149d5b4a706da38cb12999e2e604f350c30ff",
-      "merge_commit": null,
-      "affected_subsystems": [
-        "sub.layer.4_services.canonfs"
-      ],
-      "checks_status": "PENDING_MERGE",
-      "review_disposition": "OPEN — Portability fix for snapshot paths rejecting non-canonical legacy separators."
+      "checks_status": "GITHUB_REPORTED_FAILURE",
+      "review_disposition": "3 unresolved returned threads. Refresh exact revision, resolve retained findings/check failures and obtain applicable independent/maintainer review before disposition.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/698",
+      "observed_at": "2026-11-11T00:26:00Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
     }
-  ]
+  ],
+  "status_source_baseline_commit": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3"
 }

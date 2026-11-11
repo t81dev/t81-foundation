@@ -1,0 +1,681 @@
+diff --git a/experiments/scg08_arithmetic_work/CMakeLists.txt b/experiments/scg08_arithmetic_work/CMakeLists.txt
+index 443d803b4..dd5478a32 100644
+--- a/experiments/scg08_arithmetic_work/CMakeLists.txt
++++ b/experiments/scg08_arithmetic_work/CMakeLists.txt
+@@ -29,0 +30,7 @@ if(T81_BUILD_TESTS)
++
++  add_test(NAME t81_exp_scg08_01_schema_negative_validation
++    COMMAND ${Python3_EXECUTABLE}
++      ${PROJECT_SOURCE_DIR}/scripts/ci/validate_scg08_gate1_evidence.py
++      --test-negative
++  )
++  set_tests_properties(t81_exp_scg08_01_schema_negative_validation PROPERTIES TIMEOUT 30)
+diff --git a/experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md b/experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md
+index 0814d2b98..f6612c43d 100644
+--- a/experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md
++++ b/experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md
+@@ -29 +29 @@ The primary objective of Gate 1 is to establish:
+-- **Baseline Git SHA:** `cd490f5b5c0496350682542b56424dd77bea6963` (merging PR #756)
++- **Baseline Git SHA:** `dbf107fda83a3755fa21d6b95caa3eb8ac450dd3` (merging PR #763)
+@@ -90 +90,14 @@ $$W_{\text{ops}} = \text{OP}_{\text{ALU\_ADD\_SUB}} + 3 \cdot \text{OP}_{\text{A
+-1. **Finding 1 (P1 - Table Lookup Accounting Reconciliation):**
++1. **Finding 1 (P1 - Binary Primitive Arithmetic Accounting in `mul64()` and caller):**
++   - *Audit:* Evaluated `mul64()` and caller accumulator additions in `mul_binary()`. `mul64()` decomposes 64x64 into 4 32x32 multiplications (`u0*v0`, `u1*v0`, `u0*v1`, `u1*v1`) and 3 intermediate 64-bit additions (`w0 >> 32 + ...`, `+ u0*v1`, `u1*v1 + w2`). In the caller loop, each limb product adds `lo` and `carry` into the result accumulator (`sum1 = cur + lo`, `sum2 = sum1 + carry`) and accumulates carry (`carry = hi + c1 + c2`), totaling 4 primitive additions per inner iteration.
++   - *Resolution:* Reconciled `acc.op_alu_mul` and `acc.op_alu_add_sub` in `mul64()` and `mul_binary()` to track all executed primitive arithmetic operations without distorting accounting semantics.
++2. **Finding 2 (P2 - Binary Condition Evaluation Accounting):**
++   - *Audit:* Audited executed conditional evaluations across zero, sparse, dense, and carry-propagating inputs.
++   - *Resolution:* Tracked condition evaluations consistently:
++     - In `mul_binary()`: outer loop `ai == 0`, inner loop `i + j >= OutLimbs`, inner carry predicates `sum1 < cur` and `sum2 < sum1`, carry propagation checks `carry == 0` and `sum < cur`, result-zero limb check `res.limbs[i] != 0`, and final sign normalization `if (all_zero)`.
++     - In `add_binary()`: sign check `a.is_negative == b.is_negative`, carry check `carry != 0` and predicate `sum <= a.limbs[i]` vs `sum < a.limbs[i]`, and subtraction magnitude comparisons (`va != vb`, `va < vb`, `c == 0`, `c > 0`, borrow predicates).
++3. **Finding 3 (P1 - Evidence Trial-Count Integrity & Provenance):**
++   - *Audit:* Evaluated committed evidence record against standalone test execution. The initial draft stored 30 trials from an isolated band run, conflicting with the 179 trials executed by the smoke suite.
++   - *Resolution:* Reconciled `gate1_evidence_record.json` to record the exact 179 cumulative trials executed by the smoke suite (`actual_cumulative_trials_executed: 179`), verified against the ceiling of 1,000 trials, and bound to authoritative commit SHAs and ISO-8601 UTC timestamp.
++4. **Finding 4 (P2 - Evidence Schema Validation & Negative Test Suite):**
++   - *Resolution:* Hardened `scripts/ci/validate_scg08_gate1_evidence.py` to enforce strict regex pattern matching on commit SHAs (40-char hex) and ISO-8601 UTC timestamps, exact specification version string matching, strictly positive costs, and non-empty dimension strings. Added a comprehensive 11-case negative test suite (`--test-negative`) registered in CTest (`t81_exp_scg08_01_schema_negative_validation`).
++5. **Table Lookup Accounting Reconciliation (P1):**
+@@ -100,10 +112,0 @@ $$W_{\text{ops}} = \text{OP}_{\text{ALU\_ADD\_SUB}} + 3 \cdot \text{OP}_{\text{A
+-2. **Finding 2 (P2 - Consistent Conditional Evaluations):**
+-   - *Source Verification:* Conditional branch evaluations must be counted consistently rather than branch-taken only. In both binary and ternary algorithms, condition evaluations are counted on each iteration:
+-     - Ternary multiplication: outer loop `if (ai == 0)` and inner loop `if (bj == 0)` and `if (i + j < ACCUM_TRITS)` evaluate condition checks on each iteration regardless of whether trits are zero or non-zero.
+-     - Binary multiplication: outer loop `if (ai == 0)` evaluates condition checks on each iteration, inner loop `if (i + j >= OutLimbs)` and carry continuation `if (carry == 0)` condition checks are tracked.
+-     - Binary addition: `if (a.is_negative == b.is_negative)`, `if (carry != 0)`, and magnitude comparison condition checks are tracked.
+-     - Zero, sparse, dense, and carry-propagating operands evaluate condition branches consistently without artificially equalizing operation costs.
+-3. **Finding 3 (P2 - Machine-Readable Evidence Artifact & Schema Conformance):**
+-   - *Resolution:* Persisted measured counters, weighted totals, and validation outcomes in `experiments/scg08_arithmetic_work/gate1_evidence_record.json`.
+-   - Built a fail-closed, stdlib-only validation script `scripts/ci/validate_scg08_gate1_evidence.py` verifying full conformance against `experiments/scg08_arithmetic_work/evidence_schema.json` (`t81.scg08.carry-experiment.v1`).
+-   - Integrated schema validation into CTest (`t81_exp_scg08_01_schema_validation`).
+@@ -179 +182 @@ ctest --test-dir build -R scg08 --output-on-failure
+-1/2 Test #390: t81_exp_scg08_01_test ................   Passed    0.39 sec
++1/3 Test #390: t81_exp_scg08_01_test .........................   Passed    0.40 sec
+@@ -181 +184,3 @@ ctest --test-dir build -R scg08 --output-on-failure
+-2/2 Test #391: t81_exp_scg08_01_schema_validation ...   Passed    0.28 sec
++2/3 Test #391: t81_exp_scg08_01_schema_validation ............   Passed    0.31 sec
++    Start 392: t81_exp_scg08_01_schema_negative_validation
++3/3 Test #392: t81_exp_scg08_01_schema_negative_validation ...   Passed    0.31 sec
+@@ -183 +188 @@ ctest --test-dir build -R scg08 --output-on-failure
+-100% tests passed, 0 tests failed out of 2
++100% tests passed, 0 tests failed out of 3
+diff --git a/experiments/scg08_arithmetic_work/evidence_schema.json b/experiments/scg08_arithmetic_work/evidence_schema.json
+index 1d28a4ae8..792afcfd6 100644
+--- a/experiments/scg08_arithmetic_work/evidence_schema.json
++++ b/experiments/scg08_arithmetic_work/evidence_schema.json
+@@ -121,0 +122,4 @@
++              "counters_add_ternary",
++              "counters_mul_ternary",
++              "counters_add_binary",
++              "counters_mul_binary",
+@@ -134,0 +139,44 @@
++              "counters_add_ternary": {
++                "type": "object",
++                "required": ["op_alu_add_sub", "op_alu_mul", "op_table_lookup", "op_branch_cond", "op_norm_pass"],
++                "properties": {
++                  "op_alu_add_sub": {"type": "integer"},
++                  "op_alu_mul": {"type": "integer"},
++                  "op_table_lookup": {"type": "integer"},
++                  "op_branch_cond": {"type": "integer"},
++                  "op_norm_pass": {"type": "integer"}
++                }
++              },
++              "counters_mul_ternary": {
++                "type": "object",
++                "required": ["op_alu_add_sub", "op_alu_mul", "op_table_lookup", "op_branch_cond", "op_norm_pass"],
++                "properties": {
++                  "op_alu_add_sub": {"type": "integer"},
++                  "op_alu_mul": {"type": "integer"},
++                  "op_table_lookup": {"type": "integer"},
++                  "op_branch_cond": {"type": "integer"},
++                  "op_norm_pass": {"type": "integer"}
++                }
++              },
++              "counters_add_binary": {
++                "type": "object",
++                "required": ["op_alu_add_sub", "op_alu_mul", "op_table_lookup", "op_branch_cond", "op_norm_pass"],
++                "properties": {
++                  "op_alu_add_sub": {"type": "integer"},
++                  "op_alu_mul": {"type": "integer"},
++                  "op_table_lookup": {"type": "integer"},
++                  "op_branch_cond": {"type": "integer"},
++                  "op_norm_pass": {"type": "integer"}
++                }
++              },
++              "counters_mul_binary": {
++                "type": "object",
++                "required": ["op_alu_add_sub", "op_alu_mul", "op_table_lookup", "op_branch_cond", "op_norm_pass"],
++                "properties": {
++                  "op_alu_add_sub": {"type": "integer"},
++                  "op_alu_mul": {"type": "integer"},
++                  "op_table_lookup": {"type": "integer"},
++                  "op_branch_cond": {"type": "integer"},
++                  "op_norm_pass": {"type": "integer"}
++                }
++              },
+diff --git a/experiments/scg08_arithmetic_work/gate1_evidence_record.json b/experiments/scg08_arithmetic_work/gate1_evidence_record.json
+index f2e48ae2c..d918f2948 100644
+--- a/experiments/scg08_arithmetic_work/gate1_evidence_record.json
++++ b/experiments/scg08_arithmetic_work/gate1_evidence_record.json
+@@ -6 +6 @@
+-  "timestamp_utc": "2026-11-10T21:45:00Z",
++  "timestamp_utc": "2026-11-10T22:30:00Z",
+@@ -8,2 +8,2 @@
+-    "baseline_sha": "cd490f5b5c0496350682542b56424dd77bea6963",
+-    "head_sha": "1edded878a12f81fbd45049f19ff816675c50464"
++    "baseline_sha": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3",
++    "head_sha": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3"
+@@ -13 +13 @@
+-    "actual_cumulative_trials_executed": 30,
++    "actual_cumulative_trials_executed": 179,
+@@ -43,0 +44,28 @@
++        "counters_add_ternary": {
++          "op_alu_add_sub": 2,
++          "op_alu_mul": 0,
++          "op_table_lookup": 76,
++          "op_branch_cond": 2,
++          "op_norm_pass": 0
++        },
++        "counters_mul_ternary": {
++          "op_alu_add_sub": 841,
++          "op_alu_mul": 841,
++          "op_table_lookup": 0,
++          "op_branch_cond": 2461,
++          "op_norm_pass": 1
++        },
++        "counters_add_binary": {
++          "op_alu_add_sub": 2,
++          "op_alu_mul": 0,
++          "op_table_lookup": 0,
++          "op_branch_cond": 2,
++          "op_norm_pass": 0
++        },
++        "counters_mul_binary": {
++          "op_alu_add_sub": 9,
++          "op_alu_mul": 4,
++          "op_table_lookup": 0,
++          "op_branch_cond": 8,
++          "op_norm_pass": 0
++        },
+@@ -47 +75 @@
+-        "w_ops_mul_binary": 9
++        "w_ops_mul_binary": 29
+@@ -56,0 +85,28 @@
++        "counters_add_ternary": {
++          "op_alu_add_sub": 5,
++          "op_alu_mul": 0,
++          "op_table_lookup": 152,
++          "op_branch_cond": 4,
++          "op_norm_pass": 0
++        },
++        "counters_mul_ternary": {
++          "op_alu_add_sub": 2601,
++          "op_alu_mul": 2601,
++          "op_table_lookup": 0,
++          "op_branch_cond": 6813,
++          "op_norm_pass": 1
++        },
++        "counters_add_binary": {
++          "op_alu_add_sub": 3,
++          "op_alu_mul": 0,
++          "op_table_lookup": 0,
++          "op_branch_cond": 3,
++          "op_norm_pass": 0
++        },
++        "counters_mul_binary": {
++          "op_alu_add_sub": 34,
++          "op_alu_mul": 16,
++          "op_table_lookup": 0,
++          "op_branch_cond": 21,
++          "op_norm_pass": 0
++        },
+@@ -60 +116 @@
+-        "w_ops_mul_binary": 31
++        "w_ops_mul_binary": 103
+@@ -69,0 +126,28 @@
++        "counters_add_ternary": {
++          "op_alu_add_sub": 10,
++          "op_alu_mul": 0,
++          "op_table_lookup": 342,
++          "op_branch_cond": 7,
++          "op_norm_pass": 0
++        },
++        "counters_mul_ternary": {
++          "op_alu_add_sub": 12321,
++          "op_alu_mul": 12321,
++          "op_table_lookup": 0,
++          "op_branch_cond": 30465,
++          "op_norm_pass": 1
++        },
++        "counters_add_binary": {
++          "op_alu_add_sub": 5,
++          "op_alu_mul": 0,
++          "op_table_lookup": 0,
++          "op_branch_cond": 5,
++          "op_norm_pass": 0
++        },
++        "counters_mul_binary": {
++          "op_alu_add_sub": 132,
++          "op_alu_mul": 64,
++          "op_table_lookup": 0,
++          "op_branch_cond": 65,
++          "op_norm_pass": 0
++        },
+@@ -73 +157 @@
+-        "w_ops_mul_binary": 111
++        "w_ops_mul_binary": 389
+@@ -82,0 +167,28 @@
++        "counters_add_ternary": {
++          "op_alu_add_sub": 18,
++          "op_alu_mul": 0,
++          "op_table_lookup": 684,
++          "op_branch_cond": 12,
++          "op_norm_pass": 0
++        },
++        "counters_mul_ternary": {
++          "op_alu_add_sub": 45369,
++          "op_alu_mul": 45369,
++          "op_table_lookup": 0,
++          "op_branch_cond": 114705,
++          "op_norm_pass": 1
++        },
++        "counters_add_binary": {
++          "op_alu_add_sub": 9,
++          "op_alu_mul": 0,
++          "op_table_lookup": 0,
++          "op_branch_cond": 9,
++          "op_norm_pass": 0
++        },
++        "counters_mul_binary": {
++          "op_alu_add_sub": 520,
++          "op_alu_mul": 256,
++          "op_table_lookup": 0,
++          "op_branch_cond": 225,
++          "op_norm_pass": 0
++        },
+@@ -86 +198 @@
+-        "w_ops_mul_binary": 415
++        "w_ops_mul_binary": 1513
+@@ -95,0 +208,28 @@
++        "counters_add_ternary": {
++          "op_alu_add_sub": 34,
++          "op_alu_mul": 0,
++          "op_table_lookup": 1292,
++          "op_branch_cond": 24,
++          "op_norm_pass": 0
++        },
++        "counters_mul_ternary": {
++          "op_alu_add_sub": 185761,
++          "op_alu_mul": 185761,
++          "op_table_lookup": 0,
++          "op_branch_cond": 465697,
++          "op_norm_pass": 1
++        },
++        "counters_add_binary": {
++          "op_alu_add_sub": 17,
++          "op_alu_mul": 0,
++          "op_table_lookup": 0,
++          "op_branch_cond": 17,
++          "op_norm_pass": 0
++        },
++        "counters_mul_binary": {
++          "op_alu_add_sub": 2064,
++          "op_alu_mul": 1024,
++          "op_table_lookup": 0,
++          "op_branch_cond": 833,
++          "op_norm_pass": 0
++        },
+@@ -99 +239 @@
+-        "w_ops_mul_binary": 1599
++        "w_ops_mul_binary": 5969
+diff --git a/experiments/scg08_arithmetic_work/test_exp_scg08_01.cpp b/experiments/scg08_arithmetic_work/test_exp_scg08_01.cpp
+index 9b7c8c293..0d9e71286 100644
+--- a/experiments/scg08_arithmetic_work/test_exp_scg08_01.cpp
++++ b/experiments/scg08_arithmetic_work/test_exp_scg08_01.cpp
+@@ -281 +281,2 @@ void test_deterministic_exact_counts() {
+-  // Binary Zero Mul: 1 outer limb ai==0 check, 0 multiplies
++  // Binary Zero Mul: 1 outer limb ai==0 check, 2 zero-detection limb checks, 1 all_zero check, 0
++  // multiplies
+@@ -283,2 +284,3 @@ void test_deterministic_exact_counts() {
+-  SCG08_REQUIRE(acc_b_mul_0.op_branch_cond == 1, "Binary zero mul branch count mismatch");
+-  SCG08_REQUIRE(acc_b_mul_0.compute_w_ops() == 1, "Binary zero mul W_ops mismatch");
++  SCG08_REQUIRE(acc_b_mul_0.op_branch_cond == 4,
++                "Binary zero mul branch count mismatch (1 outer + 2 zero-detect + 1 all_zero)");
++  SCG08_REQUIRE(acc_b_mul_0.compute_w_ops() == 4, "Binary zero mul W_ops mismatch");
+@@ -307,3 +309,9 @@ void test_deterministic_exact_counts() {
+-  // Binary Sparse Mul (1 * 1):
+-  SCG08_REQUIRE(acc_b_mul_sp.op_alu_mul == 1, "Binary sparse mul ALU mul mismatch");
+-  SCG08_REQUIRE(acc_b_mul_sp.compute_w_ops() == 8, "Binary sparse mul W_ops mismatch");
++  // Binary Sparse Mul (1 * 1): 4 primitive mul64 muls (4 * 3 = 12), 3 mul64 adds + 4 accumulator
++  // adds + 1 carry loop add (8 total), 7 branches
++  SCG08_REQUIRE(acc_b_mul_sp.op_alu_mul == 4,
++                "Binary sparse mul ALU mul mismatch (4 primitive 32x32 muls)");
++  SCG08_REQUIRE(acc_b_mul_sp.op_alu_add_sub == 8,
++                "Binary sparse mul ALU add mismatch (3 in mul64 + 4 accumulator + 1 carry loop)");
++  SCG08_REQUIRE(acc_b_mul_sp.op_branch_cond == 7, "Binary sparse mul branch count mismatch");
++  SCG08_REQUIRE(acc_b_mul_sp.compute_w_ops() == 27,
++                "Binary sparse mul W_ops mismatch (8 add + 3*4 mul + 7 branch)");
+@@ -327 +335,5 @@ void test_deterministic_exact_counts() {
+-  SCG08_REQUIRE(acc_b_mul_dense.compute_w_ops() == 9, "Binary dense mul W_ops mismatch");
++  SCG08_REQUIRE(acc_b_mul_dense.op_alu_mul == 4, "Binary dense mul ALU mul mismatch");
++  SCG08_REQUIRE(acc_b_mul_dense.op_alu_add_sub == 9, "Binary dense mul ALU add mismatch");
++  SCG08_REQUIRE(acc_b_mul_dense.op_branch_cond == 8, "Binary dense mul branch count mismatch");
++  SCG08_REQUIRE(acc_b_mul_dense.compute_w_ops() == 29,
++                "Binary dense mul W_ops mismatch (9 add + 3*4 mul + 8 branch)");
+diff --git a/experiments/scg08_arithmetic_work/tier2_work_harness.hpp b/experiments/scg08_arithmetic_work/tier2_work_harness.hpp
+index 2d63940a8..610999bdc 100644
+--- a/experiments/scg08_arithmetic_work/tier2_work_harness.hpp
++++ b/experiments/scg08_arithmetic_work/tier2_work_harness.hpp
+@@ -211 +211,2 @@ struct BinaryMultiLimb {
+-inline int cmp_binary_limbs(std::span<const uint64_t> a, std::span<const uint64_t> b) noexcept {
++inline int cmp_binary_limbs(std::span<const uint64_t> a, std::span<const uint64_t> b,
++                            OperationAccounting& acc) noexcept {
+@@ -216 +217,5 @@ inline int cmp_binary_limbs(std::span<const uint64_t> a, std::span<const uint64_
+-    if (va != vb) return va < vb ? -1 : 1;
++    acc.op_branch_cond++;  // Condition evaluation: va != vb
++    if (va != vb) {
++      acc.op_branch_cond++;  // Condition evaluation: va < vb
++      return va < vb ? -1 : 1;
++    }
+@@ -221,2 +226,3 @@ inline int cmp_binary_limbs(std::span<const uint64_t> a, std::span<const uint64_
+-// 64x64 -> 128-bit multiplication using 32-bit halves
+-inline void mul64(uint64_t u, uint64_t v, uint64_t& hi, uint64_t& lo) noexcept {
++// 64x64 -> 128-bit multiplication using 32-bit halves, accounting for primitive operations
++inline void mul64(uint64_t u, uint64_t v, uint64_t& hi, uint64_t& lo,
++                  OperationAccounting& acc) noexcept {
+@@ -228,0 +235 @@ inline void mul64(uint64_t u, uint64_t v, uint64_t& hi, uint64_t& lo) noexcept {
++  acc.op_alu_mul++;
+@@ -229,0 +237,2 @@ inline void mul64(uint64_t u, uint64_t v, uint64_t& hi, uint64_t& lo) noexcept {
++  acc.op_alu_mul++;
++  acc.op_alu_add_sub++;
+@@ -232,0 +242,2 @@ inline void mul64(uint64_t u, uint64_t v, uint64_t& hi, uint64_t& lo) noexcept {
++  acc.op_alu_mul++;
++  acc.op_alu_add_sub++;
+@@ -233,0 +245 @@ inline void mul64(uint64_t u, uint64_t v, uint64_t& hi, uint64_t& lo) noexcept {
++  acc.op_alu_add_sub++;
+@@ -236,0 +249,2 @@ inline void mul64(uint64_t u, uint64_t v, uint64_t& hi, uint64_t& lo) noexcept {
++  acc.op_alu_mul++;
++  acc.op_alu_add_sub++;
+@@ -397 +411 @@ public:
+-      int c = cmp_binary_limbs(a.limbs, b.limbs);
++      int c = cmp_binary_limbs(a.limbs, b.limbs, acc);
+@@ -401,0 +416 @@ public:
++        acc.op_branch_cond++;  // Condition evaluation: c > 0
+@@ -408,2 +423,10 @@ public:
+-          uint64_t new_borrow =
+-              (smaller.limbs[i] + borrow < smaller.limbs[i] || larger.limbs[i] < sub) ? 1 : 0;
++          acc.op_alu_add_sub++;  // sub = smaller.limbs[i] + borrow
++          acc.op_branch_cond++;  // Condition evaluation: smaller.limbs[i] + borrow <
++                                 // smaller.limbs[i]
++          bool b1 = (smaller.limbs[i] + borrow < smaller.limbs[i]);
++          bool b2 = false;
++          if (!b1) {
++            acc.op_branch_cond++;  // Short-circuit condition evaluation: larger.limbs[i] < sub
++            b2 = (larger.limbs[i] < sub);
++          }
++          uint64_t new_borrow = (b1 || b2) ? 1 : 0;
+@@ -412 +435 @@ public:
+-          acc.op_alu_add_sub++;
++          acc.op_alu_add_sub++;  // res = larger.limbs[i] - sub
+@@ -451,2 +474 @@ public:
+-        mul64(ai, bj, hi, lo);
+-        acc.op_alu_mul++;
++        mul64(ai, bj, hi, lo, acc);
+@@ -456,0 +479 @@ public:
++        acc.op_branch_cond++;  // Condition evaluation: sum1 < cur
+@@ -458,0 +482 @@ public:
++        acc.op_branch_cond++;  // Condition evaluation: sum2 < sum1
+@@ -462 +486,2 @@ public:
+-        acc.op_alu_add_sub += 2;
++        acc.op_alu_add_sub +=
++            4;  // sum1 = cur + lo; sum2 = sum1 + carry; carry = hi + c1; carry += c2
+@@ -468,0 +494 @@ public:
++        acc.op_branch_cond++;  // Condition evaluation: sum < cur
+@@ -476,0 +503 @@ public:
++      acc.op_branch_cond++;  // Condition evaluation: res.limbs[i] != 0
+@@ -481,0 +509 @@ public:
++    acc.op_branch_cond++;  // Condition evaluation: all_zero
+diff --git a/scripts/ci/validate_scg08_gate1_evidence.py b/scripts/ci/validate_scg08_gate1_evidence.py
+index d4ebaed68..e02fe0efb 100755
+--- a/scripts/ci/validate_scg08_gate1_evidence.py
++++ b/scripts/ci/validate_scg08_gate1_evidence.py
+@@ -4,0 +5 @@ Stdlib-only, fail-closed validation.
++Includes rigorous negative test mode (--test-negative).
+@@ -6,0 +8 @@ Stdlib-only, fail-closed validation.
++import copy
+@@ -8,0 +11 @@ import os
++import re
+@@ -11,0 +15,5 @@ from pathlib import Path
++SHA_REGEX = re.compile(r"^[0-9a-f]{40}$")
++ISO8601_REGEX = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$")
++
++EXPECTED_SPECIFICATION_VERSION = "T81-SCG-08-PHASE1-PROP-001-R3-ADDENDUM-06"
++
+@@ -17,0 +26,10 @@ def fail(msg: str):
++def compute_expected_w_ops(counters: dict) -> int:
++    return (
++        counters["op_alu_add_sub"]
++        + (3 * counters["op_alu_mul"])
++        + counters["op_table_lookup"]
++        + counters["op_branch_cond"]
++        + counters["op_norm_pass"]
++    )
++
++
+@@ -36 +54,9 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
+-    # Top-level required
++    validate_dict(data, schema)
++    print(f"[SCG-08 SCHEMA VALIDATION PASSED] Artifact {evidence_path.name} conforms to {schema.get('$id')}")
++
++
++def validate_dict(data: dict, schema: dict):
++    if not isinstance(data, dict):
++        fail("Top-level evidence artifact must be a JSON object")
++
++    # Top-level required properties
+@@ -46,0 +73,3 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
++    if data.get("specification_version") != EXPECTED_SPECIFICATION_VERSION:
++        fail(f"Invalid specification_version: {data.get('specification_version')} (expected {EXPECTED_SPECIFICATION_VERSION})")
++
+@@ -53,0 +83,5 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
++    # timestamp_utc validation
++    ts = data.get("timestamp_utc")
++    if not isinstance(ts, str) or not ISO8601_REGEX.match(ts):
++        fail(f"Invalid timestamp_utc format: {ts} (must be valid ISO-8601 UTC timestamp)")
++
+@@ -55 +89 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
+-    gc = data.get("git_context", {})
++    gc = data.get("git_context")
+@@ -57 +91,5 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
+-        fail("Invalid git_context: must contain baseline_sha and head_sha strings")
++        fail("Invalid git_context: must be an object with baseline_sha and head_sha")
++    for sha_key in ["baseline_sha", "head_sha"]:
++        sha_val = gc[sha_key]
++        if not isinstance(sha_val, str) or not SHA_REGEX.match(sha_val):
++            fail(f"Invalid {sha_key}: {sha_val} (must be non-null 40-character hexadecimal SHA)")
+@@ -60 +98,3 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
+-    tb = data.get("trial_budget", {})
++    tb = data.get("trial_budget")
++    if not isinstance(tb, dict):
++        fail("trial_budget must be an object")
+@@ -64,5 +104,5 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
+-    if not isinstance(tb["max_cumulative_trials_ceiling"], int):
+-        fail("max_cumulative_trials_ceiling must be integer")
+-    if not isinstance(tb["actual_cumulative_trials_executed"], int):
+-        fail("actual_cumulative_trials_executed must be integer")
+-    if not isinstance(tb["budget_enforced_fail_closed"], bool) or not tb["budget_enforced_fail_closed"]:
++    if type(tb["max_cumulative_trials_ceiling"]) is not int or tb["max_cumulative_trials_ceiling"] <= 0:
++        fail("max_cumulative_trials_ceiling must be a positive integer")
++    if type(tb["actual_cumulative_trials_executed"]) is not int or tb["actual_cumulative_trials_executed"] < 0:
++        fail("actual_cumulative_trials_executed must be a non-negative integer")
++    if type(tb["budget_enforced_fail_closed"]) is not bool or not tb["budget_enforced_fail_closed"]:
+@@ -71 +111 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
+-        fail("Trial budget exceeded ceiling")
++        fail(f"Actual executed trials ({tb['actual_cumulative_trials_executed']}) exceeded budget ceiling ({tb['max_cumulative_trials_ceiling']})")
+@@ -74 +114,3 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
+-    t1 = data.get("tier1_markov", {})
++    t1 = data.get("tier1_markov")
++    if not isinstance(t1, dict):
++        fail("tier1_markov must be an object")
+@@ -78,0 +121,2 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
++        if not isinstance(sub, dict):
++            fail(f"tier1_markov.{k} must be an object")
+@@ -82,4 +126,9 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
+-            if prop == "total_digits" and not isinstance(sub[prop], int):
+-                fail(f"Property {prop} in tier1_markov.{k} must be int")
+-            elif prop != "total_digits" and not isinstance(sub[prop], (int, float)):
+-                fail(f"Property {prop} in tier1_markov.{k} must be float/number")
++            val = sub[prop]
++            if prop == "total_digits":
++                if type(val) is not int or val <= 0:
++                    fail(f"Property {prop} in tier1_markov.{k} must be positive int")
++            else:
++                if not isinstance(val, (int, float)) or type(val) is bool:
++                    fail(f"Property {prop} in tier1_markov.{k} must be float/number")
++                if val < 0.0:
++                    fail(f"Property {prop} in tier1_markov.{k} cannot be negative")
+@@ -88 +137,3 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
+-    t2 = data.get("tier2_work", {})
++    t2 = data.get("tier2_work")
++    if not isinstance(t2, dict):
++        fail("tier2_work must be an object")
+@@ -100,0 +152,4 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
++        "counters_add_ternary",
++        "counters_mul_ternary",
++        "counters_add_binary",
++        "counters_mul_binary",
+@@ -106 +161,6 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
+-    for b in bands:
++    expected_bit_widths = [64, 128, 256, 512, 1024]
++    seen_bit_widths = []
++
++    for idx, b in enumerate(bands):
++        if not isinstance(b, dict):
++            fail(f"evaluated_bands element {idx} must be an object")
+@@ -109,3 +169,27 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
+-                fail(f"Missing band property: {prop}")
+-            if not isinstance(b[prop], int):
+-                fail(f"Band property {prop} must be integer")
++                fail(f"Missing band property: {prop} in band {idx}")
++
++        # Validate primitive counter objects and reconcile with weighted total W_ops
++        counter_mappings = [
++            ("counters_add_ternary", "w_ops_add_ternary"),
++            ("counters_mul_ternary", "w_ops_mul_ternary"),
++            ("counters_add_binary", "w_ops_add_binary"),
++            ("counters_mul_binary", "w_ops_mul_binary"),
++        ]
++        for c_key, w_key in counter_mappings:
++            c_obj = b[c_key]
++            if not isinstance(c_obj, dict):
++                fail(f"Band {b.get('bit_width')} {c_key} must be an object")
++            for prim in ["op_alu_add_sub", "op_alu_mul", "op_table_lookup", "op_branch_cond", "op_norm_pass"]:
++                if prim not in c_obj:
++                    fail(f"Missing primitive counter {prim} in {c_key}")
++                if type(c_obj[prim]) is not int or c_obj[prim] < 0:
++                    fail(f"Primitive counter {prim} in {c_key} must be a non-negative integer")
++            expected_w = compute_expected_w_ops(c_obj)
++            actual_w = b[w_key]
++            if expected_w != actual_w:
++                fail(f"Band {b.get('bit_width')} weighted total {w_key} ({actual_w}) does not match measured counters formula ({expected_w})")
++
++        seen_bit_widths.append(b["bit_width"])
++
++    if seen_bit_widths != expected_bit_widths:
++        fail(f"evaluated_bands must cover bit widths {expected_bit_widths}, found {seen_bit_widths}")
+@@ -114 +198,3 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
+-    ov = data.get("oracle_verification", {})
++    ov = data.get("oracle_verification")
++    if not isinstance(ov, dict):
++        fail("oracle_verification must be an object")
+@@ -119 +205 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
+-        fail("oracle_type must be non-empty string")
++        fail("oracle_type must be a non-empty string")
+@@ -121,0 +208,3 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
++    for d in ov["dimensions_verified"]:
++        if not isinstance(d, str) or len(d) == 0:
++            fail("Each dimension in dimensions_verified must be a non-empty string")
+@@ -123 +212 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
+-        fail("all_dimensions_passed must be true")
++        fail("all_dimensions_passed must be boolean true")
+@@ -125 +214,113 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
+-    print(f"[SCG-08 SCHEMA VALIDATION PASSED] Artifact {evidence_path.name} conforms to {schema.get('$id')}")
++
++def run_negative_tests(schema_path: Path):
++    """Verify that malformed records, null SHAs, and invalid types fail closed."""
++    print("[SCG-08 NEGATIVE TEST SUITE] Running negative schema tests...")
++
++    base_valid = {
++        "schema_id": "t81.scg08.carry-experiment.v1",
++        "experiment_id": "EXP-SCG08-01",
++        "specification_version": EXPECTED_SPECIFICATION_VERSION,
++        "status": "READY_FOR_INDEPENDENT_GATE1_IMPLEMENTATION_REVIEW",
++        "timestamp_utc": "2026-11-10T22:30:00Z",
++        "git_context": {
++            "baseline_sha": "cd490f5b5c0496350682542b56424dd77bea6963",
++            "head_sha": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3",
++        },
++        "trial_budget": {
++            "max_cumulative_trials_ceiling": 1000,
++            "actual_cumulative_trials_executed": 179,
++            "budget_enforced_fail_closed": True,
++        },
++        "tier1_markov": {
++            "ternary": {
++                "total_digits": 100,
++                "f_gen_given_0": 0.24,
++                "f_trans": 0.18,
++                "f_occ": 0.29,
++                "f_cont_given_act": 0.42,
++                "mean_run_length": 1.61,
++            },
++            "binary": {
++                "total_digits": 100,
++                "f_gen_given_0": 0.27,
++                "f_trans": 0.15,
++                "f_occ": 0.47,
++                "f_cont_given_act": 0.71,
++                "mean_run_length": 3.13,
++            },
++        },
++        "tier2_work": {
++            "evaluated_bands": [
++                {
++                    "bit_width": bw,
++                    "operand_trits": 41,
++                    "add_trits_min": 42,
++                    "mul_trits_min": 81,
++                    "ternary_limbs_op": 2,
++                    "ternary_limbs_add": 2,
++                    "ternary_limbs_mul": 3,
++                    "counters_add_ternary": {
++                        "op_alu_add_sub": 2, "op_alu_mul": 0, "op_table_lookup": 76, "op_branch_cond": 2, "op_norm_pass": 0
++                    },
++                    "counters_mul_ternary": {
++                        "op_alu_add_sub": 841, "op_alu_mul": 841, "op_table_lookup": 0, "op_branch_cond": 2461, "op_norm_pass": 1
++                    },
++                    "counters_add_binary": {
++                        "op_alu_add_sub": 2, "op_alu_mul": 0, "op_table_lookup": 0, "op_branch_cond": 2, "op_norm_pass": 0
++                    },
++                    "counters_mul_binary": {
++                        "op_alu_add_sub": 9, "op_alu_mul": 4, "op_table_lookup": 0, "op_branch_cond": 8, "op_norm_pass": 0
++                    },
++                    "w_ops_add_ternary": 80,
++                    "w_ops_mul_ternary": 5826,
++                    "w_ops_add_binary": 4,
++                    "w_ops_mul_binary": 29,
++                }
++                for bw in [64, 128, 256, 512, 1024]
++            ]
++        },
++        "oracle_verification": {
++            "oracle_type": "ExactBigIntOracle",
++            "dimensions_verified": ["dim1", "dim2", "dim3", "dim4", "dim5"],
++            "all_dimensions_passed": True,
++        },
++    }
++
++    negative_cases = [
++        ("null head_sha", lambda d: d["git_context"].__setitem__("head_sha", None)),
++        ("invalid short head_sha", lambda d: d["git_context"].__setitem__("head_sha", "abc123")),
++        ("malformed timestamp", lambda d: d.__setitem__("timestamp_utc", "invalid-time")),
++        ("wrong specification version", lambda d: d.__setitem__("specification_version", "v1.0")),
++        ("budget ceiling exceeded", lambda d: d["trial_budget"].__setitem__("actual_cumulative_trials_executed", 1001)),
++        ("budget boolean False", lambda d: d["trial_budget"].__setitem__("budget_enforced_fail_closed", False)),
++        ("missing tier2 band", lambda d: d["tier2_work"]["evaluated_bands"].pop()),
++        ("mismatched weighted total W_ops", lambda d: d["tier2_work"]["evaluated_bands"][0].__setitem__("w_ops_add_ternary", 999)),
++        ("missing primitive counter", lambda d: d["tier2_work"]["evaluated_bands"][0]["counters_add_ternary"].pop("op_alu_add_sub")),
++        ("boolean instead of number", lambda d: d["tier1_markov"]["ternary"].__setitem__("f_occ", True)),
++        ("oracle passed False", lambda d: d["oracle_verification"].__setitem__("all_dimensions_passed", False)),
++        ("oracle dimensions missing", lambda d: d["oracle_verification"].__setitem__("dimensions_verified", ["dim1"])),
++    ]
++
++    with open(schema_path, "r", encoding="utf-8") as f:
++        schema = json.load(f)
++
++    # First verify base_valid passes
++    validate_dict(base_valid, schema)
++
++    for desc, mutator in negative_cases:
++        test_doc = copy.deepcopy(base_valid)
++        mutator(test_doc)
++        failed_as_expected = False
++        try:
++            validate_dict(test_doc, schema)
++        except SystemExit:
++            failed_as_expected = True
++        except Exception:
++            failed_as_expected = True
++
++        if not failed_as_expected:
++            print(f"[NEGATIVE TEST FAILED] Case '{desc}' unexpectedly passed validation!", file=sys.stderr)
++            sys.exit(1)
++        print(f"  ✓ Case '{desc}' properly rejected fail-closed")
++
++    print("[SCG-08 NEGATIVE TEST SUITE] All negative test cases passed successfully.")
+@@ -133 +334,5 @@ def main():
+-    if len(sys.argv) > 1:
++    if "--test-negative" in sys.argv:
++        run_negative_tests(schema_path)
++        return
++
++    if len(sys.argv) > 1 and not sys.argv[1].startswith("--"):
+@@ -135 +340 @@ def main():
+-    if len(sys.argv) > 2:
++    if len(sys.argv) > 2 and not sys.argv[2].startswith("--"):

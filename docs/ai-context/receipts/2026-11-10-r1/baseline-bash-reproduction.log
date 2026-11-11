@@ -1,0 +1,29 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____________ test_bash_arithmetic_evaluation_defect_reproduction ______________
+
+    def test_bash_arithmetic_evaluation_defect_reproduction():
+        """
+        Subprocess test reproducing the exact Bash defect in automated_verification.sh:
+        When COMPLETED_TESTS=0, `((COMPLETED_TESTS++))` returns exit status 1.
+        Under `set -e`, this immediately crashes the script.
+        """
+        script_defect = """#!/usr/bin/env bash
+    set -e
+    TOTAL_TESTS=5
+    COMPLETED_TESTS=0
+    tmp_file=$(mktemp)
+    [ -f "$tmp_file" ] && ((COMPLETED_TESTS++))
+    rm -f "$tmp_file"
+    echo "COMPLETED_REACHED"
+    """
+        res = subprocess.run(["bash", "-c", script_defect], capture_output=True, text=True)
+>       assert res.returncode == 1, "Expected bash script to fail closed with exit code 1"
+E       AssertionError: Expected bash script to fail closed with exit code 1
+E       assert 0 == 1
+E        +  where 0 = CompletedProcess(args=['bash', '-c', '#!/usr/bin/env bash\nset -e\nTOTAL_TESTS=5\nCOMPLETED_TESTS=0\ntmp_file=$(mktemp...ETED_TESTS++))\nrm -f "$tmp_file"\necho "COMPLETED_REACHED"\n'], returncode=0, stdout='COMPLETED_REACHED\n', stderr='').returncode
+
+../t81-scg08-correction/tests/ci/test_architecture_engineering_diagnostics.py:312: AssertionError
+=========================== short test summary info ============================
+FAILED ../t81-scg08-correction/tests/ci/test_architecture_engineering_diagnostics.py::test_bash_arithmetic_evaluation_defect_reproduction
+1 failed, 22 deselected in 0.09s

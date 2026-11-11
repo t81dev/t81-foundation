@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "authoritative_baseline_commit": "6c9eaf1a2fc8368cd06f6dddbbdcd78e6606c0ce",
-  "generated_at": "2026-11-10T21:00:00Z",
+  "generated_at": "2026-11-11T00:26:00Z",
   "description": "Evidence-linked active and historical research programs across the T81 Foundation platform",
   "programs": [
     {
@@ -109,10 +109,18 @@
         {
           "phase_id": "SCG-08_P1",
           "title": "Phase 1: Contract Reconciliation (Signed-Domain & Cost Metric)",
-          "disposition": "PROPOSAL_STAGE_AUTHORIZATION_WITHHELD",
-          "receipt": "docs/research/continuity/SCG08_PHASE0_RESEARCH_CHARTER.md",
-          "pr": "Unmerged proposal",
-          "details": "Addenda 01-05 standardize on signed B-bit operand domain [-2^(B-1), 2^(B-1)-1]; Gate 1 implementation authorization and Gate 2 execution remain strictly withheld."
+          "disposition": "MERGED_IMPLEMENTATION_CORRECTIVE_REVIEW_REQUIRED",
+          "receipt": "docs/ai-context/T81_RESEARCH_STATUS_2026-11-10_R1.md",
+          "pr": "#763 merged; #760 open; correction branch 3969002e pending new PR",
+          "details": "Gate 1 harness integrated at dbf107fda83a3755fa21d6b95caa3eb8ac450dd3. Four unresolved Codex findings; implementation correctness and evidence integrity BLOCKED. Published correction 3969002e9d684bbf67b01aab485648aa2cd8c0d0 inspected, schema-only checks executed; remaining accounting/type/provenance issues prevent acceptance. Independent Gate 1 review pending; scientific acceptance withheld; Gate 2 strictly withheld. Addendum-06 is referenced by the harness but its authoritative authorization record is missing from the inspected tree; do not reconstruct approval from merge status."
+        },
+        {
+          "phase_id": "SCG-08_P0_REVIEW",
+          "title": "Phase 0: Independent Acceptance Report Publication",
+          "disposition": "READY FOR REVIEW",
+          "receipt": "docs/ai-context/T81_RESEARCH_STATUS_2026-11-10_R1.md",
+          "pr": "#761 open draft",
+          "details": "Source-reported independent mathematical review passes derivations, with conditional statistical readiness: 136,500-sequence allocation not reconciled against the 10^7-step criterion. Report not merged; not independently rerun in this reconciliation."
         }
       ]
     },
@@ -307,7 +315,7 @@
       "linked_studies": [
         {
           "study_id": "SCG-08",
-          "scope": "Phase 0 charter derived 3-state carry Markov chain; candidate experiment EXP-SCG08-01 preregistered; Gate 1/2 authorization withheld."
+          "scope": "Phase 0 charter merged; Gate 1 implementation merged via #763 with four unresolved findings and unaccepted branch correction 3969002e. Mathematical carry model does not establish runtime or physical advantage. Gate 1 acceptance and Gate 2 authorization withheld."
         },
         {
           "study_id": "T81-SCALAR-ADD",
@@ -333,7 +341,7 @@
         },
         {
           "study_id": "SCG-08",
-          "scope": "Markov carry propagation analysis proves 1/4 stationary non-zero occurrence vs 1/2 in binary; Tier 2 multi-precision software work benchmark preregistered."
+          "scope": "Phase 0 charter merged; Gate 1 implementation merged via #763 with four unresolved findings and unaccepted branch correction 3969002e. Mathematical carry model does not establish runtime or physical advantage. Gate 1 acceptance and Gate 2 authorization withheld."
         }
       ]
     },
@@ -451,5 +459,11 @@
         }
       ]
     }
-  ]
+  ],
+  "status_observation": {
+    "observed_at": "2026-11-11T00:26:00Z",
+    "source_baseline_commit": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3",
+    "receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+    "boundary": "Historical authoritative_baseline_commit preserved; no coverage audit or metric change"
+  }
 }

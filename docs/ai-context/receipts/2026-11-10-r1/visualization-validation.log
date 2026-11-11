@@ -1,0 +1,29 @@
+== Validating Architecture Visualization Datasets (docs/architecture/visualization) ==
+ [PASS] Loaded architecture_layers.json
+ [PASS] Loaded architecture_nodes.json
+ [PASS] Loaded architecture_edges.json
+ [PASS] Loaded architecture_interfaces.json
+ [PASS] Loaded architecture_gaps.json
+ [PASS] Loaded execution_paths.json
+ [PASS] Loaded architecture_evidence.json
+ [PASS] Loaded visualization_layout.json
+ [PASS] Loaded subsystem_summary.json
+ [PASS] Loaded coverage_manifest.json
+ [PASS] Loaded component_evidence_index.json
+ [PASS] Loaded research_programs.json
+ [PASS] Loaded pull_requests_snapshot.json
+ [PASS] Validated 35 nodes and their source file paths.
+ [PASS] Validated 32 edges, derivation methods, and referential integrity.
+ [PASS] Validated 6 interfaces.
+ [PASS] Validated 9 execution pathways and trace provenance.
+ [PASS] Validated 3D layout coordinates for all nodes.
+ [PASS] Validated coverage manifest (18 mapped, 17 unmapped directories).
+ [PASS] Validated component evidence index, summary reconciliation, and relationship classifications.
+== All Visualization Data Invariants Verified Successfully! ==
+
+== Architecture Drift Detection Results ==
+Missing source paths: 0
+Stale line references: 0
+Unsupported reference types: 0
+Record inconsistencies: 0
+ [PASS] Zero drift detected against repository tree.
