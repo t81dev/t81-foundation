@@ -7,15 +7,26 @@ Includes rigorous negative test mode (--test-negative).
 
 import copy
 import json
+import math
 import os
 import re
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
+from datetime import datetime, timedelta
 
 SHA_REGEX = re.compile(r"^[0-9a-f]{40}$")
 ISO8601_REGEX = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$")
 
 EXPECTED_SPECIFICATION_VERSION = "T81-SCG-08-PHASE1-PROP-001-R3-ADDENDUM-06"
+
+# Only the keywords used by this evidence schema, plus boolean extra-property
+# admission, are supported. Unknown constraints must never be silently ignored.
+SUPPORTED_SCHEMA_KEYWORDS = {
+    "$schema", "$id", "title", "description", "type", "enum", "required",
+    "properties", "items", "pattern", "additionalProperties",
+}
 
 
 def fail(msg: str):
@@ -33,6 +44,23 @@ def compute_expected_w_ops(counters: dict) -> int:
     )
 
 
+def reject_json_constant(value):
+    raise ValueError(f"Nonfinite JSON constant: {value}")
+
+
+def parse_finite_float(value):
+    result = float(value)
+    if not math.isfinite(result):
+        raise ValueError(f"JSON number outside finite float range: {value}")
+    return result
+
+
+def load_json(stream):
+    # Python otherwise accepts NaN/Infinity tokens, including in extra fields
+    # that the schema intentionally permits without interpreting their contents.
+    return json.load(stream, parse_constant=reject_json_constant, parse_float=parse_finite_float)
+
+
 def validate_evidence(evidence_path: Path, schema_path: Path):
     if not evidence_path.is_file():
         fail(f"Evidence file not found: {evidence_path}")
@@ -41,21 +69,79 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
 
     try:
         with open(evidence_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
+            data = load_json(f)
     except Exception as e:
         fail(f"Failed to parse evidence JSON: {e}")
 
     try:
         with open(schema_path, "r", encoding="utf-8") as f:
-            schema = json.load(f)
+            schema = load_json(f)
     except Exception as e:
         fail(f"Failed to parse schema JSON: {e}")
 
     validate_dict(data, schema)
-    print(f"[SCG-08 SCHEMA VALIDATION PASSED] Artifact {evidence_path.name} conforms to {schema.get('$id')}")
+    print(f"[SCG-08 SCHEMA VALIDATION PASSED] Artifact {evidence_path.name} passes supported schema checks and domain rules for {schema.get('$id')}")
+
+
+def validate_schema_shape(value, schema: dict, path: str = "evidence"):
+    """Check this schema's types, string enums, required/properties/items,
+    ASCII-compatible regex patterns and boolean additionalProperties.
+
+    Domain constraints below remain additional checks; this is not a general
+    JSON Schema implementation or general ECMAScript regex engine. Integer
+    counters require Python ints (not bools or integral floats).
+    """
+    if not isinstance(schema, dict):
+        fail(f"{path}: schema must be an object")
+    unsupported = set(schema) - SUPPORTED_SCHEMA_KEYWORDS
+    if unsupported:
+        fail(f"{path}: unsupported schema keywords: {sorted(unsupported)}")
+    if "additionalProperties" in schema and type(schema["additionalProperties"]) is not bool:
+        fail(f"{path}: only boolean additionalProperties is supported")
+    if "enum" in schema and (
+        not isinstance(schema["enum"], list)
+        or not all(isinstance(option, str) for option in schema["enum"])
+    ):
+        fail(f"{path}: only string enum values are supported")
+    expected = schema.get("type")
+    valid_types = {
+        "object": isinstance(value, dict),
+        "array": isinstance(value, list),
+        "string": isinstance(value, str),
+        "integer": type(value) is int,
+        "number": type(value) in (int, float),
+        "boolean": type(value) is bool,
+    }
+    if expected is not None and not valid_types.get(expected, False):
+        fail(f"{path} must be {expected}")
+    if type(value) is float and not math.isfinite(value):
+        fail(f"{path} must be finite")
+    if "enum" in schema and value not in schema["enum"]:
+        fail(f"{path} is outside the schema enum")
+    if "pattern" in schema and isinstance(value, str):
+        try:
+            matches = re.search(schema["pattern"], value)
+        except (TypeError, re.error) as exc:
+            fail(f"{path}: invalid supported regex pattern: {exc}")
+        if matches is None:
+            fail(f"{path} does not match the schema pattern")
+    if isinstance(value, dict):
+        for key in schema.get("required", []):
+            if key not in value:
+                fail(f"Missing required property: {path}.{key}")
+        properties = schema.get("properties", {})
+        for key, item in value.items():
+            if key in properties:
+                validate_schema_shape(item, properties[key], f"{path}.{key}")
+            elif schema.get("additionalProperties") is False:
+                fail(f"Unexpected property: {path}.{key}")
+    elif isinstance(value, list) and "items" in schema:
+        for idx, item in enumerate(value):
+            validate_schema_shape(item, schema["items"], f"{path}[{idx}]")
 
 
 def validate_dict(data: dict, schema: dict):
+    validate_schema_shape(data, schema)
     if not isinstance(data, dict):
         fail("Top-level evidence artifact must be a JSON object")
 
@@ -82,8 +168,14 @@ def validate_dict(data: dict, schema: dict):
 
     # timestamp_utc validation
     ts = data.get("timestamp_utc")
-    if not isinstance(ts, str) or not ISO8601_REGEX.match(ts):
+    if not isinstance(ts, str) or not ISO8601_REGEX.fullmatch(ts):
         fail(f"Invalid timestamp_utc format: {ts} (must be valid ISO-8601 UTC timestamp)")
+    try:
+        parsed_ts = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    except ValueError:
+        fail(f"Invalid timestamp_utc calendar value: {ts}")
+    if parsed_ts.utcoffset() != timedelta(0):
+        fail("timestamp_utc must have UTC offset zero")
 
     # git_context
     gc = data.get("git_context")
@@ -95,11 +187,11 @@ def validate_dict(data: dict, schema: dict):
             fail(f"Invalid git_context: missing required property {req_prop}")
     for sha_key in required_git_props:
         sha_val = gc[sha_key]
-        if not isinstance(sha_val, str) or not SHA_REGEX.match(sha_val):
+        if not isinstance(sha_val, str) or not SHA_REGEX.fullmatch(sha_val):
             fail(f"Invalid {sha_key}: {sha_val} (must be non-null 40-character hexadecimal SHA)")
     if "evidence_publication_sha" in gc:
         pub_sha = gc["evidence_publication_sha"]
-        if not isinstance(pub_sha, str) or not SHA_REGEX.match(pub_sha):
+        if not isinstance(pub_sha, str) or not SHA_REGEX.fullmatch(pub_sha):
             fail(f"Invalid evidence_publication_sha: {pub_sha!r} (must be a non-null 40-character hexadecimal SHA)")
 
     # trial_budget
@@ -334,10 +426,19 @@ def run_negative_tests(schema_path: Path):
         ("bit_width boolean True", lambda d: d["tier2_work"]["evaluated_bands"][0].__setitem__("bit_width", True)),
         ("operand_trits float", lambda d: d["tier2_work"]["evaluated_bands"][0].__setitem__("operand_trits", 41.5)),
         ("negative operand_trits", lambda d: d["tier2_work"]["evaluated_bands"][0].__setitem__("operand_trits", -1)),
+        ("invalid calendar timestamp", lambda d: d.__setitem__("timestamp_utc", "2026-99-99T25:61:61Z")),
+        ("non-UTC timestamp", lambda d: d.__setitem__("timestamp_utc", "2026-11-10T22:30:00+01:00")),
+        ("SHA trailing newline", lambda d: d["git_context"].__setitem__("evaluated_implementation_sha", "a" * 40 + "\n")),
+        ("nonfinite metric", lambda d: d["tier1_markov"]["ternary"].__setitem__("f_occ", float("nan"))),
+        ("negative counter", lambda d: d["tier2_work"]["evaluated_bands"][0]["counters_add_binary"].__setitem__("op_alu_mul", -1)),
+        ("boolean counter", lambda d: d["tier2_work"]["evaluated_bands"][0]["counters_add_binary"].__setitem__("op_alu_mul", False)),
+        ("nested counter", lambda d: d["tier2_work"]["evaluated_bands"][0]["counters_add_binary"].__setitem__("op_alu_mul", {})),
+        ("publication SHA trailing newline", lambda d: d["git_context"].__setitem__("evidence_publication_sha", "a" * 40 + "\n")),
+        ("nonfinite infinite metric", lambda d: d["tier1_markov"]["ternary"].__setitem__("f_occ", float("inf"))),
     ]
 
     with open(schema_path, "r", encoding="utf-8") as f:
-        schema = json.load(f)
+        schema = load_json(f)
 
     # First verify base_valid passes
     validate_dict(base_valid, schema)
@@ -348,10 +449,8 @@ def run_negative_tests(schema_path: Path):
         failed_as_expected = False
         try:
             validate_dict(test_doc, schema)
-        except SystemExit:
-            failed_as_expected = True
-        except Exception:
-            failed_as_expected = True
+        except SystemExit as exc:
+            failed_as_expected = exc.code == 1
 
         if not failed_as_expected:
             print(f"[NEGATIVE TEST FAILED] Case '{desc}' unexpectedly passed validation!", file=sys.stderr)
@@ -361,6 +460,68 @@ def run_negative_tests(schema_path: Path):
     print("[SCG-08 NEGATIVE TEST SUITE] All negative test cases passed successfully.")
 
 
+def run_json_file_tests(evidence_path: Path, schema_path: Path):
+    """Exercise file parsing and CLI rejection separately from dict fixtures."""
+    valid_text = evidence_path.read_text(encoding="utf-8")
+    valid = json.loads(valid_text)
+    nonfinite = copy.deepcopy(valid)
+    nonfinite["tier1_markov"]["ternary"]["f_occ"] = float("nan")
+    nested = copy.deepcopy(valid)
+    nested["tier2_work"]["evaluated_bands"][0]["counters_add_binary"]["op_alu_mul"] = {}
+    cases = [
+        ("valid", valid_text.encode(), 0),
+        ("truncated", b'{"schema_id":', 1),
+        ("trailing data", valid_text.encode() + b'{}', 1),
+        ("invalid UTF-8", b'\xff', 1),
+        ("top-level null", b'null', 1),
+        ("top-level array", b'[]', 1),
+        ("missing properties", b'{}', 1),
+        ("nested scalar object", json.dumps(nested).encode(), 1),
+        ("NaN declared field", json.dumps(nonfinite).encode(), 1),
+    ]
+    for token in ("NaN", "Infinity", "-Infinity", "1e999"):
+        # Even uninterpreted extra properties must contain parseable finite JSON.
+        text = valid_text.rstrip()[:-1] + ', "extra": ' + token + '}'
+        cases.append((f"nonfinite extra field {token}", text.encode(), 1))
+    extra = copy.deepcopy(valid)
+    extra["extra"] = {"nested": [1, "permitted"]}
+    cases.append(("permitted finite extras", json.dumps(extra).encode(), 0))
+    schema_text = schema_path.read_text(encoding="utf-8")
+    unsupported = json.loads(schema_text)
+    unsupported["minimum"] = 0
+    schema_cases = [
+        ("truncated schema", b'{"type":', 1),
+        ("invalid UTF-8 schema", b'\xff', 1),
+        ("null schema", b'null', 1),
+        ("array schema", b'[]', 1),
+        ("unsupported schema constraint", json.dumps(unsupported).encode(), 1),
+    ]
+    file_cases = [(label, payload, schema_text.encode(), expected)
+                  for label, payload, expected in cases]
+    file_cases += [(label, valid_text.encode(), payload, expected)
+                   for label, payload, expected in schema_cases]
+    with tempfile.TemporaryDirectory(prefix="scg08-json-files-") as scratch:
+        path = Path(scratch) / "evidence.json"
+        schema_file = Path(scratch) / "schema.json"
+        for label, payload, schema_payload, expected in file_cases:
+            path.write_bytes(payload)
+            schema_file.write_bytes(schema_payload)
+            command = [sys.executable]
+            if sys.flags.optimize:
+                command.append("-O")
+            command += [str(Path(__file__).resolve()), str(path), str(schema_file)]
+            result = subprocess.run(command, capture_output=True, text=True, timeout=10)
+            if result.returncode != expected or "Traceback" in result.stderr:
+                fail(f"JSON-file case {label}: exit {result.returncode}, expected {expected}: {result.stderr}")
+            if expected and (
+                "[SCG-08 SCHEMA VALIDATION ERROR]" not in result.stderr
+                or "[SCG-08 SCHEMA VALIDATION PASSED]" in result.stdout
+            ):
+                fail(f"JSON-file case {label} did not use the intended rejection path")
+            print(f"  JSON-file case '{label}' passed (exit {expected})")
+    print(f"[SCG-08 JSON FILE TEST SUITE] All {len(file_cases)} cases passed.")
+
+
 def main():
     repo_root = Path(__file__).resolve().parent.parent.parent
     evidence_path = repo_root / "experiments" / "scg08_arithmetic_work" / "gate1_evidence_record.json"
@@ -368,6 +529,9 @@ def main():
 
     if "--test-negative" in sys.argv:
         run_negative_tests(schema_path)
+        return
+    if "--test-json-files" in sys.argv:
+        run_json_file_tests(evidence_path, schema_path)
         return
 
     if len(sys.argv) > 1 and not sys.argv[1].startswith("--"):
