@@ -42,6 +42,10 @@
 #define NOMINMAX
 #endif
 #include <windows.h>
+// Windows GDI's ERROR macro collides with monitoring::AlertLevel::ERROR.
+#ifdef ERROR
+#undef ERROR
+#endif
 #elif defined(__APPLE__)
 #include <mach-o/dyld.h>
 #else
