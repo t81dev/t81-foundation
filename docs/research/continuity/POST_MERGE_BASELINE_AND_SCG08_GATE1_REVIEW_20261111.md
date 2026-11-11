@@ -19,8 +19,8 @@ Following the integration of Pull Requests **#770**, **#771**, and **#772** into
 | **Integrated Engineering Baseline** | **VERIFIED FOR EXECUTED LOCAL TESTS** | All local targeted CTest suites (semantic analyzer, frontend, VM decoder, DPE epoch DAG/parallel/thread pool, SCG-08 Gate 1) compiled cleanly and passed 100% (24/24 frontend/semantic tests, 35/35 DPE parallel tests, 30/30 DPE pool tests, 20/20 DPE DAG tests, decoder tests, and 5-width arithmetic tests). |
 | **Cross-Platform Hosted CI Matrix** | **PARTIALLY VERIFIED — WINDOWS TEST FAILURES REMAIN** | Ubuntu Linux (GCC/Clang, sanitizers, determinism slices, AVX2-ASan) and macOS runners pass build, configuration, and determinism gates. Windows runners (`build / windows-x86_64 / msvc` and `build / windows-x86_64 / clang-cl`) successfully checkout, configure CMake, and build all binaries, but fail during the CTest step with exit code 8 due to inherited upstream fixture and directory issues (`cli_contract_test` missing llama fixture and `check_root_structure` unexpected `review/` directory). |
 | **Semantic Analyzer Scope Lifetime** | **VERIFIED (DEFENSIVE STABILITY IMPROVEMENT)** | Switching `_scopes` from `std::vector<Scope>` to `std::deque<Scope>` prevents reallocation of the outer scope container during deep nesting. Because individual symbols are stored in `std::unordered_map` whose node addresses are node-allocated and remain stable across map operations, no prior bug of symbol pointer corruption was observed; the change is classified as a defensive scope-container stability improvement. |
-| **SCG-08 Phase 1 Gate 1 Readiness** | **READY FOR INDEPENDENT REVIEW** | Arithmetic correctness across all 5 bands ($B \in \{64, 128, 256, 512, 1024\}$), decoupled base-$10^9$ `ExactBigIntOracle` parity, digit canonicalization, fail-closed trial ceiling ($\le 1,000$), $W_{\text{ops}}$ formula reconciliation, and evidence schema (12 negative cases) are locally verified and documented. Independent review and formal maintainer sign-off remain required before Gate 1 closure. |
-| **SCG-08 Phase 2 (Experimental Campaign)** | **NO-GO — NOT AUTHORIZED** | Large-scale statistical benchmarks, carry-propagation timing campaigns, and hardware timing remain strictly withheld. Progression to Gate 2 requires a separate, dated maintainer authorization record. |
+| **SCG-08 Phase 1 Gate 1 Readiness** | **ACCEPTANCE PENDING INDEPENDENT REVIEW** | Arithmetic correctness across all 5 bands ($B \in \{64, 128, 256, 512, 1024\}$), decoupled base-$10^9$ `ExactBigIntOracle` parity, digit canonicalization, fail-closed trial ceiling ($\le 1,000$), $W_{\text{ops}}$ formula reconciliation, and evidence schema (12 negative cases) are locally verified and documented. Independent review and formal maintainer sign-off remain required before Gate 1 closure. |
+| **SCG-08 Phase 2 (Experimental Campaign)** | **STRICT NO-GO — NOT AUTHORIZED** | Large-scale statistical benchmarks, carry-propagation timing campaigns, and hardware timing remain strictly withheld. Progression to Gate 2 requires a separate, dated maintainer authorization record. |
 
 ---
 
@@ -145,16 +145,20 @@ The fixes integrated in PR #772 successfully addressed several previous blocking
 - **Docs-Only Compliance Check:** The step `Verify stable baseline docs and platform test surfaces` now properly passes with `--docs-only` on Windows (step 22), avoiding execution of non-portable fork/wait test runners.
 - **Compilation Clean:** Both MSVC and `clang-cl` successfully compiled all libraries and test executables (step 16).
 
-### 4.3 Root Cause Analysis of Remaining Windows Failures (Step 25: CTest Exit Code 8)
+### 4.3 Deep Root Cause Analysis of Remaining Windows Failures (Step 25: CTest Exit Code 8)
 CTest executes in step 25:
 ```bash
 ctest --test-dir build --output-on-failure --verbose --output-junit build/ctest-results.xml
 ```
-Process completed with **exit code 8**. The failure is caused by known inherited repository defects:
-1. `t81_cli_contract_test_runner`: Fails on `fs::exists(safetensors_fixture)` due to missing upstream fixture file `models/tiny-random-llama/model.safetensors`.
-2. `t81_root_structure_policy_test`: Fails in `scripts/governance/check_root_structure.py` reporting unexpected committed directory `review/` in the repository root.
-
-**Boundary Statement:** The Windows failures are confirmed inherited defects. Per task directives, Windows CI was not modified or masked in this pull request.
+Process completed with **exit code 8**. Detailed investigation reveals that the failures stem from environmental checkout omissions and path conventions rather than core execution defects:
+1. **`cli_contract_test` (`tests/cpp/cli_contract_test.cpp:549`):**
+   - **Mechanism:** Line 549 asserts `T81_TEST_CHECK(fs::exists(safetensors_fixture))`.
+   - **Root Cause:** In `.github/workflows/ci.yml`, the sparse-checkout patterns omit `/models/**`. Furthermore, `scripts/ci/provision_model_fixtures.sh` expects the executable `--t81-bin build/t81`, whereas on Windows the executable is created as `build/t81.exe` (or in multi-config builds `build/Release/t81.exe`), causing the fixture download and export step to be skipped or fail to find the binary.
+   - **Path Separators:** Line 560 checks for exact string matching of `"source_path": "` + safetensors_fixture.string() + `"`. On Windows, `safetensors_fixture.string()` contains Windows backslashes (`\`), whereas JSON serialization often normalizes to forward slashes (`/`), producing string comparison mismatches.
+2. **`check_root_structure` (`scripts/governance/check_root_structure.py`):**
+   - **Mechanism:** In `CMakeLists.txt:1800`, the test is registered as `COMMAND python3 ${CMAKE_SOURCE_DIR}/tests/ci/check_root_structure_test.py`.
+   - **Root Cause:** On Windows runner environments, `python3` is frequently not present in the system `PATH` (only `python.exe` is registered), unlike Unix runners. In contrast, line 1806 uses `${Python3_EXECUTABLE}`. Additionally, `check_root_structure_test.py` itself invokes `["python3", str(script_path)]` in a subprocess, causing `FileNotFoundError` when spawning Python on Windows.
+   - **Isolation Boundary:** These failures reflect path conventions, sparse checkout filtering, and runner executable aliases. **There is no causal connection between these test fixture/structural issues and arithmetic or cross-profile execution semantics.**
 
 ---
 
@@ -203,42 +207,56 @@ $$W_{\text{ops}} = \text{OP}_{\text{ALU\_ADD\_SUB}} + 3 \cdot \text{OP}_{\text{A
 - **Normalization Costs:** Normalization passes are counted under `op_norm_pass`. Primitive normalization counters are tracked as non-aggregating diagnostic counters and do not alter $W_{\text{ops}}$.
 - **Workload Equivalence:** Ternary and binary harnesses execute identical operand pairs generated from deterministic PRNG seed `0x5C608001ULL`.
 
-### 6.4 Carry-Transition Markov Dynamics
-- The Tier 1 Markov model (`tier1_markov_harness.hpp`) measures carry generation probability $P(\text{gen}|0)$, carry occupation $f_{\text{occ}}$, and mean carry run length.
-- Empirical smoke tests confirm balanced ternary significantly reduces carry run lengths compared to binary addition (e.g. mean run length $\approx 1.61$ trits vs $\approx 3.13$ bits in smoke trials).
+### 6.4 Falsification Criteria vs Execution Authorization (Separation of Boundaries)
+- **Authoritative Falsification Source:** Defined in `SCG08_PHASE0_RESEARCH_CHARTER.md` (§10.5 line 506 and §9 Table):
+  *"If balanced-ternary carry normalization overhead exceeds total binary carry resolution time by > 2.0x for all operand widths N in [64, 1024] bits, H02 is FALSIFIED."*
+- **Strict Governance Boundary:** Preregistered scientific falsification criteria define stopping conditions under which a hypothesis is rejected. **Falsification conditions do not confer authorization to begin testing or execute Gate 2.**
+- **Missing Gate 2 Pre-Requisites:** Gate 2 execution remains **STRICT NO-GO** because the following required pre-requisites are currently missing:
+  1. No dated maintainer authorization record approving Gate 2 entry.
+  2. No ratified benchmark stopping rules or trial ceilings for large-scale runs.
+  3. No ratified protocol amendment choosing between contiguous streams and clustered sequences.
+  4. No independent maintainer signature accepting Phase 1 Gate 1.
 
-### 6.5 Execution Budget & Gate Separation
-- `TrialBudgetEnforcer` strictly enforces a ceiling of $\le 1,000$ cumulative trials.
-- Smoke verification recorded 179 trials, well within the ceiling. Deliberate overflow triggers fail-closed termination.
-- Gate 2 benchmarking remains **STRICTLY WITHHELD / NO-GO**.
-
-### 6.6 Evidence Schema & Negative Tests
-The schema validation tool `scripts/ci/validate_scg08_gate1_evidence.py` verified `gate1_evidence_record.json` against `evidence_schema.json`. Running `--test-negative` executed all 12 negative test cases:
-1. Null `head_sha` fail-closed rejection.
-2. Short `head_sha` fail-closed rejection.
-3. Malformed timestamp rejection.
-4. Incorrect specification version rejection.
-5. Trial budget ceiling overflow rejection ($1001 > 1000$).
-6. `budget_enforced_fail_closed` false rejection.
-7. Missing evaluated band rejection.
-8. Mismatched $W_{\text{ops}}$ weighted sum rejection.
-9. Missing primitive counter rejection.
-10. Non-numeric field type rejection.
-11. `all_dimensions_passed` false rejection.
-12. Incomplete oracle dimensions list rejection.
+### 6.5 Statistical Protocol Identity: Contiguous Markov Stream vs Clustered Design
+A rigorous distinction must be maintained between the two competing experimental protocols:
+1. **Original Preregistered Protocol (Charter §5.3, §10.3):**
+   - Single contiguous Markov stream of $10^7$ steps ($10,000,000$ steps).
+   - Single initial boundary condition $c_0 = 0$, evaluating asymptotic stationary mixing with eigenvalue $\lambda_3 = 1/9$.
+   - Effective sample size $M_{\text{eff}} \approx 0.8M$.
+2. **Unratified Proposed Clustered Design (Addendum 03 / Report):**
+   - Stratified sequence clusters across 6 length bands totaling $K = 136,500$ clusters ($48,128,000$ digits).
+   - Boundary condition $c_0 = 0$ is reset $136,500$ times, inducing a cumulative carry deficit of $\approx -4,265.6$ active carries and systematically suppressing early carries ($\mathbb{E}[\hat{R}_b] < 1/4$).
+   - Uses within-stratum centered variance estimation.
+- **Protocol Boundary Decision:** Because these protocols measure fundamentally different regimes (asymptotic stationary mixing vs transient-dominated mixtures), **they must not be combined or conflated**.
+- **Recommendation:** The proposed 136,500-cluster design should receive its own separate experiment identifier (e.g. `EXP-SCG08-02-CLUSTERED`) and dedicated preregistration prior to any execution.
 
 ---
 
-## 7. Gate 1 Readiness Disposition & Next Engineering Task
+## 7. SCG-08 Authorization & Provenance Decision Matrix
 
-### 7.1 Gate 1 Readiness
-- **Status:** **`READY FOR INDEPENDENT REVIEW`**
-- **Basis:** The implementation meets all technical, mathematical, and schema requirements. Historical authorization provenance (`T81-SCG-08-PHASE1-PROP-001-R3-ADDENDUM-06`) is classified as `NOT VERIFIED`, but prospective standard `RFC-00E1` formalizes the requirements. Technical acceptance is ready for formal independent review and maintainer signature.
+To ensure historical fidelity without backdating, authorization dimensions are formally classified below:
 
-### 7.2 Gate 2 Disposition
-- **Status:** **`NO-GO — NOT AUTHORIZED`**
+| Dimension | Classification | Authoritative Evidence / Basis | Minimum Acceptance Requirement |
+|:---|:---:|:---|:---|
+| **Historical Gate 1 Authorization** | **`NOT VERIFIED`** | No dated maintainer signature, PR approval, or commit SHA exists granting Gate 1 implementation authorization in the historical archive. | Retain `NOT VERIFIED`. Do not manufacture or backdate approval. |
+| **Historical Addendum 06 Authority** | **`NOT VERIFIED`** | Physical specification document text is absent from git tree; cited only as an external string. | Retained as `NOT VERIFIED`; requirements prospectively formalized under RFC-00E1. |
+| **H02 Falsification Threshold ($W_{\text{ops}} > 2.0\times$)** | **`PREREGISTERED`** | Charter §10.5 line 506 and §9 Table. Immediate hypothesis rejection rule. | Established in Charter; does not grant Gate 2 execution permission. |
+| **Gate 1 Trial Ceiling ($\le 1,000$)** | **`IMPLEMENTED / HISTORICAL — PREREGISTRATION NOT VERIFIED`** | Implemented in `tier2_work_harness.hpp:67` and enforced fail-closed. | Requires explicit maintainer ratification in prospective Gate 1 acceptance. |
+| **Gate 1 Prospective Technical Acceptance** | **`PENDING INDEPENDENT REVIEW`** | Technical harness, 5-width arithmetic, base-$10^9$ oracle, and 12-case negative schema verification are 100% verified locally. | Signed maintainer acceptance record on RFC-00E1 and Gate 1 evidence packet. |
+| **Gate 2 Benchmark Execution** | **`STRICT NO-GO / NOT AUTHORIZED`** | Prohibited by Charter §1.3 and governance protocol. | Requires complete Gate 1 sign-off, ratified protocol amendment, and signed Gate 2 authorization. |
+
+---
+
+## 8. Gate 1 Readiness Disposition & Next Engineering Task
+
+### 8.1 Gate 1 Readiness
+- **Status:** **`ACCEPTANCE PENDING INDEPENDENT REVIEW`**
+- **Basis:** The harness implementation meets all technical, mathematical, and schema validation requirements. Historical authorization is `NOT VERIFIED`, but prospective standard `RFC-00E1` formalizes the contract. Technical acceptance is ready for formal independent review and maintainer signature.
+
+### 8.2 Gate 2 Disposition
+- **Status:** **`STRICT NO-GO — NOT AUTHORIZED`**
 - **Basis:** No large-scale statistical campaigns, performance timing, or microarchitectural benchmarks may be executed until Gate 1 is formally accepted by repository maintainers.
 
-### 7.3 Exactly One Recommended Next Engineering Task
+### 8.3 Exactly One Recommended Next Engineering Task
 **Recommendation:**
-Execute an independent maintainer review of the SCG-08 Gate 1 technical package (RFC-00E1, `gate1_evidence_record.json`, and harness verification) to issue formal maintainer technical acceptance of Phase 1 Gate 1.
+Execute an independent maintainer review of the SCG-08 Gate 1 technical package (prospective RFC-00E1, `gate1_evidence_record.json`, and harness verification) to issue formal maintainer technical acceptance of Phase 1 Gate 1.
