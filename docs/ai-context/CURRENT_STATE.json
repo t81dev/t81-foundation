@@ -2687,6 +2687,115 @@
           "next": "Review #747, then #748/#750/#752; #751 follows #750."
         }
       ]
+    },
+    "2026-11-10-r2": {
+      "view_date": "2026-11-10",
+      "freshness": "Focused post-#765 follow-up at 2026-11-11T01:02:53Z; older view selection and 82-record R1 inventory preserved",
+      "coverage": {
+        "inventory_scope": "Focused #765 metadata/review follow-up, plus complete open-list metadata; not a new full research PR audit",
+        "coverage_state": "VERIFIED merge metadata; two unresolved findings; scientific acceptance withheld",
+        "open_pr_count": 70
+      },
+      "repository_observation": {
+        "envelope": {
+          "subject": "Fetched current origin/main after #765 merge",
+          "observed_at": "2026-11-11T01:02:53Z",
+          "collector": "Codex follow-up: GitHub metadata and pinned source inspection; no scientific acceptance",
+          "retained_receipt": "docs/ai-context/receipts/2026-11-10-r2/github-observations.json",
+          "source_revision": {
+            "commit_sha": "36b3849aa1e6297e88de2ec1655777793ab0b59e"
+          }
+        },
+        "name": "t81dev/t81-foundation",
+        "base_branch": "main",
+        "observed_head": "36b3849aa1e6297e88de2ec1655777793ab0b59e"
+      },
+      "scientific_observations": [
+        {
+          "envelope": {
+            "subject": "SCG-08 Gate 1 acceptance after corrective #765 merge",
+            "observed_at": "2026-11-11T01:02:53Z",
+            "collector": "Codex follow-up: GitHub metadata and pinned source inspection; no scientific acceptance",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r2/github-observations.json",
+            "source_revision": {
+              "commit_sha": "36b3849aa1e6297e88de2ec1655777793ab0b59e"
+            }
+          },
+          "id": "SCG-08-GATE1",
+          "status": "BLOCKED: #765 merged; P1 source pin and P2 scalar schema validation unresolved",
+          "verification": "blocked",
+          "claims_boundary": "Merged correction is implemented, not independently accepted. Original R1 accounting/run-provenance concerns remain unresolved by this metadata update. Missing authoritative Gate 1 authorization record; Phase 0 statistical readiness conditional. Gate 2 withheld. Any further Jules correction remains MISSING EVIDENCE until published source is observed."
+        },
+        {
+          "envelope": {
+            "subject": "T81-AIOPT-001 M1 fixed-catalog pattern filtering",
+            "observed_at": "2026-11-02T00:00:00Z",
+            "source_revision": {
+              "commit_sha": "b2b9d3c73df96d6b4227ee0061c56bc2ee04a8fe"
+            },
+            "collector": "Jules_AI_assisted_source_assessment_not_independent_experimental_replication",
+            "retained_receipt": "docs/research/aiopt/T81-AIOPT-001-SCIENTIFIC-REVIEW.md"
+          },
+          "id": "AIOPT-001-M1",
+          "status": "redesign_required",
+          "verification": "falsified",
+          "claims_boundary": "Historical finding carried forward unchanged in scope; observed_at and pinned source retained, not re-executed in R1. Preserved negative mathematical critique of C40 equality filtering: scalar lookup/index controls invalidate an optimization claim. The pinned review does not establish independent experimental replication or authenticated independent-person review; no ternary speedup is accepted."
+        }
+      ],
+      "pr_observations": [
+        {
+          "envelope": {
+            "subject": "PR #765 GitHub lifecycle and review",
+            "observed_at": "2026-11-11T01:02:53Z",
+            "collector": "Codex follow-up: GitHub metadata and pinned source inspection; no scientific acceptance",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r2/github-observations.json",
+            "source_revision": {
+              "commit_sha": "2dd3cc62e526942cdcbed6d100770c08c26ab2fe"
+            }
+          },
+          "pr_number": 765,
+          "title": "fix(scg08): resolve Codex review findings on Gate 1 arithmetic harness",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/765",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "2dd3cc62e526942cdcbed6d100770c08c26ab2fe",
+          "merge_sha": {
+            "commit_sha": "36b3849aa1e6297e88de2ec1655777793ab0b59e"
+          },
+          "scientific_acceptance": "WITHHELD; two unresolved Codex findings at actual head 2dd3cc62e526942cdcbed6d100770c08c26ab2fe",
+          "integration_readiness": "MERGED implementation; corrective review required, not scientific acceptance",
+          "authorization_status": "No Gate 2, merge or research authorization granted by this index"
+        }
+      ],
+      "ci_observations": [
+        {
+          "envelope": {
+            "subject": "PR #765 head workflow metadata",
+            "observed_at": "2026-11-11T01:02:53Z",
+            "collector": "Codex follow-up: GitHub metadata and pinned source inspection; no scientific acceptance",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r2/github-observations.json",
+            "source_revision": {
+              "commit_sha": "2dd3cc62e526942cdcbed6d100770c08c26ab2fe"
+            }
+          },
+          "suite_name": "T81 Foundation CI",
+          "status": "unexecuted",
+          "known_baseline_failures": [
+            "Queued in GitHub at checkpoint; no completed result asserted. Format Check success; CodeQL and cross-platform in progress; these are reported metadata, not local execution."
+          ]
+        }
+      ],
+      "workstreams": [
+        {
+          "id": "SCG-08-GATE1",
+          "priority": "high",
+          "state": "BLOCKED",
+          "source": "docs/ai-context/T81_RESEARCH_STATUS_2026-11-10_R2.md",
+          "next": "Inspect an exact published successor to #765, repair evidence pin/scalar typing and resolve prior accounting/run-provenance concerns; independent Gate 1 acceptance required. Gate 2 withheld."
+        }
+      ]
     }
   },
   "historical_snapshots": {

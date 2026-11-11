@@ -1,19 +1,35 @@
 {
   "schema_version": "1.0.0",
-  "snapshot_timestamp": "2026-11-11T00:26:00Z",
+  "snapshot_timestamp": "2026-11-11T01:02:53Z",
   "authoritative_baseline_commit": "6c9eaf1a2fc8368cd06f6dddbbdcd78e6606c0ce",
-  "provenance": "GitHub metadata retained in docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json; historical snapshot remains in parent git revision",
-  "refresh_instructions": "Dated metadata only; 69 open PRs before this draft publication. Refresh GitHub lifecycle, branch tips, review findings and exact-head checks before action. Historical architecture baseline preserved; lifecycle does not establish scientific acceptance.",
+  "provenance": "Focused #765 follow-up: docs/ai-context/receipts/2026-11-10-r2/github-observations.json; other 24 mapped rows retain their original R1 observed_at and receipt.",
+  "refresh_instructions": "Partial follow-up: only #765 was freshly reviewed; other 24 rows are R1 observations, not revalidated. Full open-list metadata: 70 PRs, 40 drafts including #764. Preserve original 82-record R1 inventory. Refresh GitHub before action; merge status does not establish scientific acceptance.",
   "pr_inventory_summary": {
-    "total_open_prs_observed": 69,
-    "cataloged_prs": 24,
+    "total_open_prs_observed": 70,
+    "cataloged_prs": 25,
     "state_breakdown": {
-      "MERGED": 10,
+      "MERGED": 11,
       "DRAFT": 9,
       "OPEN": 5
     }
   },
   "pull_requests": [
+    {
+      "pr_number": 765,
+      "title": "fix(scg08): resolve Codex review findings on Gate 1 arithmetic harness",
+      "state": "MERGED",
+      "base_sha": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3",
+      "head_sha": "2dd3cc62e526942cdcbed6d100770c08c26ab2fe",
+      "merge_commit": "36b3849aa1e6297e88de2ec1655777793ab0b59e",
+      "affected_subsystems": [
+        "sub.layer.7_assurance.scg_continuity"
+      ],
+      "checks_status": "GITHUB_REPORTED_QUEUED_OR_IN_PROGRESS; FORMAT_SUCCESS",
+      "review_disposition": "MERGED; two unresolved Codex findings (P1 evidence source pin; P2 scalar band types). Gate 1 acceptance blocked; Gate 2 withheld. New Jules correction publication/verification not established.",
+      "url": "https://github.com/t81dev/t81-foundation/pull/765",
+      "observed_at": "2026-11-11T01:02:53Z",
+      "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r2/github-observations.json"
+    },
     {
       "pr_number": 763,
       "title": "SCG-08 Gate 1 (PR #760) Correctness and Evidence Repair",
@@ -416,5 +432,13 @@
       "inventory_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json"
     }
   ],
-  "status_source_baseline_commit": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3"
+  "status_source_baseline_commit": "36b3849aa1e6297e88de2ec1655777793ab0b59e",
+  "status_observation_history": [
+    {
+      "observed_at": "2026-11-11T00:26:00Z",
+      "source_baseline_commit": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3",
+      "receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+      "scope": "Original 24 mapped PR rows and 69-open inventory checkpoint; retained unchanged"
+    }
+  ]
 }

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "authoritative_baseline_commit": "6c9eaf1a2fc8368cd06f6dddbbdcd78e6606c0ce",
-  "generated_at": "2026-11-11T00:26:00Z",
+  "generated_at": "2026-11-11T01:02:53Z",
   "description": "Evidence-linked active and historical research programs across the T81 Foundation platform",
   "programs": [
     {
@@ -109,10 +109,10 @@
         {
           "phase_id": "SCG-08_P1",
           "title": "Phase 1: Contract Reconciliation (Signed-Domain & Cost Metric)",
-          "disposition": "MERGED_IMPLEMENTATION_CORRECTIVE_REVIEW_REQUIRED",
-          "receipt": "docs/ai-context/T81_RESEARCH_STATUS_2026-11-10_R1.md",
-          "pr": "#763 merged; #760 open; correction branch 3969002e pending new PR",
-          "details": "Gate 1 harness integrated at dbf107fda83a3755fa21d6b95caa3eb8ac450dd3. Four unresolved Codex findings; implementation correctness and evidence integrity BLOCKED. Published correction 3969002e9d684bbf67b01aab485648aa2cd8c0d0 inspected, schema-only checks executed; remaining accounting/type/provenance issues prevent acceptance. Independent Gate 1 review pending; scientific acceptance withheld; Gate 2 strictly withheld. Addendum-06 is referenced by the harness but its authoritative authorization record is missing from the inspected tree; do not reconstruct approval from merge status."
+          "disposition": "MERGED_CORRECTION_ACCEPTANCE_BLOCKED",
+          "receipt": "docs/ai-context/T81_RESEARCH_STATUS_2026-11-10_R2.md",
+          "pr": "#763 and #765 merged; #765 actual head 2dd3cc62, merge 36b3849aa",
+          "details": "Corrective #765 integrated at 36b3849aa1e6297e88de2ec1655777793ab0b59e. Two unresolved Codex findings: P1 evidence head_sha names pre-correction dbf107fda; P2 scalar band properties bypass schema type checks. Implementation integration VERIFIED; evidence integrity BLOCKED; independent Gate 1 acceptance and scientific acceptance withheld. Earlier R1 accounting/run-linkage concerns remain open. Gate 1 authorization provenance missing from inspected record; Phase 0 statistical readiness conditional. Gate 2 strictly withheld. No newer published Jules correction established at checkpoint 2026-11-11T01:02:53Z."
         },
         {
           "phase_id": "SCG-08_P0_REVIEW",
@@ -315,7 +315,7 @@
       "linked_studies": [
         {
           "study_id": "SCG-08",
-          "scope": "Phase 0 charter merged; Gate 1 implementation merged via #763 with four unresolved findings and unaccepted branch correction 3969002e. Mathematical carry model does not establish runtime or physical advantage. Gate 1 acceptance and Gate 2 authorization withheld."
+          "scope": "Phase 0 charter and Gate 1 implementation/correction (#763/#765) merged. #765 has two unresolved evidence-pin/schema-type findings; Gate 1 acceptance and Gate 2 withheld. R1 negative findings retained. No runtime or physical advantage established."
         },
         {
           "study_id": "T81-SCALAR-ADD",
@@ -341,7 +341,7 @@
         },
         {
           "study_id": "SCG-08",
-          "scope": "Phase 0 charter merged; Gate 1 implementation merged via #763 with four unresolved findings and unaccepted branch correction 3969002e. Mathematical carry model does not establish runtime or physical advantage. Gate 1 acceptance and Gate 2 authorization withheld."
+          "scope": "Phase 0 charter and Gate 1 implementation/correction (#763/#765) merged. #765 has two unresolved evidence-pin/schema-type findings; Gate 1 acceptance and Gate 2 withheld. R1 negative findings retained. No runtime or physical advantage established."
         }
       ]
     },
@@ -461,9 +461,17 @@
     }
   ],
   "status_observation": {
-    "observed_at": "2026-11-11T00:26:00Z",
-    "source_baseline_commit": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3",
-    "receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
-    "boundary": "Historical authoritative_baseline_commit preserved; no coverage audit or metric change"
-  }
+    "observed_at": "2026-11-11T01:02:53Z",
+    "source_baseline_commit": "36b3849aa1e6297e88de2ec1655777793ab0b59e",
+    "receipt": "docs/ai-context/receipts/2026-11-10-r2/github-observations.json",
+    "boundary": "Focused #765 follow-up; historical architecture baseline and R1 observations retained; no coverage or acceptance promotion"
+  },
+  "status_observation_history": [
+    {
+      "observed_at": "2026-11-11T00:26:00Z",
+      "source_baseline_commit": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3",
+      "receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+      "boundary": "Historical authoritative_baseline_commit preserved; no coverage audit or metric change"
+    }
+  ]
 }
