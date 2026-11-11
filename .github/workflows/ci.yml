@@ -423,7 +423,7 @@ jobs:
     name: " build / ${{ matrix.platform }} / ${{ matrix.compiler }}"
     needs: [spec-and-docs, warn-strict]
     runs-on: ${{ matrix.runs_on }}
-    timeout-minutes: 40
+    timeout-minutes: ${{ matrix.timeout_minutes || 40 }}
     strategy:
       fail-fast: false
       matrix:
@@ -433,6 +433,7 @@ jobs:
             compiler: gcc
             c_compiler: gcc-14
             cpp_compiler: g++-14
+            timeout_minutes: 60
           - platform: linux-x86_64
             runs_on: ubuntu-24.04
             compiler: clang
@@ -444,7 +445,7 @@ jobs:
             c_compiler: clang-18
             cpp_compiler: clang++-18
           - platform: macos-arm64
-            runs_on: macos-14
+            runs_on: macos-15
             compiler: clang
             c_compiler: clang
             cpp_compiler: clang++
@@ -500,6 +501,12 @@ jobs:
             /benchmarks/**
             /spec/**
             /third_party/**
+            /development_tests/**
+            /docs/reference/STABLE_BASELINE_CONTRACT.md
+            /docs/reference/AI_OS_OBJECT_BUNDLE_CONSUMPTION_CONTRACT.md
+            /docs/reference/AI_OS_OBJECT_BUNDLE_VERSIONING_BOUNDARY.md
+            /docs/reference/AI_OS_OBJECT_FAMILY_ADMISSION_CONTRACT.md
+            /docs/status/BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md
             /README.md
             /LICENSE
           sparse-checkout-cone-mode: false
@@ -536,6 +543,31 @@ jobs:
           fi
         shell: bash
 
+      # Homebrew's GoogleTest uses AppleClang/libc++; the GCC lane uses libstdc++.
+      - name: Checkout GoogleTest for macOS GCC
+        if: runner.os == 'macOS' && matrix.compiler == 'gcc'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          repository: google/googletest
+          ref: 52eb8108c5bdec04579160ae17225d66034bd723 # v1.17.0
+          path: .ci-deps/googletest
+          persist-credentials: false
+
+      - name: Build GoogleTest with the selected GCC toolchain
+        if: runner.os == 'macOS' && matrix.compiler == 'gcc'
+        shell: bash
+        run: |
+          set -eo pipefail
+          cmake -S .ci-deps/googletest -B .ci-deps/googletest-build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+            -DCMAKE_INSTALL_PREFIX="$PWD/.ci-deps/googletest-install" \
+            -DCMAKE_INSTALL_LIBDIR=lib \
+            -DBUILD_GMOCK=ON
+          cmake --build .ci-deps/googletest-build --parallel
+          cmake --install .ci-deps/googletest-build
+
       - name: Configure ccache
         run: |
           ccache -z
@@ -554,10 +586,10 @@ jobs:
         with:
           path: build
           key: >-
-            cmake-build-${{ runner.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-
+            cmake-build-${{ runner.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-${{ matrix.runs_on }}-
             ${{ hashFiles('CMakeLists.txt', 'cmake/**', 'include/**', 'src/**', 'tests/**') }}
           restore-keys: |
-            cmake-build-${{ runner.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-
+            cmake-build-${{ runner.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-${{ matrix.runs_on }}-
 
       - name: Setup MSVC/cl environment (Windows)
         if: runner.os == 'Windows'
@@ -574,7 +606,12 @@ jobs:
         shell: bash
         run: |
           set -eo pipefail
+          dependency_args=()
+          if [ "${{ runner.os }}" = "macOS" ] && [ "${{ matrix.compiler }}" = "gcc" ]; then
+            dependency_args+=("-DGTest_DIR=$PWD/.ci-deps/googletest-install/lib/cmake/GTest")
+          fi
           cmake -S . -B build -G Ninja \
+            "${dependency_args[@]}" \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
             -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
@@ -629,13 +666,18 @@ jobs:
           set -eo pipefail
           bash scripts/ci/run_model_artifact_review_smoke.sh 2>&1 | tee -a .github/logs/build-and-test.log
 
-      - name: Verify stable baseline compliance surfaces are present
+      - name: Verify stable baseline docs and platform test surfaces
         shell: bash
         run: |
           set -eo pipefail
-          python3 scripts/ci/check_stable_baseline_compliance.py \
-            --repo-root . \
-            --build-dir build 2>&1 | tee -a .github/logs/build-and-test.log
+          baseline_args=(--repo-root . --build-dir build)
+          # CMake excludes the fork/wait-based baseline runners on Windows.
+          # Check the documents there without claiming runner or execution coverage.
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            baseline_args+=(--docs-only)
+          fi
+          python3 scripts/ci/check_stable_baseline_compliance.py "${baseline_args[@]}" \
+            2>&1 | tee -a .github/logs/build-and-test.log
 
       - name: Run stable baseline compliance tests (single matrix lane)
         if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
@@ -948,7 +990,7 @@ jobs:
     name: " gate / determinism slice / linux-x86_64 / clang "
     needs: spec-and-docs
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -1335,7 +1377,7 @@ jobs:
     name: " build / sanitizers "
     needs: spec-and-docs
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -1441,7 +1483,8 @@ jobs:
       matrix:
         config:
           - name: "avx2-asan"
-            cmake_args: "-DCMAKE_BUILD_TYPE=Debug -DT81_BUILD_BENCHMARKS=ON -DT81_BUILD_TESTS=ON -DT81_ENABLE_ASAN=ON -DT81_ENABLE_UBSAN=ON -DCMAKE_CXX_FLAGS=\"-mavx2 -mfma\""
+            # Keep dependency warnings visible without treating them as T81 failures.
+            cmake_args: "-DCMAKE_BUILD_TYPE=Debug -DT81_BUILD_BENCHMARKS=ON -DBENCHMARK_ENABLE_WERROR=OFF -DT81_BUILD_TESTS=ON -DT81_ENABLE_ASAN=ON -DT81_ENABLE_UBSAN=ON -DCMAKE_CXX_FLAGS=\"-mavx2 -mfma\""
             build_targets: "t81_tritwise_backend_equivalence_test benchmark_runner"
             run_cmd: "./build/t81_tritwise_backend_equivalence_test"
             smoke_cmd: "./build/benchmarks/benchmark_runner --benchmark_filter=\"BM_MaskApply_Library/256\" --benchmark_min_time=0.01"

@@ -16,10 +16,11 @@
 
 #include "t81/dpe/task_graph.hpp"
 #include "t81/dpe/task_runner.hpp"
-#include "t81/isa/program.hpp"
 #include "t81/isa/opcodes.hpp"
+#include "t81/isa/program.hpp"
 
 #include <cstdio>
+#include <cstring>
 
 using namespace t81::dpe;
 
@@ -40,7 +41,7 @@ static void check(bool cond, const char* label) {
 
 static std::int64_t first_word(const DeltaRecord& rec) {
   std::int64_t w = 0;
-  __builtin_memcpy(&w, rec.value.data(), sizeof(w));
+  std::memcpy(&w, rec.value.data(), sizeof(w));
   return w;
 }
 
@@ -61,9 +62,7 @@ static std::int64_t first_word(const DeltaRecord& rec) {
 static constexpr uint64_t kPageTVA = 512;
 
 // Build program-identity TaskId helper.
-static TaskId prog_id(const TaskDescriptor& t) {
-  return program_identity(t);
-}
+static TaskId prog_id(const TaskDescriptor& t) { return program_identity(t); }
 
 // ── [DPE-04-01 / DPE-04-02] T0 → T1 chain: value flows and transforms ────────
 
@@ -73,19 +72,19 @@ static void test_dag_predecessor_value_flows_to_successor() {
   // T0: LoadImm R1=42; Store mem[512]=R1; Halt
   t81::tisc::Program prog_t0;
   prog_t0.insns = {
-    {t81::tisc::Opcode::LoadImm, 1, 42},
-    {t81::tisc::Opcode::Store,   static_cast<std::int32_t>(kPageTVA), 1},
-    {t81::tisc::Opcode::Halt},
+      {t81::tisc::Opcode::LoadImm, 1, 42},
+      {t81::tisc::Opcode::Store, static_cast<std::int32_t>(kPageTVA), 1},
+      {t81::tisc::Opcode::Halt},
   };
 
   // T1: Load R2=mem[512]; LoadImm R3=1; Add R4=R2+R3; Store mem[512]=R4; Halt
   t81::tisc::Program prog_t1;
   prog_t1.insns = {
-    {t81::tisc::Opcode::Load,    2, static_cast<std::int32_t>(kPageTVA)},
-    {t81::tisc::Opcode::LoadImm, 3, 1},
-    {t81::tisc::Opcode::Add,     4, 2, 3},
-    {t81::tisc::Opcode::Store,   static_cast<std::int32_t>(kPageTVA), 4},
-    {t81::tisc::Opcode::Halt},
+      {t81::tisc::Opcode::Load, 2, static_cast<std::int32_t>(kPageTVA)},
+      {t81::tisc::Opcode::LoadImm, 3, 1},
+      {t81::tisc::Opcode::Add, 4, 2, 3},
+      {t81::tisc::Opcode::Store, static_cast<std::int32_t>(kPageTVA), 4},
+      {t81::tisc::Opcode::Halt},
   };
 
   // Build T0 descriptor (no deps — independent).
@@ -111,17 +110,16 @@ static void test_dag_predecessor_value_flows_to_successor() {
 
   // ── Topological sort should return [0, 1] (T0 before T1) ─────────────────
   const auto order = topological_sort_epoch(epoch);
-  check(order.size() == 2,        "[DPE-04-01] topo sort returns 2 indices");
+  check(order.size() == 2, "[DPE-04-01] topo sort returns 2 indices");
   check(!order.empty() && order[0] == 0, "[DPE-04-01] T0 precedes T1 in topo order");
 
   // ── Run T0 directly to verify it writes 42 ───────────────────────────────
   DpeTaskRunner runner;
   const DpeTaskResult r0 = runner.run_direct(t0, prog_t0);
-  check(r0.halted,                          "[DPE-04-01] T0 halted");
-  check(!r0.delta_records.empty(),          "[DPE-04-01] T0 emitted a DeltaRecord");
+  check(r0.halted, "[DPE-04-01] T0 halted");
+  check(!r0.delta_records.empty(), "[DPE-04-01] T0 emitted a DeltaRecord");
   if (!r0.delta_records.empty()) {
-    check(first_word(r0.delta_records[0]) == 42,
-          "[DPE-04-01] T0 DeltaRecord[0] first word == 42");
+    check(first_word(r0.delta_records[0]) == 42, "[DPE-04-01] T0 DeltaRecord[0] first word == 42");
   }
 
   // ── Build input snapshot for T1 from T0's delta records ──────────────────
@@ -132,11 +130,10 @@ static void test_dag_predecessor_value_flows_to_successor() {
 
   // ── Run T1 with the input snapshot ───────────────────────────────────────
   const DpeTaskResult r1 = runner.run_direct(t1, prog_t1, snap);
-  check(r1.halted,                          "[DPE-04-02] T1 halted");
-  check(!r1.delta_records.empty(),          "[DPE-04-02] T1 emitted a DeltaRecord");
+  check(r1.halted, "[DPE-04-02] T1 halted");
+  check(!r1.delta_records.empty(), "[DPE-04-02] T1 emitted a DeltaRecord");
   if (!r1.delta_records.empty()) {
-    check(first_word(r1.delta_records[0]) == 43,
-          "[DPE-04-02] T1 commits 43 (42 + 1) to page P");
+    check(first_word(r1.delta_records[0]) == 43, "[DPE-04-02] T1 commits 43 (42 + 1) to page P");
   }
 }
 
@@ -148,18 +145,18 @@ static void test_dag_array_order_irrelevant() {
   // Same programs as above.
   t81::tisc::Program prog_t0;
   prog_t0.insns = {
-    {t81::tisc::Opcode::LoadImm, 1, 42},
-    {t81::tisc::Opcode::Store,   static_cast<std::int32_t>(kPageTVA), 1},
-    {t81::tisc::Opcode::Halt},
+      {t81::tisc::Opcode::LoadImm, 1, 42},
+      {t81::tisc::Opcode::Store, static_cast<std::int32_t>(kPageTVA), 1},
+      {t81::tisc::Opcode::Halt},
   };
 
   t81::tisc::Program prog_t1;
   prog_t1.insns = {
-    {t81::tisc::Opcode::Load,    2, static_cast<std::int32_t>(kPageTVA)},
-    {t81::tisc::Opcode::LoadImm, 3, 1},
-    {t81::tisc::Opcode::Add,     4, 2, 3},
-    {t81::tisc::Opcode::Store,   static_cast<std::int32_t>(kPageTVA), 4},
-    {t81::tisc::Opcode::Halt},
+      {t81::tisc::Opcode::Load, 2, static_cast<std::int32_t>(kPageTVA)},
+      {t81::tisc::Opcode::LoadImm, 3, 1},
+      {t81::tisc::Opcode::Add, 4, 2, 3},
+      {t81::tisc::Opcode::Store, static_cast<std::int32_t>(kPageTVA), 4},
+      {t81::tisc::Opcode::Halt},
   };
 
   // Build T0 (no deps).
@@ -186,7 +183,7 @@ static void test_dag_array_order_irrelevant() {
 
   // ── Topological sort should return [1, 0] (T0 at index 1 runs first) ─────
   const auto order = topological_sort_epoch(epoch);
-  check(order.size() == 2,              "[DPE-04-03] topo sort returns 2 indices");
+  check(order.size() == 2, "[DPE-04-03] topo sort returns 2 indices");
   // T0 is at array index 1; it has no deps so it runs first.
   check(!order.empty() && order[0] == 1, "[DPE-04-03] T0 (array[1]) runs first");
   check(order.size() >= 2 && order[1] == 0, "[DPE-04-03] T1 (array[0]) runs second");
@@ -196,7 +193,7 @@ static void test_dag_array_order_irrelevant() {
 
   // Run T0 first (array index 1).
   const DpeTaskResult r0 = runner.run_direct(t0, programs[1]);
-  check(r0.halted,               "[DPE-04-03] T0 halted");
+  check(r0.halted, "[DPE-04-03] T0 halted");
   check(!r0.delta_records.empty(), "[DPE-04-03] T0 emitted a DeltaRecord");
 
   // Build snapshot for T1.
@@ -207,7 +204,7 @@ static void test_dag_array_order_irrelevant() {
 
   // Run T1 with snapshot.
   const DpeTaskResult r1 = runner.run_direct(t1, programs[0], snap);
-  check(r1.halted,               "[DPE-04-03] T1 halted");
+  check(r1.halted, "[DPE-04-03] T1 halted");
   check(!r1.delta_records.empty(), "[DPE-04-03] T1 emitted a DeltaRecord");
   if (!r1.delta_records.empty()) {
     check(first_word(r1.delta_records[0]) == 43,
@@ -218,13 +215,14 @@ static void test_dag_array_order_irrelevant() {
 // ── [DPE-04-04] Independent task unaffected by topological ordering ───────────
 
 static void test_independent_task_unaffected_by_topo_sort() {
-  std::printf("\n[DPE-04-04] Independent task (no deps) produces correct result unaffected by topo sort\n");
+  std::printf(
+      "\n[DPE-04-04] Independent task (no deps) produces correct result unaffected by topo sort\n");
 
   // Simple single-task: LoadImm R5=77; Halt.  No output regions, no deps.
   t81::tisc::Program program;
   program.insns = {
-    {t81::tisc::Opcode::LoadImm, 5, 77},
-    {t81::tisc::Opcode::Halt},
+      {t81::tisc::Opcode::LoadImm, 5, 77},
+      {t81::tisc::Opcode::Halt},
   };
 
   TaskDescriptor task;
@@ -234,7 +232,7 @@ static void test_independent_task_unaffected_by_topo_sort() {
 
   EpochGraph epoch;
   epoch.epoch_id = 102;
-  epoch.tasks    = {task};
+  epoch.tasks = {task};
 
   const auto order = topological_sort_epoch(epoch);
   check(order.size() == 1 && order[0] == 0,
@@ -242,9 +240,9 @@ static void test_independent_task_unaffected_by_topo_sort() {
 
   DpeTaskRunner runner;
   const DpeTaskResult res = runner.run_direct(task, program);
-  check(res.halted,                      "[DPE-04-04] Independent task halted");
-  check(res.final_registers[5] == 77,    "[DPE-04-04] R5 == 77 (unaffected)");
-  check(res.delta_records.empty(),       "[DPE-04-04] No DeltaRecords (no output regions)");
+  check(res.halted, "[DPE-04-04] Independent task halted");
+  check(res.final_registers[5] == 77, "[DPE-04-04] R5 == 77 (unaffected)");
+  check(res.delta_records.empty(), "[DPE-04-04] No DeltaRecords (no output regions)");
 }
 
 // ── main ─────────────────────────────────────────────────────────────────────

@@ -472,6 +472,7 @@ if(T81_BUILD_TESTS)
   add_executable(t81_vm_decoder_test tests/cpp/vm_decoder_test.cpp)
   target_link_libraries(t81_vm_decoder_test PRIVATE t81_decode t81_vm t81_core t81_tool_model)
   add_test(NAME t81_vm_decoder_test COMMAND t81_vm_decoder_test)
+  set_tests_properties(t81_vm_decoder_test PROPERTIES TIMEOUT 300)
   add_executable(t81_safetensors_import_test tests/cpp/safetensors_import_test.cpp)
   target_link_libraries(t81_safetensors_import_test PRIVATE t81_tool_model t81_core)
   add_executable(t81_native_weights_metrics_test tests/cpp/native_weights_metrics_test.cpp)
@@ -1732,6 +1733,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   endforeach()
   # Golden interchange fixtures live in the source tree, including out-of-tree builds.
   set_tests_properties(canonfs_interchange_test PROPERTIES WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+  set_tests_properties(jit_trace_equivalence_test PROPERTIES TIMEOUT 240)
   add_test(NAME t81_cli_repro_hash_test COMMAND $<TARGET_FILE:cli_repro_hash_test> $<TARGET_FILE:t81>)
   add_test(NAME canonfs_cli_portable_storage_test
     COMMAND ${Python3_EXECUTABLE}
@@ -1800,6 +1802,8 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   set_tests_properties(t81_root_structure_policy_test PROPERTIES
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   )
+  add_test(NAME t81_stable_baseline_checker_test
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/ci/test_stable_baseline_compliance.py)
 endif()
 
 # =============================================================================
