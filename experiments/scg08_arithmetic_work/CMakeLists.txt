@@ -27,4 +27,11 @@ if(T81_BUILD_TESTS)
       ${CMAKE_CURRENT_SOURCE_DIR}/evidence_schema.json
   )
   set_tests_properties(t81_exp_scg08_01_schema_validation PROPERTIES TIMEOUT 30)
+
+  add_test(NAME t81_exp_scg08_01_schema_negative_validation
+    COMMAND ${Python3_EXECUTABLE}
+      ${PROJECT_SOURCE_DIR}/scripts/ci/validate_scg08_gate1_evidence.py
+      --test-negative
+  )
+  set_tests_properties(t81_exp_scg08_01_schema_negative_validation PROPERTIES TIMEOUT 30)
 endif()
