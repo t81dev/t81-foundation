@@ -1,5 +1,5 @@
 {
-  "version": "1.9.0",
-  "surface_digest_sha256": "fa406791328c8ce64c03f25aa794b20b069d0b68a1755213585f90aee2d02c93",
+  "version": "1.9.1",
+  "surface_digest_sha256": "6f62bfc713d41d21716d28d9e62c78a183890ab9d158323045635e65303c7e78",
   "scope": "include/t81/**/*.hpp"
 }
