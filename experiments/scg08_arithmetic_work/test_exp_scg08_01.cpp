@@ -278,10 +278,12 @@ void test_deterministic_exact_counts() {
   SCG08_REQUIRE(acc_t_mul_0.op_norm_pass == 1, "Ternary zero mul norm pass mismatch");
   SCG08_REQUIRE(acc_t_mul_0.compute_w_ops() == 55, "Ternary zero mul W_ops mismatch");
 
-  // Binary Zero Mul: 1 outer limb ai==0 check, 0 multiplies
+  // Binary Zero Mul: 1 outer limb ai==0 check, 2 zero-detection limb checks, 1 all_zero check, 0
+  // multiplies
   SCG08_REQUIRE(acc_b_mul_0.op_alu_mul == 0, "Binary zero mul ALU mul mismatch");
-  SCG08_REQUIRE(acc_b_mul_0.op_branch_cond == 1, "Binary zero mul branch count mismatch");
-  SCG08_REQUIRE(acc_b_mul_0.compute_w_ops() == 1, "Binary zero mul W_ops mismatch");
+  SCG08_REQUIRE(acc_b_mul_0.op_branch_cond == 4,
+                "Binary zero mul branch count mismatch (1 outer + 2 zero-detect + 1 all_zero)");
+  SCG08_REQUIRE(acc_b_mul_0.compute_w_ops() == 4, "Binary zero mul W_ops mismatch");
 
   // Case B: Sparse Operands (1 + 0, 1 * 1)
   ExactBigIntOracle v_one(1);
@@ -304,9 +306,15 @@ void test_deterministic_exact_counts() {
   SCG08_REQUIRE(acc_t_mul_sp.op_branch_cond == 109, "Ternary sparse mul branch count mismatch");
   SCG08_REQUIRE(acc_t_mul_sp.compute_w_ops() == 114, "Ternary sparse mul W_ops mismatch");
 
-  // Binary Sparse Mul (1 * 1):
-  SCG08_REQUIRE(acc_b_mul_sp.op_alu_mul == 1, "Binary sparse mul ALU mul mismatch");
-  SCG08_REQUIRE(acc_b_mul_sp.compute_w_ops() == 8, "Binary sparse mul W_ops mismatch");
+  // Binary Sparse Mul (1 * 1): 4 primitive mul64 muls (4 * 3 = 12), 3 mul64 adds + 4 accumulator
+  // adds + 1 carry loop add (8 total), 7 branches
+  SCG08_REQUIRE(acc_b_mul_sp.op_alu_mul == 4,
+                "Binary sparse mul ALU mul mismatch (4 primitive 32x32 muls)");
+  SCG08_REQUIRE(acc_b_mul_sp.op_alu_add_sub == 8,
+                "Binary sparse mul ALU add mismatch (3 in mul64 + 4 accumulator + 1 carry loop)");
+  SCG08_REQUIRE(acc_b_mul_sp.op_branch_cond == 7, "Binary sparse mul branch count mismatch");
+  SCG08_REQUIRE(acc_b_mul_sp.compute_w_ops() == 27,
+                "Binary sparse mul W_ops mismatch (8 add + 3*4 mul + 7 branch)");
 
   // Case C: Dense Operands (val_max + val_max, val_max * val_max)
   ExactBigIntOracle v_max = ExactBigIntOracle::from_power_of_two(63);
@@ -324,7 +332,11 @@ void test_deterministic_exact_counts() {
   SCG08_REQUIRE(acc_b_add_dense.compute_w_ops() == 4, "Binary dense add W_ops mismatch");
   SCG08_REQUIRE(acc_t_mul_dense.op_alu_mul == 841, "Ternary dense mul ALU mul mismatch");
   SCG08_REQUIRE(acc_t_mul_dense.compute_w_ops() == 5826, "Ternary dense mul W_ops mismatch");
-  SCG08_REQUIRE(acc_b_mul_dense.compute_w_ops() == 9, "Binary dense mul W_ops mismatch");
+  SCG08_REQUIRE(acc_b_mul_dense.op_alu_mul == 4, "Binary dense mul ALU mul mismatch");
+  SCG08_REQUIRE(acc_b_mul_dense.op_alu_add_sub == 9, "Binary dense mul ALU add mismatch");
+  SCG08_REQUIRE(acc_b_mul_dense.op_branch_cond == 8, "Binary dense mul branch count mismatch");
+  SCG08_REQUIRE(acc_b_mul_dense.compute_w_ops() == 29,
+                "Binary dense mul W_ops mismatch (9 add + 3*4 mul + 8 branch)");
 
   // Case D: Carry-Propagating Operands
   // In balanced ternary, limb 0 max is 27 trits of 1. Adding 1 generates a carry-out.

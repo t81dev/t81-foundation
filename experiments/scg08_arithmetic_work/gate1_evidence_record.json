@@ -3,14 +3,14 @@
   "experiment_id": "EXP-SCG08-01",
   "specification_version": "T81-SCG-08-PHASE1-PROP-001-R3-ADDENDUM-06",
   "status": "READY_FOR_INDEPENDENT_GATE1_IMPLEMENTATION_REVIEW",
-  "timestamp_utc": "2026-11-10T21:45:00Z",
+  "timestamp_utc": "2026-11-10T22:30:00Z",
   "git_context": {
-    "baseline_sha": "cd490f5b5c0496350682542b56424dd77bea6963",
-    "head_sha": "1edded878a12f81fbd45049f19ff816675c50464"
+    "baseline_sha": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3",
+    "head_sha": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3"
   },
   "trial_budget": {
     "max_cumulative_trials_ceiling": 1000,
-    "actual_cumulative_trials_executed": 30,
+    "actual_cumulative_trials_executed": 179,
     "budget_enforced_fail_closed": true
   },
   "tier1_markov": {
@@ -41,10 +41,38 @@
         "ternary_limbs_op": 2,
         "ternary_limbs_add": 2,
         "ternary_limbs_mul": 3,
+        "counters_add_ternary": {
+          "op_alu_add_sub": 2,
+          "op_alu_mul": 0,
+          "op_table_lookup": 76,
+          "op_branch_cond": 2,
+          "op_norm_pass": 0
+        },
+        "counters_mul_ternary": {
+          "op_alu_add_sub": 841,
+          "op_alu_mul": 841,
+          "op_table_lookup": 0,
+          "op_branch_cond": 2461,
+          "op_norm_pass": 1
+        },
+        "counters_add_binary": {
+          "op_alu_add_sub": 2,
+          "op_alu_mul": 0,
+          "op_table_lookup": 0,
+          "op_branch_cond": 2,
+          "op_norm_pass": 0
+        },
+        "counters_mul_binary": {
+          "op_alu_add_sub": 9,
+          "op_alu_mul": 4,
+          "op_table_lookup": 0,
+          "op_branch_cond": 8,
+          "op_norm_pass": 0
+        },
         "w_ops_add_ternary": 80,
         "w_ops_mul_ternary": 5826,
         "w_ops_add_binary": 4,
-        "w_ops_mul_binary": 9
+        "w_ops_mul_binary": 29
       },
       {
         "bit_width": 128,
@@ -54,10 +82,38 @@
         "ternary_limbs_op": 3,
         "ternary_limbs_add": 4,
         "ternary_limbs_mul": 6,
+        "counters_add_ternary": {
+          "op_alu_add_sub": 5,
+          "op_alu_mul": 0,
+          "op_table_lookup": 152,
+          "op_branch_cond": 4,
+          "op_norm_pass": 0
+        },
+        "counters_mul_ternary": {
+          "op_alu_add_sub": 2601,
+          "op_alu_mul": 2601,
+          "op_table_lookup": 0,
+          "op_branch_cond": 6813,
+          "op_norm_pass": 1
+        },
+        "counters_add_binary": {
+          "op_alu_add_sub": 3,
+          "op_alu_mul": 0,
+          "op_table_lookup": 0,
+          "op_branch_cond": 3,
+          "op_norm_pass": 0
+        },
+        "counters_mul_binary": {
+          "op_alu_add_sub": 34,
+          "op_alu_mul": 16,
+          "op_table_lookup": 0,
+          "op_branch_cond": 21,
+          "op_norm_pass": 0
+        },
         "w_ops_add_ternary": 161,
         "w_ops_mul_ternary": 17218,
         "w_ops_add_binary": 6,
-        "w_ops_mul_binary": 31
+        "w_ops_mul_binary": 103
       },
       {
         "bit_width": 256,
@@ -67,10 +123,38 @@
         "ternary_limbs_op": 6,
         "ternary_limbs_add": 7,
         "ternary_limbs_mul": 12,
+        "counters_add_ternary": {
+          "op_alu_add_sub": 10,
+          "op_alu_mul": 0,
+          "op_table_lookup": 342,
+          "op_branch_cond": 7,
+          "op_norm_pass": 0
+        },
+        "counters_mul_ternary": {
+          "op_alu_add_sub": 12321,
+          "op_alu_mul": 12321,
+          "op_table_lookup": 0,
+          "op_branch_cond": 30465,
+          "op_norm_pass": 1
+        },
+        "counters_add_binary": {
+          "op_alu_add_sub": 5,
+          "op_alu_mul": 0,
+          "op_table_lookup": 0,
+          "op_branch_cond": 5,
+          "op_norm_pass": 0
+        },
+        "counters_mul_binary": {
+          "op_alu_add_sub": 132,
+          "op_alu_mul": 64,
+          "op_table_lookup": 0,
+          "op_branch_cond": 65,
+          "op_norm_pass": 0
+        },
         "w_ops_add_ternary": 359,
         "w_ops_mul_ternary": 79750,
         "w_ops_add_binary": 10,
-        "w_ops_mul_binary": 111
+        "w_ops_mul_binary": 389
       },
       {
         "bit_width": 512,
@@ -80,10 +164,38 @@
         "ternary_limbs_op": 12,
         "ternary_limbs_add": 12,
         "ternary_limbs_mul": 24,
+        "counters_add_ternary": {
+          "op_alu_add_sub": 18,
+          "op_alu_mul": 0,
+          "op_table_lookup": 684,
+          "op_branch_cond": 12,
+          "op_norm_pass": 0
+        },
+        "counters_mul_ternary": {
+          "op_alu_add_sub": 45369,
+          "op_alu_mul": 45369,
+          "op_table_lookup": 0,
+          "op_branch_cond": 114705,
+          "op_norm_pass": 1
+        },
+        "counters_add_binary": {
+          "op_alu_add_sub": 9,
+          "op_alu_mul": 0,
+          "op_table_lookup": 0,
+          "op_branch_cond": 9,
+          "op_norm_pass": 0
+        },
+        "counters_mul_binary": {
+          "op_alu_add_sub": 520,
+          "op_alu_mul": 256,
+          "op_table_lookup": 0,
+          "op_branch_cond": 225,
+          "op_norm_pass": 0
+        },
         "w_ops_add_ternary": 714,
         "w_ops_mul_ternary": 296182,
         "w_ops_add_binary": 18,
-        "w_ops_mul_binary": 415
+        "w_ops_mul_binary": 1513
       },
       {
         "bit_width": 1024,
@@ -93,10 +205,38 @@
         "ternary_limbs_op": 24,
         "ternary_limbs_add": 24,
         "ternary_limbs_mul": 48,
+        "counters_add_ternary": {
+          "op_alu_add_sub": 34,
+          "op_alu_mul": 0,
+          "op_table_lookup": 1292,
+          "op_branch_cond": 24,
+          "op_norm_pass": 0
+        },
+        "counters_mul_ternary": {
+          "op_alu_add_sub": 185761,
+          "op_alu_mul": 185761,
+          "op_table_lookup": 0,
+          "op_branch_cond": 465697,
+          "op_norm_pass": 1
+        },
+        "counters_add_binary": {
+          "op_alu_add_sub": 17,
+          "op_alu_mul": 0,
+          "op_table_lookup": 0,
+          "op_branch_cond": 17,
+          "op_norm_pass": 0
+        },
+        "counters_mul_binary": {
+          "op_alu_add_sub": 2064,
+          "op_alu_mul": 1024,
+          "op_table_lookup": 0,
+          "op_branch_cond": 833,
+          "op_norm_pass": 0
+        },
         "w_ops_add_ternary": 1350,
         "w_ops_mul_ternary": 1208742,
         "w_ops_add_binary": 34,
-        "w_ops_mul_binary": 1599
+        "w_ops_mul_binary": 5969
       }
     ]
   },

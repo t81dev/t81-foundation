@@ -26,7 +26,7 @@ The primary objective of Gate 1 is to establish:
 ## 2. Repository Context & Baseline
 
 - **Repository:** https://github.com/t81dev/t81-foundation
-- **Baseline Git SHA:** `cd490f5b5c0496350682542b56424dd77bea6963` (merging PR #756)
+- **Baseline Git SHA:** `dbf107fda83a3755fa21d6b95caa3eb8ac450dd3` (merging PR #763)
 - **PR #753 Integration:** Verified integrated into mainline history (`0bd0817e4b9dc879fffce18c59ea9ff781f7acb3`).
 
 ### Changed File Inventory
@@ -87,7 +87,20 @@ The frozen weighted cost metric is preserved exactly:
 $$W_{\text{ops}} = \text{OP}_{\text{ALU\_ADD\_SUB}} + 3 \cdot \text{OP}_{\text{ALU\_MUL}} + \text{OP}_{\text{TABLE\_LOOKUP}} + \text{OP}_{\text{BRANCH\_COND}} + \text{OP}_{\text{NORM\_PASS}}$$
 
 ### 5.1 Inline Review Findings Reconciliation
-1. **Finding 1 (P1 - Table Lookup Accounting Reconciliation):**
+1. **Finding 1 (P1 - Binary Primitive Arithmetic Accounting in `mul64()` and caller):**
+   - *Audit:* Evaluated `mul64()` and caller accumulator additions in `mul_binary()`. `mul64()` decomposes 64x64 into 4 32x32 multiplications (`u0*v0`, `u1*v0`, `u0*v1`, `u1*v1`) and 3 intermediate 64-bit additions (`w0 >> 32 + ...`, `+ u0*v1`, `u1*v1 + w2`). In the caller loop, each limb product adds `lo` and `carry` into the result accumulator (`sum1 = cur + lo`, `sum2 = sum1 + carry`) and accumulates carry (`carry = hi + c1 + c2`), totaling 4 primitive additions per inner iteration.
+   - *Resolution:* Reconciled `acc.op_alu_mul` and `acc.op_alu_add_sub` in `mul64()` and `mul_binary()` to track all executed primitive arithmetic operations without distorting accounting semantics.
+2. **Finding 2 (P2 - Binary Condition Evaluation Accounting):**
+   - *Audit:* Audited executed conditional evaluations across zero, sparse, dense, and carry-propagating inputs.
+   - *Resolution:* Tracked condition evaluations consistently:
+     - In `mul_binary()`: outer loop `ai == 0`, inner loop `i + j >= OutLimbs`, inner carry predicates `sum1 < cur` and `sum2 < sum1`, carry propagation checks `carry == 0` and `sum < cur`, result-zero limb check `res.limbs[i] != 0`, and final sign normalization `if (all_zero)`.
+     - In `add_binary()`: sign check `a.is_negative == b.is_negative`, carry check `carry != 0` and predicate `sum <= a.limbs[i]` vs `sum < a.limbs[i]`, and subtraction magnitude comparisons (`va != vb`, `va < vb`, `c == 0`, `c > 0`, borrow predicates).
+3. **Finding 3 (P1 - Evidence Trial-Count Integrity & Provenance):**
+   - *Audit:* Evaluated committed evidence record against standalone test execution. The initial draft stored 30 trials from an isolated band run, conflicting with the 179 trials executed by the smoke suite.
+   - *Resolution:* Reconciled `gate1_evidence_record.json` to record the exact 179 cumulative trials executed by the smoke suite (`actual_cumulative_trials_executed: 179`), verified against the ceiling of 1,000 trials, and bound to authoritative commit SHAs and ISO-8601 UTC timestamp.
+4. **Finding 4 (P2 - Evidence Schema Validation & Negative Test Suite):**
+   - *Resolution:* Hardened `scripts/ci/validate_scg08_gate1_evidence.py` to enforce strict regex pattern matching on commit SHAs (40-char hex) and ISO-8601 UTC timestamps, exact specification version string matching, strictly positive costs, and non-empty dimension strings. Added a comprehensive 11-case negative test suite (`--test-negative`) registered in CTest (`t81_exp_scg08_01_schema_negative_validation`).
+5. **Table Lookup Accounting Reconciliation (P1):**
    - *Source Verification:* In `include/t81/types/T81Limb.hpp`, each `T81Limb27::addc()` performs:
      - 9 lookups in `detail::ADD_TABLE[trytes_[i] + 13][other.trytes_[i] + 13]` (1 per tryte)
      - 8 lookups in `detail::COMPOSITION_TABLE[map_ids[i]][map_ids[i - 1]]` (for $i=1..8$)
@@ -97,16 +110,6 @@ $$W_{\text{ops}} = \text{OP}_{\text{ALU\_ADD\_SUB}} + 3 \cdot \text{OP}_{\text{A
      - 1 lookup in `detail::CARRY_FROM_ZERO[map_ids[8]]` (carry_out computation)
      - **Exact Sum:** $9 + 8 + 7 + 5 + 8 + 1 = 38$ table lookups per `T81Limb27::addc()` invocation.
    - *Resolution:* Reconciled `acc.op_table_lookup` in `ArithmeticWorkHarness::add_ternary` to increment by 38 per `addc()` call (for both initial limb pairs and nested carry-in limbs `sum_ab.addc(c_limb)`).
-2. **Finding 2 (P2 - Consistent Conditional Evaluations):**
-   - *Source Verification:* Conditional branch evaluations must be counted consistently rather than branch-taken only. In both binary and ternary algorithms, condition evaluations are counted on each iteration:
-     - Ternary multiplication: outer loop `if (ai == 0)` and inner loop `if (bj == 0)` and `if (i + j < ACCUM_TRITS)` evaluate condition checks on each iteration regardless of whether trits are zero or non-zero.
-     - Binary multiplication: outer loop `if (ai == 0)` evaluates condition checks on each iteration, inner loop `if (i + j >= OutLimbs)` and carry continuation `if (carry == 0)` condition checks are tracked.
-     - Binary addition: `if (a.is_negative == b.is_negative)`, `if (carry != 0)`, and magnitude comparison condition checks are tracked.
-     - Zero, sparse, dense, and carry-propagating operands evaluate condition branches consistently without artificially equalizing operation costs.
-3. **Finding 3 (P2 - Machine-Readable Evidence Artifact & Schema Conformance):**
-   - *Resolution:* Persisted measured counters, weighted totals, and validation outcomes in `experiments/scg08_arithmetic_work/gate1_evidence_record.json`.
-   - Built a fail-closed, stdlib-only validation script `scripts/ci/validate_scg08_gate1_evidence.py` verifying full conformance against `experiments/scg08_arithmetic_work/evidence_schema.json` (`t81.scg08.carry-experiment.v1`).
-   - Integrated schema validation into CTest (`t81_exp_scg08_01_schema_validation`).
 
 Accounting guarantees enforced:
 - **Diagnostic Non-Aggregating Counters:** `diagnostic_convolution_ops` and `diagnostic_reduction_ops` are recorded separately and confirmed **not** to aggregate into $W_{\text{ops}}$.
@@ -176,11 +179,13 @@ ctest --test-dir build -R scg08 --output-on-failure
 ```
 ```
     Start 390: t81_exp_scg08_01_test
-1/2 Test #390: t81_exp_scg08_01_test ................   Passed    0.39 sec
+1/3 Test #390: t81_exp_scg08_01_test .........................   Passed    0.40 sec
     Start 391: t81_exp_scg08_01_schema_validation
-2/2 Test #391: t81_exp_scg08_01_schema_validation ...   Passed    0.28 sec
+2/3 Test #391: t81_exp_scg08_01_schema_validation ............   Passed    0.31 sec
+    Start 392: t81_exp_scg08_01_schema_negative_validation
+3/3 Test #392: t81_exp_scg08_01_schema_negative_validation ...   Passed    0.31 sec
 
-100% tests passed, 0 tests failed out of 2
+100% tests passed, 0 tests failed out of 3
 ```
 
 ### Schema Validation Output:
