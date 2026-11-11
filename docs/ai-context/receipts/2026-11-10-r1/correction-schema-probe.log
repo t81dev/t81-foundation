@@ -1,0 +1,4 @@
+null operand_trits: candidate validator ACCEPTED; Draft202012Validator errors=1
+string ternary_limbs_op: candidate validator ACCEPTED; Draft202012Validator errors=1
+Evidence revision identity: {'baseline_sha': 'dbf107fda83a3755fa21d6b95caa3eb8ac450dd3', 'head_sha': 'dbf107fda83a3755fa21d6b95caa3eb8ac450dd3'}
+No arithmetic kernels, smoke suite, Markov simulation, benchmarks or Gate 2 executed.

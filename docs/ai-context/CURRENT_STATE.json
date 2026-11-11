@@ -475,6 +475,2327 @@
           "next": "Preserve negative M1 findings and distinguish S/A/T; no M2 candidate or execution is authorized by this index."
         }
       ]
+    },
+    "2026-11-10-r1": {
+      "view_date": "2026-11-10",
+      "freshness": "Dated metadata checkpoint; selected_view intentionally unchanged; refresh before action",
+      "coverage": {
+        "inventory_scope": "All 69 open PRs plus 13 relevant merged/closed records",
+        "coverage_state": "GitHub metadata verified; review completeness and scientific acceptance not inferred",
+        "open_pr_count": 69
+      },
+      "repository_observation": {
+        "envelope": {
+          "subject": "Fetched origin/main",
+          "observed_at": "2026-11-11T00:26:00Z",
+          "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+          "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+          "source_revision": {
+            "commit_sha": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3"
+          }
+        },
+        "name": "t81dev/t81-foundation",
+        "base_branch": "main",
+        "observed_head": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3"
+      },
+      "scientific_observations": [
+        {
+          "envelope": {
+            "subject": "SCG-08 Gate 1 implementation and evidence",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3"
+            }
+          },
+          "id": "SCG-08-GATE1",
+          "status": "BLOCKED: merged #763 has four unresolved findings; published correction candidate not accepted",
+          "verification": "blocked",
+          "claims_boundary": "Source inspection and schema-only checks; no arithmetic trials, independent scientific acceptance, advantage claim or Gate 2 authorization."
+        },
+        {
+          "envelope": {
+            "subject": "T81-AIOPT-001 M1 fixed-catalog pattern filtering",
+            "observed_at": "2026-11-02T00:00:00Z",
+            "source_revision": {
+              "commit_sha": "b2b9d3c73df96d6b4227ee0061c56bc2ee04a8fe"
+            },
+            "collector": "Jules_AI_assisted_source_assessment_not_independent_experimental_replication",
+            "retained_receipt": "docs/research/aiopt/T81-AIOPT-001-SCIENTIFIC-REVIEW.md"
+          },
+          "id": "AIOPT-001-M1",
+          "status": "redesign_required",
+          "verification": "falsified",
+          "claims_boundary": "Historical finding carried forward unchanged in scope; observed_at and pinned source retained, not re-executed in R1. Preserved negative mathematical critique of C40 equality filtering: scalar lookup/index controls invalidate an optimization claim. The pinned review does not establish independent experimental replication or authenticated independent-person review; no ternary speedup is accepted."
+        }
+      ],
+      "pr_observations": [
+        {
+          "envelope": {
+            "subject": "PR #763 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "93a3d1bc36e18395d6863d56a604506d108eac32"
+            }
+          },
+          "pr_number": 763,
+          "title": "SCG-08 Gate 1 (PR #760) Correctness and Evidence Repair",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/763",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "da656dee2fcb34da63b428fc7b3f827189431d00",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "93a3d1bc36e18395d6863d56a604506d108eac32",
+          "merge_sha": {
+            "commit_sha": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3"
+          },
+          "scientific_acceptance": "WITHHELD: SCG-08 Gate 1",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #762 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "37bf79375ad37035ca5ae1456bae1ac1453d02d7"
+            }
+          },
+          "pr_number": 762,
+          "title": "fix(arch-viz): reconcile dashboard and research programs with canonical datasets",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/762",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "8e6918fa98e19ee1476f91c97e82989b051a02e7",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "37bf79375ad37035ca5ae1456bae1ac1453d02d7",
+          "merge_sha": {
+            "commit_sha": "da656dee2fcb34da63b428fc7b3f827189431d00"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #761 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "5c69f11579b96686de1520aa45062b418c7c3bdd"
+            }
+          },
+          "pr_number": 761,
+          "title": "docs(scg08): publish Phase 0 independent acceptance review R2",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/761",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "8e6918fa98e19ee1476f91c97e82989b051a02e7",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "5c69f11579b96686de1520aa45062b418c7c3bdd",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #760 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "dab59a63e4000f81799a6b2303bbfab26300d526"
+            }
+          },
+          "pr_number": 760,
+          "title": "SCG-08 Phase 1 Gate 1 Implementation: Carry Propagation & Arithmetic Work Harness",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/760",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "8e6918fa98e19ee1476f91c97e82989b051a02e7",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "dab59a63e4000f81799a6b2303bbfab26300d526",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "WITHHELD: SCG-08 Gate 1",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #759 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "00ab93dcf385709302126e1018386e51238dd78a"
+            }
+          },
+          "pr_number": 759,
+          "title": "T81-ARCH-VIZ-003: Interactive Architecture & Research Status Dashboard",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/759",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "e24614d9b87a3f4852d678810cbe371453690833",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "00ab93dcf385709302126e1018386e51238dd78a",
+          "merge_sha": {
+            "commit_sha": "8e6918fa98e19ee1476f91c97e82989b051a02e7"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #758 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "4b550b4d2f82ef3d0be2a001136d693cab1d7b0c"
+            }
+          },
+          "pr_number": 758,
+          "title": "docs(ternaryos): attribute firmware failures and bound native compatibility blockers",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/758",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "6c9eaf1a2fc8368cd06f6dddbbdcd78e6606c0ce",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "4b550b4d2f82ef3d0be2a001136d693cab1d7b0c",
+          "merge_sha": {
+            "commit_sha": "e24614d9b87a3f4852d678810cbe371453690833"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #757 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "246ded7a3c962c2b6376eb37639325d2f5feb5cb"
+            }
+          },
+          "pr_number": 757,
+          "title": "docs(ternaryos): isolate stale EFI payload from firmware verification failures",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/757",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "cd490f5b5c0496350682542b56424dd77bea6963",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "246ded7a3c962c2b6376eb37639325d2f5feb5cb",
+          "merge_sha": {
+            "commit_sha": "6c9eaf1a2fc8368cd06f6dddbbdcd78e6606c0ce"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #756 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "70d2c8654354a7d5e9efef0513bc171efbe4d4fb"
+            }
+          },
+          "pr_number": 756,
+          "title": "fix(ternaryos): restore fail-closed QEMU verification and trustworthy completion reporting",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/756",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "ee0c7d90537eaa2dc4b522c1624fcabebf6e999b",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "70d2c8654354a7d5e9efef0513bc171efbe4d4fb",
+          "merge_sha": {
+            "commit_sha": "cd490f5b5c0496350682542b56424dd77bea6963"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #755 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "fd2439b996d9ab44f363813136843f48729314a5"
+            }
+          },
+          "pr_number": 755,
+          "title": "feat(arch): ARCH-ENG-002 Phase 1 - Architecture-Guided Engineering Diagnostics",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/755",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "9a3e307ad21135749d35a4f1a6a0d5820d0cc698",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "fd2439b996d9ab44f363813136843f48729314a5",
+          "merge_sha": {
+            "commit_sha": "ee0c7d90537eaa2dc4b522c1624fcabebf6e999b"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #754 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "758244cd204a1beabb13e4fdb30885915fe6004b"
+            }
+          },
+          "pr_number": 754,
+          "title": "docs(ai-context): reconcile November 10 PR backlog and SCG-08 Phase 0 integration",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/754",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "0bd0817e4b9dc879fffce18c59ea9ff781f7acb3",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "758244cd204a1beabb13e4fdb30885915fe6004b",
+          "merge_sha": {
+            "commit_sha": "9a3e307ad21135749d35a4f1a6a0d5820d0cc698"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #753 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "09c666e36a9152371ba74c91adc117fd51dc95c7"
+            }
+          },
+          "pr_number": 753,
+          "title": "Reconcile SCG-08 Phase 0 Charter for PR #745 with post-PR749 baseline",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/753",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "f085e9d8b7455fa08e81ed2ab45de297b22fcfa8",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "09c666e36a9152371ba74c91adc117fd51dc95c7",
+          "merge_sha": {
+            "commit_sha": "0bd0817e4b9dc879fffce18c59ea9ff781f7acb3"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #752 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "0d775fc0556805fe097b99c417116b0672116fee"
+            }
+          },
+          "pr_number": 752,
+          "title": "docs(h04-r03): separate current retention status from historical snapshot",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/752",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "b18075ad6de93091f9aea30707ef5237d479c9d1",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "0d775fc0556805fe097b99c417116b0672116fee",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "UNVERIFIED; review and applicable checks required",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #751 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "b68853335264d0758124a359f705fb5fbb8dfdc3"
+            }
+          },
+          "pr_number": 751,
+          "title": "fix(skills): constrain policy validation to literal argv",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/751",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "1522f14aa1994d03af72441f2554718c9cfc11cb",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "b68853335264d0758124a359f705fb5fbb8dfdc3",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "UNVERIFIED; review and applicable checks required",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #750 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "1522f14aa1994d03af72441f2554718c9cfc11cb"
+            }
+          },
+          "pr_number": 750,
+          "title": "fix(cli): enforce explicitly requested execution policies",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/750",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "b18075ad6de93091f9aea30707ef5237d479c9d1",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "1522f14aa1994d03af72441f2554718c9cfc11cb",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "UNVERIFIED; review and applicable checks required",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #749 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "46d83c1fe3c4aa849071c041d268dbf5e31e86fd"
+            }
+          },
+          "pr_number": 749,
+          "title": "docs(architecture): harden visualization evidence and validation (T81-ARCH-VIZ-002)",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/749",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "e5c30560aa77c31184a14b03ed152a6deef5c1a3",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "46d83c1fe3c4aa849071c041d268dbf5e31e86fd",
+          "merge_sha": {
+            "commit_sha": "f085e9d8b7455fa08e81ed2ab45de297b22fcfa8"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #748 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "7a3cdf850a143758eb1355ebb8747368e6ca72cb"
+            }
+          },
+          "pr_number": 748,
+          "title": "fix(canonfs): authorize block metadata before side effects",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/748",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "b18075ad6de93091f9aea30707ef5237d479c9d1",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "7a3cdf850a143758eb1355ebb8747368e6ca72cb",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "UNVERIFIED; review and applicable checks required",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #747 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "b18075ad6de93091f9aea30707ef5237d479c9d1"
+            }
+          },
+          "pr_number": 747,
+          "title": "fix(ci): restore supported runners and unblock portability builds",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/747",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "e5c30560aa77c31184a14b03ed152a6deef5c1a3",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "b18075ad6de93091f9aea30707ef5237d479c9d1",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #745 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "d62a7c988139a0defd125dca16dba0f32366e0b1"
+            }
+          },
+          "pr_number": 745,
+          "title": "docs(continuity): establish SCG-08 Phase 0 research charter",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/745",
+          "state": "closed",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "e5c30560aa77c31184a14b03ed152a6deef5c1a3",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "d62a7c988139a0defd125dca16dba0f32366e0b1",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #732 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "69b3b29447d827b50347fd4e2d3a140d9c174fcb"
+            }
+          },
+          "pr_number": 732,
+          "title": "docs(continuity): SCG-05 generic Result contract feasibility assessment",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/732",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "e45c5435aa47d4ccb8f343798214eb917352c871",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "69b3b29447d827b50347fd4e2d3a140d9c174fcb",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #719 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "f9dd69d3de30c3816f4aae652531da97d9fac68a"
+            }
+          },
+          "pr_number": 719,
+          "title": "docs(arch003): resolve six review findings for R2 proposal",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/719",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "9654fd2b05f0abd1af4f0f3d14318d5213b7c8c8",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "f9dd69d3de30c3816f4aae652531da97d9fac68a",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #718 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "c55b53a0d43a4d76e1aab1efe806ebfed175a99f"
+            }
+          },
+          "pr_number": 718,
+          "title": "docs(arch003): propose R2 external deadline authority amendment",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/718",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "9654fd2b05f0abd1af4f0f3d14318d5213b7c8c8",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "c55b53a0d43a4d76e1aab1efe806ebfed175a99f",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #716 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "f408f6fb27bd7516fb0b32f3645f9d53fbbd4b15"
+            }
+          },
+          "pr_number": 716,
+          "title": "ARCH-003-I2: Linux accounting closure with bounded lifecycle evidence",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/716",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "1454bd63426d21686cfb5ef22dbaebc3c9cae94b",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "f408f6fb27bd7516fb0b32f3645f9d53fbbd4b15",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "UNVERIFIED; review and applicable checks required",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #714 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "1454bd63426d21686cfb5ef22dbaebc3c9cae94b"
+            }
+          },
+          "pr_number": 714,
+          "title": "docs(research): preregister packed equality correctness protocol (ARCH-002)",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/714",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "d134407ae1059c4d7f6a9418177e695e0e5d3b51",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "1454bd63426d21686cfb5ef22dbaebc3c9cae94b",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #709 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "b803bf916a1b1e44129f3a07abf96fa6103c51fc"
+            }
+          },
+          "pr_number": 709,
+          "title": "experiment(cpa004): execute frozen TISC profile after ExitBootServices",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/709",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "ea6d031a8117341fe03013cc9d5473de1b07727d",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "b803bf916a1b1e44129f3a07abf96fa6103c51fc",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #707 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "55223cbd3ee29b5391e151197fe6eee1b8889452"
+            }
+          },
+          "pr_number": 707,
+          "title": "test(isa): restore trustworthy opcode matrix conformance (T81-CPA-002)",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/707",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "55223cbd3ee29b5391e151197fe6eee1b8889452",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #699 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "8c9e2c7f0b1252b63b175972630bfa2147e436da"
+            }
+          },
+          "pr_number": 699,
+          "title": "BASE-01 B1: propose CanonFS retained-output budget amendment A1",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/699",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "8c9e2c7f0b1252b63b175972630bfa2147e436da",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #698 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "accebb20f4de25fddfe12e6152c356ff25cb6127"
+            }
+          },
+          "pr_number": 698,
+          "title": "BASE-01 Physical Linux Correctness-Only Qualification Report",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/698",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "accebb20f4de25fddfe12e6152c356ff25cb6127",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #697 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "7f42e2b8d444168f74cb3a3a25d89f002ad1eea4"
+            }
+          },
+          "pr_number": 697,
+          "title": "docs(base01): reconcile B1 retention and insertion contracts [skip ci]",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/697",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "7f42e2b8d444168f74cb3a3a25d89f002ad1eea4",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #685 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "43bc3000c2a580410a8abeae094880739c6c8fa0"
+            }
+          },
+          "pr_number": 685,
+          "title": "research: investigate H04-R03 Linux enforcement feasibility",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/685",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "dbc8c1ac05aebf9f64dccc45968b75e891b6ff21",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "43bc3000c2a580410a8abeae094880739c6c8fa0",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #674 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "67d3e3d0b24827801ec382069d66f5c8c9fd536a"
+            }
+          },
+          "pr_number": 674,
+          "title": "docs: T81-AIOPT-001 M2 Adversarial Workload & Experimental Design Review",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/674",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "1fe1cd7a9ca01402afcfa3d53c3305f0a1ba8263",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "67d3e3d0b24827801ec382069d66f5c8c9fd536a",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #673 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "b8ab59ccb8183db9476d47259bd43de1ea34522a"
+            }
+          },
+          "pr_number": 673,
+          "title": "docs(research): independent M2 protocol acceptance audit",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/673",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "1fe1cd7a9ca01402afcfa3d53c3305f0a1ba8263",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "b8ab59ccb8183db9476d47259bd43de1ea34522a",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #672 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "13e1828cc4f6cbeba1b37c18345eb68a5da98147"
+            }
+          },
+          "pr_number": 672,
+          "title": "docs(research): draft M2 adaptive-representation preregistration",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/672",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "1fe1cd7a9ca01402afcfa3d53c3305f0a1ba8263",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "13e1828cc4f6cbeba1b37c18345eb68a5da98147",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #671 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "8892d094b6ec62728eb783cd7fb735cf3d57de5f"
+            }
+          },
+          "pr_number": 671,
+          "title": "docs(research): M2 adaptive-selection versus GEMV decision gate",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/671",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "1fe1cd7a9ca01402afcfa3d53c3305f0a1ba8263",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "8892d094b6ec62728eb783cd7fb735cf3d57de5f",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #670 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "685f7d958afdb9859365b6dcf37b6a73c06b5218"
+            }
+          },
+          "pr_number": 670,
+          "title": "docs(research): audit AIOPT-001 acceptance and M2 protocol",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/670",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "005714caced20b7ce54c37c68808d0492c7567b7",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "685f7d958afdb9859365b6dcf37b6a73c06b5218",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #668 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "86838191420ecc7ccdca02e41f4e009c6375417a"
+            }
+          },
+          "pr_number": 668,
+          "title": "docs(research): propose AIOPT-001 M2 discriminating workload protocol",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/668",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "affeea65ba5de6c46bfad5d05cffa0e16bd7c2a6",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "86838191420ecc7ccdca02e41f4e009c6375417a",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #667 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "1edf70bbffc9168c27be5c6c19cf97388f6991a4"
+            }
+          },
+          "pr_number": 667,
+          "title": "docs(research): reconcile AIOPT-001 M1 evidence and M2 design gate",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/667",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "affeea65ba5de6c46bfad5d05cffa0e16bd7c2a6",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "1edf70bbffc9168c27be5c6c19cf97388f6991a4",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #666 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "a14cf48a9ec8494f876819ec457be5478dfc08d5"
+            }
+          },
+          "pr_number": 666,
+          "title": "docs(research): independent scientific review of T81-AIOPT-001",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/666",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "affeea65ba5de6c46bfad5d05cffa0e16bd7c2a6",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "a14cf48a9ec8494f876819ec457be5478dfc08d5",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #665 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "e113e75f9bbbcc3ed0cc75f1ed15ff188ee062db"
+            }
+          },
+          "pr_number": 665,
+          "title": "docs(research): establish T81-AIOPT-001 M1 correctness protocol",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/665",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "affeea65ba5de6c46bfad5d05cffa0e16bd7c2a6",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "e113e75f9bbbcc3ed0cc75f1ed15ff188ee062db",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #664 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "b6dea482cbb060e38650c7d2b31ab5237a65a497"
+            }
+          },
+          "pr_number": 664,
+          "title": "docs(research): final evidence reconciliation for baseline assessment",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/664",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "affeea65ba5de6c46bfad5d05cffa0e16bd7c2a6",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "b6dea482cbb060e38650c7d2b31ab5237a65a497",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #662 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "a1ca08d3fa59024f37858e42aeea7ec4d082c674"
+            }
+          },
+          "pr_number": 662,
+          "title": "Extended testing results (2026-10-31): full build, ctest, and dynamic confirmation of audit findings",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/662",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "e108fdad078f4d6dfcc427f1fd419ecbe48b4e05",
+          "head_repository": "leeex1/t81-foundation",
+          "head_sha": "a1ca08d3fa59024f37858e42aeea7ec4d082c674",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #659 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "5af7b6140d40614c7e5c6b0e5b06d97cb78607ca"
+            }
+          },
+          "pr_number": 659,
+          "title": "External audit findings (2026-10-31): ai-context handoff + full-repo review",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/659",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "e108fdad078f4d6dfcc427f1fd419ecbe48b4e05",
+          "head_repository": "leeex1/t81-foundation",
+          "head_sha": "5af7b6140d40614c7e5c6b0e5b06d97cb78607ca",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #657 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "db1b4beff94d48e8ce7c71dfcb449dcd9684b75a"
+            }
+          },
+          "pr_number": 657,
+          "title": "fix(archaeology): resolve PR #653 P1 Codex findings",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/657",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "e108fdad078f4d6dfcc427f1fd419ecbe48b4e05",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "db1b4beff94d48e8ce7c71dfcb449dcd9684b75a",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #652 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "e2e5a25b17ab37198e5fe2d53b68792963fd088f"
+            }
+          },
+          "pr_number": 652,
+          "title": "Final Publication Corrections: Baseline Maintenance Repair and ADM-2 M1 Header Isolation",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/652",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "f775680aba7db200691c0f4e2a3174b0e7e51581",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "e2e5a25b17ab37198e5fe2d53b68792963fd088f",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #650 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "137faac2830f9f21b66667a3cb103df79b550e0d"
+            }
+          },
+          "pr_number": 650,
+          "title": "docs(rfc): propose C++ SDK 2.0.0 compatibility transition (A.1)",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/650",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "f775680aba7db200691c0f4e2a3174b0e7e51581",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "137faac2830f9f21b66667a3cb103df79b550e0d",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #649 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "3a28eae9c11bbd18b09b71509fa7f74e0584bc24"
+            }
+          },
+          "pr_number": 649,
+          "title": "Integrate non-API governance corrections while preserving the API-lock boundary",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/649",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "f775680aba7db200691c0f4e2a3174b0e7e51581",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "3a28eae9c11bbd18b09b71509fa7f74e0584bc24",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #648 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "34682b77dcb72abf468683b005df6c4ad5db6104"
+            }
+          },
+          "pr_number": 648,
+          "title": "Governance Authority Reconciliation Report",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/648",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "f775680aba7db200691c0f4e2a3174b0e7e51581",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "34682b77dcb72abf468683b005df6c4ad5db6104",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #645 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "6d20d381322e4859e33524f4fc18d4c6569539ce"
+            }
+          },
+          "pr_number": 645,
+          "title": "docs(research): review H04-R03 matched codec specification",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/645",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "872ac1b4c8a303fc5417d0b21551a430d0a50200",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "6d20d381322e4859e33524f4fc18d4c6569539ce",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #640 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "e0dc9649db3145e60294a2591589c321ae5d4e38"
+            }
+          },
+          "pr_number": 640,
+          "title": "docs(ai-context): reconcile H04 correction and post-merge research handoff",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/640",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "6864a810693a6034bd28be870ee38a180ba70ba0",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "e0dc9649db3145e60294a2591589c321ae5d4e38",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #634 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "21095d65cc0c849f5a6f2599a962cbce032b5cea"
+            }
+          },
+          "pr_number": 634,
+          "title": "Audit and Correct EXP-T81-COMP3-01 Pre-Execution Protocol",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/634",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "f8ac77159ded2c4b93f4cc83abd48f6f35655468",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "21095d65cc0c849f5a6f2599a962cbce032b5cea",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #633 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "994736a7b553f01e27b430f597da41b87d34aada"
+            }
+          },
+          "pr_number": 633,
+          "title": "Correct EXP-T81-COMP3-01 Preregistration Protocol",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/633",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "f8ac77159ded2c4b93f4cc83abd48f6f35655468",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "994736a7b553f01e27b430f597da41b87d34aada",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #628 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "a9ae2af6a8abce21f2aeefb0b53fb0fe5906d2ca"
+            }
+          },
+          "pr_number": 628,
+          "title": "research(i08): prepare matched measurement apparatus for independent review",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/628",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "0662e0e637f47168e56ca4ddd66e8ee877473b38",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "a9ae2af6a8abce21f2aeefb0b53fb0fe5906d2ca",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #617 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "7afd3246ea587d4b4d350e807b5fd1d2334d643e"
+            }
+          },
+          "pr_number": 617,
+          "title": "audit: reconcile #574\u2013#577 governance integration acceptance (no activation)",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/617",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "b6a20706b3b37eebbfb5ab0293a88306a3dae29a",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "7afd3246ea587d4b4d350e807b5fd1d2334d643e",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "UNVERIFIED; review and applicable checks required",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #616 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "20ef563ea96a7cf84dad612067355e2dd4cf4d8b"
+            }
+          },
+          "pr_number": 616,
+          "title": "fix(commons): restore PR607 source fidelity and qualify audit receipts",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/616",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "f3288b0ff55727282c7395ed14f4598add096706",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "20ef563ea96a7cf84dad612067355e2dd4cf4d8b",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #612 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "215fb5cba7d452f1c94a714446235619e92e7abe"
+            }
+          },
+          "pr_number": 612,
+          "title": "audit: map agent skills to operational handlers and retain boundary failures",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/612",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "903ea2fe653df0d636e0543f9788dd8442738045",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "215fb5cba7d452f1c94a714446235619e92e7abe",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #604 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "827d2accbf8ccb56afe3fe8d96dfb7251f249d7d"
+            }
+          },
+          "pr_number": 604,
+          "title": "docs(research): design Investigation 09 TISC and T81Lang advantage tests",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/604",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "c930b8c2ee7478782bf3c6d231bdd59984595ef2",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "827d2accbf8ccb56afe3fe8d96dfb7251f249d7d",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #603 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "0ae27310b1eade876e9b2036e3ddd811e7e86537"
+            }
+          },
+          "pr_number": 603,
+          "title": "research: instrument Investigation 08 phases and attribute execution cost",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/603",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "7c61afa3ba0e97c3c800ca5cde567cf374d7a5cc",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "0ae27310b1eade876e9b2036e3ddd811e7e86537",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "UNVERIFIED; review and applicable checks required",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #601 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "9af0bffb29a66375ac3aaaf5012e91ffa4613e06"
+            }
+          },
+          "pr_number": 601,
+          "title": "docs(status): reconcile project status with current implementation and research evidence",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/601",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "c930b8c2ee7478782bf3c6d231bdd59984595ef2",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "9af0bffb29a66375ac3aaaf5012e91ffa4613e06",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #580 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "353d7592a725e8e2025238a9fc247760950c8297"
+            }
+          },
+          "pr_number": 580,
+          "title": "Scope A \u2014 Typed Root Governance Validator and Preservation Enforcement (Preparation Only)",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/580",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "71bb2c0e937dbcad73c9421e5465651b6e0d3ec3",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "353d7592a725e8e2025238a9fc247760950c8297",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "UNVERIFIED; review and applicable checks required",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #579 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "71bb2c0e937dbcad73c9421e5465651b6e0d3ec3"
+            }
+          },
+          "pr_number": 579,
+          "title": "INVESTIGATION ONLY \u2014 proposed root-layout contract pending maintainer decisions",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/579",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "f4ffa85bf0bcaf028b51462113bf19c2eebb0091",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "71bb2c0e937dbcad73c9421e5465651b6e0d3ec3",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "UNVERIFIED; review and applicable checks required",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #578 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "f4ffa85bf0bcaf028b51462113bf19c2eebb0091"
+            }
+          },
+          "pr_number": 578,
+          "title": "INVESTIGATION ONLY \u2014 NO GOVERNANCE CORRECTION: root-layout authority",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/578",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "b6a20706b3b37eebbfb5ab0293a88306a3dae29a",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "f4ffa85bf0bcaf028b51462113bf19c2eebb0091",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "UNVERIFIED; review and applicable checks required",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #577 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "b6a20706b3b37eebbfb5ab0293a88306a3dae29a"
+            }
+          },
+          "pr_number": 577,
+          "title": "ci: pin workflow actions and restrict x86 workflow token permissions",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/577",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "41fa126cc82df6ed54b095d8dd67bfe066252066",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "b6a20706b3b37eebbfb5ab0293a88306a3dae29a",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "UNVERIFIED; review and applicable checks required",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #576 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "41fa126cc82df6ed54b095d8dd67bfe066252066"
+            }
+          },
+          "pr_number": 576,
+          "title": "ci: restore architecture coherence paths and README determinism boundary",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/576",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "b06f8520d02fd68301a5ae06777beb03b73c8eb5",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "41fa126cc82df6ed54b095d8dd67bfe066252066",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "UNVERIFIED; review and applicable checks required",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #575 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "b06f8520d02fd68301a5ae06777beb03b73c8eb5"
+            }
+          },
+          "pr_number": 575,
+          "title": "ci: reconcile architecture target discovery with delegated CMake sources",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/575",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "10df367102151b087ee64b1fbb737c471f4c87fb",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "b06f8520d02fd68301a5ae06777beb03b73c8eb5",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "UNVERIFIED; review and applicable checks required",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #574 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "10df367102151b087ee64b1fbb737c471f4c87fb"
+            }
+          },
+          "pr_number": 574,
+          "title": "ci: report validator failures through logged pipelines",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/574",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "01c85019319fd020922402ba356878e392cb2231",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "10df367102151b087ee64b1fbb737c471f4c87fb",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #573 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "b2a1a43452bfbb89403b5b4cb62ab83c0c0dbf11"
+            }
+          },
+          "pr_number": 573,
+          "title": "research: test model-object authority with independent MCO-R01 oracle",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/573",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "01c85019319fd020922402ba356878e392cb2231",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "b2a1a43452bfbb89403b5b4cb62ab83c0c0dbf11",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #560 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "056f0d6307f59049ef9dfa42c482f727a02c2b96"
+            }
+          },
+          "pr_number": 560,
+          "title": "Resolve PR #559 Review Findings and Establish Trustworthy Experimental Results",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/560",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "66b7905b98820816caf0c04bfbe938ea006e48e8",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "056f0d6307f59049ef9dfa42c482f727a02c2b96",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #557 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "aaa3970af36bf187782f3a5c38bd07931cc081ce"
+            }
+          },
+          "pr_number": 557,
+          "title": "experiment: durable authority, witnessed effects and restart replay resistance",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/557",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "0005ab675d2729b2795200e8c78ded43d4520b0d",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "aaa3970af36bf187782f3a5c38bd07931cc081ce",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #556 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "92e63d89b6eacdb5696d12b2da52593a8c2e526f"
+            }
+          },
+          "pr_number": 556,
+          "title": "feat(canonfs,ci): portable storage mapping (RFC-00D6), SMT invariant proofs, and determinism CI fix",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/556",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "872ac1b4c8a303fc5417d0b21551a430d0a50200",
+          "head_repository": "mkrishna793/t81-foundation",
+          "head_sha": "92e63d89b6eacdb5696d12b2da52593a8c2e526f",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #554 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "7af837ece1325752e555b814c94aacc33afd2c96"
+            }
+          },
+          "pr_number": 554,
+          "title": "experiment: independently challenge T81 against Wasmtime at the write boundary",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/554",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "0005ab675d2729b2795200e8c78ded43d4520b0d",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "7af837ece1325752e555b814c94aacc33afd2c96",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #536 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "671d3d133e6f0e1ee7e59012bc97f71462bec5d2"
+            }
+          },
+          "pr_number": 536,
+          "title": "fix(core,vm): fix arithmetic UB, BigInt invariants, ControlledAIBacke\u2026",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/536",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "872ac1b4c8a303fc5417d0b21551a430d0a50200",
+          "head_repository": "mkrishna793/t81-foundation",
+          "head_sha": "671d3d133e6f0e1ee7e59012bc97f71462bec5d2",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #528 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "29b09ec231e2f695e7c94be70569e2546688a45f"
+            }
+          },
+          "pr_number": 528,
+          "title": "Implement Phase 1 Real-Model Validation Experiment",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/528",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "98738607d2bbe849d4023e6340b83c1f2d105c5f",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "29b09ec231e2f695e7c94be70569e2546688a45f",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #527 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "0fd1bb43c58ee68e187fbba97effcd22ea8d16ce"
+            }
+          },
+          "pr_number": 527,
+          "title": "docs: complete T81 portfolio evidence and reality audit",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/527",
+          "state": "closed",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "98738607d2bbe849d4023e6340b83c1f2d105c5f",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "0fd1bb43c58ee68e187fbba97effcd22ea8d16ce",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "UNVERIFIED; review and applicable checks required",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #525 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "e6e3f9d8ba7fdb253ba0398ec7c64c447669f2c4"
+            }
+          },
+          "pr_number": 525,
+          "title": "Bump actions/checkout from 6.0.2 to 7.0.0",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/525",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "98738607d2bbe849d4023e6340b83c1f2d105c5f",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "e6e3f9d8ba7fdb253ba0398ec7c64c447669f2c4",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #524 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "5b057e7a81c1bbe417b030d89655caba0c1c46ac"
+            }
+          },
+          "pr_number": 524,
+          "title": "Bump softprops/action-gh-release from 2.6.1 to 3.0.1",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/524",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "98738607d2bbe849d4023e6340b83c1f2d105c5f",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "5b057e7a81c1bbe417b030d89655caba0c1c46ac",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #523 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "abcec70e01d4366a24a3b6b128f9bb7813b2c87c"
+            }
+          },
+          "pr_number": 523,
+          "title": "Bump github/codeql-action from 4.34.1 to 4.36.2",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/523",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "98738607d2bbe849d4023e6340b83c1f2d105c5f",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "abcec70e01d4366a24a3b6b128f9bb7813b2c87c",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #516 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "537ad15b36cc65106ecdcb20d9d141c0db69c486"
+            }
+          },
+          "pr_number": 516,
+          "title": "Bump actions/setup-node from 6.3.0 to 6.4.0",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/516",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "98738607d2bbe849d4023e6340b83c1f2d105c5f",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "537ad15b36cc65106ecdcb20d9d141c0db69c486",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #514 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "61002ef3b586fcfa8c3eaf07a540608744b1fb77"
+            }
+          },
+          "pr_number": 514,
+          "title": "Bump actions/cache from 5.0.4 to 5.0.5",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/514",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "98738607d2bbe849d4023e6340b83c1f2d105c5f",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "61002ef3b586fcfa8c3eaf07a540608744b1fb77",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #513 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "687ced99ac87f81d1f4effc16f5675d291569234"
+            }
+          },
+          "pr_number": 513,
+          "title": "Bump actions/upload-artifact from 7.0.0 to 7.0.1",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/513",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "98738607d2bbe849d4023e6340b83c1f2d105c5f",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "687ced99ac87f81d1f4effc16f5675d291569234",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #508 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "832b7b0824d1d7c744f2550756391e0b5d182999"
+            }
+          },
+          "pr_number": 508,
+          "title": "feat: integrate Tier 6 distributed monad into build and add tests",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/508",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "ba3e1ff0aa7588c859e3f59272444621990ca620",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "832b7b0824d1d7c744f2550756391e0b5d182999",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #507 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "b8ca8e3b25ee94cbedf55702f4c639a6294b6565"
+            }
+          },
+          "pr_number": 507,
+          "title": "Documentation audit and hygiene update",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/507",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "925f4a32d932e71cc199e3d5c9becfea230f1a62",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "b8ca8e3b25ee94cbedf55702f4c639a6294b6565",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #504 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "cb208858bb9a77fcf5115592bdc74c1ca2e41317"
+            }
+          },
+          "pr_number": 504,
+          "title": "docs: Provide RFC compliance audit and fix status mismatch",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/504",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "041309bcdfc2d85113f6a46e6349701e833e210d",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "cb208858bb9a77fcf5115592bdc74c1ca2e41317",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #503 GitHub metadata",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "60e86c0aa00f649a93ee171ba01710818be4cb39"
+            }
+          },
+          "pr_number": 503,
+          "title": "feat(kernel): Implement RFC-00C8 concurrent fault isolation test",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/503",
+          "state": "closed",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "041309bcdfc2d85113f6a46e6349701e833e210d",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "60e86c0aa00f649a93ee171ba01710818be4cb39",
+          "merge_sha": {
+            "value": null,
+            "reason": "No actual merge observed; synthetic merge refs excluded"
+          },
+          "scientific_acceptance": "Not established by lifecycle/check metadata; consult scoped acceptance evidence",
+          "integration_readiness": "BLOCKED",
+          "authorization_status": "No merge, Gate 2, measurement or governance authority granted by this index"
+        }
+      ],
+      "ci_observations": [
+        {
+          "envelope": {
+            "subject": "PR #763 head Foundation CI",
+            "observed_at": "2026-11-11T00:26:00Z",
+            "collector": "Codex operational reconciliation; GitHub metadata and source inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r1/pr-inventory.json",
+            "source_revision": {
+              "commit_sha": "93a3d1bc36e18395d6863d56a604506d108eac32"
+            }
+          },
+          "suite_name": "T81 Foundation CI",
+          "status": "failing",
+          "known_baseline_failures": [
+            "GitHub run 42913263904 reports failure; root cause not locally reproduced or attributed"
+          ]
+        }
+      ],
+      "workstreams": [
+        {
+          "id": "SCG-08-GATE1",
+          "priority": "high",
+          "state": "BLOCKED",
+          "source": "docs/ai-context/T81_RESEARCH_STATUS_2026-11-10_R1.md",
+          "next": "Publish a new corrective PR at an exact revision, repair remaining accounting/schema/provenance issues, then obtain independent Gate 1 review; Gate 2 withheld."
+        },
+        {
+          "id": "CI-policy-stack",
+          "priority": "high",
+          "state": "READY FOR REVIEW; failing hosted CI and transient conflicts remain",
+          "next": "Review #747, then #748/#750/#752; #751 follows #750."
+        }
+      ]
+    },
+    "2026-11-10-r2": {
+      "view_date": "2026-11-10",
+      "freshness": "Focused post-#765 follow-up at 2026-11-11T01:02:53Z; older view selection and 82-record R1 inventory preserved",
+      "coverage": {
+        "inventory_scope": "Focused #765 metadata/review follow-up, plus complete open-list metadata; not a new full research PR audit",
+        "coverage_state": "VERIFIED merge metadata; two unresolved findings; scientific acceptance withheld",
+        "open_pr_count": 70
+      },
+      "repository_observation": {
+        "envelope": {
+          "subject": "Fetched current origin/main after #765 merge",
+          "observed_at": "2026-11-11T01:02:53Z",
+          "collector": "Codex follow-up: GitHub metadata and pinned source inspection; no scientific acceptance",
+          "retained_receipt": "docs/ai-context/receipts/2026-11-10-r2/github-observations.json",
+          "source_revision": {
+            "commit_sha": "36b3849aa1e6297e88de2ec1655777793ab0b59e"
+          }
+        },
+        "name": "t81dev/t81-foundation",
+        "base_branch": "main",
+        "observed_head": "36b3849aa1e6297e88de2ec1655777793ab0b59e"
+      },
+      "scientific_observations": [
+        {
+          "envelope": {
+            "subject": "SCG-08 Gate 1 acceptance after corrective #765 merge",
+            "observed_at": "2026-11-11T01:02:53Z",
+            "collector": "Codex follow-up: GitHub metadata and pinned source inspection; no scientific acceptance",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r2/github-observations.json",
+            "source_revision": {
+              "commit_sha": "36b3849aa1e6297e88de2ec1655777793ab0b59e"
+            }
+          },
+          "id": "SCG-08-GATE1",
+          "status": "BLOCKED: #765 merged; P1 source pin and P2 scalar schema validation unresolved",
+          "verification": "blocked",
+          "claims_boundary": "Merged correction is implemented, not independently accepted. Original R1 accounting/run-provenance concerns remain unresolved by this metadata update. Missing authoritative Gate 1 authorization record; Phase 0 statistical readiness conditional. Gate 2 withheld. Any further Jules correction remains MISSING EVIDENCE until published source is observed."
+        },
+        {
+          "envelope": {
+            "subject": "T81-AIOPT-001 M1 fixed-catalog pattern filtering",
+            "observed_at": "2026-11-02T00:00:00Z",
+            "source_revision": {
+              "commit_sha": "b2b9d3c73df96d6b4227ee0061c56bc2ee04a8fe"
+            },
+            "collector": "Jules_AI_assisted_source_assessment_not_independent_experimental_replication",
+            "retained_receipt": "docs/research/aiopt/T81-AIOPT-001-SCIENTIFIC-REVIEW.md"
+          },
+          "id": "AIOPT-001-M1",
+          "status": "redesign_required",
+          "verification": "falsified",
+          "claims_boundary": "Historical finding carried forward unchanged in scope; observed_at and pinned source retained, not re-executed in R1. Preserved negative mathematical critique of C40 equality filtering: scalar lookup/index controls invalidate an optimization claim. The pinned review does not establish independent experimental replication or authenticated independent-person review; no ternary speedup is accepted."
+        }
+      ],
+      "pr_observations": [
+        {
+          "envelope": {
+            "subject": "PR #765 GitHub lifecycle and review",
+            "observed_at": "2026-11-11T01:02:53Z",
+            "collector": "Codex follow-up: GitHub metadata and pinned source inspection; no scientific acceptance",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r2/github-observations.json",
+            "source_revision": {
+              "commit_sha": "2dd3cc62e526942cdcbed6d100770c08c26ab2fe"
+            }
+          },
+          "pr_number": 765,
+          "title": "fix(scg08): resolve Codex review findings on Gate 1 arithmetic harness",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/765",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "2dd3cc62e526942cdcbed6d100770c08c26ab2fe",
+          "merge_sha": {
+            "commit_sha": "36b3849aa1e6297e88de2ec1655777793ab0b59e"
+          },
+          "scientific_acceptance": "WITHHELD; two unresolved Codex findings at actual head 2dd3cc62e526942cdcbed6d100770c08c26ab2fe",
+          "integration_readiness": "MERGED implementation; corrective review required, not scientific acceptance",
+          "authorization_status": "No Gate 2, merge or research authorization granted by this index"
+        }
+      ],
+      "ci_observations": [
+        {
+          "envelope": {
+            "subject": "PR #765 head workflow metadata",
+            "observed_at": "2026-11-11T01:02:53Z",
+            "collector": "Codex follow-up: GitHub metadata and pinned source inspection; no scientific acceptance",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-10-r2/github-observations.json",
+            "source_revision": {
+              "commit_sha": "2dd3cc62e526942cdcbed6d100770c08c26ab2fe"
+            }
+          },
+          "suite_name": "T81 Foundation CI",
+          "status": "unexecuted",
+          "known_baseline_failures": [
+            "Queued in GitHub at checkpoint; no completed result asserted. Format Check success; CodeQL and cross-platform in progress; these are reported metadata, not local execution."
+          ]
+        }
+      ],
+      "workstreams": [
+        {
+          "id": "SCG-08-GATE1",
+          "priority": "high",
+          "state": "BLOCKED",
+          "source": "docs/ai-context/T81_RESEARCH_STATUS_2026-11-10_R2.md",
+          "next": "Inspect an exact published successor to #765, repair evidence pin/scalar typing and resolve prior accounting/run-provenance concerns; independent Gate 1 acceptance required. Gate 2 withheld."
+        }
+      ]
     }
   },
   "historical_snapshots": {

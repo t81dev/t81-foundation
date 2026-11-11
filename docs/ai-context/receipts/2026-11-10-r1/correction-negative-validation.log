@@ -1,0 +1,26 @@
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid head_sha: None (must be non-null 40-character hexadecimal SHA)
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid head_sha: abc123 (must be non-null 40-character hexadecimal SHA)
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid timestamp_utc format: invalid-time (must be valid ISO-8601 UTC timestamp)
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid specification_version: v1.0 (expected T81-SCG-08-PHASE1-PROP-001-R3-ADDENDUM-06)
+[SCG-08 SCHEMA VALIDATION ERROR] Actual executed trials (1001) exceeded budget ceiling (1000)
+[SCG-08 SCHEMA VALIDATION ERROR] budget_enforced_fail_closed must be boolean true
+[SCG-08 SCHEMA VALIDATION ERROR] tier2_work.evaluated_bands must be a list of 5 evaluated bands
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 weighted total w_ops_add_ternary (999) does not match measured counters formula (80)
+[SCG-08 SCHEMA VALIDATION ERROR] Missing primitive counter op_alu_add_sub in counters_add_ternary
+[SCG-08 SCHEMA VALIDATION ERROR] Property f_occ in tier1_markov.ternary must be float/number
+[SCG-08 SCHEMA VALIDATION ERROR] all_dimensions_passed must be boolean true
+[SCG-08 SCHEMA VALIDATION ERROR] dimensions_verified must list all 5 dimensions
+[SCG-08 NEGATIVE TEST SUITE] Running negative schema tests...
+  ✓ Case 'null head_sha' properly rejected fail-closed
+  ✓ Case 'invalid short head_sha' properly rejected fail-closed
+  ✓ Case 'malformed timestamp' properly rejected fail-closed
+  ✓ Case 'wrong specification version' properly rejected fail-closed
+  ✓ Case 'budget ceiling exceeded' properly rejected fail-closed
+  ✓ Case 'budget boolean False' properly rejected fail-closed
+  ✓ Case 'missing tier2 band' properly rejected fail-closed
+  ✓ Case 'mismatched weighted total W_ops' properly rejected fail-closed
+  ✓ Case 'missing primitive counter' properly rejected fail-closed
+  ✓ Case 'boolean instead of number' properly rejected fail-closed
+  ✓ Case 'oracle passed False' properly rejected fail-closed
+  ✓ Case 'oracle dimensions missing' properly rejected fail-closed
+[SCG-08 NEGATIVE TEST SUITE] All negative test cases passed successfully.
