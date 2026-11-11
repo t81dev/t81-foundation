@@ -87,12 +87,20 @@ def validate_dict(data: dict, schema: dict):
 
     # git_context
     gc = data.get("git_context")
-    if not isinstance(gc, dict) or "baseline_sha" not in gc or "head_sha" not in gc:
-        fail("Invalid git_context: must be an object with baseline_sha and head_sha")
-    for sha_key in ["baseline_sha", "head_sha"]:
+    if not isinstance(gc, dict):
+        fail("Invalid git_context: must be an object")
+    required_git_props = ["baseline_sha", "evaluated_implementation_sha"]
+    for req_prop in required_git_props:
+        if req_prop not in gc:
+            fail(f"Invalid git_context: missing required property {req_prop}")
+    for sha_key in required_git_props:
         sha_val = gc[sha_key]
         if not isinstance(sha_val, str) or not SHA_REGEX.match(sha_val):
             fail(f"Invalid {sha_key}: {sha_val} (must be non-null 40-character hexadecimal SHA)")
+    if "evidence_publication_sha" in gc:
+        pub_sha = gc["evidence_publication_sha"]
+        if pub_sha is not None and (not isinstance(pub_sha, str) or not SHA_REGEX.match(pub_sha)):
+            fail(f"Invalid evidence_publication_sha: {pub_sha} (must be 40-character hexadecimal SHA or null)")
 
     # trial_budget
     tb = data.get("trial_budget")
@@ -168,6 +176,25 @@ def validate_dict(data: dict, schema: dict):
             if prop not in b:
                 fail(f"Missing band property: {prop} in band {idx}")
 
+        # Enforce strict integer type on scalar properties (rejecting bools, nulls, strings, floats)
+        scalar_props = [
+            "bit_width",
+            "operand_trits",
+            "add_trits_min",
+            "mul_trits_min",
+            "ternary_limbs_op",
+            "ternary_limbs_add",
+            "ternary_limbs_mul",
+            "w_ops_add_ternary",
+            "w_ops_mul_ternary",
+            "w_ops_add_binary",
+            "w_ops_mul_binary",
+        ]
+        for prop in scalar_props:
+            val = b[prop]
+            if type(val) is not int or val < 0:
+                fail(f"Band {b.get('bit_width')} property {prop} must be a non-negative integer (found {type(val).__name__}: {val!r})")
+
         # Validate primitive counter objects and reconcile with weighted total W_ops
         counter_mappings = [
             ("counters_add_ternary", "w_ops_add_ternary"),
@@ -223,8 +250,8 @@ def run_negative_tests(schema_path: Path):
         "status": "READY_FOR_INDEPENDENT_GATE1_IMPLEMENTATION_REVIEW",
         "timestamp_utc": "2026-11-10T22:30:00Z",
         "git_context": {
-            "baseline_sha": "cd490f5b5c0496350682542b56424dd77bea6963",
-            "head_sha": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3",
+            "baseline_sha": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3",
+            "evaluated_implementation_sha": "2dd3cc62e526942cdcbed6d100770c08c26ab2fe",
         },
         "trial_budget": {
             "max_cumulative_trials_ceiling": 1000,
@@ -287,8 +314,9 @@ def run_negative_tests(schema_path: Path):
     }
 
     negative_cases = [
-        ("null head_sha", lambda d: d["git_context"].__setitem__("head_sha", None)),
-        ("invalid short head_sha", lambda d: d["git_context"].__setitem__("head_sha", "abc123")),
+        ("null evaluated_implementation_sha", lambda d: d["git_context"].__setitem__("evaluated_implementation_sha", None)),
+        ("invalid short evaluated_implementation_sha", lambda d: d["git_context"].__setitem__("evaluated_implementation_sha", "abc123")),
+        ("invalid publication sha format", lambda d: d["git_context"].__setitem__("evidence_publication_sha", "invalid-sha")),
         ("malformed timestamp", lambda d: d.__setitem__("timestamp_utc", "invalid-time")),
         ("wrong specification version", lambda d: d.__setitem__("specification_version", "v1.0")),
         ("budget ceiling exceeded", lambda d: d["trial_budget"].__setitem__("actual_cumulative_trials_executed", 1001)),
@@ -299,6 +327,11 @@ def run_negative_tests(schema_path: Path):
         ("boolean instead of number", lambda d: d["tier1_markov"]["ternary"].__setitem__("f_occ", True)),
         ("oracle passed False", lambda d: d["oracle_verification"].__setitem__("all_dimensions_passed", False)),
         ("oracle dimensions missing", lambda d: d["oracle_verification"].__setitem__("dimensions_verified", ["dim1"])),
+        ("operand_trits is null", lambda d: d["tier2_work"]["evaluated_bands"][0].__setitem__("operand_trits", None)),
+        ("ternary_limbs_op is not integer", lambda d: d["tier2_work"]["evaluated_bands"][0].__setitem__("ternary_limbs_op", "not an integer")),
+        ("bit_width boolean True", lambda d: d["tier2_work"]["evaluated_bands"][0].__setitem__("bit_width", True)),
+        ("operand_trits float", lambda d: d["tier2_work"]["evaluated_bands"][0].__setitem__("operand_trits", 41.5)),
+        ("negative operand_trits", lambda d: d["tier2_work"]["evaluated_bands"][0].__setitem__("operand_trits", -1)),
     ]
 
     with open(schema_path, "r", encoding="utf-8") as f:

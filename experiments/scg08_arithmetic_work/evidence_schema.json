@@ -40,10 +40,11 @@
     },
     "git_context": {
       "type": "object",
-      "required": ["baseline_sha", "head_sha"],
+      "required": ["baseline_sha", "evaluated_implementation_sha"],
       "properties": {
         "baseline_sha": {"type": "string"},
-        "head_sha": {"type": "string"}
+        "evaluated_implementation_sha": {"type": "string"},
+        "evidence_publication_sha": {"type": "string"}
       }
     },
     "trial_budget": {

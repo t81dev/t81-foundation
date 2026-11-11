@@ -23,27 +23,23 @@ The primary objective of Gate 1 is to establish:
 
 ---
 
-## 2. Repository Context & Baseline
+## 2. Repository Context & Provenance
 
 - **Repository:** https://github.com/t81dev/t81-foundation
 - **Baseline Git SHA:** `dbf107fda83a3755fa21d6b95caa3eb8ac450dd3` (merging PR #763)
+- **Evaluated Implementation SHA:** `2dd3cc62e526942cdcbed6d100770c08c26ab2fe` (the exact source revision that implemented the measured arithmetic counters and schema validation fixes)
+- **Starting Baseline for this Corrective PR:** `36b3849aa1e6297e88de2ec1655777793ab0b59e` (merge commit of PR #765 on mainline)
 - **PR #753 Integration:** Verified integrated into mainline history (`0bd0817e4b9dc879fffce18c59ea9ff781f7acb3`).
 
 ### Changed File Inventory
 | File | Action | Purpose |
 | :--- | :--- | :--- |
-| `CMakeLists.txt` | Modified | Added opt-in `T81_BUILD_EXPERIMENTS` option guarding `experiments/scg08_arithmetic_work` |
-| `experiments/scg08_arithmetic_work/CMakeLists.txt` | Created | Declares target `t81_exp_scg08_01_test` and `t81_exp_scg08_01_schema_validation` CTest checks |
-| `experiments/scg08_arithmetic_work/evidence_schema.json` | Created | Machine-readable JSON schema `t81.scg08.carry-experiment.v1` |
-| `experiments/scg08_arithmetic_work/gate1_evidence_record.json` | Created | Measured counters, weighted totals, and validation outcomes conforming to evidence schema |
-| `experiments/scg08_arithmetic_work/exact_oracle_adapter.hpp` | Created | Decoupled arbitrary-precision base-$10^9$ exact integer oracle & 5D validator |
-| `experiments/scg08_arithmetic_work/tier1_markov_harness.hpp` | Created | Tier 1 scalar carry Markov chain simulator with decoupled event counters |
-| `experiments/scg08_arithmetic_work/tier2_work_harness.hpp` | Created | Tier 2 multi-precision signed arithmetic, operation accounting, and trial budget enforcer |
-| `experiments/scg08_arithmetic_work/test_exp_scg08_01.cpp` | Created | Unconditional fail-closed test harness executable active under `-DNDEBUG` |
-| `scripts/ci/validate_scg08_gate1_evidence.py` | Created | Fail-closed stdlib-only validation script for `gate1_evidence_record.json` |
-| `experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md` | Created | Gate 1 implementation report and verification receipts |
+| `experiments/scg08_arithmetic_work/evidence_schema.json` | Modified | Updated provenance model (`baseline_sha`, `evaluated_implementation_sha`) and enforced scalar band property integer types |
+| `experiments/scg08_arithmetic_work/gate1_evidence_record.json` | Modified | Recorded explicit revision provenance separating baseline and evaluated implementation revisions |
+| `scripts/ci/validate_scg08_gate1_evidence.py` | Modified | Enforced strict non-negative integer type checks on scalar band properties; added negative tests reproducing `operand_trits: null` and `ternary_limbs_op: "not an integer"` |
+| `experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md` | Modified | Documented findings resolution, exact provenance, and reproduction instructions |
 
-**Production Impact:** Zero modifications to production arithmetic files (`include/t81/types/`, `src/core/`, etc.). All additions are isolated under `experiments/scg08_arithmetic_work/`.
+**Production Impact:** Zero modifications to production arithmetic files (`include/t81/types/`, `src/core/`, etc.). All additions are isolated under `experiments/scg08_arithmetic_work/` and `scripts/ci/`.
 
 ---
 
@@ -99,7 +95,10 @@ $$W_{\text{ops}} = \text{OP}_{\text{ALU\_ADD\_SUB}} + 3 \cdot \text{OP}_{\text{A
    - *Audit:* Evaluated committed evidence record against standalone test execution. The initial draft stored 30 trials from an isolated band run, conflicting with the 179 trials executed by the smoke suite.
    - *Resolution:* Reconciled `gate1_evidence_record.json` to record the exact 179 cumulative trials executed by the smoke suite (`actual_cumulative_trials_executed: 179`), verified against the ceiling of 1,000 trials, and bound to authoritative commit SHAs and ISO-8601 UTC timestamp.
 4. **Finding 4 (P2 - Evidence Schema Validation & Negative Test Suite):**
-   - *Resolution:* Hardened `scripts/ci/validate_scg08_gate1_evidence.py` to enforce strict regex pattern matching on commit SHAs (40-char hex) and ISO-8601 UTC timestamps, exact specification version string matching, strictly positive costs, and non-empty dimension strings. Added a comprehensive 11-case negative test suite (`--test-negative`) registered in CTest (`t81_exp_scg08_01_schema_negative_validation`).
+   - *Resolution:* Hardened `scripts/ci/validate_scg08_gate1_evidence.py` to enforce strict regex pattern matching on commit SHAs (40-char hex) and ISO-8601 UTC timestamps, exact specification version string matching, strictly positive costs, and non-empty dimension strings. Added a comprehensive negative test suite (`--test-negative`) registered in CTest (`t81_exp_scg08_01_schema_negative_validation`).
+   - *Post-PR #765 Review Findings Resolution:*
+     - **P1 (Evidence revision provenance):** Repaired `git_context` to separate `baseline_sha` (`dbf107fda83a3755fa21d6b95caa3eb8ac450dd3`) from `evaluated_implementation_sha` (`2dd3cc62e526942cdcbed6d100770c08c26ab2fe`), avoiding self-referential commit hashes by documenting the publication revision relationship non-cyclically.
+     - **P2 (Scalar schema validation):** Hardened validator to enforce explicit scalar integer type checks on all band properties (`bit_width`, `operand_trits`, `add_trits_min`, `mul_trits_min`, `ternary_limbs_op`, `ternary_limbs_add`, `ternary_limbs_mul`, `w_ops_*`), rejecting malformed properties like `operand_trits: null` and `ternary_limbs_op: "not an integer"`. Confirmed exact parity with `jsonschema.Draft7Validator`.
 5. **Table Lookup Accounting Reconciliation (P1):**
    - *Source Verification:* In `include/t81/types/T81Limb.hpp`, each `T81Limb27::addc()` performs:
      - 9 lookups in `detail::ADD_TABLE[trytes_[i] + 13][other.trytes_[i] + 13]` (1 per tryte)
