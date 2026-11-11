@@ -861,6 +861,9 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   add_executable(t81_semantic_analyzer_loop_test tests/cpp/semantic_analyzer_loop_test.cpp)
   target_link_libraries(t81_semantic_analyzer_loop_test PRIVATE t81_lang_frontend)
 
+  add_executable(t81_semantic_analyzer_scope_lifetime_test tests/cpp/semantic_analyzer_scope_lifetime_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_scope_lifetime_test PRIVATE t81_lang_frontend)
+
   add_executable(ir_inspector tools/ir_inspector.cpp)
   target_link_libraries(ir_inspector PRIVATE t81_lang_frontend)
 
@@ -1622,6 +1625,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_semantic_analyzer_vector_literal_test
     t81_semantic_analyzer_equality_test
     t81_semantic_analyzer_loop_test
+    t81_semantic_analyzer_scope_lifetime_test
     t81_semantic_analyzer_numeric_test
     t81_semantic_analyzer_diagnostic_location_test
     t81_semantic_analyzer_cascade_suppression_test
