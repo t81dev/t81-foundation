@@ -1,10 +1,12 @@
 # T81 Foundation
 
+[English](README.md) · [简体中文](README.zh-CN.md) · [Español](README.es.md) · [Português (Brasil)](README.pt-BR.md) · [Русский](README.ru.md)
+
 ### Researching alternative representations, adaptive execution, and verifiable computing.
 
 **Balanced ternary · Representation-aware AI/ML · Deterministic execution · Experimental architecture**
 
-[Research Charter](docs/research/RESEARCH_CHARTER.md) · [Research Roadmap](docs/ROADMAP.md) · [Architecture](docs/explanation/ARCHITECTURE.md) · [AI Research Context](docs/ai-context/)
+[Research Charter](docs/research/RESEARCH_CHARTER.md) · [Research Roadmap](docs/ROADMAP.md) · [Architecture](docs/explanation/ARCHITECTURE.md) · [AI Research Context](docs/ai-context/) · [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md)
 
 ---
 
@@ -14,9 +16,9 @@
 
 T81 is an **implemented, functioning architecture**: it defines the Ternary Instruction Set Computer (TISC) as its computational instruction contract, with bounded cross-profile execution demonstrated across both a hosted virtual machine (T81VM) and a bare-metal freestanding microkernel environment (Axion OS / TernaryOS on AArch64 QEMU).
 
-The project studies computation at several levels: mathematical representation, algorithms, software execution, storage, hardware architecture, and verifiable system behavior. Its research-first architecture originated in discrete mathematics, CWEB/Hanoi, and investigations of alternative numerical systems before expanding into language, VM, instruction, policy, and research-assurance subsystems.
+The project studies computation across multiple domains: mathematical representation, algorithms, software execution, storage, hardware architecture, and verifiable system behavior. Its research-first architecture originated in discrete mathematics, CWEB/Hanoi, and investigations of alternative numerical systems before expanding into language, VM, instruction, policy, and research-assurance subsystems.
 
-A second, explicitly experimental direction is **representation-aware adaptive execution**: selecting data representations, algorithms, and execution paths for particular workloads, especially AI/ML, while measuring the full costs of selection, conversion, computation, and accuracy. This is an architectural hypothesis, **not** an established T81 performance advantage.
+A secondary, explicitly experimental direction is **representation-aware adaptive execution**: selecting data representations, algorithms, and execution paths for particular workloads, especially AI/ML, while measuring the full costs of selection, conversion, computation, and accuracy. This is an architectural hypothesis, **not** an established T81 performance advantage.
 
 Its central question is:
 
@@ -24,11 +26,11 @@ Its central question is:
 
 The answer is not assumed.
 
-Some experiments have demonstrated useful mathematical and representational properties. Others have shown that conventional binary implementations remain faster or more efficient. Several important questions remain unresolved.
+Some experiments have demonstrated useful mathematical and representational properties. Others have shown that conventional binary implementations remain faster or more efficient. Several fundamental questions remain unresolved.
 
 T81 exists to investigate those boundaries systematically.
 
-**This is a research platform, not a claim that a superior ternary computer has already been built.**
+**This is an experimental research platform, not a claim that a superior ternary computer has already been built.**
 
 ---
 
@@ -42,7 +44,7 @@ Ternary computing uses three states. In balanced ternary, these are represented 
 T = \{-1,0,+1\}
 \]
 
-This creates interesting possibilities for signed arithmetic, numerical representation, state encoding, decision systems, and computational architecture.
+This creates distinct possibilities for signed arithmetic, numerical representation, state encoding, decision systems, and computational architecture.
 
 For example:
 
@@ -58,7 +60,7 @@ These relationships are mathematical facts.
 
 They do **not** establish that ternary processors are faster, that ternary memory is physically denser, or that ternary algorithms consume less energy.
 
-Those are separate engineering questions requiring appropriate comparisons.
+Those are separate engineering questions requiring rigorous, matched comparisons against optimized binary alternatives.
 
 T81 investigates the distinction.
 
@@ -70,7 +72,7 @@ Research is valuable when it identifies both opportunities and limitations.
 
 **Lead result — an unfavorable optimized-binary comparison:** In the historical AVX2 matrix-vector experiment below, native INT8 reached **17.15 GFLOP/s**, versus **12.91 GFLOP/s** for packed 2-bit ternary (approximately **32.8% higher throughput** for the native INT8 implementation). This is a workload-specific result, not a universal radix ranking; T81 publishes it prominently because an unfavorable result is evidence, not a defect to conceal.
 
-T81's experimental history has produced several important findings.
+T81's experimental history has established several important findings.
 
 ### 1. AVX2 negative result: representation density is not execution speed
 
@@ -91,11 +93,11 @@ This is a bounded experimental result—not a proof that ternary computation is 
 
 [Explore the packed ternary research](docs/research/PACKED_TERNARY_MATVEC_PERFORMANCE_REPORT.md)
 
-### 2. Adaptive representations can have conditional advantages
+### 2. Adaptive representations have conditional advantages
 
 Research into adaptive representation tiering has identified configurations in which a ternary representation has a lower modeled cost than a matched binary alternative.
 
-Those advantages depend on workload assumptions, metadata, conversion costs, and representation boundaries.
+Those advantages depend on workload assumptions, metadata overhead, conversion costs, and representation boundaries.
 
 The corrected H04-R02 research preserves these conditional findings while explicitly leaving physical performance unresolved.
 
@@ -103,51 +105,48 @@ The corrected H04-R02 research preserves these conditional findings while explic
 
 ### 3. Correctness does not establish optimization
 
-A recent experimental investigation, T81-AIOPT-001, examined multiple representations of four-trit pattern matching.
+Experimental investigation T81-AIOPT-001 examined multiple representations of four-trit pattern matching.
 
 Its M1 implementation passed extensive local correctness checks, but the experimental workload could be reduced to a simple ordinal comparison.
 
 The result demonstrates why an exhaustive correctness test can still be insufficient for evaluating computational advantage.
 
-The next question is not simply whether another representation works.
-
-It is whether the chosen workload can distinguish meaningful differences between competing algorithms.
+The relevant question is not simply whether another representation works, but whether the chosen workload can distinguish meaningful differences between competing algorithms.
 
 [Explore T81-AIOPT-001](docs/research/aiopt/)
 
-### 4. H04-R03 status snapshot (2026-11-02): correctness before performance
+### 4. Bounded cross-profile execution demonstrated (CPA-004/CPA-005)
 
-The H04-R03 matched-codec program compares bounded representation and access alternatives, including a B729-µ5 candidate. Its preregistered protocol and Candidate A implementation/review are tracked in [PR #677](https://github.com/t81dev/t81-foundation/pull/677), [PR #679](https://github.com/t81dev/t81-foundation/pull/679), and [PR #680](https://github.com/t81dev/t81-foundation/pull/680). The independent review reports correctness and protocol acceptance only; as of 2026-11-02, PRs #679 and #680 remain open, and Phase C performance measurement is not authorized or reported. PR status must be refreshed before relying on this snapshot.
+**Evidence classification: bounded determinism and portability, not comparative performance or whole-system maturity.** Determinism guarantees are strictly bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md).
 
-An equality of payload lengths is a mathematical property, not a demonstrated latency, energy, or end-to-end benefit. No H04-R03 performance advantage is claimed.
-
-### 5. Bounded cross-profile execution demonstrated (CPA-004/CPA-005)
-
-**Evidence classification: bounded determinism and portability, not comparative performance or whole-system maturity.** The results below concern a frozen program and specified execution environments; they do not qualify untested instructions, workloads, physical hardware, or the broader architecture.
-
-Recent research in the Cross-Profile Architecture (CPA) program demonstrated that the computational core of T81 executes consistently across divergent execution environments:
+Recent research in the Cross-Profile Architecture (CPA) program demonstrated that the computational core of T81 executes identically across divergent execution environments:
 
 - **Canonical Program Artifact:** A frozen 351-byte canonical program comprising 27 canonical 13-byte records (SHA-256 `b0649777cfa1c9e0fa1febb8bdfb1191c5cd3deea0d313791a4a32d5f207c80b`) exercised an admitted subset of 17 TISC instructions.
 - **Cross-Profile Equivalence:** Fresh executions across three hosted T81VM processes and three fresh AArch64 QEMU bare-metal boots (after UEFI `ExitBootServices`) matched an independently derived mathematical oracle at **all 25 observation boundaries** (initial state + 24 instruction steps).
 - **Comprehensive Boundary Matching:** Equivalence was verified across all 81 register values and tags, 1,563 logical memory words and tags, flags, and system registers (R75–R80), halting deterministically at PC=27, SP=283.
-- **Scope & Snapshot:** Tested on repository base snapshot `803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4` (with freestanding evaluator and acceptance report committed in branch `origin/experiment/cpa004-freestanding` at commit `b803bf916a1b1e44129f3a07abf96fa6103c51fc`, and local CPA-005 continuity records).
-- **Distinction:** Demonstrating cross-profile execution correctness proves the computational architecture functions as designed; it is **not** evidence of ternary performance, energy, or hardware superiority over binary baselines.
+- **Distinction:** Demonstrating cross-profile execution correctness proves the computational architecture functions as specified; it is **not** evidence of ternary performance, energy, or hardware superiority over binary baselines.
+
+### 5. SCG-08 active research program: carry propagation and arithmetic work
+
+Program **SCG-08** investigates balanced-ternary carry propagation and multi-precision arithmetic work under a frozen weighted cost metric:
+
+- **Phase 0 Research Charter:** Accepted and integrated (`SCG08_PHASE0_RESEARCH_CHARTER.md`).
+- **Phase 1 Gate 1 Arithmetic Harness:** Implemented and verified under isolated test harness `experiments/scg08_arithmetic_work/`. It establishes mathematical correctness across 5 standardized operand bit-widths (64, 128, 256, 512, 1024 bits) against a decoupled arbitrary-precision base-$10^9$ exact integer oracle, deterministic replay, exact primitive operation accounting, and strict trial budget enforcement ($\le 1,000$ trials; 179 executed in the smoke suite).
+- **Gate 2 Benchmarking Status:** **STRICTLY WITHHELD.** Full-scale empirical campaigns and statistical hypothesis evaluations remain unauthorized until explicit, authoritative review and gate elevation occur. Merged harness code does not constitute experimental authorization.
 
 ### 6. Physical ternary computing remains an open question
 
-Software-emulated ternary computation is not equivalent to computation on native ternary hardware.
+Software-emulated ternary computation on binary CPUs is not equivalent to computation on native ternary hardware.
 
-Evaluating physical devices requires matched evidence for area, energy, latency, reliability, sensing, encoding, and peripheral costs.
+Evaluating physical devices requires matched evidence for area, energy, latency, reliability, sensing, encoding, and peripheral circuitry.
 
-Current physical evaluation remains blocked where adequate device-characterization evidence is unavailable.
-
-T81 does not interpret missing evidence as proof of impossibility.
+Physical evaluation remains blocked where adequate device-characterization evidence is unavailable (Investigation 10A). T81 does not interpret missing evidence as proof of impossibility, nor does it treat theoretical radix efficiency as proof of physical advantage.
 
 ---
 
 ## The T81 research architecture
 
-The repository contains several experimental subsystems developed to investigate computational representations and controlled execution.
+The repository contains several subsystems developed to investigate computational representations and controlled execution.
 
 ```text
                      T81 FOUNDATION
@@ -179,80 +178,66 @@ In the T81 architecture:
 - **TISC (Ternary Instruction Set Computer):** Serves as the central computational instruction contract, defining opcode semantics, 64-bit state vectors, and deterministic transition rules.
 - **Hosted T81VM:** Serves as the hosted execution profile for user-space development, tooling, testing, and deterministic replay on conventional host OSes (Linux, macOS, Windows).
 - **Freestanding Axion OS / TernaryOS:** Serves as the bare-metal execution profile running directly on hardware or hypervisors (e.g., AArch64 QEMU), executing TISC without user-space OS dependencies.
-- **DAIOS (Deterministic AI OS):** Remains an independent, forward-looking experimental research direction for high-level autonomous agent and AI runtime governance, distinct from the implemented low-level TISC execution engine.
+- **CanonFS:** Provides content-addressed object identity, immutable artifact storage, cryptographic provenance, and RFC-00D1 interchange contracts.
+- **DAIOS (Deterministic AI OS):** Remains an independent, forward-looking architectural concept and target architecture proposal (RFC-00D2) for high-level autonomous agent and AI runtime governance, distinct from the implemented low-level TISC execution engine.
 
-### Principal components
+### Subsystem Maturity Classifications
 
-| Component | Research and architectural role |
-|---|---|
-| **TISC** | The computational instruction contract governing execution semantics |
-| **T81VM** | Hosted execution profile for virtual-machine execution and determinism (bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md)) |
-| **Axion / TernaryOS** | Freestanding execution profile (bare-metal AArch64 microkernel/HAL) and pre-side-effect policy authorization |
-| **T81Lang** | Language frontend and compilation infrastructure targeting TISC |
-| **T81 Core** | Numerical types, containers, and representation primitives |
-| **CanonFS** | Content-addressed artifacts and integrity mechanisms |
-| **DAIOS** | Independent target architecture proposal for deterministic AI operating systems |
-| **Research experiments** | Hypothesis testing, correctness validation, and comparative measurements |
+The project distinguishes among different maturity classifications across its subsystems. A working implementation or specification does not imply equal maturity or validated advantage:
 
-These components have different maturity levels. A working implementation is not automatically a validated performance advantage.
+| Component | Maturity | Role |
+|---|---|---|
+| **TISC** | Frozen | Computational instruction contract governing execution semantics (v1.9.0) |
+| **T81VM** | Stable | Hosted execution profile for virtual-machine execution and determinism (bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md)) |
+| **Axion Kernel** | Stable | Freestanding execution profile (bare-metal AArch64 microkernel/HAL) and pre-side-effect policy authorization |
+| **T81Lang** | Stable | Language frontend and compilation infrastructure targeting TISC |
+| **T81 Core** | Stable | Numerical types, containers, and representation primitives |
+| **CanonFS** | Stable | Content-addressed artifacts and integrity mechanisms |
+| **DAIOS** | Concept | Target architecture proposal for deterministic AI operating systems (RFC-00D2) |
+| **Research experiments** | Experimental | Hypothesis testing, correctness validation, and comparative measurements |
 
 ---
 
-## Representation-aware adaptive execution: an open research direction
+## Getting Started
 
-The historical T81 manuscripts describe an integrated ambition: numerical data types, TISC execution semantics, T81Lang/T81VM, and Axion-mediated decisions about resource use. The [historical PDF collection](docs/pdf/) preserves these proposals; their reported performance figures are **historical, unverified claims**, not current experimental results.
+### Prerequisites
 
-A modern falsifiable version of this ambition asks whether a system can select among exact, floating-point, low-bit, packed ternary, and conventional binary representations for a **real workload**, achieving a net benefit after accounting for accuracy, encoding/decoding, memory traffic, scheduling, and decision overhead. The project must distinguish:
+Building T81 requires:
+- **CMake** 3.24 or higher
+- **C++20 compliant compiler** (GCC 12+, Clang 15+, or MSVC 2022)
+- **Python** 3.10+ (for governance, validation, and testing scripts)
+- *Optional:* Ninja build system, QEMU AArch64 (for bare-metal targets)
 
-- **T — ternary-specific mechanism:** an advantage attributable to ternary semantics or a physical ternary substrate, not merely a different encoding.
-- **S — software representation choice:** an advantage from selecting a representation, potentially reproducible with binary encodings.
-- **A — algorithm routing:** an advantage from choosing a better algorithm or execution path, independent of radix.
+### Building the Project
 
-Positive S or A results are useful but do **not** establish T. T81-AIOPT-001 M2 remains a research-design problem rather than an authorized proof of adaptive ternary superiority. For authoritative scope and gates, consult [AI research continuity](docs/ai-context/) and the underlying experiment protocols.
+Configure and build the core project:
 
-## Three research tracks
+```bash
+# Configure out-of-source build
+cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
 
-T81 organizes its work into three complementary tracks.
+# Build core targets
+cmake --build build --target t81 -j$(nproc)
 
-### Track R — Computational research
+# Run standard test suite
+ctest --test-dir build --output-on-failure
+```
 
-Investigate whether alternative representations or computational architectures produce useful advantages.
+### Running Experiments (Opt-In)
 
-Subjects include:
+Research experiments and harnesses (such as SCG-08) are guarded behind opt-in CMake flags:
 
-- Balanced ternary arithmetic and representation.
-- Base-81 and higher-order grouping.
-- Adaptive representation selection.
-- Packed low-bit computation.
-- Memory and data-movement costs.
-- Native ternary hardware hypotheses.
-- Ternary AI inference and model representations.
+```bash
+# Configure with experimental harnesses enabled
+cmake -B build -S . -DT81_BUILD_EXPERIMENTS=ON -DCMAKE_BUILD_TYPE=Release
 
-**Success means establishing a defensible result, including a negative result.**
+# Build and execute SCG-08 Gate 1 arithmetic validation
+cmake --build build --target t81_exp_scg08_01_test
+ctest --test-dir build -R scg08 --output-on-failure
 
-### Track F — Foundation engineering
-
-Develop the tools needed to conduct reliable experiments and evaluate deterministic computation.
-
-This includes virtual machines, language tooling, artifact identity, authorization, replay, and verification infrastructure.
-
-These capabilities may be useful independently of ternary computation.
-
-Their engineering value must be evaluated separately from claims of radix-specific superiority.
-
-### Track M — Research memory
-
-Preserve the evidence behind every conclusion.
-
-This includes source history, experimental protocols, failed attempts, corrections, reproducibility records, and unresolved questions.
-
-A superseded result remains part of the historical record.
-
-A mathematical model is not silently promoted to a physical measurement.
-
-An AI-generated assessment is not automatically independent verification.
-
-[Read the Master Continuity Charter](docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md)
+# Validate evidence schema
+python3 scripts/ci/validate_scg08_gate1_evidence.py
+```
 
 ---
 
@@ -260,128 +245,56 @@ An AI-generated assessment is not automatically independent verification.
 
 T81 follows an evidence-first approach.
 
-Every comparative experiment should answer five questions:
+Every comparative experiment must answer five questions:
 
 1. **What is the hypothesis?** Define a falsifiable proposition.
 2. **What is the baseline?** Compare against a functionally equivalent, appropriately optimized conventional alternative.
-3. **What is measured?** Separate correctness, storage, latency, throughput, energy, and other relevant costs.
-4. **What are the limitations?** Identify assumptions, hardware, workload scope, uncertainty, and unresolved dependencies.
+3. **What is measured?** Separate correctness, storage, latency, throughput, energy, and memory traffic.
+4. **What are the limitations?** Identify assumptions, host hardware, workload scope, and unresolved dependencies.
 5. **What conclusion is justified?** Distinguish supported, unsupported, inconclusive, blocked, and untested outcomes.
 
-The project also distinguishes between:
+The project strictly enforces evidence classifications:
 
 **Implemented → Tested → Measured → Comparatively established**
 
-These are different evidentiary levels, not interchangeable labels.
-
-An experimental result must not claim more than its evidence supports.
+These are different evidentiary levels, not interchangeable labels. An experimental result must not claim more than its evidence supports.
 
 ---
 
-## The original vision and historical manuscripts
+## Documentation Navigation
 
-The [historical PDF archive](docs/pdf/) contains early explorations of Base-81, data types, T81Lang, TISC, Axion, AI/ML, and proposed applications. These documents preserve intellectual lineage and design hypotheses; they are **not** current specifications or verified benchmark reports. A future revision should reconcile claims with primary experiments without overwriting the originals.
-
-### Hanoi
-
-T81's history predates the current Foundation repository.
-
-Its earliest known precursor, **Hanoi**, explored recursive computation, ternary virtual-machine structures, symbolic dispatch, and workload-dependent representation tiers using CWEB literate programming.
-
-The project emerged from investigations into discrete mathematics, algorithms, computational models, and the work of Donald Knuth.
-
-Over time, the research expanded into arithmetic libraries, language tooling, virtual machines, low-bit AI computation, deterministic execution, governance, and experimental hardware.
-
-Some historical designs were incomplete. Some assumptions proved incorrect. Others remain unexplored.
-
-The purpose of preserving this lineage is not to validate every earlier proposal.
-
-It is to recover the questions that motivated them and test those questions with better tools.
-
-[Explore the original Hanoi repository](https://github.com/t81dev/Hanoi) · [Research continuity archive](docs/research/continuity/)
-
----
-
-## Current research priorities
-
-The program's immediate priorities are:
-
-**1. Establish reliable experimental baselines.**  
-Verify equivalent semantics and independently reproducible behavior before interpreting performance differences.
-
-**2. Identify discriminating workloads.**  
-Select experiments in which alternative representations have a plausible, measurable consequence beyond ordinary encoding changes.
-
-**3. Investigate conditional advantages and AI/ML workloads.**  
-Study the circumstances under which representation density, access patterns, conversion costs, model accuracy, or adaptive strategies change the outcome. Compare against equally optimized binary and algorithm-routing baselines.
-
-**4. Preserve physical hardware questions.**  
-Separate limitations of software emulation from the cost and feasibility of native multivalued devices.
-
-**5. Maintain the experimental foundation.**  
-Keep the tools, specifications, tests, provenance records, and governance mechanisms reliable enough to support the research.
-
-Active proposals and their acceptance status belong in the research records and pull requests. Their appearance in the repository does not imply formal approval.
-
-[Read the contributor roadmap](docs/ROADMAP.md)
-
----
-
-## Explore the repository
-
-| Starting point | What you will find |
+| Directory / File | Description |
 |---|---|
-| [`docs/research/`](docs/research/) | Scientific investigations and experimental conclusions |
-| [`experiments/`](experiments/) | Experimental implementations and reproducibility artifacts |
-| [`spec/`](spec/) | Instruction-set specifications and RFCs |
-| [`include/t81/`](include/t81/) | Core libraries and public interfaces |
-| [`vm/`](vm/) | Virtual-machine implementation |
-| [`lang/`](lang/) | Language tooling |
-| [`kernel/axion/`](kernel/axion/) | Authorization and policy components |
-| [`fs/`](fs/) | Artifact identity and storage mechanisms |
-| [`docs/ai-context/`](docs/ai-context/) | Continuity material for AI research collaborators |
-| [`docs/pdf/`](docs/pdf/) | Historical manuscripts and their original research hypotheses |
-
-For build instructions, development dependencies, and available test targets, consult the repository's contributor documentation and CMake configuration. Research results should be reproduced using the environment and commands specified by their individual protocols.
-
----
-
-## Contributing
-
-T81 welcomes contributions that improve scientific understanding, implementation correctness, reproducibility, or documentation.
-
-Especially valuable contributions include:
-
-- Independent reproduction of existing experiments.
-- Stronger conventional binary baselines.
-- Mathematical counterexamples and proof corrections.
-- Smaller, more discriminating experimental protocols.
-- Cross-platform correctness validation.
-- Evidence-backed corrections to historical claims.
-- Clearly scoped improvements to research infrastructure.
-
-Before proposing a new subsystem, identify which research question it answers and what evidence would establish its usefulness.
-
-Read the [contributor roadmap](docs/ROADMAP.md), repository governance instructions, and relevant experiment protocols before modifying research artifacts.
+| [`docs/research/`](docs/research/) | Primary scientific investigations and experimental findings |
+| [`experiments/`](experiments/) | Bounded experimental implementations, harnesses, and evidence records |
+| [`spec/`](spec/) | Instruction-set specifications and RFC directory |
+| [`docs/governance/`](docs/governance/) | Governance surface registers, authority model, and [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md) |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md) | Contributor roadmap and active research sequencing |
+| [`docs/ai-context/`](docs/ai-context/) | Authoritative continuity documentation and state reviews for AI research collaborators |
+| [`include/t81/`](include/t81/) | Core public C++ headers and contracts |
+| [`vm/`](vm/) | Hosted virtual-machine implementation (T81VM) |
+| [`kernel/axion/`](kernel/axion/) | Axion policy engine and governance kernel |
+| [`fs/`](fs/) | CanonFS content-addressed storage and interchange driver |
+| [`PROJECT_STRUCTURE.md`](PROJECT_STRUCTURE.md) | Comprehensive map of repository directories and layout |
+| [`SUPPORT_TAXONOMY.md`](SUPPORT_TAXONOMY.md) | Taxonomy of support tiers, platform boundaries, and profiles |
 
 ---
 
 ## What T81 does not claim
 
-T81 does not currently claim:
+T81 does not claim:
 
 - Universal superiority of ternary computation over binary computation.
-- Demonstrated superiority of native ternary silicon.
-- A general performance advantage for the integrated T81 architecture.
+- Demonstrated superiority or commercial feasibility of native ternary silicon.
+- A general performance advantage for the integrated T81 architecture over optimized conventional runtimes.
 - A validated adaptive AI optimizer that outperforms strong fixed-policy or algorithm-selection baselines.
 - That historical PDF case-study figures constitute independently reproduced measurements.
 - That ternary model weights inherently accelerate AI inference.
 - That deterministic execution or policy enforcement requires a ternary virtual machine.
-- That an AI-generated experiment is independently validated merely because its tests pass.
+- That an AI-generated experiment is independently validated merely because its local tests pass.
+- That merged harness code or Gate 1 qualification authorizes Phase 2 benchmarking without explicit governance approval.
 
-These boundaries are essential to the research.
-
-They leave room for future discoveries without misrepresenting what has already been established.
+These boundaries are essential to the scientific integrity of the research.
 
 ---
 
