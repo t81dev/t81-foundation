@@ -289,7 +289,7 @@ inline void enforce_oracle_parity(bool condition, const std::string& context) {
   }
 }
 
-// Signed domain bounds checker
+// Signed domain bounds checker: [-2^(B-1), 2^(B-1) - 1]
 inline bool is_in_signed_b_domain(const ExactBigIntOracle& val, size_t B) {
   ExactBigIntOracle lower_bound = ExactBigIntOracle::from_power_of_two(B - 1);
   lower_bound.negative = true;
@@ -298,6 +298,81 @@ inline bool is_in_signed_b_domain(const ExactBigIntOracle& val, size_t B) {
   upper_bound = ExactBigIntOracle::sub(upper_bound, ExactBigIntOracle(1));
 
   return (val >= lower_bound && val <= upper_bound);
+}
+
+// Verify every balanced-ternary digit is in {-1, 0, +1}
+inline bool are_trits_in_canonical_range(std::span<const int8_t> trits) noexcept {
+  if (trits.empty()) return false;
+  for (int8_t t : trits) {
+    if (t < -1 || t > 1) return false;
+  }
+  return true;
+}
+
+// Verify balanced-ternary digit vector is canonical and matches unique oracle expansion
+template <size_t N>
+inline bool are_trits_canonical_for_oracle(std::span<const int8_t> trits,
+                                           const ExactBigIntOracle& expected) {
+  if (trits.size() != N) return false;
+  if (!are_trits_in_canonical_range(trits)) return false;
+  auto canonical = oracle_to_canonical_trits<N>(expected);
+  for (size_t i = 0; i < N; ++i) {
+    if (trits[i] != canonical[i]) return false;
+  }
+  return true;
+}
+
+// Check that an oracle integer fits in num_trits balanced trits with zero high-order residual
+inline bool oracle_fits_in_trits(ExactBigIntOracle val, size_t num_trits) {
+  for (size_t i = 0; i < num_trits; ++i) {
+    auto [next_val, rem] = ExactBigIntOracle::div_rem3_balanced(val);
+    if (rem < -1 || rem > 1) return false;
+    val = next_val;
+  }
+  return val.is_zero();
+}
+
+// Check that an oracle integer magnitude fits in num_limbs 64-bit unsigned words without truncation
+inline bool oracle_fits_in_binary_limbs(const ExactBigIntOracle& val, size_t num_limbs) {
+  ExactBigIntOracle mag = val;
+  mag.negative = false;
+  ExactBigIntOracle limit = ExactBigIntOracle::from_power_of_two(num_limbs * 64);
+  return mag < limit;
+}
+
+// Result-level sign verification for balanced-ternary digit vectors
+inline bool verify_ternary_sign(std::span<const int8_t> trits,
+                                const ExactBigIntOracle& expected) noexcept {
+  if (expected.is_zero() && expected.negative) return false;
+  int8_t msd_sign = 0;
+  for (size_t i = trits.size(); i-- > 0;) {
+    if (trits[i] < -1 || trits[i] > 1) return false;
+    if (trits[i] != 0) {
+      msd_sign = trits[i];
+      break;
+    }
+  }
+  if (expected.is_zero()) {
+    return msd_sign == 0;
+  }
+  return expected.negative ? (msd_sign == -1) : (msd_sign == 1);
+}
+
+// Result-level sign verification for sign-magnitude binary limbs (rejecting -0 and sign flips)
+inline bool verify_binary_sign(std::span<const uint64_t> limbs, bool is_negative,
+                               const ExactBigIntOracle& expected) noexcept {
+  if (expected.is_zero() && expected.negative) return false;
+  bool all_zero = true;
+  for (uint64_t w : limbs) {
+    if (w != 0) {
+      all_zero = false;
+      break;
+    }
+  }
+  if (expected.is_zero()) {
+    return all_zero && !is_negative;
+  }
+  return !all_zero && (is_negative == expected.negative);
 }
 
 }  // namespace scg08
