@@ -99,7 +99,7 @@ static void BM_CellRoundtrip_T81Cell(benchmark::State& state) {
     state.SetItemsProcessed(static_cast<int64_t>(completed_ops));
     state.SetLabel(
         "comparison=not-evaluated; op=cell_roundtrip; semantics=from_int+to_int; "
-        "domain=[-121,121]; seed=0x781; unit=ops/s; timing=real_time; work: ops/iter=" +
+        "domain=[-121,121]; seed=0x781; unit=ops/s; timing=cpu_time; work: ops/iter=" +
         std::to_string(DATA_SIZE));
 }
 BENCHMARK(BM_CellRoundtrip_T81Cell)->Repetitions(5);
@@ -140,7 +140,7 @@ static void BM_RoundtripAccuracy_T81Cell(benchmark::State& state) {
     state.SetItemsProcessed(static_cast<int64_t>(completed_ops));
     state.SetLabel(
         "comparison=semantic-tax; op=cell_roundtrip; semantics=from_int+to_int; "
-        "domain=[-121,121]; seed=0x781; unit=ops/s; timing=real_time; work: ops/iter=" +
+        "domain=[-121,121]; seed=0x781; unit=ops/s; timing=cpu_time; work: ops/iter=" +
         std::to_string(DATA_SIZE));
 }
 BENCHMARK(BM_RoundtripAccuracy_T81Cell)->Repetitions(5);
@@ -159,7 +159,7 @@ static void BM_RoundtripAccuracy_Int64(benchmark::State& state) {
     state.SetItemsProcessed(state.iterations() * DATA_SIZE);
     state.SetLabel(
         "comparison=semantic-tax; op=int64_identity_copy; "
-        "domain=[-121,121]; seed=0x781; unit=ops/s; timing=real_time; work: ops/iter=" +
+        "domain=[-121,121]; seed=0x781; unit=ops/s; timing=cpu_time; work: ops/iter=" +
         std::to_string(DATA_SIZE));
 }
 BENCHMARK(BM_RoundtripAccuracy_Int64)->Repetitions(5);

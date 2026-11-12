@@ -173,6 +173,10 @@ void test_cell_host_oracle_exhaustive() {
 
   // 3. Multiplication oracle:
   // (a) Benchmark safe domain [-10, +10]^2 (441 pairs): 100% in-range and exact.
+  // Operands in [-10, +10] fit in three balanced trits (trits 0..2, 1 + 3 + 9 = 13 >= 10),
+  // whereas products in [-100, +100] can require five trits. Because operands fit in three
+  // trits, shifts in operator* stop at index 2, shifted operands (*this << i) have magnitude
+  // <= 10 * 9 = 90 <= 121, and partial sums remain representable in [-121, +121].
   std::size_t mul_bench_domain_ok = 0;
   for (int64_t a = -10; a <= 10; ++a) {
     const Cell ca = Cell::from_int(a);
@@ -214,7 +218,7 @@ void test_cell_host_oracle_exhaustive() {
     }
   }
   TEST_CHECK(mul_succeeded + mul_true_overflow + mul_intermediate_shift_overflow == 59049);
-  TEST_CHECK(mul_intermediate_shift_overflow > 0);
+  TEST_CHECK(mul_intermediate_shift_overflow == 352);
 
   // 4. Exhaustive division oracle over [-121, +121]^2:
   // 58,806 non-zero divisor pairs match host int64_t truncated division;

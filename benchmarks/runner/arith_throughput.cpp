@@ -149,7 +149,7 @@ static void BM_CellAdd_T81Cell(benchmark::State& state) {
     state.SetItemsProcessed(static_cast<int64_t>(completed_ops));
     state.SetLabel(
         "comparison=not-evaluated; op=cell_add; semantics=5trit_ripple_carry; "
-        "domain=[-10,10]; seed=0x781; unit=ops/s; timing=real_time; work: ops/iter=10000");
+        "domain=[-10,10]; seed=0x781; unit=ops/s; timing=cpu_time; work: ops/iter=10000");
 }
 BENCHMARK(BM_CellAdd_T81Cell)->Repetitions(5);
 
@@ -186,7 +186,7 @@ static void BM_CellSub_T81Cell(benchmark::State& state) {
     state.SetItemsProcessed(static_cast<int64_t>(completed_ops));
     state.SetLabel(
         "comparison=not-evaluated; op=cell_sub; semantics=5trit_negate_and_add; "
-        "domain=[-10,10]; seed=0x781; unit=ops/s; timing=real_time; work: ops/iter=10000");
+        "domain=[-10,10]; seed=0x781; unit=ops/s; timing=cpu_time; work: ops/iter=10000");
 }
 BENCHMARK(BM_CellSub_T81Cell)->Repetitions(5);
 
@@ -223,7 +223,7 @@ static void BM_CellMul_T81Cell(benchmark::State& state) {
     state.SetItemsProcessed(static_cast<int64_t>(completed_ops));
     state.SetLabel(
         "comparison=not-evaluated; op=cell_mul; semantics=5trit_shift_and_add; "
-        "domain=[-10,10]; seed=0x781; unit=ops/s; timing=real_time; work: ops/iter=10000");
+        "domain=[-10,10]; seed=0x781; unit=ops/s; timing=cpu_time; work: ops/iter=10000");
 }
 BENCHMARK(BM_CellMul_T81Cell)->Repetitions(5);
 
@@ -261,7 +261,7 @@ static void BM_CellDiv_T81Cell(benchmark::State& state) {
     state.SetItemsProcessed(static_cast<int64_t>(completed_ops));
     state.SetLabel(
         "comparison=not-evaluated; op=cell_div; semantics=to_int+int64_div+from_int; "
-        "domain=[-10,10]\\{0}; seed=0x781; unit=ops/s; timing=real_time; work: ops/iter=10000");
+        "domain=[-10,10]\\{0}; seed=0x781; unit=ops/s; timing=cpu_time; work: ops/iter=10000");
 }
 BENCHMARK(BM_CellDiv_T81Cell)->Repetitions(5);
 
@@ -311,7 +311,7 @@ static void BM_ArithThroughput_T81Cell(benchmark::State& state) {
     state.SetItemsProcessed(static_cast<int64_t>(completed_ops));
     state.SetLabel(
         "comparison=not-evaluated; op=composite_add_sub_mul_div; "
-        "domain=[-10,10]; seed=0x781; unit=ops/s; timing=real_time; work: ops/iter=40000");
+        "domain=[-10,10]; seed=0x781; unit=ops/s; timing=cpu_time; work: ops/iter=40000");
 }
 BENCHMARK(BM_ArithThroughput_T81Cell)->Repetitions(5);
 
@@ -341,6 +341,6 @@ static void BM_ArithThroughput_Int64(benchmark::State& state) {
     state.SetItemsProcessed(state.iterations() * DATA_SIZE * 4);
     state.SetLabel(
         "comparison=not-evaluated; op=int64_composite_reference; "
-        "domain=[-10,10]; seed=0x781; unit=ops/s; timing=real_time; work: ops/iter=40000");
+        "domain=[-10,10]; seed=0x781; unit=ops/s; timing=cpu_time; work: ops/iter=40000");
 }
 BENCHMARK(BM_ArithThroughput_Int64)->Repetitions(5);

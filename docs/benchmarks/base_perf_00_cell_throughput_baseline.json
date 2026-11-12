@@ -9,7 +9,17 @@
     "branch": "codex/base-perf-00-cell-throughput-baseline",
     "production_cell_header_modified": false
   },
+  "provenance": {
+    "raw_artifact": "docs/benchmarks/base_perf_00_cell_throughput_raw.json",
+    "raw_artifact_preserved_byte_for_byte": true,
+    "raw_artifact_timestamp": "2026-11-12T07:15:14-05:00",
+    "retained_execution_receipt": null,
+    "build_and_environment_assertions": "author-reported (unverified by retained receipt)",
+    "original_source_to_binary_binding": "unverified",
+    "reproduction_vs_authentication": "Fresh builds or reproductions on current source validate only the current working tree on the local host and do not authenticate or retroactively verify the original 2026-11-12T07:15:14-05:00 execution or its source-to-binary binding."
+  },
   "environment_identity": {
+    "assertion_provenance": "author-reported (unverified by retained receipt)",
     "host_name": "MacBook-Air.local",
     "cpu_brand": "Apple M2",
     "architecture": "arm64 (arm64-apple-darwin25.5.0)",
@@ -30,7 +40,8 @@
     "warmup_min_time_seconds": 0.05,
     "benchmark_min_time_seconds": 0.05,
     "repetitions": 5,
-    "timing_basis": "real_time (wall-clock ns per iteration; cpu_time also recorded per repetition; throughput items_per_second computed by Google Benchmark from completed_ops / cpu_time)"
+    "timing_basis": "cpu_time_for_throughput (Google Benchmark items_per_second = completed_ops / cpu_time; UseRealTime() is not enabled); wall-clock batch iteration times (real_time_ns per 10,000-op iteration) are recorded separately; source labels in arith_throughput.cpp and roundtrip_accuracy.cpp corrected from timing=real_time to timing=cpu_time while raw JSON is preserved byte-for-byte",
+    "work_per_iteration_ops": 10000
   },
   "correctness_oracle": {
     "oracle_reference": "Host int64_t exact integer arithmetic and C++ truncated integer division",
@@ -68,7 +79,7 @@
         "full_domain_true_overflow_exceptions": 56144,
         "full_domain_intermediate_shift_overflow_exceptions": 352,
         "silent_corruptions": 0,
-        "note": "Cell::operator* uses 5-trit shift-and-add; for operands outside [-13, +13] where a has non-zero high trits and b has non-zero trits at index >= 1, intermediate (a << i) or partial sum can exceed [-121, +121] and throw std::overflow_error even when |a*b| <= 121. Within the benchmark operand domain [-10, +10]^2, all 441 pairs succeed without overflow."
+        "note": "Cell::operator* uses 5-trit shift-and-add. Operands in [-10, +10] fit in three balanced trits (trits 0..2, 1+3+9=13 >= 10), whereas products in [-100, +100] can require five trits ([-121, +121]). Because operands fit in three trits, shifts stop at index 2, shifted operands (*this << i, i <= 2) have magnitude <= 90 <= 121, and partial sums remain representable in [-121, +121]; exhaustive testing confirms 441/441 pairs. Over the full [-121, +121]^2 domain (59,049 pairs), 352 pairs with |a*b| <= 121 throw std::overflow_error due to intermediate shift or partial-sum overflow."
       },
       "division": {
         "domain": "[-121, +121] x [-121, +121]",
@@ -276,3 +287,4 @@
     "BINARY_COMPARATIVE_ADVANTAGE": "NOT EVALUATED"
   }
 }
+
