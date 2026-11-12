@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
+#include <cstdlib>
 #include <iomanip>
 #include <iostream>
 #include <span>
@@ -279,6 +280,51 @@ struct OracleValidationReport {
            absence_of_truncation;
   }
 };
+
+// Result classification refers to the original signed B-bit operand domain;
+// out-of-domain results are valid when retained exactly in a wider accumulator.
+inline bool is_in_signed_b_domain(const ExactBigIntOracle& val, size_t B);
+
+inline OracleValidationReport validate_result(const ExactBigIntOracle& actual,
+    const ExactBigIntOracle& expected, size_t B, bool reported_overflow,
+    bool canonical, bool represented_negative, bool capacity_sufficient) {
+  OracleValidationReport r;
+  r.numerical_equality = actual == expected;
+  const bool expected_overflow = !is_in_signed_b_domain(expected, B);
+  r.overflow_classification = reported_overflow == expected_overflow &&
+      (!is_in_signed_b_domain(actual, B)) == expected_overflow;
+  r.canonical_digits = canonical;
+  r.sign_handling = represented_negative == expected.negative &&
+      actual.negative == expected.negative;
+  r.absence_of_truncation = capacity_sufficient && r.numerical_equality;
+  return r;
+}
+
+inline OracleValidationReport validate_ternary_result(std::span<const int8_t> digits,
+    const ExactBigIntOracle& expected, size_t B, bool reported_overflow) {
+  bool canonical = true;
+  bool negative = false;
+  for (int8_t d : digits) {
+    canonical = canonical && d >= -1 && d <= 1;
+    if (d != 0) negative = d < 0; // highest nonzero balanced digit defines sign
+  }
+  auto remainder = expected;
+  for (size_t i = 0; i < digits.size(); ++i)
+    remainder = ExactBigIntOracle::div_rem3_balanced(remainder).first;
+  return validate_result(trits_to_oracle(digits), expected, B, reported_overflow,
+                         canonical, negative, remainder.is_zero());
+}
+
+inline OracleValidationReport validate_binary_result(std::span<const uint64_t> limbs,
+    bool negative, const ExactBigIntOracle& expected, size_t B, bool reported_overflow) {
+  auto actual = binary_limbs_to_oracle(limbs, negative);
+  auto magnitude = expected;
+  magnitude.negative = false;
+  const bool fits = magnitude < ExactBigIntOracle::from_power_of_two(limbs.size() * 64);
+  // uint64_t words are canonical digits; sign-magnitude zero must have a positive sign.
+  const bool canonical = !actual.is_zero() || !negative;
+  return validate_result(actual, expected, B, reported_overflow, canonical, negative, fits);
+}
 
 // Fail-closed oracle validator terminating with exact mandatory diagnostic
 inline void enforce_oracle_parity(bool condition, const std::string& context) {

@@ -1,5 +1,3 @@
-#include <sys/wait.h>
-#include <unistd.h>
 #include <cassert>
 #include <cmath>
 #include <cstdint>
@@ -142,36 +140,14 @@ void run_band_verification(size_t bit_width) {
       {val_max, val_max},   {val_min, val_min}, {val_min, val_one}};
 
   for (const auto& [oa, ob] : test_pairs) {
-    OracleValidationReport oracle_rep;
-
-    // Dimension 4: Correct sign handling
-    oracle_rep.sign_handling = true;
-    if (oa.negative && oa > ExactBigIntOracle(0)) oracle_rep.sign_handling = false;
-    if (!oa.negative && oa < ExactBigIntOracle(0)) oracle_rep.sign_handling = false;
-    enforce_oracle_parity(oracle_rep.sign_handling, "Oracle sign representation invalid");
-
-    // Dimension 2: Overflow classification
-    bool a_in_domain = is_in_signed_b_domain(oa, bit_width);
-    bool b_in_domain = is_in_signed_b_domain(ob, bit_width);
-    oracle_rep.overflow_classification = a_in_domain && b_in_domain;
-    enforce_oracle_parity(oracle_rep.overflow_classification,
-                          "Operand overflow classification failed");
-
-    // Convert to Ternary representations
+    enforce_oracle_parity(is_in_signed_b_domain(oa, bit_width) &&
+                          is_in_signed_b_domain(ob, bit_width), "Operand domain");
     auto ta = TernaryMultiLimb<T_In>::from_oracle(oa);
     auto tb = TernaryMultiLimb<T_In>::from_oracle(ob);
-
-    // Dimension 3: Canonical balanced-ternary digits verification
-    auto ta_trits = ta.to_trits();
-    auto tb_trits = tb.to_trits();
-    oracle_rep.canonical_digits = true;
-    for (int8_t t : ta_trits) {
-      if (t < -1 || t > 1) oracle_rep.canonical_digits = false;
-    }
-    for (int8_t t : tb_trits) {
-      if (t < -1 || t > 1) oracle_rep.canonical_digits = false;
-    }
-    enforce_oracle_parity(oracle_rep.canonical_digits, "Ternary operands must be canonical trits");
+    enforce_oracle_parity(validate_ternary_result(ta.to_trits(), oa, bit_width, false).all_passed(),
+                          "Ternary input a");
+    enforce_oracle_parity(validate_ternary_result(tb.to_trits(), ob, bit_width, false).all_passed(),
+                          "Ternary input b");
 
     // Operation Accounting
     OperationAccounting acc_t_add;
@@ -183,13 +159,8 @@ void run_band_verification(size_t bit_width) {
     auto computed_oa_sum = trits_to_oracle(t_sum_trits);
     auto expected_oa_sum = ExactBigIntOracle::add(oa, ob);
 
-    // Dimension 1: Exact numerical equality
-    enforce_oracle_parity(computed_oa_sum == expected_oa_sum,
-                          "Ternary addition numerical equality failed");
-
-    // Dimension 5: Absence of truncation (full precision retained)
-    oracle_rep.absence_of_truncation = (computed_oa_sum == expected_oa_sum);
-    enforce_oracle_parity(oracle_rep.absence_of_truncation, "Ternary addition truncation detected");
+    enforce_oracle_parity(validate_ternary_result(t_sum_trits, expected_oa_sum, bit_width,
+        !is_in_signed_b_domain(computed_oa_sum, bit_width)).all_passed(), "Ternary sum report");
 
     // Execute Ternary Multiplication
     auto t_prod = ArithmeticWorkHarness::mul_ternary<T_In, T_Mul>(ta, tb, acc_t_mul);
@@ -197,23 +168,24 @@ void run_band_verification(size_t bit_width) {
     auto computed_oa_prod = trits_to_oracle(t_prod_trits);
     auto expected_oa_prod = ExactBigIntOracle::mul(oa, ob);
 
-    enforce_oracle_parity(computed_oa_prod == expected_oa_prod,
-                          "Ternary multiplication numerical equality failed");
+    enforce_oracle_parity(validate_ternary_result(t_prod_trits, expected_oa_prod, bit_width,
+        !is_in_signed_b_domain(computed_oa_prod, bit_width)).all_passed(), "Ternary product report");
 
-    // Verify independent binary control execution and oracle equality
-    OperationAccounting acc_b_add;
-    OperationAccounting acc_b_mul;
-
+    OperationAccounting acc_b_add, acc_b_mul;
     auto ba = BinaryMultiLimb<B_In>::from_oracle(oa);
     auto bb = BinaryMultiLimb<B_In>::from_oracle(ob);
-
+    enforce_oracle_parity(validate_binary_result(ba.limbs, ba.is_negative, oa, bit_width,
+        false).all_passed(), "Binary input a");
+    enforce_oracle_parity(validate_binary_result(bb.limbs, bb.is_negative, ob, bit_width,
+        false).all_passed(), "Binary input b");
     auto b_sum = ArithmeticWorkHarness::add_binary<B_In, B_Add>(ba, bb, acc_b_add);
     auto b_prod = ArithmeticWorkHarness::mul_binary<B_In, B_Mul>(ba, bb, acc_b_mul);
-
-    enforce_oracle_parity(b_sum.to_oracle() == expected_oa_sum,
-                          "Binary addition numerical equality failed");
-    enforce_oracle_parity(b_prod.to_oracle() == expected_oa_prod,
-                          "Binary multiplication numerical equality failed");
+    enforce_oracle_parity(validate_binary_result(b_sum.limbs, b_sum.is_negative,
+        expected_oa_sum, bit_width, !is_in_signed_b_domain(b_sum.to_oracle(), bit_width)).all_passed(),
+        "Binary sum report");
+    enforce_oracle_parity(validate_binary_result(b_prod.limbs, b_prod.is_negative,
+        expected_oa_prod, bit_width, !is_in_signed_b_domain(b_prod.to_oracle(), bit_width)).all_passed(),
+        "Binary product report");
 
     // Check operation accounting invariant
     SCG08_REQUIRE(acc_t_add.compute_w_ops() > 0, "W_ops for addition must be non-zero");
@@ -241,6 +213,106 @@ void test_tier2_all_bands() {
   run_band_verification<24, 24, 48, 16, 17, 32>(1024);
 }
 
+// Correctness checks also cover the deterministic accounting fixtures.
+template <size_t I, size_t O>
+auto checked_t_add(const TernaryMultiLimb<I>& a, const TernaryMultiLimb<I>& b,
+                   OperationAccounting& acc) {
+  auto expected = ExactBigIntOracle::add(trits_to_oracle(a.to_trits()), trits_to_oracle(b.to_trits()));
+  auto out = ArithmeticWorkHarness::add_ternary<I, O>(a, b, acc);
+  enforce_oracle_parity(validate_ternary_result(out.to_trits(), expected, 64,
+      !is_in_signed_b_domain(trits_to_oracle(out.to_trits()), 64)).all_passed(), "Count fixture sum");
+  return out;
+}
+template <size_t I, size_t O>
+auto checked_t_mul(const TernaryMultiLimb<I>& a, const TernaryMultiLimb<I>& b,
+                   OperationAccounting& acc) {
+  auto expected = ExactBigIntOracle::mul(trits_to_oracle(a.to_trits()), trits_to_oracle(b.to_trits()));
+  auto out = ArithmeticWorkHarness::mul_ternary<I, O>(a, b, acc);
+  enforce_oracle_parity(validate_ternary_result(out.to_trits(), expected, 64,
+      !is_in_signed_b_domain(trits_to_oracle(out.to_trits()), 64)).all_passed(), "Count fixture product");
+  return out;
+}
+template <bool Multiply, size_t I, size_t O>
+auto checked_binary(const BinaryMultiLimb<I>& a, const BinaryMultiLimb<I>& b,
+                    OperationAccounting& acc) {
+  auto expected = Multiply ? ExactBigIntOracle::mul(a.to_oracle(), b.to_oracle())
+                           : ExactBigIntOracle::add(a.to_oracle(), b.to_oracle());
+  auto out = Multiply ? ArithmeticWorkHarness::mul_binary<I, O>(a, b, acc)
+                      : ArithmeticWorkHarness::add_binary<I, O>(a, b, acc);
+  enforce_oracle_parity(validate_binary_result(out.limbs, out.is_negative, expected, 64,
+      !is_in_signed_b_domain(out.to_oracle(), 64)).all_passed(), "Binary count fixture");
+  return out;
+}
+
+void test_additional_contract_cases() {
+  // L=1 ternary max + 1: one addc, no carry combination, two carry checks.
+  std::array<int8_t, 27> ones;
+  ones.fill(1);
+  auto tmax = TernaryMultiLimb<1>::from_trits(ones);
+  auto tone = TernaryMultiLimb<1>::from_oracle(ExactBigIntOracle(1));
+  OperationAccounting t;
+  checked_t_add<1, 2>(tmax, tone, t);
+  SCG08_REQUIRE(t.op_alu_add_sub == 1 && t.op_table_lookup == 38 &&
+                t.op_branch_cond == 2 && t.compute_w_ops() == 41, "Ternary extension is a copy");
+
+  // Binary 2^64-1 + 1: two adds, sign decision + carry select + predicate,
+  // two result scan predicates + final zero decision; extension is a copy.
+  BinaryMultiLimb<1> bmax, bone;
+  bmax.limbs[0] = UINT64_MAX;
+  bone.limbs[0] = 1;
+  OperationAccounting b;
+  checked_binary<false, 1, 2>(bmax, bone, b);
+  SCG08_REQUIRE(b.op_alu_add_sub == 2 && b.op_branch_cond == 6, "Binary extension counts");
+
+  // Equal opposite magnitudes: sign, equal-limb, c==0, two scans, zero decision.
+  bone.is_negative = true;
+  auto positive = BinaryMultiLimb<1>::from_oracle(ExactBigIntOracle(1));
+  OperationAccounting equal;
+  checked_binary<false, 1, 2>(positive, bone, equal);
+  SCG08_REQUIRE(equal.op_alu_add_sub == 0 && equal.op_branch_cond == 6, "Cancellation counts");
+
+  // 2^64 - 1 via opposite signs: borrow traverses two limbs.
+  // 1 sign + 2 magnitude + 1 c==0 + 2 selections + 2*4 borrow decisions
+  // + 1 result scan + 1 zero decision = 16; two arithmetic events per limb.
+  BinaryMultiLimb<2> large, minus_one;
+  large.limbs[1] = 1;
+  minus_one.limbs[0] = 1;
+  minus_one.is_negative = true;
+  OperationAccounting sub;
+  checked_binary<false, 2, 3>(large, minus_one, sub);
+  SCG08_REQUIRE(sub.op_alu_add_sub == 4 && sub.op_branch_cond == 16, "Borrow counts");
+
+  // Borrow overflow skips the second comparison in the middle limb:
+  // 6 fixed decisions + (4+3+4) borrow decisions + 2 scan decisions = 19.
+  BinaryMultiLimb<3> power, negative_max;
+  power.limbs[2] = 1;
+  negative_max.limbs[0] = UINT64_MAX;
+  negative_max.limbs[1] = UINT64_MAX;
+  negative_max.is_negative = true;
+  OperationAccounting overflow_borrow;
+  checked_binary<false, 3, 4>(power, negative_max, overflow_borrow);
+  SCG08_REQUIRE(overflow_borrow.op_alu_add_sub == 6 && overflow_borrow.op_branch_cond == 19,
+                "Short-circuited borrow counts");
+
+  // Full-word helper edge has four products and four additions, independent of values.
+  OperationAccounting helper;
+  uint64_t hi, lo;
+  mul64(UINT64_MAX, UINT64_MAX, hi, lo, helper);
+  SCG08_REQUIRE(hi == UINT64_MAX - 1 && lo == 1 && helper.op_alu_mul == 4 &&
+                helper.op_alu_add_sub == 4 && helper.compute_w_ops() == 16, "mul64 derivation");
+
+  auto report = validate_ternary_result(std::array<int8_t, 2>{1, 2}, ExactBigIntOracle(1), 64, false);
+  SCG08_REQUIRE(report.numerical_equality && !report.canonical_digits && !report.all_passed(),
+                "Malformed digit must fail even when permissive decoder matches");
+  report = validate_ternary_result(std::array<int8_t, 2>{-1, 1}, ExactBigIntOracle(2), 2, true);
+  SCG08_REQUIRE(report.all_passed(), "Out-of-domain result retained in wider accumulator");
+  report = validate_ternary_result(std::array<int8_t, 2>{-1, 1}, ExactBigIntOracle(2), 2, false);
+  SCG08_REQUIRE(!report.overflow_classification && !report.all_passed(), "Wrong overflow label");
+  report = validate_binary_result(std::array<uint64_t, 1>{0}, false,
+      ExactBigIntOracle::from_power_of_two(64), 64, true);
+  SCG08_REQUIRE(!report.absence_of_truncation && !report.all_passed(), "Binary capacity rejection");
+}
+
 // ============================================================================
 // Test 4: Deterministic Exact-Count Assertions (Zero, Sparse, Dense, Carry-Propagating)
 // ============================================================================
@@ -254,10 +326,10 @@ void test_deterministic_exact_counts() {
   auto b_zero = BinaryMultiLimb<1>::from_oracle(v_zero);
 
   OperationAccounting acc_t_add_0, acc_t_mul_0, acc_b_add_0, acc_b_mul_0;
-  ArithmeticWorkHarness::add_ternary<2, 2>(t_zero, t_zero, acc_t_add_0);
-  ArithmeticWorkHarness::mul_ternary<2, 3>(t_zero, t_zero, acc_t_mul_0);
-  ArithmeticWorkHarness::add_binary<1, 2>(b_zero, b_zero, acc_b_add_0);
-  ArithmeticWorkHarness::mul_binary<1, 2>(b_zero, b_zero, acc_b_mul_0);
+  checked_t_add<2, 2>(t_zero, t_zero, acc_t_add_0);
+  checked_t_mul<2, 3>(t_zero, t_zero, acc_t_mul_0);
+  checked_binary<false, 1, 2>(b_zero, b_zero, acc_b_add_0);
+  checked_binary<true, 1, 2>(b_zero, b_zero, acc_b_mul_0);
 
   // Ternary Zero Add: 2 limb iterations, each addc() performs 38 lookups, 0 carry-ins, 2 branch
   // checks
@@ -267,23 +339,25 @@ void test_deterministic_exact_counts() {
   SCG08_REQUIRE(acc_t_add_0.op_branch_cond == 2, "Ternary zero add branch evaluation mismatch");
   SCG08_REQUIRE(acc_t_add_0.compute_w_ops() == 80, "Ternary zero add W_ops mismatch");
 
-  // Binary Zero Add: 1 limb addition + 1 accumulator zeroing, 2 branch checks
+  // Binary zero add: 2 arithmetic events; 3 kernel decisions + 3 zero-scan decisions.
   SCG08_REQUIRE(acc_b_add_0.op_alu_add_sub == 2, "Binary zero add ALU count mismatch");
-  SCG08_REQUIRE(acc_b_add_0.op_branch_cond == 2, "Binary zero add branch count mismatch");
-  SCG08_REQUIRE(acc_b_add_0.compute_w_ops() == 4, "Binary zero add W_ops mismatch");
+  SCG08_REQUIRE(acc_b_add_0.op_branch_cond == 6, "Binary zero add branch count mismatch");
+  SCG08_REQUIRE(acc_b_add_0.compute_w_ops() == 8, "Binary zero add W_ops mismatch");
 
   // Ternary Zero Mul: 54 outer loop ai==0 checks, 0 inner multiplies, 1 norm pass
   SCG08_REQUIRE(acc_t_mul_0.op_alu_mul == 0, "Ternary zero mul ALU mul mismatch");
   SCG08_REQUIRE(acc_t_mul_0.op_branch_cond == 54, "Ternary zero mul branch evaluation mismatch");
   SCG08_REQUIRE(acc_t_mul_0.op_norm_pass == 1, "Ternary zero mul norm pass mismatch");
+  SCG08_REQUIRE(acc_t_mul_0.norm_alu_add_sub == 4 * 81 &&
+                acc_t_mul_0.norm_branch_cond == 81, "Zero normalization diagnostic derivation");
   SCG08_REQUIRE(acc_t_mul_0.compute_w_ops() == 55, "Ternary zero mul W_ops mismatch");
 
-  // Binary Zero Mul: 1 outer limb ai==0 check, 2 zero-detection limb checks, 1 all_zero check, 0
+  // Binary Zero Mul: 1 sign comparison, 1 outer check, 2 zero scans, 1 all_zero, 0
   // multiplies
   SCG08_REQUIRE(acc_b_mul_0.op_alu_mul == 0, "Binary zero mul ALU mul mismatch");
-  SCG08_REQUIRE(acc_b_mul_0.op_branch_cond == 4,
-                "Binary zero mul branch count mismatch (1 outer + 2 zero-detect + 1 all_zero)");
-  SCG08_REQUIRE(acc_b_mul_0.compute_w_ops() == 4, "Binary zero mul W_ops mismatch");
+  SCG08_REQUIRE(acc_b_mul_0.op_branch_cond == 5,
+                "Binary zero mul branch count mismatch (1 sign + 1 outer + 2 zero-detect + 1 all_zero)");
+  SCG08_REQUIRE(acc_b_mul_0.compute_w_ops() == 5, "Binary zero mul W_ops mismatch");
 
   // Case B: Sparse Operands (1 + 0, 1 * 1)
   ExactBigIntOracle v_one(1);
@@ -291,14 +365,14 @@ void test_deterministic_exact_counts() {
   auto b_one = BinaryMultiLimb<1>::from_oracle(v_one);
 
   OperationAccounting acc_t_add_sp, acc_t_mul_sp, acc_b_add_sp, acc_b_mul_sp;
-  ArithmeticWorkHarness::add_ternary<2, 2>(t_one, t_zero, acc_t_add_sp);
-  ArithmeticWorkHarness::mul_ternary<2, 3>(t_one, t_one, acc_t_mul_sp);
-  ArithmeticWorkHarness::add_binary<1, 2>(b_one, b_zero, acc_b_add_sp);
-  ArithmeticWorkHarness::mul_binary<1, 2>(b_one, b_one, acc_b_mul_sp);
+  checked_t_add<2, 2>(t_one, t_zero, acc_t_add_sp);
+  checked_t_mul<2, 3>(t_one, t_one, acc_t_mul_sp);
+  checked_binary<false, 1, 2>(b_one, b_zero, acc_b_add_sp);
+  checked_binary<true, 1, 2>(b_one, b_one, acc_b_mul_sp);
 
   SCG08_REQUIRE(acc_t_add_sp.op_table_lookup == 76, "Ternary sparse add table lookup mismatch");
   SCG08_REQUIRE(acc_t_add_sp.compute_w_ops() == 80, "Ternary sparse add W_ops mismatch");
-  SCG08_REQUIRE(acc_b_add_sp.compute_w_ops() == 4, "Binary sparse add W_ops mismatch");
+  SCG08_REQUIRE(acc_b_add_sp.compute_w_ops() == 7, "Binary sparse add W_ops mismatch");
 
   // Ternary Sparse Mul (1 * 1): single non-zero trit in a and b
   SCG08_REQUIRE(acc_t_mul_sp.op_alu_mul == 1, "Ternary sparse mul ALU mul mismatch");
@@ -306,15 +380,15 @@ void test_deterministic_exact_counts() {
   SCG08_REQUIRE(acc_t_mul_sp.op_branch_cond == 109, "Ternary sparse mul branch count mismatch");
   SCG08_REQUIRE(acc_t_mul_sp.compute_w_ops() == 114, "Ternary sparse mul W_ops mismatch");
 
-  // Binary Sparse Mul (1 * 1): 4 primitive mul64 muls (4 * 3 = 12), 3 mul64 adds + 4 accumulator
-  // adds + 1 carry loop add (8 total), 7 branches
+  // Binary Sparse Mul (1 * 1): 4 primitive mul64 muls (4 * 3 = 12), 4 mul64 adds + 4 accumulator
+  // adds + 0 carry loop adds (8 total), 8 predicates including sign
   SCG08_REQUIRE(acc_b_mul_sp.op_alu_mul == 4,
                 "Binary sparse mul ALU mul mismatch (4 primitive 32x32 muls)");
   SCG08_REQUIRE(acc_b_mul_sp.op_alu_add_sub == 8,
-                "Binary sparse mul ALU add mismatch (3 in mul64 + 4 accumulator + 1 carry loop)");
-  SCG08_REQUIRE(acc_b_mul_sp.op_branch_cond == 7, "Binary sparse mul branch count mismatch");
-  SCG08_REQUIRE(acc_b_mul_sp.compute_w_ops() == 27,
-                "Binary sparse mul W_ops mismatch (8 add + 3*4 mul + 7 branch)");
+                "Binary sparse mul ALU add mismatch (4 in mul64 + 4 accumulator + 0 carry loop)");
+  SCG08_REQUIRE(acc_b_mul_sp.op_branch_cond == 8, "Binary sparse mul branch count mismatch");
+  SCG08_REQUIRE(acc_b_mul_sp.compute_w_ops() == 28,
+                "Binary sparse mul W_ops mismatch (8 add + 3*4 mul + 8 branch)");
 
   // Case C: Dense Operands (val_max + val_max, val_max * val_max)
   ExactBigIntOracle v_max = ExactBigIntOracle::from_power_of_two(63);
@@ -323,20 +397,20 @@ void test_deterministic_exact_counts() {
   auto b_max = BinaryMultiLimb<1>::from_oracle(v_max);
 
   OperationAccounting acc_t_add_dense, acc_t_mul_dense, acc_b_add_dense, acc_b_mul_dense;
-  ArithmeticWorkHarness::add_ternary<2, 2>(t_max, t_max, acc_t_add_dense);
-  ArithmeticWorkHarness::mul_ternary<2, 3>(t_max, t_max, acc_t_mul_dense);
-  ArithmeticWorkHarness::add_binary<1, 2>(b_max, b_max, acc_b_add_dense);
-  ArithmeticWorkHarness::mul_binary<1, 2>(b_max, b_max, acc_b_mul_dense);
+  checked_t_add<2, 2>(t_max, t_max, acc_t_add_dense);
+  checked_t_mul<2, 3>(t_max, t_max, acc_t_mul_dense);
+  checked_binary<false, 1, 2>(b_max, b_max, acc_b_add_dense);
+  checked_binary<true, 1, 2>(b_max, b_max, acc_b_mul_dense);
 
   SCG08_REQUIRE(acc_t_add_dense.compute_w_ops() == 80, "Ternary dense add W_ops mismatch");
-  SCG08_REQUIRE(acc_b_add_dense.compute_w_ops() == 4, "Binary dense add W_ops mismatch");
+  SCG08_REQUIRE(acc_b_add_dense.compute_w_ops() == 7, "Binary dense add W_ops mismatch");
   SCG08_REQUIRE(acc_t_mul_dense.op_alu_mul == 841, "Ternary dense mul ALU mul mismatch");
   SCG08_REQUIRE(acc_t_mul_dense.compute_w_ops() == 5826, "Ternary dense mul W_ops mismatch");
   SCG08_REQUIRE(acc_b_mul_dense.op_alu_mul == 4, "Binary dense mul ALU mul mismatch");
   SCG08_REQUIRE(acc_b_mul_dense.op_alu_add_sub == 9, "Binary dense mul ALU add mismatch");
-  SCG08_REQUIRE(acc_b_mul_dense.op_branch_cond == 8, "Binary dense mul branch count mismatch");
-  SCG08_REQUIRE(acc_b_mul_dense.compute_w_ops() == 29,
-                "Binary dense mul W_ops mismatch (9 add + 3*4 mul + 8 branch)");
+  SCG08_REQUIRE(acc_b_mul_dense.op_branch_cond == 9, "Binary dense mul branch count mismatch");
+  SCG08_REQUIRE(acc_b_mul_dense.compute_w_ops() == 30,
+                "Binary dense mul W_ops mismatch (9 add + 3*4 mul + 9 branch)");
 
   // Case D: Carry-Propagating Operands
   // In balanced ternary, limb 0 max is 27 trits of 1. Adding 1 generates a carry-out.
@@ -347,13 +421,13 @@ void test_deterministic_exact_counts() {
   auto t_cprop_b = t_one;
 
   OperationAccounting acc_t_add_cprop;
-  ArithmeticWorkHarness::add_ternary<2, 2>(t_cprop_a, t_cprop_b, acc_t_add_cprop);
+  checked_t_add<2, 2>(t_cprop_a, t_cprop_b, acc_t_add_cprop);
 
-  SCG08_REQUIRE(acc_t_add_cprop.op_alu_add_sub == 3, "Ternary carry-prop add ALU count mismatch");
+  SCG08_REQUIRE(acc_t_add_cprop.op_alu_add_sub == 4, "Ternary carry-prop add ALU count mismatch");
   SCG08_REQUIRE(acc_t_add_cprop.op_table_lookup == 114,
                 "Ternary carry-prop table lookup mismatch (3 * 38)");
   SCG08_REQUIRE(acc_t_add_cprop.op_branch_cond == 2, "Ternary carry-prop branch count mismatch");
-  SCG08_REQUIRE(acc_t_add_cprop.compute_w_ops() == 119, "Ternary carry-prop W_ops mismatch");
+  SCG08_REQUIRE(acc_t_add_cprop.compute_w_ops() == 120, "Ternary carry-prop W_ops mismatch");
 
   // In binary, B=128: limb 0 = 0xFFFFFFFFFFFFFFFF, adding 1 propagates carry to limb 1
   BinaryMultiLimb<2> b_cprop_a;
@@ -364,11 +438,11 @@ void test_deterministic_exact_counts() {
   b_cprop_b.limbs[1] = 0;
 
   OperationAccounting acc_b_add_cprop;
-  ArithmeticWorkHarness::add_binary<2, 3>(b_cprop_a, b_cprop_b, acc_b_add_cprop);
+  checked_binary<false, 2, 3>(b_cprop_a, b_cprop_b, acc_b_add_cprop);
 
-  SCG08_REQUIRE(acc_b_add_cprop.op_alu_add_sub == 3, "Binary carry-prop add ALU count mismatch");
-  SCG08_REQUIRE(acc_b_add_cprop.op_branch_cond == 3, "Binary carry-prop branch count mismatch");
-  SCG08_REQUIRE(acc_b_add_cprop.compute_w_ops() == 6, "Binary carry-prop W_ops mismatch");
+  SCG08_REQUIRE(acc_b_add_cprop.op_alu_add_sub == 4, "Binary carry-prop add ALU count mismatch");
+  SCG08_REQUIRE(acc_b_add_cprop.op_branch_cond == 8, "Binary carry-prop branch count mismatch");
+  SCG08_REQUIRE(acc_b_add_cprop.compute_w_ops() == 12, "Binary carry-prop W_ops mismatch");
 
   std::cout << "  Deterministic exact-count verifications passed.\n";
 }
@@ -433,39 +507,40 @@ void test_deterministic_replay() {
 // ============================================================================
 // Test 7: Fail-Closed Negative Tests for Oracle Mismatch and Budget Exceeded
 // ============================================================================
-void test_fail_closed_negative_cases() {
-  std::cout << "[SCG-08 GATE 1] Running negative tests: deliberate oracle mismatch "
-               "and budget violation fail closed...\n";
-
-  pid_t pid1 = fork();
-  SCG08_REQUIRE(pid1 >= 0, "Fork failed for oracle mismatch negative test");
-  if (pid1 == 0) {
-    enforce_oracle_parity(false, "Deliberate negative test mismatch");
-    std::exit(0);
-  }
-  int status1 = 0;
-  waitpid(pid1, &status1, 0);
-  SCG08_REQUIRE(WIFEXITED(status1) && WEXITSTATUS(status1) == 1,
-                "Deliberate oracle mismatch must exit fail-closed with code 1");
-
-  pid_t pid2 = fork();
-  SCG08_REQUIRE(pid2 >= 0, "Fork failed for trial budget negative test");
-  if (pid2 == 0) {
+// Each command-line mutation is run in a fresh process by the bounded Python driver.
+void run_negative_case(const std::string& kind) {
+  if (kind == "budget") {
     TrialBudgetEnforcer::instance().reset_for_test(1000);
     TrialBudgetEnforcer::instance().record_trial();
-    std::exit(0);
+    return;
   }
-  int status2 = 0;
-  waitpid(pid2, &status2, 0);
-  SCG08_REQUIRE(WIFEXITED(status2) && WEXITSTATUS(status2) == 1,
-                "Cumulative trial budget exceeded must exit fail-closed with code 1");
-
-  std::cout << "  Negative tests passed: both oracle mismatch and budget overflow fail closed.\n";
+  const ExactBigIntOracle expected(1);
+  std::array<int8_t, 2> digits{1, 0};
+  OracleValidationReport r;
+  if (kind == "value") digits[0] = 0;
+  if (kind == "digits") digits = {1, 2};
+  if (kind == "sign") digits[0] = -1;
+  if (kind == "truncation") {
+    r = validate_ternary_result(digits, ExactBigIntOracle(10), 64, false);
+  } else if (kind == "binary-zero") {
+    std::array<uint64_t, 1> zero{0};
+    r = validate_binary_result(zero, true, ExactBigIntOracle(0), 64, false);
+  } else if (kind == "binary-value") {
+    std::array<uint64_t, 1> zero{0};
+    r = validate_binary_result(zero, false, expected, 64, false);
+  } else {
+    r = validate_ternary_result(digits, expected, 64, kind == "overflow");
+  }
+  enforce_oracle_parity(r.all_passed(), "Deliberately corrupted " + kind + " result report");
 }
 
 }  // namespace scg08
 
-int main() {
+int main(int argc, char** argv) {
+  if (argc == 3 && std::string(argv[1]) == "--negative") {
+    scg08::run_negative_case(argv[2]);
+    return 0;
+  }
   std::cout << "==============================================================="
                "======\n";
   std::cout << " SCG-08 Phase 1 Gate 1: Carry Propagation & Arithmetic Work "
@@ -481,19 +556,20 @@ int main() {
   scg08::test_tier1_markov_dynamics();
   scg08::test_tier2_all_bands();
   scg08::test_deterministic_exact_counts();
+  scg08::test_additional_contract_cases();
   scg08::test_operation_accounting_formula();
   scg08::test_deterministic_replay();
-  scg08::test_fail_closed_negative_cases();
   scg08::test_trial_budget_enforcement();
 
   std::cout << "==============================================================="
                "======\n";
   std::cout << " [GATE 1 RESULT] ALL SMOKE-TESTS AND VERIFICATIONS PASSED      "
                "     \n";
+  std::cout << " Accounting: correction-v2; formal Gate 1 acceptance: WITHHELD\n";
   std::cout << " Cumulative Trials: "
             << scg08::TrialBudgetEnforcer::instance().get_cumulative_trials() << " / "
             << scg08::TrialBudgetEnforcer::GATE1_MAX_CUMULATIVE_TRIALS << " (Budget Respected)\n";
-  std::cout << " Gate 2 Status: STRICTLY WITHHELD                               "
+  std::cout << " Gate 2 Status: STRICT NO-GO                               "
                "     \n";
   std::cout << "==============================================================="
                "======\n";

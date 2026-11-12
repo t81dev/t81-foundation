@@ -1,3 +1,11 @@
+> **Correction notice (2026-11-11):** The historical accounting and five-dimension
+> enforcement claims below are superseded prospectively by
+> [CONTRACT_CORRECTIONS.md](CONTRACT_CORRECTIONS.md). In particular `mul64` has
+> four helper additions, baseline `all_passed()` was unused, normalization
+> diagnostics are partial, and memory counters describe logical limb transfers.
+> Historical observations, provenance and trial counts below are preserved.
+> Formal Gate 1 acceptance remains WITHHELD; Gate 2 remains STRICT NO-GO.
+
 # SCG-08 Phase 1 Gate 1 Implementation Report
 
 **Document ID:** `T81-SCG-08-GATE1-REPORT-001`

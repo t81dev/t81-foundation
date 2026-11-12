@@ -17,6 +17,8 @@ namespace scg08 {
 // ============================================================================
 // Tier 2: Arithmetic Work and Operation Instrumentation
 //
+// Accounting revision: RFC-00E1 correction v2 (historical observations unchanged).
+// Selected kernel events only; see RFC section 3 for exclusions.
 // Frozen Weighted Metric:
 // W_ops = OP_ALU_ADD_SUB + 3*OP_ALU_MUL + OP_TABLE_LOOKUP + OP_BRANCH_COND +
 // OP_NORM_PASS
@@ -284,6 +286,7 @@ public:
         acc.op_table_lookup += 38;
         res.limbs[i] = sum_c;
         carry_in = c1 + c2;
+        acc.op_alu_add_sub++; // scalar carry combination, separate from addc
       } else {
         res.limbs[i] = sum_ab;
         carry_in = c1;
@@ -297,8 +300,7 @@ public:
         c_buf[0] = carry_in;
         auto c_limb = t81::core::T81Limb27::from_trits_window(c_buf, 0);
         res.limbs[i] = c_limb;
-        carry_in = 0;
-        acc.op_alu_add_sub++;
+        carry_in = 0; // representation copy, no arithmetic event
       } else {
         res.limbs[i] = t81::core::T81Limb27{};
       }
@@ -393,6 +395,7 @@ public:
         uint64_t sum = a.limbs[i] + b.limbs[i] + carry;
         acc.op_branch_cond++;  // Condition evaluation: carry != 0
         uint64_t new_carry = 0;
+        acc.op_branch_cond++; // selected <= or < carry predicate
         if (carry != 0) {
           new_carry = (sum <= a.limbs[i]) ? 1 : 0;
         } else {
@@ -400,12 +403,11 @@ public:
         }
         res.limbs[i] = sum;
         carry = new_carry;
-        acc.op_alu_add_sub++;
+        acc.op_alu_add_sub += 2; // a + b, then + carry
       }
       for (size_t i = InLimbs; i < OutLimbs; ++i) {
         res.limbs[i] = carry;
-        carry = 0;
-        acc.op_alu_add_sub++;
+        carry = 0; // copy into extension limb, no arithmetic event
       }
     } else {
       int c = cmp_binary_limbs(a.limbs, b.limbs, acc);
@@ -415,6 +417,7 @@ public:
       } else {
         acc.op_branch_cond++;  // Condition evaluation: c > 0
         const auto& larger = (c > 0) ? a : b;
+        acc.op_branch_cond++; // second c > 0 selection
         const auto& smaller = (c > 0) ? b : a;
         res.is_negative = larger.is_negative;
         uint64_t borrow = 0;
@@ -423,12 +426,14 @@ public:
           acc.op_alu_add_sub++;  // sub = smaller.limbs[i] + borrow
           acc.op_branch_cond++;  // Condition evaluation: smaller.limbs[i] + borrow <
                                  // smaller.limbs[i]
-          bool b1 = (smaller.limbs[i] + borrow < smaller.limbs[i]);
+          bool b1 = (sub < smaller.limbs[i]); // reuse the already computed sum
           bool b2 = false;
+          acc.op_branch_cond++; // !b1 decision
           if (!b1) {
             acc.op_branch_cond++;  // Short-circuit condition evaluation: larger.limbs[i] < sub
             b2 = (larger.limbs[i] < sub);
           }
+          acc.op_branch_cond++; // combined borrow decision
           uint64_t new_borrow = (b1 || b2) ? 1 : 0;
           res.limbs[i] = larger.limbs[i] - sub;
           borrow = new_borrow;
@@ -439,6 +444,14 @@ public:
         }
       }
     }
+
+    bool all_zero = true;
+    for (size_t i = 0; i < OutLimbs; ++i) {
+      acc.op_branch_cond++;
+      if (res.limbs[i] != 0) { all_zero = false; break; }
+    }
+    acc.op_branch_cond++;
+    if (all_zero) res.is_negative = false;
 
     acc.mem_stores += OutLimbs;
     acc.bytes_written += OutLimbs * sizeof(uint64_t);
@@ -458,6 +471,7 @@ public:
 
     BinaryMultiLimb<OutLimbs> res;
     res.is_negative = (a.is_negative != b.is_negative);
+    acc.op_branch_cond++; // sign comparison
 
     acc.diagnostic_convolution_ops++;
 

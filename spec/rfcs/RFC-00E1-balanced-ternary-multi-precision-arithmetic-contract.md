@@ -59,34 +59,76 @@ Notice that for $B=512$, $512 \log_3(2) \approx 323.036 \implies T_{\text{signed
 
 ## 3. Weighted Operation Metric ($W_{\text{ops}}$) & Accounting Invariants
 
-To avoid biasing algorithmic comparisons, both ternary and binary implementations SHALL account for primitive computational steps under the frozen weighted metric:
+Accounting revision **correction-v2** defines selected algorithmic kernel events:
 $$W_{\text{ops}} = \text{OP}_{\text{ALU\_ADD\_SUB}} + 3 \cdot \text{OP}_{\text{ALU\_MUL}} + \text{OP}_{\text{TABLE\_LOOKUP}} + \text{OP}_{\text{BRANCH\_COND}} + \text{OP}_{\text{NORM\_PASS}}$$
 
-### 3.1 Ternary Arithmetic Accounting Rules
-1. **Limb Addition (`add_ternary`):**
-   - Each call to `T81Limb27::addc()` performs table-driven addition across 9 trytes. As verified against `include/t81/types/T81Limb.hpp`, each invocation SHALL account for exactly **38 table lookups**:
-     - 9 lookups in `detail::ADD_TABLE`
-     - 20 lookups in `detail::COMPOSITION_TABLE` ($8 + 7 + 5$)
-     - 9 lookups in `detail::CARRY_FROM_ZERO` ($8 + 1$)
-   - Primary limb addition increments `op_alu_add_sub` by 1 and `op_table_lookup` by 38.
-   - If incoming carry is non-zero, a second `addc()` invocation absorbs the carry, incrementing `op_alu_add_sub` by 1 and `op_table_lookup` by 38.
-   - Every carry check evaluates `op_branch_cond`.
-2. **Limb Multiplication (`mul_ternary`):**
-   - Convolutive outer and inner loops evaluate trits $a_i$ and $b_j$.
-   - Conditional zero-checks `ai == 0` and `bj == 0` increment `op_branch_cond` on **every evaluation** regardless of branch outcome.
-   - Active products (`ai != 0 && bj != 0`) increment `op_alu_mul` by 1 and `op_alu_add_sub` by 1.
-   - Each multiplication pass executes a normalization pass, incrementing `op_norm_pass` by 1.
-   - Primitive normalization operations (`norm_alu_add_sub`, `norm_branch_cond`) SHALL be tracked as non-aggregating diagnostic counters and MUST NOT alter $W_{\text{ops}}$.
+The formula is retained. Multiplication weight **3 is a stipulated modeling
+choice**, not an empirically established universal relative cost. This mixed
+abstraction metric is **not unbiased total computational work**, instruction
+count, timing, energy, or a native hardware measurement. It does not supersede
+H02 timing or the separate elementary operations-per-bit model. Corrected counters
+must be labeled correction-v2; historical observations must not be recomputed or
+silently interpreted under these definitions.
 
-### 3.2 Binary Arithmetic Accounting Rules
-1. **Primitive Multiplier (`mul64`):**
-   - 64x64-bit multiplication decomposed into 32-bit halves SHALL account for 4 primitive multiplications (`u0*v0`, `u1*v0`, `u0*v1`, `u1*v1`) into `op_alu_mul` and 3 intermediate 64-bit additions into `op_alu_add_sub`.
-2. **Multi-Precision Multiplication (`mul_binary`):**
-   - Accumulator additions in the caller loop (`sum1 = cur + lo`, `sum2 = sum1 + carry`, `carry = hi + c1`, `carry += c2`) SHALL account for 4 additions per inner step into `op_alu_add_sub` (totaling 7 additions per inner product).
-   - Condition checks across limb zero-detection, carry predicates, carry propagation, result scanning, and sign normalization SHALL increment `op_branch_cond` on every evaluation.
-3. **Multi-Precision Addition/Subtraction (`add_binary`):**
-   - Same-sign additions account for limb additions and carry predicates.
-   - Opposite-sign subtractions account for magnitude comparisons (`cmp_binary_limbs`) and borrow propagation additions.
+### 3.1 Event definitions and boundaries
+
+| Event | Included boundary | Excluded work |
+| --- | --- | --- |
+| `op_alu_add_sub` | One ternary `addc` macro invocation; each scalar carry combination `c1+c2`; binary value additions/subtractions in `add_binary`, `mul64`, and multiplication accumulation; one multiply-accumulate addition per active ternary trit product | Internals of `addc`, conversions, normalization internals, index/address arithmetic, loop increments, assignments and copies |
+| `op_alu_mul` | Each active ternary trit product; each of four binary 32x32 products in `mul64` | Products within decoding/repacking, `addc` internals, oracle and setup arithmetic |
+| `op_table_lookup` | Only accesses to the three named tables in `T81Limb27::addc` | Local array indexing, `e.sum_value`, `e.cout`, `sum_vals[i][carries[i]+1]`, conversion tables, cache effects |
+| `op_branch_cond` | Explicit arithmetic decisions/predicates in the four harness kernels and magnitude comparator, including selected ternary carry tests, sign comparisons, carry comparisons, borrow decisions and result-zero scans | Loop control, indexing/padding selection in the comparator, boolean short-circuit plumbing, library/conversion/internal-`addc` conditions, trial and validation checks; normalization predicates are diagnostic |
+| `op_norm_pass` | One pass per ternary multiplication | Its internal operations are not added again to W_ops |
+| `diagnostic_convolution_ops`, `diagnostic_reduction_ops` | One algorithmic pass each | Not per scalar product and never added to W_ops |
+| `norm_alu_add_sub`, `norm_branch_cond` | Four scalar additions/subtractions per normalized trit, one extra when the remainder is negative; one remainder-sign comparison per trit | Modulo/division, loop/index arithmetic and memory; other `norm_*` fields are unused placeholders, not complete cost visibility |
+| `mem_loads`, `mem_stores`, byte totals | Logical input/output limb transfers once per invocation | Sign metadata, initialization, repeated accesses, temporary arrays, allocations, internal helper/conversion traffic, caches; these are not measured host traffic |
+
+Binary borrow decisions are: `sub < smaller`, `!b1`, conditional `larger < sub`,
+and the combined `b1 || b2` selection. The selected comparison is counted once;
+boolean operands are not additional comparisons. Both `c > 0` operand selections
+are counted. Same-sign carry counts the carry selector and its selected `<` or
+`<=` predicate. Result-zero scans count each visited limb and the final decision.
+
+**Conversion boundary (both controls):** oracle operand preparation and validation
+are outside W_ops. Ternary `to_trits()` currently constructs a unit limb, multiplies
+each packed limb by that unit using `T81Limb27::operator*`, then decodes the 54-trit
+result and copies 27 trits. All that arithmetic, normalization and allocation is
+excluded. `from_trits_window()` (tryte encoding), carry-limb construction,
+`from_trits()` buffers and output repacking are also excluded, even when called
+inside a harness kernel. Only the explicit convolution on the decoded arrays and
+one normalization-pass event are included for ternary multiplication. These costs
+are **unmeasured and unverified as total costs**, not zero. The boundary is an
+explicit model limitation; it cannot justify end-to-end comparative advantage.
+
+### 3.2 Ternary addition and multiplication
+
+Each `addc` invokes exactly **38 named-table lookups**: 9 `ADD_TABLE`,
+8+7+5 `COMPOSITION_TABLE`, and 8+1 `CARRY_FROM_ZERO`. Internal arithmetic and
+local array accesses are excluded as specified above. A nonzero incoming carry
+executes a second `addc` (one macro event and 38 lookups) **and** a scalar
+`c1+c2` addition. Writing a carry into an otherwise empty extension limb is a
+representation copy, not an arithmetic addition.
+
+Convolution counts each outer `ai == 0`, each visited inner `bj == 0`, and each
+active-pair output-bound predicate. Each active in-bounds pair contributes one
+product and one accumulation addition. Normalization contributes one pass and
+separate partial diagnostic counters.
+
+### 3.3 Binary arithmetic (correction to former §3.2)
+
+`mul64` always executes four products and **four additions**:
+`u1*v0 + (w0>>32)`, `w1 += u0*v1`, `w2 += (w1>>32)`, and
+`hi = u1*v1 + w2`. The caller adds four more (`cur+lo`, `sum1+carry`,
+`hi+c1`, then `+c2`): **eight additions per visited limb product**, plus one
+for each actually executed extension carry addition. A zero carry breaks before
+that addition. Shifts, masks and bitwise assembly are excluded.
+
+Same-sign binary addition executes **two** additions per input limb in
+`a+b+carry`. Copying a carry to an extension limb executes no arithmetic.
+Opposite-sign subtraction reuses `sub=smaller+borrow` for its overflow predicate,
+then executes `larger-sub`: two arithmetic events per visited input limb.
+Magnitude comparison and the decisions listed in §3.1 are included. Binary zero
+results are normalized to a positive sign in addition and multiplication.
 
 ---
 
@@ -95,10 +137,21 @@ $$W_{\text{ops}} = \text{OP}_{\text{ALU\_ADD\_SUB}} + 3 \cdot \text{OP}_{\text{A
 Every arithmetic operation in evaluation harnesses MUST be validated against the structurally decoupled base-$10^9$ arbitrary-precision oracle (`ExactBigIntOracle`) across five mandatory dimensions:
 
 1. **Numerical Parity:** Multi-precision balanced-ternary trits and binary words evaluate to identical integer values in the oracle.
-2. **Overflow Classification:** Input operands and results are strictly checked against $[-2^{B-1}, 2^{B-1}-1]$.
+2. **Overflow Classification:** Input operands must fit the domain; results are classified (not rejected merely for exceeding it) against $[-2^{B-1}, 2^{B-1}-1]$.
 3. **Canonical Digits:** Balanced-ternary digits are verified to be canonical $d_i \in \{-1, 0, +1\}$ with no non-canonical borrows or carries.
 4. **Sign Handling:** Positive, negative, zero, and boundary asymmetric values are verified without sign corruption.
 5. **Absence of Truncation:** Full mathematical intermediate and result precision is preserved without bit truncation.
+
+Each result validator populates all five `OracleValidationReport` fields and
+`all_passed()` is the acceptance condition. Equality compares the decoded result
+with the full oracle sum/product. Overflow compares the observed signed-B domain
+classification with that of the mathematical result; the kernels return widened
+values and have no separate overflow status flag. Sign checks include rejection
+of binary negative zero. Ternary digit checks inspect every decoded output digit;
+internal packed tryte validity before decoding is not independently verified.
+Truncation requires both equality and enough output capacity for the exact value
+(residual balanced quotient zero, or binary magnitude below `2^(64*limbs)`). This
+is a final-result check, not a proof about every internal transient.
 
 ### Fail-Closed Enforcement
 Any discrepancy in oracle evaluation SHALL immediately abort execution with exit code 1 and emit:
