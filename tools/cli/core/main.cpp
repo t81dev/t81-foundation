@@ -42,6 +42,7 @@
 #define NOMINMAX
 #endif
 #include <windows.h>
+#include <shellapi.h>
 // Windows GDI's ERROR macro collides with monitoring::AlertLevel::ERROR.
 #ifdef ERROR
 #undef ERROR
@@ -10689,10 +10690,71 @@ std::optional<std::string> removed_help_topic_recommendation(std::string_view to
   return std::nullopt;
 }
 
+#ifdef _WIN32
+static bool collect_windows_utf8_argv(std::vector<std::string>& storage, std::vector<char*>& ptrs,
+                                      std::string& error_message) {
+  int wargc = 0;
+  LPWSTR* wargv = CommandLineToArgvW(GetCommandLineW(), &wargc);
+  if (wargv == nullptr || wargc <= 0) {
+    if (wargv != nullptr) {
+      LocalFree(wargv);
+    }
+    error_message = "CommandLineToArgvW failed";
+    return false;
+  }
+
+  storage.clear();
+  ptrs.clear();
+  storage.reserve(static_cast<std::size_t>(wargc));
+
+  for (int i = 0; i < wargc; ++i) {
+    if (wargv[i] == nullptr || wargv[i][0] == L'\0') {
+      storage.emplace_back();
+      continue;
+    }
+    const int needed = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, wargv[i], -1, nullptr, 0,
+                                           nullptr, nullptr);
+    if (needed <= 0) {
+      LocalFree(wargv);
+      error_message = "Failed to convert Windows command-line argument to UTF-8";
+      return false;
+    }
+    std::string utf8(static_cast<std::size_t>(needed - 1), '\0');
+    const int written = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, wargv[i], -1,
+                                            utf8.data(), needed, nullptr, nullptr);
+    if (written <= 0) {
+      LocalFree(wargv);
+      error_message = "Failed to encode Windows command-line argument as UTF-8";
+      return false;
+    }
+    storage.push_back(std::move(utf8));
+  }
+
+  LocalFree(wargv);
+  ptrs.reserve(storage.size() + 1);
+  for (auto& arg : storage) {
+    ptrs.push_back(arg.data());
+  }
+  ptrs.push_back(nullptr);
+  return true;
+}
+#endif
+
 // ──────────────────────────────────────────────────────────────
 // Main
 // ──────────────────────────────────────────────────────────────
 int main(int argc, char* argv[]) {
+#ifdef _WIN32
+  std::vector<std::string> win_utf8_args;
+  std::vector<char*> win_utf8_argv;
+  std::string win_argv_error;
+  if (!collect_windows_utf8_argv(win_utf8_args, win_utf8_argv, win_argv_error)) {
+    std::cerr << "Error: " << win_argv_error << "\n";
+    return 1;
+  }
+  argc = static_cast<int>(win_utf8_args.size());
+  argv = win_utf8_argv.data();
+#endif
   g_json_error_mode = false;
   g_json_error_emitted = false;
   for (int i = 1; i < argc; ++i) {

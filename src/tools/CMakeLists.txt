@@ -61,6 +61,9 @@ t81_preserve_root_output(t81_tool_cli)
 target_link_libraries(t81_tool_cli PUBLIC t81_lang_frontend t81_isa t81_vm t81_tool_model)
 target_link_libraries(t81_tool_cli PRIVATE t81_math_quantization t81_decode)
 target_link_libraries(t81_tool_cli PUBLIC t81_llvm t81_mlir t81_c_frontend t81_rust_frontend t81_python_frontend)
+if(WIN32)
+  target_link_libraries(t81_tool_cli PUBLIC shell32)
+endif()
 target_include_directories(t81_tool_cli PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -113,6 +116,9 @@ add_executable(t81
 )
 t81_preserve_root_output(t81)
 target_link_libraries(t81 PRIVATE t81_decode t81_lang_frontend t81_isa t81_vm t81_tool_cli t81_axion t81_math_quantization t81_core)
+if(WIN32)
+  target_link_libraries(t81 PRIVATE shell32)
+endif()
 target_include_directories(t81 PRIVATE
   ${PROJECT_SOURCE_DIR}
 )

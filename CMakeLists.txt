@@ -1336,6 +1336,8 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
 
   add_executable(test_bigint_robust_features tests/cpp/test_bigint_robust_features.cpp)
   target_link_libraries(test_bigint_robust_features PRIVATE t81_core)
+  add_executable(t81_int128_test tests/cpp/t81_int128_test.cpp)
+  target_link_libraries(t81_int128_test PRIVATE t81_core)
 
   add_executable(test_bigint_multilimb_ext tests/cpp/test_bigint_multilimb_ext.cpp)
   target_link_libraries(test_bigint_multilimb_ext PRIVATE t81_core)
@@ -1692,6 +1694,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     axion_hybrid_mlp_policy_test
     test_bigint_multilimb_ext
     test_bigint_robust_features
+    t81_int128_test
     t81_bigint_v1_perf
     bigint_perf_guardrail_test
     t81_bigint_allocation_pathology_test
@@ -1735,6 +1738,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   set_tests_properties(canonfs_interchange_test PROPERTIES WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
   set_tests_properties(jit_trace_equivalence_test PROPERTIES TIMEOUT 240)
   add_test(NAME t81_cli_repro_hash_test COMMAND $<TARGET_FILE:cli_repro_hash_test> $<TARGET_FILE:t81>)
+  set_tests_properties(t81_cli_repro_hash_test PROPERTIES WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
   add_test(NAME canonfs_cli_portable_storage_test
     COMMAND ${Python3_EXECUTABLE}
       ${PROJECT_SOURCE_DIR}/tests/python/test_canonfs_cli_portable_storage.py
