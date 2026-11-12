@@ -524,6 +524,64 @@ Trap taxonomy: invalid hash format → `DecodeFault`; valid hash with no driver 
 
 ---
 
+### DEC-015 — Conditional single-use CI-gate exception for PR #775 (SCG-08 Gate 1 evidence repair)
+
+**Date (UTC):** 2026-11-12T02:09:24Z
+**Approver:** @t81dev (explicit maintainer approval to publish this exception record; **no merge authorization**)
+**Category:** Governance / CI / Operational
+**Target:** PR #775, head `1fe9044cb497484ecf5f89d4f1bc7581b141eae5`, base `89223724038ff7dec349343469df4ea8389ede26`
+**Status:** APPROVED FOR PUBLICATION; EXCEPTION EXECUTION AND MERGE NOT AUTHORIZED
+
+**Decision:** Approve documentation of a narrowly scoped, single-use administrative exception for PR #775 at the pinned head. The exception may be exercised **only after separate, explicit maintainer authorization to merge** and renewed verification of the PR head, base, review findings, and required-check status. A changed head or base invalidates this evaluation. Publishing this record does not waive any check, authorize an administrative override, or merge the PR.
+
+**Policy classification:** The required `quality gate / required` check is failing. Using GitHub's `enforce_admins: false` capability would be an explicit departure from the current Hard-Fail policy in `docs/governance/ENFORCEMENT_MATRIX.md` and `docs/status/CI_GATE_STATUS.md`, not compliance with it and not a release waiver under `docs/product/RELEASE_DISCIPLINE.md` §4. No general precedent or standing CI waiver is created.
+
+**Technical evidence and review:**
+- Exactly four files are changed: `experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md`, `evidence_schema.json`, `gate1_evidence_record.json`, and `scripts/ci/validate_scg08_gate1_evidence.py`. No C++, CMake, or CI workflow files change.
+- Antigravity's external read-only technical assessment found the bounded evidence repair ACCEPTANCE READY. It ran 94 negative validator cases, 61 Draft 7 parity rejection cases, and two positive records with `jsonschema==4.26.0`. Draft 7's acceptance of integral-valued floats differs from the stricter Python validator and is disclosed; no full parity is claimed.
+- Codex authored the candidate, so its local validation is author-side, not an independent review. The automated Codex GitHub review summary for head `1fe9044` reports completion with zero findings (2026-11-12T01:59:36Z). Human owner approval of the PR and final merge authorization remain distinct.
+- The historical evidence-generation commit remains unverified (`evidence_generation_sha: null`); the timestamp, observations, and 179-trial count are preserved. The libc++/libstdc++ PRNG explanation reproduces smoke observations mathematically, but does not establish historical execution provenance or native Linux verification.
+
+**Required CI and baseline comparison:**
+- `Analyze (cpp)` succeeded (job `130899172378`).
+- `quality gate / required` failed (job `130915725780`, run `43132315331`) because `build-and-test` failed.
+- Windows MSVC failed 3/401 tests (job `130900388075`); Windows clang-cl failed 8/401 (job `130900388119`); macOS x86_64 GCC was cancelled after the 40-minute test timeout (job `130900388055`). Antigravity compared these with the pinned `main` baseline run `43022879680` and found matching failures/cancellation.
+- Baseline-equivalent failures support non-regression for those specific failures only. They do **not** establish general merge safety or branch health; downstream jobs skipped because of the failing dependency remain unexecuted.
+
+**Alternatives considered:** Hold integration until baseline Windows/macOS-GCC CI and the documented informational-versus-required gate inconsistency are repaired (strict policy compliance but delays an isolated evidence repair); silently override the required check (rejected for lack of governance traceability).
+
+**Scope and conditions:** This approval covers publishing DEC-015 and evaluating a possible later single-use override for the pinned PR only. It does not authorize merging, changing branch protection, changing CI, ratifying draft RFC-00E1, accepting SCG-08 Gate 1, or executing Gate 2. Formal Gate 1 acceptance remains WITHHELD; Gate 2 remains **STRICT NO-GO**.
+
+**References:** PR #775; superseded unmerged PR #766; PR #773 post-merge review §8.4; `docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md`; `docs/governance/MODULE_OWNERSHIP_CHARTER.md`; CI runs `43132315331` and `43022879680`.
+
+---
+
+### DEC-015-C1 — Proposed factual erratum: CI job timeout versus CTest duration
+
+**Recorded (UTC):** 2026-11-12 (exact amendment-approval timestamp pending)
+**Approver:** PENDING @t81dev review; this proposed factual correction is not a new exception or merge authorization
+**Category:** Governance / CI / Evidence correction
+**Amends:** DEC-015, paragraph “Required CI and baseline comparison”; the original stamped text is preserved above in accordance with the append-only decision-log rule.
+
+**Correction:** The DEC-015 phrase “cancelled after the 40-minute test timeout” is inaccurate. The `build-and-test` matrix job is subject to an **overall 40-minute job timeout** (`.github/workflows/ci.yml`, line 426: `timeout-minutes: ${{ matrix.timeout_minutes || 40 }}`). The macOS x86_64 GCC jobs were cancelled **during the CTest step when the overall job time limit was reached**. The CTest step lasted approximately **8m17s** for PR #775 (job `130900388055`, workflow run `43132315331`) and **11m03s** for the pinned baseline (job `130533549236`, workflow run `43022879680`).
+
+**Evidence limit:** Both jobs reached the overall job timeout while CTest was active; the differing CTest durations mean that matching cancellations do **not** establish an identical test-level failure or test-level non-regression. Windows baseline-equivalent test failures are unaffected. The required `quality gate / required` remains failed; no conclusion about complete branch health, skipped downstream coverage, or general merge safety is added.
+
+**Authorization boundary:** This erratum corrects the CI evidence description only. It does not authorize a CI bypass, publication to `main`, merging PR #776 or PR #775, ratifying RFC-00E1, accepting Gate 1, or proceeding to Gate 2.
+
+**References:** Codex independent review of PR #776, `ci.yml:426`, PR #775 [macOS GCC job](https://github.com/t81dev/t81-foundation/actions/runs/43132315331/job/130900388055), pinned baseline [macOS GCC job](https://github.com/t81dev/t81-foundation/actions/runs/43022879680/job/130533549236).
+
+---
+
+### DEC-015-C1-A — Maintainer approval of factual erratum
+
+**Date (UTC):** 2026-11-12T02:18:38.844Z
+**Approver:** @t81dev (explicit approval conveyed in the maintainer conversation)
+**Category:** Governance / CI / Evidence correction approval
+**Decision:** Approve the factual correction recorded in DEC-015-C1, including the distinction between the overall 40-minute CI job timeout and the shorter CTest durations. DEC-015-C1's original pending-approval wording is retained for append-only provenance. This approval applies to the erratum and its publication for review; it does **not** authorize merging PR #776 or PR #775, bypassing the required quality gate, or accepting any scientific gate. Integration requires a separate explicit decision.
+
+---
+
 ## Log Maintenance
 
 - New decisions must be logged within the same PR or governance window in which
