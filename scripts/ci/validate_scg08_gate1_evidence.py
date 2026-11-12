@@ -87,12 +87,27 @@ def validate_dict(data: dict, schema: dict):
 
     # git_context
     gc = data.get("git_context")
-    if not isinstance(gc, dict) or "baseline_sha" not in gc or "head_sha" not in gc:
-        fail("Invalid git_context: must be an object with baseline_sha and head_sha")
-    for sha_key in ["baseline_sha", "head_sha"]:
+    if not isinstance(gc, dict):
+        fail("Invalid git_context: must be an object")
+    required_git_props = ["baseline_sha", "evaluated_implementation_sha"]
+    for req_prop in required_git_props:
+        if req_prop not in gc:
+            fail(f"Invalid git_context: missing required property {req_prop}")
+    for sha_key in required_git_props:
         sha_val = gc[sha_key]
-        if not isinstance(sha_val, str) or not SHA_REGEX.match(sha_val):
+        if not isinstance(sha_val, str) or not SHA_REGEX.fullmatch(sha_val):
             fail(f"Invalid {sha_key}: {sha_val} (must be non-null 40-character hexadecimal SHA)")
+    if "evidence_generation_sha" not in gc:
+        fail("Invalid git_context: missing required property evidence_generation_sha")
+    generation_sha = gc["evidence_generation_sha"]
+    if generation_sha is not None and (
+        not isinstance(generation_sha, str) or not SHA_REGEX.fullmatch(generation_sha)
+    ):
+        fail("Invalid evidence_generation_sha: must be null (unverified) or a 40-character hexadecimal SHA")
+    if "evidence_publication_sha" in gc:
+        pub_sha = gc["evidence_publication_sha"]
+        if not isinstance(pub_sha, str) or not SHA_REGEX.fullmatch(pub_sha):
+            fail(f"Invalid evidence_publication_sha: {pub_sha!r} (must be a non-null 40-character hexadecimal SHA)")
 
     # trial_budget
     tb = data.get("trial_budget")
@@ -168,6 +183,25 @@ def validate_dict(data: dict, schema: dict):
             if prop not in b:
                 fail(f"Missing band property: {prop} in band {idx}")
 
+        # Enforce strict integer type on scalar properties (rejecting bools, nulls, strings, floats)
+        scalar_props = [
+            "bit_width",
+            "operand_trits",
+            "add_trits_min",
+            "mul_trits_min",
+            "ternary_limbs_op",
+            "ternary_limbs_add",
+            "ternary_limbs_mul",
+            "w_ops_add_ternary",
+            "w_ops_mul_ternary",
+            "w_ops_add_binary",
+            "w_ops_mul_binary",
+        ]
+        for prop in scalar_props:
+            val = b[prop]
+            if type(val) is not int or val < 0:
+                fail(f"Band {b.get('bit_width')} property {prop} must be a non-negative integer (found {type(val).__name__}: {val!r})")
+
         # Validate primitive counter objects and reconcile with weighted total W_ops
         counter_mappings = [
             ("counters_add_ternary", "w_ops_add_ternary"),
@@ -223,8 +257,9 @@ def run_negative_tests(schema_path: Path):
         "status": "READY_FOR_INDEPENDENT_GATE1_IMPLEMENTATION_REVIEW",
         "timestamp_utc": "2026-11-10T22:30:00Z",
         "git_context": {
-            "baseline_sha": "cd490f5b5c0496350682542b56424dd77bea6963",
-            "head_sha": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3",
+            "baseline_sha": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3",
+            "evaluated_implementation_sha": "2dd3cc62e526942cdcbed6d100770c08c26ab2fe",
+            "evidence_generation_sha": None,
         },
         "trial_budget": {
             "max_cumulative_trials_ceiling": 1000,
@@ -287,8 +322,11 @@ def run_negative_tests(schema_path: Path):
     }
 
     negative_cases = [
-        ("null head_sha", lambda d: d["git_context"].__setitem__("head_sha", None)),
-        ("invalid short head_sha", lambda d: d["git_context"].__setitem__("head_sha", "abc123")),
+        ("null evaluated_implementation_sha", lambda d: d["git_context"].__setitem__("evaluated_implementation_sha", None)),
+        ("invalid short evaluated_implementation_sha", lambda d: d["git_context"].__setitem__("evaluated_implementation_sha", "abc123")),
+        ("null evidence_publication_sha", lambda d: d["git_context"].__setitem__("evidence_publication_sha", None)),
+        ("non-string evidence_publication_sha", lambda d: d["git_context"].__setitem__("evidence_publication_sha", 12345)),
+        ("invalid publication sha format", lambda d: d["git_context"].__setitem__("evidence_publication_sha", "invalid-sha")),
         ("malformed timestamp", lambda d: d.__setitem__("timestamp_utc", "invalid-time")),
         ("wrong specification version", lambda d: d.__setitem__("specification_version", "v1.0")),
         ("budget ceiling exceeded", lambda d: d["trial_budget"].__setitem__("actual_cumulative_trials_executed", 1001)),
@@ -299,7 +337,43 @@ def run_negative_tests(schema_path: Path):
         ("boolean instead of number", lambda d: d["tier1_markov"]["ternary"].__setitem__("f_occ", True)),
         ("oracle passed False", lambda d: d["oracle_verification"].__setitem__("all_dimensions_passed", False)),
         ("oracle dimensions missing", lambda d: d["oracle_verification"].__setitem__("dimensions_verified", ["dim1"])),
+        ("operand_trits is null", lambda d: d["tier2_work"]["evaluated_bands"][0].__setitem__("operand_trits", None)),
+        ("ternary_limbs_op is not integer", lambda d: d["tier2_work"]["evaluated_bands"][0].__setitem__("ternary_limbs_op", "not an integer")),
+        ("bit_width boolean True", lambda d: d["tier2_work"]["evaluated_bands"][0].__setitem__("bit_width", True)),
+        ("operand_trits float", lambda d: d["tier2_work"]["evaluated_bands"][0].__setitem__("operand_trits", 41.5)),
+        ("negative operand_trits", lambda d: d["tier2_work"]["evaluated_bands"][0].__setitem__("operand_trits", -1)),
     ]
+
+    # Exercise every scalar field against each invalid JSON/Python value class.
+    scalar_props = [
+        "bit_width", "operand_trits", "add_trits_min", "mul_trits_min",
+        "ternary_limbs_op", "ternary_limbs_add", "ternary_limbs_mul",
+        "w_ops_add_ternary", "w_ops_mul_ternary", "w_ops_add_binary", "w_ops_mul_binary",
+    ]
+    parity_cases = []
+    for prop in scalar_props:
+        for value in [True, None, "not an integer", 41.5, -1, 41.0]:
+            desc = f"scalar {prop}: {value!r} ({type(value).__name__})"
+            mutate = lambda d, p=prop, v=value: d["tier2_work"]["evaluated_bands"][0].__setitem__(p, v)
+            negative_cases.append((desc, mutate))
+            # Draft 7 treats integral floats as integers; the stdlib validator
+            # deliberately enforces Python int. Report this boundary explicitly.
+            if not (type(value) is float and value.is_integer()):
+                parity_cases.append((desc, mutate))
+
+    publication_cases = [
+        ("null publication", None), ("boolean publication", True),
+        ("numeric publication", 12345), ("float publication", 1.5),
+        ("short publication", "abc123"), ("newline publication", "a" * 40 + "\n"),
+    ]
+    for desc, value in publication_cases:
+        mutate = lambda d, v=value: d["git_context"].__setitem__("evidence_publication_sha", v)
+        negative_cases.append((desc, mutate))
+        parity_cases.append((desc, mutate))
+    negative_cases.extend([
+        ("missing generation revision", lambda d: d["git_context"].pop("evidence_generation_sha")),
+        ("invalid generation revision", lambda d: d["git_context"].__setitem__("evidence_generation_sha", "unknown")),
+    ])
 
     with open(schema_path, "r", encoding="utf-8") as f:
         schema = json.load(f)
@@ -313,15 +387,38 @@ def run_negative_tests(schema_path: Path):
         failed_as_expected = False
         try:
             validate_dict(test_doc, schema)
-        except SystemExit:
-            failed_as_expected = True
-        except Exception:
+        except SystemExit as exc:
+            if exc.code != 1:
+                raise
             failed_as_expected = True
 
         if not failed_as_expected:
             print(f"[NEGATIVE TEST FAILED] Case '{desc}' unexpectedly passed validation!", file=sys.stderr)
             sys.exit(1)
         print(f"  ✓ Case '{desc}' properly rejected fail-closed")
+
+    # Publication identity is optional; validate both omission and a valid value.
+    published = copy.deepcopy(base_valid)
+    published["git_context"]["evidence_publication_sha"] = "a" * 40
+    validate_dict(published, schema)
+    print(f"[SCG-08 NEGATIVE TEST SUITE] {len(negative_cases)} negative cases passed; publication omission and valid SHA accepted.")
+
+    try:
+        from jsonschema import Draft7Validator
+    except ImportError:
+        print("[SCG-08 SCHEMA PARITY] NOT RUN: optional jsonschema dependency unavailable.")
+    else:
+        Draft7Validator.check_schema(schema)
+        validator = Draft7Validator(schema)
+        validator.validate(base_valid)
+        validator.validate(published)
+        for desc, mutate in parity_cases:
+            doc = copy.deepcopy(base_valid)
+            mutate(doc)
+            if validator.is_valid(doc):
+                raise RuntimeError(f"JSON Schema unexpectedly accepted {desc}")
+        print(f"[SCG-08 SCHEMA PARITY] {len(parity_cases)} rejection cases and 2 positive records passed.")
+        print("[SCG-08 SCHEMA PARITY] Integral floats: Draft 7 accepts mathematical integers; stdlib validation intentionally rejects all Python floats.")
 
     print("[SCG-08 NEGATIVE TEST SUITE] All negative test cases passed successfully.")
 

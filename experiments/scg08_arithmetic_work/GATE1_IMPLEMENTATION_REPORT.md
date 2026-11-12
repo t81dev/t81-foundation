@@ -23,27 +23,25 @@ The primary objective of Gate 1 is to establish:
 
 ---
 
-## 2. Repository Context & Baseline
+## 2. Repository Context & Provenance
 
 - **Repository:** https://github.com/t81dev/t81-foundation
 - **Baseline Git SHA:** `dbf107fda83a3755fa21d6b95caa3eb8ac450dd3` (merging PR #763)
+- **Evaluated Implementation SHA:** `2dd3cc62e526942cdcbed6d100770c08c26ab2fe` (corrected source revision reviewed; not an independently established historical execution revision)
+- **Original PR #766 base/head:** `36b3849aa1e6297e88de2ec1655777793ab0b59e` / `a763ab6876bf07b8ae7c529656cdd2e5d9cf3766`.
+- **Isolated reconciliation baseline:** `89223724038ff7dec349343469df4ea8389ede26`.
+- **Actual historical evidence-generation revision:** **UNVERIFIED** (`evidence_generation_sha: null`); no independently traceable execution receipt binds the observations to a generating source revision.
 - **PR #753 Integration:** Verified integrated into mainline history (`0bd0817e4b9dc879fffce18c59ea9ff781f7acb3`).
 
 ### Changed File Inventory
 | File | Action | Purpose |
 | :--- | :--- | :--- |
-| `CMakeLists.txt` | Modified | Added opt-in `T81_BUILD_EXPERIMENTS` option guarding `experiments/scg08_arithmetic_work` |
-| `experiments/scg08_arithmetic_work/CMakeLists.txt` | Created | Declares target `t81_exp_scg08_01_test` and `t81_exp_scg08_01_schema_validation` CTest checks |
-| `experiments/scg08_arithmetic_work/evidence_schema.json` | Created | Machine-readable JSON schema `t81.scg08.carry-experiment.v1` |
-| `experiments/scg08_arithmetic_work/gate1_evidence_record.json` | Created | Measured counters, weighted totals, and validation outcomes conforming to evidence schema |
-| `experiments/scg08_arithmetic_work/exact_oracle_adapter.hpp` | Created | Decoupled arbitrary-precision base-$10^9$ exact integer oracle & 5D validator |
-| `experiments/scg08_arithmetic_work/tier1_markov_harness.hpp` | Created | Tier 1 scalar carry Markov chain simulator with decoupled event counters |
-| `experiments/scg08_arithmetic_work/tier2_work_harness.hpp` | Created | Tier 2 multi-precision signed arithmetic, operation accounting, and trial budget enforcer |
-| `experiments/scg08_arithmetic_work/test_exp_scg08_01.cpp` | Created | Unconditional fail-closed test harness executable active under `-DNDEBUG` |
-| `scripts/ci/validate_scg08_gate1_evidence.py` | Created | Fail-closed stdlib-only validation script for `gate1_evidence_record.json` |
-| `experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md` | Created | Gate 1 implementation report and verification receipts |
+| `experiments/scg08_arithmetic_work/evidence_schema.json` | Modified | Updated provenance model (`baseline_sha`, `evaluated_implementation_sha`) and enforced scalar band property integer types |
+| `experiments/scg08_arithmetic_work/gate1_evidence_record.json` | Modified | Recorded explicit revision provenance separating baseline and evaluated implementation revisions |
+| `scripts/ci/validate_scg08_gate1_evidence.py` | Modified | Enforced strict non-negative integer type checks on scalar band properties; added negative tests reproducing `operand_trits: null` and `ternary_limbs_op: "not an integer"` |
+| `experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md` | Modified | Documented findings resolution, exact provenance, and reproduction instructions |
 
-**Production Impact:** Zero modifications to production arithmetic files (`include/t81/types/`, `src/core/`, etc.). All additions are isolated under `experiments/scg08_arithmetic_work/`.
+**Production Impact:** Zero modifications to production arithmetic files (`include/t81/types/`, `src/core/`, etc.). All additions are isolated under `experiments/scg08_arithmetic_work/` and `scripts/ci/`.
 
 ---
 
@@ -97,9 +95,12 @@ $$W_{\text{ops}} = \text{OP}_{\text{ALU\_ADD\_SUB}} + 3 \cdot \text{OP}_{\text{A
      - In `add_binary()`: sign check `a.is_negative == b.is_negative`, carry check `carry != 0` and predicate `sum <= a.limbs[i]` vs `sum < a.limbs[i]`, and subtraction magnitude comparisons (`va != vb`, `va < vb`, `c == 0`, `c > 0`, borrow predicates).
 3. **Finding 3 (P1 - Evidence Trial-Count Integrity & Provenance):**
    - *Audit:* Evaluated committed evidence record against standalone test execution. The initial draft stored 30 trials from an isolated band run, conflicting with the 179 trials executed by the smoke suite.
-   - *Resolution:* Reconciled `gate1_evidence_record.json` to record the exact 179 cumulative trials executed by the smoke suite (`actual_cumulative_trials_executed: 179`), verified against the ceiling of 1,000 trials, and bound to authoritative commit SHAs and ISO-8601 UTC timestamp.
+   - *Resolution:* Reconciled `gate1_evidence_record.json` to record the exact 179 cumulative trials executed by the smoke suite (`actual_cumulative_trials_executed: 179`), verified against the ceiling of 1,000 trials, with recorded timestamp preserved. The baseline and corrected source identities are recorded separately; the actual historical evidence-generation revision remains unverified.
 4. **Finding 4 (P2 - Evidence Schema Validation & Negative Test Suite):**
-   - *Resolution:* Hardened `scripts/ci/validate_scg08_gate1_evidence.py` to enforce strict regex pattern matching on commit SHAs (40-char hex) and ISO-8601 UTC timestamps, exact specification version string matching, strictly positive costs, and non-empty dimension strings. Added a comprehensive 11-case negative test suite (`--test-negative`) registered in CTest (`t81_exp_scg08_01_schema_negative_validation`).
+   - *Resolution:* Hardened `scripts/ci/validate_scg08_gate1_evidence.py` to enforce strict regex pattern matching on commit SHAs (40-char hex) and ISO-8601 UTC timestamps, exact specification version string matching, strictly positive costs, and non-empty dimension strings. Added a comprehensive negative test suite (`--test-negative`) registered in CTest (`t81_exp_scg08_01_schema_negative_validation`).
+   - *Post-PR #765 Review Findings Resolution:*
+     - **P1 (Evidence revision provenance):** Repaired `git_context` to separate `baseline_sha` (`dbf107fda83a3755fa21d6b95caa3eb8ac450dd3`) from `evaluated_implementation_sha` (`2dd3cc62e526942cdcbed6d100770c08c26ab2fe`), avoiding self-referential commit hashes by documenting the publication revision relationship non-cyclically.
+     - **P2 (Scalar schema validation):** Hardened validator to enforce explicit scalar integer type checks on all band properties (`bit_width`, `operand_trits`, `add_trits_min`, `mul_trits_min`, `ternary_limbs_op`, `ternary_limbs_add`, `ternary_limbs_mul`, `w_ops_*`), rejecting malformed properties like `operand_trits: null` and `ternary_limbs_op: "not an integer"`. JSON Schema parity is checked when `jsonschema` is available, except that Draft 7 accepts integral floats as mathematical integers while the strict Python validator rejects all floats.
 5. **Table Lookup Accounting Reconciliation (P1):**
    - *Source Verification:* In `include/t81/types/T81Limb.hpp`, each `T81Limb27::addc()` performs:
      - 9 lookups in `detail::ADD_TABLE[trytes_[i] + 13][other.trytes_[i] + 13]` (1 per tryte)
@@ -118,16 +119,27 @@ Accounting guarantees enforced:
 
 ---
 
-## 6. Execution Budget Accounting
+## 6. Execution Budget Accounting & Evidence Provenance
 
 The executable code enforces a hard ceiling of **1,000 cumulative trials maximum** via `TrialBudgetEnforcer`:
 - **Allowed Ceiling:** 1,000 cumulative trials.
-- **Executed in Gate 1 Smoke Suite:** Exactly **179 trials** (10 Tier 1 sequences + 15 Tier 1 deterministic replay sequences + 140 Tier 2 band trials + 14 deterministic exact-count trials = 179 trials, well within the budget).
+- **Historical Recorded Output in Evidence Artifact:** Exactly **179 trials** (10 Tier 1 sequences + 15 Tier 1 deterministic replay sequences + 140 Tier 2 band trials + 14 deterministic exact-count trials = 179 trials, well within the budget).
 - **Enforcement Mechanism:** Exceeding 1,000 calls to `record_trial()` aborts execution fail-closed via `std::exit(1)`.
+
+### 6.1 Evidence Provenance & Historical Artifact Boundary
+- **Historical Output Designation:** The 179 cumulative trials and measured operation counters stored in `gate1_evidence_record.json` are historical recorded observations. Commit `2dd3cc62e526942cdcbed6d100770c08c26ab2fe` (`evaluated_implementation_sha`) identifies corrected source reviewed, not a proven generating execution. The actual evidence-generation revision remains **UNVERIFIED** (`evidence_generation_sha: null`). They are retained for schema conformance and non-normative review, not claimed as a newly executed full campaign.
+- **Historical Reported Execution Command (not an independently traceable receipt):**
+  ```bash
+  cmake -B build -S . -DT81_BUILD_EXPERIMENTS=ON -DCMAKE_BUILD_TYPE=Release
+  cmake --build build --target t81_exp_scg08_01_test
+  ./build/experiments/scg08_arithmetic_work/t81_exp_scg08_01_test
+  ```
+- **Historically Claimed Environment:** Ubuntu Linux x86_64, GNU C++20 (GCC 13.3.0), Python 3.12. This reconciliation does not independently establish that historical environment.
+- **Non-Self-Referential Provenance:** The evidence artifact omits `evidence_publication_sha` to prevent circular self-referential hash cycles, recording `baseline_sha` and `evaluated_implementation_sha` as source context. Optional publication identity is validated when present; omission is valid. Publication identity is not an execution receipt.
 
 ---
 
-## 7. Verification Outcomes
+## 7. Historical Reported Verification Outcomes (not rerun receipts)
 
 ### Command:
 ```bash
@@ -136,7 +148,7 @@ cmake --build build --target t81_exp_scg08_01_test
 ./build/experiments/scg08_arithmetic_work/t81_exp_scg08_01_test
 ```
 
-### Observed Output:
+### Historical Reported Output (preserved; not a new execution receipt):
 ```
 =====================================================================
  SCG-08 Phase 1 Gate 1: Carry Propagation & Arithmetic Work Harness
@@ -203,3 +215,65 @@ python3 scripts/ci/validate_scg08_gate1_evidence.py experiments/scg08_arithmetic
 1. **Emulated Binary Substrate:** All algorithms are executed on binary host CPU architectures (x86_64). Cycle and latency measurements reflect binary instruction translation overhead rather than hypothetical native ternary hardware.
 2. **Gate 2 Execution Withheld:** Full-scale statistical campaigns (e.g., 136,500 sequences, cluster-robust delta variance estimation, empirical latency distributions) remain strictly withheld pending explicit maintainer authorization.
 3. **No Automatic Merge:** This PR must be reviewed and accepted by a human maintainer without automatic merge.
+
+
+## 9. Isolated PR #766 Reconciliation Verification
+
+This section records the bounded reconciliation run separately from the historical
+output above. It neither ratifies draft RFC-00E1 nor establishes historical Gate 1
+authorization, formal Gate 1 acceptance, or Gate 2 execution authorization.
+
+- Remote `main` was confirmed at `89223724038ff7dec349343469df4ea8389ede26`;
+  the original PR #766 branch remained at `a763ab6876bf07b8ae7c529656cdd2e5d9cf3766`.
+  The original PR comparison base is `36b3849aa1e6297e88de2ec1655777793ab0b59e`.
+- The four-file repair was applied with `git merge --squash --no-commit` in
+  `/tmp/t81-scg08-evidence-reconciliation` on
+  `codex/scg08-gate1-evidence-reconciliation`, based on the pinned main revision.
+  Git reported a clean merge; no unmerged index entries or conflict resolutions.
+- Historical JSON values outside `git_context` were compared structurally with
+  the pinned baseline and are unchanged, including timestamp
+  `2026-11-10T22:30:00Z`, measured counters, and the 179-trial record.
+- Validation environment: macOS ARM64, Apple clang 21.0.0
+  (`clang-2100.1.1.101`, target `arm64-apple-darwin25.5.0`), Python 3.14.3.
+
+Executed commands (from the isolated worktree):
+
+```bash
+python3 scripts/ci/validate_scg08_gate1_evidence.py
+python3 scripts/ci/validate_scg08_gate1_evidence.py --test-negative
+clang++ -std=c++20 -O2 -DNDEBUG -I include experiments/scg08_arithmetic_work/test_exp_scg08_01.cpp -o /tmp/t81-scg08-gate1-reconciliation-test
+/tmp/t81-scg08-gate1-reconciliation-test
+```
+
+Results:
+
+- Stdlib evidence validation: PASS.
+- Negative schema suite: 94 rejection cases PASS, retaining the source PR's cases
+  and adding all 11 scalar fields crossed with boolean, null, string, fractional
+  float, negative integer, and integral-float inputs. Optional publication SHA
+  omission and a valid SHA both PASS; malformed values, including a trailing
+  newline, are rejected. Missing/invalid generation revision fields are rejected;
+  explicit null preserves unverified historical provenance.
+- Optional `jsonschema.Draft7Validator` parity: NOT RUN, dependency unavailable
+  in the available Python environments. The suite retains conditional parity
+  checks for 61 malformed scalar/publication cases and two positive records.
+  Draft 7 accepts integral floats as mathematical integers; the strict Python
+  validator deliberately rejects every float. Full validator/schema equivalence
+  is not claimed.
+- Targeted standalone arithmetic regression: PASS under `-DNDEBUG`, all five
+  bands, exact accounting, oracle checks, replay checks, and both existing
+  fail-closed subprocess tests. Parent workload: 179/1,000 trials. The budget
+  negative subprocess attempts counter 1,001 and exits as required; this is not
+  an additional arithmetic campaign. No full CMake/CTest integration run was made.
+- Fresh Tier 1 smoke observations differ from the historical artifact: ternary
+  `f_gen|0=0.1875`, `f_occ=0.2`, mean run `1.33333`; binary
+  `f_gen|0=0.326923`, `f_occ=0.51`, mean run `3`. The source uses
+  `std::uniform_int_distribution`; this run does not establish the cause of the
+  discrepancy or cross-library reproducibility. Historical values were retained
+  unchanged. No comparative scientific conclusion is drawn from either smoke run.
+
+Raw local validation logs (temporary review artifacts; not committed):
+
+- `/tmp/t81-scg08-reconciliation-schema.log` — SHA-256 `b6bfdd65661223786be3592b412ba9125da7161133adca418b13ab9a4cd27e8e`.
+- `/tmp/t81-scg08-reconciliation-negative.log` — SHA-256 `532d3f1107843cbbf566eff335dea162c76655d8af0761bada605b992d3e225f`.
+- `/tmp/t81-scg08-reconciliation-arithmetic.log` — SHA-256 `ce3982d46aa5066fb23e11e1c4e78c17bc961473e61e0b0d333cf1f8384b794d`.
