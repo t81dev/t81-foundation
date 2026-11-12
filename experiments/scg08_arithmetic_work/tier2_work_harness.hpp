@@ -157,6 +157,9 @@ struct TernaryMultiLimb {
   }
 
   [[nodiscard]] std::vector<int8_t> to_trits() const {
+    enforce_oracle_parity(
+        has_canonical_trytes(),
+        "Non-canonical stored tryte detected in TernaryMultiLimb::to_trits() before TRYTE_TO_TRITS lookup");
     std::vector<int8_t> trits;
     trits.reserve(TRITS);
     std::array<int8_t, t81::core::T81Limb::TRITS> one_buffer{};
@@ -174,6 +177,9 @@ struct TernaryMultiLimb {
   }
 
   static TernaryMultiLimb from_trits(std::span<const int8_t> trits) {
+    enforce_oracle_parity(
+        trits.empty() || are_trits_in_canonical_range(trits),
+        "Non-canonical trit detected in TernaryMultiLimb::from_trits() before from_trits_window");
     TernaryMultiLimb res;
     std::array<int8_t, t81::core::T81Limb::TRITS> buffer{};
     for (size_t l = 0; l < NumLimbs; ++l) {
@@ -286,6 +292,9 @@ public:
   static TernaryMultiLimb<OutLimbs> add_ternary(const TernaryMultiLimb<InLimbs>& a,
                                                 const TernaryMultiLimb<InLimbs>& b,
                                                 OperationAccounting& acc) {
+    enforce_oracle_parity(
+        a.has_canonical_trytes() && b.has_canonical_trytes(),
+        "Non-canonical stored tryte detected in add_ternary() input operand before ADD_TABLE lookup");
     TrialBudgetEnforcer::instance().record_trial();
 
     TernaryMultiLimb<OutLimbs> res;
@@ -349,6 +358,9 @@ public:
   static TernaryMultiLimb<OutLimbs> mul_ternary(const TernaryMultiLimb<InLimbs>& a,
                                                 const TernaryMultiLimb<InLimbs>& b,
                                                 OperationAccounting& acc) {
+    enforce_oracle_parity(
+        a.has_canonical_trytes() && b.has_canonical_trytes(),
+        "Non-canonical stored tryte detected in mul_ternary() input operand before to_trits() decoding");
     TrialBudgetEnforcer::instance().record_trial();
 
     acc.mem_loads += InLimbs * 2;
@@ -358,12 +370,14 @@ public:
     std::vector<int64_t> accum(ACCUM_TRITS, 0);
 
     // Entry representation unpacking (excluded from W_ops; recorded in conv_* diagnostics):
-    // Each to_trits() call packs 1 unit_limb (9 encode_tryte) and per limb executes
-    // limbs[l] * unit_limb (18 TRYTE_TO_TRITS lookups + 18 encode_tryte in T81Limb54::from_trits)
+    // Each to_trits() call packs 1 temporary unit_limb via T81Limb27::from_trits_window
+    // (+1 conv_limb_repacks, +9 encode_tryte) and per limb executes limbs[l] * unit_limb
+    // (18 TRYTE_TO_TRITS lookups + 18 encode_tryte in T81Limb54::from_trits)
     // followed by l54.to_trits() (18 decode_tryte).
     auto a_trits = a.to_trits();
     auto b_trits = b.to_trits();
     acc.conv_limb_unpacks += InLimbs * 2;
+    acc.conv_limb_repacks += 2;  // 1 temporary unit_limb via from_trits_window per to_trits() call
     acc.conv_tryte_decodes += InLimbs * 2 * (2 * t81::core::T81Limb27::TRYTES +
                                              t81::core::T81Limb54::TRYTES);
     acc.conv_tryte_encodes += 2 * t81::core::T81Limb27::TRYTES +
@@ -581,6 +595,11 @@ inline OracleValidationReport evaluate_oracle_validation_report(
   OracleValidationReport rep{};
   const auto& spec = get_accumulator_spec(bit_width);
 
+  bool all_trytes_canonical = ta.has_canonical_trytes() && tb.has_canonical_trytes() &&
+                              t_sum.has_canonical_trytes() && t_prod.has_canonical_trytes();
+  bool trit_sizes_valid = (ta_trits.size() == T_In * 27) && (tb_trits.size() == T_In * 27) &&
+                          (t_sum_trits.size() == T_Add * 27) && (t_prod_trits.size() == T_Mul * 27);
+
   ExactBigIntOracle ta_oracle = trits_to_oracle(ta_trits);
   ExactBigIntOracle tb_oracle = trits_to_oracle(tb_trits);
   ExactBigIntOracle computed_t_sum_oracle = trits_to_oracle(t_sum_trits);
@@ -593,12 +612,14 @@ inline OracleValidationReport evaluate_oracle_validation_report(
 
   // Dimension 1: Exact numerical equality across converted inputs and computed outputs
   rep.numerical_equality =
+      all_trytes_canonical && trit_sizes_valid &&
       (ta_oracle == oa) && (tb_oracle == ob) && (ba_oracle == oa) && (bb_oracle == ob) &&
       (computed_t_sum_oracle == expected_oa_sum) && (computed_t_prod_oracle == expected_oa_prod) &&
       (computed_b_sum_oracle == expected_oa_sum) && (computed_b_prod_oracle == expected_oa_prod);
 
   // Dimension 2: Two-sided signed overflow classification against [-2^(B-1), 2^(B-1)-1]
-  // for both input operands and computed addition/multiplication results, plus accumulator bounds
+  // for both input operands and computed addition/multiplication results, plus exact
+  // accumulator bounds: [-2^B, 2^B - 2] for addition and [-2^(B-1)*(2^(B-1)-1), 2^(2B-2)] for multiplication
   bool inputs_in_domain = is_in_signed_b_domain(oa, bit_width) &&
                           is_in_signed_b_domain(ob, bit_width) &&
                           is_in_signed_b_domain(ta_oracle, bit_width) &&
@@ -618,14 +639,18 @@ inline OracleValidationReport evaluate_oracle_validation_report(
   min_add_bound.negative = true;
   ExactBigIntOracle max_add_bound = ExactBigIntOracle::sub(max_add_mag, ExactBigIntOracle(2));
 
+  ExactBigIntOracle half_domain = ExactBigIntOracle::from_power_of_two(bit_width - 1);
+  ExactBigIntOracle max_operand = ExactBigIntOracle::sub(half_domain, ExactBigIntOracle(1));
   ExactBigIntOracle max_prod_bound = ExactBigIntOracle::from_power_of_two(2 * bit_width - 2);
-  ExactBigIntOracle min_prod_bound = max_prod_bound;
+  ExactBigIntOracle min_prod_bound = ExactBigIntOracle::mul(half_domain, max_operand);
   min_prod_bound.negative = true;
 
   bool sum_in_accum_bounds =
+      (expected_oa_sum >= min_add_bound && expected_oa_sum <= max_add_bound) &&
       (computed_t_sum_oracle >= min_add_bound && computed_t_sum_oracle <= max_add_bound) &&
       (computed_b_sum_oracle >= min_add_bound && computed_b_sum_oracle <= max_add_bound);
   bool prod_in_accum_bounds =
+      (expected_oa_prod >= min_prod_bound && expected_oa_prod <= max_prod_bound) &&
       (computed_t_prod_oracle >= min_prod_bound && computed_t_prod_oracle <= max_prod_bound) &&
       (computed_b_prod_oracle >= min_prod_bound && computed_b_prod_oracle <= max_prod_bound);
 
@@ -703,11 +728,37 @@ inline OracleValidationReport evaluate_oracle_validation_report(
       (b_sum.limbs == expected_b_sum.limbs) && (b_prod.limbs == expected_b_prod.limbs);
 
   rep.absence_of_truncation =
-      capacity_ok && no_residual && high_trits_preserved && high_binary_limbs_preserved &&
+      all_trytes_canonical && trit_sizes_valid && capacity_ok && no_residual &&
+      high_trits_preserved && high_binary_limbs_preserved &&
       (computed_t_sum_oracle == expected_oa_sum) && (computed_t_prod_oracle == expected_oa_prod) &&
       (computed_b_sum_oracle == expected_oa_sum) && (computed_b_prod_oracle == expected_oa_prod);
 
   return rep;
+}
+
+// Object-level 5-Dimensional Oracle Validation Evaluator:
+// Validates stored trytes (has_canonical_trytes()) BEFORE calling to_trits() so a malformed
+// stored tryte (e.g. +14) can never reach TRYTE_TO_TRITS[tryte + 13].
+template <size_t T_In, size_t T_Add, size_t T_Mul, size_t B_In, size_t B_Add, size_t B_Mul>
+inline OracleValidationReport evaluate_oracle_validation_report(
+    size_t bit_width, const ExactBigIntOracle& oa, const ExactBigIntOracle& ob,
+    const TernaryMultiLimb<T_In>& ta, const TernaryMultiLimb<T_In>& tb,
+    const TernaryMultiLimb<T_Add>& t_sum, const TernaryMultiLimb<T_Mul>& t_prod,
+    const BinaryMultiLimb<B_In>& ba, const BinaryMultiLimb<B_In>& bb,
+    const BinaryMultiLimb<B_Add>& b_sum, const BinaryMultiLimb<B_Mul>& b_prod,
+    const ExactBigIntOracle& expected_oa_sum, const ExactBigIntOracle& expected_oa_prod,
+    bool expected_sum_overflow, bool expected_prod_overflow) {
+  std::vector<int8_t> ta_trits = ta.has_canonical_trytes() ? ta.to_trits() : std::vector<int8_t>{};
+  std::vector<int8_t> tb_trits = tb.has_canonical_trytes() ? tb.to_trits() : std::vector<int8_t>{};
+  std::vector<int8_t> t_sum_trits =
+      t_sum.has_canonical_trytes() ? t_sum.to_trits() : std::vector<int8_t>{};
+  std::vector<int8_t> t_prod_trits =
+      t_prod.has_canonical_trytes() ? t_prod.to_trits() : std::vector<int8_t>{};
+
+  return evaluate_oracle_validation_report<T_In, T_Add, T_Mul, B_In, B_Add, B_Mul>(
+      bit_width, oa, ob, ta, ta_trits, tb, tb_trits, t_sum, t_sum_trits, t_prod, t_prod_trits, ba,
+      bb, b_sum, b_prod, expected_oa_sum, expected_oa_prod, expected_sum_overflow,
+      expected_prod_overflow);
 }
 
 }  // namespace scg08

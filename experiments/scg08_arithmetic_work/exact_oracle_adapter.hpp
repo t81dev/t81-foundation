@@ -343,6 +343,7 @@ inline bool oracle_fits_in_binary_limbs(const ExactBigIntOracle& val, size_t num
 // Result-level sign verification for balanced-ternary digit vectors
 inline bool verify_ternary_sign(std::span<const int8_t> trits,
                                 const ExactBigIntOracle& expected) noexcept {
+  if (trits.empty()) return false;
   if (expected.is_zero() && expected.negative) return false;
   int8_t msd_sign = 0;
   for (size_t i = trits.size(); i-- > 0;) {
@@ -361,6 +362,7 @@ inline bool verify_ternary_sign(std::span<const int8_t> trits,
 // Result-level sign verification for sign-magnitude binary limbs (rejecting -0 and sign flips)
 inline bool verify_binary_sign(std::span<const uint64_t> limbs, bool is_negative,
                                const ExactBigIntOracle& expected) noexcept {
+  if (limbs.empty()) return false;
   if (expected.is_zero() && expected.negative) return false;
   bool all_zero = true;
   for (uint64_t w : limbs) {
