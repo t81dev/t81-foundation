@@ -6,7 +6,8 @@
   "timestamp_utc": "2026-11-10T22:30:00Z",
   "git_context": {
     "baseline_sha": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3",
-    "head_sha": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3"
+    "evaluated_implementation_sha": "2dd3cc62e526942cdcbed6d100770c08c26ab2fe",
+    "evidence_generation_sha": null
   },
   "trial_budget": {
     "max_cumulative_trials_ceiling": 1000,

@@ -40,10 +40,33 @@
     },
     "git_context": {
       "type": "object",
-      "required": ["baseline_sha", "head_sha"],
+      "required": ["baseline_sha", "evaluated_implementation_sha", "evidence_generation_sha"],
       "properties": {
-        "baseline_sha": {"type": "string"},
-        "head_sha": {"type": "string"}
+        "baseline_sha": {
+          "type": "string",
+          "minLength": 40,
+          "maxLength": 40,
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "evaluated_implementation_sha": {
+          "type": "string",
+          "minLength": 40,
+          "maxLength": 40,
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "evidence_generation_sha": {
+          "description": "Actual historical execution revision; null means UNVERIFIED, without an independently traceable execution receipt. The evaluated implementation identifies source reviewed, not a generating execution.",
+          "type": ["string", "null"],
+          "minLength": 40,
+          "maxLength": 40,
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "evidence_publication_sha": {
+          "type": "string",
+          "minLength": 40,
+          "maxLength": 40,
+          "pattern": "^[0-9a-f]{40}$"
+        }
       }
     },
     "trial_budget": {
@@ -54,8 +77,8 @@
         "budget_enforced_fail_closed"
       ],
       "properties": {
-        "max_cumulative_trials_ceiling": {"type": "integer"},
-        "actual_cumulative_trials_executed": {"type": "integer"},
+        "max_cumulative_trials_ceiling": {"type": "integer", "minimum": 1},
+        "actual_cumulative_trials_executed": {"type": "integer", "minimum": 0},
         "budget_enforced_fail_closed": {"type": "boolean"}
       }
     },
@@ -74,7 +97,7 @@
             "mean_run_length"
           ],
           "properties": {
-            "total_digits": {"type": "integer"},
+            "total_digits": {"type": "integer", "minimum": 1},
             "f_gen_given_0": {"type": "number"},
             "f_trans": {"type": "number"},
             "f_occ": {"type": "number"},
@@ -93,7 +116,7 @@
             "mean_run_length"
           ],
           "properties": {
-            "total_digits": {"type": "integer"},
+            "total_digits": {"type": "integer", "minimum": 1},
             "f_gen_given_0": {"type": "number"},
             "f_trans": {"type": "number"},
             "f_occ": {"type": "number"},
@@ -129,61 +152,61 @@
               "w_ops_mul_binary"
             ],
             "properties": {
-              "bit_width": {"type": "integer"},
-              "operand_trits": {"type": "integer"},
-              "add_trits_min": {"type": "integer"},
-              "mul_trits_min": {"type": "integer"},
-              "ternary_limbs_op": {"type": "integer"},
-              "ternary_limbs_add": {"type": "integer"},
-              "ternary_limbs_mul": {"type": "integer"},
+              "bit_width": {"type": "integer", "minimum": 0},
+              "operand_trits": {"type": "integer", "minimum": 0},
+              "add_trits_min": {"type": "integer", "minimum": 0},
+              "mul_trits_min": {"type": "integer", "minimum": 0},
+              "ternary_limbs_op": {"type": "integer", "minimum": 0},
+              "ternary_limbs_add": {"type": "integer", "minimum": 0},
+              "ternary_limbs_mul": {"type": "integer", "minimum": 0},
               "counters_add_ternary": {
                 "type": "object",
                 "required": ["op_alu_add_sub", "op_alu_mul", "op_table_lookup", "op_branch_cond", "op_norm_pass"],
                 "properties": {
-                  "op_alu_add_sub": {"type": "integer"},
-                  "op_alu_mul": {"type": "integer"},
-                  "op_table_lookup": {"type": "integer"},
-                  "op_branch_cond": {"type": "integer"},
-                  "op_norm_pass": {"type": "integer"}
+                  "op_alu_add_sub": {"type": "integer", "minimum": 0},
+                  "op_alu_mul": {"type": "integer", "minimum": 0},
+                  "op_table_lookup": {"type": "integer", "minimum": 0},
+                  "op_branch_cond": {"type": "integer", "minimum": 0},
+                  "op_norm_pass": {"type": "integer", "minimum": 0}
                 }
               },
               "counters_mul_ternary": {
                 "type": "object",
                 "required": ["op_alu_add_sub", "op_alu_mul", "op_table_lookup", "op_branch_cond", "op_norm_pass"],
                 "properties": {
-                  "op_alu_add_sub": {"type": "integer"},
-                  "op_alu_mul": {"type": "integer"},
-                  "op_table_lookup": {"type": "integer"},
-                  "op_branch_cond": {"type": "integer"},
-                  "op_norm_pass": {"type": "integer"}
+                  "op_alu_add_sub": {"type": "integer", "minimum": 0},
+                  "op_alu_mul": {"type": "integer", "minimum": 0},
+                  "op_table_lookup": {"type": "integer", "minimum": 0},
+                  "op_branch_cond": {"type": "integer", "minimum": 0},
+                  "op_norm_pass": {"type": "integer", "minimum": 0}
                 }
               },
               "counters_add_binary": {
                 "type": "object",
                 "required": ["op_alu_add_sub", "op_alu_mul", "op_table_lookup", "op_branch_cond", "op_norm_pass"],
                 "properties": {
-                  "op_alu_add_sub": {"type": "integer"},
-                  "op_alu_mul": {"type": "integer"},
-                  "op_table_lookup": {"type": "integer"},
-                  "op_branch_cond": {"type": "integer"},
-                  "op_norm_pass": {"type": "integer"}
+                  "op_alu_add_sub": {"type": "integer", "minimum": 0},
+                  "op_alu_mul": {"type": "integer", "minimum": 0},
+                  "op_table_lookup": {"type": "integer", "minimum": 0},
+                  "op_branch_cond": {"type": "integer", "minimum": 0},
+                  "op_norm_pass": {"type": "integer", "minimum": 0}
                 }
               },
               "counters_mul_binary": {
                 "type": "object",
                 "required": ["op_alu_add_sub", "op_alu_mul", "op_table_lookup", "op_branch_cond", "op_norm_pass"],
                 "properties": {
-                  "op_alu_add_sub": {"type": "integer"},
-                  "op_alu_mul": {"type": "integer"},
-                  "op_table_lookup": {"type": "integer"},
-                  "op_branch_cond": {"type": "integer"},
-                  "op_norm_pass": {"type": "integer"}
+                  "op_alu_add_sub": {"type": "integer", "minimum": 0},
+                  "op_alu_mul": {"type": "integer", "minimum": 0},
+                  "op_table_lookup": {"type": "integer", "minimum": 0},
+                  "op_branch_cond": {"type": "integer", "minimum": 0},
+                  "op_norm_pass": {"type": "integer", "minimum": 0}
                 }
               },
-              "w_ops_add_ternary": {"type": "integer"},
-              "w_ops_mul_ternary": {"type": "integer"},
-              "w_ops_add_binary": {"type": "integer"},
-              "w_ops_mul_binary": {"type": "integer"}
+              "w_ops_add_ternary": {"type": "integer", "minimum": 0},
+              "w_ops_mul_ternary": {"type": "integer", "minimum": 0},
+              "w_ops_add_binary": {"type": "integer", "minimum": 0},
+              "w_ops_mul_binary": {"type": "integer", "minimum": 0}
             }
           }
         }
