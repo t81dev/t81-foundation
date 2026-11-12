@@ -28,6 +28,22 @@ REQUIRED_FILES = [
     "pull_requests_snapshot.json"
 ]
 
+DATASET_SCOPES = {
+    "architecture_layers.json": "7-layer architectural taxonomy (L1 Language to L7 Assurance)",
+    "architecture_nodes.json": "35 architectural components across 7 platform layers",
+    "architecture_edges.json": "32 technical dependency edges and source line evidence anchors",
+    "architecture_interfaces.json": "6 public system-level ABI and API interface contracts",
+    "architecture_gaps.json": "4 documented architectural and target-system gaps",
+    "execution_paths.json": "9 statically traced execution pathways and dispatch sequences",
+    "architecture_evidence.json": "Primary architectural citations and unresolved questions",
+    "visualization_layout.json": "3D isometric layout coordinates and layer elevations",
+    "subsystem_summary.json": "Aggregated subsystem graph (13 subsystems, 11 summary edges)",
+    "coverage_manifest.json": "Top-level directory representation census (18/35 directories, 51.43%)",
+    "component_evidence_index.json": "Evidence, test files, and continuity qualification receipts across 35 components",
+    "research_programs.json": "Historical research progress snapshot across 6 programs and H01-H08 mappings",
+    "pull_requests_snapshot.json": "Point-in-time snapshot of 18 cataloged PRs mapped to subsystems"
+}
+
 VALID_REFERENCE_TYPES = {
     "FUNCTION_DEFINITION",
     "CALL_SITE",
@@ -551,7 +567,176 @@ def detect_drift(data_dir=DATA_DIR):
                     "issue": f"Consumer node {c} not found in nodes"
                 })
 
+    # 6. Check Component Evidence Index Paths
+    evidence_index_file = "component_evidence_index.json"
+    ev_path = os.path.join(data_dir, evidence_index_file)
+    if os.path.exists(ev_path):
+        ev_data = load_json(evidence_index_file, base_dir=data_dir)
+        for c in ev_data.get("components", []):
+            cid = c.get("component_id", "unknown")
+            for tf in c.get("test_files", []):
+                if not os.path.exists(tf):
+                    anomalies["missing_source_paths"].append({
+                        "context": f"Component {cid} test_files",
+                        "path": tf
+                    })
+            for rf in c.get("receipt_files", []):
+                if not os.path.exists(rf):
+                    anomalies["missing_source_paths"].append({
+                        "context": f"Component {cid} receipt_files",
+                        "path": rf
+                    })
+
     return anomalies
+
+def check_git_ancestry(baseline_sha, comparison_ref="HEAD", repo_root="."):
+    """
+    Evaluates Git ancestry relationship between baseline_sha and comparison_ref.
+    Returns: (ancestry_status, commits_behind, resolved_comparison_sha)
+      - ancestry_status: 'IDENTICAL' | 'ANCESTOR' | 'DIVERGENT' | 'UNAVAILABLE'
+      - commits_behind: int (only if 'ANCESTOR' or 'IDENTICAL'), otherwise None
+      - resolved_comparison_sha: full SHA string or None
+    Handles missing Git, shallow clones, or unknown refs gracefully without raising exceptions.
+    """
+    import subprocess
+
+    if not baseline_sha or baseline_sha == "Not recorded":
+        return ("UNAVAILABLE", None, None)
+
+    try:
+        resolved_sha = subprocess.check_output(
+            ["git", "rev-parse", comparison_ref],
+            cwd=repo_root,
+            stderr=subprocess.DEVNULL
+        ).decode("utf-8").strip()
+    except Exception:
+        return ("UNAVAILABLE", None, None)
+
+    if baseline_sha == resolved_sha:
+        return ("IDENTICAL", 0, resolved_sha)
+
+    # Check if baseline_sha exists as a commit object in git
+    try:
+        subprocess.check_call(
+            ["git", "cat-file", "-e", f"{baseline_sha}^{{commit}}"],
+            cwd=repo_root,
+            stderr=subprocess.DEVNULL
+        )
+    except Exception:
+        return ("UNAVAILABLE", None, resolved_sha)
+
+    # Check if baseline_sha is an ancestor of comparison_ref
+    try:
+        subprocess.check_call(
+            ["git", "merge-base", "--is-ancestor", baseline_sha, comparison_ref],
+            cwd=repo_root,
+            stderr=subprocess.DEVNULL
+        )
+        count_str = subprocess.check_output(
+            ["git", "rev-list", "--count", f"{baseline_sha}..{comparison_ref}"],
+            cwd=repo_root,
+            stderr=subprocess.DEVNULL
+        ).decode("utf-8").strip()
+        return ("ANCESTOR", int(count_str), resolved_sha)
+    except subprocess.CalledProcessError:
+        return ("DIVERGENT", None, resolved_sha)
+    except Exception:
+        return ("UNAVAILABLE", None, resolved_sha)
+
+def collect_baseline_inventory(data_dir=DATA_DIR, comparison_ref="HEAD", repo_root="."):
+    """
+    Collects recorded baseline and timestamp metadata across all 13 required visualization datasets.
+    Missing metadata is explicitly normalized to 'Not recorded'.
+    Evaluates Git ancestry against comparison_ref when available.
+    """
+    inventory = []
+    for fname in REQUIRED_FILES:
+        fpath = os.path.join(data_dir, fname)
+        if not os.path.exists(fpath):
+            inventory.append({
+                "filename": fname,
+                "recorded_baseline": "Not recorded",
+                "recorded_timestamp": "Not recorded",
+                "scope": DATASET_SCOPES.get(fname, "Not recorded"),
+                "ancestry_status": "UNAVAILABLE",
+                "commits_behind": None
+            })
+            continue
+
+        try:
+            with open(fpath, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            data = {}
+
+        baseline = (
+            data.get("baseline_commit") or
+            data.get("authoritative_baseline_commit") or
+            data.get("pinned_baseline") or
+            "Not recorded"
+        )
+        timestamp = (
+            data.get("snapshot_timestamp") or
+            data.get("generated_at") or
+            data.get("verification_timestamp") or
+            data.get("timestamp") or
+            "Not recorded"
+        )
+        scope = DATASET_SCOPES.get(fname, data.get("description", "Not recorded"))
+
+        ancestry_status, commits_behind, resolved_sha = check_git_ancestry(
+            baseline, comparison_ref=comparison_ref, repo_root=repo_root
+        )
+
+        inventory.append({
+            "filename": fname,
+            "recorded_baseline": baseline,
+            "recorded_timestamp": timestamp,
+            "scope": scope,
+            "ancestry_status": ancestry_status,
+            "commits_behind": commits_behind
+        })
+
+    import subprocess
+    try:
+        resolved_comp_sha = subprocess.check_output(
+            ["git", "rev-parse", comparison_ref],
+            cwd=repo_root,
+            stderr=subprocess.DEVNULL
+        ).decode("utf-8").strip()
+    except Exception:
+        resolved_comp_sha = None
+
+    return {
+        "comparison_ref": comparison_ref,
+        "resolved_comparison_sha": resolved_comp_sha,
+        "inventory": inventory
+    }
+
+def print_baseline_inventory(inv_data):
+    ref = inv_data.get("comparison_ref", "HEAD")
+    sha = inv_data.get("resolved_comparison_sha")
+    sha_str = f" ({sha})" if sha else " (Git unavailable or unresolved)"
+    print(f"\n== Dataset Baseline & Provenance Inventory ==")
+    print(f"Comparison Reference: {ref}{sha_str}")
+    print("-" * 115)
+    print(f"{'Filename':<32} {'Recorded Baseline':<42} {'Timestamp':<22} {'Ancestry':<12} {'Behind':<8}")
+    print("-" * 115)
+    distinct_baselines = set()
+    for item in inv_data["inventory"]:
+        fname = item["filename"]
+        b = item["recorded_baseline"]
+        t = item["recorded_timestamp"]
+        anc = item["ancestry_status"]
+        behind = str(item["commits_behind"]) if item["commits_behind"] is not None else "-"
+        if b != "Not recorded":
+            distinct_baselines.add(b)
+        print(f"{fname:<32} {b:<42} {t:<22} {anc:<12} {behind:<8}")
+    print("-" * 115)
+    print(f"Total datasets cataloged: {len(inv_data['inventory'])}")
+    print(f"Distinct historical baselines: {len(distinct_baselines)}")
+    print("Note: Datasets represent recorded offline research observations. Mixed historical baselines")
+    print("or snapshot age do not constitute integrity defects or invalidate historical qualification.\n")
 
 if __name__ == "__main__":
     import argparse
@@ -559,13 +744,19 @@ if __name__ == "__main__":
     parser.add_argument("--data-dir", default=DATA_DIR, help="Path to visualization dataset directory")
     parser.add_argument("--drift-check", action="store_true", help="Perform architecture drift detection")
     parser.add_argument("--allow-missing-evidence-index", action="store_true", help="Explicit legacy mode permitting omitted component_evidence_index.json")
+    parser.add_argument("--comparison-ref", default="HEAD", help="Git reference for ancestry comparison (default: HEAD)")
+    parser.add_argument("--report-inventory", action="store_true", help="Output dataset baseline provenance inventory")
     args = parser.parse_args()
 
     validate(args.data_dir, allow_missing_evidence_index=args.allow_missing_evidence_index)
+    if args.drift_check or args.report_inventory:
+        inv_data = collect_baseline_inventory(data_dir=args.data_dir, comparison_ref=args.comparison_ref)
+        print_baseline_inventory(inv_data)
+
     if args.drift_check:
         drift = detect_drift(args.data_dir)
         total_anomalies = sum(len(v) for v in drift.values())
-        print(f"\n== Architecture Drift Detection Results ==")
+        print(f"== Architecture Drift Detection Results ==")
         print(f"Missing source paths: {len(drift['missing_source_paths'])}")
         print(f"Stale line references: {len(drift['stale_line_references'])}")
         print(f"Unsupported reference types: {len(drift['unsupported_reference_types'])}")

@@ -18,6 +18,7 @@ Validates:
 """
 
 import json
+from pathlib import Path
 import os
 import subprocess
 import time
@@ -135,6 +136,37 @@ def test_browser_dashboard_interaction_and_2d_fallback(tmp_path):
             # Check title
             assert "T81 Architecture & Research Status Dashboard" in page.title()
 
+            # Verify dynamic provenance badge derived from all 13 datasets
+            badge = page.locator("#baseline-badge")
+            assert badge.is_visible()
+            badge_text = badge.inner_text().upper()
+            assert "PROVENANCE: 13 DATASETS" in badge_text, f"Expected dynamic provenance badge, got '{badge_text}'"
+            assert "8E6918FA" not in badge_text, f"Stale hardcoded baseline badge detected: '{badge_text}'"
+
+            # Test opening Dataset Provenance & Freshness Modal via badge click
+            badge.click()
+            prov_modal = page.locator("#provenance-modal")
+            assert prov_modal.is_visible()
+            prov_text = prov_modal.inner_text()
+            assert "Dataset Provenance & Freshness Inventory" in prov_text
+            assert "Recorded Snapshot Notice" in prov_text
+            assert "All datasets reflect recorded offline research observations" in prov_text
+
+            # Verify table contains all 13 datasets and historical anchors
+            rows = prov_modal.locator("table tbody tr")
+            assert rows.count() == 13, f"Expected 13 dataset rows, found {rows.count()}"
+            assert "architecture_layers.json" in prov_text
+            assert "component_evidence_index.json" in prov_text
+            assert "research_programs.json" in prov_text
+            assert "pull_requests_snapshot.json" in prov_text
+            assert "4f96cb24358bfd260e67387b2c4db2797b01236f" in prov_text
+            assert "9a3e307ad21135749d35a4f1a6a0d5820d0cc698" in prov_text
+            assert "6c9eaf1a2fc8368cd06f6dddbbdcd78e6606c0ce" in prov_text
+
+            # Close provenance modal
+            page.locator("#close-provenance-btn").click()
+            assert not prov_modal.is_visible()
+
             # Verify footer component count matches canonical 35 nodes
             with open(NODES_PATH, "r", encoding="utf-8") as f:
                 canonical_nodes = json.load(f)["nodes"]
@@ -157,7 +189,7 @@ def test_browser_dashboard_interaction_and_2d_fallback(tmp_path):
             assert canvas.is_visible()
 
             # Take initial screenshot of 3D Canvas
-            screenshot_3d = os.path.join(VIZ_DIR, "dashboard_3d_screenshot.png")
+            screenshot_3d = str(tmp_path / "dashboard_3d_screenshot.png")
             page.screenshot(path=screenshot_3d)
             assert os.path.exists(screenshot_3d)
 
@@ -166,6 +198,15 @@ def test_browser_dashboard_interaction_and_2d_fallback(tmp_path):
             btn_2d.click()
             fallback = page.locator("#fallback-2d-container")
             assert fallback.is_visible()
+
+            # Verify Accessible Provenance Banner in 2D view
+            fallback_prov = page.locator(".fallback-provenance-banner")
+            assert fallback_prov.is_visible()
+            assert "13 datasets; 3 recorded historical baselines" in fallback_prov.inner_text()
+            page.locator("#fallback-provenance-btn").click()
+            assert prov_modal.is_visible()
+            page.locator("#close-provenance-btn").click()
+            assert not prov_modal.is_visible()
 
             # Verify all 35 components are rendered as cards in 2D view
             cards = page.locator(".layer-card-group")
@@ -181,7 +222,7 @@ def test_browser_dashboard_interaction_and_2d_fallback(tmp_path):
             assert not page.locator("#detail-empty").is_visible()
 
             # Take screenshot of Accessible 2D view
-            screenshot_2d = os.path.join(VIZ_DIR, "dashboard_2d_screenshot.png")
+            screenshot_2d = str(tmp_path / "dashboard_2d_screenshot.png")
             page.screenshot(path=screenshot_2d)
             assert os.path.exists(screenshot_2d)
 
@@ -243,6 +284,7 @@ def test_browser_dashboard_interaction_and_2d_fallback(tmp_path):
             research_modal = page.locator("#research-modal")
             assert research_modal.is_visible()
             modal_text = research_modal.inner_text()
+            assert "Recorded Research Snapshot" in modal_text
             assert "SCG-07" in modal_text
             assert "Phase 4: Native Firmware Compatibility" in modal_text
 
@@ -260,6 +302,7 @@ def test_browser_dashboard_interaction_and_2d_fallback(tmp_path):
             page.locator("#pr-panel-btn").click()
             pr_modal = page.locator("#pr-modal")
             assert pr_modal.is_visible()
+            assert "Recorded Pull Request Snapshot" in pr_modal.inner_text()
             assert "#757" in pr_modal.inner_text()
             page.locator("#close-pr-btn").click()
             assert not pr_modal.is_visible()
@@ -269,6 +312,7 @@ def test_browser_dashboard_interaction_and_2d_fallback(tmp_path):
             summary_modal = page.locator("#summary-modal")
             assert summary_modal.is_visible()
             sum_text = summary_modal.inner_text()
+            assert "Provenance & Snapshot Context" in sum_text
             assert "Methodological Constraint" in sum_text
             assert "VERIFIED" in sum_text
             assert f"{pct}%" in sum_text
@@ -280,6 +324,29 @@ def test_browser_dashboard_interaction_and_2d_fallback(tmp_path):
             page.locator("#view-mode-3d").click()
             assert canvas.is_visible()
             assert not fallback.is_visible()
+
+            # Changed metadata must render as text everywhere, without executing HTML.
+            payload = '<img src=x onerror="window.provenanceInjected=true">'
+            def changed_dataset(route):
+                data = json.loads(Path(VIZ_DIR, "architecture_layers.json").read_text())
+                data["baseline_commit"] = payload
+                data["timestamp"] = payload
+                route.fulfill(json=data)
+
+            page.route("**/architecture_layers.json", changed_dataset)
+            page.reload()
+            page.wait_for_function("document.querySelector('#baseline-badge').textContent.includes('13 Datasets')")
+            page.locator("#baseline-badge").click()
+            assert payload in prov_modal.inner_text()
+            assert prov_modal.locator("img").count() == 0
+            assert "Not recorded" in prov_modal.inner_text()
+            page.locator("#close-provenance-btn").click()
+            page.locator("#view-mode-2d").click()
+            assert payload in page.locator(".fallback-provenance-banner").inner_text()
+            page.locator("#summary-btn").click()
+            assert payload in summary_modal.inner_text()
+            assert page.locator("img").count() == 0
+            assert page.evaluate("window.provenanceInjected === undefined")
 
             browser.close()
 

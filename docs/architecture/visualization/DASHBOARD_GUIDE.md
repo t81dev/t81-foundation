@@ -1,8 +1,8 @@
 # T81 Architecture & Research Status Dashboard Guide (`T81-ARCH-VIZ-003`)
 
-**Document ID:** `T81-ARCH-VIZ-003-GUIDE-R2`
-**Authoritative Baseline:** `8e6918fa98e19ee1476f91c97e82989b051a02e7` (`origin/main`, post-PR #759)
-**Status:** Corrected & Verified under Pinned Baseline
+**Document ID:** `T81-ARCH-VIZ-003-GUIDE-R3`
+**Authoritative Baseline:** Multi-Baseline Provenance Architecture (Taxonomy: `4f96cb2435`, Evidence: `9a3e307ad2`, Snapshots: `6c9eaf1a2f`)
+**Status:** Corrected & Verified under Multi-Baseline Provenance Framework
 **Audience:** Maintainers, Researchers, System Integrators, and External Auditors
 
 ---
@@ -17,7 +17,8 @@ It provides an interactive interface to explore:
 3. **Evidence Classifications:** Real-time inspection of source code files, CMake test targets, and formal scientific receipts (`VERIFIED`, `STATICALLY_SUPPORTED`, `UNVERIFIED`, `NOT_MAPPED`).
 4. **Independent Status Overlays:** Multi-dimensional tracking separating Implementation Maturity, Research Qualification, and Engineering Activity.
 5. **Research Program Tracking:** Direct traceability to SCG-01..08, TernaryOS ARCH-ENG-002 Phases 1..4, TISC v1.1.0/v2.0, CanonFS, Hardware/RTL feasibility, and empirical hypothesis register H01–H08.
-6. **Pull Request Subsystem Activity:** Deterministic tracking of open and recently merged pull requests affecting specific subsystems.
+6. **Pull Request Subsystem Activity:** Deterministic tracking of open and recently merged pull requests affecting specific subsystems at snapshot time.
+7. **Dataset Provenance & Freshness Transparency:** Per-dataset inspection of recorded baseline SHAs, timestamps, and scopes across the loaded dataset inventory (currently 13 required datasets). Clear distinction between historical qualification anchors (SCG-07 Phase 6, CPA-004) and recorded point-in-time progress snapshots.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
@@ -106,7 +107,7 @@ The dashboard provides four **mutually independent status overlays** selectable 
 | **Evidence Classification** | `VERIFIED`<br>`STATICALLY_SUPPORTED`<br>`UNVERIFIED`<br>`NOT_MAPPED` | Machine-checkable evidence baseline defined in ARCH-ENG-002: formal receipts, tests, and qualification. |
 | **Implementation Maturity** | `IMPLEMENTED`<br>`EXPERIMENTAL`<br>`PROPOSED`<br>`UNKNOWN` | Software presence in the codebase (compiled source vs research prototypes vs specifications). |
 | **Research Qualification** | `QUALIFIED`<br>`QUALIFIED_WITH_LIMITATIONS`<br>`BLOCKED`<br>`NOT EVALUATED` | Formal scientific qualification status under an independent mathematical oracle. |
-| **Engineering Activity** | `ACTIVE PR`<br>`MERGED MILESTONE`<br>`OPEN BLOCKER`<br>`NO RECORDED ACTIVITY` | Current pull request involvement from repository metadata. |
+| **Engineering Activity** | `ACTIVE PR`<br>`MERGED MILESTONE`<br>`OPEN BLOCKER`<br>`NO RECORDED ACTIVITY` | Recorded pull request involvement at snapshot time. |
 
 ### Crucial Semantic Distinction
 A component may simultaneously have:
@@ -177,3 +178,15 @@ When refreshing PR status:
 2. **Local Browser Isolation:** The dashboard operates offline from static JSON files and does not issue external network requests.
 3. **No Dynamic Execution Verification:** Viewing a component in the dashboard does not imply that its C++ code has executed in your browser session.
 4. **Firmware Qualification Boundary:** Real QEMU execution of TernaryOS is currently diagnosed under PR #757 and PR #758 (all four matrix configurations failed at 2/5) and must not be represented as an accepted native pass.
+
+### Provenance interpretation
+
+The header, 2D banner, summary notice, and provenance table derive dataset counts
+and recorded baseline identities from the loaded inventory. Baselines identify
+historical observations; timestamps are dataset metadata, not currentness checks.
+Missing baseline or timestamp metadata displays `Not recorded`. The dashboard
+serves offline snapshots over local HTTP and independently knows neither the
+current local Git state nor current GitHub state. Only the validator compares
+recorded baselines with an explicitly resolved Git reference (`HEAD` by default).
+Mixed baselines and snapshot age are reported separately from integrity defects;
+historical evidence and qualification receipts remain unchanged.

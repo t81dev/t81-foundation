@@ -98,6 +98,11 @@
     els.prModal = document.getElementById('pr-modal');
     els.closePrBtn = document.getElementById('close-pr-btn');
     els.prModalBody = document.getElementById('pr-modal-body');
+    els.provenanceModal = document.getElementById('provenance-modal');
+    els.closeProvenanceBtn = document.getElementById('close-provenance-btn');
+    els.provenanceModalBody = document.getElementById('provenance-modal-body');
+    els.baselineBadge = document.getElementById('baseline-badge');
+    els.provenanceBtn = document.getElementById('provenance-btn');
     els.footerComponentCount = document.getElementById('footer-component-count');
     els.footerVerifiedCount = document.getElementById('footer-verified-count');
     els.footerCoverageMetric = document.getElementById('footer-coverage-metric');
@@ -121,9 +126,12 @@
     els.closeResearchBtn.addEventListener('click', () => els.researchModal.classList.add('hidden'));
     els.prPanelBtn.addEventListener('click', openPrModal);
     els.closePrBtn.addEventListener('click', () => els.prModal.classList.add('hidden'));
+    if (els.baselineBadge) els.baselineBadge.addEventListener('click', openProvenanceModal);
+    if (els.provenanceBtn) els.provenanceBtn.addEventListener('click', openProvenanceModal);
+    if (els.closeProvenanceBtn) els.closeProvenanceBtn.addEventListener('click', () => els.provenanceModal.classList.add('hidden'));
 
     // Close modal on click backdrop
-    [els.summaryModal, els.researchModal, els.prModal].forEach(m => {
+    [els.summaryModal, els.researchModal, els.prModal, els.provenanceModal].filter(Boolean).forEach(m => {
       m.addEventListener('click', (e) => {
         if (e.target === m) m.classList.add('hidden');
       });
@@ -243,11 +251,25 @@
     });
   }
 
+  // Escape dataset text at HTML sinks, including quoted attribute values.
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+
+  function provenanceSummary() {
+    const items = state.datasetProvenance || [];
+    const baselines = [...new Set(items.map(d => d.recordedBaseline).filter(b => b !== 'Not recorded'))];
+    return `${items.length} datasets; ${baselines.length} recorded historical baselines: ${baselines.join(', ') || 'Not recorded'}`;
+  }
+
   async function loadDatasets() {
     const basePath = '.';
     try {
       const [
-        layers, nodes, edges, ifaces, gaps, paths, evidence, layout, cov, research, prs
+        layers, nodes, edges, ifaces, gaps, paths, evidence, layout, cov, research, prs,
+        archEvidence, subSummary
       ] = await Promise.all([
         fetchJson(`${basePath}/architecture_layers.json`),
         fetchJson(`${basePath}/architecture_nodes.json`),
@@ -259,7 +281,9 @@
         fetchJson(`${basePath}/visualization_layout.json`),
         fetchJson(`${basePath}/coverage_manifest.json`),
         fetchJson(`${basePath}/research_programs.json`),
-        fetchJson(`${basePath}/pull_requests_snapshot.json`)
+        fetchJson(`${basePath}/pull_requests_snapshot.json`),
+        fetchJson(`${basePath}/architecture_evidence.json`),
+        fetchJson(`${basePath}/subsystem_summary.json`)
       ]);
 
       state.layers = layers.layers;
@@ -273,6 +297,46 @@
       state.coverage = cov;
       state.researchPrograms = research;
       state.prSnapshot = prs;
+
+      // Extract and normalize provenance metadata across all 13 datasets
+      const rawDatasets = [
+        { file: 'architecture_layers.json', data: layers, scope: '7-layer platform architectural taxonomy' },
+        { file: 'architecture_nodes.json', data: nodes, scope: '35 architectural components across 7 platform layers' },
+        { file: 'architecture_edges.json', data: edges, scope: '32 technical dependency edges and source line evidence anchors' },
+        { file: 'architecture_interfaces.json', data: ifaces, scope: '6 public system ABI and API interface contracts' },
+        { file: 'architecture_gaps.json', data: gaps, scope: '4 documented architectural and target-system gaps' },
+        { file: 'execution_paths.json', data: paths, scope: '9 statically traced execution pathways and dispatch sequences' },
+        { file: 'architecture_evidence.json', data: archEvidence, scope: 'Primary architectural citations and unresolved questions' },
+        { file: 'visualization_layout.json', data: layout, scope: '3D isometric layout coordinates and layer elevations' },
+        { file: 'subsystem_summary.json', data: subSummary, scope: 'Aggregated subsystem graph (13 subsystems, 11 summary edges)' },
+        { file: 'coverage_manifest.json', data: cov, scope: 'Repository top-level directory representation census (51.43%)' },
+        { file: 'component_evidence_index.json', data: evidence, scope: 'Evidence, test files, and continuity qualification receipts across 35 components' },
+        { file: 'research_programs.json', data: research, scope: 'Historical research progress snapshot across 6 programs and H01–H08 mappings' },
+        { file: 'pull_requests_snapshot.json', data: prs, scope: 'Point-in-time snapshot of 18 cataloged PRs mapped to subsystems' }
+      ];
+
+      state.datasetProvenance = rawDatasets.map(item => {
+        const d = item.data || {};
+        const baseline = d.baseline_commit || d.authoritative_baseline_commit || d.pinned_baseline || 'Not recorded';
+        const timestamp = d.snapshot_timestamp || d.generated_at || d.verification_timestamp || d.timestamp || 'Not recorded';
+        return {
+          filename: item.file,
+          recordedBaseline: baseline,
+          recordedTimestamp: timestamp,
+          scope: item.scope
+        };
+      });
+
+      // Update header badge dynamically from dataset provenance
+      if (els.baselineBadge) {
+        const distinctBaselines = new Set(
+          state.datasetProvenance
+            .map(d => d.recordedBaseline)
+            .filter(b => b !== 'Not recorded')
+        );
+        els.baselineBadge.textContent = `Provenance: ${state.datasetProvenance.length} Datasets (${distinctBaselines.size} Baselines)`;
+        els.baselineBadge.title = `Click to inspect the complete ${state.datasetProvenance.length}-dataset provenance table (Distinct baselines: ${Array.from(distinctBaselines).map(b => b.slice(0, 8)).join(', ')})`;
+      }
 
       // Build Fast Lookups
       state.nodes.forEach(n => nodesById.set(n.id, n));
@@ -325,8 +389,8 @@
       item.className = 'layer-item';
       item.dataset.layerId = layer.id;
       item.innerHTML = `
-        <span class="layer-color-dot" style="background-color: ${layer.color_theme};"></span>
-        <span class="layer-item-title">${layer.name}</span>
+        <span class="layer-color-dot" style="background-color: ${escapeHtml(layer.color_theme)};"></span>
+        <span class="layer-item-title">${escapeHtml(layer.name)}</span>
         <span class="layer-item-count">${nodeCount}</span>
       `;
       item.addEventListener('click', () => {
@@ -534,6 +598,20 @@
   function render2DFallback() {
     els.fallbackGrid.innerHTML = '';
 
+    // Accessible Provenance & Freshness Banner in 2D View
+    if (state.datasetProvenance && state.datasetProvenance.length > 0) {
+      const banner = document.createElement('div');
+      banner.className = 'fallback-provenance-banner';
+      banner.style.cssText = 'background:var(--bg-card); border:1px solid var(--border-color); border-radius:6px; padding:10px 14px; margin-bottom:14px; font-size:0.8rem; color:var(--text-secondary); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;';
+      banner.innerHTML = `
+        <span><strong>Dataset Provenance:</strong> ${escapeHtml(provenanceSummary())}. Data represents recorded offline snapshots; current repository state is unknown to this dashboard.</span>
+        <button id="fallback-provenance-btn" class="toggle-btn" style="padding:4px 10px; font-size:0.75rem;">View Provenance Table &rarr;</button>
+      `;
+      const btn = banner.querySelector('#fallback-provenance-btn');
+      if (btn) btn.addEventListener('click', openProvenanceModal);
+      els.fallbackGrid.appendChild(banner);
+    }
+
     state.layers.forEach(layer => {
       if (!state.visibleLayers.has(layer.id)) return;
 
@@ -547,8 +625,8 @@
       const header = document.createElement('div');
       header.className = 'layer-card-header';
       header.innerHTML = `
-        <span class="layer-badge" style="background-color: ${layer.color_theme};">L${layer.index}</span>
-        <h3 class="layer-name-title">${layer.name}</h3>
+        <span class="layer-badge" style="background-color: ${escapeHtml(layer.color_theme)};">L${escapeHtml(layer.index)}</span>
+        <h3 class="layer-name-title">${escapeHtml(layer.name)}</h3>
         <span class="layer-item-count">(${layerNodes.length} component${layerNodes.length === 1 ? '' : 's'})</span>
       `;
       group.appendChild(header);
@@ -569,14 +647,14 @@
 
         card.innerHTML = `
           <div class="node-card-top">
-            <h4 class="node-card-name">${node.name}</h4>
-            <span class="status-tag ${overlayBadge.cls}">${overlayBadge.label}</span>
+            <h4 class="node-card-name">${escapeHtml(node.name)}</h4>
+            <span class="status-tag ${overlayBadge.cls}">${escapeHtml(overlayBadge.label)}</span>
           </div>
-          <div class="node-card-id">${node.id}</div>
-          <p class="node-card-desc">${node.description || 'No description provided.'}</p>
+          <div class="node-card-id">${escapeHtml(node.id)}</div>
+          <p class="node-card-desc">${escapeHtml(node.description || 'No description provided.')}</p>
           <div class="node-card-badges">
-            <span class="status-tag ${classification === 'VERIFIED' ? 'tag-verified' : 'tag-static'}">${classification}</span>
-            <span class="status-tag tag-not-mapped">${node.category}</span>
+            <span class="status-tag ${classification === 'VERIFIED' ? 'tag-verified' : 'tag-static'}">${escapeHtml(classification)}</span>
+            <span class="status-tag tag-not-mapped">${escapeHtml(node.category)}</span>
           </div>
         `;
 
@@ -823,30 +901,30 @@
         <span class="detail-section-title">Identity &amp; Governance</span>
         <div class="detail-prop-row">
           <span class="detail-prop-key">ID:</span>
-          <span class="detail-prop-val">${node.id}</span>
+          <span class="detail-prop-val">${escapeHtml(node.id)}</span>
         </div>
         <div class="detail-prop-row">
           <span class="detail-prop-key">Layer:</span>
-          <span class="detail-prop-val">${layer ? layer.name : node.layer_id}</span>
+          <span class="detail-prop-val">${escapeHtml(layer ? layer.name : node.layer_id)}</span>
         </div>
         <div class="detail-prop-row">
           <span class="detail-prop-key">Category:</span>
-          <span class="detail-prop-val">${node.category}</span>
+          <span class="detail-prop-val">${escapeHtml(node.category)}</span>
         </div>
         <div class="detail-prop-row">
           <span class="detail-prop-key">Evidence Status:</span>
-          <span class="status-tag ${classification === 'VERIFIED' ? 'tag-verified' : 'tag-static'}">${classification}</span>
+          <span class="status-tag ${classification === 'VERIFIED' ? 'tag-verified' : 'tag-static'}">${escapeHtml(classification)}</span>
         </div>
         <div class="detail-prop-row">
           <span class="detail-prop-key">Active Overlay (${state.activeOverlay}):</span>
-          <span class="status-tag ${overlayBadge.cls}">${overlayBadge.label}</span>
+          <span class="status-tag ${overlayBadge.cls}">${escapeHtml(overlayBadge.label)}</span>
         </div>
       </div>
 
       <!-- Description -->
       <div class="detail-section">
         <span class="detail-section-title">Description</span>
-        <p style="font-size:0.8rem; color:var(--text-secondary);">${node.description || 'No description provided.'}</p>
+        <p style="font-size:0.8rem; color:var(--text-secondary);">${escapeHtml(node.description || 'No description provided.')}</p>
       </div>
 
       <!-- Implementation Maturity -->
@@ -862,19 +940,19 @@
         </div>
         <div class="detail-prop-row">
           <span class="detail-prop-key">Execution Profile:</span>
-          <span class="detail-prop-val">${node.maturity ? node.maturity.execution : 'N/A'}</span>
+          <span class="detail-prop-val">${escapeHtml(node.maturity ? node.maturity.execution : 'N/A')}</span>
         </div>
         <div class="detail-prop-row">
           <span class="detail-prop-key">Test Coverage:</span>
-          <span class="detail-prop-val">${node.maturity ? node.maturity.test_coverage : 'NONE'}</span>
+          <span class="detail-prop-val">${escapeHtml(node.maturity ? node.maturity.test_coverage : 'NONE')}</span>
         </div>
         <div class="detail-prop-row">
           <span class="detail-prop-key">Qualification Level:</span>
-          <span class="detail-prop-val">${node.maturity ? node.maturity.qualification : 'UNVERIFIED'}</span>
+          <span class="detail-prop-val">${escapeHtml(node.maturity ? node.maturity.qualification : 'UNVERIFIED')}</span>
         </div>
         <div class="detail-prop-row">
           <span class="detail-prop-key">Production Status:</span>
-          <span class="detail-prop-val">${node.maturity ? node.maturity.production_status : 'N/A'}</span>
+          <span class="detail-prop-val">${escapeHtml(node.maturity ? node.maturity.production_status : 'N/A')}</span>
         </div>
       </div>
 
@@ -882,11 +960,11 @@
       <div class="detail-section">
         <span class="detail-section-title">Evidence &amp; Continuity Receipts</span>
         <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">
-          ${ev && ev.evidence_notes ? ev.evidence_notes : 'No evidence notes recorded.'}
+          ${escapeHtml(ev && ev.evidence_notes ? ev.evidence_notes : 'No evidence notes recorded.')}
         </p>
         ${ev && ev.receipt_files && ev.receipt_files.length > 0 ? `
           <div class="file-link-list">
-            ${ev.receipt_files.map(r => `<span class="file-link-item">${r}</span>`).join('')}
+            ${ev.receipt_files.map(r => `<span class="file-link-item">${escapeHtml(r)}</span>`).join('')}
           </div>
         ` : '<span style="font-size:0.75rem; color:var(--text-muted);">No formal receipts bound (unverified for independent qualification).</span>'}
       </div>
@@ -896,7 +974,7 @@
         <span class="detail-section-title">CMake Test Targets</span>
         ${ev && ev.cmake_test_targets && ev.cmake_test_targets.length > 0 ? `
           <div class="file-link-list">
-            ${ev.cmake_test_targets.map(t => `<span class="file-link-item">${t}</span>`).join('')}
+            ${ev.cmake_test_targets.map(t => `<span class="file-link-item">${escapeHtml(t)}</span>`).join('')}
           </div>
         ` : '<span style="font-size:0.75rem; color:var(--text-muted);">No standalone CMake test targets.</span>'}
       </div>
@@ -906,7 +984,7 @@
         <span class="detail-section-title">Tracked Source Files</span>
         ${node.source_paths && node.source_paths.length > 0 ? `
           <div class="file-link-list">
-            ${node.source_paths.map(s => `<span class="file-link-item">${s}</span>`).join('')}
+            ${node.source_paths.map(s => `<span class="file-link-item">${escapeHtml(s)}</span>`).join('')}
           </div>
         ` : '<span style="font-size:0.75rem; color:var(--text-muted);">No direct source files.</span>'}
       </div>
@@ -919,7 +997,7 @@
         </div>
         ${downEdges.length > 0 ? `
           <div class="file-link-list">
-            ${downEdges.map(e => `<span class="file-link-item">&rarr; ${e.target_id} [${e.dependency_type}]</span>`).join('')}
+            ${downEdges.map(e => `<span class="file-link-item">&rarr; ${escapeHtml(e.target_id)} [${escapeHtml(e.dependency_type)}]</span>`).join('')}
           </div>
         ` : '<span style="font-size:0.75rem; color:var(--text-muted);">No outbound dependencies.</span>'}
         <div class="detail-prop-row" style="margin-top:6px;">
@@ -927,7 +1005,7 @@
         </div>
         ${upEdges.length > 0 ? `
           <div class="file-link-list">
-            ${upEdges.map(e => `<span class="file-link-item">&larr; ${e.source_id} [${e.dependency_type}]</span>`).join('')}
+            ${upEdges.map(e => `<span class="file-link-item">&larr; ${escapeHtml(e.source_id)} [${escapeHtml(e.dependency_type)}]</span>`).join('')}
           </div>
         ` : '<span style="font-size:0.75rem; color:var(--text-muted);">No inbound dependents.</span>'}
       </div>
@@ -939,8 +1017,8 @@
           <div class="file-link-list">
             ${prs.map(pr => `
               <div class="file-link-item" style="display:flex; justify-content:space-between; align-items:center;">
-                <span>#${pr.pr_number} ${pr.title.slice(0, 32)}...</span>
-                <span class="status-tag ${pr.state === 'MERGED' ? 'tag-verified' : 'tag-static'}">${pr.state}</span>
+                <span>#${escapeHtml(pr.pr_number)} ${escapeHtml(pr.title.slice(0, 32))}...</span>
+                <span class="status-tag ${pr.state === 'MERGED' ? 'tag-verified' : 'tag-static'}">${escapeHtml(pr.state)}</span>
               </div>
             `).join('')}
           </div>
@@ -968,8 +1046,13 @@
     });
 
     els.summaryModalBody.innerHTML = `
+      <!-- Notice on Recorded Offline Baselines -->
+      <div style="background:rgba(56,139,253,0.1); border:1px solid rgba(56,139,253,0.3); padding:10px 14px; border-radius:6px; font-size:0.8rem; margin-bottom:12px; color:var(--text-primary); line-height:1.4;">
+        <strong>Provenance &amp; Snapshot Context:</strong> The metrics below reflect recorded repository observations across ${escapeHtml(provenanceSummary())}. Different baselines across datasets do not establish semantic invalidity; this offline tool does not poll or claim knowledge of current local repository or live remote GitHub state.
+      </div>
+
       <!-- Notice on Non-Universal Metrics -->
-      <div style="background:rgba(210,153,34,0.15); border:1px solid rgba(210,153,34,0.4); padding:10px 14px; border-radius:6px; color:#f0883e; font-size:0.8rem;">
+      <div style="background:rgba(210,153,34,0.15); border:1px solid rgba(210,153,34,0.4); padding:10px 14px; border-radius:6px; color:#f0883e; font-size:0.8rem; margin-bottom:12px;">
         <strong>Methodological Constraint:</strong> All metrics derive strictly from inspected repository evidence and research receipts. The T81 Foundation does not publish an aggregate "overall system completion %" because implementation presence, test execution, and independent mathematical qualification represent fundamentally distinct dimensions.
       </div>
 
@@ -988,25 +1071,25 @@
           <tbody>
             <tr>
               <td><span class="status-tag tag-verified">VERIFIED</span></td>
-              <td><strong>${evSummary.VERIFIED || 0}</strong></td>
+              <td><strong>${escapeHtml(evSummary.VERIFIED || 0)}</strong></td>
               <td>${((evSummary.VERIFIED || 0) / state.nodes.length * 100).toFixed(1)}%</td>
               <td>Formal continuity receipt + dedicated tests + QUALIFIED maturity (SCG-07 & CPA-004)</td>
             </tr>
             <tr>
               <td><span class="status-tag tag-static">STATICALLY_SUPPORTED</span></td>
-              <td><strong>${evSummary.STATICALLY_SUPPORTED || 0}</strong></td>
+              <td><strong>${escapeHtml(evSummary.STATICALLY_SUPPORTED || 0)}</strong></td>
               <td>${((evSummary.STATICALLY_SUPPORTED || 0) / state.nodes.length * 100).toFixed(1)}%</td>
               <td>Tracked C++ source code + compiled tests/targets; no independent continuity qualification receipt</td>
             </tr>
             <tr>
               <td><span class="status-tag tag-unverified">UNVERIFIED</span></td>
-              <td><strong>${evSummary.UNVERIFIED || 0}</strong></td>
+              <td><strong>${escapeHtml(evSummary.UNVERIFIED || 0)}</strong></td>
               <td>${((evSummary.UNVERIFIED || 0) / state.nodes.length * 100).toFixed(1)}%</td>
               <td>Draft or experimental code lacking dedicated test coverage</td>
             </tr>
             <tr>
               <td><span class="status-tag tag-not-mapped">NOT_MAPPED</span></td>
-              <td><strong>${evSummary.NOT_MAPPED || 0}</strong></td>
+              <td><strong>${escapeHtml(evSummary.NOT_MAPPED || 0)}</strong></td>
               <td>${((evSummary.NOT_MAPPED || 0) / state.nodes.length * 100).toFixed(1)}%</td>
               <td>Specification or target architecture lacking internal source representation (DAIOS RFC-00D2)</td>
             </tr>
@@ -1049,11 +1132,11 @@
       <div>
         <h3 style="font-size:0.95rem; margin-bottom:8px;">Repository Directory Coverage</h3>
         <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:6px;">
-          Top-Level Directory Representation: <strong>${cov.coverage_metrics ? cov.coverage_metrics.top_level_directory_representation_percentage : 0}%</strong> (${cov.repository_directories ? cov.repository_directories.mapped_count : 0} of ${cov.repository_directories ? cov.repository_directories.total_top_level_directories : 0} directories mapped to architectural components).
+          Top-Level Directory Representation: <strong>${escapeHtml(cov.coverage_metrics ? cov.coverage_metrics.top_level_directory_representation_percentage : 0)}%</strong> (${escapeHtml(cov.repository_directories ? cov.repository_directories.mapped_count : 0)} of ${escapeHtml(cov.repository_directories ? cov.repository_directories.total_top_level_directories : 0)} directories mapped to architectural components).
         </p>
         <p style="font-size:0.75rem; color:var(--text-muted);">
           Unmapped directories represent tooling, CI configs, benchmarks, and external fixtures not part of runtime subsystems:
-          <br><code>${cov.repository_directories && cov.repository_directories.unmapped ? Object.keys(cov.repository_directories.unmapped).join(', ') : ''}</code>
+          <br><code>${escapeHtml(cov.repository_directories && cov.repository_directories.unmapped ? Object.keys(cov.repository_directories.unmapped).join(', ') : '')}</code>
         </p>
       </div>
 
@@ -1079,8 +1162,15 @@
 
     const progs = state.researchPrograms.programs || [];
     const hyps = state.researchPrograms.hypothesis_mappings || [];
+    const baseSha = state.researchPrograms.authoritative_baseline_commit
+      ? state.researchPrograms.authoritative_baseline_commit
+      : 'Not recorded';
+    const genAt = state.researchPrograms.generated_at || 'Not recorded';
 
     els.researchModalBody.innerHTML = `
+      <div style="background:rgba(56,139,253,0.1); border:1px solid rgba(56,139,253,0.3); padding:10px 14px; border-radius:6px; font-size:0.8rem; margin-bottom:12px; color:var(--text-primary); line-height:1.4;">
+        <strong>Recorded Research Snapshot:</strong> Pinned to authoritative baseline commit <code>${escapeHtml(baseSha)}</code> (generated <code>${escapeHtml(genAt)}</code>). Represents recorded progress and dispositions at snapshot time; this offline view does not claim knowledge of uncataloged or subsequent remote GitHub activity.
+      </div>
       <div style="margin-bottom:12px;">
         <p style="font-size:0.85rem; color:var(--text-secondary);">
           Evidence-linked status of active research initiatives across the T81 Foundation platform. All entries cite authoritative receipts and pull requests.
@@ -1092,10 +1182,10 @@
         ${progs.map(prog => `
           <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:6px; padding:12px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-              <h3 style="font-size:0.95rem; color:var(--accent-hover);">${prog.name}</h3>
-              <span class="status-tag ${prog.status.includes('ACTIVE') ? 'tag-static' : 'tag-verified'}">${prog.status}</span>
+              <h3 style="font-size:0.95rem; color:var(--accent-hover);">${escapeHtml(prog.name)}</h3>
+              <span class="status-tag ${prog.status.includes('ACTIVE') ? 'tag-static' : 'tag-verified'}">${escapeHtml(prog.status)}</span>
             </div>
-            <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:8px;">${prog.summary}</p>
+            <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:8px;">${escapeHtml(prog.summary)}</p>
 
             <!-- Phases Table -->
             <table class="data-table">
@@ -1110,12 +1200,12 @@
               <tbody>
                 ${prog.phases.map(ph => `
                   <tr>
-                    <td><code>${ph.phase_id}</code></td>
-                    <td>${ph.title}</td>
-                    <td><span class="status-tag ${ph.disposition.includes('QUALIFIED') || ph.disposition.includes('VERIFIED') ? 'tag-verified' : (ph.disposition.includes('WITHHELD') || ph.disposition.includes('REPAIR_NOT_AUTHORIZED') ? 'tag-blocked' : 'tag-static')}">${ph.disposition}</span></td>
+                    <td><code>${escapeHtml(ph.phase_id)}</code></td>
+                    <td>${escapeHtml(ph.title)}</td>
+                    <td><span class="status-tag ${ph.disposition.includes('QUALIFIED') || ph.disposition.includes('VERIFIED') ? 'tag-verified' : (ph.disposition.includes('WITHHELD') || ph.disposition.includes('REPAIR_NOT_AUTHORIZED') ? 'tag-blocked' : 'tag-static')}">${escapeHtml(ph.disposition)}</span></td>
                     <td style="font-size:0.75rem;">
-                      <div><code>${ph.receipt}</code></div>
-                      <div style="color:var(--text-muted);">${ph.details}</div>
+                      <div><code>${escapeHtml(ph.receipt)}</code></div>
+                      <div style="color:var(--text-muted);">${escapeHtml(ph.details)}</div>
                     </td>
                   </tr>
                 `).join('')}
@@ -1141,24 +1231,24 @@
           <tbody>
             ${hyps.map(h => `
               <tr>
-                <td><strong>${h.hypothesis_id}</strong></td>
+                <td><strong>${escapeHtml(h.hypothesis_id)}</strong></td>
                 <td>
-                  ${(h.evidence_tiers || []).map(t => `<span class="status-tag tag-static" style="font-size:0.7rem; padding:1px 4px; margin-right:2px;">Tier ${t}</span>`).join('')}
+                  ${(h.evidence_tiers || []).map(t => `<span class="status-tag tag-static" style="font-size:0.7rem; padding:1px 4px; margin-right:2px;">Tier ${escapeHtml(t)}</span>`).join('')}
                 </td>
                 <td style="font-size:0.8rem;">
-                  <div>${h.formal_claim || h.title}</div>
-                  ${h.baseline ? `<div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;"><strong>Baseline:</strong> ${h.baseline}</div>` : ''}
+                  <div>${escapeHtml(h.formal_claim || h.title)}</div>
+                  ${h.baseline ? `<div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;"><strong>Baseline:</strong> ${escapeHtml(h.baseline)}</div>` : ''}
                 </td>
                 <td style="font-size:0.75rem;">
-                  <div>${h.canonical_result || (h.current_disposition ? `<span class="status-tag tag-static">${h.current_disposition}</span>` : '')}</div>
-                  <div style="color:var(--accent-hover); margin-top:4px; font-weight:500;">${h.confidence || ''}</div>
+                  <div>${h.canonical_result ? escapeHtml(h.canonical_result) : (h.current_disposition ? `<span class="status-tag tag-static">${escapeHtml(h.current_disposition)}</span>` : '')}</div>
+                  <div style="color:var(--accent-hover); margin-top:4px; font-weight:500;">${escapeHtml(h.confidence || '')}</div>
                 </td>
                 <td style="font-size:0.75rem; color:var(--text-secondary);">
-                  <div>${h.unresolved_limitations || h.governance_note || ''}</div>
+                  <div>${escapeHtml(h.unresolved_limitations || h.governance_note || '')}</div>
                   ${h.linked_studies && h.linked_studies.length > 0 ? `
                     <div style="margin-top:4px; border-top:1px dashed var(--border-color); padding-top:4px;">
                       <strong style="color:var(--text-primary);">Linked Studies:</strong>
-                      ${h.linked_studies.map(s => `<div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">• <em>${s.study_id}:</em> ${s.scope}</div>`).join('')}
+                      ${h.linked_studies.map(s => `<div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">• <em>${escapeHtml(s.study_id)}:</em> ${escapeHtml(s.scope)}</div>`).join('')}
                     </div>
                   ` : ''}
                 </td>
@@ -1180,12 +1270,15 @@
 
     const prs = state.prSnapshot.pull_requests || [];
     const summary = state.prSnapshot.pr_inventory_summary || {};
+    const baseSha = state.prSnapshot.authoritative_baseline_commit
+      ? state.prSnapshot.authoritative_baseline_commit
+      : 'Not recorded';
+    const snapTs = state.prSnapshot.snapshot_timestamp || 'Not recorded';
 
     els.prModalBody.innerHTML = `
-      <div style="background:var(--bg-tertiary); border:1px solid var(--border-color); padding:10px 14px; border-radius:6px; font-size:0.8rem; color:var(--text-secondary); margin-bottom:12px;">
-        <div><strong>Snapshot Timestamp:</strong> <code>${state.prSnapshot.snapshot_timestamp}</code> (Baseline SHA: <code>${state.prSnapshot.authoritative_baseline_commit.slice(0, 10)}</code>)</div>
-        <div><strong>Inventory:</strong> ${summary.total_open_prs_observed} open PRs observed on remote repository; ${summary.cataloged_prs} cataloged and mapped to subsystems.</div>
-        <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">${state.prSnapshot.refresh_instructions}</div>
+      <div style="background:rgba(56,139,253,0.1); border:1px solid rgba(56,139,253,0.3); padding:10px 14px; border-radius:6px; font-size:0.8rem; color:var(--text-primary); margin-bottom:12px; line-height:1.4;">
+        <strong>Recorded Pull Request Snapshot:</strong> Captured at <code>${escapeHtml(snapTs)}</code> (Baseline SHA: <code>${escapeHtml(baseSha)}</code>). Catalogs ${prs.length} PRs mapped to architectural subsystems at snapshot time. This offline dashboard does not poll or claim knowledge of current local repository or live remote GitHub state.
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;"><strong>Inventory:</strong> ${escapeHtml(summary.total_open_prs_observed ?? 'Not recorded')} open PRs observed on remote repository; ${escapeHtml(summary.cataloged_prs || prs.length)} cataloged and mapped to subsystems.</div>
       </div>
 
       <table class="data-table">
@@ -1201,15 +1294,15 @@
         <tbody>
           ${prs.map(pr => `
             <tr>
-              <td><strong>#${pr.pr_number}</strong></td>
-              <td>${pr.title}</td>
-              <td><span class="status-tag ${pr.state === 'MERGED' ? 'tag-verified' : 'tag-static'}">${pr.state}</span></td>
+              <td><strong>#${escapeHtml(pr.pr_number)}</strong></td>
+              <td>${escapeHtml(pr.title)}</td>
+              <td><span class="status-tag ${pr.state === 'MERGED' ? 'tag-verified' : 'tag-static'}">${escapeHtml(pr.state)}</span></td>
               <td style="font-size:0.75rem;">
-                ${pr.affected_subsystems.map(sub => `<div><code>${sub}</code></div>`).join('')}
+                ${pr.affected_subsystems.map(sub => `<div><code>${escapeHtml(sub)}</code></div>`).join('')}
               </td>
               <td style="font-size:0.75rem;">
-                <div><span class="status-tag ${pr.checks_status.includes('PASSED') ? 'tag-verified' : 'tag-blocked'}">${pr.checks_status}</span></div>
-                <div style="color:var(--text-secondary); margin-top:2px;">${pr.review_disposition}</div>
+                <div><span class="status-tag ${pr.checks_status.includes('PASSED') ? 'tag-verified' : 'tag-blocked'}">${escapeHtml(pr.checks_status)}</span></div>
+                <div style="color:var(--text-secondary); margin-top:2px;">${escapeHtml(pr.review_disposition)}</div>
               </td>
             </tr>
           `).join('')}
@@ -1218,6 +1311,52 @@
     `;
 
     els.prModal.classList.remove('hidden');
+  }
+
+  // ==========================================
+  // Dataset Provenance & Freshness Modal
+  // ==========================================
+  function openProvenanceModal() {
+    if (!els.provenanceModalBody) return;
+
+    const items = state.datasetProvenance || [];
+    const distinctBaselines = new Set(
+      items.map(d => d.recordedBaseline).filter(b => b !== 'Not recorded')
+    );
+
+    els.provenanceModalBody.innerHTML = `
+      <div style="background:rgba(56,139,253,0.1); border:1px solid rgba(56,139,253,0.3); padding:10px 14px; border-radius:6px; font-size:0.8rem; color:var(--text-primary); margin-bottom:14px; line-height:1.4;">
+        <strong>Recorded Snapshot Notice:</strong> All datasets reflect recorded offline research observations and historical evidence snapshots under declared baseline commits. Different baselines across datasets or historical observation timestamps do not establish semantic invalidity. The offline dashboard does not claim knowledge of current local repository or live remote GitHub state.
+      </div>
+
+      <table class="data-table" aria-label="Per-dataset provenance and freshness">
+        <thead>
+          <tr>
+            <th style="width:26%;">Dataset File</th>
+            <th style="width:28%;">Recorded Baseline</th>
+            <th style="width:20%;">Recorded Timestamp</th>
+            <th style="width:26%;">Scope &amp; Domain</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items.map(item => `
+            <tr>
+              <td><code>${escapeHtml(item.filename)}</code></td>
+              <td>${item.recordedBaseline !== 'Not recorded' ? `<code>${escapeHtml(item.recordedBaseline)}</code>` : '<span style="color:var(--text-muted); font-style:italic;">Not recorded</span>'}</td>
+              <td>${item.recordedTimestamp !== 'Not recorded' ? `<span class="status-tag tag-static" style="font-size:0.75rem;">${escapeHtml(item.recordedTimestamp)}</span>` : '<span style="color:var(--text-muted); font-style:italic;">Not recorded</span>'}</td>
+              <td style="font-size:0.75rem; color:var(--text-secondary);">${escapeHtml(item.scope)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+
+      <div style="margin-top:14px; padding:10px; background:var(--bg-tertiary); border:1px solid var(--border-color); border-radius:6px; font-size:0.75rem; color:var(--text-muted);">
+        <div><strong>Dataset Inventory Census:</strong> ${items.length} required datasets inspected. Distinct recorded historical baselines: ${distinctBaselines.size} (${Array.from(distinctBaselines).map(b => `<code>${escapeHtml(b.slice(0, 10))}</code>`).join(', ')}).</div>
+        <div style="margin-top:4px;"><strong>Historical Anchor Preservation:</strong> Original historical anchors (e.g. SCG-07 Phase 6 and CPA-004 qualification receipts, T81-ARCH-VIZ-002 taxonomy) are permanently preserved. Missing metadata fields explicitly display <em>Not recorded</em>.</div>
+      </div>
+    `;
+
+    els.provenanceModal.classList.remove('hidden');
   }
 
 })();
