@@ -167,7 +167,8 @@ void test_cell_host_oracle_exhaustive() {
   }
   TEST_CHECK(add_in_range + add_overflow == 59049);
   TEST_CHECK(sub_in_range + sub_overflow == 59049);
-  // Exact combinatorics: 2 * (121 * 122 / 2) = 14,762 overflow pairs; 59,049 - 14,762 = 44,287 in-range pairs.
+  // Exact combinatorics: 2 * (121 * 122 / 2) = 14,762 overflow pairs; 59,049 - 14,762 = 44,287
+  // in-range pairs.
   TEST_CHECK(add_in_range == 44287 && add_overflow == 14762);
   TEST_CHECK(sub_in_range == 44287 && sub_overflow == 14762);
 
@@ -301,7 +302,8 @@ void test_cell_host_oracle_exhaustive() {
     TEST_CHECK(fnv_hash == fnv_hash2);
   }
 
-  // 6. Deterministic round-trip benchmark input sequence verification (seed = 0x781, DATA_SIZE = 10000)
+  // 6. Deterministic round-trip benchmark input sequence verification (seed = 0x781, DATA_SIZE =
+  // 10000)
   {
     constexpr std::size_t kDataSize = 10000;
     std::mt19937_64 gen(0x781);
@@ -315,9 +317,9 @@ void test_cell_host_oracle_exhaustive() {
   }
 
   std::cout << "  Cell oracle summary: conv=243/243, add_ok=" << add_in_range
-            << " (ovf=" << add_overflow << "), sub_ok=" << sub_in_range
-            << " (ovf=" << sub_overflow << "), mul_bench_ok=" << mul_bench_domain_ok
-            << "/441 (full_ok=" << mul_succeeded << ", true_ovf=" << mul_true_overflow
+            << " (ovf=" << add_overflow << "), sub_ok=" << sub_in_range << " (ovf=" << sub_overflow
+            << "), mul_bench_ok=" << mul_bench_domain_ok << "/441 (full_ok=" << mul_succeeded
+            << ", true_ovf=" << mul_true_overflow
             << ", shift_ovf=" << mul_intermediate_shift_overflow << "), div_ok=" << div_valid
             << " (div0=" << div_by_zero_caught << ")" << std::endl;
 }
