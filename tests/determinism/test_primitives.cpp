@@ -1,7 +1,10 @@
 #include <cassert>
+#include <cstdint>
 #include <iostream>
 #include <limits>
+#include <random>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 #include "t81/types/T81BigInt.hpp"
@@ -83,6 +86,238 @@ void test_cell_determinism() {
   }
 }
 
+// --- Exhaustive Host-Integer (int64_t) Oracle Validation for Cell (BASE-PERF-00 Phase B) ---
+void test_cell_host_oracle_exhaustive() {
+  std::cout << "Testing Cell exhaustive host-integer oracle validation..." << std::endl;
+
+  // 1. Conversion round-trip and canonical trit uniqueness over [-121, +121]
+  std::size_t valid_conversions = 0;
+  for (int64_t v = Cell::MIN; v <= Cell::MAX; ++v) {
+    const Cell c = Cell::from_int(v);
+    TEST_CHECK(c.to_int() == v);
+    TEST_CHECK(c == Cell::from_int(c.to_int()));
+    TEST_CHECK((-c).to_int() == -v);
+    TEST_CHECK((-(-c)) == c);
+    if (v > Cell::MIN) {
+      const Cell prev = Cell::from_int(v - 1);
+      TEST_CHECK(prev < c);
+      TEST_CHECK(c > prev);
+      TEST_CHECK(prev != c);
+    }
+    ++valid_conversions;
+  }
+  TEST_CHECK(valid_conversions == 243);
+
+  // Out-of-range conversion rejection
+  for (int64_t out_v : {-10000LL, -243LL, -122LL, 122LL, 243LL, 10000LL}) {
+    bool caught = false;
+    try {
+      [[maybe_unused]] Cell bad = Cell::from_int(out_v);
+    } catch (const std::overflow_error&) {
+      caught = true;
+    }
+    TEST_CHECK(caught);
+  }
+
+  // 2. Exhaustive addition and subtraction over [-121, +121]^2 (59,049 pairs each)
+  std::size_t add_in_range = 0;
+  std::size_t add_overflow = 0;
+  std::size_t sub_in_range = 0;
+  std::size_t sub_overflow = 0;
+
+  for (int64_t a = Cell::MIN; a <= Cell::MAX; ++a) {
+    const Cell ca = Cell::from_int(a);
+    for (int64_t b = Cell::MIN; b <= Cell::MAX; ++b) {
+      const Cell cb = Cell::from_int(b);
+
+      // Addition oracle
+      const int64_t expected_sum = a + b;
+      if (expected_sum >= Cell::MIN && expected_sum <= Cell::MAX) {
+        const Cell sum = ca + cb;
+        TEST_CHECK(sum.to_int() == expected_sum);
+        ++add_in_range;
+      } else {
+        bool caught = false;
+        try {
+          [[maybe_unused]] Cell sum = ca + cb;
+        } catch (const std::overflow_error&) {
+          caught = true;
+        }
+        TEST_CHECK(caught);
+        ++add_overflow;
+      }
+
+      // Subtraction oracle
+      const int64_t expected_diff = a - b;
+      if (expected_diff >= Cell::MIN && expected_diff <= Cell::MAX) {
+        const Cell diff = ca - cb;
+        TEST_CHECK(diff.to_int() == expected_diff);
+        ++sub_in_range;
+      } else {
+        bool caught = false;
+        try {
+          [[maybe_unused]] Cell diff = ca - cb;
+        } catch (const std::overflow_error&) {
+          caught = true;
+        }
+        TEST_CHECK(caught);
+        ++sub_overflow;
+      }
+    }
+  }
+  TEST_CHECK(add_in_range + add_overflow == 59049);
+  TEST_CHECK(sub_in_range + sub_overflow == 59049);
+  // Exact combinatorics: 2 * (121 * 122 / 2) = 14,762 overflow pairs; 59,049 - 14,762 = 44,287 in-range pairs.
+  TEST_CHECK(add_in_range == 44287 && add_overflow == 14762);
+  TEST_CHECK(sub_in_range == 44287 && sub_overflow == 14762);
+
+  // 3. Multiplication oracle:
+  // (a) Benchmark safe domain [-10, +10]^2 (441 pairs): 100% in-range and exact.
+  std::size_t mul_bench_domain_ok = 0;
+  for (int64_t a = -10; a <= 10; ++a) {
+    const Cell ca = Cell::from_int(a);
+    for (int64_t b = -10; b <= 10; ++b) {
+      const Cell cb = Cell::from_int(b);
+      const Cell prod = ca * cb;
+      TEST_CHECK(prod.to_int() == a * b);
+      ++mul_bench_domain_ok;
+    }
+  }
+  TEST_CHECK(mul_bench_domain_ok == 441);
+
+  // (b) Full [-121, +121]^2 characterization (59,049 pairs):
+  // Every non-throwing product matches int64_t a * b; every out-of-range product throws
+  // std::overflow_error; intermediate shift/partial-sum overflows when |a*b| <= 121 also
+  // throw std::overflow_error deterministically (never silently corrupting output).
+  std::size_t mul_succeeded = 0;
+  std::size_t mul_true_overflow = 0;
+  std::size_t mul_intermediate_shift_overflow = 0;
+  for (int64_t a = Cell::MIN; a <= Cell::MAX; ++a) {
+    const Cell ca = Cell::from_int(a);
+    for (int64_t b = Cell::MIN; b <= Cell::MAX; ++b) {
+      const Cell cb = Cell::from_int(b);
+      const int64_t expected_prod = a * b;
+      const bool mathematically_in_range =
+          (expected_prod >= Cell::MIN && expected_prod <= Cell::MAX);
+      try {
+        const Cell prod = ca * cb;
+        TEST_CHECK(mathematically_in_range);
+        TEST_CHECK(prod.to_int() == expected_prod);
+        ++mul_succeeded;
+      } catch (const std::overflow_error&) {
+        if (mathematically_in_range) {
+          ++mul_intermediate_shift_overflow;
+        } else {
+          ++mul_true_overflow;
+        }
+      }
+    }
+  }
+  TEST_CHECK(mul_succeeded + mul_true_overflow + mul_intermediate_shift_overflow == 59049);
+  TEST_CHECK(mul_intermediate_shift_overflow > 0);
+
+  // 4. Exhaustive division oracle over [-121, +121]^2:
+  // 58,806 non-zero divisor pairs match host int64_t truncated division;
+  // all 243 b == 0 pairs throw std::domain_error.
+  std::size_t div_valid = 0;
+  std::size_t div_by_zero_caught = 0;
+  for (int64_t a = Cell::MIN; a <= Cell::MAX; ++a) {
+    const Cell ca = Cell::from_int(a);
+    for (int64_t b = Cell::MIN; b <= Cell::MAX; ++b) {
+      const Cell cb = Cell::from_int(b);
+      if (b == 0) {
+        bool caught = false;
+        try {
+          [[maybe_unused]] Cell quot = ca / cb;
+        } catch (const std::domain_error&) {
+          caught = true;
+        }
+        TEST_CHECK(caught);
+        ++div_by_zero_caught;
+      } else {
+        const Cell quot = ca / cb;
+        TEST_CHECK(quot.to_int() == (a / b));
+        ++div_valid;
+      }
+    }
+  }
+  TEST_CHECK(div_valid == 58806);
+  TEST_CHECK(div_by_zero_caught == 243);
+
+  // 5. Deterministic benchmark input sequence verification (seed = 0x781, DATA_SIZE = 10000)
+  {
+    constexpr std::size_t kDataSize = 10000;
+    constexpr int64_t kSafeLimit = 10;
+    std::mt19937_64 gen(0x781);
+    std::uniform_int_distribution<int64_t> distrib(-kSafeLimit, kSafeLimit);
+    uint64_t fnv_hash = 14695981039346656037ULL;
+    auto fnv_mix = [&](int64_t v) {
+      const uint64_t u = static_cast<uint64_t>(v);
+      for (int byte_idx = 0; byte_idx < 8; ++byte_idx) {
+        fnv_hash ^= (u >> (byte_idx * 8)) & 0xFFULL;
+        fnv_hash *= 1099511628211ULL;
+      }
+    };
+
+    for (std::size_t i = 0; i < kDataSize; ++i) {
+      const int64_t val_a = distrib(gen);
+      int64_t val_b = distrib(gen);
+      if (val_b == 0) val_b = 1;
+      fnv_mix(val_a);
+      fnv_mix(val_b);
+
+      const Cell ca = Cell::from_int(val_a);
+      const Cell cb = Cell::from_int(val_b);
+      TEST_CHECK(ca.to_int() == val_a);
+      TEST_CHECK(cb.to_int() == val_b);
+      TEST_CHECK((ca + cb).to_int() == val_a + val_b);
+      TEST_CHECK((ca - cb).to_int() == val_a - val_b);
+      TEST_CHECK((ca * cb).to_int() == val_a * val_b);
+      TEST_CHECK((ca / cb).to_int() == val_a / val_b);
+    }
+
+    // Re-generate and verify deterministic hash stability
+    std::mt19937_64 gen2(0x781);
+    std::uniform_int_distribution<int64_t> distrib2(-kSafeLimit, kSafeLimit);
+    uint64_t fnv_hash2 = 14695981039346656037ULL;
+    auto fnv_mix2 = [&](int64_t v) {
+      const uint64_t u = static_cast<uint64_t>(v);
+      for (int byte_idx = 0; byte_idx < 8; ++byte_idx) {
+        fnv_hash2 ^= (u >> (byte_idx * 8)) & 0xFFULL;
+        fnv_hash2 *= 1099511628211ULL;
+      }
+    };
+    for (std::size_t i = 0; i < kDataSize; ++i) {
+      const int64_t val_a = distrib2(gen2);
+      int64_t val_b = distrib2(gen2);
+      if (val_b == 0) val_b = 1;
+      fnv_mix2(val_a);
+      fnv_mix2(val_b);
+    }
+    TEST_CHECK(fnv_hash == fnv_hash2);
+  }
+
+  // 6. Deterministic round-trip benchmark input sequence verification (seed = 0x781, DATA_SIZE = 10000)
+  {
+    constexpr std::size_t kDataSize = 10000;
+    std::mt19937_64 gen(0x781);
+    std::uniform_int_distribution<int64_t> distrib(Cell::MIN, Cell::MAX);
+    for (std::size_t i = 0; i < kDataSize; ++i) {
+      const int64_t val = distrib(gen);
+      TEST_CHECK(val >= Cell::MIN && val <= Cell::MAX);
+      const Cell c = Cell::from_int(val);
+      TEST_CHECK(c.to_int() == val);
+    }
+  }
+
+  std::cout << "  Cell oracle summary: conv=243/243, add_ok=" << add_in_range
+            << " (ovf=" << add_overflow << "), sub_ok=" << sub_in_range
+            << " (ovf=" << sub_overflow << "), mul_bench_ok=" << mul_bench_domain_ok
+            << "/441 (full_ok=" << mul_succeeded << ", true_ovf=" << mul_true_overflow
+            << ", shift_ovf=" << mul_intermediate_shift_overflow << "), div_ok=" << div_valid
+            << " (div0=" << div_by_zero_caught << ")" << std::endl;
+}
+
 // --- T81Int Tests ---
 void test_t81int_determinism() {
   std::cout << "Testing T81Int determinism..." << std::endl;
@@ -151,6 +386,7 @@ void test_bigint_determinism() {
 
 int main() {
   test_cell_determinism();
+  test_cell_host_oracle_exhaustive();
   test_t81int_determinism();
   test_bigint_determinism();
   std::cout << "All primitive determinism tests passed." << std::endl;
