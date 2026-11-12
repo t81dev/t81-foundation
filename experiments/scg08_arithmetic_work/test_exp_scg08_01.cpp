@@ -163,8 +163,6 @@ void run_band_verification(size_t bit_width) {
     // Convert to Ternary and Binary representations
     auto ta = TernaryMultiLimb<T_In>::from_oracle(oa);
     auto tb = TernaryMultiLimb<T_In>::from_oracle(ob);
-    auto ta_trits = ta.to_trits();
-    auto tb_trits = tb.to_trits();
 
     auto ba = BinaryMultiLimb<B_In>::from_oracle(oa);
     auto bb = BinaryMultiLimb<B_In>::from_oracle(ob);
@@ -177,9 +175,7 @@ void run_band_verification(size_t bit_width) {
 
     // Execute Ternary Addition & Multiplication
     auto t_sum = ArithmeticWorkHarness::add_ternary<T_In, T_Add>(ta, tb, acc_t_add);
-    auto t_sum_trits = t_sum.to_trits();
     auto t_prod = ArithmeticWorkHarness::mul_ternary<T_In, T_Mul>(ta, tb, acc_t_mul);
-    auto t_prod_trits = t_prod.to_trits();
 
     // Execute Binary Addition & Multiplication
     auto b_sum = ArithmeticWorkHarness::add_binary<B_In, B_Add>(ba, bb, acc_b_add);
@@ -190,11 +186,11 @@ void run_band_verification(size_t bit_width) {
     auto expected_oa_prod = ExactBigIntOracle::mul(oa, ob);
 
     // Populate all 5 fields of OracleValidationReport across inputs and results
+    // using the object-level evaluator that checks stored trytes before decoding trits
     OracleValidationReport oracle_rep =
         evaluate_oracle_validation_report<T_In, T_Add, T_Mul, B_In, B_Add, B_Mul>(
-            bit_width, oa, ob, ta, ta_trits, tb, tb_trits, t_sum, t_sum_trits, t_prod,
-            t_prod_trits, ba, bb, b_sum, b_prod, expected_oa_sum, expected_oa_prod,
-            tc.expected_sum_overflow, tc.expected_prod_overflow);
+            bit_width, oa, ob, ta, tb, t_sum, t_prod, ba, bb, b_sum, b_prod, expected_oa_sum,
+            expected_oa_prod, tc.expected_sum_overflow, tc.expected_prod_overflow);
 
     enforce_oracle_parity(oracle_rep.numerical_equality,
                           "Dimension 1 (numerical_equality) failed");
@@ -208,6 +204,8 @@ void run_band_verification(size_t bit_width) {
                           "Dimension 5 (absence_of_truncation) failed");
     enforce_oracle_parity(oracle_rep.all_passed(),
                           "OracleValidationReport::all_passed() acceptance condition failed");
+
+    auto t_sum_trits = t_sum.to_trits();
 
     // Verify operation accounting invariants and deterministic counter formulas
     SCG08_REQUIRE(acc_t_add.compute_w_ops() > 0, "W_ops for addition must be non-zero");
@@ -224,8 +222,8 @@ void run_band_verification(size_t bit_width) {
     // Verify ternary conversion diagnostics
     SCG08_REQUIRE(acc_t_mul.conv_limb_unpacks == 2 * T_In,
                   "mul_ternary must record 2 * T_In limb unpacks");
-    SCG08_REQUIRE(acc_t_mul.conv_limb_repacks == T_Mul,
-                  "mul_ternary must record T_Mul output limb repacks");
+    SCG08_REQUIRE(acc_t_mul.conv_limb_repacks == T_Mul + 2,
+                  "mul_ternary must record T_Mul + 2 limb repacks (2 unit_limb + T_Mul output)");
     SCG08_REQUIRE(acc_t_mul.conv_tryte_decodes == 72 * T_In,
                   "mul_ternary must record 72 * T_In tryte decodes");
     SCG08_REQUIRE(acc_t_mul.conv_tryte_encodes == 18 + 36 * T_In + 9 * T_Mul,
@@ -327,12 +325,14 @@ void test_deterministic_exact_counts() {
 
   // Ternary Zero Mul (InLimbs=2, OutLimbs=3):
   // 54 outer loop ai==0 checks, 0 inner multiplies, 1 norm pass
+  // conv_limb_repacks = OutLimbs + 2 = 3 + 2 = 5 (2 unit_limb in a/b.to_trits() + 3 output limbs)
   SCG08_REQUIRE(acc_t_mul_0.op_alu_mul == 0, "Ternary zero mul ALU mul mismatch");
   SCG08_REQUIRE(acc_t_mul_0.op_branch_cond == 54, "Ternary zero mul branch evaluation mismatch");
   SCG08_REQUIRE(acc_t_mul_0.op_norm_pass == 1, "Ternary zero mul norm pass mismatch");
   SCG08_REQUIRE(acc_t_mul_0.compute_w_ops() == 55, "Ternary zero mul W_ops mismatch");
   SCG08_REQUIRE(acc_t_mul_0.conv_limb_unpacks == 4, "Ternary zero mul conv_limb_unpacks mismatch");
-  SCG08_REQUIRE(acc_t_mul_0.conv_limb_repacks == 3, "Ternary zero mul conv_limb_repacks mismatch");
+  SCG08_REQUIRE(acc_t_mul_0.conv_limb_repacks == 5,
+                "Ternary zero mul conv_limb_repacks mismatch (OutLimbs + 2 = 5)");
 
   // Binary Zero Mul (InLimbs=1, OutLimbs=2):
   // 1 outer limb ai==0 check, 2 zero-detection limb checks, 1 all_zero check, 0 multiplies
@@ -363,6 +363,8 @@ void test_deterministic_exact_counts() {
   SCG08_REQUIRE(acc_t_mul_sp.op_alu_add_sub == 1, "Ternary sparse mul ALU add mismatch");
   SCG08_REQUIRE(acc_t_mul_sp.op_branch_cond == 109, "Ternary sparse mul branch count mismatch");
   SCG08_REQUIRE(acc_t_mul_sp.compute_w_ops() == 114, "Ternary sparse mul W_ops mismatch");
+  SCG08_REQUIRE(acc_t_mul_sp.conv_limb_repacks == 5,
+                "Ternary sparse mul conv_limb_repacks mismatch (OutLimbs + 2 = 5)");
 
   // Binary Sparse Mul (1 * 1):
   // 4 primitive mul64 muls (4 * 3 = 12), 4 mul64 helper adds + 4 caller accumulator adds +
@@ -393,6 +395,8 @@ void test_deterministic_exact_counts() {
   SCG08_REQUIRE(acc_b_add_dense.compute_w_ops() == 5, "Binary dense add W_ops mismatch");
   SCG08_REQUIRE(acc_t_mul_dense.op_alu_mul == 841, "Ternary dense mul ALU mul mismatch");
   SCG08_REQUIRE(acc_t_mul_dense.compute_w_ops() == 5826, "Ternary dense mul W_ops mismatch");
+  SCG08_REQUIRE(acc_t_mul_dense.conv_limb_repacks == 5,
+                "Ternary dense mul conv_limb_repacks mismatch (OutLimbs + 2 = 5)");
   SCG08_REQUIRE(acc_b_mul_dense.op_alu_mul == 4, "Binary dense mul ALU mul mismatch");
   SCG08_REQUIRE(acc_b_mul_dense.op_alu_add_sub == 9,
                 "Binary dense mul ALU add mismatch (4 in mul64 + 4 accumulator + 1 carry loop)");
@@ -510,18 +514,41 @@ void test_deterministic_replay() {
   SCG08_REQUIRE(res1.mean_run_length() == res2.mean_run_length(), "PRNG replay mismatch");
 }
 
-// Helper to verify that a failed condition in enforce_oracle_parity terminates a child process with exit code 1
-static void expect_fail_closed_in_child(bool condition, const char* context_msg) {
+// Helper to verify that a callable in a child process exits with code 1 and emits the mandatory
+// oracle-mismatch diagnostic on stderr
+template <typename Fn>
+static void expect_fail_closed_fn_in_child(Fn&& fn) {
+  int pipefd[2] = {-1, -1};
+  SCG08_REQUIRE(pipe(pipefd) == 0, "Pipe creation failed for negative oracle test");
   pid_t pid = fork();
   SCG08_REQUIRE(pid >= 0, "Fork failed for negative oracle test");
   if (pid == 0) {
-    enforce_oracle_parity(condition, context_msg);
+    close(pipefd[0]);
+    dup2(pipefd[1], STDERR_FILENO);
+    close(pipefd[1]);
+    fn();
     std::exit(0);
   }
+  close(pipefd[1]);
+  std::string stderr_output;
+  char buf[256];
+  ssize_t n = 0;
+  while ((n = read(pipefd[0], buf, sizeof(buf))) > 0) {
+    stderr_output.append(buf, static_cast<size_t>(n));
+  }
+  close(pipefd[0]);
   int status = 0;
   waitpid(pid, &status, 0);
   SCG08_REQUIRE(WIFEXITED(status) && WEXITSTATUS(status) == 1,
                 "Corrupted oracle validation case must exit fail-closed with code 1");
+  SCG08_REQUIRE(
+      stderr_output.find("INVALID EXPERIMENT (CORRECTNESS DEFECT: ORACLE MISMATCH)") !=
+          std::string::npos,
+      "Corrupted oracle validation case must emit mandatory oracle-mismatch diagnostic on stderr");
+}
+
+static void expect_fail_closed_in_child(bool condition, const char* context_msg) {
+  expect_fail_closed_fn_in_child([&]() { enforce_oracle_parity(condition, context_msg); });
 }
 
 // ============================================================================
@@ -536,6 +563,8 @@ void test_fail_closed_negative_cases() {
   const auto& spec = get_accumulator_spec(B);
   ExactBigIntOracle val_max = ExactBigIntOracle::from_power_of_two(B - 1);
   val_max = ExactBigIntOracle::sub(val_max, ExactBigIntOracle(1));
+  ExactBigIntOracle val_min = ExactBigIntOracle::from_power_of_two(B - 1);
+  val_min.negative = true;
   ExactBigIntOracle expected_sum = ExactBigIntOracle::add(val_max, val_max);
   ExactBigIntOracle expected_prod = ExactBigIntOracle::mul(val_max, val_max);
 
@@ -555,8 +584,8 @@ void test_fail_closed_negative_cases() {
 
   // Confirm uncorrupted baseline passes all 5 dimensions
   auto valid_rep = evaluate_oracle_validation_report<2, 2, 3, 1, 2, 2>(
-      B, val_max, val_max, ta, ta_trits, tb, tb_trits, t_sum, t_sum_trits, t_prod, t_prod_trits,
-      ba, bb, b_sum, b_prod, expected_sum, expected_prod, true, true);
+      B, val_max, val_max, ta, tb, t_sum, t_prod, ba, bb, b_sum, b_prod, expected_sum,
+      expected_prod, true, true);
   SCG08_REQUIRE(valid_rep.all_passed(), "Baseline valid oracle report must pass all 5 dimensions");
 
   // 1. Negative Test — Dimension 1 (Numerical Equality Corruption): corrupt low limb of b_sum
@@ -575,6 +604,8 @@ void test_fail_closed_negative_cases() {
   // 2. Negative Test — Dimension 2 (Overflow Classification Corruption):
   // (a) Misclassify overflowing sum (val_max + val_max) as non-overflowing
   // (b) Supply out-of-domain input operand (2^63 > 2^63 - 1)
+  // (c) Verify exact negative product bound -2^(B-1)*(2^(B-1)-1) is accepted while
+  //     -2^(B-1)*(2^(B-1)-1) - 1 (which is still > -2^(2B-2)) is rejected
   {
     auto rep_misclass = evaluate_oracle_validation_report<2, 2, 3, 1, 2, 2>(
         B, val_max, val_max, ta, ta_trits, tb, tb_trits, t_sum, t_sum_trits, t_prod, t_prod_trits,
@@ -593,11 +624,45 @@ void test_fail_closed_negative_cases() {
     SCG08_REQUIRE(!rep_ood.overflow_classification,
                   "Out-of-domain operand must fail overflow_classification");
     SCG08_REQUIRE(!rep_ood.all_passed(), "Out-of-domain operand must fail all_passed()");
+
+    // Exact negative product bound: -2^(B-1) * (2^(B-1) - 1) = val_min * val_max
+    ExactBigIntOracle exact_min_prod = ExactBigIntOracle::mul(val_min, val_max);
+    ExactBigIntOracle sum_max_min = ExactBigIntOracle::add(val_max, val_min);
+    auto tb_min = TernaryMultiLimb<2>::from_oracle(val_min);
+    auto bb_min = BinaryMultiLimb<1>::from_oracle(val_min);
+    auto t_sum_mm = TernaryMultiLimb<2>::from_oracle(sum_max_min);
+    auto b_sum_mm = BinaryMultiLimb<2>::from_oracle(sum_max_min);
+    auto t_prod_exact_min = TernaryMultiLimb<3>::from_oracle(exact_min_prod);
+    auto b_prod_exact_min = BinaryMultiLimb<2>::from_oracle(exact_min_prod);
+
+    auto rep_exact_min_prod = evaluate_oracle_validation_report<2, 2, 3, 1, 2, 2>(
+        B, val_max, val_min, ta, tb_min, t_sum_mm, t_prod_exact_min, ba, bb_min, b_sum_mm,
+        b_prod_exact_min, sum_max_min, exact_min_prod, false, true);
+    SCG08_REQUIRE(rep_exact_min_prod.overflow_classification && rep_exact_min_prod.all_passed(),
+                  "Exact negative product bound -2^(B-1)*(2^(B-1)-1) must pass validation");
+
+    // 1 below exact negative product bound: -2^(B-1)*(2^(B-1)-1) - 1 (still > -2^(2B-2))
+    ExactBigIntOracle below_min_prod =
+        ExactBigIntOracle::sub(exact_min_prod, ExactBigIntOracle(1));
+    auto t_prod_below_min = TernaryMultiLimb<3>::from_oracle(below_min_prod);
+    auto b_prod_below_min = BinaryMultiLimb<2>::from_oracle(below_min_prod);
+    auto rep_below_min_prod = evaluate_oracle_validation_report<2, 2, 3, 1, 2, 2>(
+        B, val_max, val_min, ta, tb_min, t_sum_mm, t_prod_below_min, ba, bb_min, b_sum_mm,
+        b_prod_below_min, sum_max_min, below_min_prod, false, true);
+    SCG08_REQUIRE(!rep_below_min_prod.overflow_classification,
+                  "Product below exact negative bound -2^(B-1)*(2^(B-1)-1) must fail overflow_classification");
+    SCG08_REQUIRE(!rep_below_min_prod.all_passed(),
+                  "Product below exact negative bound must fail all_passed()");
+    expect_fail_closed_in_child(
+        rep_below_min_prod.all_passed(),
+        "Deliberate negative product bound violation below -2^(B-1)*(2^(B-1)-1)");
   }
 
   // 3. Negative Test — Dimension 3 (Canonical Output Digits & Stored Trytes Corruption):
   // (a) Inject non-canonical trit (+2) into output t_sum_trits
-  // (b) Inject non-canonical tryte (+14) into output t_sum limb storage
+  // (b) Inject non-canonical tryte (+14) into output t_sum limb storage and exercise the
+  //     actual corrupted-object verification and decoding paths in subprocesses without
+  //     reaching TRYTE_TO_TRITS[14 + 13] or ADD_TABLE[14 + 13]
   {
     auto t_sum_trits_corrupt = t_sum_trits;
     t_sum_trits_corrupt[0] = 2;
@@ -614,13 +679,47 @@ void test_fail_closed_negative_cases() {
     auto t_sum_tryte_corrupt = t_sum;
     int8_t bad_tryte = 14;
     std::memcpy(&t_sum_tryte_corrupt.limbs[0], &bad_tryte, 1);
+
+    // Exercise the actual object-level verification path (NOT passing pre-extracted t_sum_trits)
     auto rep_tryte = evaluate_oracle_validation_report<2, 2, 3, 1, 2, 2>(
-        B, val_max, val_max, ta, ta_trits, tb, tb_trits, t_sum_tryte_corrupt, t_sum_trits, t_prod,
-        t_prod_trits, ba, bb, b_sum, b_prod, expected_sum, expected_prod, true, true);
+        B, val_max, val_max, ta, tb, t_sum_tryte_corrupt, t_prod, ba, bb, b_sum, b_prod,
+        expected_sum, expected_prod, true, true);
     SCG08_REQUIRE(!rep_tryte.canonical_digits,
                   "Non-canonical stored tryte (+14) must fail canonical_digits");
     SCG08_REQUIRE(!rep_tryte.all_passed(),
                   "Non-canonical stored tryte must fail all_passed()");
+
+    // Subprocess 3b-i: Full object-level verification path on corrupted TernaryMultiLimb (+14)
+    expect_fail_closed_fn_in_child([&]() {
+      auto rep = evaluate_oracle_validation_report<2, 2, 3, 1, 2, 2>(
+          B, val_max, val_max, ta, tb, t_sum_tryte_corrupt, t_prod, ba, bb, b_sum, b_prod,
+          expected_sum, expected_prod, true, true);
+      enforce_oracle_parity(rep.canonical_digits, "Dimension 3 (canonical_digits) failed");
+      enforce_oracle_parity(rep.all_passed(), "OracleValidationReport::all_passed() failed");
+    });
+
+    // Subprocess 3b-ii: Direct to_trits() decoding on corrupted TernaryMultiLimb (+14)
+    // Must reject before reaching limbs[l] * unit_limb -> TRYTE_TO_TRITS[14 + 13]
+    expect_fail_closed_fn_in_child([&]() {
+      auto decoded = t_sum_tryte_corrupt.to_trits();
+      (void)decoded;
+    });
+
+    // Subprocess 3b-iii: Direct add_ternary() on corrupted TernaryMultiLimb (+14)
+    // Must reject before reaching addc() -> ADD_TABLE[14 + 13]
+    expect_fail_closed_fn_in_child([&]() {
+      OperationAccounting acc_corrupt;
+      auto res = ArithmeticWorkHarness::add_ternary<2, 2>(t_sum_tryte_corrupt, tb, acc_corrupt);
+      (void)res;
+    });
+
+    // Subprocess 3b-iv: Direct mul_ternary() on corrupted TernaryMultiLimb (+14)
+    // Must reject before reaching to_trits() -> TRYTE_TO_TRITS[14 + 13]
+    expect_fail_closed_fn_in_child([&]() {
+      OperationAccounting acc_corrupt;
+      auto res = ArithmeticWorkHarness::mul_ternary<2, 3>(t_sum_tryte_corrupt, tb, acc_corrupt);
+      (void)res;
+    });
   }
 
   // 4. Negative Test — Dimension 4 (Sign Correctness Corruption):
