@@ -1,0 +1,17 @@
+Test project /private/tmp/t81-pr782-backend.1QyjlA/build-portable
+    Start  49: t81_bigint_properties_test
+1/6 Test  #49: t81_bigint_properties_test .................   Passed    0.48 sec
+    Start  52: t81_bigint_division_edge_properties_test
+2/6 Test  #52: t81_bigint_division_edge_properties_test ...   Passed    0.36 sec
+    Start  56: fuzz_bigint_libfuzzer
+3/6 Test  #56: fuzz_bigint_libfuzzer ......................   Passed    1.77 sec
+    Start  57: t81_fraction_properties_test
+4/6 Test  #57: t81_fraction_properties_test ...............   Passed    1.20 sec
+    Start 290: t81_int128_test
+5/6 Test #290: t81_int128_test ............................   Passed    0.26 sec
+    Start 291: t81_int128_portable_test
+6/6 Test #291: t81_int128_portable_test ...................   Passed    0.22 sec
+
+100% tests passed, 0 tests failed out of 6
+
+Total Test time (real) =   4.31 sec

@@ -22,6 +22,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Options.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Compiler.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Int128.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Sanitizers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Dependencies.cmake)
 add_subdirectory(src)
@@ -1338,6 +1339,11 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   target_link_libraries(test_bigint_robust_features PRIVATE t81_core)
   add_executable(t81_int128_test tests/cpp/t81_int128_test.cpp)
   target_link_libraries(t81_int128_test PRIVATE t81_core)
+  # Execute the fallback even on hosts with a native __int128 backend.
+  add_executable(t81_int128_portable_test tests/cpp/t81_int128_test.cpp)
+  target_include_directories(t81_int128_portable_test PRIVATE ${PROJECT_SOURCE_DIR}/include)
+  target_compile_features(t81_int128_portable_test PRIVATE ${T81_CXX_STD_FEATURE})
+  target_compile_definitions(t81_int128_portable_test PRIVATE T81_FORCE_PORTABLE_INT128=1)
 
   add_executable(test_bigint_multilimb_ext tests/cpp/test_bigint_multilimb_ext.cpp)
   target_link_libraries(test_bigint_multilimb_ext PRIVATE t81_core)
@@ -1695,6 +1701,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     test_bigint_multilimb_ext
     test_bigint_robust_features
     t81_int128_test
+    t81_int128_portable_test
     t81_bigint_v1_perf
     bigint_perf_guardrail_test
     t81_bigint_allocation_pathology_test
