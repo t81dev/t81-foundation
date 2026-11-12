@@ -573,6 +573,15 @@ Trap taxonomy: invalid hash format → `DecodeFault`; valid hash with no driver 
 
 ---
 
+### DEC-015-C1-A — Maintainer approval of factual erratum
+
+**Date (UTC):** 2026-11-12T02:18:38.844Z
+**Approver:** @t81dev (explicit approval conveyed in the maintainer conversation)
+**Category:** Governance / CI / Evidence correction approval
+**Decision:** Approve the factual correction recorded in DEC-015-C1, including the distinction between the overall 40-minute CI job timeout and the shorter CTest durations. DEC-015-C1's original pending-approval wording is retained for append-only provenance. This approval applies to the erratum and its publication for review; it does **not** authorize merging PR #776 or PR #775, bypassing the required quality gate, or accepting any scientific gate. Integration requires a separate explicit decision.
+
+---
+
 ## Log Maintenance
 
 - New decisions must be logged within the same PR or governance window in which
