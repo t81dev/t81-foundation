@@ -556,6 +556,23 @@ Trap taxonomy: invalid hash format → `DecodeFault`; valid hash with no driver 
 
 ---
 
+### DEC-015-C1 — Proposed factual erratum: CI job timeout versus CTest duration
+
+**Recorded (UTC):** 2026-11-12 (exact amendment-approval timestamp pending)
+**Approver:** PENDING @t81dev review; this proposed factual correction is not a new exception or merge authorization
+**Category:** Governance / CI / Evidence correction
+**Amends:** DEC-015, paragraph “Required CI and baseline comparison”; the original stamped text is preserved above in accordance with the append-only decision-log rule.
+
+**Correction:** The DEC-015 phrase “cancelled after the 40-minute test timeout” is inaccurate. The `build-and-test` matrix job is subject to an **overall 40-minute job timeout** (`.github/workflows/ci.yml`, line 426: `timeout-minutes: ${{ matrix.timeout_minutes || 40 }}`). The macOS x86_64 GCC jobs were cancelled **during the CTest step when the overall job time limit was reached**. The CTest step lasted approximately **8m17s** for PR #775 (job `130900388055`, workflow run `43132315331`) and **11m03s** for the pinned baseline (job `130533549236`, workflow run `43022879680`).
+
+**Evidence limit:** Both jobs reached the overall job timeout while CTest was active; the differing CTest durations mean that matching cancellations do **not** establish an identical test-level failure or test-level non-regression. Windows baseline-equivalent test failures are unaffected. The required `quality gate / required` remains failed; no conclusion about complete branch health, skipped downstream coverage, or general merge safety is added.
+
+**Authorization boundary:** This erratum corrects the CI evidence description only. It does not authorize a CI bypass, publication to `main`, merging PR #776 or PR #775, ratifying RFC-00E1, accepting Gate 1, or proceeding to Gate 2.
+
+**References:** Codex independent review of PR #776, `ci.yml:426`, PR #775 [macOS GCC job](https://github.com/t81dev/t81-foundation/actions/runs/43132315331/job/130900388055), pinned baseline [macOS GCC job](https://github.com/t81dev/t81-foundation/actions/runs/43022879680/job/130533549236).
+
+---
+
 ## Log Maintenance
 
 - New decisions must be logged within the same PR or governance window in which
