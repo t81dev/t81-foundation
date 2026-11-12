@@ -582,6 +582,25 @@ Trap taxonomy: invalid hash format → `DecodeFault`; valid hash with no driver 
 
 ---
 
+### DEC-015-C2 — Post-PR #776 baseline reconciliation and single-use PR #775 integration authorization
+
+**Date (UTC):** 2026-11-12T02:30:53.165Z
+**Approver:** @t81dev (explicit maintainer authorization)
+**Category:** Governance / CI / Baseline reconciliation
+**Amends:** DEC-015's target baseline and invalidation clause; preserves DEC-015, DEC-015-C1, and DEC-015-C1-A unchanged.
+
+**Decision:** Approve the reconciled baseline `e42f30af051ee596bc03e4343c4c34cafd37e5b8` (PR #776 merge) for the single-use administrative integration exception covering PR #775 at **exact head `1fe9044cb497484ecf5f89d4f1bc7581b141eae5`**. The maintainer explicitly authorizes the administrative override of the failing `quality gate / required` and strict `BEHIND` condition for this specific PR, without rebasing or modifying the reviewed head. This is an exceptional departure from the documented Hard-Fail policy, not a finding that the required checks passed.
+
+**Basis:** PR #776 changed only `docs/status/DECISION_LOG.md` relative to the original baseline `89223724038ff7dec349343469df4ea8389ede26` (+58/-0). All non-governance source, CMake, CI, RFC, and SCG-08 paths remained identical. Antigravity independently reconciled the unchanged four-file PR #775 patch (+264/-69; SHA-256 `082f4529c3d31d48f9be100ff15a35b7f7291c7a52e012356eb7103e6a14ab22`) as conflict-free and confirmed no new review findings. Windows MSVC 3/401 and clang-cl 8/401 failing tests matched the earlier pinned baseline; this is specific non-regression evidence, not general branch-health certification. The macOS GCC cancellation occurred during CTest at the overall 40-minute **job** timeout; CTest ran approximately 8m17s for PR #775 versus 11m03s on the original baseline, so no identical test-level failure is asserted. CI on the updated `main` baseline was still queued/in progress when reconciled; the required gate on PR #775 remained failed. No new experimental executions were authorized.
+
+**Execution conditions:** The exception is single-use and limited to PR #775 at `1fe9044cb497484ecf5f89d4f1bc7581b141eae5`; revalidate the current PR head and mergeability immediately before the merge. This governance-only recording commit may advance `main` without changing the evaluated non-governance code baseline. Any non-governance changes to `main` or head changes before execution require a fresh assessment. Do not modify branch protection or CI configuration. Preserve the exception's provenance in this append-only record.
+
+**Scientific boundaries:** RFC-00E1 remains draft and unratified; formal SCG-08 Gate 1 technical acceptance remains WITHHELD; Gate 2 remains **STRICT NO-GO**. Integration of evidence/schema repair does not authorize new experiments or scientific acceptance.
+
+**References:** PR #775; PR #776; DEC-015; DEC-015-C1; DEC-015-C1-A; original base `89223724038ff7dec349343469df4ea8389ede26`; reconciled base `e42f30af051ee596bc03e4343c4c34cafd37e5b8`.
+
+---
+
 ## Log Maintenance
 
 - New decisions must be logged within the same PR or governance window in which
