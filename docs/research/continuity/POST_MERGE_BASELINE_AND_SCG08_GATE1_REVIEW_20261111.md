@@ -4,7 +4,8 @@
 **Date:** 2026-11-11
 **Author:** Jules (T81 Research Continuity Assistant)
 **Parent Charter:** `docs/research/continuity/SCG08_PHASE0_RESEARCH_CHARTER.md`
-**Associated PRs:** PR #770, PR #771, PR #772 (integrated); PR #747, PR #769 (superseded); PR #748, PR #750 (open)
+**Associated PRs:** PR #770, PR #771, PR #772 (integrated); PR #747, PR #769 (superseded); PR #748, PR #750 (open); PR #775 (published draft evidence repair, pending acceptance and integration); PR #766 (superseded, unmerged historical repair candidate)
+**Sequencing correction attribution:** Codex; documentation-only reconciliation. Historical test and CI observations below are retained; no new experimental execution is reported by this correction.
 
 ---
 
@@ -19,7 +20,7 @@ Following the integration of Pull Requests **#770**, **#771**, and **#772** into
 | **Integrated Engineering Baseline** | **VERIFIED FOR EXECUTED LOCAL TESTS** | All local targeted CTest suites (semantic analyzer, frontend, VM decoder, DPE epoch DAG/parallel/thread pool, SCG-08 Gate 1) compiled cleanly and passed 100% (24/24 frontend/semantic tests, 35/35 DPE parallel tests, 30/30 DPE pool tests, 20/20 DPE DAG tests, decoder tests, and 5-width arithmetic tests). |
 | **Cross-Platform Hosted CI Matrix** | **PARTIALLY VERIFIED — WINDOWS CTEST FAILURES REMAIN** | Linux (GCC/Clang, sanitizers, determinism slices, AVX2-ASan) and macOS runners pass all build, configuration, and determinism gates. Windows runners (`build / windows-x86_64 / msvc` and `build / windows-x86_64 / clang-cl`) successfully configure CMake and compile all targets, but exhibit remaining CTest execution failures with exit code 8 (3 failed under MSVC, 8 failed under clang-cl in check suite `43070255392`). |
 | **Semantic Analyzer Scope Lifetime** | **VERIFIED (DEFENSIVE STABILITY IMPROVEMENT)** | Switching `_scopes` from `std::vector<Scope>` to `std::deque<Scope>` prevents reallocation of the outer scope container during deep nesting. Because individual symbols are stored in `std::unordered_map` whose node addresses are node-allocated and remain stable across map operations, no prior bug of symbol pointer corruption was observed; the change is classified as a defensive scope-container stability improvement. |
-| **SCG-08 Phase 1 Gate 1 Readiness** | **ACCEPTANCE PENDING INDEPENDENT REVIEW** | Available local verification supports readiness for independent technical review. Full compliance and formal acceptance remain unestablished pending that review. |
+| **SCG-08 Phase 1 Gate 1 Readiness** | **ACCEPTANCE WITHHELD — PREREQUISITES PENDING** | First accept and integrate the evidence/schema corrections in draft PR #775, then independently review and prospectively ratify draft RFC-00E1, then record a separate signed Gate 1 technical acceptance decision. Reported local tests do not establish these decisions. |
 | **SCG-08 Phase 2 (Experimental Campaign)** | **STRICT NO-GO — NOT AUTHORIZED** | Large-scale statistical benchmarks, carry-propagation timing campaigns, and hardware timing remain strictly withheld. Progression to Gate 2 requires a separate, dated maintainer authorization record. |
 
 ---
@@ -231,22 +232,19 @@ The implementation in `experiments/scg08_arithmetic_work/` strictly conforms to 
 - Digit canonicalization ($d_i \in \{-1, 0, 1\}$), sign symmetry, asymmetric domain boundaries (e.g. $-2^{B-1}$ and $2^{B-1}-1$), and overflow classifications are verified fail-closed.
 
 ### 6.3 Operation Accounting & Weighted Metric ($W_{\text{ops}}$)
-The frozen weighted operation metric is defined as:
+The implementation uses the following frozen weighted operation metric, described prospectively in draft RFC-00E1; the draft is not an authoritative normative contract:
 $$W_{\text{ops}} = \text{OP}_{\text{ALU\_ADD\_SUB}} + 3 \cdot \text{OP}_{\text{ALU\_MUL}} + \text{OP}_{\text{TABLE\_LOOKUP}} + \text{OP}_{\text{BRANCH\_COND}} + \text{OP}_{\text{NORM\_PASS}}$$
 - **Ternary Addition:** Each call to `T81Limb27::addc()` performs exactly 38 table lookups (9 in `ADD_TABLE`, 20 in `COMPOSITION_TABLE`, 9 in `CARRY_FROM_ZERO`).
 - **Binary Multiplication:** `mul64()` primitive accurately accounts for 4 primitive multiplications and 3 additions; accumulator additions in `mul_binary()` account for 4 additions per inner step.
 - **Normalization Costs:** Normalization passes are counted under `op_norm_pass`. Primitive normalization counters are tracked as non-aggregating diagnostic counters and do not alter $W_{\text{ops}}$.
 - **Workload Equivalence:** Ternary and binary harnesses execute identical operand pairs generated from deterministic PRNG seed `0x5C608001ULL`.
 
-### 6.4 Falsification Criteria vs Execution Authorization (Separation of Boundaries)
-- **Authoritative Falsification Source:** Defined in `SCG08_PHASE0_RESEARCH_CHARTER.md` (§10.5 line 506 and §9 Table):
-  *"If balanced-ternary carry normalization overhead exceeds total binary carry resolution time by > 2.0x for all operand widths N in [64, 1024] bits, H02 is FALSIFIED."*
-- **Strict Governance Boundary:** Preregistered scientific falsification criteria define stopping conditions under which a hypothesis is rejected. **Falsification conditions do not confer authorization to begin testing or execute Gate 2.**
-- **Missing Gate 2 Pre-Requisites:** Gate 2 execution remains **STRICT NO-GO** because the following required pre-requisites are currently missing:
-  1. No dated maintainer authorization record approving Gate 2 entry.
-  2. No ratified benchmark stopping rules or trial ceilings for large-scale runs.
-  3. No ratified protocol amendment choosing between contiguous streams and clustered sequences.
-  4. No independent maintainer signature accepting Phase 1 Gate 1.
+### 6.4 Distinct Falsification Criteria, Accounting Model & Execution Authorization
+- **Charter §9 H02 timing criterion:** The falsification matrix compares balanced-ternary carry-normalization overhead with total binary carry-resolution **time**: greater than $2.0\times$ for all widths in $[64, 1024]$ bits. This is a timing comparison, not an operation-count ratio.
+- **Charter §10.5 EXP-SCG08-01 elementary operations-per-bit criterion:** The experiment separately states a success target of $\le 1.10\times$ total operations per bit for multiplication at $\ge 512$ bits equivalent, and an immediate-closure threshold of greater than $2.0\times$ elementary operations per bit across all evaluated bands. This criterion does not measure carry-resolution time.
+- **Prospective weighted $W_{\text{ops}}$ model:** The weights in §6.3 and draft RFC-00E1 define the implementation's accounting model. The charter's elementary operations-per-bit wording does not itself establish those exact weights. Review and prospective ratification must explicitly reconcile the accounting interpretation; neither weighted counts nor smoke outputs automatically satisfy or falsify the timing criterion. No new threshold or equivalence is adopted here.
+- **Strict Governance Boundary:** A preregistered falsification criterion is a stopping rule, not authorization to execute it. No scientific falsification or comparative advantage is established by the Gate 1 smoke suite.
+- **Gate 2 remains STRICT NO-GO:** Evidence/schema correction acceptance and integration, prospective specification ratification, and a separate signed Gate 1 technical acceptance decision must precede any Gate 2 consideration. A ratified protocol amendment and separate dated maintainer Gate 2 authorization are also required; none is issued by this document.
 
 ### 6.5 Statistical Protocol Identity: Contiguous Markov Stream vs Clustered Design
 A rigorous distinction must be maintained between the two competing experimental protocols:
@@ -261,6 +259,13 @@ A rigorous distinction must be maintained between the two competing experimental
 - **Protocol Boundary Decision:** Because these protocols measure fundamentally different regimes (asymptotic stationary mixing vs transient-dominated mixtures), **they must not be combined or conflated**.
 - **Recommendation:** The proposed 136,500-cluster design should receive its own separate experiment identifier (e.g. `EXP-SCG08-02-CLUSTERED`) and dedicated preregistration prior to any execution.
 
+### 6.6 Published Evidence Repair & Unresolved Reproducibility Boundary
+- **Current repair candidate:** [Draft PR #775](https://github.com/t81dev/t81-foundation/pull/775), head `1fe9044cb497484ecf5f89d4f1bc7581b141eae5`, publishes the four-file evidence-binding and scalar-validation reconciliation against baseline `89223724038ff7dec349343469df4ea8389ede26`. It remains pending independent acceptance and integration; publication and prior candidate review do not establish integration or formal Gate 1 acceptance.
+- **Historical predecessor:** [PR #766](https://github.com/t81dev/t81-foundation/pull/766), head `a763ab6876bf07b8ae7c529656cdd2e5d9cf3766`, remains the superseded, unmerged historical repair candidate. This document neither closes it nor treats its changes as integrated.
+- **Source context is not execution provenance:** PR #775 separates recorded `baseline_sha` (`dbf107fda83a3755fa21d6b95caa3eb8ac450dd3`) from `evaluated_implementation_sha` (`2dd3cc62e526942cdcbed6d100770c08c26ab2fe`, corrected source reviewed). Actual historical evidence-generation revision remains **NOT VERIFIED**, represented by `evidence_generation_sha: null`. No independently traceable execution receipt establishes that the reviewed source generated the historical observations. An optional publication SHA is validated when present and may be omitted; it is not an execution receipt.
+- **Reported bounded verification in PR #775:** 94 passing negative cases and targeted arithmetic regression at 179/1,000 trials under `-DNDEBUG`. JSON Schema parity was **not executed locally** because `jsonschema` was unavailable; Draft 7 integral-float semantics differ from strict Python integer validation. These are reported results from that candidate, not new executions for this documentation correction.
+- **Unresolved macOS smoke discrepancy:** Historical ternary `f_gen|0=0.243243`, `f_occ=0.29`, mean run `1.611111`; historical binary `f_gen|0=0.272727`, `f_occ=0.47`, mean run `3.133333`. Fresh macOS observations reported in PR #775 were ternary `0.1875`, `0.2`, `1.33333` and binary `0.326923`, `0.51`, `3`, respectively. The cause and cross-library reproducibility remain unresolved. The historical timestamp, numerical observations, counters, and 179-trial evidence record are preserved. Five 20-digit sequences per representation with one fixed seed and broad sanity checks do not establish statistical significance, comparative advantage, or a campaign finding.
+
 ---
 
 ## 7. SCG-08 Authorization & Provenance Decision Matrix
@@ -270,10 +275,14 @@ To ensure historical fidelity without backdating, authorization dimensions are f
 | Dimension | Classification | Authoritative Evidence / Basis | Minimum Acceptance Requirement |
 |:---|:---:|:---|:---|
 | **Historical Gate 1 Authorization** | **`NOT VERIFIED`** | No dated maintainer signature, PR approval, or commit SHA exists granting Gate 1 implementation authorization in the historical archive. | Retain `NOT VERIFIED`. Do not manufacture or backdate approval. |
-| **Historical Addendum 06 Authority** | **`NOT VERIFIED`** | Physical specification document text is absent from git tree; cited only as an external string. | Retained as `NOT VERIFIED`; requirements prospectively formalized under RFC-00E1. |
-| **H02 Falsification Threshold ($W_{\text{ops}} > 2.0\times$)** | **`PREREGISTERED`** | Charter §10.5 line 506 and §9 Table. Immediate hypothesis rejection rule. | Established in Charter; does not grant Gate 2 execution permission. |
+| **Historical Addendum 06 Authority** | **`NOT VERIFIED`** | Physical specification document text is absent from git tree; cited only as an external string. | Retain `NOT VERIFIED`; draft RFC-00E1 proposes prospective requirements and does not backdate authority. |
+| **H02 carry-resolution timing criterion** | **`PREREGISTERED — CHARTER §9`** | Carry-normalization overhead versus binary carry-resolution time, greater than $2.0\times$ across all specified widths. | Preserve timing units and scope; no execution permission follows. |
+| **EXP-SCG08-01 operations-per-bit criterion** | **`PREREGISTERED — CHARTER §10.5`** | Elementary operations per bit; success $\le 1.10\times$ at $\ge 512$ bits; failure greater than $2.0\times$ across all evaluated bands. | Keep separate from §9 timing and prospectively reconcile the weighted interpretation. |
+| **Weighted $W_{\text{ops}}$ accounting model** | **`IMPLEMENTED / PROSPECTIVE DRAFT`** | Existing harness accounting; draft RFC-00E1 §3. | Independent review and prospective ratification; not an already authoritative charter weighting. |
+| **Evidence/schema repair** | **`PUBLISHED DRAFT — NOT INTEGRATED`** | PR #775 at `1fe9044cb497484ecf5f89d4f1bc7581b141eae5`; PR #766 is superseded and unmerged. | Accept and integrate the correction before specification ratification and Gate 1 acceptance. |
+| **Actual historical evidence-generation revision** | **`NOT VERIFIED`** | PR #775 records `evidence_generation_sha: null`; source identities alone do not identify the generating execution. | Preserve the unknown; do not infer or backdate a generating SHA. Review this limitation explicitly. |
 | **Gate 1 Trial Ceiling ($\le 1,000$)** | **`IMPLEMENTED / HISTORICAL — PREREGISTRATION NOT VERIFIED`** | Implemented in `tier2_work_harness.hpp:67` and enforced fail-closed. | Requires explicit maintainer ratification in prospective Gate 1 acceptance. |
-| **Gate 1 Prospective Technical Acceptance** | **`PENDING INDEPENDENT REVIEW`** | Technical harness, 5-width arithmetic, base-$10^9$ oracle, and 12-case negative schema verification are 100% verified locally. | Signed maintainer acceptance record on RFC-00E1 and Gate 1 evidence packet. |
+| **Gate 1 Prospective Technical Acceptance** | **`WITHHELD — PREREQUISITES PENDING`** | Reported bounded tests support review, subject to evidence binding, unexecuted parity checks, and unresolved smoke reproducibility. | Accept/integrate evidence corrections; independently review and prospectively ratify RFC-00E1; then issue a separate signed Gate 1 technical acceptance decision. |
 | **Gate 2 Benchmark Execution** | **`STRICT NO-GO / NOT AUTHORIZED`** | Prohibited by Charter §1.3 and governance protocol. | Requires complete Gate 1 sign-off, ratified protocol amendment, and signed Gate 2 authorization. |
 
 ---
@@ -281,17 +290,17 @@ To ensure historical fidelity without backdating, authorization dimensions are f
 ## 8. Gate 1 Readiness Disposition & Next Engineering Task
 
 ### 8.1 Gate 1 Readiness
-- **Status:** **`ACCEPTANCE PENDING INDEPENDENT REVIEW`**
-- **Basis:** Available local verification supports readiness for independent technical review. Full compliance and formal acceptance remain unestablished pending that review. Historical Gate 1 authorization remains classified as `NOT VERIFIED`, historical Addendum 06 authority remains `NOT VERIFIED`, and prospective specification `RFC-00E1` is a draft awaiting formal ratification.
+- **Status:** **`ACCEPTANCE WITHHELD — PREREQUISITES PENDING`**
+- **Basis:** Draft PR #775 must first be accepted and integrated. Draft RFC-00E1 then requires independent review and prospective maintainer ratification. A separate signed Gate 1 technical acceptance decision follows; neither the repair nor RFC ratification substitutes for it. Historical Gate 1 authorization, Addendum 06 authority, and actual historical evidence-generation revision remain `NOT VERIFIED`.
 
 ### 8.2 Gate 2 Disposition
 - **Status:** **`STRICT NO-GO — NOT AUTHORIZED`**
-- **Basis:** No large-scale statistical campaigns, performance timing, or microarchitectural benchmarks may be executed until Gate 1 is formally accepted by repository maintainers.
+- **Basis:** Gate 1 acceptance is necessary but insufficient for execution. A ratified protocol amendment and a separate dated maintainer Gate 2 authorization are also required. No large-scale statistical campaigns, performance timing, or microarchitectural benchmarks are authorized here.
 
 ### 8.3 Next Research Milestone — Independent Review Manifest
 To facilitate formal independent technical review of SCG-08 Phase 1 Gate 1, the following exact artifacts and commands constitute the review package:
 
-1. **Normative Evaluation Contract:**
+1. **Prospective Evaluation Contract — Draft Proposal:**
    - `spec/rfcs/RFC-00E1-balanced-ternary-multi-precision-arithmetic-contract.md` (§2 operand domains, §3 $W_{\text{ops}}$ accounting model, §4 decoupled base-$10^9$ oracle, §5 budget ceiling).
 2. **Implementation Sources:**
    - `experiments/scg08_arithmetic_work/tier1_markov_harness.hpp` (Markov carry-dynamics transitions).
@@ -299,22 +308,37 @@ To facilitate formal independent technical review of SCG-08 Phase 1 Gate 1, the 
    - `experiments/scg08_arithmetic_work/exact_oracle_adapter.hpp` (Decoupled base-$10^9$ `ExactBigIntOracle`).
    - `experiments/scg08_arithmetic_work/test_exp_scg08_01.cpp` (Smoke and deterministic replay test suite).
 3. **Evidence Artifacts & Schemas:**
-   - `experiments/scg08_arithmetic_work/gate1_evidence_record.json` (179 executed trials).
+   - `experiments/scg08_arithmetic_work/gate1_evidence_record.json` (179 historically recorded trials; actual generating revision NOT VERIFIED). Review the correction at PR #775 head separately until it is integrated.
    - `experiments/scg08_arithmetic_work/evidence_schema.json` (JSON schema `t81.scg08.carry-experiment.v1`).
    - `experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md` (Implementation report).
-4. **Independent Validation Commands:**
+4. **Previously Listed Gate 1 Validation Commands (not executed or newly authorized by this correction):**
    ```bash
    # Build test harness
    cmake -B build -G Ninja -DT81_BUILD_EXPERIMENTS=ON -DBENCHMARK_ENABLE_WERROR=OFF
    ninja -C build t81_exp_scg08_01_test
    # Execute arithmetic harness
    ./build/experiments/scg08_arithmetic_work/t81_exp_scg08_01_test
-   # Validate schema and 12-case negative fail-closed rejection
+   # Validate schema and negative fail-closed rejection; PR #775 reports 94 cases
    python3 scripts/ci/validate_scg08_gate1_evidence.py
    python3 scripts/ci/validate_scg08_gate1_evidence.py --test-negative
    ```
-5. **Core Evaluation Question for Reviewers:** Determine whether prospective Gate 1 technical acceptance under `RFC-00E1` is justified on technical and mathematical merit despite the unresolved historical authorization provenance of `Addendum 06`.
+5. **Core Evaluation Question for Reviewers:** Assess evidence/schema correction acceptance first, then independently review draft RFC-00E1 for prospective ratification. Only afterward assess a separate signed Gate 1 technical acceptance decision, explicitly retaining the historical authorization and evidence-generation limitations.
 
 ### 8.4 Exactly One Recommended Next Engineering Task
 **Recommendation:**
-Execute an independent maintainer review of the SCG-08 Gate 1 technical package (prospective RFC-00E1, `gate1_evidence_record.json`, and harness verification) to determine formal maintainer technical acceptance of Phase 1 Gate 1.
+Review and accept the evidence/schema correction in draft PR #775 for integration, retaining PR #766 as the superseded, unmerged historical candidate. The required sequence is:
+
+1. **Accept and integrate evidence/schema corrections.** Review PR #775's source/evidence distinction, strict scalar validation, optional publication identity, unexecuted JSON Schema parity, and unresolved macOS smoke discrepancy. Do not infer historical execution provenance.
+2. **Independently review and prospectively ratify RFC-00E1.** It remains a draft proposal until an explicit maintainer decision; preserve its prospective scope and reconcile timing, elementary operations-per-bit, and weighted accounting distinctions.
+3. **Record a separate signed Gate 1 technical acceptance decision.** Identify the accepted implementation and evidence packet and explicitly retain historical authorization and evidence-generation provenance as NOT VERIFIED. Neither integration nor RFC ratification is this acceptance decision.
+
+Gate 2 remains **STRICT NO-GO** throughout. Any later execution consideration additionally requires protocol amendment and separate dated maintainer Gate 2 authorization.
+
+### 8.5 Reconciliation of Existing Codex Review Findings
+
+Both findings were posted against `d05e9123dd129a46a0cf2fb22946309efbf75f68`; GitHub currently marks their threads outdated but unresolved. This correction retains and links the findings rather than silently closing or dismissing them:
+
+- [Smoke-test overclaim (discussion_r4539562436)](https://github.com/t81dev/t81-foundation/pull/773#discussion_r4539562436): The earlier claim that smoke tests confirm a significant reduction was removed. Section 6.6 now preserves descriptive historical/fresh observations, limits the tested domain, and records the unresolved reproducibility discrepancy. No significance or comparative conclusion is claimed.
+- [Acceptance prerequisites (discussion_r4539562442)](https://github.com/t81dev/t81-foundation/pull/773#discussion_r4539562442): Sections 7 and 8 restore evidence correction acceptance/integration before prospective specification ratification and a separate signed Gate 1 technical acceptance decision. PR #775 supersedes the unmerged PR #766 repair candidate; it is not represented as integrated or formally accepted.
+
+These are proposed documentation responses for reviewer assessment. Neither thread is resolved or dismissed by this update; neither finding nor this correction establishes scientific acceptance or authorization.
