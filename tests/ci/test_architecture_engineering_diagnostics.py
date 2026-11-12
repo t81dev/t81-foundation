@@ -24,6 +24,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from unittest.mock import Mock
 import pytest
 
 import importlib.util
@@ -457,6 +458,48 @@ def test_git_ancestry_edge_cases(tmp_path):
     assert check_git_ancestry("0" * 40, ref, tmp_path) == ("UNAVAILABLE", None, head)
     assert check_git_ancestry("Not recorded", ref, tmp_path) == ("UNAVAILABLE", None, None)
     assert check_git_ancestry(root, "refs/nonexistent/phantom_ref", tmp_path) == ("UNAVAILABLE", None, None)
+
+
+
+@pytest.mark.parametrize("failure, expected", [
+    (subprocess.CalledProcessError(1, ["git", "merge-base"]), "DIVERGENT"),
+    (subprocess.CalledProcessError(128, ["git", "merge-base"]), "UNAVAILABLE"),
+    (OSError("Git execution unavailable"), "UNAVAILABLE"),
+])
+def test_git_ancestry_merge_base_failures(monkeypatch, failure, expected):
+    """Only merge-base exit 1 establishes non-ancestry; never count on failure."""
+    head = "a" * 40
+    baseline = "b" * 40
+    output = Mock(return_value=head.encode())
+    call = Mock(side_effect=[0, failure])  # cat-file succeeds, merge-base fails
+    monkeypatch.setattr(subprocess, "check_output", output)
+    monkeypatch.setattr(subprocess, "check_call", call)
+
+    assert check_git_ancestry(baseline) == (expected, None, head)
+    assert call.call_args.args[0] == ["git", "merge-base", "--is-ancestor", baseline, "HEAD"]
+    output.assert_called_once_with(["git", "rev-parse", "HEAD"], cwd=".", stderr=subprocess.DEVNULL)
+
+
+@pytest.mark.parametrize("count_result", [
+    subprocess.CalledProcessError(1, ["git", "rev-list"]),
+    subprocess.CalledProcessError(128, ["git", "rev-list"]),
+    OSError("Git execution unavailable"),
+    b"invalid count",
+])
+def test_git_ancestry_count_failures(monkeypatch, count_result):
+    """Counting failures after confirmed ancestry must never report divergence."""
+    head = "a" * 40
+    baseline = "b" * 40
+    output = Mock(side_effect=[head.encode(), count_result])
+    call = Mock(return_value=0)  # cat-file and merge-base both succeed
+    monkeypatch.setattr(subprocess, "check_output", output)
+    monkeypatch.setattr(subprocess, "check_call", call)
+
+    assert check_git_ancestry(baseline) == ("UNAVAILABLE", None, head)
+    assert call.call_count == 2
+    assert call.call_args.args[0] == ["git", "merge-base", "--is-ancestor", baseline, "HEAD"]
+    assert output.call_count == 2
+    assert output.call_args.args[0] == ["git", "rev-list", "--count", f"{baseline}..HEAD"]
 
 
 def test_missing_metadata_normalizes_to_not_recorded(isolated_dataset):

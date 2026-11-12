@@ -596,6 +596,9 @@ def check_git_ancestry(baseline_sha, comparison_ref="HEAD", repo_root="."):
       - ancestry_status: 'IDENTICAL' | 'ANCESTOR' | 'DIVERGENT' | 'UNAVAILABLE'
       - commits_behind: int (only if 'ANCESTOR' or 'IDENTICAL'), otherwise None
       - resolved_comparison_sha: full SHA string or None
+    DIVERGENT means merge-base exited 1 (confirmed non-ancestry).
+    UNAVAILABLE includes command failures and unavailable/invalid commit counts,
+    even when ancestry was confirmed; ANCESTOR always includes an integer count.
     Handles missing Git, shallow clones, or unknown refs gracefully without raising exceptions.
     """
     import subprocess
@@ -632,16 +635,23 @@ def check_git_ancestry(baseline_sha, comparison_ref="HEAD", repo_root="."):
             cwd=repo_root,
             stderr=subprocess.DEVNULL
         )
+    except subprocess.CalledProcessError as exc:
+        status = "DIVERGENT" if exc.returncode == 1 else "UNAVAILABLE"
+        return (status, None, resolved_sha)
+    except OSError:
+        return ("UNAVAILABLE", None, resolved_sha)
+
+    # Ancestry is confirmed. A counting failure is not evidence of divergence.
+    try:
         count_str = subprocess.check_output(
             ["git", "rev-list", "--count", f"{baseline_sha}..{comparison_ref}"],
             cwd=repo_root,
             stderr=subprocess.DEVNULL
         ).decode("utf-8").strip()
         return ("ANCESTOR", int(count_str), resolved_sha)
-    except subprocess.CalledProcessError:
-        return ("DIVERGENT", None, resolved_sha)
-    except Exception:
+    except (subprocess.CalledProcessError, OSError, ValueError):
         return ("UNAVAILABLE", None, resolved_sha)
+
 
 def collect_baseline_inventory(data_dir=DATA_DIR, comparison_ref="HEAD", repo_root="."):
     """
