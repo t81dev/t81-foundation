@@ -153,7 +153,7 @@ void private_permissions(CaptureFile& file) {
   LocalFree(descriptor);
   REQUIRE(private_acl);
 #else
-  struct stat info{};
+  struct stat info {};
   REQUIRE(::fstat(file.native_handle(), &info) == 0);
   REQUIRE((info.st_mode & 0777) == 0600);
   REQUIRE((::fcntl(file.native_handle(), F_GETFD) & FD_CLOEXEC) != 0);

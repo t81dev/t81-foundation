@@ -121,7 +121,7 @@ CaptureFile CaptureFile::create_exclusive(const fs::path& path) {
   // Keep only the opened object. No later read or cleanup resolves this pathname.
   if (::unlink(path.c_str()) != 0) system_failure("unlink owned capture");
   if (::fchmod(fd, 0600) != 0) system_failure("private capture permissions");
-  struct stat info{};
+  struct stat info {};
   if (::fstat(fd, &info) != 0) system_failure("verify capture permissions");
   if ((info.st_mode & 0777) != 0600 || info.st_uid != ::geteuid())
     throw std::runtime_error("capture permissions are not private to the current user");

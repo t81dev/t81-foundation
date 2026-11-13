@@ -63,8 +63,10 @@ ASAN_OPTIONS=detect_leaks=0 ./test-capture-sanitized
 All three CTest targets and both standalone runs passed. Symlink rejection actually
 executed locally. ASan leak detection was disabled; no Windows sanitizer execution
 is established by this result. Logs accompany this record. Diff whitespace and
-clang-format checks passed locally (clang-format 22); CI's format version remains
-an independent check.
+clang-format 22 checks initially passed locally. CI then identified its version-18
+spacing requirement for `struct stat info {}` in the two files. Both were
+formatted with clang-format 18.1.8, changing whitespace only; the same version
+passes locally. The original failed CI result is retained in PR history.
 
 ## Publication boundary and preserved limits
 
