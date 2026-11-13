@@ -1,12 +1,22 @@
 #include "tools/cli/core/process_capture.hpp"
+#include "tools/cli/core/process_capture_detail.hpp"
 
+#include <array>
 #include <atomic>
+#include <cerrno>
 #include <cstdlib>
-#include <fstream>
-#include <iterator>
+#include <limits>
+#include <memory>
+#include <random>
+#include <stdexcept>
 #include <string_view>
+#include <system_error>
+#include <utility>
 
-#if defined(_WIN32)
+#ifdef _WIN32
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0601
+#endif
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -14,52 +24,204 @@
 #define NOMINMAX
 #endif
 #include <windows.h>
+
+#include <aclapi.h>
 #include <cwctype>
 #include <map>
 #else
 #include <fcntl.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #endif
 
 namespace fs = std::filesystem;
+namespace {
+#ifdef _WIN32
+[[noreturn]] void system_failure(const char* operation) {
+  throw std::system_error(static_cast<int>(GetLastError()), std::system_category(), operation);
+}
+struct UniqueHandle {
+  HANDLE value = nullptr;
+  explicit UniqueHandle(HANDLE handle = nullptr) : value(handle) {}
+  ~UniqueHandle() { reset(); }
+  UniqueHandle(const UniqueHandle&) = delete;
+  UniqueHandle& operator=(const UniqueHandle&) = delete;
+  void reset() noexcept {
+    if (value && value != INVALID_HANDLE_VALUE) CloseHandle(value);
+    value = nullptr;
+  }
+};
+#else
+[[noreturn]] void system_failure(const char* operation) {
+  throw std::system_error(errno, std::generic_category(), operation);
+}
+#endif
+}  // namespace
+
+namespace t81::cli::detail {
+CaptureFile CaptureFile::create_exclusive(const fs::path& path) {
+#ifdef _WIN32
+  UniqueHandle token;
+  if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token.value))
+    system_failure("OpenProcessToken");
+  DWORD bytes = 0;
+  if (GetTokenInformation(token.value, TokenUser, nullptr, 0, &bytes) ||
+      GetLastError() != ERROR_INSUFFICIENT_BUFFER || bytes == 0)
+    system_failure("GetTokenInformation size");
+  std::vector<BYTE> token_info(bytes);
+  if (!GetTokenInformation(token.value, TokenUser, token_info.data(), bytes, &bytes))
+    system_failure("GetTokenInformation");
+  const auto* user = reinterpret_cast<const TOKEN_USER*>(token_info.data());
+  const DWORD acl_size =
+      static_cast<DWORD>(sizeof(ACL) + sizeof(ACCESS_ALLOWED_ACE) - sizeof(DWORD)) +
+      GetLengthSid(user->User.Sid);
+  std::vector<BYTE> acl_storage(acl_size);
+  auto* acl = reinterpret_cast<PACL>(acl_storage.data());
+  SECURITY_DESCRIPTOR descriptor{};
+  if (!InitializeAcl(acl, acl_size, ACL_REVISION) ||
+      !AddAccessAllowedAce(acl, ACL_REVISION, FILE_ALL_ACCESS, user->User.Sid) ||
+      !InitializeSecurityDescriptor(&descriptor, SECURITY_DESCRIPTOR_REVISION) ||
+      !SetSecurityDescriptorDacl(&descriptor, TRUE, acl, FALSE) ||
+      !SetSecurityDescriptorControl(&descriptor, SE_DACL_PROTECTED, SE_DACL_PROTECTED))
+    system_failure("private capture DACL");
+  SECURITY_ATTRIBUTES security{sizeof(SECURITY_ATTRIBUTES), &descriptor, FALSE};
+  HANDLE handle = CreateFileW(
+      path.c_str(), GENERIC_READ | GENERIC_WRITE | DELETE, 0, &security, CREATE_NEW,
+      FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE | FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
+  if (handle == INVALID_HANDLE_VALUE) system_failure("exclusive capture creation");
+  CaptureFile file(handle);
+  PACL actual_acl = nullptr;
+  PSECURITY_DESCRIPTOR actual_descriptor = nullptr;
+  const DWORD security_error =
+      GetSecurityInfo(handle, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr,
+                      &actual_acl, nullptr, &actual_descriptor);
+  if (security_error != ERROR_SUCCESS)
+    throw std::system_error(static_cast<int>(security_error), std::system_category(),
+                            "verify capture DACL");
+  std::unique_ptr<void, decltype(&LocalFree)> descriptor_owner(actual_descriptor, &LocalFree);
+  SECURITY_DESCRIPTOR_CONTROL control = 0;
+  DWORD revision = 0;
+  ACL_SIZE_INFORMATION info{};
+  void* raw_ace = nullptr;
+  if (!GetSecurityDescriptorControl(actual_descriptor, &control, &revision) ||
+      !(control & SE_DACL_PROTECTED) || !actual_acl ||
+      !GetAclInformation(actual_acl, &info, sizeof(info), AclSizeInformation) ||
+      info.AceCount != 1 || !GetAce(actual_acl, 0, &raw_ace))
+    throw std::runtime_error("capture DACL is not private");
+  auto* ace = static_cast<ACCESS_ALLOWED_ACE*>(raw_ace);
+  if (ace->Header.AceType != ACCESS_ALLOWED_ACE_TYPE || ace->Mask != FILE_ALL_ACCESS ||
+      !EqualSid(&ace->SidStart, user->User.Sid))
+    throw std::runtime_error("capture DACL is not restricted to the current user");
+  return file;
+#else
+  const int fd = ::open(path.c_str(), O_CREAT | O_EXCL | O_RDWR | O_CLOEXEC | O_NOFOLLOW, 0600);
+  if (fd < 0) system_failure("exclusive capture creation");
+  CaptureFile file(fd);
+  // Keep only the opened object. No later read or cleanup resolves this pathname.
+  if (::unlink(path.c_str()) != 0) system_failure("unlink owned capture");
+  if (::fchmod(fd, 0600) != 0) system_failure("private capture permissions");
+  struct stat info{};
+  if (::fstat(fd, &info) != 0) system_failure("verify capture permissions");
+  if ((info.st_mode & 0777) != 0600 || info.st_uid != ::geteuid())
+    throw std::runtime_error("capture permissions are not private to the current user");
+  if (fd <= STDERR_FILENO) {
+    const int promoted = ::fcntl(fd, F_DUPFD_CLOEXEC, STDERR_FILENO + 1);
+    if (promoted < 0) system_failure("promote capture descriptor");
+    file = CaptureFile(promoted);
+  }
+  return file;
+#endif
+}
+
+CaptureFile CaptureFile::create_temporary() {
+  const fs::path directory = fs::temp_directory_path();
+  std::random_device random;
+  static std::atomic<unsigned long long> sequence{0};
+  for (unsigned attempt = 0; attempt < 128; ++attempt) {
+    const auto name = "t81-capture-" + std::to_string(random()) + "-" + std::to_string(random()) +
+                      "-" + std::to_string(random()) + "-" + std::to_string(random()) + "-" +
+                      std::to_string(sequence.fetch_add(1));
+    try {
+      return create_exclusive(directory / name);
+    } catch (const std::system_error& error) {
+#ifdef _WIN32
+      if (error.code().value() != ERROR_FILE_EXISTS && error.code().value() != ERROR_ALREADY_EXISTS)
+        throw;
+#else
+      if (error.code().value() != EEXIST) throw;
+#endif
+    }
+  }
+  throw std::runtime_error("capture filename collisions exhausted");
+}
+
+CaptureFile::CaptureFile(CaptureFile&& other) noexcept {
+#ifdef _WIN32
+  handle_ = std::exchange(other.handle_, nullptr);
+#else
+  handle_ = std::exchange(other.handle_, -1);
+#endif
+}
+CaptureFile& CaptureFile::operator=(CaptureFile&& other) noexcept {
+  if (this != &other) {
+    close();
+#ifdef _WIN32
+    handle_ = std::exchange(other.handle_, nullptr);
+#else
+    handle_ = std::exchange(other.handle_, -1);
+#endif
+  }
+  return *this;
+}
+CaptureFile::~CaptureFile() { close(); }
+void CaptureFile::close() noexcept {
+#ifdef _WIN32
+  if (handle_) CloseHandle(std::exchange(handle_, nullptr));
+#else
+  if (handle_ >= 0) ::close(std::exchange(handle_, -1));
+#endif
+}
+std::string CaptureFile::read_all() {
+  std::string text;
+  std::array<char, 65536> buffer{};
+#ifdef _WIN32
+  LARGE_INTEGER start{};
+  if (!SetFilePointerEx(handle_, start, nullptr, FILE_BEGIN)) system_failure("rewind capture");
+  for (;;) {
+    DWORD count = 0;
+    if (!ReadFile(handle_, buffer.data(), static_cast<DWORD>(buffer.size()), &count, nullptr))
+      system_failure("read capture");
+    if (count == 0) break;
+    text.append(buffer.data(), count);
+  }
+#else
+  if (::lseek(handle_, 0, SEEK_SET) < 0) system_failure("rewind capture");
+  for (;;) {
+    const auto count = ::read(handle_, buffer.data(), buffer.size());
+    if (count < 0) {
+      if (errno == EINTR) continue;
+      system_failure("read capture");
+    }
+    if (count == 0) break;
+    text.append(buffer.data(), static_cast<std::size_t>(count));
+  }
+#endif
+  return text;
+}
+}  // namespace t81::cli::detail
 
 namespace t81::cli {
 namespace {
-
-struct ScopedCaptureFile {
-  fs::path path;
-
-  explicit ScopedCaptureFile(const std::string& hint, const std::string& ext) {
-    static std::atomic<unsigned long long> counter{0};
-    const unsigned long long seq = counter.fetch_add(1, std::memory_order_relaxed);
-#if defined(_WIN32)
-    const unsigned long long pid = static_cast<unsigned long long>(GetCurrentProcessId());
-#else
-    const unsigned long long pid = static_cast<unsigned long long>(::getpid());
-#endif
-    std::error_code ec;
-    const fs::path base = fs::temp_directory_path(ec);
-    const fs::path dir = ec ? fs::current_path(ec) : base;
-    path = dir / ("t81-" + hint + "-" + std::to_string(pid) + "-" + std::to_string(seq) + ext);
-    std::ofstream touch(path, std::ios::binary | std::ios::trunc);
-  }
-
-  ~ScopedCaptureFile() {
-    std::error_code ec;
-    fs::remove(path, ec);
-  }
-
-  ScopedCaptureFile(const ScopedCaptureFile&) = delete;
-  ScopedCaptureFile& operator=(const ScopedCaptureFile&) = delete;
-};
-
 #if defined(_WIN32)
 bool utf8_to_wide(std::string_view input, std::wstring& out) {
   out.clear();
   if (input.empty()) {
     return true;
   }
+  if (input.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()) ||
+      input.find('\0') != std::string_view::npos)
+    return false;
   const int needed = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, input.data(),
                                          static_cast<int>(input.size()), nullptr, 0);
   if (needed <= 0) {
@@ -120,6 +282,8 @@ bool build_windows_environment(const std::vector<std::pair<std::string, std::str
   if (raw_env == nullptr) {
     return false;
   }
+  std::unique_ptr<wchar_t, decltype(&FreeEnvironmentStringsW)> env_guard(raw_env,
+                                                                         &FreeEnvironmentStringsW);
   for (const wchar_t* cur = raw_env; *cur != L'\0';) {
     const std::wstring entry(cur);
     cur += entry.size() + 1;
@@ -128,7 +292,6 @@ bool build_windows_environment(const std::vector<std::pair<std::string, std::str
       env_map[entry.substr(0, eq)] = entry.substr(eq + 1);
     }
   }
-  FreeEnvironmentStringsW(raw_env);
 
   for (const auto& [k, v] : overrides) {
     std::wstring wk;
@@ -149,156 +312,132 @@ bool build_windows_environment(const std::vector<std::pair<std::string, std::str
   return true;
 }
 #endif
-
+#ifdef _WIN32
+void inherit_duplicate(HANDLE source, UniqueHandle& destination) {
+  if (!DuplicateHandle(GetCurrentProcess(), source, GetCurrentProcess(), &destination.value, 0,
+                       TRUE, DUPLICATE_SAME_ACCESS))
+    system_failure("DuplicateHandle");
+}
+struct AttributeListGuard {
+  LPPROC_THREAD_ATTRIBUTE_LIST value = nullptr;
+  ~AttributeListGuard() {
+    if (value) DeleteProcThreadAttributeList(value);
+  }
+};
+#endif
 }  // namespace
 
 ProcessCaptureResult run_process_capture(
     const std::vector<std::string>& argv, const std::optional<fs::path>& cwd,
     const std::vector<std::pair<std::string, std::string>>& env_overrides) {
   ProcessCaptureResult result;
-  if (argv.empty()) {
-    return result;
-  }
-#if defined(_WIN32)
-  ScopedCaptureFile out_file("capture", ".out");
-  ScopedCaptureFile err_file("capture", ".err");
-
-  std::wstring cmdline;
-  for (std::size_t i = 0; i < argv.size(); ++i) {
-    std::wstring warg;
-    if (!utf8_to_wide(argv[i], warg)) {
-      return result;
+  try {
+    if (argv.empty() || argv[0].empty()) throw std::invalid_argument("missing executable");
+    for (const auto& arg : argv)
+      if (arg.find('\0') != std::string::npos) throw std::invalid_argument("NUL in argument");
+    for (const auto& [key, value] : env_overrides)
+      if (key.empty() || key.find_first_of("=\0", 0, 2) != std::string::npos ||
+          value.find('\0') != std::string::npos)
+        throw std::invalid_argument("invalid environment override");
+    auto output = detail::CaptureFile::create_temporary();
+    auto errors = detail::CaptureFile::create_temporary();
+#ifdef _WIN32
+    std::wstring cmdline;
+    for (const auto& arg : argv) {
+      std::wstring wide;
+      if (!utf8_to_wide(arg, wide)) throw std::invalid_argument("invalid UTF-8 argument");
+      if (!cmdline.empty()) cmdline.push_back(L' ');
+      cmdline += quote_windows_arg(wide);
     }
-    if (i != 0) {
-      cmdline.push_back(L' ');
+    std::wstring cwd_w;
+    if (cwd) cwd_w = cwd->wstring();
+    std::vector<wchar_t> env_block;
+    if (!env_overrides.empty() && !build_windows_environment(env_overrides, env_block))
+      throw std::runtime_error("cannot build Unicode environment");
+
+    UniqueHandle child_output, child_errors, child_input;
+    inherit_duplicate(output.native_handle(), child_output);
+    inherit_duplicate(errors.native_handle(), child_errors);
+    HANDLE input = GetStdHandle(STD_INPUT_HANDLE);
+    if (input && input != INVALID_HANDLE_VALUE) {
+      inherit_duplicate(input, child_input);
+    } else {
+      SECURITY_ATTRIBUTES sa{sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE};
+      child_input.value = CreateFileW(L"NUL", GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, &sa,
+                                      OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+      if (child_input.value == INVALID_HANDLE_VALUE) system_failure("open null stdin");
     }
-    cmdline += quote_windows_arg(warg);
-  }
-
-  std::wstring cwd_w;
-  const wchar_t* cwd_ptr = nullptr;
-  if (cwd.has_value()) {
-    cwd_w = cwd->wstring();
-    cwd_ptr = cwd_w.c_str();
-  }
-
-  std::vector<wchar_t> env_block;
-  void* env_ptr = nullptr;
-  DWORD create_flags = 0;
-  if (!env_overrides.empty()) {
-    if (!build_windows_environment(env_overrides, env_block)) {
-      return result;
-    }
-    env_ptr = env_block.data();
-    create_flags |= CREATE_UNICODE_ENVIRONMENT;
-  }
-
-  SECURITY_ATTRIBUTES sa{};
-  sa.nLength = sizeof(sa);
-  sa.bInheritHandle = TRUE;
-
-  HANDLE hOut =
-      CreateFileW(out_file.path.c_str(), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, &sa,
-                  CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-  if (hOut == INVALID_HANDLE_VALUE) {
-    return result;
-  }
-  HANDLE hErr =
-      CreateFileW(err_file.path.c_str(), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, &sa,
-                  CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-  if (hErr == INVALID_HANDLE_VALUE) {
-    CloseHandle(hOut);
-    return result;
-  }
-
-  STARTUPINFOW si{};
-  si.cb = sizeof(si);
-  si.dwFlags = STARTF_USESTDHANDLES;
-  si.hStdOutput = hOut;
-  si.hStdError = hErr;
-  si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
-
-  PROCESS_INFORMATION pi{};
-  const BOOL ok = CreateProcessW(nullptr, cmdline.data(), nullptr, nullptr, TRUE, create_flags,
-                                 env_ptr, cwd_ptr, &si, &pi);
-  CloseHandle(hOut);
-  CloseHandle(hErr);
-  if (!ok) {
-    return result;
-  }
-
-  const DWORD wait_rc = WaitForSingleObject(pi.hProcess, INFINITE);
-  DWORD exit_code = 1;
-  const BOOL got_exit = GetExitCodeProcess(pi.hProcess, &exit_code);
-  CloseHandle(pi.hThread);
-  CloseHandle(pi.hProcess);
-  if (wait_rc == WAIT_FAILED || !got_exit) {
-    return result;
-  }
-  result.exit_code = static_cast<int>(exit_code);
-  std::ifstream out_stream(out_file.path, std::ios::binary);
-  std::ifstream err_stream(err_file.path, std::ios::binary);
-  result.stdout_text.assign((std::istreambuf_iterator<char>(out_stream)),
-                            std::istreambuf_iterator<char>());
-  result.stderr_text.assign((std::istreambuf_iterator<char>(err_stream)),
-                            std::istreambuf_iterator<char>());
-  return result;
+    std::array<HANDLE, 3> inherited{child_input.value, child_output.value, child_errors.value};
+    SIZE_T bytes = 0;
+    InitializeProcThreadAttributeList(nullptr, 1, 0, &bytes);
+    if (bytes == 0) system_failure("attribute list size");
+    std::vector<BYTE> storage(bytes);
+    AttributeListGuard attributes;
+    auto* list = reinterpret_cast<LPPROC_THREAD_ATTRIBUTE_LIST>(storage.data());
+    if (!InitializeProcThreadAttributeList(list, 1, 0, &bytes))
+      system_failure("initialize handle list");
+    attributes.value = list;
+    if (!UpdateProcThreadAttribute(list, 0, PROC_THREAD_ATTRIBUTE_HANDLE_LIST, inherited.data(),
+                                   sizeof(inherited), nullptr, nullptr))
+      system_failure("restrict inherited handles");
+    STARTUPINFOEXW startup{};
+    startup.StartupInfo.cb = sizeof(startup);
+    startup.StartupInfo.dwFlags = STARTF_USESTDHANDLES;
+    startup.StartupInfo.hStdInput = child_input.value;
+    startup.StartupInfo.hStdOutput = child_output.value;
+    startup.StartupInfo.hStdError = child_errors.value;
+    startup.lpAttributeList = list;
+    PROCESS_INFORMATION pi{};
+    const BOOL created = CreateProcessW(
+        nullptr, cmdline.data(), nullptr, nullptr, TRUE,
+        EXTENDED_STARTUPINFO_PRESENT | (env_block.empty() ? 0 : CREATE_UNICODE_ENVIRONMENT),
+        env_block.empty() ? nullptr : env_block.data(), cwd ? cwd_w.c_str() : nullptr,
+        &startup.StartupInfo, &pi);
+    const DWORD create_error = created ? ERROR_SUCCESS : GetLastError();
+    child_output.reset();
+    child_errors.reset();
+    child_input.reset();
+    if (!created)
+      throw std::system_error(static_cast<int>(create_error), std::system_category(),
+                              "CreateProcessW");
+    UniqueHandle process(pi.hProcess), thread(pi.hThread);
+    if (WaitForSingleObject(process.value, INFINITE) != WAIT_OBJECT_0)
+      system_failure("wait for child");
+    DWORD exit_code = 0;
+    if (!GetExitCodeProcess(process.value, &exit_code)) system_failure("child exit status");
+    result.exit_code = static_cast<int>(exit_code);
 #else
-  ScopedCaptureFile out_file("capture", ".out");
-  ScopedCaptureFile err_file("capture", ".err");
-
-  std::vector<std::string> argv_storage = argv;
-  std::vector<char*> argv_ptrs;
-  argv_ptrs.reserve(argv_storage.size() + 1);
-  for (auto& item : argv_storage) {
-    argv_ptrs.push_back(item.data());
-  }
-  argv_ptrs.push_back(nullptr);
-
-  pid_t pid = fork();
-  if (pid == 0) {
-    int out_fd = open(out_file.path.c_str(), O_WRONLY | O_TRUNC);
-    int err_fd = open(err_file.path.c_str(), O_WRONLY | O_TRUNC);
-    if (out_fd == -1 || err_fd == -1) {
+    std::vector<std::string> storage = argv;
+    std::vector<char*> pointers;
+    for (auto& arg : storage) pointers.push_back(arg.data());
+    pointers.push_back(nullptr);
+    const pid_t pid = ::fork();
+    if (pid < 0) system_failure("fork");
+    if (pid == 0) {
+      if (::dup2(output.native_handle(), STDOUT_FILENO) < 0 ||
+          ::dup2(errors.native_handle(), STDERR_FILENO) < 0)
+        _exit(127);
+      ::close(output.native_handle());
+      ::close(errors.native_handle());
+      if (cwd && ::chdir(cwd->c_str()) != 0) _exit(127);
+      for (const auto& [key, value] : env_overrides)
+        if (::setenv(key.c_str(), value.c_str(), 1) != 0) _exit(127);
+      ::execvp(pointers[0], pointers.data());
       _exit(127);
     }
-    if (dup2(out_fd, STDOUT_FILENO) == -1 || dup2(err_fd, STDERR_FILENO) == -1) {
-      _exit(127);
+    int status = 0;
+    while (::waitpid(pid, &status, 0) < 0) {
+      if (errno != EINTR) system_failure("waitpid");
     }
-    close(out_fd);
-    close(err_fd);
-    if (cwd && chdir(cwd->c_str()) != 0) {
-      _exit(127);
-    }
-    for (const auto& [key, value] : env_overrides) {
-      setenv(key.c_str(), value.c_str(), 1);
-    }
-    execvp(argv_ptrs[0], argv_ptrs.data());
-    _exit(127);
-  }
-  if (pid < 0) {
-    return result;
-  }
-
-  int status = 0;
-  if (waitpid(pid, &status, 0) == -1) {
-    return result;
-  }
-  if (WIFEXITED(status)) {
-    result.exit_code = WEXITSTATUS(status);
-  } else if (WIFSIGNALED(status)) {
-    result.exit_code = 128 + WTERMSIG(status);
-  } else {
-    result.exit_code = status;
-  }
-  std::ifstream out_stream(out_file.path, std::ios::binary);
-  std::ifstream err_stream(err_file.path, std::ios::binary);
-  result.stdout_text.assign((std::istreambuf_iterator<char>(out_stream)),
-                            std::istreambuf_iterator<char>());
-  result.stderr_text.assign((std::istreambuf_iterator<char>(err_stream)),
-                            std::istreambuf_iterator<char>());
-  return result;
+    result.exit_code = WIFEXITED(status) ? WEXITSTATUS(status)
+                                         : (WIFSIGNALED(status) ? 128 + WTERMSIG(status) : status);
 #endif
+    result.stdout_text = output.read_all();
+    result.stderr_text = errors.read_all();
+  } catch (const std::exception& error) {
+    result.exit_code = -1;
+    result.error_message = error.what();
+  }
+  return result;
 }
-
 }  // namespace t81::cli
