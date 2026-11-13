@@ -1,0 +1,1410 @@
+c[?7l[2J[0mSeaBIOS (version rel-1.17.0-0-gb52ca86e094d-prebuilt.qemu.org)
+
+
+iPXE (http://ipxe.org) 00:02.0 CA00 PCI2.10 PnP PMM+3EFD1A20+3EF31A20 CA00
+Press Ctrl-B to configure iPXE (PCI 00:02.0)...                                                                               
+
+
+Booting from ROM...
+c[?7l[2J[    0.000000] Linux version 6.12.114-0-virt (buildozer@build-3-21-x86_64) (gcc (Alpine 14.2.0) 14.2.0, GNU ld (GNU Binutils) 2.43.1) #1-Alpine SMP PREEMPT_DYNAMIC 2026-10-21 12:19:03
+[    0.000000] Command line: console=ttyS0 cgroup_no_v1=all
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable
+[    0.000000] BIOS-e820: [mem 0x000000000009fc00-0x000000000009ffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000000f0000-0x00000000000fffff] reserved
+[    0.000000] BIOS-e820: [mem 0x0000000000100000-0x000000003ffdefff] usable
+[    0.000000] BIOS-e820: [mem 0x000000003ffdf000-0x000000003fffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000b0000000-0x00000000bfffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000fed1c000-0x00000000fed1ffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000fffc0000-0x00000000ffffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x000000fd00000000-0x000000ffffffffff] reserved
+[    0.000000] NX (Execute Disable) protection: active
+[    0.000000] APIC: Static calls initialized
+[    0.000000] SMBIOS 2.8 present.
+[    0.000000] DMI: QEMU Standard PC (Q35 + ICH9, 2009), BIOS rel-1.17.0-0-gb52ca86e094d-prebuilt.qemu.org 04/01/2014
+[    0.000000] DMI: Memory slots populated: 1/1
+[    0.000000] tsc: Fast TSC calibration using PIT
+[    0.000000] tsc: Detected 1000.144 MHz processor
+[    0.014142] last_pfn = 0x3ffdf max_arch_pfn = 0x400000000
+[    0.015236] MTRR map: 4 entries (3 fixed + 1 variable; max 19), built from 8 variable MTRRs
+[    0.015544] x86/PAT: Configuration [0-7]: WB  WC  UC- UC  WB  WP  UC- WT  
+[    0.043972] found SMP MP-table at [mem 0x000f54c0-0x000f54cf]
+[    0.046325] Using GB pages for direct mapping
+[    0.050977] RAMDISK: [mem 0x3f716000-0x3ffcffff]
+[    0.051371] ACPI: Early table checksum verification disabled
+[    0.051939] ACPI: RSDP 0x00000000000F52E0 000014 (v00 BOCHS )
+[    0.052377] ACPI: RSDT 0x000000003FFE2351 000038 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.053158] ACPI: FACP 0x000000003FFE2149 0000F4 (v03 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.053974] ACPI: DSDT 0x000000003FFE0040 002109 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.054075] ACPI: FACS 0x000000003FFE0000 000040
+[    0.054174] ACPI: APIC 0x000000003FFE223D 000078 (v03 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.054231] ACPI: HPET 0x000000003FFE22B5 000038 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.054259] ACPI: MCFG 0x000000003FFE22ED 00003C (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.054286] ACPI: WAET 0x000000003FFE2329 000028 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.054442] ACPI: Reserving FACP table memory at [mem 0x3ffe2149-0x3ffe223c]
+[    0.054486] ACPI: Reserving DSDT table memory at [mem 0x3ffe0040-0x3ffe2148]
+[    0.054498] ACPI: Reserving FACS table memory at [mem 0x3ffe0000-0x3ffe003f]
+[    0.054506] ACPI: Reserving APIC table memory at [mem 0x3ffe223d-0x3ffe22b4]
+[    0.054513] ACPI: Reserving HPET table memory at [mem 0x3ffe22b5-0x3ffe22ec]
+[    0.054522] ACPI: Reserving MCFG table memory at [mem 0x3ffe22ed-0x3ffe2328]
+[    0.054529] ACPI: Reserving WAET table memory at [mem 0x3ffe2329-0x3ffe2350]
+[    0.060073] Zone ranges:
+[    0.060111]   DMA      [mem 0x0000000000001000-0x0000000000ffffff]
+[    0.060210]   DMA32    [mem 0x0000000001000000-0x000000003ffdefff]
+[    0.060224]   Normal   empty
+[    0.060258] Movable zone start for each node
+[    0.060313] Early memory node ranges
+[    0.060358]   node   0: [mem 0x0000000000001000-0x000000000009efff]
+[    0.060600]   node   0: [mem 0x0000000000100000-0x000000003ffdefff]
+[    0.060853] Initmem setup node 0 [mem 0x0000000000001000-0x000000003ffdefff]
+[    0.062593] On node 0, zone DMA: 1 pages in unavailable ranges
+[    0.062940] On node 0, zone DMA: 97 pages in unavailable ranges
+[    0.088593] On node 0, zone DMA32: 33 pages in unavailable ranges
+[    0.089508] ACPI: PM-Timer IO Port: 0x608
+[    0.090243] ACPI: LAPIC_NMI (acpi_id[0xff] dfl dfl lint[0x1])
+[    0.090816] IOAPIC[0]: apic_id 0, version 32, address 0xfec00000, GSI 0-23
+[    0.091012] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+[    0.091467] ACPI: INT_SRC_OVR (bus 0 bus_irq 5 global_irq 5 high level)
+[    0.091540] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+[    0.091722] ACPI: INT_SRC_OVR (bus 0 bus_irq 10 global_irq 10 high level)
+[    0.091734] ACPI: INT_SRC_OVR (bus 0 bus_irq 11 global_irq 11 high level)
+[    0.092096] ACPI: Using ACPI (MADT) for SMP configuration information
+[    0.092169] ACPI: HPET id: 0x8086a201 base: 0xfed00000
+[    0.092860] CPU topo: Max. logical packages:   1
+[    0.092881] CPU topo: Max. logical dies:       1
+[    0.092893] CPU topo: Max. dies per package:   1
+[    0.092967] CPU topo: Max. threads per core:   1
+[    0.093179] CPU topo: Num. cores per package:     1
+[    0.093199] CPU topo: Num. threads per package:   1
+[    0.093210] CPU topo: Allowing 1 present CPUs plus 0 hotplug CPUs
+[    0.094661] [mem 0x40000000-0xafffffff] available for PCI devices
+[    0.094760] Booting paravirtualized kernel on bare hardware
+[    0.095144] clocksource: refined-jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+[    0.112495] setup_percpu: NR_CPUS:256 nr_cpumask_bits:1 nr_cpu_ids:1 nr_node_ids:1
+[    0.115234] percpu: Embedded 59 pages/cpu s204184 r8192 d29288 u2097152
+[    0.118040] Kernel command line: console=ttyS0 cgroup_no_v1=all
+[    0.120485] random: crng init done
+[    0.121280] Dentry cache hash table entries: 131072 (order: 8, 1048576 bytes, linear)
+[    0.121578] Inode-cache hash table entries: 65536 (order: 7, 524288 bytes, linear)
+[    0.125100] Built 1 zonelists, mobility grouping on.  Total pages: 262013
+[    0.126643] mem auto-init: stack:all(zero), heap alloc:on, heap free:off
+[    0.147965] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+[    0.164987] Dynamic Preempt: none
+[    0.170065] rcu: Preemptible hierarchical RCU implementation.
+[    0.170119] rcu: 	RCU restricting CPUs from NR_CPUS=256 to nr_cpu_ids=1.
+[    0.170501] 	Trampoline variant of Tasks RCU enabled.
+[    0.170519] 	Tracing variant of Tasks RCU enabled.
+[    0.170687] rcu: RCU calculated value of scheduler-enlistment delay is 10 jiffies.
+[    0.170731] rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=1
+[    0.172520] RCU Tasks: Setting shift to 0 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=1.
+[    0.172555] RCU Tasks Trace: Setting shift to 0 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=1.
+[    0.232915] NR_IRQS: 16640, nr_irqs: 256, preallocated irqs: 16
+[    0.245744] rcu: srcu_init: Setting srcu_struct sizes based on contention.
+[    0.246801] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+[    0.252594] kfence: initialized - using 2097152 bytes for 255 objects at 0x(____ptrval____)-0x(____ptrval____)
+[    0.260228] Console: colour VGA+ 80x25
+[    0.263186] printk: legacy console [ttyS0] enabled
+[    0.293399] ACPI: Core revision 20240827
+[    0.310071] clocksource: hpet: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604467 ns
+[    0.329722] APIC: Switch to symmetric I/O mode setup
+[    0.333018] x2apic: IRQ remapping doesn't support X2APIC mode
+[    0.344450] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
+[    0.387953] clocksource: tsc-early: mask: 0xffffffffffffffff max_cycles: 0xe6a9f1e629, max_idle_ns: 440795202126 ns
+[    0.388882] Calibrating delay loop (skipped), value calculated using timer frequency.. 2000.28 BogoMIPS (lpj=10001440)
+[    0.403209] x86/cpu: User Mode Instruction Prevention (UMIP) activated
+[    0.414524] Last level iTLB entries: 4KB 0, 2MB 0, 4MB 0
+[    0.415406] Last level dTLB entries: 4KB 0, 2MB 0, 4MB 0, 1GB 0
+[    0.420978] Spectre V1 : Mitigation: usercopy/swapgs barriers and __user pointer sanitization
+[    0.422470] Spectre V2 : Mitigation: Retpolines
+[    0.422937] Spectre V2 : Spectre v2 / SpectreRSB: Filling RSB on context switch and VMEXIT
+[    0.423685] Speculative Store Bypass: Vulnerable
+[    0.428409] x86/fpu: Supporting XSAVE feature 0x001: 'x87 floating point registers'
+[    0.441230] x86/fpu: Supporting XSAVE feature 0x002: 'SSE registers'
+[    0.441618] x86/fpu: Supporting XSAVE feature 0x004: 'AVX registers'
+[    0.441824] x86/fpu: Supporting XSAVE feature 0x008: 'MPX bounds registers'
+[    0.442063] x86/fpu: Supporting XSAVE feature 0x010: 'MPX CSR'
+[    0.442922] x86/fpu: xstate_offset[2]:  576, xstate_sizes[2]:  256
+[    0.443447] x86/fpu: xstate_offset[3]:  960, xstate_sizes[3]:   64
+[    0.443645] x86/fpu: xstate_offset[4]: 1024, xstate_sizes[4]:   64
+[    0.443867] x86/fpu: Enabled xstate features 0x1f, context size is 1088 bytes, using 'standard' format.
+[    0.880741] Freeing SMP alternatives memory: 36K
+[    0.882328] pid_max: default: 32768 minimum: 301
+[    0.891468] LSM: initializing lsm=lockdown,capability,landlock
+[    0.895103] landlock: Up and running.
+[    0.911116] Mount-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)
+[    0.911821] Mountpoint-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)
+[    0.933947] cgroup: Disabling cpuset control group subsystem in v1 mounts
+[    0.935938] cgroup: Disabling cpu control group subsystem in v1 mounts
+[    0.936290] cgroup: Disabling cpuacct control group subsystem in v1 mounts
+[    0.937518] cgroup: Disabling blkio control group subsystem in v1 mounts
+[    0.941382] cgroup: Disabling memory control group subsystem in v1 mounts
+[    0.941883] cgroup: Disabling devices control group subsystem in v1 mounts
+[    0.942234] cgroup: Disabling freezer control group subsystem in v1 mounts
+[    0.942777] cgroup: Disabling net_cls control group subsystem in v1 mounts
+[    0.943988] cgroup: Disabling perf_event control group subsystem in v1 mounts
+[    0.944637] cgroup: Disabling net_prio control group subsystem in v1 mounts
+[    0.945455] cgroup: Disabling hugetlb control group subsystem in v1 mounts
+[    0.945969] cgroup: Disabling pids control group subsystem in v1 mounts
+[    1.091345] smpboot: CPU0: AMD QEMU TCG CPU version 2.5+ (family: 0x6, model: 0x6, stepping: 0x3)
+[    1.113599] Performance Events: PMU not available due to virtualization, using software events only.
+[    1.116333] signal: max sigframe size: 2032
+[    1.121487] rcu: Hierarchical SRCU implementation.
+[    1.121704] rcu: 	Max phase no-delay instances is 1000.
+[    1.134443] NMI watchdog: Perf NMI watchdog permanently disabled
+[    1.139195] smp: Bringing up secondary CPUs ...
+[    1.142568] smp: Brought up 1 node, 1 CPU
+[    1.142941] smpboot: Total of 1 processors activated (2000.28 BogoMIPS)
+[    1.151767] Memory: 979460K/1048052K available (14336K kernel code, 1938K rwdata, 9232K rodata, 2808K init, 1424K bss, 64948K reserved, 0K cma-reserved)
+[    1.171468] devtmpfs: initialized
+[    1.178747] x86/mm: Memory block size: 128MB
+[    1.190418] futex hash table entries: 256 (order: 2, 16384 bytes, linear)
+[    1.229212] NET: Registered PF_NETLINK/PF_ROUTE protocol family
+[    1.234521] audit: initializing netlink subsys (disabled)
+[    1.242292] thermal_sys: Registered thermal governor 'step_wise'
+[    1.243440] audit: type=2000 audit(1793665679.920:1): state=initialized audit_enabled=0 res=1
+[    1.244918] cpuidle: using governor ladder
+[    1.245261] cpuidle: using governor menu
+[    1.251524] acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+[    1.260144] PCI: ECAM [mem 0xb0000000-0xbfffffff] (base 0xb0000000) for domain 0000 [bus 00-ff]
+[    1.261960] PCI: ECAM [mem 0xb0000000-0xbfffffff] reserved as E820 entry
+[    1.264433] PCI: Using configuration type 1 for base access
+[    1.269892] kprobes: kprobe jump-optimization is enabled. All kprobes are optimized if possible.
+[    1.287117] HugeTLB: registered 1.00 GiB page size, pre-allocated 0 pages
+[    1.287503] HugeTLB: 16380 KiB vmemmap can be freed for a 1.00 GiB page
+[    1.287846] HugeTLB: registered 2.00 MiB page size, pre-allocated 0 pages
+[    1.288602] HugeTLB: 28 KiB vmemmap can be freed for a 2.00 MiB page
+[    1.322664] ACPI: Added _OSI(Module Device)
+[    1.322893] ACPI: Added _OSI(Processor Device)
+[    1.323024] ACPI: Added _OSI(Processor Aggregator Device)
+[    1.349232] ACPI: 1 ACPI AML tables successfully acquired and loaded
+[    1.427650] ACPI: Interpreter enabled
+[    1.429511] ACPI: PM: (supports S0 S3 S5)
+[    1.429725] ACPI: Using IOAPIC for interrupt routing
+[    1.433706] PCI: Using host bridge windows from ACPI; if necessary, use "pci=nocrs" and report a bug
+[    1.434248] PCI: Using E820 reservations for host bridge windows
+[    1.437432] ACPI: Enabled 2 GPEs in block 00 to 3F
+[    1.473391] ACPI: PCI Root Bridge [PCI0] (domain 0000 [bus 00-ff])
+[    1.475365] acpi PNP0A08:00: _OSC: OS supports [ExtendedConfig ASPM ClockPM Segments MSI HPX-Type3]
+[    1.479474] acpi PNP0A08:00: _OSC: platform does not support [PCIeHotplug LTR]
+[    1.482052] acpi PNP0A08:00: _OSC: OS now controls [PME PCIeCapability]
+[    1.490672] PCI host bridge to bus 0000:00
+[    1.491506] pci_bus 0000:00: root bus resource [io  0x0000-0x0cf7 window]
+[    1.491903] pci_bus 0000:00: root bus resource [io  0x0d00-0xffff window]
+[    1.492223] pci_bus 0000:00: root bus resource [mem 0x000a0000-0x000bffff window]
+[    1.492617] pci_bus 0000:00: root bus resource [mem 0x40000000-0xafffffff window]
+[    1.492982] pci_bus 0000:00: root bus resource [mem 0xc0000000-0xfebfffff window]
+[    1.493342] pci_bus 0000:00: root bus resource [mem 0x100000000-0x8ffffffff window]
+[    1.494630] pci_bus 0000:00: root bus resource [bus 00-ff]
+[    1.499997] pci 0000:00:00.0: [8086:29c0] type 00 class 0x060000 conventional PCI endpoint
+[    1.510236] pci 0000:00:01.0: [1234:1111] type 00 class 0x030000 conventional PCI endpoint
+[    1.512488] pci 0000:00:01.0: BAR 0 [mem 0xfd000000-0xfdffffff pref]
+[    1.514463] pci 0000:00:01.0: BAR 2 [mem 0xfebd0000-0xfebd0fff]
+[    1.519771] pci 0000:00:01.0: ROM [mem 0xfebc0000-0xfebcffff pref]
+[    1.520695] pci 0000:00:01.0: Video device with shadowed ROM at [mem 0x000c0000-0x000dffff]
+[    1.522866] pci 0000:00:02.0: [1af4:1000] type 00 class 0x020000 conventional PCI endpoint
+[    1.525538] pci 0000:00:02.0: BAR 0 [io  0xc040-0xc05f]
+[    1.526603] pci 0000:00:02.0: BAR 1 [mem 0xfebd1000-0xfebd1fff]
+[    1.530330] pci 0000:00:02.0: BAR 4 [mem 0xfe000000-0xfe003fff 64bit pref]
+[    1.531687] pci 0000:00:02.0: ROM [mem 0xfeb80000-0xfebbffff pref]
+[    1.533579] pci 0000:00:1f.0: [8086:2918] type 00 class 0x060100 conventional PCI endpoint
+[    1.535565] pci 0000:00:1f.0: quirk: [io  0x0600-0x067f] claimed by ICH6 ACPI/GPIO/TCO
+[    1.539625] pci 0000:00:1f.2: [8086:2922] type 00 class 0x010601 conventional PCI endpoint
+[    1.542387] pci 0000:00:1f.2: BAR 4 [io  0xc060-0xc07f]
+[    1.543071] pci 0000:00:1f.2: BAR 5 [mem 0xfebd2000-0xfebd2fff]
+[    1.545314] pci 0000:00:1f.3: [8086:2930] type 00 class 0x0c0500 conventional PCI endpoint
+[    1.548553] pci 0000:00:1f.3: BAR 4 [io  0x0700-0x073f]
+[    1.555084] ACPI: PCI: Interrupt link LNKA configured for IRQ 10
+[    1.556767] ACPI: PCI: Interrupt link LNKB configured for IRQ 10
+[    1.557812] ACPI: PCI: Interrupt link LNKC configured for IRQ 11
+[    1.559089] ACPI: PCI: Interrupt link LNKD configured for IRQ 11
+[    1.560743] ACPI: PCI: Interrupt link LNKE configured for IRQ 10
+[    1.561561] ACPI: PCI: Interrupt link LNKF configured for IRQ 10
+[    1.563345] ACPI: PCI: Interrupt link LNKG configured for IRQ 11
+[    1.564792] ACPI: PCI: Interrupt link LNKH configured for IRQ 11
+[    1.565720] ACPI: PCI: Interrupt link GSIA configured for IRQ 16
+[    1.566217] ACPI: PCI: Interrupt link GSIB configured for IRQ 17
+[    1.566556] ACPI: PCI: Interrupt link GSIC configured for IRQ 18
+[    1.567061] ACPI: PCI: Interrupt link GSID configured for IRQ 19
+[    1.567670] ACPI: PCI: Interrupt link GSIE configured for IRQ 20
+[    1.567922] ACPI: PCI: Interrupt link GSIF configured for IRQ 21
+[    1.568160] ACPI: PCI: Interrupt link GSIG configured for IRQ 22
+[    1.568411] ACPI: PCI: Interrupt link GSIH configured for IRQ 23
+[    1.579999] iommu: Default domain type: Translated
+[    1.580233] iommu: DMA domain TLB invalidation policy: lazy mode
+[    1.586950] SCSI subsystem initialized
+[    1.642250] pps_core: LinuxPPS API ver. 1 registered
+[    1.642436] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    1.642805] PTP clock support registered
+[    1.667554] PCI: Using ACPI for IRQ routing
+[    1.680174] clocksource: Switched to clocksource tsc-early
+[    1.690107] VFS: Disk quotas dquot_6.6.0
+[    1.690534] VFS: Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
+[    1.710091] pnp: PnP ACPI init
+[    1.716935] system 00:05: [mem 0xb0000000-0xbfffffff window] has been reserved
+[    1.720774] pnp: PnP ACPI: found 6 devices
+[    1.762767] clocksource: acpi_pm: mask: 0xffffff max_cycles: 0xffffff, max_idle_ns: 2085701024 ns
+[    1.766356] NET: Registered PF_INET protocol family
+[    1.769570] IP idents hash table entries: 16384 (order: 5, 131072 bytes, linear)
+[    1.889908] tcp_listen_portaddr_hash hash table entries: 512 (order: 1, 8192 bytes, linear)
+[    1.891277] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[    1.892164] TCP established hash table entries: 8192 (order: 4, 65536 bytes, linear)
+[    1.894377] TCP bind hash table entries: 8192 (order: 6, 262144 bytes, linear)
+[    1.895222] TCP: Hash tables configured (established 8192 bind 8192)
+[    1.901333] MPTCP token hash table entries: 1024 (order: 3, 24576 bytes, linear)
+[    1.902097] UDP hash table entries: 512 (order: 2, 16384 bytes, linear)
+[    1.903022] UDP-Lite hash table entries: 512 (order: 2, 16384 bytes, linear)
+[    1.909785] NET: Registered PF_UNIX/PF_LOCAL protocol family
+[    1.911199] NET: Registered PF_XDP protocol family
+[    1.913966] pci_bus 0000:00: resource 4 [io  0x0000-0x0cf7 window]
+[    1.914593] pci_bus 0000:00: resource 5 [io  0x0d00-0xffff window]
+[    1.914849] pci_bus 0000:00: resource 6 [mem 0x000a0000-0x000bffff window]
+[    1.915268] pci_bus 0000:00: resource 7 [mem 0x40000000-0xafffffff window]
+[    1.915747] pci_bus 0000:00: resource 8 [mem 0xc0000000-0xfebfffff window]
+[    1.916149] pci_bus 0000:00: resource 9 [mem 0x100000000-0x8ffffffff window]
+[    1.917904] PCI: CLS 0 bytes, default 64
+[    1.927662] Initialise system trusted keyrings
+[    1.941655] Unpacking initramfs...
+[    2.014809] workingset: timestamp_bits=46 max_order=18 bucket_order=0
+[    2.023210] Key type asymmetric registered
+[    2.023210] Asymmetric key parser 'x509' registered
+[    2.026545] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 247)
+[    2.034795] io scheduler mq-deadline registered
+[    2.035052] io scheduler kyber registered
+[    2.035941] io scheduler bfq registered
+[    2.054990] ERST DBG: ERST support is disabled.
+[    2.063287] ACPI: \_SB_.GSIG: Enabled at IRQ 22
+[    2.095348] Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
+[    2.103071] 00:03: ttyS0 at I/O 0x3f8 (irq = 4, base_baud = 115200) is a 16550A
+[    2.140650] VMware PVSCSI driver - version 1.0.7.0-k
+[    2.144899] ACPI: \_SB_.GSIA: Enabled at IRQ 16
+[    2.156788] ahci 0000:00:1f.2: AHCI vers 0001.0000, 32 command slots, 1.5 Gbps, SATA mode
+[    2.157066] ahci 0000:00:1f.2: 6/6 ports implemented (port mask 0x3f)
+[    2.157520] ahci 0000:00:1f.2: flags: 64bit ncq only 
+[    2.225012] scsi host0: ahci
+[    2.230956] scsi host1: ahci
+[    2.234414] scsi host2: ahci
+[    2.243125] scsi host3: ahci
+[    2.245604] scsi host4: ahci
+[    2.248432] scsi host5: ahci
+[    2.250126] ata1: SATA max UDMA/133 abar m4096@0xfebd2000 port 0xfebd2100 irq 24 lpm-pol 1
+[    2.250867] ata2: SATA max UDMA/133 abar m4096@0xfebd2000 port 0xfebd2180 irq 24 lpm-pol 1
+[    2.251191] ata3: SATA max UDMA/133 abar m4096@0xfebd2000 port 0xfebd2200 irq 24 lpm-pol 1
+[    2.251666] ata4: SATA max UDMA/133 abar m4096@0xfebd2000 port 0xfebd2280 irq 24 lpm-pol 1
+[    2.252006] ata5: SATA max UDMA/133 abar m4096@0xfebd2000 port 0xfebd2300 irq 24 lpm-pol 1
+[    2.252142] ata6: SATA max UDMA/133 abar m4096@0xfebd2000 port 0xfebd2380 irq 24 lpm-pol 1
+[    2.256781] hv_vmbus: registering driver hv_netvsc
+[    2.259677] i8042: PNP: PS/2 Controller [PNP0303:KBD,PNP0f13:MOU] at 0x60,0x64 irq 1,12
+[    2.266249] serio: i8042 KBD port at 0x60,0x64 irq 1
+[    2.267092] serio: i8042 AUX port at 0x60,0x64 irq 12
+[    2.267863] hv_vmbus: registering driver hyperv_keyboard
+[    2.269496] rtc_cmos 00:04: RTC can wake from S4
+[    2.280064] input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input0
+[    2.325002] rtc_cmos 00:04: registered as rtc0
+[    2.327839] rtc_cmos 00:04: setting system clock to 2026-11-03T00:28:01 UTC (1793665681)
+[    2.331640] rtc_cmos 00:04: alarms up to one day, y3k, 242 bytes nvram, hpet irqs
+[    2.332506] amd_pstate: the _CPC object is not present in SBIOS or ACPI disabled
+[    2.359684] gre: GRE over IPv4 demultiplexor driver
+[    2.360955] NET: Registered PF_INET6 protocol family
+[    2.388322] Segment Routing with IPv6
+[    2.388777] In-situ OAM (IOAM) with IPv6
+[    2.395680] Key type dns_resolver registered
+[    2.397758] IPI shorthand broadcast: enabled
+[    2.426739] sched_clock: Marking stable (2363356936, 61940561)->(2427822394, -2524897)
+[    2.557809] registered taskstats version 1
+[    2.564340] Loading compiled-in X.509 certificates
+[    2.656982] ata6: SATA link down (SStatus 0 SControl 300)
+[    2.660875] ata1: SATA link down (SStatus 0 SControl 300)
+[    2.671713] ata3: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+[    2.676811] ata3.00: LPM support broken, forcing max_power
+[    2.677389] ata3.00: ATAPI: QEMU DVD-ROM, 2.5+, max UDMA/100
+[    2.678108] ata3.00: applying bridge limits
+[    2.680102] ata3.00: LPM support broken, forcing max_power
+[    2.680484] ata3.00: configured for UDMA/100
+[    2.683158] ata2: SATA link down (SStatus 0 SControl 300)
+[    2.683533] ata4: SATA link down (SStatus 0 SControl 300)
+[    2.702152] scsi 2:0:0:0: CD-ROM            QEMU     QEMU DVD-ROM     2.5+ PQ: 0 ANSI: 5
+[    2.711499] ata5: SATA link down (SStatus 0 SControl 300)
+[    2.956345] tsc: Refined TSC clocksource calibration: 1000.000 MHz
+[    2.957844] clocksource: tsc: mask: 0xffffffffffffffff max_cycles: 0x1cd42e4dffb, max_idle_ns: 881590591483 ns
+[    2.967349] clocksource: Switched to clocksource tsc
+[    3.534997] Freeing initrd memory: 8936K
+[    3.781548] Loaded X.509 cert 'alpinelinux.org: Alpine Linux kernel key: d76a695f66ad9cd28f5c22a8508f36e91f521f7a'
+[    3.802884] Key type .fscrypt registered
+[    3.803083] Key type fscrypt-provisioning registered
+[    3.974984] Freeing unused kernel image (initmem) memory: 2808K
+[    3.975721] Write protecting the kernel read-only data: 24576k
+[    3.981697] Freeing unused kernel image (rodata/data gap) memory: 1008K
+[    3.982762] rodata_test: all tests were successful
+[    3.983436] Run /init as init process
+[    4.146830] Alpine Init 3.11.1-r0
+Alpine Init 3.11.1-r0
+[    4.156896] Loading boot drivers...
+ * Loading boot drivers: [    4.246563] loop: module loaded
+[    4.266884] squashfs: version 4.0 (2009/01/31) Phillip Lougher
+[    4.432453] ACPI: bus type drm_connector registered
+[    4.519502] Loading boot drivers: ok.
+ok.
+[    4.546500] Mounting boot media...
+ * Mounting boot media: [    4.904313] sr 2:0:0:0: [sr0] scsi3-mmc drive: 4x/4x cd/rw xa/form2 tray
+[    4.995873] cdrom: Uniform CD-ROM driver Revision: 3.20
+[    6.849937] block sr0: the capability attribute has been deprecated.
+[    7.801174] Mounting boot media: ok.
+ok.
+[    8.228286] Installing packages to root filesystem...
+ * Installing packages to root filesystem: (1/25) Installing alpine-baselayout-data (3.6.8-r1)
+7  0%                                             8[0K(2/25) Installing musl (1.2.5-r12)
+7  0%                                             8[0K(3/25) Installing busybox (1.37.0-r14)
+7  6% ##                                          8[0K7 14% ######                                      8[0KExecuting busybox-1.37.0-r14.post-install
+(4/25) Installing busybox-binsh (1.37.0-r14)
+7 14% ######                                      8[0K(5/25) Installing alpine-baselayout (3.6.8-r1)
+7 14% ######                                      8[0KExecuting alpine-baselayout-3.6.8-r1.pre-install
+7 14% ######                                      8[0KExecuting alpine-baselayout-3.6.8-r1.post-install
+(6/25) Installing ifupdown-ng (0.12.1-r6)
+7 14% ######                                      8[0K7 15% ######                                      8[0K(7/25) Installing libcap2 (2.78-r0)
+7 15% ######                                      8[0K7 15% #######                                     8[0K(8/25) Installing openrc (0.55.1-r2)
+7 16% #######                                     8[0K7 17% #######                                     8[0K7 18% #######                                     8[0K7 18% ########                                    8[0K7 19% ########                                    8[0K7 20% ########                                    8[0K7 20% #########                                   8[0K7 21% #########                                   8[0K7 22% #########                                   8[0K7 22% ##########                                  8[0K7 23% ##########                                  8[0K7 24% ##########                                  8[0K7 25% ###########                                 8[0K7 26% ###########                                 8[0K7 27% ###########                                 8[0K7 27% ############                                8[0K7 28% ############                                8[0KExecuting openrc-0.55.1-r2.post-install
+(9/25) Installing alpine-conf (3.19.2-r0)
+7 28% ############                                8[0K7 29% ############                                8[0K7 29% #############                               8[0K7 30% #############                               8[0K(10/25) Installing alpine-keys (2.5-r0)
+7 30% #############                               8[0K(11/25) Installing alpine-release (3.21.9-r0)
+7 30% #############                               8[0K(12/25) Installing ca-certificates-bundle (20261020-r0)
+7 30% #############                               8[0K(13/25) Installing libcrypto3 (3.3.7-r2)
+7 32% ##############                              8[0K7 33% ##############                              8[0K7 54% #######################                     8[0K7 74% ################################            8[0K7 78% ##################################          8[0K(14/25) Installing libssl3 (3.3.7-r2)
+7 78% ##################################          8[0K(15/25) Installing ssl_client (1.37.0-r14)
+7 86% ######################################      8[0K(16/25) Installing zlib (1.3.2-r1)
+7 86% ######################################      8[0K(17/25) Installing apk-tools (2.14.6-r3)
+7 87% ######################################      8[0K7 88% ######################################      8[0K(18/25) Installing mdev-conf (4.7-r0)
+7 90% #######################################     8[0K(19/25) Installing busybox-mdev-openrc (1.37.0-r14)
+7 90% #######################################     8[0K(20/25) Installing busybox-openrc (1.37.0-r14)
+7 90% #######################################     8[0K(21/25) Installing busybox-suid (1.37.0-r14)
+7 90% #######################################     8[0K(22/25) Installing scanelf (1.3.8-r1)
+7 90% #######################################     8[0K(23/25) Installing musl-utils (1.2.5-r12)
+7 91% ########################################    8[0K7 92% ########################################    8[0K(24/25) Installing alpine-base (3.21.9-r0)
+7 92% ########################################    8[0K(25/25) Installing openssl (3.3.7-r2)
+7 92% ########################################    8[0K7100% ############################################8[0KExecuting busybox-1.37.0-r14.trigger
+OK: 9 MiB in 25 packages
+[    9.622898] Installing packages to root filesystem: ok.
+ok.
+
+
+   OpenRC 0.55.1 is starting up Linux 6.12.114-0-virt (x86_64)
+
+ * /proc is already mounted
+ * Mounting /run ... [ ok ]
+ * /run/openrc: creating directory
+ * /run/lock: creating directory
+ * /run/lock: correcting owner
+ * Caching service dependencies ... [ ok ]
+ * Remounting devtmpfs on /dev ... [ ok ]
+ * Mounting /dev/mqueue ... [ ok ]
+ * Mounting modloop  ... * Verifying modloop
+ [ ok ]
+ * Mounting security filesystem ... [ ok ]
+ * Mounting debug filesystem ... [ ok ]
+ * Mounting persistent storage (pstore) filesystem ... [ ok ]
+ * Starting busybox mdev ... [ ok ]
+ * Scanning hardware for mdev ... [ ok ]
+ * Loading hardware drivers ... [ ok ]
+ * Loading modules ... [ ok ]
+ * Setting system clock using the hardware clock [UTC] ... [ ok ]
+ * Checking local filesystems  ... [ ok ]
+ * Remounting filesystems ... [ ok ]
+ * Mounting local filesystems ... [ ok ]
+ * Configuring kernel parameters ... [ ok ]
+ * Creating user login records ... [ ok ]
+ * Cleaning /tmp directory ... [ ok ]
+ * Setting hostname ... [ ok ]
+ * Starting busybox syslog ... [ ok ]
+ * Starting firstboot ... [ ok ]
+
+Welcome to Alpine Linux 3.21
+Kernel 6.12.114-0-virt on an x86_64 (/dev/ttyS0)
+
+localhost login: root
+Welcome to Alpine!
+
+The Alpine Wiki contains a large amount of how-to guides and general
+information about administrating Alpine systems.
+See <https://wiki.alpinelinux.org/>.
+
+You can setup the system with the command: setup-alpine
+
+You may change this message by editing /etc/motd.
+
+localhost:~# [6nip link set eth0 up && udhcpc -i eth0 -n -q && printf 'https://dl-c
+dn.alpinelinux.org/alpine/v3.21/main\n' > /etc/apk/repositories && apk add --no-
+progress gcc musl-dev linux-headers python3
+udhcpc: started, v1.37.0
+udhcpc: broadcasting discover
+udhcpc: broadcasting select for 10.0.2.15, server 10.0.2.2
+udhcpc: lease of 10.0.2.15 obtained from 10.0.2.2, lease time 86400
+fetch https://dl-cdn.alpinelinux.org/alpine/v3.21/main/x86_64/APKINDEX.tar.gz
+(1/29) Installing libgcc (14.2.0-r4)
+(2/29) Installing jansson (2.14-r4)
+(3/29) Installing libstdc++ (14.2.0-r4)
+(4/29) Installing zstd-libs (1.5.6-r2)
+(5/29) Installing binutils (2.43.1-r3)
+(6/29) Installing libgomp (14.2.0-r4)
+(7/29) Installing libatomic (14.2.0-r4)
+(8/29) Installing gmp (6.3.0-r2)
+(9/29) Installing isl26 (0.26-r1)
+(10/29) Installing mpfr4 (4.2.1-r0)
+(11/29) Installing mpc1 (1.3.1-r1)
+(12/29) Installing gcc (14.2.0-r4)
+(13/29) Installing linux-headers (6.6-r1)
+(14/29) Installing musl-dev (1.2.5-r12)
+(15/29) Installing libexpat (2.9.0-r0)
+(16/29) Installing libbz2 (1.0.8-r6)
+(17/29) Installing libffi (3.4.7-r0)
+(18/29) Installing gdbm (1.24-r0)
+(19/29) Installing xz-libs (5.8.4-r0)
+(20/29) Installing mpdecimal (4.0.0-r0)
+(21/29) Installing ncurses-terminfo-base (6.5_p20241006-r3)
+(22/29) Installing libncursesw (6.5_p20241006-r3)
+(23/29) Installing libpanelw (6.5_p20241006-r3)
+(24/29) Installing readline (8.2.13-r0)
+(25/29) Installing sqlite-libs (3.48.0-r4)
+(26/29) Installing python3 (3.12.16-r0)
+(27/29) Installing python3-pycache-pyc0 (3.12.16-r0)
+(28/29) Installing pyc (3.12.16-r0)
+(29/29) Installing python3-pyc (3.12.16-r0)
+Executing busybox-1.37.0-r14.trigger
+OK: 214 MiB in 54 packages
+localhost:~# [6nmkdir -p /tmp/h04-feasibility && cd /tmp/h04-feasibility && wget -q
+ http://10.0.2.2:18765/share/containment_probe.c && wget -q http://10.0.2.2:1876
+5/share/native_scratch_probe.py && wget -q http://10.0.2.2:18765/share/guest_dia
+gnostics.sh && sh guest_diagnostics.sh > diagnostics.log 2>&1; printf 'DIAGNOSTI
+C_EXIT=%s\n' "$?"; cat diagnostics.log
+DIAGNOSTIC_EXIT=1
+
+H04_FEASIBILITY_BEGIN
+Linux localhost 6.12.114-0-virt #1-Alpine SMP PREEMPT_DYNAMIC 2026-10-21 12:19:03 x86_64 Linux
+3.21.9
+uid=0(root) gid=0(root) groups=0(root),0(root),1(bin),2(daemon),3(sys),4(adm),6(disk),10(wheel),11(floppy),20(dialout),26(tape),27(video)
+console=ttyS0 cgroup_no_v1=all
+Name:	cat
+Umask:	0022
+State:	R (running)
+Tgid:	1866
+Ngid:	0
+Pid:	1866
+PPid:	1860
+TracerPid:	0
+Uid:	0	0	0	0
+Gid:	0	0	0	0
+FDSize:	64
+Groups:	0 0 1 2 3 4 6 10 11 20 26 27 
+NStgid:	1866
+NSpid:	1866
+NSpgid:	1860
+NSsid:	1836
+Kthread:	0
+VmPeak:	    1688 kB
+VmSize:	    1688 kB
+VmLck:	       0 kB
+VmPin:	       0 kB
+VmHWM:	     844 kB
+VmRSS:	     844 kB
+RssAnon:	      48 kB
+RssFile:	       4 kB
+RssShmem:	     792 kB
+VmData:	      88 kB
+VmStk:	     132 kB
+VmExe:	     616 kB
+VmLib:	     356 kB
+VmPTE:	      48 kB
+VmSwap:	       0 kB
+HugetlbPages:	       0 kB
+CoreDumping:	0
+THP_enabled:	1
+untag_mask:	0xffffffffffffffff
+Threads:	1
+SigQ:	0/3838
+SigPnd:	0000000000000000
+ShdPnd:	0000000000000000
+SigBlk:	0000000000000000
+SigIgn:	0000000000000000
+SigCgt:	0000000000000000
+CapInh:	0000000000000000
+CapPrm:	000001ffffffffff
+CapEff:	000001ffffffffff
+CapBnd:	000001ffffffffff
+CapAmb:	0000000000000000
+NoNewPrivs:	0
+Seccomp:	0
+Seccomp_filters:	0
+Speculation_Store_Bypass:	vulnerable
+SpeculationIndirectBranch:	always enabled
+Cpus_allowed:	1
+Cpus_allowed_list:	0
+Mems_allowed:	1
+Mems_allowed_list:	0
+voluntary_ctxt_switches:	0
+nonvoluntary_ctxt_switches:	1
+Filename				Type		Size		Used		Priority
+MemTotal:         995856 kB
+MemFree:          676756 kB
+MemAvailable:     630052 kB
+Buffers:             244 kB
+Cached:           256584 kB
+SwapCached:            0 kB
+Active:           230196 kB
+Inactive:          27436 kB
+Active(anon):     230196 kB
+Inactive(anon):        0 kB
+Active(file):          0 kB
+Inactive(file):    27436 kB
+Unevictable:           0 kB
+Mlocked:               0 kB
+SwapTotal:             0 kB
+SwapFree:              0 kB
+Zswap:                 0 kB
+Zswapped:              0 kB
+Dirty:                 0 kB
+Writeback:             0 kB
+AnonPages:           768 kB
+Mapped:             1216 kB
+Shmem:            229392 kB
+KReclaimable:      21856 kB
+Slab:              37064 kB
+SReclaimable:      21856 kB
+SUnreclaim:        15208 kB
+KernelStack:        1384 kB
+PageTables:          804 kB
+SecPageTables:         0 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:      497928 kB
+Committed_AS:     231644 kB
+VmallocTotal:   34359738367 kB
+VmallocUsed:       14172 kB
+VmallocChunk:          0 kB
+Percpu:              248 kB
+AnonHugePages:         0 kB
+ShmemHugePages:        0 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+Hugetlb:               0 kB
+DirectMap4k:       42876 kB
+DirectMap2M:     1005568 kB
+DirectMap1G:           0 kB
+#subsys_name	hierarchy	num_cgroups	enabled
+cpu	0	1	1
+cpuacct	0	1	1
+blkio	0	1	1
+devices	0	1	1
+freezer	0	1	1
+net_cls	0	1	1
+perf_event	0	1	1
+net_prio	0	1	1
+hugetlb	0	1	1
+pids	0	1	1
+22 28 0:21 / /sys rw,nosuid,nodev,noexec,relatime - sysfs sysfs rw
+23 28 0:6 / /dev rw,nosuid,noexec,relatime - devtmpfs devtmpfs rw,size=10240k,nr_inodes=122888,mode=755,inode64
+24 28 0:22 / /proc rw,nosuid,nodev,noexec,relatime - proc proc rw
+25 23 0:23 / /dev/pts rw,nosuid,noexec,relatime - devpts devpts rw,gid=5,mode=620,ptmxmode=000
+26 23 0:24 / /dev/shm rw,nosuid,nodev,noexec,relatime - tmpfs shm rw,inode64
+27 28 11:0 / /media/cdrom ro,relatime - iso9660 /dev/sr0 ro,nojoliet,check=s,map=n,blocksize=2048,iocharset=utf8
+28 1 0:25 / / rw,relatime - tmpfs tmpfs rw,mode=755,inode64
+29 28 0:26 / /run rw,nosuid,nodev - tmpfs tmpfs rw,size=199172k,nr_inodes=819200,mode=755,inode64
+30 23 0:20 / /dev/mqueue rw,nosuid,nodev,noexec,relatime - mqueue mqueue rw
+31 28 7:0 / /.modloop ro,relatime - squashfs /dev/loop0 ro,errors=continue
+32 22 0:7 / /sys/kernel/security rw,nosuid,nodev,noexec,relatime - securityfs securityfs rw
+33 22 0:8 / /sys/kernel/debug rw,nosuid,nodev,noexec,relatime - debugfs debugfs rw
+34 22 0:27 / /sys/fs/pstore rw,nosuid,nodev,noexec,relatime - pstore pstore rw
+35 33 0:13 / /sys/kernel/debug/tracing rw,nosuid,nodev,noexec,relatime - tracefs tracefs rw
+cc (Alpine 14.2.0) 14.2.0
+Copyright (C) 2024 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+GNU ld (GNU Binutils) 2.43.1
+Copyright (C) 2024 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms of
+the GNU General Public License version 3 or (at your option) a later version.
+This program has absolutely no warranty.
+Python 3.12.16
+alpine-base-3.21.9-r0 x86_64 {alpine-base} (MIT) [installed]
+alpine-baselayout-3.6.8-r1 x86_64 {alpine-baselayout} (GPL-2.0-only) [installed]
+alpine-baselayout-data-3.6.8-r1 x86_64 {alpine-baselayout} (GPL-2.0-only) [installed]
+alpine-conf-3.19.2-r0 x86_64 {alpine-conf} (MIT) [installed]
+alpine-keys-2.5-r0 x86_64 {alpine-keys} (MIT) [installed]
+alpine-release-3.21.9-r0 x86_64 {alpine-base} (MIT) [installed]
+apk-tools-2.14.6-r3 x86_64 {apk-tools} (GPL-2.0-only) [installed]
+binutils-2.43.1-r3 x86_64 {binutils} (GPL-2.0-or-later AND LGPL-2.1-or-later AND BSD-3-Clause) [installed]
+busybox-1.37.0-r14 x86_64 {busybox} (GPL-2.0-only) [installed]
+busybox-binsh-1.37.0-r14 x86_64 {busybox} (GPL-2.0-only) [installed]
+busybox-mdev-openrc-1.37.0-r14 x86_64 {busybox} (GPL-2.0-only) [installed]
+busybox-openrc-1.37.0-r14 x86_64 {busybox} (GPL-2.0-only) [installed]
+busybox-suid-1.37.0-r14 x86_64 {busybox} (GPL-2.0-only) [installed]
+ca-certificates-bundle-20261020-r0 x86_64 {ca-certificates} (MPL-2.0 AND MIT) [installed]
+gcc-14.2.0-r4 x86_64 {gcc} (GPL-2.0-or-later AND LGPL-2.1-or-later) [installed]
+gdbm-1.24-r0 x86_64 {gdbm} (GPL-3.0-or-later) [installed]
+gmp-6.3.0-r2 x86_64 {gmp} (LGPL-3.0-or-later OR GPL-2.0-or-later) [installed]
+ifupdown-ng-0.12.1-r6 x86_64 {ifupdown-ng} (ISC) [installed]
+isl26-0.26-r1 x86_64 {isl26} (MIT) [installed]
+jansson-2.14-r4 x86_64 {jansson} (MIT) [installed]
+libatomic-14.2.0-r4 x86_64 {gcc} (GPL-2.0-or-later AND LGPL-2.1-or-later) [installed]
+libbz2-1.0.8-r6 x86_64 {bzip2} (bzip2-1.0.6) [installed]
+libcap2-2.78-r0 x86_64 {libcap} (BSD-3-Clause OR GPL-2.0-only) [installed]
+libcrypto3-3.3.7-r2 x86_64 {openssl} (Apache-2.0) [installed]
+libexpat-2.9.0-r0 x86_64 {expat} (MIT) [installed]
+libffi-3.4.7-r0 x86_64 {libffi} (MIT) [installed]
+libgcc-14.2.0-r4 x86_64 {gcc} (GPL-2.0-or-later AND LGPL-2.1-or-later) [installed]
+libgomp-14.2.0-r4 x86_64 {gcc} (GPL-2.0-or-later AND LGPL-2.1-or-later) [installed]
+libncursesw-6.5_p20241006-r3 x86_64 {ncurses} (X11) [installed]
+libpanelw-6.5_p20241006-r3 x86_64 {ncurses} (X11) [installed]
+libssl3-3.3.7-r2 x86_64 {openssl} (Apache-2.0) [installed]
+libstdc++-14.2.0-r4 x86_64 {gcc} (GPL-2.0-or-later AND LGPL-2.1-or-later) [installed]
+linux-headers-6.6-r1 x86_64 {linux-headers} (GPL-2.0-only) [installed]
+mdev-conf-4.7-r0 x86_64 {mdev-conf} (MIT) [installed]
+mpc1-1.3.1-r1 x86_64 {mpc1} (LGPL-3.0-or-later) [installed]
+mpdecimal-4.0.0-r0 x86_64 {mpdecimal} (BSD-2-Clause) [installed]
+mpfr4-4.2.1-r0 x86_64 {mpfr4} (LGPL-3.0-or-later) [installed]
+musl-1.2.5-r12 x86_64 {musl} (MIT) [installed]
+musl-dev-1.2.5-r12 x86_64 {musl} (MIT) [installed]
+musl-utils-1.2.5-r12 x86_64 {musl} (MIT AND BSD-2-Clause AND GPL-2.0-or-later) [installed]
+ncurses-terminfo-base-6.5_p20241006-r3 x86_64 {ncurses} (X11) [installed]
+openrc-0.55.1-r2 x86_64 {openrc} (BSD-2-Clause) [installed]
+openssl-3.3.7-r2 x86_64 {openssl} (Apache-2.0) [installed]
+pyc-3.12.16-r0 x86_64 {python3} (PSF-2.0) [installed]
+python3-3.12.16-r0 x86_64 {python3} (PSF-2.0) [installed]
+python3-pyc-3.12.16-r0 x86_64 {python3} (PSF-2.0) [installed]
+python3-pycache-pyc0-3.12.16-r0 x86_64 {python3} (PSF-2.0) [installed]
+readline-8.2.13-r0 x86_64 {readline} (GPL-3.0-or-later) [installed]
+scanelf-1.3.8-r1 x86_64 {pax-utils} (GPL-2.0-only) [installed]
+sqlite-libs-3.48.0-r4 x86_64 {sqlite} (blessing) [installed]
+ssl_client-1.37.0-r14 x86_64 {busybox} (GPL-2.0-only) [installed]
+xz-libs-5.8.4-r0 x86_64 {xz} (GPL-2.0-or-later AND 0BSD AND Public-Domain AND LGPL-2.1-or-later) [installed]
+zlib-1.3.2-r1 x86_64 {zlib} (Zlib) [installed]
+zstd-libs-1.5.6-r2 x86_64 {zstd} (BSD-3-Clause OR GPL-2.0-or-later) [installed]
+2006031229d158ca25f5a7a54c1bab3fc541411bdb6878e66e61116d97fffcba  containment_probe.c
+266a526f969a5af615b81a151949700f80bcbbf15ced41177e3f1ef7798b77bb  native_scratch_probe.py
+7f6ff610cbf44ce225bfbca83119c87df1e8edbfb3176e3c45837b14d8e64690  containment_probe
+7f6ff610cbf44ce225bfbca83119c87df1e8edbfb3176e3c45837b14d8e64690  containment_probe.rebuild
+NATIVE_BUILD_IDENTICAL=1
+0d42ad3750de6cce7431a0b46df0cc697c6f1c06d06c2124c09e831196518a55  /usr/bin/gcc
+4dec5e3c46e950fafcbb5a55d37315053030650ffebc2db1da5781628aa82ade  /usr/bin/ld
+19313c7fcdd4816403c95fa43a9d63639b17f09cbb69fbb8cae414efef4f57cb  /lib/ld-musl-x86_64.so.1
+555c67662b853a44431690f87399a2e48d0d5d05b5e8262ed9fb3dea44950d36  /usr/libexec/gcc/x86_64-alpine-linux-musl/14.2.0/cc1
+09484343eaf9d6ad80536945a60b50e6403983c330aeed363ff1801aa6149021  /usr/bin/python3.12
+cpuset cpu io memory hugetlb pids
+guest_diagnostics.sh: line 40: can't create /sys/fs/cgroup/h04-feasibility/pids.max: Permission denied
+localhost:/tmp/h04-feasibility# [6ncp diagnostics.log diagnostics.first-controls-fa
+ilure.log; cat /sys/fs/cgroup/cgroup.subtree_control; ls /sys/fs/cgroup/h04-feas
+ibility/pids.max; rmdir /sys/fs/cgroup/h04-feasibility; wget -q -O guest_diagnos
+tics.sh http://10.0.2.2:18765/share/guest_diagnostics.sh && sh guest_diagnostics
+.sh > diagnostics.final.log 2>&1; printf 'DIAGNOSTIC_EXIT=%s\n' "$?"; cat diagno
+stics.final.log
+memory
+ls: /sys/fs/cgroup/h04-feasibility/pids.max: No such file or directory
+DIAGNOSTIC_EXIT=0
+
+H04_FEASIBILITY_BEGIN
+Linux localhost 6.12.114-0-virt #1-Alpine SMP PREEMPT_DYNAMIC 2026-10-21 12:19:03 x86_64 Linux
+3.21.9
+uid=0(root) gid=0(root) groups=0(root),0(root),1(bin),2(daemon),3(sys),4(adm),6(disk),10(wheel),11(floppy),20(dialout),26(tape),27(video)
+console=ttyS0 cgroup_no_v1=all
+Name:	cat
+Umask:	0022
+State:	R (running)
+Tgid:	1906
+Ngid:	0
+Pid:	1906
+PPid:	1900
+TracerPid:	0
+Uid:	0	0	0	0
+Gid:	0	0	0	0
+FDSize:	64
+Groups:	0 0 1 2 3 4 6 10 11 20 26 27 
+NStgid:	1906
+NSpid:	1906
+NSpgid:	1900
+NSsid:	1836
+Kthread:	0
+VmPeak:	    1688 kB
+VmSize:	    1688 kB
+VmLck:	       0 kB
+VmPin:	       0 kB
+VmHWM:	     920 kB
+VmRSS:	     920 kB
+RssAnon:	      48 kB
+RssFile:	       4 kB
+RssShmem:	     868 kB
+VmData:	      88 kB
+VmStk:	     132 kB
+VmExe:	     616 kB
+VmLib:	     356 kB
+VmPTE:	      40 kB
+VmSwap:	       0 kB
+HugetlbPages:	       0 kB
+CoreDumping:	0
+THP_enabled:	1
+untag_mask:	0xffffffffffffffff
+Threads:	1
+SigQ:	0/3838
+SigPnd:	0000000000000000
+ShdPnd:	0000000000000000
+SigBlk:	0000000000000000
+SigIgn:	0000000000000000
+SigCgt:	0000000000000000
+CapInh:	0000000000000000
+CapPrm:	000001ffffffffff
+CapEff:	000001ffffffffff
+CapBnd:	000001ffffffffff
+CapAmb:	0000000000000000
+NoNewPrivs:	0
+Seccomp:	0
+Seccomp_filters:	0
+Speculation_Store_Bypass:	vulnerable
+SpeculationIndirectBranch:	always enabled
+Cpus_allowed:	1
+Cpus_allowed_list:	0
+Mems_allowed:	1
+Mems_allowed_list:	0
+voluntary_ctxt_switches:	0
+nonvoluntary_ctxt_switches:	0
+Filename				Type		Size		Used		Priority
+MemTotal:         995856 kB
+MemFree:          682212 kB
+MemAvailable:     635516 kB
+Buffers:             244 kB
+Cached:           257140 kB
+SwapCached:            0 kB
+Active:           230740 kB
+Inactive:          27436 kB
+Active(anon):     230740 kB
+Inactive(anon):        0 kB
+Active(file):          0 kB
+Inactive(file):    27436 kB
+Unevictable:           0 kB
+Mlocked:               0 kB
+SwapTotal:             0 kB
+SwapFree:              0 kB
+Zswap:                 0 kB
+Zswapped:              0 kB
+Dirty:                 0 kB
+Writeback:             0 kB
+AnonPages:           772 kB
+Mapped:             1216 kB
+Shmem:            229948 kB
+KReclaimable:      21868 kB
+Slab:              36540 kB
+SReclaimable:      21868 kB
+SUnreclaim:        14672 kB
+KernelStack:        1144 kB
+PageTables:          804 kB
+SecPageTables:         0 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:      497928 kB
+Committed_AS:     232196 kB
+VmallocTotal:   34359738367 kB
+VmallocUsed:       13932 kB
+VmallocChunk:          0 kB
+Percpu:              248 kB
+AnonHugePages:         0 kB
+ShmemHugePages:        0 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+Hugetlb:               0 kB
+DirectMap4k:       42876 kB
+DirectMap2M:     1005568 kB
+DirectMap1G:           0 kB
+#subsys_name	hierarchy	num_cgroups	enabled
+cpu	0	1	1
+cpuacct	0	1	1
+blkio	0	1	1
+devices	0	1	1
+freezer	0	1	1
+net_cls	0	1	1
+perf_event	0	1	1
+net_prio	0	1	1
+hugetlb	0	1	1
+pids	0	1	1
+22 28 0:21 / /sys rw,nosuid,nodev,noexec,relatime - sysfs sysfs rw
+23 28 0:6 / /dev rw,nosuid,noexec,relatime - devtmpfs devtmpfs rw,size=10240k,nr_inodes=122888,mode=755,inode64
+24 28 0:22 / /proc rw,nosuid,nodev,noexec,relatime - proc proc rw
+25 23 0:23 / /dev/pts rw,nosuid,noexec,relatime - devpts devpts rw,gid=5,mode=620,ptmxmode=000
+26 23 0:24 / /dev/shm rw,nosuid,nodev,noexec,relatime - tmpfs shm rw,inode64
+27 28 11:0 / /media/cdrom ro,relatime - iso9660 /dev/sr0 ro,nojoliet,check=s,map=n,blocksize=2048,iocharset=utf8
+28 1 0:25 / / rw,relatime - tmpfs tmpfs rw,mode=755,inode64
+29 28 0:26 / /run rw,nosuid,nodev - tmpfs tmpfs rw,size=199172k,nr_inodes=819200,mode=755,inode64
+30 23 0:20 / /dev/mqueue rw,nosuid,nodev,noexec,relatime - mqueue mqueue rw
+31 28 7:0 / /.modloop ro,relatime - squashfs /dev/loop0 ro,errors=continue
+32 22 0:7 / /sys/kernel/security rw,nosuid,nodev,noexec,relatime - securityfs securityfs rw
+33 22 0:8 / /sys/kernel/debug rw,nosuid,nodev,noexec,relatime - debugfs debugfs rw
+34 22 0:27 / /sys/fs/pstore rw,nosuid,nodev,noexec,relatime - pstore pstore rw
+35 33 0:13 / /sys/kernel/debug/tracing rw,nosuid,nodev,noexec,relatime - tracefs tracefs rw
+37 22 0:29 / /sys/fs/cgroup rw,relatime - cgroup2 none rw
+cc (Alpine 14.2.0) 14.2.0
+Copyright (C) 2024 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+GNU ld (GNU Binutils) 2.43.1
+Copyright (C) 2024 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms of
+the GNU General Public License version 3 or (at your option) a later version.
+This program has absolutely no warranty.
+Python 3.12.16
+alpine-base-3.21.9-r0 x86_64 {alpine-base} (MIT) [installed]
+alpine-baselayout-3.6.8-r1 x86_64 {alpine-baselayout} (GPL-2.0-only) [installed]
+alpine-baselayout-data-3.6.8-r1 x86_64 {alpine-baselayout} (GPL-2.0-only) [installed]
+alpine-conf-3.19.2-r0 x86_64 {alpine-conf} (MIT) [installed]
+alpine-keys-2.5-r0 x86_64 {alpine-keys} (MIT) [installed]
+alpine-release-3.21.9-r0 x86_64 {alpine-base} (MIT) [installed]
+apk-tools-2.14.6-r3 x86_64 {apk-tools} (GPL-2.0-only) [installed]
+binutils-2.43.1-r3 x86_64 {binutils} (GPL-2.0-or-later AND LGPL-2.1-or-later AND BSD-3-Clause) [installed]
+busybox-1.37.0-r14 x86_64 {busybox} (GPL-2.0-only) [installed]
+busybox-binsh-1.37.0-r14 x86_64 {busybox} (GPL-2.0-only) [installed]
+busybox-mdev-openrc-1.37.0-r14 x86_64 {busybox} (GPL-2.0-only) [installed]
+busybox-openrc-1.37.0-r14 x86_64 {busybox} (GPL-2.0-only) [installed]
+busybox-suid-1.37.0-r14 x86_64 {busybox} (GPL-2.0-only) [installed]
+ca-certificates-bundle-20261020-r0 x86_64 {ca-certificates} (MPL-2.0 AND MIT) [installed]
+gcc-14.2.0-r4 x86_64 {gcc} (GPL-2.0-or-later AND LGPL-2.1-or-later) [installed]
+gdbm-1.24-r0 x86_64 {gdbm} (GPL-3.0-or-later) [installed]
+gmp-6.3.0-r2 x86_64 {gmp} (LGPL-3.0-or-later OR GPL-2.0-or-later) [installed]
+ifupdown-ng-0.12.1-r6 x86_64 {ifupdown-ng} (ISC) [installed]
+isl26-0.26-r1 x86_64 {isl26} (MIT) [installed]
+jansson-2.14-r4 x86_64 {jansson} (MIT) [installed]
+libatomic-14.2.0-r4 x86_64 {gcc} (GPL-2.0-or-later AND LGPL-2.1-or-later) [installed]
+libbz2-1.0.8-r6 x86_64 {bzip2} (bzip2-1.0.6) [installed]
+libcap2-2.78-r0 x86_64 {libcap} (BSD-3-Clause OR GPL-2.0-only) [installed]
+libcrypto3-3.3.7-r2 x86_64 {openssl} (Apache-2.0) [installed]
+libexpat-2.9.0-r0 x86_64 {expat} (MIT) [installed]
+libffi-3.4.7-r0 x86_64 {libffi} (MIT) [installed]
+libgcc-14.2.0-r4 x86_64 {gcc} (GPL-2.0-or-later AND LGPL-2.1-or-later) [installed]
+libgomp-14.2.0-r4 x86_64 {gcc} (GPL-2.0-or-later AND LGPL-2.1-or-later) [installed]
+libncursesw-6.5_p20241006-r3 x86_64 {ncurses} (X11) [installed]
+libpanelw-6.5_p20241006-r3 x86_64 {ncurses} (X11) [installed]
+libssl3-3.3.7-r2 x86_64 {openssl} (Apache-2.0) [installed]
+libstdc++-14.2.0-r4 x86_64 {gcc} (GPL-2.0-or-later AND LGPL-2.1-or-later) [installed]
+linux-headers-6.6-r1 x86_64 {linux-headers} (GPL-2.0-only) [installed]
+mdev-conf-4.7-r0 x86_64 {mdev-conf} (MIT) [installed]
+mpc1-1.3.1-r1 x86_64 {mpc1} (LGPL-3.0-or-later) [installed]
+mpdecimal-4.0.0-r0 x86_64 {mpdecimal} (BSD-2-Clause) [installed]
+mpfr4-4.2.1-r0 x86_64 {mpfr4} (LGPL-3.0-or-later) [installed]
+musl-1.2.5-r12 x86_64 {musl} (MIT) [installed]
+musl-dev-1.2.5-r12 x86_64 {musl} (MIT) [installed]
+musl-utils-1.2.5-r12 x86_64 {musl} (MIT AND BSD-2-Clause AND GPL-2.0-or-later) [installed]
+ncurses-terminfo-base-6.5_p20241006-r3 x86_64 {ncurses} (X11) [installed]
+openrc-0.55.1-r2 x86_64 {openrc} (BSD-2-Clause) [installed]
+openssl-3.3.7-r2 x86_64 {openssl} (Apache-2.0) [installed]
+pyc-3.12.16-r0 x86_64 {python3} (PSF-2.0) [installed]
+python3-3.12.16-r0 x86_64 {python3} (PSF-2.0) [installed]
+python3-pyc-3.12.16-r0 x86_64 {python3} (PSF-2.0) [installed]
+python3-pycache-pyc0-3.12.16-r0 x86_64 {python3} (PSF-2.0) [installed]
+readline-8.2.13-r0 x86_64 {readline} (GPL-3.0-or-later) [installed]
+scanelf-1.3.8-r1 x86_64 {pax-utils} (GPL-2.0-only) [installed]
+sqlite-libs-3.48.0-r4 x86_64 {sqlite} (blessing) [installed]
+ssl_client-1.37.0-r14 x86_64 {busybox} (GPL-2.0-only) [installed]
+xz-libs-5.8.4-r0 x86_64 {xz} (GPL-2.0-or-later AND 0BSD AND Public-Domain AND LGPL-2.1-or-later) [installed]
+zlib-1.3.2-r1 x86_64 {zlib} (Zlib) [installed]
+zstd-libs-1.5.6-r2 x86_64 {zstd} (BSD-3-Clause OR GPL-2.0-or-later) [installed]
+2006031229d158ca25f5a7a54c1bab3fc541411bdb6878e66e61116d97fffcba  containment_probe.c
+266a526f969a5af615b81a151949700f80bcbbf15ced41177e3f1ef7798b77bb  native_scratch_probe.py
+fb004923584b0bee31be1100c41dcc21c4d3c3db70cd1a37f0a6ec0471e1f2d0  containment_probe
+fb004923584b0bee31be1100c41dcc21c4d3c3db70cd1a37f0a6ec0471e1f2d0  containment_probe.rebuild
+NATIVE_BUILD_IDENTICAL=1
+
+Elf file type is DYN (Position-Independent Executable file)
+Entry point 0x1b53
+There are 12 program headers, starting at offset 64
+
+Program Headers:
+  Type           Offset   VirtAddr           PhysAddr           FileSiz  MemSiz   Flg Align
+  PHDR           0x000040 0x0000000000000040 0x0000000000000040 0x0002a0 0x0002a0 R   0x8
+  INTERP         0x0002e0 0x00000000000002e0 0x00000000000002e0 0x000019 0x000019 R   0x1
+      [Requesting program interpreter: /lib/ld-musl-x86_64.so.1]
+  LOAD           0x000000 0x0000000000000000 0x0000000000000000 0x000ca0 0x000ca0 R   0x1000
+  LOAD           0x001000 0x0000000000001000 0x0000000000001000 0x000e50 0x000e50 R E 0x1000
+  LOAD           0x002000 0x0000000000002000 0x0000000000002000 0x000550 0x000550 R   0x1000
+  LOAD           0x002ce8 0x0000000000003ce8 0x0000000000003ce8 0x000320 0x000388 RW  0x1000
+  DYNAMIC        0x002d08 0x0000000000003d08 0x0000000000003d08 0x0001c0 0x0001c0 RW  0x8
+  NOTE           0x000300 0x0000000000000300 0x0000000000000300 0x000030 0x000030 R   0x8
+  GNU_PROPERTY   0x000300 0x0000000000000300 0x0000000000000300 0x000030 0x000030 R   0x8
+  GNU_EH_FRAME   0x0023e4 0x00000000000023e4 0x00000000000023e4 0x00003c 0x00003c R   0x4
+  GNU_STACK      0x000000 0x0000000000000000 0x0000000000000000 0x000000 0x000000 RW  0x10
+  GNU_RELRO      0x002ce8 0x0000000000003ce8 0x0000000000003ce8 0x000318 0x000318 R   0x1
+
+ Section to Segment mapping:
+  Segment Sections...
+   00     
+   01     .interp 
+   02     .interp .note.gnu.property .gnu.hash .dynsym .dynstr .rela.dyn .rela.plt 
+   03     .init .plt .text .fini 
+   04     .rodata .eh_frame_hdr .eh_frame 
+   05     .init_array .fini_array .data.rel.ro .dynamic .got .data .bss 
+   06     .dynamic 
+   07     .note.gnu.property 
+   08     .note.gnu.property 
+   09     .eh_frame_hdr 
+   10     
+   11     .init_array .fini_array .data.rel.ro .dynamic .got 
+0d42ad3750de6cce7431a0b46df0cc697c6f1c06d06c2124c09e831196518a55  /usr/bin/gcc
+4dec5e3c46e950fafcbb5a55d37315053030650ffebc2db1da5781628aa82ade  /usr/bin/ld
+19313c7fcdd4816403c95fa43a9d63639b17f09cbb69fbb8cae414efef4f57cb  /lib/ld-musl-x86_64.so.1
+555c67662b853a44431690f87399a2e48d0d5d05b5e8262ed9fb3dea44950d36  /usr/libexec/gcc/x86_64-alpine-linux-musl/14.2.0/cc1
+09484343eaf9d6ad80536945a60b50e6403983c330aeed363ff1801aa6149021  /usr/bin/python3.12
+cpuset cpu io memory hugetlb pids
+CGROUP_BEFORE
+33554432
+0
+0
+low 0
+high 0
+max 0
+oom 0
+oom_kill 0
+oom_group_kill 0
+domain
+F2_RLIMIT_RSS rss_bytes=50880512 limit_bytes=33554432 survived=1
+F1_PARENT_OUTSIDE pid=1936 cgroup=0::/
+F1_FIRST_CHILD_MARKER child=1937 cgroup=0::/h04-feasibility
+F1_PARENT_OBSERVATION child=1937 cgroup=0::/h04-feasibility
+F1_TARGET_PROCS 1937
+F1_POST_EXEC pid=1937 cgroup=0::/h04-feasibility
+F2_SHARED rss_bytes=50892800 cgroup_current_bytes=245760 limit_bytes=33554432 checksum=1105920
+F4_CHILD_WAIT exited=1 code=0 proc_absent=1
+F4_SHARED_AFTER_EXIT resident=1 value=90
+CGROUP_AFTER
+33554432
+53248
+262144
+low 0
+high 0
+max 0
+oom 0
+oom_kill 0
+oom_group_kill 0
+populated 0
+frozen 0
+{"dead_after_last_alias": true, "physical_reclamation_proven": false, "retained_with_alias": true, "scope": "one-CPython-object-only"}
+{"complete_coverage": false, "native_buffer_freed": true, "requested_native_bytes": 131072, "scope": "synthetic-native-malloc-not-Phase-C", "scratch_limit_bytes": 65536, "traced_current_bytes": 32, "traced_peak_bytes": 304}
+H04_FEASIBILITY_DONE
+localhost:/tmp/h04-feasibility# [6nprintf '\nH04_EXPORT_FINAL_BEGIN\n'; base64 diag
+nostics.final.log; printf 'H04_EXPORT_FINAL_END\n'; printf 'H04_EXPORT_FAILURE_B
+EGIN\n'; base64 diagnostics.first-controls-failure.log; printf 'H04_EXPORT_FAILU
+RE_END\n'
+
+H04_EXPORT_FINAL_BEGIN
+CkgwNF9GRUFTSUJJTElUWV9CRUdJTgpMaW51eCBsb2NhbGhvc3QgNi4xMi4xMTQtMC12aXJ0ICMx
+LUFscGluZSBTTVAgUFJFRU1QVF9EWU5BTUlDIDIwMjYtMTAtMjEgMTI6MTk6MDMgeDg2XzY0IExp
+bnV4CjMuMjEuOQp1aWQ9MChyb290KSBnaWQ9MChyb290KSBncm91cHM9MChyb290KSwwKHJvb3Qp
+LDEoYmluKSwyKGRhZW1vbiksMyhzeXMpLDQoYWRtKSw2KGRpc2spLDEwKHdoZWVsKSwxMShmbG9w
+cHkpLDIwKGRpYWxvdXQpLDI2KHRhcGUpLDI3KHZpZGVvKQpjb25zb2xlPXR0eVMwIGNncm91cF9u
+b192MT1hbGwKTmFtZToJY2F0ClVtYXNrOgkwMDIyClN0YXRlOglSIChydW5uaW5nKQpUZ2lkOgkx
+OTA2Ck5naWQ6CTAKUGlkOgkxOTA2ClBQaWQ6CTE5MDAKVHJhY2VyUGlkOgkwClVpZDoJMAkwCTAJ
+MApHaWQ6CTAJMAkwCTAKRkRTaXplOgk2NApHcm91cHM6CTAgMCAxIDIgMyA0IDYgMTAgMTEgMjAg
+MjYgMjcgCk5TdGdpZDoJMTkwNgpOU3BpZDoJMTkwNgpOU3BnaWQ6CTE5MDAKTlNzaWQ6CTE4MzYK
+S3RocmVhZDoJMApWbVBlYWs6CSAgICAxNjg4IGtCClZtU2l6ZToJICAgIDE2ODgga0IKVm1MY2s6
+CSAgICAgICAwIGtCClZtUGluOgkgICAgICAgMCBrQgpWbUhXTToJICAgICA5MjAga0IKVm1SU1M6
+CSAgICAgOTIwIGtCClJzc0Fub246CSAgICAgIDQ4IGtCClJzc0ZpbGU6CSAgICAgICA0IGtCClJz
+c1NobWVtOgkgICAgIDg2OCBrQgpWbURhdGE6CSAgICAgIDg4IGtCClZtU3RrOgkgICAgIDEzMiBr
+QgpWbUV4ZToJICAgICA2MTYga0IKVm1MaWI6CSAgICAgMzU2IGtCClZtUFRFOgkgICAgICA0MCBr
+QgpWbVN3YXA6CSAgICAgICAwIGtCCkh1Z2V0bGJQYWdlczoJICAgICAgIDAga0IKQ29yZUR1bXBp
+bmc6CTAKVEhQX2VuYWJsZWQ6CTEKdW50YWdfbWFzazoJMHhmZmZmZmZmZmZmZmZmZmZmClRocmVh
+ZHM6CTEKU2lnUToJMC8zODM4ClNpZ1BuZDoJMDAwMDAwMDAwMDAwMDAwMApTaGRQbmQ6CTAwMDAw
+MDAwMDAwMDAwMDAKU2lnQmxrOgkwMDAwMDAwMDAwMDAwMDAwClNpZ0lnbjoJMDAwMDAwMDAwMDAw
+MDAwMApTaWdDZ3Q6CTAwMDAwMDAwMDAwMDAwMDAKQ2FwSW5oOgkwMDAwMDAwMDAwMDAwMDAwCkNh
+cFBybToJMDAwMDAxZmZmZmZmZmZmZgpDYXBFZmY6CTAwMDAwMWZmZmZmZmZmZmYKQ2FwQm5kOgkw
+MDAwMDFmZmZmZmZmZmZmCkNhcEFtYjoJMDAwMDAwMDAwMDAwMDAwMApOb05ld1ByaXZzOgkwClNl
+Y2NvbXA6CTAKU2VjY29tcF9maWx0ZXJzOgkwClNwZWN1bGF0aW9uX1N0b3JlX0J5cGFzczoJdnVs
+bmVyYWJsZQpTcGVjdWxhdGlvbkluZGlyZWN0QnJhbmNoOglhbHdheXMgZW5hYmxlZApDcHVzX2Fs
+bG93ZWQ6CTEKQ3B1c19hbGxvd2VkX2xpc3Q6CTAKTWVtc19hbGxvd2VkOgkxCk1lbXNfYWxsb3dl
+ZF9saXN0OgkwCnZvbHVudGFyeV9jdHh0X3N3aXRjaGVzOgkwCm5vbnZvbHVudGFyeV9jdHh0X3N3
+aXRjaGVzOgkwCkZpbGVuYW1lCQkJCVR5cGUJCVNpemUJCVVzZWQJCVByaW9yaXR5Ck1lbVRvdGFs
+OiAgICAgICAgIDk5NTg1NiBrQgpNZW1GcmVlOiAgICAgICAgICA2ODIyMTIga0IKTWVtQXZhaWxh
+YmxlOiAgICAgNjM1NTE2IGtCCkJ1ZmZlcnM6ICAgICAgICAgICAgIDI0NCBrQgpDYWNoZWQ6ICAg
+ICAgICAgICAyNTcxNDAga0IKU3dhcENhY2hlZDogICAgICAgICAgICAwIGtCCkFjdGl2ZTogICAg
+ICAgICAgIDIzMDc0MCBrQgpJbmFjdGl2ZTogICAgICAgICAgMjc0MzYga0IKQWN0aXZlKGFub24p
+OiAgICAgMjMwNzQwIGtCCkluYWN0aXZlKGFub24pOiAgICAgICAgMCBrQgpBY3RpdmUoZmlsZSk6
+ICAgICAgICAgIDAga0IKSW5hY3RpdmUoZmlsZSk6ICAgIDI3NDM2IGtCClVuZXZpY3RhYmxlOiAg
+ICAgICAgICAgMCBrQgpNbG9ja2VkOiAgICAgICAgICAgICAgIDAga0IKU3dhcFRvdGFsOiAgICAg
+ICAgICAgICAwIGtCClN3YXBGcmVlOiAgICAgICAgICAgICAgMCBrQgpac3dhcDogICAgICAgICAg
+ICAgICAgIDAga0IKWnN3YXBwZWQ6ICAgICAgICAgICAgICAwIGtCCkRpcnR5OiAgICAgICAgICAg
+ICAgICAgMCBrQgpXcml0ZWJhY2s6ICAgICAgICAgICAgIDAga0IKQW5vblBhZ2VzOiAgICAgICAg
+ICAgNzcyIGtCCk1hcHBlZDogICAgICAgICAgICAgMTIxNiBrQgpTaG1lbTogICAgICAgICAgICAy
+Mjk5NDgga0IKS1JlY2xhaW1hYmxlOiAgICAgIDIxODY4IGtCClNsYWI6ICAgICAgICAgICAgICAz
+NjU0MCBrQgpTUmVjbGFpbWFibGU6ICAgICAgMjE4Njgga0IKU1VucmVjbGFpbTogICAgICAgIDE0
+NjcyIGtCCktlcm5lbFN0YWNrOiAgICAgICAgMTE0NCBrQgpQYWdlVGFibGVzOiAgICAgICAgICA4
+MDQga0IKU2VjUGFnZVRhYmxlczogICAgICAgICAwIGtCCk5GU19VbnN0YWJsZTogICAgICAgICAg
+MCBrQgpCb3VuY2U6ICAgICAgICAgICAgICAgIDAga0IKV3JpdGViYWNrVG1wOiAgICAgICAgICAw
+IGtCCkNvbW1pdExpbWl0OiAgICAgIDQ5NzkyOCBrQgpDb21taXR0ZWRfQVM6ICAgICAyMzIxOTYg
+a0IKVm1hbGxvY1RvdGFsOiAgIDM0MzU5NzM4MzY3IGtCClZtYWxsb2NVc2VkOiAgICAgICAxMzkz
+MiBrQgpWbWFsbG9jQ2h1bms6ICAgICAgICAgIDAga0IKUGVyY3B1OiAgICAgICAgICAgICAgMjQ4
+IGtCCkFub25IdWdlUGFnZXM6ICAgICAgICAgMCBrQgpTaG1lbUh1Z2VQYWdlczogICAgICAgIDAg
+a0IKU2htZW1QbWRNYXBwZWQ6ICAgICAgICAwIGtCCkZpbGVIdWdlUGFnZXM6ICAgICAgICAgMCBr
+QgpGaWxlUG1kTWFwcGVkOiAgICAgICAgIDAga0IKSHVnZVBhZ2VzX1RvdGFsOiAgICAgICAwCkh1
+Z2VQYWdlc19GcmVlOiAgICAgICAgMApIdWdlUGFnZXNfUnN2ZDogICAgICAgIDAKSHVnZVBhZ2Vz
+X1N1cnA6ICAgICAgICAwCkh1Z2VwYWdlc2l6ZTogICAgICAgMjA0OCBrQgpIdWdldGxiOiAgICAg
+ICAgICAgICAgIDAga0IKRGlyZWN0TWFwNGs6ICAgICAgIDQyODc2IGtCCkRpcmVjdE1hcDJNOiAg
+ICAgMTAwNTU2OCBrQgpEaXJlY3RNYXAxRzogICAgICAgICAgIDAga0IKI3N1YnN5c19uYW1lCWhp
+ZXJhcmNoeQludW1fY2dyb3VwcwllbmFibGVkCmNwdQkwCTEJMQpjcHVhY2N0CTAJMQkxCmJsa2lv
+CTAJMQkxCmRldmljZXMJMAkxCTEKZnJlZXplcgkwCTEJMQpuZXRfY2xzCTAJMQkxCnBlcmZfZXZl
+bnQJMAkxCTEKbmV0X3ByaW8JMAkxCTEKaHVnZXRsYgkwCTEJMQpwaWRzCTAJMQkxCjIyIDI4IDA6
+MjEgLyAvc3lzIHJ3LG5vc3VpZCxub2Rldixub2V4ZWMscmVsYXRpbWUgLSBzeXNmcyBzeXNmcyBy
+dwoyMyAyOCAwOjYgLyAvZGV2IHJ3LG5vc3VpZCxub2V4ZWMscmVsYXRpbWUgLSBkZXZ0bXBmcyBk
+ZXZ0bXBmcyBydyxzaXplPTEwMjQwayxucl9pbm9kZXM9MTIyODg4LG1vZGU9NzU1LGlub2RlNjQK
+MjQgMjggMDoyMiAvIC9wcm9jIHJ3LG5vc3VpZCxub2Rldixub2V4ZWMscmVsYXRpbWUgLSBwcm9j
+IHByb2MgcncKMjUgMjMgMDoyMyAvIC9kZXYvcHRzIHJ3LG5vc3VpZCxub2V4ZWMscmVsYXRpbWUg
+LSBkZXZwdHMgZGV2cHRzIHJ3LGdpZD01LG1vZGU9NjIwLHB0bXhtb2RlPTAwMAoyNiAyMyAwOjI0
+IC8gL2Rldi9zaG0gcncsbm9zdWlkLG5vZGV2LG5vZXhlYyxyZWxhdGltZSAtIHRtcGZzIHNobSBy
+dyxpbm9kZTY0CjI3IDI4IDExOjAgLyAvbWVkaWEvY2Ryb20gcm8scmVsYXRpbWUgLSBpc285NjYw
+IC9kZXYvc3IwIHJvLG5vam9saWV0LGNoZWNrPXMsbWFwPW4sYmxvY2tzaXplPTIwNDgsaW9jaGFy
+c2V0PXV0ZjgKMjggMSAwOjI1IC8gLyBydyxyZWxhdGltZSAtIHRtcGZzIHRtcGZzIHJ3LG1vZGU9
+NzU1LGlub2RlNjQKMjkgMjggMDoyNiAvIC9ydW4gcncsbm9zdWlkLG5vZGV2IC0gdG1wZnMgdG1w
+ZnMgcncsc2l6ZT0xOTkxNzJrLG5yX2lub2Rlcz04MTkyMDAsbW9kZT03NTUsaW5vZGU2NAozMCAy
+MyAwOjIwIC8gL2Rldi9tcXVldWUgcncsbm9zdWlkLG5vZGV2LG5vZXhlYyxyZWxhdGltZSAtIG1x
+dWV1ZSBtcXVldWUgcncKMzEgMjggNzowIC8gLy5tb2Rsb29wIHJvLHJlbGF0aW1lIC0gc3F1YXNo
+ZnMgL2Rldi9sb29wMCBybyxlcnJvcnM9Y29udGludWUKMzIgMjIgMDo3IC8gL3N5cy9rZXJuZWwv
+c2VjdXJpdHkgcncsbm9zdWlkLG5vZGV2LG5vZXhlYyxyZWxhdGltZSAtIHNlY3VyaXR5ZnMgc2Vj
+dXJpdHlmcyBydwozMyAyMiAwOjggLyAvc3lzL2tlcm5lbC9kZWJ1ZyBydyxub3N1aWQsbm9kZXYs
+bm9leGVjLHJlbGF0aW1lIC0gZGVidWdmcyBkZWJ1Z2ZzIHJ3CjM0IDIyIDA6MjcgLyAvc3lzL2Zz
+L3BzdG9yZSBydyxub3N1aWQsbm9kZXYsbm9leGVjLHJlbGF0aW1lIC0gcHN0b3JlIHBzdG9yZSBy
+dwozNSAzMyAwOjEzIC8gL3N5cy9rZXJuZWwvZGVidWcvdHJhY2luZyBydyxub3N1aWQsbm9kZXYs
+bm9leGVjLHJlbGF0aW1lIC0gdHJhY2VmcyB0cmFjZWZzIHJ3CjM3IDIyIDA6MjkgLyAvc3lzL2Zz
+L2Nncm91cCBydyxyZWxhdGltZSAtIGNncm91cDIgbm9uZSBydwpjYyAoQWxwaW5lIDE0LjIuMCkg
+MTQuMi4wCkNvcHlyaWdodCAoQykgMjAyNCBGcmVlIFNvZnR3YXJlIEZvdW5kYXRpb24sIEluYy4K
+VGhpcyBpcyBmcmVlIHNvZnR3YXJlOyBzZWUgdGhlIHNvdXJjZSBmb3IgY29weWluZyBjb25kaXRp
+b25zLiAgVGhlcmUgaXMgTk8Kd2FycmFudHk7IG5vdCBldmVuIGZvciBNRVJDSEFOVEFCSUxJVFkg
+b3IgRklUTkVTUyBGT1IgQSBQQVJUSUNVTEFSIFBVUlBPU0UuCgpHTlUgbGQgKEdOVSBCaW51dGls
+cykgMi40My4xCkNvcHlyaWdodCAoQykgMjAyNCBGcmVlIFNvZnR3YXJlIEZvdW5kYXRpb24sIElu
+Yy4KVGhpcyBwcm9ncmFtIGlzIGZyZWUgc29mdHdhcmU7IHlvdSBtYXkgcmVkaXN0cmlidXRlIGl0
+IHVuZGVyIHRoZSB0ZXJtcyBvZgp0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UgdmVyc2lv
+biAzIG9yIChhdCB5b3VyIG9wdGlvbikgYSBsYXRlciB2ZXJzaW9uLgpUaGlzIHByb2dyYW0gaGFz
+IGFic29sdXRlbHkgbm8gd2FycmFudHkuClB5dGhvbiAzLjEyLjE2CmFscGluZS1iYXNlLTMuMjEu
+OS1yMCB4ODZfNjQge2FscGluZS1iYXNlfSAoTUlUKSBbaW5zdGFsbGVkXQphbHBpbmUtYmFzZWxh
+eW91dC0zLjYuOC1yMSB4ODZfNjQge2FscGluZS1iYXNlbGF5b3V0fSAoR1BMLTIuMC1vbmx5KSBb
+aW5zdGFsbGVkXQphbHBpbmUtYmFzZWxheW91dC1kYXRhLTMuNi44LXIxIHg4Nl82NCB7YWxwaW5l
+LWJhc2VsYXlvdXR9IChHUEwtMi4wLW9ubHkpIFtpbnN0YWxsZWRdCmFscGluZS1jb25mLTMuMTku
+Mi1yMCB4ODZfNjQge2FscGluZS1jb25mfSAoTUlUKSBbaW5zdGFsbGVkXQphbHBpbmUta2V5cy0y
+LjUtcjAgeDg2XzY0IHthbHBpbmUta2V5c30gKE1JVCkgW2luc3RhbGxlZF0KYWxwaW5lLXJlbGVh
+c2UtMy4yMS45LXIwIHg4Nl82NCB7YWxwaW5lLWJhc2V9IChNSVQpIFtpbnN0YWxsZWRdCmFway10
+b29scy0yLjE0LjYtcjMgeDg2XzY0IHthcGstdG9vbHN9IChHUEwtMi4wLW9ubHkpIFtpbnN0YWxs
+ZWRdCmJpbnV0aWxzLTIuNDMuMS1yMyB4ODZfNjQge2JpbnV0aWxzfSAoR1BMLTIuMC1vci1sYXRl
+ciBBTkQgTEdQTC0yLjEtb3ItbGF0ZXIgQU5EIEJTRC0zLUNsYXVzZSkgW2luc3RhbGxlZF0KYnVz
+eWJveC0xLjM3LjAtcjE0IHg4Nl82NCB7YnVzeWJveH0gKEdQTC0yLjAtb25seSkgW2luc3RhbGxl
+ZF0KYnVzeWJveC1iaW5zaC0xLjM3LjAtcjE0IHg4Nl82NCB7YnVzeWJveH0gKEdQTC0yLjAtb25s
+eSkgW2luc3RhbGxlZF0KYnVzeWJveC1tZGV2LW9wZW5yYy0xLjM3LjAtcjE0IHg4Nl82NCB7YnVz
+eWJveH0gKEdQTC0yLjAtb25seSkgW2luc3RhbGxlZF0KYnVzeWJveC1vcGVucmMtMS4zNy4wLXIx
+NCB4ODZfNjQge2J1c3lib3h9IChHUEwtMi4wLW9ubHkpIFtpbnN0YWxsZWRdCmJ1c3lib3gtc3Vp
+ZC0xLjM3LjAtcjE0IHg4Nl82NCB7YnVzeWJveH0gKEdQTC0yLjAtb25seSkgW2luc3RhbGxlZF0K
+Y2EtY2VydGlmaWNhdGVzLWJ1bmRsZS0yMDI2MTAyMC1yMCB4ODZfNjQge2NhLWNlcnRpZmljYXRl
+c30gKE1QTC0yLjAgQU5EIE1JVCkgW2luc3RhbGxlZF0KZ2NjLTE0LjIuMC1yNCB4ODZfNjQge2dj
+Y30gKEdQTC0yLjAtb3ItbGF0ZXIgQU5EIExHUEwtMi4xLW9yLWxhdGVyKSBbaW5zdGFsbGVkXQpn
+ZGJtLTEuMjQtcjAgeDg2XzY0IHtnZGJtfSAoR1BMLTMuMC1vci1sYXRlcikgW2luc3RhbGxlZF0K
+Z21wLTYuMy4wLXIyIHg4Nl82NCB7Z21wfSAoTEdQTC0zLjAtb3ItbGF0ZXIgT1IgR1BMLTIuMC1v
+ci1sYXRlcikgW2luc3RhbGxlZF0KaWZ1cGRvd24tbmctMC4xMi4xLXI2IHg4Nl82NCB7aWZ1cGRv
+d24tbmd9IChJU0MpIFtpbnN0YWxsZWRdCmlzbDI2LTAuMjYtcjEgeDg2XzY0IHtpc2wyNn0gKE1J
+VCkgW2luc3RhbGxlZF0KamFuc3Nvbi0yLjE0LXI0IHg4Nl82NCB7amFuc3Nvbn0gKE1JVCkgW2lu
+c3RhbGxlZF0KbGliYXRvbWljLTE0LjIuMC1yNCB4ODZfNjQge2djY30gKEdQTC0yLjAtb3ItbGF0
+ZXIgQU5EIExHUEwtMi4xLW9yLWxhdGVyKSBbaW5zdGFsbGVkXQpsaWJiejItMS4wLjgtcjYgeDg2
+XzY0IHtiemlwMn0gKGJ6aXAyLTEuMC42KSBbaW5zdGFsbGVkXQpsaWJjYXAyLTIuNzgtcjAgeDg2
+XzY0IHtsaWJjYXB9IChCU0QtMy1DbGF1c2UgT1IgR1BMLTIuMC1vbmx5KSBbaW5zdGFsbGVkXQps
+aWJjcnlwdG8zLTMuMy43LXIyIHg4Nl82NCB7b3BlbnNzbH0gKEFwYWNoZS0yLjApIFtpbnN0YWxs
+ZWRdCmxpYmV4cGF0LTIuOS4wLXIwIHg4Nl82NCB7ZXhwYXR9IChNSVQpIFtpbnN0YWxsZWRdCmxp
+YmZmaS0zLjQuNy1yMCB4ODZfNjQge2xpYmZmaX0gKE1JVCkgW2luc3RhbGxlZF0KbGliZ2NjLTE0
+LjIuMC1yNCB4ODZfNjQge2djY30gKEdQTC0yLjAtb3ItbGF0ZXIgQU5EIExHUEwtMi4xLW9yLWxh
+dGVyKSBbaW5zdGFsbGVkXQpsaWJnb21wLTE0LjIuMC1yNCB4ODZfNjQge2djY30gKEdQTC0yLjAt
+b3ItbGF0ZXIgQU5EIExHUEwtMi4xLW9yLWxhdGVyKSBbaW5zdGFsbGVkXQpsaWJuY3Vyc2Vzdy02
+LjVfcDIwMjQxMDA2LXIzIHg4Nl82NCB7bmN1cnNlc30gKFgxMSkgW2luc3RhbGxlZF0KbGlicGFu
+ZWx3LTYuNV9wMjAyNDEwMDYtcjMgeDg2XzY0IHtuY3Vyc2VzfSAoWDExKSBbaW5zdGFsbGVkXQps
+aWJzc2wzLTMuMy43LXIyIHg4Nl82NCB7b3BlbnNzbH0gKEFwYWNoZS0yLjApIFtpbnN0YWxsZWRd
+CmxpYnN0ZGMrKy0xNC4yLjAtcjQgeDg2XzY0IHtnY2N9IChHUEwtMi4wLW9yLWxhdGVyIEFORCBM
+R1BMLTIuMS1vci1sYXRlcikgW2luc3RhbGxlZF0KbGludXgtaGVhZGVycy02LjYtcjEgeDg2XzY0
+IHtsaW51eC1oZWFkZXJzfSAoR1BMLTIuMC1vbmx5KSBbaW5zdGFsbGVkXQptZGV2LWNvbmYtNC43
+LXIwIHg4Nl82NCB7bWRldi1jb25mfSAoTUlUKSBbaW5zdGFsbGVkXQptcGMxLTEuMy4xLXIxIHg4
+Nl82NCB7bXBjMX0gKExHUEwtMy4wLW9yLWxhdGVyKSBbaW5zdGFsbGVkXQptcGRlY2ltYWwtNC4w
+LjAtcjAgeDg2XzY0IHttcGRlY2ltYWx9IChCU0QtMi1DbGF1c2UpIFtpbnN0YWxsZWRdCm1wZnI0
+LTQuMi4xLXIwIHg4Nl82NCB7bXBmcjR9IChMR1BMLTMuMC1vci1sYXRlcikgW2luc3RhbGxlZF0K
+bXVzbC0xLjIuNS1yMTIgeDg2XzY0IHttdXNsfSAoTUlUKSBbaW5zdGFsbGVkXQptdXNsLWRldi0x
+LjIuNS1yMTIgeDg2XzY0IHttdXNsfSAoTUlUKSBbaW5zdGFsbGVkXQptdXNsLXV0aWxzLTEuMi41
+LXIxMiB4ODZfNjQge211c2x9IChNSVQgQU5EIEJTRC0yLUNsYXVzZSBBTkQgR1BMLTIuMC1vci1s
+YXRlcikgW2luc3RhbGxlZF0KbmN1cnNlcy10ZXJtaW5mby1iYXNlLTYuNV9wMjAyNDEwMDYtcjMg
+eDg2XzY0IHtuY3Vyc2VzfSAoWDExKSBbaW5zdGFsbGVkXQpvcGVucmMtMC41NS4xLXIyIHg4Nl82
+NCB7b3BlbnJjfSAoQlNELTItQ2xhdXNlKSBbaW5zdGFsbGVkXQpvcGVuc3NsLTMuMy43LXIyIHg4
+Nl82NCB7b3BlbnNzbH0gKEFwYWNoZS0yLjApIFtpbnN0YWxsZWRdCnB5Yy0zLjEyLjE2LXIwIHg4
+Nl82NCB7cHl0aG9uM30gKFBTRi0yLjApIFtpbnN0YWxsZWRdCnB5dGhvbjMtMy4xMi4xNi1yMCB4
+ODZfNjQge3B5dGhvbjN9IChQU0YtMi4wKSBbaW5zdGFsbGVkXQpweXRob24zLXB5Yy0zLjEyLjE2
+LXIwIHg4Nl82NCB7cHl0aG9uM30gKFBTRi0yLjApIFtpbnN0YWxsZWRdCnB5dGhvbjMtcHljYWNo
+ZS1weWMwLTMuMTIuMTYtcjAgeDg2XzY0IHtweXRob24zfSAoUFNGLTIuMCkgW2luc3RhbGxlZF0K
+cmVhZGxpbmUtOC4yLjEzLXIwIHg4Nl82NCB7cmVhZGxpbmV9IChHUEwtMy4wLW9yLWxhdGVyKSBb
+aW5zdGFsbGVkXQpzY2FuZWxmLTEuMy44LXIxIHg4Nl82NCB7cGF4LXV0aWxzfSAoR1BMLTIuMC1v
+bmx5KSBbaW5zdGFsbGVkXQpzcWxpdGUtbGlicy0zLjQ4LjAtcjQgeDg2XzY0IHtzcWxpdGV9IChi
+bGVzc2luZykgW2luc3RhbGxlZF0Kc3NsX2NsaWVudC0xLjM3LjAtcjE0IHg4Nl82NCB7YnVzeWJv
+eH0gKEdQTC0yLjAtb25seSkgW2luc3RhbGxlZF0KeHotbGlicy01LjguNC1yMCB4ODZfNjQge3h6
+fSAoR1BMLTIuMC1vci1sYXRlciBBTkQgMEJTRCBBTkQgUHVibGljLURvbWFpbiBBTkQgTEdQTC0y
+LjEtb3ItbGF0ZXIpIFtpbnN0YWxsZWRdCnpsaWItMS4zLjItcjEgeDg2XzY0IHt6bGlifSAoWmxp
+YikgW2luc3RhbGxlZF0KenN0ZC1saWJzLTEuNS42LXIyIHg4Nl82NCB7enN0ZH0gKEJTRC0zLUNs
+YXVzZSBPUiBHUEwtMi4wLW9yLWxhdGVyKSBbaW5zdGFsbGVkXQoyMDA2MDMxMjI5ZDE1OGNhMjVm
+NWE3YTU0YzFiYWIzZmM1NDE0MTFiZGI2ODc4ZTY2ZTYxMTE2ZDk3ZmZmY2JhICBjb250YWlubWVu
+dF9wcm9iZS5jCjI2NmE1MjZmOTY5YTVhZjYxNWI4MWExNTE5NDk3MDBmODBiY2JiZjE1Y2VkNDEx
+NzdlM2YxZWY3Nzk4Yjc3YmIgIG5hdGl2ZV9zY3JhdGNoX3Byb2JlLnB5CmZiMDA0OTIzNTg0YjBi
+ZWUzMWJlMTEwMGM0MWRjYzIxYzRkM2MzZGI3MGNkMWEzN2YwYTZlYzA0NzFlMWYyZDAgIGNvbnRh
+aW5tZW50X3Byb2JlCmZiMDA0OTIzNTg0YjBiZWUzMWJlMTEwMGM0MWRjYzIxYzRkM2MzZGI3MGNk
+MWEzN2YwYTZlYzA0NzFlMWYyZDAgIGNvbnRhaW5tZW50X3Byb2JlLnJlYnVpbGQKTkFUSVZFX0JV
+SUxEX0lERU5USUNBTD0xCgpFbGYgZmlsZSB0eXBlIGlzIERZTiAoUG9zaXRpb24tSW5kZXBlbmRl
+bnQgRXhlY3V0YWJsZSBmaWxlKQpFbnRyeSBwb2ludCAweDFiNTMKVGhlcmUgYXJlIDEyIHByb2dy
+YW0gaGVhZGVycywgc3RhcnRpbmcgYXQgb2Zmc2V0IDY0CgpQcm9ncmFtIEhlYWRlcnM6CiAgVHlw
+ZSAgICAgICAgICAgT2Zmc2V0ICAgVmlydEFkZHIgICAgICAgICAgIFBoeXNBZGRyICAgICAgICAg
+ICBGaWxlU2l6ICBNZW1TaXogICBGbGcgQWxpZ24KICBQSERSICAgICAgICAgICAweDAwMDA0MCAw
+eDAwMDAwMDAwMDAwMDAwNDAgMHgwMDAwMDAwMDAwMDAwMDQwIDB4MDAwMmEwIDB4MDAwMmEwIFIg
+ICAweDgKICBJTlRFUlAgICAgICAgICAweDAwMDJlMCAweDAwMDAwMDAwMDAwMDAyZTAgMHgwMDAw
+MDAwMDAwMDAwMmUwIDB4MDAwMDE5IDB4MDAwMDE5IFIgICAweDEKICAgICAgW1JlcXVlc3Rpbmcg
+cHJvZ3JhbSBpbnRlcnByZXRlcjogL2xpYi9sZC1tdXNsLXg4Nl82NC5zby4xXQogIExPQUQgICAg
+ICAgICAgIDB4MDAwMDAwIDB4MDAwMDAwMDAwMDAwMDAwMCAweDAwMDAwMDAwMDAwMDAwMDAgMHgw
+MDBjYTAgMHgwMDBjYTAgUiAgIDB4MTAwMAogIExPQUQgICAgICAgICAgIDB4MDAxMDAwIDB4MDAw
+MDAwMDAwMDAwMTAwMCAweDAwMDAwMDAwMDAwMDEwMDAgMHgwMDBlNTAgMHgwMDBlNTAgUiBFIDB4
+MTAwMAogIExPQUQgICAgICAgICAgIDB4MDAyMDAwIDB4MDAwMDAwMDAwMDAwMjAwMCAweDAwMDAw
+MDAwMDAwMDIwMDAgMHgwMDA1NTAgMHgwMDA1NTAgUiAgIDB4MTAwMAogIExPQUQgICAgICAgICAg
+IDB4MDAyY2U4IDB4MDAwMDAwMDAwMDAwM2NlOCAweDAwMDAwMDAwMDAwMDNjZTggMHgwMDAzMjAg
+MHgwMDAzODggUlcgIDB4MTAwMAogIERZTkFNSUMgICAgICAgIDB4MDAyZDA4IDB4MDAwMDAwMDAw
+MDAwM2QwOCAweDAwMDAwMDAwMDAwMDNkMDggMHgwMDAxYzAgMHgwMDAxYzAgUlcgIDB4OAogIE5P
+VEUgICAgICAgICAgIDB4MDAwMzAwIDB4MDAwMDAwMDAwMDAwMDMwMCAweDAwMDAwMDAwMDAwMDAz
+MDAgMHgwMDAwMzAgMHgwMDAwMzAgUiAgIDB4OAogIEdOVV9QUk9QRVJUWSAgIDB4MDAwMzAwIDB4
+MDAwMDAwMDAwMDAwMDMwMCAweDAwMDAwMDAwMDAwMDAzMDAgMHgwMDAwMzAgMHgwMDAwMzAgUiAg
+IDB4OAogIEdOVV9FSF9GUkFNRSAgIDB4MDAyM2U0IDB4MDAwMDAwMDAwMDAwMjNlNCAweDAwMDAw
+MDAwMDAwMDIzZTQgMHgwMDAwM2MgMHgwMDAwM2MgUiAgIDB4NAogIEdOVV9TVEFDSyAgICAgIDB4
+MDAwMDAwIDB4MDAwMDAwMDAwMDAwMDAwMCAweDAwMDAwMDAwMDAwMDAwMDAgMHgwMDAwMDAgMHgw
+MDAwMDAgUlcgIDB4MTAKICBHTlVfUkVMUk8gICAgICAweDAwMmNlOCAweDAwMDAwMDAwMDAwMDNj
+ZTggMHgwMDAwMDAwMDAwMDAzY2U4IDB4MDAwMzE4IDB4MDAwMzE4IFIgICAweDEKCiBTZWN0aW9u
+IHRvIFNlZ21lbnQgbWFwcGluZzoKICBTZWdtZW50IFNlY3Rpb25zLi4uCiAgIDAwICAgICAKICAg
+MDEgICAgIC5pbnRlcnAgCiAgIDAyICAgICAuaW50ZXJwIC5ub3RlLmdudS5wcm9wZXJ0eSAuZ251
+Lmhhc2ggLmR5bnN5bSAuZHluc3RyIC5yZWxhLmR5biAucmVsYS5wbHQgCiAgIDAzICAgICAuaW5p
+dCAucGx0IC50ZXh0IC5maW5pIAogICAwNCAgICAgLnJvZGF0YSAuZWhfZnJhbWVfaGRyIC5laF9m
+cmFtZSAKICAgMDUgICAgIC5pbml0X2FycmF5IC5maW5pX2FycmF5IC5kYXRhLnJlbC5ybyAuZHlu
+YW1pYyAuZ290IC5kYXRhIC5ic3MgCiAgIDA2ICAgICAuZHluYW1pYyAKICAgMDcgICAgIC5ub3Rl
+LmdudS5wcm9wZXJ0eSAKICAgMDggICAgIC5ub3RlLmdudS5wcm9wZXJ0eSAKICAgMDkgICAgIC5l
+aF9mcmFtZV9oZHIgCiAgIDEwICAgICAKICAgMTEgICAgIC5pbml0X2FycmF5IC5maW5pX2FycmF5
+IC5kYXRhLnJlbC5ybyAuZHluYW1pYyAuZ290IAowZDQyYWQzNzUwZGU2Y2NlNzQzMWEwYjQ2ZGYw
+Y2M2OTdjNmYxYzA2ZDA2YzIxMjRjMDllODMxMTk2NTE4YTU1ICAvdXNyL2Jpbi9nY2MKNGRlYzVl
+M2M0NmU5NTBmYWZjYmI1YTU1ZDM3MzE1MDUzMDMwNjUwZmZlYmMyZGIxZGE1NzgxNjI4YWE4MmFk
+ZSAgL3Vzci9iaW4vbGQKMTkzMTNjN2ZjZGQ0ODE2NDAzYzk1ZmE0M2E5ZDYzNjM5YjE3ZjA5Y2Ji
+NjlmYmI4Y2FlNDE0ZWZlZjRmNTdjYiAgL2xpYi9sZC1tdXNsLXg4Nl82NC5zby4xCjU1NWM2NzY2
+MmI4NTNhNDQ0MzE2OTBmODczOTlhMmU0OGQwZDVkMDViNWU4MjYyZWQ5ZmIzZGVhNDQ5NTBkMzYg
+IC91c3IvbGliZXhlYy9nY2MveDg2XzY0LWFscGluZS1saW51eC1tdXNsLzE0LjIuMC9jYzEKMDk0
+ODQzNDNlYWY5ZDZhZDgwNTM2OTQ1YTYwYjUwZTY0MDM5ODNjMzMwYWVlZDM2M2ZmMTgwMWFhNjE0
+OTAyMSAgL3Vzci9iaW4vcHl0aG9uMy4xMgpjcHVzZXQgY3B1IGlvIG1lbW9yeSBodWdldGxiIHBp
+ZHMKQ0dST1VQX0JFRk9SRQozMzU1NDQzMgowCjAKbG93IDAKaGlnaCAwCm1heCAwCm9vbSAwCm9v
+bV9raWxsIDAKb29tX2dyb3VwX2tpbGwgMApkb21haW4KRjJfUkxJTUlUX1JTUyByc3NfYnl0ZXM9
+NTA4ODA1MTIgbGltaXRfYnl0ZXM9MzM1NTQ0MzIgc3Vydml2ZWQ9MQpGMV9QQVJFTlRfT1VUU0lE
+RSBwaWQ9MTkzNiBjZ3JvdXA9MDo6LwpGMV9GSVJTVF9DSElMRF9NQVJLRVIgY2hpbGQ9MTkzNyBj
+Z3JvdXA9MDo6L2gwNC1mZWFzaWJpbGl0eQpGMV9QQVJFTlRfT0JTRVJWQVRJT04gY2hpbGQ9MTkz
+NyBjZ3JvdXA9MDo6L2gwNC1mZWFzaWJpbGl0eQpGMV9UQVJHRVRfUFJPQ1MgMTkzNwpGMV9QT1NU
+X0VYRUMgcGlkPTE5MzcgY2dyb3VwPTA6Oi9oMDQtZmVhc2liaWxpdHkKRjJfU0hBUkVEIHJzc19i
+eXRlcz01MDg5MjgwMCBjZ3JvdXBfY3VycmVudF9ieXRlcz0yNDU3NjAgbGltaXRfYnl0ZXM9MzM1
+NTQ0MzIgY2hlY2tzdW09MTEwNTkyMApGNF9DSElMRF9XQUlUIGV4aXRlZD0xIGNvZGU9MCBwcm9j
+X2Fic2VudD0xCkY0X1NIQVJFRF9BRlRFUl9FWElUIHJlc2lkZW50PTEgdmFsdWU9OTAKQ0dST1VQ
+X0FGVEVSCjMzNTU0NDMyCjUzMjQ4CjI2MjE0NApsb3cgMApoaWdoIDAKbWF4IDAKb29tIDAKb29t
+X2tpbGwgMApvb21fZ3JvdXBfa2lsbCAwCnBvcHVsYXRlZCAwCmZyb3plbiAwCnsiZGVhZF9hZnRl
+cl9sYXN0X2FsaWFzIjogdHJ1ZSwgInBoeXNpY2FsX3JlY2xhbWF0aW9uX3Byb3ZlbiI6IGZhbHNl
+LCAicmV0YWluZWRfd2l0aF9hbGlhcyI6IHRydWUsICJzY29wZSI6ICJvbmUtQ1B5dGhvbi1vYmpl
+Y3Qtb25seSJ9CnsiY29tcGxldGVfY292ZXJhZ2UiOiBmYWxzZSwgIm5hdGl2ZV9idWZmZXJfZnJl
+ZWQiOiB0cnVlLCAicmVxdWVzdGVkX25hdGl2ZV9ieXRlcyI6IDEzMTA3MiwgInNjb3BlIjogInN5
+bnRoZXRpYy1uYXRpdmUtbWFsbG9jLW5vdC1QaGFzZS1DIiwgInNjcmF0Y2hfbGltaXRfYnl0ZXMi
+OiA2NTUzNiwgInRyYWNlZF9jdXJyZW50X2J5dGVzIjogMzIsICJ0cmFjZWRfcGVha19ieXRlcyI6
+IDMwNH0KSDA0X0ZFQVNJQklMSVRZX0RPTkUK
+H04_EXPORT_FINAL_END
+H04_EXPORT_FAILURE_BEGIN
+CkgwNF9GRUFTSUJJTElUWV9CRUdJTgpMaW51eCBsb2NhbGhvc3QgNi4xMi4xMTQtMC12aXJ0ICMx
+LUFscGluZSBTTVAgUFJFRU1QVF9EWU5BTUlDIDIwMjYtMTAtMjEgMTI6MTk6MDMgeDg2XzY0IExp
+bnV4CjMuMjEuOQp1aWQ9MChyb290KSBnaWQ9MChyb290KSBncm91cHM9MChyb290KSwwKHJvb3Qp
+LDEoYmluKSwyKGRhZW1vbiksMyhzeXMpLDQoYWRtKSw2KGRpc2spLDEwKHdoZWVsKSwxMShmbG9w
+cHkpLDIwKGRpYWxvdXQpLDI2KHRhcGUpLDI3KHZpZGVvKQpjb25zb2xlPXR0eVMwIGNncm91cF9u
+b192MT1hbGwKTmFtZToJY2F0ClVtYXNrOgkwMDIyClN0YXRlOglSIChydW5uaW5nKQpUZ2lkOgkx
+ODY2Ck5naWQ6CTAKUGlkOgkxODY2ClBQaWQ6CTE4NjAKVHJhY2VyUGlkOgkwClVpZDoJMAkwCTAJ
+MApHaWQ6CTAJMAkwCTAKRkRTaXplOgk2NApHcm91cHM6CTAgMCAxIDIgMyA0IDYgMTAgMTEgMjAg
+MjYgMjcgCk5TdGdpZDoJMTg2NgpOU3BpZDoJMTg2NgpOU3BnaWQ6CTE4NjAKTlNzaWQ6CTE4MzYK
+S3RocmVhZDoJMApWbVBlYWs6CSAgICAxNjg4IGtCClZtU2l6ZToJICAgIDE2ODgga0IKVm1MY2s6
+CSAgICAgICAwIGtCClZtUGluOgkgICAgICAgMCBrQgpWbUhXTToJICAgICA4NDQga0IKVm1SU1M6
+CSAgICAgODQ0IGtCClJzc0Fub246CSAgICAgIDQ4IGtCClJzc0ZpbGU6CSAgICAgICA0IGtCClJz
+c1NobWVtOgkgICAgIDc5MiBrQgpWbURhdGE6CSAgICAgIDg4IGtCClZtU3RrOgkgICAgIDEzMiBr
+QgpWbUV4ZToJICAgICA2MTYga0IKVm1MaWI6CSAgICAgMzU2IGtCClZtUFRFOgkgICAgICA0OCBr
+QgpWbVN3YXA6CSAgICAgICAwIGtCCkh1Z2V0bGJQYWdlczoJICAgICAgIDAga0IKQ29yZUR1bXBp
+bmc6CTAKVEhQX2VuYWJsZWQ6CTEKdW50YWdfbWFzazoJMHhmZmZmZmZmZmZmZmZmZmZmClRocmVh
+ZHM6CTEKU2lnUToJMC8zODM4ClNpZ1BuZDoJMDAwMDAwMDAwMDAwMDAwMApTaGRQbmQ6CTAwMDAw
+MDAwMDAwMDAwMDAKU2lnQmxrOgkwMDAwMDAwMDAwMDAwMDAwClNpZ0lnbjoJMDAwMDAwMDAwMDAw
+MDAwMApTaWdDZ3Q6CTAwMDAwMDAwMDAwMDAwMDAKQ2FwSW5oOgkwMDAwMDAwMDAwMDAwMDAwCkNh
+cFBybToJMDAwMDAxZmZmZmZmZmZmZgpDYXBFZmY6CTAwMDAwMWZmZmZmZmZmZmYKQ2FwQm5kOgkw
+MDAwMDFmZmZmZmZmZmZmCkNhcEFtYjoJMDAwMDAwMDAwMDAwMDAwMApOb05ld1ByaXZzOgkwClNl
+Y2NvbXA6CTAKU2VjY29tcF9maWx0ZXJzOgkwClNwZWN1bGF0aW9uX1N0b3JlX0J5cGFzczoJdnVs
+bmVyYWJsZQpTcGVjdWxhdGlvbkluZGlyZWN0QnJhbmNoOglhbHdheXMgZW5hYmxlZApDcHVzX2Fs
+bG93ZWQ6CTEKQ3B1c19hbGxvd2VkX2xpc3Q6CTAKTWVtc19hbGxvd2VkOgkxCk1lbXNfYWxsb3dl
+ZF9saXN0OgkwCnZvbHVudGFyeV9jdHh0X3N3aXRjaGVzOgkwCm5vbnZvbHVudGFyeV9jdHh0X3N3
+aXRjaGVzOgkxCkZpbGVuYW1lCQkJCVR5cGUJCVNpemUJCVVzZWQJCVByaW9yaXR5Ck1lbVRvdGFs
+OiAgICAgICAgIDk5NTg1NiBrQgpNZW1GcmVlOiAgICAgICAgICA2NzY3NTYga0IKTWVtQXZhaWxh
+YmxlOiAgICAgNjMwMDUyIGtCCkJ1ZmZlcnM6ICAgICAgICAgICAgIDI0NCBrQgpDYWNoZWQ6ICAg
+ICAgICAgICAyNTY1ODQga0IKU3dhcENhY2hlZDogICAgICAgICAgICAwIGtCCkFjdGl2ZTogICAg
+ICAgICAgIDIzMDE5NiBrQgpJbmFjdGl2ZTogICAgICAgICAgMjc0MzYga0IKQWN0aXZlKGFub24p
+OiAgICAgMjMwMTk2IGtCCkluYWN0aXZlKGFub24pOiAgICAgICAgMCBrQgpBY3RpdmUoZmlsZSk6
+ICAgICAgICAgIDAga0IKSW5hY3RpdmUoZmlsZSk6ICAgIDI3NDM2IGtCClVuZXZpY3RhYmxlOiAg
+ICAgICAgICAgMCBrQgpNbG9ja2VkOiAgICAgICAgICAgICAgIDAga0IKU3dhcFRvdGFsOiAgICAg
+ICAgICAgICAwIGtCClN3YXBGcmVlOiAgICAgICAgICAgICAgMCBrQgpac3dhcDogICAgICAgICAg
+ICAgICAgIDAga0IKWnN3YXBwZWQ6ICAgICAgICAgICAgICAwIGtCCkRpcnR5OiAgICAgICAgICAg
+ICAgICAgMCBrQgpXcml0ZWJhY2s6ICAgICAgICAgICAgIDAga0IKQW5vblBhZ2VzOiAgICAgICAg
+ICAgNzY4IGtCCk1hcHBlZDogICAgICAgICAgICAgMTIxNiBrQgpTaG1lbTogICAgICAgICAgICAy
+MjkzOTIga0IKS1JlY2xhaW1hYmxlOiAgICAgIDIxODU2IGtCClNsYWI6ICAgICAgICAgICAgICAz
+NzA2NCBrQgpTUmVjbGFpbWFibGU6ICAgICAgMjE4NTYga0IKU1VucmVjbGFpbTogICAgICAgIDE1
+MjA4IGtCCktlcm5lbFN0YWNrOiAgICAgICAgMTM4NCBrQgpQYWdlVGFibGVzOiAgICAgICAgICA4
+MDQga0IKU2VjUGFnZVRhYmxlczogICAgICAgICAwIGtCCk5GU19VbnN0YWJsZTogICAgICAgICAg
+MCBrQgpCb3VuY2U6ICAgICAgICAgICAgICAgIDAga0IKV3JpdGViYWNrVG1wOiAgICAgICAgICAw
+IGtCCkNvbW1pdExpbWl0OiAgICAgIDQ5NzkyOCBrQgpDb21taXR0ZWRfQVM6ICAgICAyMzE2NDQg
+a0IKVm1hbGxvY1RvdGFsOiAgIDM0MzU5NzM4MzY3IGtCClZtYWxsb2NVc2VkOiAgICAgICAxNDE3
+MiBrQgpWbWFsbG9jQ2h1bms6ICAgICAgICAgIDAga0IKUGVyY3B1OiAgICAgICAgICAgICAgMjQ4
+IGtCCkFub25IdWdlUGFnZXM6ICAgICAgICAgMCBrQgpTaG1lbUh1Z2VQYWdlczogICAgICAgIDAg
+a0IKU2htZW1QbWRNYXBwZWQ6ICAgICAgICAwIGtCCkZpbGVIdWdlUGFnZXM6ICAgICAgICAgMCBr
+QgpGaWxlUG1kTWFwcGVkOiAgICAgICAgIDAga0IKSHVnZVBhZ2VzX1RvdGFsOiAgICAgICAwCkh1
+Z2VQYWdlc19GcmVlOiAgICAgICAgMApIdWdlUGFnZXNfUnN2ZDogICAgICAgIDAKSHVnZVBhZ2Vz
+X1N1cnA6ICAgICAgICAwCkh1Z2VwYWdlc2l6ZTogICAgICAgMjA0OCBrQgpIdWdldGxiOiAgICAg
+ICAgICAgICAgIDAga0IKRGlyZWN0TWFwNGs6ICAgICAgIDQyODc2IGtCCkRpcmVjdE1hcDJNOiAg
+ICAgMTAwNTU2OCBrQgpEaXJlY3RNYXAxRzogICAgICAgICAgIDAga0IKI3N1YnN5c19uYW1lCWhp
+ZXJhcmNoeQludW1fY2dyb3VwcwllbmFibGVkCmNwdQkwCTEJMQpjcHVhY2N0CTAJMQkxCmJsa2lv
+CTAJMQkxCmRldmljZXMJMAkxCTEKZnJlZXplcgkwCTEJMQpuZXRfY2xzCTAJMQkxCnBlcmZfZXZl
+bnQJMAkxCTEKbmV0X3ByaW8JMAkxCTEKaHVnZXRsYgkwCTEJMQpwaWRzCTAJMQkxCjIyIDI4IDA6
+MjEgLyAvc3lzIHJ3LG5vc3VpZCxub2Rldixub2V4ZWMscmVsYXRpbWUgLSBzeXNmcyBzeXNmcyBy
+dwoyMyAyOCAwOjYgLyAvZGV2IHJ3LG5vc3VpZCxub2V4ZWMscmVsYXRpbWUgLSBkZXZ0bXBmcyBk
+ZXZ0bXBmcyBydyxzaXplPTEwMjQwayxucl9pbm9kZXM9MTIyODg4LG1vZGU9NzU1LGlub2RlNjQK
+MjQgMjggMDoyMiAvIC9wcm9jIHJ3LG5vc3VpZCxub2Rldixub2V4ZWMscmVsYXRpbWUgLSBwcm9j
+IHByb2MgcncKMjUgMjMgMDoyMyAvIC9kZXYvcHRzIHJ3LG5vc3VpZCxub2V4ZWMscmVsYXRpbWUg
+LSBkZXZwdHMgZGV2cHRzIHJ3LGdpZD01LG1vZGU9NjIwLHB0bXhtb2RlPTAwMAoyNiAyMyAwOjI0
+IC8gL2Rldi9zaG0gcncsbm9zdWlkLG5vZGV2LG5vZXhlYyxyZWxhdGltZSAtIHRtcGZzIHNobSBy
+dyxpbm9kZTY0CjI3IDI4IDExOjAgLyAvbWVkaWEvY2Ryb20gcm8scmVsYXRpbWUgLSBpc285NjYw
+IC9kZXYvc3IwIHJvLG5vam9saWV0LGNoZWNrPXMsbWFwPW4sYmxvY2tzaXplPTIwNDgsaW9jaGFy
+c2V0PXV0ZjgKMjggMSAwOjI1IC8gLyBydyxyZWxhdGltZSAtIHRtcGZzIHRtcGZzIHJ3LG1vZGU9
+NzU1LGlub2RlNjQKMjkgMjggMDoyNiAvIC9ydW4gcncsbm9zdWlkLG5vZGV2IC0gdG1wZnMgdG1w
+ZnMgcncsc2l6ZT0xOTkxNzJrLG5yX2lub2Rlcz04MTkyMDAsbW9kZT03NTUsaW5vZGU2NAozMCAy
+MyAwOjIwIC8gL2Rldi9tcXVldWUgcncsbm9zdWlkLG5vZGV2LG5vZXhlYyxyZWxhdGltZSAtIG1x
+dWV1ZSBtcXVldWUgcncKMzEgMjggNzowIC8gLy5tb2Rsb29wIHJvLHJlbGF0aW1lIC0gc3F1YXNo
+ZnMgL2Rldi9sb29wMCBybyxlcnJvcnM9Y29udGludWUKMzIgMjIgMDo3IC8gL3N5cy9rZXJuZWwv
+c2VjdXJpdHkgcncsbm9zdWlkLG5vZGV2LG5vZXhlYyxyZWxhdGltZSAtIHNlY3VyaXR5ZnMgc2Vj
+dXJpdHlmcyBydwozMyAyMiAwOjggLyAvc3lzL2tlcm5lbC9kZWJ1ZyBydyxub3N1aWQsbm9kZXYs
+bm9leGVjLHJlbGF0aW1lIC0gZGVidWdmcyBkZWJ1Z2ZzIHJ3CjM0IDIyIDA6MjcgLyAvc3lzL2Zz
+L3BzdG9yZSBydyxub3N1aWQsbm9kZXYsbm9leGVjLHJlbGF0aW1lIC0gcHN0b3JlIHBzdG9yZSBy
+dwozNSAzMyAwOjEzIC8gL3N5cy9rZXJuZWwvZGVidWcvdHJhY2luZyBydyxub3N1aWQsbm9kZXYs
+bm9leGVjLHJlbGF0aW1lIC0gdHJhY2VmcyB0cmFjZWZzIHJ3CmNjIChBbHBpbmUgMTQuMi4wKSAx
+NC4yLjAKQ29weXJpZ2h0IChDKSAyMDI0IEZyZWUgU29mdHdhcmUgRm91bmRhdGlvbiwgSW5jLgpU
+aGlzIGlzIGZyZWUgc29mdHdhcmU7IHNlZSB0aGUgc291cmNlIGZvciBjb3B5aW5nIGNvbmRpdGlv
+bnMuICBUaGVyZSBpcyBOTwp3YXJyYW50eTsgbm90IGV2ZW4gZm9yIE1FUkNIQU5UQUJJTElUWSBv
+ciBGSVRORVNTIEZPUiBBIFBBUlRJQ1VMQVIgUFVSUE9TRS4KCkdOVSBsZCAoR05VIEJpbnV0aWxz
+KSAyLjQzLjEKQ29weXJpZ2h0IChDKSAyMDI0IEZyZWUgU29mdHdhcmUgRm91bmRhdGlvbiwgSW5j
+LgpUaGlzIHByb2dyYW0gaXMgZnJlZSBzb2Z0d2FyZTsgeW91IG1heSByZWRpc3RyaWJ1dGUgaXQg
+dW5kZXIgdGhlIHRlcm1zIG9mCnRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSB2ZXJzaW9u
+IDMgb3IgKGF0IHlvdXIgb3B0aW9uKSBhIGxhdGVyIHZlcnNpb24uClRoaXMgcHJvZ3JhbSBoYXMg
+YWJzb2x1dGVseSBubyB3YXJyYW50eS4KUHl0aG9uIDMuMTIuMTYKYWxwaW5lLWJhc2UtMy4yMS45
+LXIwIHg4Nl82NCB7YWxwaW5lLWJhc2V9IChNSVQpIFtpbnN0YWxsZWRdCmFscGluZS1iYXNlbGF5
+b3V0LTMuNi44LXIxIHg4Nl82NCB7YWxwaW5lLWJhc2VsYXlvdXR9IChHUEwtMi4wLW9ubHkpIFtp
+bnN0YWxsZWRdCmFscGluZS1iYXNlbGF5b3V0LWRhdGEtMy42LjgtcjEgeDg2XzY0IHthbHBpbmUt
+YmFzZWxheW91dH0gKEdQTC0yLjAtb25seSkgW2luc3RhbGxlZF0KYWxwaW5lLWNvbmYtMy4xOS4y
+LXIwIHg4Nl82NCB7YWxwaW5lLWNvbmZ9IChNSVQpIFtpbnN0YWxsZWRdCmFscGluZS1rZXlzLTIu
+NS1yMCB4ODZfNjQge2FscGluZS1rZXlzfSAoTUlUKSBbaW5zdGFsbGVkXQphbHBpbmUtcmVsZWFz
+ZS0zLjIxLjktcjAgeDg2XzY0IHthbHBpbmUtYmFzZX0gKE1JVCkgW2luc3RhbGxlZF0KYXBrLXRv
+b2xzLTIuMTQuNi1yMyB4ODZfNjQge2Fway10b29sc30gKEdQTC0yLjAtb25seSkgW2luc3RhbGxl
+ZF0KYmludXRpbHMtMi40My4xLXIzIHg4Nl82NCB7YmludXRpbHN9IChHUEwtMi4wLW9yLWxhdGVy
+IEFORCBMR1BMLTIuMS1vci1sYXRlciBBTkQgQlNELTMtQ2xhdXNlKSBbaW5zdGFsbGVkXQpidXN5
+Ym94LTEuMzcuMC1yMTQgeDg2XzY0IHtidXN5Ym94fSAoR1BMLTIuMC1vbmx5KSBbaW5zdGFsbGVk
+XQpidXN5Ym94LWJpbnNoLTEuMzcuMC1yMTQgeDg2XzY0IHtidXN5Ym94fSAoR1BMLTIuMC1vbmx5
+KSBbaW5zdGFsbGVkXQpidXN5Ym94LW1kZXYtb3BlbnJjLTEuMzcuMC1yMTQgeDg2XzY0IHtidXN5
+Ym94fSAoR1BMLTIuMC1vbmx5KSBbaW5zdGFsbGVkXQpidXN5Ym94LW9wZW5yYy0xLjM3LjAtcjE0
+IHg4Nl82NCB7YnVzeWJveH0gKEdQTC0yLjAtb25seSkgW2luc3RhbGxlZF0KYnVzeWJveC1zdWlk
+LTEuMzcuMC1yMTQgeDg2XzY0IHtidXN5Ym94fSAoR1BMLTIuMC1vbmx5KSBbaW5zdGFsbGVkXQpj
+YS1jZXJ0aWZpY2F0ZXMtYnVuZGxlLTIwMjYxMDIwLXIwIHg4Nl82NCB7Y2EtY2VydGlmaWNhdGVz
+fSAoTVBMLTIuMCBBTkQgTUlUKSBbaW5zdGFsbGVkXQpnY2MtMTQuMi4wLXI0IHg4Nl82NCB7Z2Nj
+fSAoR1BMLTIuMC1vci1sYXRlciBBTkQgTEdQTC0yLjEtb3ItbGF0ZXIpIFtpbnN0YWxsZWRdCmdk
+Ym0tMS4yNC1yMCB4ODZfNjQge2dkYm19IChHUEwtMy4wLW9yLWxhdGVyKSBbaW5zdGFsbGVkXQpn
+bXAtNi4zLjAtcjIgeDg2XzY0IHtnbXB9IChMR1BMLTMuMC1vci1sYXRlciBPUiBHUEwtMi4wLW9y
+LWxhdGVyKSBbaW5zdGFsbGVkXQppZnVwZG93bi1uZy0wLjEyLjEtcjYgeDg2XzY0IHtpZnVwZG93
+bi1uZ30gKElTQykgW2luc3RhbGxlZF0KaXNsMjYtMC4yNi1yMSB4ODZfNjQge2lzbDI2fSAoTUlU
+KSBbaW5zdGFsbGVkXQpqYW5zc29uLTIuMTQtcjQgeDg2XzY0IHtqYW5zc29ufSAoTUlUKSBbaW5z
+dGFsbGVkXQpsaWJhdG9taWMtMTQuMi4wLXI0IHg4Nl82NCB7Z2NjfSAoR1BMLTIuMC1vci1sYXRl
+ciBBTkQgTEdQTC0yLjEtb3ItbGF0ZXIpIFtpbnN0YWxsZWRdCmxpYmJ6Mi0xLjAuOC1yNiB4ODZf
+NjQge2J6aXAyfSAoYnppcDItMS4wLjYpIFtpbnN0YWxsZWRdCmxpYmNhcDItMi43OC1yMCB4ODZf
+NjQge2xpYmNhcH0gKEJTRC0zLUNsYXVzZSBPUiBHUEwtMi4wLW9ubHkpIFtpbnN0YWxsZWRdCmxp
+YmNyeXB0bzMtMy4zLjctcjIgeDg2XzY0IHtvcGVuc3NsfSAoQXBhY2hlLTIuMCkgW2luc3RhbGxl
+ZF0KbGliZXhwYXQtMi45LjAtcjAgeDg2XzY0IHtleHBhdH0gKE1JVCkgW2luc3RhbGxlZF0KbGli
+ZmZpLTMuNC43LXIwIHg4Nl82NCB7bGliZmZpfSAoTUlUKSBbaW5zdGFsbGVkXQpsaWJnY2MtMTQu
+Mi4wLXI0IHg4Nl82NCB7Z2NjfSAoR1BMLTIuMC1vci1sYXRlciBBTkQgTEdQTC0yLjEtb3ItbGF0
+ZXIpIFtpbnN0YWxsZWRdCmxpYmdvbXAtMTQuMi4wLXI0IHg4Nl82NCB7Z2NjfSAoR1BMLTIuMC1v
+ci1sYXRlciBBTkQgTEdQTC0yLjEtb3ItbGF0ZXIpIFtpbnN0YWxsZWRdCmxpYm5jdXJzZXN3LTYu
+NV9wMjAyNDEwMDYtcjMgeDg2XzY0IHtuY3Vyc2VzfSAoWDExKSBbaW5zdGFsbGVkXQpsaWJwYW5l
+bHctNi41X3AyMDI0MTAwNi1yMyB4ODZfNjQge25jdXJzZXN9IChYMTEpIFtpbnN0YWxsZWRdCmxp
+YnNzbDMtMy4zLjctcjIgeDg2XzY0IHtvcGVuc3NsfSAoQXBhY2hlLTIuMCkgW2luc3RhbGxlZF0K
+bGlic3RkYysrLTE0LjIuMC1yNCB4ODZfNjQge2djY30gKEdQTC0yLjAtb3ItbGF0ZXIgQU5EIExH
+UEwtMi4xLW9yLWxhdGVyKSBbaW5zdGFsbGVkXQpsaW51eC1oZWFkZXJzLTYuNi1yMSB4ODZfNjQg
+e2xpbnV4LWhlYWRlcnN9IChHUEwtMi4wLW9ubHkpIFtpbnN0YWxsZWRdCm1kZXYtY29uZi00Ljct
+cjAgeDg2XzY0IHttZGV2LWNvbmZ9IChNSVQpIFtpbnN0YWxsZWRdCm1wYzEtMS4zLjEtcjEgeDg2
+XzY0IHttcGMxfSAoTEdQTC0zLjAtb3ItbGF0ZXIpIFtpbnN0YWxsZWRdCm1wZGVjaW1hbC00LjAu
+MC1yMCB4ODZfNjQge21wZGVjaW1hbH0gKEJTRC0yLUNsYXVzZSkgW2luc3RhbGxlZF0KbXBmcjQt
+NC4yLjEtcjAgeDg2XzY0IHttcGZyNH0gKExHUEwtMy4wLW9yLWxhdGVyKSBbaW5zdGFsbGVkXQpt
+dXNsLTEuMi41LXIxMiB4ODZfNjQge211c2x9IChNSVQpIFtpbnN0YWxsZWRdCm11c2wtZGV2LTEu
+Mi41LXIxMiB4ODZfNjQge211c2x9IChNSVQpIFtpbnN0YWxsZWRdCm11c2wtdXRpbHMtMS4yLjUt
+cjEyIHg4Nl82NCB7bXVzbH0gKE1JVCBBTkQgQlNELTItQ2xhdXNlIEFORCBHUEwtMi4wLW9yLWxh
+dGVyKSBbaW5zdGFsbGVkXQpuY3Vyc2VzLXRlcm1pbmZvLWJhc2UtNi41X3AyMDI0MTAwNi1yMyB4
+ODZfNjQge25jdXJzZXN9IChYMTEpIFtpbnN0YWxsZWRdCm9wZW5yYy0wLjU1LjEtcjIgeDg2XzY0
+IHtvcGVucmN9IChCU0QtMi1DbGF1c2UpIFtpbnN0YWxsZWRdCm9wZW5zc2wtMy4zLjctcjIgeDg2
+XzY0IHtvcGVuc3NsfSAoQXBhY2hlLTIuMCkgW2luc3RhbGxlZF0KcHljLTMuMTIuMTYtcjAgeDg2
+XzY0IHtweXRob24zfSAoUFNGLTIuMCkgW2luc3RhbGxlZF0KcHl0aG9uMy0zLjEyLjE2LXIwIHg4
+Nl82NCB7cHl0aG9uM30gKFBTRi0yLjApIFtpbnN0YWxsZWRdCnB5dGhvbjMtcHljLTMuMTIuMTYt
+cjAgeDg2XzY0IHtweXRob24zfSAoUFNGLTIuMCkgW2luc3RhbGxlZF0KcHl0aG9uMy1weWNhY2hl
+LXB5YzAtMy4xMi4xNi1yMCB4ODZfNjQge3B5dGhvbjN9IChQU0YtMi4wKSBbaW5zdGFsbGVkXQpy
+ZWFkbGluZS04LjIuMTMtcjAgeDg2XzY0IHtyZWFkbGluZX0gKEdQTC0zLjAtb3ItbGF0ZXIpIFtp
+bnN0YWxsZWRdCnNjYW5lbGYtMS4zLjgtcjEgeDg2XzY0IHtwYXgtdXRpbHN9IChHUEwtMi4wLW9u
+bHkpIFtpbnN0YWxsZWRdCnNxbGl0ZS1saWJzLTMuNDguMC1yNCB4ODZfNjQge3NxbGl0ZX0gKGJs
+ZXNzaW5nKSBbaW5zdGFsbGVkXQpzc2xfY2xpZW50LTEuMzcuMC1yMTQgeDg2XzY0IHtidXN5Ym94
+fSAoR1BMLTIuMC1vbmx5KSBbaW5zdGFsbGVkXQp4ei1saWJzLTUuOC40LXIwIHg4Nl82NCB7eHp9
+IChHUEwtMi4wLW9yLWxhdGVyIEFORCAwQlNEIEFORCBQdWJsaWMtRG9tYWluIEFORCBMR1BMLTIu
+MS1vci1sYXRlcikgW2luc3RhbGxlZF0KemxpYi0xLjMuMi1yMSB4ODZfNjQge3psaWJ9IChabGli
+KSBbaW5zdGFsbGVkXQp6c3RkLWxpYnMtMS41LjYtcjIgeDg2XzY0IHt6c3RkfSAoQlNELTMtQ2xh
+dXNlIE9SIEdQTC0yLjAtb3ItbGF0ZXIpIFtpbnN0YWxsZWRdCjIwMDYwMzEyMjlkMTU4Y2EyNWY1
+YTdhNTRjMWJhYjNmYzU0MTQxMWJkYjY4NzhlNjZlNjExMTZkOTdmZmZjYmEgIGNvbnRhaW5tZW50
+X3Byb2JlLmMKMjY2YTUyNmY5NjlhNWFmNjE1YjgxYTE1MTk0OTcwMGY4MGJjYmJmMTVjZWQ0MTE3
+N2UzZjFlZjc3OThiNzdiYiAgbmF0aXZlX3NjcmF0Y2hfcHJvYmUucHkKN2Y2ZmY2MTBjYmY0NGNl
+MjI1YmZiY2E4MzExOWM4N2RmMWU4ZWRiZmIzMTc2ZTNjNDU4MzdiMTRkOGU2NDY5MCAgY29udGFp
+bm1lbnRfcHJvYmUKN2Y2ZmY2MTBjYmY0NGNlMjI1YmZiY2E4MzExOWM4N2RmMWU4ZWRiZmIzMTc2
+ZTNjNDU4MzdiMTRkOGU2NDY5MCAgY29udGFpbm1lbnRfcHJvYmUucmVidWlsZApOQVRJVkVfQlVJ
+TERfSURFTlRJQ0FMPTEKMGQ0MmFkMzc1MGRlNmNjZTc0MzFhMGI0NmRmMGNjNjk3YzZmMWMwNmQw
+NmMyMTI0YzA5ZTgzMTE5NjUxOGE1NSAgL3Vzci9iaW4vZ2NjCjRkZWM1ZTNjNDZlOTUwZmFmY2Ji
+NWE1NWQzNzMxNTA1MzAzMDY1MGZmZWJjMmRiMWRhNTc4MTYyOGFhODJhZGUgIC91c3IvYmluL2xk
+CjE5MzEzYzdmY2RkNDgxNjQwM2M5NWZhNDNhOWQ2MzYzOWIxN2YwOWNiYjY5ZmJiOGNhZTQxNGVm
+ZWY0ZjU3Y2IgIC9saWIvbGQtbXVzbC14ODZfNjQuc28uMQo1NTVjNjc2NjJiODUzYTQ0NDMxNjkw
+Zjg3Mzk5YTJlNDhkMGQ1ZDA1YjVlODI2MmVkOWZiM2RlYTQ0OTUwZDM2ICAvdXNyL2xpYmV4ZWMv
+Z2NjL3g4Nl82NC1hbHBpbmUtbGludXgtbXVzbC8xNC4yLjAvY2MxCjA5NDg0MzQzZWFmOWQ2YWQ4
+MDUzNjk0NWE2MGI1MGU2NDAzOTgzYzMzMGFlZWQzNjNmZjE4MDFhYTYxNDkwMjEgIC91c3IvYmlu
+L3B5dGhvbjMuMTIKY3B1c2V0IGNwdSBpbyBtZW1vcnkgaHVnZXRsYiBwaWRzCmd1ZXN0X2RpYWdu
+b3N0aWNzLnNoOiBsaW5lIDQwOiBjYW4ndCBjcmVhdGUgL3N5cy9mcy9jZ3JvdXAvaDA0LWZlYXNp
+YmlsaXR5L3BpZHMubWF4OiBQZXJtaXNzaW9uIGRlbmllZAo=
+H04_EXPORT_FAILURE_END
+localhost:/tmp/h04-feasibility# [6nprintf '\nH04_HOST_GAPS_BEGIN\n'; for f in /sys/
+devices/system/cpu/online /sys/devices/system/cpu/isolated /sys/devices/system/c
+pu/nohz_full /sys/devices/system/cpu/smt/active /sys/devices/system/cpu/cpu0/cpu
+freq/scaling_governor /sys/devices/system/cpu/intel_pstate/no_turbo /sys/devices
+/system/cpu/cpufreq/boost; do printf '%s=' "$f"; if test -r "$f"; then cat "$f";
+ else printf 'UNAVAILABLE\n'; fi; done; sha256sum guest_diagnostics.sh; printf '
+H04_HOST_GAPS_END\n'
+
+H04_HOST_GAPS_BEGIN
+/sys/devices/system/cpu/online=0
+/sys/devices/system/cpu/isolated=
+/sys/devices/system/cpu/nohz_full=
+/sys/devices/system/cpu/smt/active=0
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor=UNAVAILABLE
+/sys/devices/system/cpu/intel_pstate/no_turbo=UNAVAILABLE
+/sys/devices/system/cpu/cpufreq/boost=UNAVAILABLE
+cbd3b94d00a164a73837fb1d53c88726e959ec84be4bbb0d0d7fe7793b11a355  guest_diagnostics.sh
+H04_HOST_GAPS_END
+localhost:/tmp/h04-feasibility# [6npoweroff -f
+[  663.501598] reboot: Power down

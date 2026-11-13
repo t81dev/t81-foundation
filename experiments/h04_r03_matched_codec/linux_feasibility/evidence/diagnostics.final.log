@@ -1,0 +1,291 @@
+
+H04_FEASIBILITY_BEGIN
+Linux localhost 6.12.114-0-virt #1-Alpine SMP PREEMPT_DYNAMIC 2026-10-21 12:19:03 x86_64 Linux
+3.21.9
+uid=0(root) gid=0(root) groups=0(root),0(root),1(bin),2(daemon),3(sys),4(adm),6(disk),10(wheel),11(floppy),20(dialout),26(tape),27(video)
+console=ttyS0 cgroup_no_v1=all
+Name:	cat
+Umask:	0022
+State:	R (running)
+Tgid:	1906
+Ngid:	0
+Pid:	1906
+PPid:	1900
+TracerPid:	0
+Uid:	0	0	0	0
+Gid:	0	0	0	0
+FDSize:	64
+Groups:	0 0 1 2 3 4 6 10 11 20 26 27 
+NStgid:	1906
+NSpid:	1906
+NSpgid:	1900
+NSsid:	1836
+Kthread:	0
+VmPeak:	    1688 kB
+VmSize:	    1688 kB
+VmLck:	       0 kB
+VmPin:	       0 kB
+VmHWM:	     920 kB
+VmRSS:	     920 kB
+RssAnon:	      48 kB
+RssFile:	       4 kB
+RssShmem:	     868 kB
+VmData:	      88 kB
+VmStk:	     132 kB
+VmExe:	     616 kB
+VmLib:	     356 kB
+VmPTE:	      40 kB
+VmSwap:	       0 kB
+HugetlbPages:	       0 kB
+CoreDumping:	0
+THP_enabled:	1
+untag_mask:	0xffffffffffffffff
+Threads:	1
+SigQ:	0/3838
+SigPnd:	0000000000000000
+ShdPnd:	0000000000000000
+SigBlk:	0000000000000000
+SigIgn:	0000000000000000
+SigCgt:	0000000000000000
+CapInh:	0000000000000000
+CapPrm:	000001ffffffffff
+CapEff:	000001ffffffffff
+CapBnd:	000001ffffffffff
+CapAmb:	0000000000000000
+NoNewPrivs:	0
+Seccomp:	0
+Seccomp_filters:	0
+Speculation_Store_Bypass:	vulnerable
+SpeculationIndirectBranch:	always enabled
+Cpus_allowed:	1
+Cpus_allowed_list:	0
+Mems_allowed:	1
+Mems_allowed_list:	0
+voluntary_ctxt_switches:	0
+nonvoluntary_ctxt_switches:	0
+Filename				Type		Size		Used		Priority
+MemTotal:         995856 kB
+MemFree:          682212 kB
+MemAvailable:     635516 kB
+Buffers:             244 kB
+Cached:           257140 kB
+SwapCached:            0 kB
+Active:           230740 kB
+Inactive:          27436 kB
+Active(anon):     230740 kB
+Inactive(anon):        0 kB
+Active(file):          0 kB
+Inactive(file):    27436 kB
+Unevictable:           0 kB
+Mlocked:               0 kB
+SwapTotal:             0 kB
+SwapFree:              0 kB
+Zswap:                 0 kB
+Zswapped:              0 kB
+Dirty:                 0 kB
+Writeback:             0 kB
+AnonPages:           772 kB
+Mapped:             1216 kB
+Shmem:            229948 kB
+KReclaimable:      21868 kB
+Slab:              36540 kB
+SReclaimable:      21868 kB
+SUnreclaim:        14672 kB
+KernelStack:        1144 kB
+PageTables:          804 kB
+SecPageTables:         0 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:      497928 kB
+Committed_AS:     232196 kB
+VmallocTotal:   34359738367 kB
+VmallocUsed:       13932 kB
+VmallocChunk:          0 kB
+Percpu:              248 kB
+AnonHugePages:         0 kB
+ShmemHugePages:        0 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+Hugetlb:               0 kB
+DirectMap4k:       42876 kB
+DirectMap2M:     1005568 kB
+DirectMap1G:           0 kB
+#subsys_name	hierarchy	num_cgroups	enabled
+cpu	0	1	1
+cpuacct	0	1	1
+blkio	0	1	1
+devices	0	1	1
+freezer	0	1	1
+net_cls	0	1	1
+perf_event	0	1	1
+net_prio	0	1	1
+hugetlb	0	1	1
+pids	0	1	1
+22 28 0:21 / /sys rw,nosuid,nodev,noexec,relatime - sysfs sysfs rw
+23 28 0:6 / /dev rw,nosuid,noexec,relatime - devtmpfs devtmpfs rw,size=10240k,nr_inodes=122888,mode=755,inode64
+24 28 0:22 / /proc rw,nosuid,nodev,noexec,relatime - proc proc rw
+25 23 0:23 / /dev/pts rw,nosuid,noexec,relatime - devpts devpts rw,gid=5,mode=620,ptmxmode=000
+26 23 0:24 / /dev/shm rw,nosuid,nodev,noexec,relatime - tmpfs shm rw,inode64
+27 28 11:0 / /media/cdrom ro,relatime - iso9660 /dev/sr0 ro,nojoliet,check=s,map=n,blocksize=2048,iocharset=utf8
+28 1 0:25 / / rw,relatime - tmpfs tmpfs rw,mode=755,inode64
+29 28 0:26 / /run rw,nosuid,nodev - tmpfs tmpfs rw,size=199172k,nr_inodes=819200,mode=755,inode64
+30 23 0:20 / /dev/mqueue rw,nosuid,nodev,noexec,relatime - mqueue mqueue rw
+31 28 7:0 / /.modloop ro,relatime - squashfs /dev/loop0 ro,errors=continue
+32 22 0:7 / /sys/kernel/security rw,nosuid,nodev,noexec,relatime - securityfs securityfs rw
+33 22 0:8 / /sys/kernel/debug rw,nosuid,nodev,noexec,relatime - debugfs debugfs rw
+34 22 0:27 / /sys/fs/pstore rw,nosuid,nodev,noexec,relatime - pstore pstore rw
+35 33 0:13 / /sys/kernel/debug/tracing rw,nosuid,nodev,noexec,relatime - tracefs tracefs rw
+37 22 0:29 / /sys/fs/cgroup rw,relatime - cgroup2 none rw
+cc (Alpine 14.2.0) 14.2.0
+Copyright (C) 2024 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+GNU ld (GNU Binutils) 2.43.1
+Copyright (C) 2024 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms of
+the GNU General Public License version 3 or (at your option) a later version.
+This program has absolutely no warranty.
+Python 3.12.16
+alpine-base-3.21.9-r0 x86_64 {alpine-base} (MIT) [installed]
+alpine-baselayout-3.6.8-r1 x86_64 {alpine-baselayout} (GPL-2.0-only) [installed]
+alpine-baselayout-data-3.6.8-r1 x86_64 {alpine-baselayout} (GPL-2.0-only) [installed]
+alpine-conf-3.19.2-r0 x86_64 {alpine-conf} (MIT) [installed]
+alpine-keys-2.5-r0 x86_64 {alpine-keys} (MIT) [installed]
+alpine-release-3.21.9-r0 x86_64 {alpine-base} (MIT) [installed]
+apk-tools-2.14.6-r3 x86_64 {apk-tools} (GPL-2.0-only) [installed]
+binutils-2.43.1-r3 x86_64 {binutils} (GPL-2.0-or-later AND LGPL-2.1-or-later AND BSD-3-Clause) [installed]
+busybox-1.37.0-r14 x86_64 {busybox} (GPL-2.0-only) [installed]
+busybox-binsh-1.37.0-r14 x86_64 {busybox} (GPL-2.0-only) [installed]
+busybox-mdev-openrc-1.37.0-r14 x86_64 {busybox} (GPL-2.0-only) [installed]
+busybox-openrc-1.37.0-r14 x86_64 {busybox} (GPL-2.0-only) [installed]
+busybox-suid-1.37.0-r14 x86_64 {busybox} (GPL-2.0-only) [installed]
+ca-certificates-bundle-20261020-r0 x86_64 {ca-certificates} (MPL-2.0 AND MIT) [installed]
+gcc-14.2.0-r4 x86_64 {gcc} (GPL-2.0-or-later AND LGPL-2.1-or-later) [installed]
+gdbm-1.24-r0 x86_64 {gdbm} (GPL-3.0-or-later) [installed]
+gmp-6.3.0-r2 x86_64 {gmp} (LGPL-3.0-or-later OR GPL-2.0-or-later) [installed]
+ifupdown-ng-0.12.1-r6 x86_64 {ifupdown-ng} (ISC) [installed]
+isl26-0.26-r1 x86_64 {isl26} (MIT) [installed]
+jansson-2.14-r4 x86_64 {jansson} (MIT) [installed]
+libatomic-14.2.0-r4 x86_64 {gcc} (GPL-2.0-or-later AND LGPL-2.1-or-later) [installed]
+libbz2-1.0.8-r6 x86_64 {bzip2} (bzip2-1.0.6) [installed]
+libcap2-2.78-r0 x86_64 {libcap} (BSD-3-Clause OR GPL-2.0-only) [installed]
+libcrypto3-3.3.7-r2 x86_64 {openssl} (Apache-2.0) [installed]
+libexpat-2.9.0-r0 x86_64 {expat} (MIT) [installed]
+libffi-3.4.7-r0 x86_64 {libffi} (MIT) [installed]
+libgcc-14.2.0-r4 x86_64 {gcc} (GPL-2.0-or-later AND LGPL-2.1-or-later) [installed]
+libgomp-14.2.0-r4 x86_64 {gcc} (GPL-2.0-or-later AND LGPL-2.1-or-later) [installed]
+libncursesw-6.5_p20241006-r3 x86_64 {ncurses} (X11) [installed]
+libpanelw-6.5_p20241006-r3 x86_64 {ncurses} (X11) [installed]
+libssl3-3.3.7-r2 x86_64 {openssl} (Apache-2.0) [installed]
+libstdc++-14.2.0-r4 x86_64 {gcc} (GPL-2.0-or-later AND LGPL-2.1-or-later) [installed]
+linux-headers-6.6-r1 x86_64 {linux-headers} (GPL-2.0-only) [installed]
+mdev-conf-4.7-r0 x86_64 {mdev-conf} (MIT) [installed]
+mpc1-1.3.1-r1 x86_64 {mpc1} (LGPL-3.0-or-later) [installed]
+mpdecimal-4.0.0-r0 x86_64 {mpdecimal} (BSD-2-Clause) [installed]
+mpfr4-4.2.1-r0 x86_64 {mpfr4} (LGPL-3.0-or-later) [installed]
+musl-1.2.5-r12 x86_64 {musl} (MIT) [installed]
+musl-dev-1.2.5-r12 x86_64 {musl} (MIT) [installed]
+musl-utils-1.2.5-r12 x86_64 {musl} (MIT AND BSD-2-Clause AND GPL-2.0-or-later) [installed]
+ncurses-terminfo-base-6.5_p20241006-r3 x86_64 {ncurses} (X11) [installed]
+openrc-0.55.1-r2 x86_64 {openrc} (BSD-2-Clause) [installed]
+openssl-3.3.7-r2 x86_64 {openssl} (Apache-2.0) [installed]
+pyc-3.12.16-r0 x86_64 {python3} (PSF-2.0) [installed]
+python3-3.12.16-r0 x86_64 {python3} (PSF-2.0) [installed]
+python3-pyc-3.12.16-r0 x86_64 {python3} (PSF-2.0) [installed]
+python3-pycache-pyc0-3.12.16-r0 x86_64 {python3} (PSF-2.0) [installed]
+readline-8.2.13-r0 x86_64 {readline} (GPL-3.0-or-later) [installed]
+scanelf-1.3.8-r1 x86_64 {pax-utils} (GPL-2.0-only) [installed]
+sqlite-libs-3.48.0-r4 x86_64 {sqlite} (blessing) [installed]
+ssl_client-1.37.0-r14 x86_64 {busybox} (GPL-2.0-only) [installed]
+xz-libs-5.8.4-r0 x86_64 {xz} (GPL-2.0-or-later AND 0BSD AND Public-Domain AND LGPL-2.1-or-later) [installed]
+zlib-1.3.2-r1 x86_64 {zlib} (Zlib) [installed]
+zstd-libs-1.5.6-r2 x86_64 {zstd} (BSD-3-Clause OR GPL-2.0-or-later) [installed]
+2006031229d158ca25f5a7a54c1bab3fc541411bdb6878e66e61116d97fffcba  containment_probe.c
+266a526f969a5af615b81a151949700f80bcbbf15ced41177e3f1ef7798b77bb  native_scratch_probe.py
+fb004923584b0bee31be1100c41dcc21c4d3c3db70cd1a37f0a6ec0471e1f2d0  containment_probe
+fb004923584b0bee31be1100c41dcc21c4d3c3db70cd1a37f0a6ec0471e1f2d0  containment_probe.rebuild
+NATIVE_BUILD_IDENTICAL=1
+
+Elf file type is DYN (Position-Independent Executable file)
+Entry point 0x1b53
+There are 12 program headers, starting at offset 64
+
+Program Headers:
+  Type           Offset   VirtAddr           PhysAddr           FileSiz  MemSiz   Flg Align
+  PHDR           0x000040 0x0000000000000040 0x0000000000000040 0x0002a0 0x0002a0 R   0x8
+  INTERP         0x0002e0 0x00000000000002e0 0x00000000000002e0 0x000019 0x000019 R   0x1
+      [Requesting program interpreter: /lib/ld-musl-x86_64.so.1]
+  LOAD           0x000000 0x0000000000000000 0x0000000000000000 0x000ca0 0x000ca0 R   0x1000
+  LOAD           0x001000 0x0000000000001000 0x0000000000001000 0x000e50 0x000e50 R E 0x1000
+  LOAD           0x002000 0x0000000000002000 0x0000000000002000 0x000550 0x000550 R   0x1000
+  LOAD           0x002ce8 0x0000000000003ce8 0x0000000000003ce8 0x000320 0x000388 RW  0x1000
+  DYNAMIC        0x002d08 0x0000000000003d08 0x0000000000003d08 0x0001c0 0x0001c0 RW  0x8
+  NOTE           0x000300 0x0000000000000300 0x0000000000000300 0x000030 0x000030 R   0x8
+  GNU_PROPERTY   0x000300 0x0000000000000300 0x0000000000000300 0x000030 0x000030 R   0x8
+  GNU_EH_FRAME   0x0023e4 0x00000000000023e4 0x00000000000023e4 0x00003c 0x00003c R   0x4
+  GNU_STACK      0x000000 0x0000000000000000 0x0000000000000000 0x000000 0x000000 RW  0x10
+  GNU_RELRO      0x002ce8 0x0000000000003ce8 0x0000000000003ce8 0x000318 0x000318 R   0x1
+
+ Section to Segment mapping:
+  Segment Sections...
+   00     
+   01     .interp 
+   02     .interp .note.gnu.property .gnu.hash .dynsym .dynstr .rela.dyn .rela.plt 
+   03     .init .plt .text .fini 
+   04     .rodata .eh_frame_hdr .eh_frame 
+   05     .init_array .fini_array .data.rel.ro .dynamic .got .data .bss 
+   06     .dynamic 
+   07     .note.gnu.property 
+   08     .note.gnu.property 
+   09     .eh_frame_hdr 
+   10     
+   11     .init_array .fini_array .data.rel.ro .dynamic .got 
+0d42ad3750de6cce7431a0b46df0cc697c6f1c06d06c2124c09e831196518a55  /usr/bin/gcc
+4dec5e3c46e950fafcbb5a55d37315053030650ffebc2db1da5781628aa82ade  /usr/bin/ld
+19313c7fcdd4816403c95fa43a9d63639b17f09cbb69fbb8cae414efef4f57cb  /lib/ld-musl-x86_64.so.1
+555c67662b853a44431690f87399a2e48d0d5d05b5e8262ed9fb3dea44950d36  /usr/libexec/gcc/x86_64-alpine-linux-musl/14.2.0/cc1
+09484343eaf9d6ad80536945a60b50e6403983c330aeed363ff1801aa6149021  /usr/bin/python3.12
+cpuset cpu io memory hugetlb pids
+CGROUP_BEFORE
+33554432
+0
+0
+low 0
+high 0
+max 0
+oom 0
+oom_kill 0
+oom_group_kill 0
+domain
+F2_RLIMIT_RSS rss_bytes=50880512 limit_bytes=33554432 survived=1
+F1_PARENT_OUTSIDE pid=1936 cgroup=0::/
+F1_FIRST_CHILD_MARKER child=1937 cgroup=0::/h04-feasibility
+F1_PARENT_OBSERVATION child=1937 cgroup=0::/h04-feasibility
+F1_TARGET_PROCS 1937
+F1_POST_EXEC pid=1937 cgroup=0::/h04-feasibility
+F2_SHARED rss_bytes=50892800 cgroup_current_bytes=245760 limit_bytes=33554432 checksum=1105920
+F4_CHILD_WAIT exited=1 code=0 proc_absent=1
+F4_SHARED_AFTER_EXIT resident=1 value=90
+CGROUP_AFTER
+33554432
+53248
+262144
+low 0
+high 0
+max 0
+oom 0
+oom_kill 0
+oom_group_kill 0
+populated 0
+frozen 0
+{"dead_after_last_alias": true, "physical_reclamation_proven": false, "retained_with_alias": true, "scope": "one-CPython-object-only"}
+{"complete_coverage": false, "native_buffer_freed": true, "requested_native_bytes": 131072, "scope": "synthetic-native-malloc-not-Phase-C", "scratch_limit_bytes": 65536, "traced_current_bytes": 32, "traced_peak_bytes": 304}
+H04_FEASIBILITY_DONE
