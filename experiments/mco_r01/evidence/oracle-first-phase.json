@@ -1,0 +1,9 @@
+{
+  "phase": "oracle before candidate implementation",
+  "source_sha256": "26f011489acb152eb57e7bda82d3bca9ae4acaa796870acb3683253935dbfcc8",
+  "cases": 60,
+  "agreements": 60,
+  "disagreements": 0,
+  "candidate_runs": 0,
+  "corpus_commit": "633645afad1ac6160f2056dcd825e2590898fca2"
+}

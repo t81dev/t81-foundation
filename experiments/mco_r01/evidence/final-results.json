@@ -1,0 +1,259 @@
+{
+  "arm_behaviorally_equivalent": true,
+  "arms": {
+    "A": {
+      "abstract_guards": 729,
+      "associativity_triples": 27,
+      "case_disagreements": 0,
+      "cases": 60,
+      "independent_reconstructions": 96,
+      "invalid_plans": 20,
+      "meet_pairs": 9,
+      "new_rows": 7,
+      "protected_dispatches": 8,
+      "reachable_plans": 4,
+      "recorded_proposal_draws": 32,
+      "replay_identical": true
+    },
+    "B": {
+      "abstract_guards": 729,
+      "associativity_triples": 27,
+      "case_disagreements": 0,
+      "cases": 60,
+      "independent_reconstructions": 96,
+      "invalid_plans": 20,
+      "meet_pairs": 9,
+      "new_rows": 7,
+      "protected_dispatches": 8,
+      "reachable_plans": 4,
+      "recorded_proposal_draws": 32,
+      "replay_identical": true
+    }
+  },
+  "base_commit": "633645afad1ac6160f2056dcd825e2590898fca2",
+  "experiment": "MCO-R01",
+  "failed_current_checks": 0,
+  "frozen_manifest_sha256": "b191179639c6e604c3860c2743de9f284f856d185a60ab576f739706e765622b",
+  "mutation_kills": 8,
+  "mutation_runs": 8,
+  "mutations": [
+    {
+      "actual_decision": "P",
+      "actual_new_rows": 0,
+      "arm": "A",
+      "killed": true,
+      "mismatches": [
+        "decision",
+        "final_decision",
+        "outcome",
+        "transition_expectations",
+        "journal"
+      ],
+      "mutation": "permit_unknown",
+      "process_exit": 0,
+      "reconstructor_exit": 2,
+      "target_reached": true,
+      "witness": "F06-C01"
+    },
+    {
+      "actual_decision": "P",
+      "actual_new_rows": 1,
+      "arm": "A",
+      "killed": true,
+      "mismatches": [
+        "final_decision",
+        "final_reasons",
+        "admissions",
+        "effect_dispatches",
+        "new_rows",
+        "final_state",
+        "outcome",
+        "outcome_reasons",
+        "transition_expectations",
+        "journal",
+        "ledger_rows",
+        "receipts"
+      ],
+      "mutation": "skip_revocation",
+      "process_exit": 0,
+      "reconstructor_exit": 2,
+      "target_reached": true,
+      "witness": "F10-C02"
+    },
+    {
+      "actual_decision": "P",
+      "actual_new_rows": 2,
+      "arm": "A",
+      "killed": true,
+      "mismatches": [
+        "admissions",
+        "effect_dispatches",
+        "new_rows",
+        "final_state",
+        "transition_expectations",
+        "journal",
+        "ledger_rows",
+        "receipts"
+      ],
+      "mutation": "skip_replay",
+      "process_exit": 0,
+      "reconstructor_exit": 2,
+      "target_reached": true,
+      "witness": "F08-C05"
+    },
+    {
+      "actual_decision": "P",
+      "actual_new_rows": 0,
+      "arm": "A",
+      "killed": true,
+      "mismatches": [
+        "guards",
+        "diagnostics",
+        "evidence_observations",
+        "pipeline_stage",
+        "decision",
+        "reasons",
+        "final_decision",
+        "final_reasons",
+        "outcome_reasons",
+        "transition_expectations",
+        "journal"
+      ],
+      "mutation": "omit_model_binding",
+      "process_exit": 0,
+      "reconstructor_exit": 2,
+      "target_reached": true,
+      "witness": "F09-C02"
+    },
+    {
+      "actual_decision": "P",
+      "actual_new_rows": 0,
+      "arm": "B",
+      "killed": true,
+      "mismatches": [
+        "decision",
+        "final_decision",
+        "outcome",
+        "transition_expectations",
+        "journal"
+      ],
+      "mutation": "permit_unknown",
+      "process_exit": 0,
+      "reconstructor_exit": 2,
+      "target_reached": true,
+      "witness": "F06-C01"
+    },
+    {
+      "actual_decision": "P",
+      "actual_new_rows": 1,
+      "arm": "B",
+      "killed": true,
+      "mismatches": [
+        "final_decision",
+        "final_reasons",
+        "admissions",
+        "effect_dispatches",
+        "new_rows",
+        "final_state",
+        "outcome",
+        "outcome_reasons",
+        "transition_expectations",
+        "journal",
+        "ledger_rows",
+        "receipts"
+      ],
+      "mutation": "skip_revocation",
+      "process_exit": 0,
+      "reconstructor_exit": 2,
+      "target_reached": true,
+      "witness": "F10-C02"
+    },
+    {
+      "actual_decision": "P",
+      "actual_new_rows": 2,
+      "arm": "B",
+      "killed": true,
+      "mismatches": [
+        "admissions",
+        "effect_dispatches",
+        "new_rows",
+        "final_state",
+        "transition_expectations",
+        "journal",
+        "ledger_rows",
+        "receipts"
+      ],
+      "mutation": "skip_replay",
+      "process_exit": 0,
+      "reconstructor_exit": 2,
+      "target_reached": true,
+      "witness": "F08-C05"
+    },
+    {
+      "actual_decision": "P",
+      "actual_new_rows": 0,
+      "arm": "B",
+      "killed": true,
+      "mismatches": [
+        "guards",
+        "diagnostics",
+        "evidence_observations",
+        "pipeline_stage",
+        "decision",
+        "reasons",
+        "final_decision",
+        "final_reasons",
+        "outcome_reasons",
+        "transition_expectations",
+        "journal"
+      ],
+      "mutation": "omit_model_binding",
+      "process_exit": 0,
+      "reconstructor_exit": 2,
+      "target_reached": true,
+      "witness": "F09-C02"
+    }
+  ],
+  "oracle_cases": 60,
+  "oracle_disagreements": 0,
+  "os_primitive_justified": false,
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "proposal_choice_counts": {
+    "F01-C01": 12,
+    "F01-C02": 8,
+    "F01-C03": 12
+  },
+  "python": "3.14.3",
+  "recommendation": "REVISE",
+  "reconstruction_tampers": [
+    {
+      "attack": "reported_permit",
+      "rejected": true,
+      "returncode": 2
+    },
+    {
+      "attack": "rehash_wrong_ledger",
+      "rejected": true,
+      "returncode": 2
+    },
+    {
+      "attack": "omit_revocation",
+      "rejected": true,
+      "returncode": 2
+    },
+    {
+      "attack": "erase_observation",
+      "rejected": true,
+      "returncode": 2
+    },
+    {
+      "attack": "omit_cases",
+      "rejected": true,
+      "returncode": 2
+    }
+  ],
+  "ruby": "2.6.10",
+  "ruby_json": "2.1.0",
+  "scope": "finite synthetic conformance under honest single-owner/observer assumptions; no opaque-model or host-compromise guarantee",
+  "ternary_native_implementation_justified": false
+}
