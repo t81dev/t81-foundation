@@ -38,6 +38,7 @@ add_library(t81_tool_cli STATIC
   ${PROJECT_SOURCE_DIR}/tools/cli/core/driver.cpp
   # ${PROJECT_SOURCE_DIR}/tools/cli/core/driver_refactored.cpp  # Skip problematic file
   ${PROJECT_SOURCE_DIR}/tools/cli/core/main.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/process_capture.cpp
   # ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_tools/canonfs_performance.cpp  # Skip problematic file
   ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_tools/canonfs_performance_standalone.cpp
   # ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_tools/canonfs_auto_optimizer.cpp  # Skip problematic file

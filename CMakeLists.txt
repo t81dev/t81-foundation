@@ -1065,6 +1065,7 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   target_link_libraries(vm_ffi_bridge_test PRIVATE t81_vm t81_isa t81_core)
   target_compile_definitions(
     vm_ffi_bridge_test PRIVATE T81_VM_FFI_TESTLIB_PATH="$<TARGET_FILE:ffi_bridge_testlib>")
+  add_dependencies(vm_ffi_bridge_test ffi_bridge_testlib)
 
   # RFC-0037 — TNN stdlib (std.tnn.* builtins → RFC-0034 TISC opcodes)
   add_executable(tnn_stdlib_test tests/cpp/tnn_stdlib_test.cpp)
@@ -1339,6 +1340,11 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   target_link_libraries(test_bigint_robust_features PRIVATE t81_core)
   add_executable(t81_int128_test tests/cpp/t81_int128_test.cpp)
   target_link_libraries(t81_int128_test PRIVATE t81_core)
+  add_executable(t81_process_capture_test
+    tests/cpp/process_capture_test.cpp
+    tools/cli/core/process_capture.cpp)
+  target_include_directories(t81_process_capture_test PRIVATE ${PROJECT_SOURCE_DIR})
+  target_compile_features(t81_process_capture_test PRIVATE ${T81_CXX_STD_FEATURE})
   # Execute the fallback even on hosts with a native __int128 backend.
   add_executable(t81_int128_portable_test tests/cpp/t81_int128_test.cpp)
   target_include_directories(t81_int128_portable_test PRIVATE ${PROJECT_SOURCE_DIR}/include)
@@ -1701,6 +1707,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     test_bigint_multilimb_ext
     test_bigint_robust_features
     t81_int128_test
+    t81_process_capture_test
     t81_int128_portable_test
     t81_bigint_v1_perf
     bigint_perf_guardrail_test
