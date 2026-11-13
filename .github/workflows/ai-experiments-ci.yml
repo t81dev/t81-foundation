@@ -132,6 +132,9 @@ permissions:
 
 jobs:
   test-ai-experiments:
+    defaults:
+      run:
+        shell: bash
     runs-on: ubuntu-latest
     env:
       T81_AI_EVIDENCE_MANIFEST_KEY_2026Q1: ${{ secrets.T81_AI_EVIDENCE_MANIFEST_KEY_2026Q1 }}
@@ -176,7 +179,8 @@ jobs:
     - name: Build AI CLI
       id: build_ai
       run: |
-        if cmake --build build --target help | grep -qE '(^| )t81_ai$'; then
+        cmake --build build --target help > build/ai-cmake-targets.txt
+        if grep -qE '(^| )t81_ai$' build/ai-cmake-targets.txt; then
           echo "has_target=true" >> "$GITHUB_OUTPUT"
           cmake --build build --target t81_ai
         else
@@ -189,7 +193,8 @@ jobs:
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
         mkdir -p build/ai-rfc0025
-        if cmake --build build --target help | grep -qE '(^| )t81_vm_tloadhash_conformance_test$'; then
+        cmake --build build --target help > build/ai-cmake-targets.txt
+        if grep -qE '(^| )t81_vm_tloadhash_conformance_test$' build/ai-cmake-targets.txt; then
           cmake --build build --target t81_vm_tloadhash_conformance_test
           cmake --build build --target t81_vm_tloadhash_decodefault_determinism_matrix_test
         else
@@ -410,8 +415,9 @@ jobs:
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
         mkdir -p build/ai-vm-trace
-        if cmake --build build --target help | grep -qE '(^| )t81_vm_trace_test$' && \
-           cmake --build build --target help | grep -qE '(^| )canonfs_axion_trace_test$'; then
+        cmake --build build --target help > build/ai-cmake-targets.txt
+        if grep -qE '(^| )t81_vm_trace_test$' build/ai-cmake-targets.txt && \
+           grep -qE '(^| )canonfs_axion_trace_test$' build/ai-cmake-targets.txt; then
           cmake --build build --target t81_vm_trace_test canonfs_axion_trace_test
           ctest --test-dir build --output-on-failure --verbose \
             -R 't81_vm_trace_test|canonfs_axion_trace_test' \
@@ -428,7 +434,8 @@ jobs:
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
         mkdir -p build/ai-opcodes
-        if cmake --build build --target help | grep -qE '(^| )t81_vm_ai_phase1_qmatmul_conformance_test$'; then
+        cmake --build build --target help > build/ai-cmake-targets.txt
+        if grep -qE '(^| )t81_vm_ai_phase1_qmatmul_conformance_test$' build/ai-cmake-targets.txt; then
           cmake --build build --target t81_vm_ai_phase1_attention_conformance_test
           cmake --build build --target t81_vm_ai_phase1_embed_conformance_test
           cmake --build build --target t81_vm_ai_phase1_qmatmul_conformance_test
@@ -707,11 +714,12 @@ jobs:
         cat build/ai-governed/governed_llama_replay_attestation.md >> "$GITHUB_STEP_SUMMARY"
 
     - name: Upload AI evidence artifacts
-      if: steps.build_ai.outputs.has_target == 'true'
+      if: always()
       uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
       with:
         name: ai-evidence-bundle
         path: |
+          build/ai-cmake-targets.txt
           build/ai-evidence/ai_evidence_bundle.json
           build/ai-evidence/ai_evidence_bundle.sha256
           build/ai-evidence/ai_evidence_summary.md
