@@ -1,0 +1,15 @@
+{
+  "scope": "Fresh draft Commons CLI lookup; implementation verification, not scientific replication",
+  "revision": "43df109b01fc88f67375f18cd41ff563982830b3",
+  "response_sha256": "8f1537e4f5c1b6e9f198efda1ef2aecc12820d7e31e9c47161ab9782b2ef4847",
+  "operation": "get_hypothesis",
+  "manifest_sha256": "a3ee2d288ac7b00176beae32f854c373194b11556d83293396bbcd7c02d688bf",
+  "canonical_hypothesis": "H08",
+  "dated_disposition": "2026-10-25",
+  "evidence_tiers": [
+    "C",
+    "E"
+  ],
+  "confidence": "Researcher intent authoritative; comparative benefit untested.",
+  "integration_status": "awaiting_pr610_merge"
+}
