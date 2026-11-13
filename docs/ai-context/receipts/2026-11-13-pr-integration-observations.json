@@ -1,0 +1,337 @@
+{
+  "observed_date": "2026-11-13",
+  "collector": "ChatGPT_GitHub_connector_read_only_observation_and_authorized_PR_closure",
+  "main_sha": "88300f14c1da1066ad6db25d31be0e8e912b3ef0",
+  "coverage": "selected_prs_and_first_100_open_PR_collection",
+  "open_pr_count_before_documentation_PR": 75,
+  "prs": [
+    {
+      "number": 778,
+      "head_sha": "56ad0d57b90487d153b35ccfdeb134fcc858adf7",
+      "base_sha": "d3a6cf55517a3098d7bae91b07c72694bc3472da",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "url": "https://github.com/t81dev/t81-foundation/pull/778"
+    },
+    {
+      "number": 779,
+      "head_sha": "4d5f3586c04a69c520e613166291c0974877628d",
+      "base_sha": "d3a6cf55517a3098d7bae91b07c72694bc3472da",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "url": "https://github.com/t81dev/t81-foundation/pull/779"
+    },
+    {
+      "number": 780,
+      "head_sha": "a31b862e6bbdc7c136a74c9117aa085a13b4da2c",
+      "base_sha": "d3a6cf55517a3098d7bae91b07c72694bc3472da",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "url": "https://github.com/t81dev/t81-foundation/pull/780"
+    },
+    {
+      "number": 782,
+      "head_sha": "125a1897b7e7e068ef6d576d97c487295c7203a7",
+      "base_sha": "88300f14c1da1066ad6db25d31be0e8e912b3ef0",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "url": "https://github.com/t81dev/t81-foundation/pull/782"
+    }
+  ],
+  "closed_without_merge": [
+    {
+      "number": 645,
+      "state": "closed",
+      "merged": false,
+      "head_sha": "6d20d381322e4859e33524f4fc18d4c6569539ce",
+      "closed_at": "2026-11-13T12:25:31Z",
+      "url": "https://github.com/t81dev/t81-foundation/pull/645"
+    },
+    {
+      "number": 747,
+      "state": "closed",
+      "merged": false,
+      "head_sha": "b18075ad6de93091f9aea30707ef5237d479c9d1",
+      "closed_at": "2026-11-13T12:25:36Z",
+      "url": "https://github.com/t81dev/t81-foundation/pull/747"
+    },
+    {
+      "number": 760,
+      "state": "closed",
+      "merged": false,
+      "head_sha": "dab59a63e4000f81799a6b2303bbfab26300d526",
+      "closed_at": "2026-11-13T12:25:39Z",
+      "url": "https://github.com/t81dev/t81-foundation/pull/760"
+    },
+    {
+      "number": 766,
+      "state": "closed",
+      "merged": false,
+      "head_sha": "a763ab6876bf07b8ae7c529656cdd2e5d9cf3766",
+      "closed_at": "2026-11-13T12:25:41Z",
+      "url": "https://github.com/t81dev/t81-foundation/pull/766"
+    },
+    {
+      "number": 769,
+      "state": "closed",
+      "merged": false,
+      "head_sha": "7c52be13dc0c3fb175271d63f1a8ba9aaeee170c",
+      "closed_at": "2026-11-13T12:25:44Z",
+      "url": "https://github.com/t81dev/t81-foundation/pull/769"
+    }
+  ],
+  "pr782_checks": [
+    {
+      "name": "quality gate / required",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131884974414"
+    },
+    {
+      "name": "gate / t3k cross-arch bit-identity",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131884922435"
+    },
+    {
+      "name": "product / deterministic profile enforcement",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131884922430"
+    },
+    {
+      "name": "gate / t81lang cross-arch bit-identity",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131884922399"
+    },
+    {
+      "name": "cross-compile / linux-armv9 / gcc (informational)",
+      "status": "in_progress",
+      "conclusion": null,
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131884922397"
+    },
+    {
+      "name": "gate / TUI binary size delta",
+      "status": "in_progress",
+      "conclusion": null,
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131884922369"
+    },
+    {
+      "name": "determinism / cross-platform compare",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383430/job/131872185563"
+    },
+    {
+      "name": "build / macos-arm64 / clang",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131867735771"
+    },
+    {
+      "name": "build / windows-x86_64 / msvc",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131867735744"
+    },
+    {
+      "name": "build / linux-x86_64 / clang",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131867735717"
+    },
+    {
+      "name": "build / linux-x86_64 / gcc",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131867735705"
+    },
+    {
+      "name": "build / windows-x86_64 / clang-cl",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131867735702"
+    },
+    {
+      "name": "build / linux-arm64 / clang",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131867735679"
+    },
+    {
+      "name": "build / macos-x86_64 / gcc",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131867735610"
+    },
+    {
+      "name": "gate / determinism repeatability / linux-x86_64 / clang",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131865752998"
+    },
+    {
+      "name": "static analysis / clang-tidy",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131865752959"
+    },
+    {
+      "name": "build / sanitizers",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131865752930"
+    },
+    {
+      "name": "cxx-std / linux-x86_64 / clang / OFF",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131865752928"
+    },
+    {
+      "name": "benchmark / linux-x86_64",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131865752926"
+    },
+    {
+      "name": "product / dcp integrity (informational)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131865752916"
+    },
+    {
+      "name": "gate / determinism slice / linux-x86_64 / clang",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131865752908"
+    },
+    {
+      "name": "cxx-std / linux-x86_64 / clang / ON",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131865752868"
+    },
+    {
+      "name": "benchmark / vm workload gate",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131865752865"
+    },
+    {
+      "name": "gate / tritwise-determinism / no-simd",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131865752846"
+    },
+    {
+      "name": "gate / tritwise-determinism / avx2-asan",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131865752838"
+    },
+    {
+      "name": "formal verification / ternary logic",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131865752834"
+    },
+    {
+      "name": "fuzzing / frontend",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131865752823"
+    },
+    {
+      "name": "gate / axion epoch determinism / linux-x86_64 / clang",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131865752764"
+    },
+    {
+      "name": "warn-strict / clang / linux",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131865752716"
+    },
+    {
+      "name": "architecture / invariants (informational)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131865752690"
+    },
+    {
+      "name": "experimental / ascend cann sanity",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131865255045"
+    },
+    {
+      "name": "experimental / oneapi sycl sanity",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131865254298"
+    },
+    {
+      "name": "experimental architectures / group anchor",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131865253998"
+    },
+    {
+      "name": "governance-metrics",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131865252380"
+    },
+    {
+      "name": "lint / spec & docs",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383525/job/131865252045"
+    },
+    {
+      "name": "Analyze (cpp)",
+      "status": "in_progress",
+      "conclusion": null,
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383499/job/131865251842"
+    },
+    {
+      "name": "determinism / linux-x86_64",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383430/job/131865251664"
+    },
+    {
+      "name": "format / clang-format",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383508/job/131865251620"
+    },
+    {
+      "name": "test-ai-experiments",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383465/job/131865251427"
+    },
+    {
+      "name": "determinism / macos-arm64",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/t81dev/t81-foundation/actions/runs/43419383430/job/131865251322"
+    }
+  ],
+  "review_attribution": "ACCEPT reports for #779/#780 supplied by maintainer in session from Codex; not reproduced by this collector. #782 final closure pending.",
+  "audit_commit": "1cc1b3cd270cd7365fa77dfb77db8db3fd005914",
+  "limits": [
+    "Check results are transient metadata",
+    "No local builds or benchmark execution",
+    "No scientific gate advancement or merge authorization",
+    "No branch deletion performed; branch existence not independently reverified"
+  ]
+}
