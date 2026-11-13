@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/tmp/base01-physical-linux-correctness-session/r75-build",
+  "command": "/usr/bin/g++ -I/tmp/base01-physical-linux-correctness-session/source/include -I/tmp/base01-physical-linux-correctness-session/source/tests/cpp -O3 -DNDEBUG -std=gnu++23 -o CMakeFiles/r75_correctness.dir/probe.cpp.o -c /tmp/base01-physical-linux-correctness-session/r75/experiments/base01_r75_semantics/probe.cpp",
+  "file": "/tmp/base01-physical-linux-correctness-session/r75/experiments/base01_r75_semantics/probe.cpp",
+  "output": "CMakeFiles/r75_correctness.dir/probe.cpp.o"
+}
+]
