@@ -1,3 +1,4 @@
+#include "../../tools/cli/core/process_capture.hpp"
 #include "t81/cli/driver.hpp"
 #include "t81/frontend/ir_generator.hpp"
 #include "t81/frontend/parser.hpp"
@@ -20,6 +21,24 @@
 #include <string>
 #include <vector>
 #include "test_runtime_check.hpp"
+
+namespace {
+struct LocalTestFailure : std::runtime_error {
+  using std::runtime_error::runtime_error;
+};
+
+void check_or_throw(bool condition, const char* expr, const char* file, int line) {
+  if (condition) {
+    return;
+  }
+  std::ostringstream msg;
+  msg << "test check failed: (" << expr << ") at " << file << ":" << line;
+  throw LocalTestFailure(msg.str());
+}
+}  // namespace
+
+#undef T81_TEST_CHECK
+#define T81_TEST_CHECK(expr) check_or_throw(static_cast<bool>(expr), #expr, __FILE__, __LINE__)
 
 using namespace t81;
 namespace fs = std::filesystem;
@@ -243,10 +262,71 @@ static void test_fallback_and_explicit_module_path_metadata() {
   T81_TEST_CHECK(ast_prog.type_aliases.front().module_path == "Core.AttrModule");
 }
 
-int main() {
-  test_enum_metadata_is_deterministic_and_canonical();
-  test_exclusive_dir_preserves_preexisting_contents();
-  test_fallback_and_explicit_module_path_metadata();
-  std::cout << "e2e enum metadata determinism test passed!\n";
-  return 0;
+static void run_injected_owned_dir_failure_child(const fs::path& record_file,
+                                                 const fs::path& preexisting_dir) {
+  OwnedTempDir owned = create_exclusive_temp_dir("t81-enum-inject-owned");
+  T81_TEST_CHECK(owned.owned);
+  {
+    std::ofstream out(record_file, std::ios::binary | std::ios::trunc);
+    T81_TEST_CHECK(static_cast<bool>(out));
+    out << owned.path.string();
+  }
+
+  OwnedTempDir collided;
+  std::error_code ec;
+  T81_TEST_CHECK(!try_create_exclusive_dir(preexisting_dir, collided, ec));
+  T81_TEST_CHECK(!collided.owned);
+
+  T81_TEST_CHECK(false && "injected failure inside owned-dir scope");
+}
+
+static void test_injected_failure_unwinds_owned_dir_and_preserves_preexisting(
+    const char* self_exe) {
+  OwnedTempDir outer = create_exclusive_temp_dir("t81-enum-inject-outer");
+  T81_TEST_CHECK(outer.owned);
+
+  const fs::path preexisting_dir = outer.path / "preexisting";
+  std::error_code ec;
+  T81_TEST_CHECK(fs::create_directory(preexisting_dir, ec) && !ec);
+  const fs::path sentinel = preexisting_dir / "keep.txt";
+  {
+    std::ofstream out(sentinel, std::ios::binary | std::ios::trunc);
+    T81_TEST_CHECK(static_cast<bool>(out));
+    out << "untouched-on-failure\n";
+  }
+
+  const fs::path record_file = outer.path / "owned_dir_path.txt";
+  const cli::ProcessCaptureResult result = cli::run_process_capture(
+      {self_exe, "--inject-owned-dir-failure", record_file.string(), preexisting_dir.string()});
+
+  T81_TEST_CHECK(result.error_message.empty());
+  T81_TEST_CHECK(result.exit_code != 0);
+  T81_TEST_CHECK(result.stderr_text.find("test check failed:") != std::string::npos);
+  const std::string owned_dir_str = read_text(record_file);
+  T81_TEST_CHECK(!owned_dir_str.empty());
+  T81_TEST_CHECK(!fs::exists(fs::path(owned_dir_str)));
+  T81_TEST_CHECK(fs::exists(preexisting_dir));
+  T81_TEST_CHECK(fs::exists(sentinel));
+  T81_TEST_CHECK(read_text(sentinel) == "untouched-on-failure\n");
+}
+
+int main(int argc, char** argv) {
+  try {
+    if (argc == 4 && std::string(argv[1]) == "--inject-owned-dir-failure") {
+      run_injected_owned_dir_failure_child(fs::path(argv[2]), fs::path(argv[3]));
+      return 0;
+    }
+    test_enum_metadata_is_deterministic_and_canonical();
+    test_exclusive_dir_preserves_preexisting_contents();
+    test_fallback_and_explicit_module_path_metadata();
+    test_injected_failure_unwinds_owned_dir_and_preserves_preexisting(argv[0]);
+    std::cout << "e2e enum metadata determinism test passed!\n";
+    return 0;
+  } catch (const LocalTestFailure& e) {
+    std::cerr << e.what() << "\n";
+    return 1;
+  } catch (const std::exception& e) {
+    std::cerr << "unexpected test exception: " << e.what() << "\n";
+    return 1;
+  }
 }
