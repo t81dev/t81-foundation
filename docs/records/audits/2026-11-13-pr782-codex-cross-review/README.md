@@ -1,7 +1,7 @@
 # PR #782: Scoped Cross-Review of Codex 128-Bit and Process-Capture Contributions
 
 - **Branch / PR:** `fix/windows-ci-baseline-repairs` (PR #782)
-- **Code Head Reviewed (unchanged):** `27901e728fe63812d8c64b8c20d821a20581300e`
+- **Code Head Reviewed (unchanged):** `a27c580882445a0f9942bad5d681eab34417b8e1` (preceded by `27901e728fe63812d8c64b8c20d821a20581300e`)
 - **Windows CI-Verified Baseline SHA (byte-identical 128-bit and capture files):** `125a1897b7e7e068ef6d576d97c487295c7203a7`
 - **Codex Commits Reviewed:**
   - `520142114` — `fix(windows): probe int128 link capability and supply portable arithmetic`
@@ -21,6 +21,7 @@ Within PR #782 (`origin/main..27901e728fe63812d8c64b8c20d821a20581300e`), commit
   - `d9701d827` — `fix(windows): normalize fallback module_path with generic_string`
   - `125a1897b` — `test(windows): match generic_string diagnostic path in cli_pipeline_test`
   - `27901e728` — `test(windows): use exclusive per-run temp dir in enum metadata test`
+  - `a27c58088` — `test(windows): unwind owned temp dir on failure and verify with injected failure`
 - **Codex-authored commits reviewed here:**
   - `520142114` (128-bit link probe and portable `int128_t`)
   - `6b47cac59`, `cbb324ad4` (exclusive `detail::CaptureFile` and secure process capture)
@@ -60,7 +61,7 @@ ctest --test-dir .cache/windows-ci-repair-worktree/build \
 - `291 - t81_process_capture_test`: Passed (`0.35 sec`)
 - Result: `100% tests passed, 0 tests failed out of 3`
 
-Also run locally at code head `27901e728fe63812d8c64b8c20d821a20581300e`:
+Also run locally at code head `a27c580882445a0f9942bad5d681eab34417b8e1` (`-O3 -DNDEBUG`):
 
 ```sh
 ctest --test-dir .cache/windows-ci-repair-worktree/build \
@@ -89,4 +90,4 @@ Inspected GitHub Actions logs from `T81 Foundation CI` run `43419383525` at comm
 - **Validation boundary:** This is a cross-review within the shared PR #782 repair effort, not third-party independent validation.
 - **128-bit (`T81Int128.hpp` / `cmake/Int128.cmake`):** Portable `int128_t` implements only the operator subset used by T81 (no bitwise/shift or `<`/`<=` operators); `cmake/Int128.cmake` passes `CMAKE_BUILD_TYPE` to `try_compile` (single-config generator assumption).
 - **Process capture (`process_capture.cpp`):** No global child-process timeout or output-size cap; Windows sanitizer execution is not established (Windows CI runs Release MSVC and `clang-cl`).
-- **Head currency:** CI workflows for `27901e728fe63812d8c64b8c20d821a20581300e` (`43527380287`, `43527380186`, `43527380138`) were still `in_progress` when this record was written (`Format Check` `43527380688` passed); `27901e728` modified only `tests/cpp/e2e_enum_metadata_determinism_test.cpp`.
+- **Head currency:** Windows CI (`T81 Foundation CI` `43419383525`, jobs `131867735744` MSVC and `131867735702` `clang-cl`) passed 404/404 at `125a1897b7e7e068ef6d576d97c487295c7203a7`. Subsequent code commits `27901e728` and `a27c58088` modified only `tests/cpp/e2e_enum_metadata_determinism_test.cpp` (leaving Codex's 128-bit and capture files byte-identical to `125a1897b`), and Windows CI for `a27c58088` / this audit head has not yet completed at the time of writing.
