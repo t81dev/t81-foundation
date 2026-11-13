@@ -1,0 +1,20 @@
+{
+  "label": "EXPLORATORY \u2014 NONCONFIRMATORY",
+  "verified_role_objects": 140,
+  "pairs": 10,
+  "nested_invocations": 130,
+  "all_nested_intervals_sequential_and_contained": true,
+  "median_outer_ns": {
+    "A": 6269387833.0,
+    "B": 108893604.5
+  },
+  "medians": {
+    "execution_ns": 6048450604.0,
+    "persistence_ns": 38140729.5,
+    "readback_ns": 44936146.0,
+    "nested_total_ns": 6130507668.5,
+    "residual_ns": 131274207.0,
+    "nested_share": 0.9793634837074183
+  },
+  "version_control_median_ns": 6886604.0
+}

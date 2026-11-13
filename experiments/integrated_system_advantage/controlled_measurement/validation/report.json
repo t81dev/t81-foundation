@@ -1,0 +1,75 @@
+{
+  "schema": "t81.i08.apparatus-validation.v1",
+  "purpose": "instrumentation_validation",
+  "confirmatory_observations": 0,
+  "independent_jules_review": "pending; this author wrote and tested the apparatus",
+  "measurement_authorization": "not granted",
+  "parent_revision": "66446de533ec0e3a8a244e45585a44476844f729",
+  "accepted_runtime_baseline": "0662e0e637f47168e56ca4ddd66e8ee877473b38",
+  "test_result": {
+    "command": "T81_VALIDATION_EVIDENCE_DIR=/private/tmp/t81-i08-apparatus-evidence-final T81_BUILD_DIR=/private/tmp/t81-pr627-review/acceptance-build python3 -B experiments/integrated_system_advantage/controlled_measurement/test_apparatus.py",
+    "methods": 17,
+    "skipped": 0,
+    "failures": 0,
+    "elapsed_test_suite_seconds": 116.82,
+    "interpretation": "Correctness-test duration, not an endpoint observation",
+    "real_validation_cells": 6,
+    "real_arms_per_cell": 2,
+    "coverage": [
+      "seven logical objects in both arms",
+      "byte identities and common evidence",
+      "empty/populated stores",
+      "original fixtures deleted before new process recovery",
+      "hash-valid false evidence rejection",
+      "binary tamper rejection",
+      "policy denial/invalid models persist no objects",
+      "launch/spawn/nonzero/timeout/fsync failures and incomplete pairs",
+      "360 scheduled pairs; six cells;60/cell;30AB30BA/cell",
+      "exact binomial ranks20/41 checked by independent Pascal oracle",
+      "rational materiality boundaries and all4096 overall combinations",
+      "chronology/purpose/identity/incomplete-sample rejection",
+      "serial-dependence and environment warnings"
+    ]
+  },
+  "source_sha256": {
+    "apparatus.py": "63820472749932404b8d48ccfb54a7e335f237855ee86718e6d03f022b7f35dd",
+    "analysis.py": "12ff768b7e8292791fb910650fc9e8375541704d093bf1a23f26b221cb4bac02",
+    "schedule.py": "88465744307e2ddb39c652eb9813360735b4b969a2f011f8125411df47e85439",
+    "schedule.json": "b9f3fdee3424840dd10c54932f42185df7d20213bb730cf4464cf136289aa5ef",
+    "test_apparatus.py": "e989b0603244570631049ad4e3ea7b61aefbf53eae1f5f000c5b89c20510ac92"
+  },
+  "accepted_source_sha256": {
+    "experiments/integrated_system_advantage/baseline_stack.py": "6cf75b3fc38ea5cd09153d1681337c6b95fea3616e84cb79032cd3414e707d2c",
+    "experiments/integrated_system_advantage/test_differential_parity.py": "d10a4a1b286c279d31f74ab62a73d25b24196ca59b449756d71c1226bca3774b",
+    "experiments/integrated_system_advantage/baseline_worker.py": "0f1b5b5a706169844c13840c78047d9b6119c859cf23d3a480c8d72e85c9ef17",
+    "experiments/integrated_system_advantage/ablation_runner.py": "5a4ce5659069d32b86d53eb8be6eb13f9770fcb85367b7f101c2c054f89abc33",
+    "experiments/integrated_system_advantage/run_experiments.py": "9d747a0645bf13e74f0770d15e47d6500e57a8495c3e236ac225d6fb38465eee"
+  },
+  "binary_sha256": {
+    "t81": "1df4bcbb1e100fe9d0e46153c3fe97a6cdf2a67a05c643c54668d8ce9d24c4ba",
+    "t81_make_assess_fixed_demo": "17ccfc975eeefca2c3e6d957ee1b7cc960bc945921aa59072bdc4512a6391f3b",
+    "t81_investigation08_probe": "b97ff802cc02528ea54220861204acae7233d861a8460797d1fabe5f51d372ce"
+  },
+  "binary_lineage": "Existing independent-review build reused; relevant production/comparator sources unchanged from accepted baseline. No new build claimed.",
+  "environment": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]",
+    "hardware": "Apple M2 Mac14,2;8 logical CPUs;8GiB RAM",
+    "compiler": "Existing AppleClang21 /usr/bin/clang++ C++23 -O3 -DNDEBUG deterministic-float build",
+    "dependencies": "Standard library for apparatus/analysis; accepted binaries as hashed; no new external package installed"
+  },
+  "artifacts": {
+    "attempts_sha256": "f86a879d97f2d4374e43f238936be9f8dd6c5dae9044f2d8487784546df40d85",
+    "tests_log_sha256": "e2c63f10b2cd308f11520327d99df0ae8bb4976d375831b3f92fc66580fc5275",
+    "schedule_sha256": "b9f3fdee3424840dd10c54932f42185df7d20213bb730cf4464cf136289aa5ef",
+    "raw_journals": 12,
+    "raw_events": 682
+  },
+  "limitations": [
+    "POSIX trusted sequential journal; macOS ARM64 tested, Windows rejected",
+    "Analysis implementation has not passed independent Jules validation",
+    "No batch timing collector is enabled; independent review and explicit authorization still required",
+    "No true warm-process, internal phase, causal architecture/ternary or full Llama inference claim",
+    "Validation purpose records cannot be fed to confirmatory analysis"
+  ]
+}

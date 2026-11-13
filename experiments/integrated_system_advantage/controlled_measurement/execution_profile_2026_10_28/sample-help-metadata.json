@@ -1,0 +1,9 @@
+{
+  "label": "EXPLORATORY \u2014 NONCONFIRMATORY",
+  "command": [
+    "/usr/bin/sample",
+    "-h"
+  ],
+  "returncode": 255,
+  "purpose": "postcollection metadata only"
+}
