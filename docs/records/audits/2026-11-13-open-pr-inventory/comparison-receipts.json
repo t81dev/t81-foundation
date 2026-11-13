@@ -1,0 +1,395 @@
+[
+  {
+    "pr": 645,
+    "argv": [
+      "git",
+      "diff",
+      "--binary",
+      "88300f14c1da1066ad6db25d31be0e8e912b3ef0",
+      "6d20d381322e4859e33524f4fc18d4c6569539ce",
+      "--",
+      "experiments/h04_r03_matched_codec/SPECIFICATION.md"
+    ],
+    "exit_code": 0,
+    "stdout_path": "comparisons/pr-645/main-to-head.diff",
+    "stdout_sha256": "59e24caee20fe05b0f6b2ceb8f7327688b6c83f5122570b969fbce3c7b1bb570",
+    "stderr_path": "comparisons/pr-645/main-to-head.diff.stderr",
+    "output_archive": "comparison-output.zip"
+  },
+  {
+    "pr": 645,
+    "argv": [
+      "git",
+      "diff",
+      "--binary",
+      "872ac1b4c8a303fc5417d0b21551a430d0a50200",
+      "6d20d381322e4859e33524f4fc18d4c6569539ce"
+    ],
+    "exit_code": 0,
+    "stdout_path": "comparisons/pr-645/proposed-delta.diff",
+    "stdout_sha256": "e658ce81f43b9b4915c759824e49e716ca60d96ddc9163c2b469c07404a255c4",
+    "stderr_path": "comparisons/pr-645/proposed-delta.diff.stderr",
+    "output_archive": "comparison-output.zip"
+  },
+  {
+    "pr": 645,
+    "argv": [
+      "git",
+      "diff",
+      "--name-status",
+      "--no-renames",
+      "872ac1b4c8a303fc5417d0b21551a430d0a50200",
+      "6d20d381322e4859e33524f4fc18d4c6569539ce"
+    ],
+    "exit_code": 0,
+    "stdout_path": "comparisons/pr-645/name-status.txt",
+    "stdout_sha256": "f1533f18e35ad93cf016f597027c79f4563d41ba99ac6d256de845b97b9e3b34",
+    "stderr_path": "comparisons/pr-645/name-status.txt.stderr",
+    "output_archive": "comparison-output.zip"
+  },
+  {
+    "pr": 645,
+    "argv": [
+      "git",
+      "diff",
+      "--quiet",
+      "--ignore-space-at-eol",
+      "88300f14c1da1066ad6db25d31be0e8e912b3ef0",
+      "6d20d381322e4859e33524f4fc18d4c6569539ce",
+      "--",
+      "experiments/h04_r03_matched_codec/SPECIFICATION.md"
+    ],
+    "exit_code": 0,
+    "stdout_path": "comparisons/pr-645/content-equality.txt",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_path": "comparisons/pr-645/content-equality.txt.stderr",
+    "output_archive": "comparison-output.zip"
+  },
+  {
+    "pr": 747,
+    "argv": [
+      "git",
+      "diff",
+      "--binary",
+      "88300f14c1da1066ad6db25d31be0e8e912b3ef0",
+      "b18075ad6de93091f9aea30707ef5237d479c9d1",
+      "--",
+      ".github/workflows/ci.yml",
+      ".github/workflows/cross-platform-determinism.yml",
+      ".github/workflows/python-wheels.yml",
+      ".github/workflows/release.yml",
+      ".github/workflows/research-commons.yml",
+      "CMakeLists.txt",
+      "benchmarks/BM_InferenceComparison.cpp",
+      "examples/ai-and-inference/model-load-canonfs/make_answer_fixed_demo.cpp",
+      "examples/ai-and-inference/model-load-canonfs/make_assess_fixed_demo.cpp",
+      "examples/ai-and-inference/model-load-canonfs/make_classify_fixed_demo.cpp",
+      "examples/ai-and-inference/model-load-canonfs/make_degraded_llama_demo.cpp",
+      "examples/ai-and-inference/model-load-canonfs/make_guarded_llama_demo.cpp",
+      "examples/ai-and-inference/model-load-canonfs/make_route_fixed_demo.cpp",
+      "include/t81/types/T81Bytes.hpp",
+      "include/t81/types/T81IOStream.hpp",
+      "scripts/ci/check_stable_baseline_compliance.py",
+      "ternaryos/dev/gicv3.cpp",
+      "ternaryos/kernel/kernel_abi.hpp",
+      "tests/ci/test_stable_baseline_compliance.py",
+      "tests/cpp/dpe/epoch_dag_test.cpp",
+      "tests/cpp/dpe/epoch_parallel_test.cpp",
+      "tests/cpp/dpe/thread_pool_test.cpp",
+      "tests/cpp/vm_decoder_test.cpp",
+      "tools/cli/core/main.cpp",
+      "vm/ai_backend/controlled_ai_backend.cpp",
+      "vm/decoder.cpp"
+    ],
+    "exit_code": 0,
+    "stdout_path": "comparisons/pr-747/main-to-head.diff",
+    "stdout_sha256": "5387aacd9e052568612a1399e0bbcc90cc6a114a97d236f414ea5be5437aeb98",
+    "stderr_path": "comparisons/pr-747/main-to-head.diff.stderr",
+    "output_archive": "comparison-output.zip"
+  },
+  {
+    "pr": 747,
+    "argv": [
+      "git",
+      "diff",
+      "--binary",
+      "e5c30560aa77c31184a14b03ed152a6deef5c1a3",
+      "b18075ad6de93091f9aea30707ef5237d479c9d1"
+    ],
+    "exit_code": 0,
+    "stdout_path": "comparisons/pr-747/proposed-delta.diff",
+    "stdout_sha256": "f002e667941fb2a8131438d58b18f1222a7212039061a195a45fa1095103e937",
+    "stderr_path": "comparisons/pr-747/proposed-delta.diff.stderr",
+    "output_archive": "comparison-output.zip"
+  },
+  {
+    "pr": 747,
+    "argv": [
+      "git",
+      "diff",
+      "--name-status",
+      "--no-renames",
+      "e5c30560aa77c31184a14b03ed152a6deef5c1a3",
+      "b18075ad6de93091f9aea30707ef5237d479c9d1"
+    ],
+    "exit_code": 0,
+    "stdout_path": "comparisons/pr-747/name-status.txt",
+    "stdout_sha256": "9291131592ee7bdea98401151e8052db3c4b5dc276fa995b54390f370579fb2b",
+    "stderr_path": "comparisons/pr-747/name-status.txt.stderr",
+    "output_archive": "comparison-output.zip"
+  },
+  {
+    "pr": 747,
+    "argv": [
+      "git",
+      "merge-tree",
+      "--write-tree",
+      "88300f14c1da1066ad6db25d31be0e8e912b3ef0",
+      "b18075ad6de93091f9aea30707ef5237d479c9d1"
+    ],
+    "exit_code": 0,
+    "stdout_path": "comparisons/pr-747/merge-tree.txt",
+    "stdout_sha256": "96e0f98a7956e45b5add4c14eb5e8c0d57dcfcde22e83f8c4b10144070ac7149",
+    "stderr_path": "comparisons/pr-747/merge-tree.txt.stderr",
+    "output_archive": "comparison-output.zip"
+  },
+  {
+    "pr": 760,
+    "argv": [
+      "git",
+      "diff",
+      "--binary",
+      "88300f14c1da1066ad6db25d31be0e8e912b3ef0",
+      "dab59a63e4000f81799a6b2303bbfab26300d526",
+      "--",
+      "CMakeLists.txt",
+      "docs/architecture/diagnostics/phase3/REPORT.md",
+      "docs/architecture/diagnostics/phase3/check_evidence.py",
+      "docs/architecture/diagnostics/phase3/evidence/SHA256SUMS.json",
+      "docs/architecture/diagnostics/phase3/evidence/build.json",
+      "docs/architecture/diagnostics/phase3/evidence/environment.json",
+      "docs/architecture/diagnostics/phase3/evidence/fresh-image.img.gz",
+      "docs/architecture/diagnostics/phase3/evidence/fresh-media.json",
+      "docs/architecture/diagnostics/phase3/evidence/media.json",
+      "docs/architecture/diagnostics/phase3/evidence/mock-processes.json",
+      "docs/architecture/diagnostics/phase3/evidence/mock-tests.log",
+      "docs/architecture/diagnostics/phase3/evidence/observations.json",
+      "docs/architecture/diagnostics/phase3/evidence/reverse-media.json",
+      "docs/architecture/diagnostics/phase3/evidence/reverse-substitution.json",
+      "docs/architecture/diagnostics/phase3/evidence/substituted-media.json",
+      "docs/architecture/diagnostics/phase3/evidence/substitution.json",
+      "docs/architecture/diagnostics/phase3/evidence/upstream-sources.json",
+      "docs/architecture/diagnostics/phase3/evidence/validation.json",
+      "docs/architecture/diagnostics/phase3/evidence/verifier-runs.json",
+      "docs/architecture/diagnostics/phase3/inspect_media.py",
+      "docs/architecture/diagnostics/phase3/observe.py",
+      "docs/architecture/diagnostics/phase3/substitute_efi.py",
+      "docs/architecture/diagnostics/phase4/REPORT.md",
+      "docs/architecture/diagnostics/phase4/check_evidence.py",
+      "docs/architecture/diagnostics/phase4/evidence/SHA256SUMS.json",
+      "docs/architecture/diagnostics/phase4/evidence/build-and-setup-logs.json.gz",
+      "docs/architecture/diagnostics/phase4/evidence/build-receipts.json",
+      "docs/architecture/diagnostics/phase4/evidence/fresh-guest.img.gz",
+      "docs/architecture/diagnostics/phase4/evidence/instrumentation.json",
+      "docs/architecture/diagnostics/phase4/evidence/matrix.json",
+      "docs/architecture/diagnostics/phase4/evidence/mock-processes.json",
+      "docs/architecture/diagnostics/phase4/evidence/mock-tests.log",
+      "docs/architecture/diagnostics/phase4/evidence/observations.json",
+      "docs/architecture/diagnostics/phase4/evidence/provenance.json",
+      "docs/architecture/diagnostics/phase4/evidence/validation.json",
+      "docs/architecture/diagnostics/phase4/matched_qemu.py",
+      "docs/architecture/diagnostics/phase4/observe.py",
+      "docs/architecture/diagnostics/phase4/run_matrix.py",
+      "docs/architecture/visualization/ARCHITECTURE_VISUALIZATION_REPORT.md",
+      "docs/architecture/visualization/DASHBOARD_GUIDE.md",
+      "docs/architecture/visualization/dashboard.css",
+      "docs/architecture/visualization/dashboard.js",
+      "docs/architecture/visualization/dashboard/dashboard.css",
+      "docs/architecture/visualization/dashboard/dashboard.js",
+      "docs/architecture/visualization/dashboard/index.html",
+      "docs/architecture/visualization/dashboard_2d_screenshot.png",
+      "docs/architecture/visualization/dashboard_3d_screenshot.png",
+      "docs/architecture/visualization/index.html",
+      "docs/architecture/visualization/pull_requests_snapshot.json",
+      "docs/architecture/visualization/research_programs.json",
+      "drivers/qemu/production_image/README.md",
+      "experiments/scg08_arithmetic_work/CMakeLists.txt",
+      "experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md",
+      "experiments/scg08_arithmetic_work/evidence_schema.json",
+      "experiments/scg08_arithmetic_work/exact_oracle_adapter.hpp",
+      "experiments/scg08_arithmetic_work/test_exp_scg08_01.cpp",
+      "experiments/scg08_arithmetic_work/tier1_markov_harness.hpp",
+      "experiments/scg08_arithmetic_work/tier2_work_harness.hpp",
+      "scripts/ci/validate_architecture_visualization.py",
+      "tests/ci/test_architecture_dashboard.py"
+    ],
+    "exit_code": 0,
+    "stdout_path": "comparisons/pr-760/main-to-head.diff",
+    "stdout_sha256": "09184b98ca84e494725570d4a26ea3dbedcd85ffa9a916cdc7b8cf29dcf5a233",
+    "stderr_path": "comparisons/pr-760/main-to-head.diff.stderr",
+    "output_archive": "comparison-output.zip"
+  },
+  {
+    "pr": 760,
+    "argv": [
+      "git",
+      "diff",
+      "--binary",
+      "8e6918fa98e19ee1476f91c97e82989b051a02e7",
+      "dab59a63e4000f81799a6b2303bbfab26300d526"
+    ],
+    "exit_code": 0,
+    "stdout_path": "comparisons/pr-760/proposed-delta.diff",
+    "stdout_sha256": "c766f7ca932734540a8a804914c7391dfa2c2390694fa530443dc10676351fb7",
+    "stderr_path": "comparisons/pr-760/proposed-delta.diff.stderr",
+    "output_archive": "comparison-output.zip"
+  },
+  {
+    "pr": 760,
+    "argv": [
+      "git",
+      "diff",
+      "--name-status",
+      "--no-renames",
+      "8e6918fa98e19ee1476f91c97e82989b051a02e7",
+      "dab59a63e4000f81799a6b2303bbfab26300d526"
+    ],
+    "exit_code": 0,
+    "stdout_path": "comparisons/pr-760/name-status.txt",
+    "stdout_sha256": "03b905159a08e265dde620727ceabcbe1ba2990d8007a650319b4a04d58f1669",
+    "stderr_path": "comparisons/pr-760/name-status.txt.stderr",
+    "output_archive": "comparison-output.zip"
+  },
+  {
+    "pr": 760,
+    "argv": [
+      "git",
+      "diff",
+      "--quiet",
+      "525554a193af6a3e37f8ab43b895a2a9ca231419",
+      "dab59a63e4000f81799a6b2303bbfab26300d526"
+    ],
+    "exit_code": 0,
+    "stdout_path": "comparisons/pr-760/original-tree-equality.txt",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_path": "comparisons/pr-760/original-tree-equality.txt.stderr",
+    "output_archive": "comparison-output.zip"
+  },
+  {
+    "pr": 766,
+    "argv": [
+      "git",
+      "diff",
+      "--binary",
+      "88300f14c1da1066ad6db25d31be0e8e912b3ef0",
+      "a763ab6876bf07b8ae7c529656cdd2e5d9cf3766",
+      "--",
+      "experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md",
+      "experiments/scg08_arithmetic_work/evidence_schema.json",
+      "experiments/scg08_arithmetic_work/gate1_evidence_record.json",
+      "scripts/ci/validate_scg08_gate1_evidence.py"
+    ],
+    "exit_code": 0,
+    "stdout_path": "comparisons/pr-766/main-to-head.diff",
+    "stdout_sha256": "13d066a9d34179accf93feeb96284189b3010a1ae8e9d2d253bf4500918b9568",
+    "stderr_path": "comparisons/pr-766/main-to-head.diff.stderr",
+    "output_archive": "comparison-output.zip"
+  },
+  {
+    "pr": 766,
+    "argv": [
+      "git",
+      "diff",
+      "--binary",
+      "36b3849aa1e6297e88de2ec1655777793ab0b59e",
+      "a763ab6876bf07b8ae7c529656cdd2e5d9cf3766"
+    ],
+    "exit_code": 0,
+    "stdout_path": "comparisons/pr-766/proposed-delta.diff",
+    "stdout_sha256": "e6a608741fac1575231027fd330a3aa6768df8a091d66d475dfc7d12016a8bd1",
+    "stderr_path": "comparisons/pr-766/proposed-delta.diff.stderr",
+    "output_archive": "comparison-output.zip"
+  },
+  {
+    "pr": 766,
+    "argv": [
+      "git",
+      "diff",
+      "--name-status",
+      "--no-renames",
+      "36b3849aa1e6297e88de2ec1655777793ab0b59e",
+      "a763ab6876bf07b8ae7c529656cdd2e5d9cf3766"
+    ],
+    "exit_code": 0,
+    "stdout_path": "comparisons/pr-766/name-status.txt",
+    "stdout_sha256": "ddc6cff9233fb780c74fbd0e4036adf9f976f832d74d10039fe9e745d76851aa",
+    "stderr_path": "comparisons/pr-766/name-status.txt.stderr",
+    "output_archive": "comparison-output.zip"
+  },
+  {
+    "pr": 769,
+    "argv": [
+      "git",
+      "diff",
+      "--binary",
+      "88300f14c1da1066ad6db25d31be0e8e912b3ef0",
+      "7c52be13dc0c3fb175271d63f1a8ba9aaeee170c",
+      "--",
+      "CMakeLists.txt",
+      "docs/governance/PUBLIC_API_LOCK.json",
+      "include/t81/frontend/semantic_analyzer.hpp",
+      "tests/cpp/semantic_analyzer_scope_lifetime_test.cpp"
+    ],
+    "exit_code": 0,
+    "stdout_path": "comparisons/pr-769/main-to-head.diff",
+    "stdout_sha256": "e92e98666c55569aa411709f2f69f76b93023235b9d6e3c2e564ac500dc1dda7",
+    "stderr_path": "comparisons/pr-769/main-to-head.diff.stderr",
+    "output_archive": "comparison-output.zip"
+  },
+  {
+    "pr": 769,
+    "argv": [
+      "git",
+      "diff",
+      "--binary",
+      "36b3849aa1e6297e88de2ec1655777793ab0b59e",
+      "7c52be13dc0c3fb175271d63f1a8ba9aaeee170c"
+    ],
+    "exit_code": 0,
+    "stdout_path": "comparisons/pr-769/proposed-delta.diff",
+    "stdout_sha256": "fe4eedb8dd5a764b64e21b5778e91fad0d3c5dd6191cfc533a8c063dd033e145",
+    "stderr_path": "comparisons/pr-769/proposed-delta.diff.stderr",
+    "output_archive": "comparison-output.zip"
+  },
+  {
+    "pr": 769,
+    "argv": [
+      "git",
+      "diff",
+      "--name-status",
+      "--no-renames",
+      "36b3849aa1e6297e88de2ec1655777793ab0b59e",
+      "7c52be13dc0c3fb175271d63f1a8ba9aaeee170c"
+    ],
+    "exit_code": 0,
+    "stdout_path": "comparisons/pr-769/name-status.txt",
+    "stdout_sha256": "32a48405701e3db286761a8489a00c4542ba30891a27200469b334e798eae21e",
+    "stderr_path": "comparisons/pr-769/name-status.txt.stderr",
+    "output_archive": "comparison-output.zip"
+  },
+  {
+    "pr": 769,
+    "argv": [
+      "git",
+      "merge-tree",
+      "--write-tree",
+      "88300f14c1da1066ad6db25d31be0e8e912b3ef0",
+      "7c52be13dc0c3fb175271d63f1a8ba9aaeee170c"
+    ],
+    "exit_code": 0,
+    "stdout_path": "comparisons/pr-769/merge-tree.txt",
+    "stdout_sha256": "96e0f98a7956e45b5add4c14eb5e8c0d57dcfcde22e83f8c4b10144070ac7149",
+    "stderr_path": "comparisons/pr-769/merge-tree.txt.stderr",
+    "output_archive": "comparison-output.zip"
+  }
+]

@@ -1,0 +1,120 @@
+[
+  {
+    "pr": 645,
+    "head_sha": "6d20d381322e4859e33524f4fc18d4c6569539ce",
+    "baseline_sha": "88300f14c1da1066ad6db25d31be0e8e912b3ef0",
+    "status": "PROVISIONAL",
+    "recommended_action": "CLOSE_WITHOUT_MERGE_ONLY_AFTER_MAINTAINER_DECISION",
+    "replacements": [
+      {
+        "description": "H04 specification substance represented",
+        "sha": "d8e1376a7a77902cc26269c6e8d4991bcde117a7"
+      }
+    ],
+    "rationale": "The contract text is already on main. Direct comparison of the specification differs only in trailing Markdown hard-break spaces on five metadata lines; ignoring end-of-line whitespace exits 0. This is substantive supersession, not byte-identical rendering.",
+    "retain": [
+      "The exact proposal/specification bytes and original review discussion, including unresolved historical findings.",
+      "The original main/specification comparison and the distinction between Markdown rendering differences and contract content.",
+      "The original candidate commit must not be relabeled as merged or execution-authorized."
+    ],
+    "posted": false,
+    "executed": false
+  },
+  {
+    "pr": 747,
+    "head_sha": "b18075ad6de93091f9aea30707ef5237d479c9d1",
+    "baseline_sha": "88300f14c1da1066ad6db25d31be0e8e912b3ef0",
+    "status": "PROVISIONAL",
+    "recommended_action": "CLOSE_WITHOUT_MERGE_ONLY_AFTER_MAINTAINER_DECISION",
+    "replacements": [
+      {
+        "description": "Integrated portability repair, PR 770",
+        "sha": "a4684582c9532061dc516836f10a8a0ed602d69f"
+      },
+      {
+        "description": "Later integration/build corrections, PR 772",
+        "sha": "89223724038ff7dec349343469df4ea8389ede26"
+      }
+    ],
+    "rationale": "A read-only three-way merge simulation returns exit 0 and exactly the current main tree. Twenty-five of 26 changed blobs already match main; the remaining CMake file includes newer main registrations. No surviving integration delta was found.",
+    "retain": [
+      "Original 26-path delta, portability/build fixture corrections, review comments and historical Windows failure records.",
+      "The exact no-op merge receipt and replacement/integration commit identities.",
+      "Dependent PRs 748, 750, 751 and 752 retain unique work; closure of 747 does not close, merge or accept them."
+    ],
+    "posted": false,
+    "executed": false
+  },
+  {
+    "pr": 760,
+    "head_sha": "dab59a63e4000f81799a6b2303bbfab26300d526",
+    "baseline_sha": "88300f14c1da1066ad6db25d31be0e8e912b3ef0",
+    "status": "PROVISIONAL",
+    "recommended_action": "CLOSE_WITHOUT_MERGE_ONLY_AFTER_MAINTAINER_DECISION",
+    "replacements": [
+      {
+        "description": "Harness/evidence/accounting successor, PR 763",
+        "sha": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3"
+      },
+      {
+        "description": "Further harness accounting repair, PR 765",
+        "sha": "36b3849aa1e6297e88de2ec1655777793ab0b59e"
+      },
+      {
+        "description": "Later evidence/provenance correction, PR 775",
+        "sha": "d3a6cf55517a3098d7bae91b07c72694bc3472da"
+      }
+    ],
+    "rationale": "The head tree exactly equals original implementation 525554a193af6a3e37f8ab43b895a2a9ca231419. All seven initially added harness files are represented on main, two byte-identically and others with later corrections. Its residual delta deletes 50 newer unrelated paths and changes stale visualization content. Do not integrate those rollbacks.",
+    "retain": [
+      "Original implementation and report at both 525554a193af6a3e37f8ab43b895a2a9ca231419 and the inventoried head.",
+      "All historical arithmetic/evidence/schema records and negative review findings; preserve source identity rather than rewriting old counters.",
+      "The full list of 50 deleted newer paths and source bytes at their baseline, retained here for comparison.",
+      "Gate 1 acceptance and Gate 2 execution remain withheld; successor integration is not scientific acceptance."
+    ],
+    "posted": false,
+    "executed": false
+  },
+  {
+    "pr": 766,
+    "head_sha": "a763ab6876bf07b8ae7c529656cdd2e5d9cf3766",
+    "baseline_sha": "88300f14c1da1066ad6db25d31be0e8e912b3ef0",
+    "status": "PROVISIONAL",
+    "recommended_action": "CLOSE_WITHOUT_MERGE_ONLY_AFTER_MAINTAINER_DECISION",
+    "replacements": [
+      {
+        "description": "Evidence/source/provenance and scalar correction, PR 775",
+        "sha": "d3a6cf55517a3098d7bae91b07c72694bc3472da"
+      }
+    ],
+    "rationale": "Main retains the strict scalar and non-null publication-SHA corrections and adds full-string SHA matching, evidence_generation_sha distinction and newer negative/parity checks through PR 775. The older branch is not a sound replacement for this newer source/evidence boundary.",
+    "retain": [
+      "Original gate1_evidence_record.json, evidence_schema.json, implementation report and validator at the exact old head, including review receipts.",
+      "Unknown historical evidence-generation provenance must remain unknown; implementation and publication hashes do not authenticate original execution.",
+      "Do not treat dependent 767 as superseded: it still has finite-JSON, calendar and recursive-schema checks absent on this main. Port/review separately while preserving newer generation fields."
+    ],
+    "posted": false,
+    "executed": false
+  },
+  {
+    "pr": 769,
+    "head_sha": "7c52be13dc0c3fb175271d63f1a8ba9aaeee170c",
+    "baseline_sha": "88300f14c1da1066ad6db25d31be0e8e912b3ef0",
+    "status": "PROVISIONAL",
+    "recommended_action": "CLOSE_WITHOUT_MERGE_ONLY_AFTER_MAINTAINER_DECISION",
+    "replacements": [
+      {
+        "description": "Semantic scope-lifetime integration, PR 771",
+        "sha": "b96022c6b8e313a0ccd6bed6f1057d5e2368d092"
+      }
+    ],
+    "rationale": "A read-only three-way merge simulation returns exit 0 and exactly main\u2019s tree. The semantic-analyzer header, public API lock and Release-active regression test are byte-identical to main after PR 771. Remaining CMake differences do not represent a missing scope-lifetime repair.",
+    "retain": [
+      "The exact semantic-analyzer repair, API-lock version and Release-active regression source plus historical reproduction/review records.",
+      "The replacement 771 commit and exact no-op merge receipt.",
+      "Do not reinterpret old failing CI as the basis for closure or as fresh qualification of main."
+    ],
+    "posted": false,
+    "executed": false
+  }
+]

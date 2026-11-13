@@ -1,0 +1,17 @@
+{
+  "records": 80,
+  "all_classifications_provisional": true,
+  "unchanged_head_and_classification_pairs": true,
+  "original_zip_sha256": "8c5eb646e4da4821349c2f6bb16e76863a05d4dc02ab7872a272c807b83088f2",
+  "original_checksum_files_validated": 18,
+  "source_blobs_validated": 225,
+  "replacement_commits_are_main_ancestors": true,
+  "closure_recommendations": 5,
+  "recommendations_posted": 0,
+  "prs_closed": 0,
+  "prs_merged": 0,
+  "active_pr782_modified": false,
+  "note": "Artifact integrity/source comparisons only; no software tests or experiments executed.",
+  "comparison_output_receipts_verified": 19,
+  "preservation_timestamp_utc": "2026-11-13 12:15:10 UTC"
+}
