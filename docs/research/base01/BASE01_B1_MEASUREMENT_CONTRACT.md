@@ -290,8 +290,9 @@ children; artifact inventory accompanies builds. Neither creates a timed kernel.
    objects and construct new measured state. This defines a warmed process with
    fresh workload state, not cold caches. Warm-up itself needs authorization.
 3. Use the base batch counts above. Only qualification-authorized pilots may
-   adjust them, with at most three pilots per cell, deterministic doubling and
-   no ranking of speed to select a count. Freeze final counts/chunk partitions
+   adjust them, with at most three pilots per cell, deterministic doubling **only for non-CanonFS cells**, and
+   no ranking of speed to select a count. CanonFS read/write cells are fixed at exactly 100 operations;
+   if a timer or stability gate fails at 100, block the cell pending a separate reviewed amendment. Freeze final counts/chunk partitions
    before the campaign; label and retain every pilot separately. Do not tune a
    batch mid-campaign or count pilots toward the 30 trials. If a count cannot
    satisfy timer/memory budgets, stop; amend the design rather than overrun them.
@@ -370,13 +371,27 @@ further trials and aborts at a reviewed safe boundary, preserving partial data.
 No claim of instantaneous revocation of an already running API call is made.
 
 Proposed ceilings for later human approval: one workload thread/child at a time,
-1 GiB worker peak-RSS observation budget, 16 VM instances per chunk, 16 MiB
-retained output per child, 8 GiB total evidence, 60 seconds per trial/pilot,
+1 GiB (= 1,048,576 KiB) worker lifetime peak-RSS acceptance budget, 16 VM instances per chunk,
+16 MiB retained output per child **except 128 MiB for CanonFS read cells only**,
+8 GiB total evidence, 60 seconds per trial/pilot,
 30 minutes total qualification, eight hours total campaign. These are ceilings,
 not predicted costs or exact RSS enforcement guarantees. External watchdog and
 OS/cgroup limits must have explicitly recorded, distinct scopes. Exceeding any
 ceiling stops the run and retains an incomplete record; absent reliable budget
-checks blocks eligibility. This design grants no resource allocation.
+checks blocks eligibility. For CanonFS read cells, preflight an overflow-safe capacity ledger before release,
+prepare empty result slots outside timing, retain all 100 owning results, and inspect actual
+unique backing capacities and outer-slot/result-container allocations **after** the timed interval.
+No per-read accounting, allocator replacement, preallocated read destinations or serialization
+may enter the measured interval. Caller-owned retained-output capacity is distinct from driver
+buffers, inputs, verification/serialization memory and total process RSS; these remain covered
+by separate resource/evidence budgets. Stream bounded post-interval evidence without duplicating
+full batches as hexadecimal strings, while independently verifying every returned byte.
+A human-selected cgroup v2 memory-containment ceiling, membership, swap/ancestor policy and
+failure semantics must be separately approved and verified; cgroup memory is not process RSS,
+may overshoot, and sampled RSS cannot enforce a hard cap. Missing controls or unexpected
+reclaim/OOM events deny or invalidate the cell. Launcher/observer and evidence-storage limits
+must also be separately specified. See [Amendment A1](BASE01_B1_CANONFS_RETENTION_AMENDMENT_A1.md).
+This design grants no resource allocation.
 
 Retain append-only per-child records: permit and host-report digests; source,
 runner and executable/archive hashes; compiler/CMake/dependency/environment data;

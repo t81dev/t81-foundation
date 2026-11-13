@@ -109,14 +109,16 @@ before the following future sequence; it does not authorize the 420-child campai
    wrapper durations, retaining zero values. No positive increments, backward
    elapsed values, unreliable mapping or unavailable clock evidence blocks timing.
 4. Run at most three pilots per eligible cell within the global qualification
-   budget and predetermined deterministic count-doubling rule. For every pilot
+   budget and predetermined deterministic count-doubling rule **for non-CanonFS cells only**.
+   CanonFS read/write cells must each retain exactly 100 operations, with no pilot doubling;
+   a failed timer gate leaves the cell blocked pending a separate reviewed protocol amendment. For every pilot
    require total raw elapsed `T >= 1000*q` and `B*e99/T <= 0.01`, with `B` the
    number of interval pairs. These are proposed conservative policy thresholds,
    not proven error bounds. Empty wrappers cannot model all syscall/scheduler
    effects. No overhead subtraction; preserve pilot failures and assembly evidence.
 5. Final pilot must satisfy all gates and memory/output budgets; freeze its batch
    count and VM chunk partition without selecting a favorable speed. If the base
-   count passes, keep it. A failed attempt can only trigger doubling for insufficient
+   count passes, keep it. For non-CanonFS cells only, a failed attempt can trigger doubling for insufficient
    duration/overhead; correctness, host or accounting failure stops qualification.
    If the next doubling exceeds a bound or the third attempt fails, the cell is
    inconclusive/blocked for campaign, pending an explicit amended plan.
