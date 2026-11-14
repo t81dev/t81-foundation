@@ -23,5 +23,15 @@
     "title": "spec.html",
     "content": "",
     "url": "/_layouts/spec.html"
+  },
+  {
+    "title": "lunr.js - A bit like Solr, but much smaller and not as bright",
+    "content": "",
+    "url": "/search/node_modules/lunr/index.html"
+  },
+  {
+    "title": "Mocha Tests",
+    "content": "",
+    "url": "/search/node_modules/lunr/test/index.html"
   }
 ]
