@@ -1,5 +1,3 @@
-#include <sys/wait.h>
-#include <unistd.h>
 #include <cassert>
 #include <cmath>
 #include <cstdint>
@@ -8,6 +6,7 @@
 #include <iomanip>
 #include <iostream>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "exact_oracle_adapter.hpp"
@@ -514,49 +513,34 @@ void test_deterministic_replay() {
   SCG08_REQUIRE(res1.mean_run_length() == res2.mean_run_length(), "PRNG replay mismatch");
 }
 
-// Helper to verify that a callable in a child process exits with code 1 and emits the mandatory
-// oracle-mismatch diagnostic on stderr
+// Python launches one fresh process per named rejection case. The normal C++ run
+// retains every fixture assertion; the result_rejection CTest verifies exit 1
+// and the mandatory diagnostic for each selected case, including under NDEBUG.
+static std::string_view selected_rejection_case;
+static constexpr std::array<std::string_view, 12> rejection_cases = {
+    "numerical-equality", "overflow-classification", "negative-product-bound",
+    "canonical-trits",    "stored-tryte-validation", "stored-tryte-decode",
+    "stored-tryte-add",   "stored-tryte-mul",        "sign-handling",
+    "binary-truncation",  "ternary-truncation",      "budget"};
+
 template <typename Fn>
-static void expect_fail_closed_fn_in_child(Fn&& fn) {
-  int pipefd[2] = {-1, -1};
-  SCG08_REQUIRE(pipe(pipefd) == 0, "Pipe creation failed for negative oracle test");
-  pid_t pid = fork();
-  SCG08_REQUIRE(pid >= 0, "Fork failed for negative oracle test");
-  if (pid == 0) {
-    close(pipefd[0]);
-    dup2(pipefd[1], STDERR_FILENO);
-    close(pipefd[1]);
-    fn();
-    std::exit(0);
-  }
-  close(pipefd[1]);
-  std::string stderr_output;
-  char buf[256];
-  ssize_t n = 0;
-  while ((n = read(pipefd[0], buf, sizeof(buf))) > 0) {
-    stderr_output.append(buf, static_cast<size_t>(n));
-  }
-  close(pipefd[0]);
-  int status = 0;
-  waitpid(pid, &status, 0);
-  SCG08_REQUIRE(WIFEXITED(status) && WEXITSTATUS(status) == 1,
-                "Corrupted oracle validation case must exit fail-closed with code 1");
-  SCG08_REQUIRE(
-      stderr_output.find("INVALID EXPERIMENT (CORRECTNESS DEFECT: ORACLE MISMATCH)") !=
-          std::string::npos,
-      "Corrupted oracle validation case must emit mandatory oracle-mismatch diagnostic on stderr");
+static void run_rejection_case(std::string_view name, Fn&& fn) {
+  if (selected_rejection_case != name) return;
+  fn();
+  // A failed rejection must return success to the driver, which rejects it.
+  // Stop here so a later fixture cannot accidentally supply the expected failure.
+  std::exit(0);
 }
 
-static void expect_fail_closed_in_child(bool condition, const char* context_msg) {
-  expect_fail_closed_fn_in_child([&]() { enforce_oracle_parity(condition, context_msg); });
+static void reject_if_selected(std::string_view name, bool condition, const char* context_msg) {
+  run_rejection_case(name, [&]() { enforce_oracle_parity(condition, context_msg); });
 }
 
 // ============================================================================
 // Test 8: Fail-Closed Negative Tests Across All 5 Oracle Dimensions & Budget
 // ============================================================================
-void test_fail_closed_negative_cases() {
-  std::cout << "[SCG-08 GATE 1] Running negative tests: deliberate 5-D oracle corruptions "
-               "and budget violation fail closed...\n";
+void test_oracle_rejection_fixtures() {
+  std::cout << "[SCG-08 GATE 1] Checking deliberate 5-D oracle corruption fixtures...\n";
 
   // Construct valid baseline B=64 inputs and expected oracle outputs without consuming parent trial budget
   constexpr size_t B = 64;
@@ -598,7 +582,8 @@ void test_fail_closed_negative_cases() {
     SCG08_REQUIRE(!rep.numerical_equality,
                   "Corrupted binary sum must fail numerical_equality");
     SCG08_REQUIRE(!rep.all_passed(), "Corrupted numerical_equality must fail all_passed()");
-    expect_fail_closed_in_child(rep.all_passed(), "Deliberate numerical equality corruption");
+    reject_if_selected("numerical-equality", rep.all_passed(),
+                       "Deliberate numerical equality corruption");
   }
 
   // 2. Negative Test — Dimension 2 (Overflow Classification Corruption):
@@ -614,8 +599,8 @@ void test_fail_closed_negative_cases() {
                   "Misclassified sum overflow must fail overflow_classification");
     SCG08_REQUIRE(!rep_misclass.all_passed(),
                   "Misclassified overflow must fail all_passed()");
-    expect_fail_closed_in_child(rep_misclass.all_passed(),
-                                "Deliberate overflow classification mismatch");
+    reject_if_selected("overflow-classification", rep_misclass.all_passed(),
+                       "Deliberate overflow classification mismatch");
 
     ExactBigIntOracle out_of_domain = ExactBigIntOracle::from_power_of_two(B - 1);
     auto rep_ood = evaluate_oracle_validation_report<2, 2, 3, 1, 2, 2>(
@@ -653,9 +638,8 @@ void test_fail_closed_negative_cases() {
                   "Product below exact negative bound -2^(B-1)*(2^(B-1)-1) must fail overflow_classification");
     SCG08_REQUIRE(!rep_below_min_prod.all_passed(),
                   "Product below exact negative bound must fail all_passed()");
-    expect_fail_closed_in_child(
-        rep_below_min_prod.all_passed(),
-        "Deliberate negative product bound violation below -2^(B-1)*(2^(B-1)-1)");
+    reject_if_selected("negative-product-bound", rep_below_min_prod.all_passed(),
+                       "Deliberate negative product bound violation below -2^(B-1)*(2^(B-1)-1)");
   }
 
   // 3. Negative Test — Dimension 3 (Canonical Output Digits & Stored Trytes Corruption):
@@ -673,8 +657,8 @@ void test_fail_closed_negative_cases() {
                   "Non-canonical output trit (+2) must fail canonical_digits");
     SCG08_REQUIRE(!rep_trit.all_passed(),
                   "Non-canonical output trit must fail all_passed()");
-    expect_fail_closed_in_child(rep_trit.all_passed(),
-                                "Deliberate non-canonical output trit corruption");
+    reject_if_selected("canonical-trits", rep_trit.all_passed(),
+                       "Deliberate non-canonical output trit corruption");
 
     auto t_sum_tryte_corrupt = t_sum;
     int8_t bad_tryte = 14;
@@ -690,7 +674,7 @@ void test_fail_closed_negative_cases() {
                   "Non-canonical stored tryte must fail all_passed()");
 
     // Subprocess 3b-i: Full object-level verification path on corrupted TernaryMultiLimb (+14)
-    expect_fail_closed_fn_in_child([&]() {
+    run_rejection_case("stored-tryte-validation", [&]() {
       auto rep = evaluate_oracle_validation_report<2, 2, 3, 1, 2, 2>(
           B, val_max, val_max, ta, tb, t_sum_tryte_corrupt, t_prod, ba, bb, b_sum, b_prod,
           expected_sum, expected_prod, true, true);
@@ -700,14 +684,14 @@ void test_fail_closed_negative_cases() {
 
     // Subprocess 3b-ii: Direct to_trits() decoding on corrupted TernaryMultiLimb (+14)
     // Must reject before reaching limbs[l] * unit_limb -> TRYTE_TO_TRITS[14 + 13]
-    expect_fail_closed_fn_in_child([&]() {
+    run_rejection_case("stored-tryte-decode", [&]() {
       auto decoded = t_sum_tryte_corrupt.to_trits();
       (void)decoded;
     });
 
     // Subprocess 3b-iii: Direct add_ternary() on corrupted TernaryMultiLimb (+14)
     // Must reject before reaching addc() -> ADD_TABLE[14 + 13]
-    expect_fail_closed_fn_in_child([&]() {
+    run_rejection_case("stored-tryte-add", [&]() {
       OperationAccounting acc_corrupt;
       auto res = ArithmeticWorkHarness::add_ternary<2, 2>(t_sum_tryte_corrupt, tb, acc_corrupt);
       (void)res;
@@ -715,7 +699,7 @@ void test_fail_closed_negative_cases() {
 
     // Subprocess 3b-iv: Direct mul_ternary() on corrupted TernaryMultiLimb (+14)
     // Must reject before reaching to_trits() -> TRYTE_TO_TRITS[14 + 13]
-    expect_fail_closed_fn_in_child([&]() {
+    run_rejection_case("stored-tryte-mul", [&]() {
       OperationAccounting acc_corrupt;
       auto res = ArithmeticWorkHarness::mul_ternary<2, 3>(t_sum_tryte_corrupt, tb, acc_corrupt);
       (void)res;
@@ -735,7 +719,8 @@ void test_fail_closed_negative_cases() {
     SCG08_REQUIRE(!rep_bsign.sign_handling,
                   "Inverted binary output sign must fail sign_handling");
     SCG08_REQUIRE(!rep_bsign.all_passed(), "Inverted binary sign must fail all_passed()");
-    expect_fail_closed_in_child(rep_bsign.all_passed(), "Deliberate sign handling corruption");
+    reject_if_selected("sign-handling", rep_bsign.all_passed(),
+                       "Deliberate sign handling corruption");
 
     ExactBigIntOracle val_zero(0);
     auto b_zero_neg = BinaryMultiLimb<2>::from_oracle(val_zero);
@@ -765,7 +750,8 @@ void test_fail_closed_negative_cases() {
     SCG08_REQUIRE(!rep_btrunc.absence_of_truncation,
                   "Truncated high binary product limb must fail absence_of_truncation");
     SCG08_REQUIRE(!rep_btrunc.all_passed(), "Truncated binary product must fail all_passed()");
-    expect_fail_closed_in_child(rep_btrunc.all_passed(), "Deliberate binary limb truncation");
+    reject_if_selected("binary-truncation", rep_btrunc.all_passed(),
+                       "Deliberate binary limb truncation");
 
     auto t_prod_trits_trunc = t_prod_trits;
     for (size_t i = spec.operand_trits; i < t_prod_trits_trunc.size(); ++i) {
@@ -777,28 +763,38 @@ void test_fail_closed_negative_cases() {
     SCG08_REQUIRE(!rep_ttrunc.absence_of_truncation,
                   "Truncated high ternary product trits must fail absence_of_truncation");
     SCG08_REQUIRE(!rep_ttrunc.all_passed(), "Truncated ternary product must fail all_passed()");
-    expect_fail_closed_in_child(rep_ttrunc.all_passed(), "Deliberate ternary trit truncation");
+    reject_if_selected("ternary-truncation", rep_ttrunc.all_passed(),
+                       "Deliberate ternary trit truncation");
   }
 
   // 6. Negative Test — Cumulative Trial Budget Violation:
-  pid_t pid_budget = fork();
-  SCG08_REQUIRE(pid_budget >= 0, "Fork failed for trial budget negative test");
-  if (pid_budget == 0) {
+  run_rejection_case("budget", []() {
     TrialBudgetEnforcer::instance().reset_for_test(1000);
     TrialBudgetEnforcer::instance().record_trial();
-    std::exit(0);
-  }
-  int status_budget = 0;
-  waitpid(pid_budget, &status_budget, 0);
-  SCG08_REQUIRE(WIFEXITED(status_budget) && WEXITSTATUS(status_budget) == 1,
-                "Cumulative trial budget exceeded must exit fail-closed with code 1");
+  });
 
-  std::cout << "  Negative tests passed: all 5 oracle dimensions and budget overflow fail closed.\n";
+  std::cout << "  Oracle rejection fixture assertions passed; process rejection checks are "
+               "registered separately in CTest.\n";
 }
 
 }  // namespace scg08
 
-int main() {
+int main(int argc, char** argv) {
+  if (argc != 1) {
+    if (argc == 3 && std::string_view(argv[1]) == "--negative") {
+      for (auto name : scg08::rejection_cases) {
+        if (name == argv[2]) {
+          scg08::selected_rejection_case = name;
+          scg08::test_oracle_rejection_fixtures();
+          std::cerr << "Selected rejection case was not reached\n";
+          return 2;
+        }
+      }
+    }
+    std::cerr << "Usage: t81_exp_scg08_01_test [--negative CASE] (known case required)\n";
+    return 2;
+  }
+
   std::cout << "==============================================================="
                "======\n";
   std::cout << " SCG-08 Phase 1 Gate 1: Carry Propagation & Arithmetic Work "
@@ -816,7 +812,7 @@ int main() {
   scg08::test_deterministic_exact_counts();
   scg08::test_operation_accounting_formula();
   scg08::test_deterministic_replay();
-  scg08::test_fail_closed_negative_cases();
+  scg08::test_oracle_rejection_fixtures();
   scg08::test_trial_budget_enforcement();
 
   std::cout << "==============================================================="
