@@ -1,0 +1,11 @@
+Undefined symbols for architecture arm64:
+  "t81::codec::trit_packing::pack_base81(std::__1::vector<t81::Trit, std::__1::allocator<t81::Trit>> const&)", referenced from:
+      t81::tisc::base81_view::render_insn(t81::tisc::Insn const&) in base81_view-959421.o
+  "t81::codec::trit_packing::unpack_base81(std::__1::vector<unsigned char, std::__1::allocator<unsigned char>> const&, unsigned long)", referenced from:
+      t81::tisc::base81_view::parse(std::__1::basic_string_view<char, std::__1::char_traits<char>>) in base81_view-959421.o
+  "t81::codec::trit_packing::b81_digits_to_string(std::__1::vector<unsigned char, std::__1::allocator<unsigned char>> const&)", referenced from:
+      t81::tisc::base81_view::render_insn(t81::tisc::Insn const&) in base81_view-959421.o
+  "t81::codec::trit_packing::string_to_b81_digits(std::__1::basic_string_view<char, std::__1::char_traits<char>>)", referenced from:
+      t81::tisc::base81_view::parse(std::__1::basic_string_view<char, std::__1::char_traits<char>>) in base81_view-959421.o
+ld: symbol(s) not found for architecture arm64
+clang++: error: linker command failed with exit code 1 (use -v to see invocation)

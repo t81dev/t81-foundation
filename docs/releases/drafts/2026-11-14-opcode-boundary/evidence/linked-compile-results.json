@@ -1,0 +1,34 @@
+[
+  {
+    "argv": [
+      "clang++",
+      "-std=c++23",
+      "-DNDEBUG",
+      "-I",
+      "/private/tmp/t81-release-baseline-v194/include",
+      "docs/releases/drafts/2026-11-14-opcode-boundary/evidence/artifact_probe.cpp",
+      "/private/tmp/t81-release-baseline-v194/isa/encoding.cpp",
+      "/private/tmp/t81-release-baseline-v194/isa/binary_io.cpp",
+      "/private/tmp/t81-release-baseline-v194/codec/base81.cpp",
+      "-o",
+      "/private/tmp/t81-artifact-probe-v194"
+    ],
+    "exit": 0
+  },
+  {
+    "argv": [
+      "clang++",
+      "-std=c++23",
+      "-DNDEBUG",
+      "-I",
+      "include",
+      "docs/releases/drafts/2026-11-14-opcode-boundary/evidence/artifact_probe.cpp",
+      "isa/encoding.cpp",
+      "isa/binary_io.cpp",
+      "codec/base81.cpp",
+      "-o",
+      "/private/tmp/t81-artifact-probe-main"
+    ],
+    "exit": 0
+  }
+]

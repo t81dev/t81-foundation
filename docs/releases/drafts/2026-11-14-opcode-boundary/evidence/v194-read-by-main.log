@@ -1,0 +1,2 @@
+load_program=TWMATMUL byte=194 a=1 b=2 c=3
+decode_raw13=TWMATMUL byte=194

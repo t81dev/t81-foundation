@@ -1,0 +1,94 @@
+[
+  {
+    "line": 5364,
+    "context": "\n  if (sub == \"simulate\") {\n    if (simulate_file.empty()) {\n      error(\"axion simulate requires a .tisc file argument.\");\n      return 1;\n    }\n    if (!fs::exists(simulate_file)) {\n      error(\"axion simulate: file not found: \" + simulate_file);\n      return 1;\n    }\n    if (fs::path(simulate_file).extension() != \".tisc\") {\n      error(\"axion simulate requires a .tisc input file.\");\n      return 1;\n    }\n    auto program = t81::tisc::load_program(simulate_file);\n    auto vm = t81::vm::make_interpreter_vm();\n    vm->load_program(program);\n    auto result = vm->run_to_halt();"
+  },
+  {
+    "line": 5366,
+    "context": "    if (simulate_file.empty()) {\n      error(\"axion simulate requires a .tisc file argument.\");\n      return 1;\n    }\n    if (!fs::exists(simulate_file)) {\n      error(\"axion simulate: file not found: \" + simulate_file);\n      return 1;\n    }\n    if (fs::path(simulate_file).extension() != \".tisc\") {\n      error(\"axion simulate requires a .tisc input file.\");\n      return 1;\n    }\n    auto program = t81::tisc::load_program(simulate_file);\n    auto vm = t81::vm::make_interpreter_vm();\n    vm->load_program(program);\n    auto result = vm->run_to_halt();\n    const bool ok = static_cast<bool>(result);\n    if (json_out) {"
+  },
+  {
+    "line": 6033,
+    "context": "  std::string artifact_sha3_512;\n  std::string output_sha3_512;\n  std::string trace_sha3_512;\n};\n\nstruct DeterminismBaselineEntry {\n  std::string relative_path;\n  DeterminismRunRecord record;\n};\n\nbool capture_determinism_run_record(const fs::path& input,\n                                    const std::optional<fs::path>& policy_path,\n                                    DeterminismRunRecord& record, std::string& error_message) {\n  try {\n    auto program = t81::tisc::load_program(input.string());\n    if (policy_path) {\n      std::ifstream ifs(*policy_path);\n      if (!ifs) {"
+  },
+  {
+    "line": 6044,
+    "context": "                                    const std::optional<fs::path>& policy_path,\n                                    DeterminismRunRecord& record, std::string& error_message) {\n  try {\n    auto program = t81::tisc::load_program(input.string());\n    if (policy_path) {\n      std::ifstream ifs(*policy_path);\n      if (!ifs) {\n        error_message = \"Could not open policy file: \" + policy_path->string();\n        return false;\n      }\n      std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());\n      program.axion_policy_text = content;\n    }\n    auto vm = t81::vm::make_interpreter_vm();\n    vm->load_program(program);\n    auto result = vm->run_to_halt();\n    std::string printed;\n    for (const auto& line : vm->state().printed_output) {"
+  },
+  {
+    "line": 6315,
+    "context": "      error(\"determinism \" + action + \" expects a .tisc input file.\");\n      return 1;\n    }\n    struct RunSnapshot {\n      bool ok = false;\n      std::optional<t81::vm::Trap> trap;\n      std::string printed;\n      std::string output_hash;\n      std::string trace_text;\n      std::string trace_hash;\n      std::vector<std::string> axion_reasons;\n    };\n    auto run_once = [&]() -> RunSnapshot {\n      RunSnapshot snapshot;\n      auto program = t81::tisc::load_program(input.string());\n      if (policy_path) {\n        std::ifstream ifs(*policy_path);\n        if (!ifs) {"
+  },
+  {
+    "line": 6326,
+    "context": "    };\n    auto run_once = [&]() -> RunSnapshot {\n      RunSnapshot snapshot;\n      auto program = t81::tisc::load_program(input.string());\n      if (policy_path) {\n        std::ifstream ifs(*policy_path);\n        if (!ifs) {\n          throw std::runtime_error(\"Could not open policy file: \" + policy_path->string());\n        }\n        std::string content((std::istreambuf_iterator<char>(ifs)),\n                            std::istreambuf_iterator<char>());\n        program.axion_policy_text = content;\n      }\n      auto vm = t81::vm::make_interpreter_vm();\n      vm->load_program(program);\n      auto result = vm->run_to_halt();\n      if (!result) {\n        snapshot.trap = result.error();"
+  },
+  {
+    "line": 6603,
+    "context": "      error(\"determinism multi-run requires --count <n> with n >= 1.\");\n      return 1;\n    }\n    const fs::path input = positional[0];\n    if (input.extension() != \".tisc\") {\n      error(\"determinism multi-run expects a .tisc input file.\");\n      return 1;\n    }\n\n    std::vector<std::string> signatures;\n    std::optional<std::string> baseline;\n    bool ok = true;\n    std::size_t mismatch_run = 0;\n    for (std::size_t run = 0; run < multi_run_count; ++run) {\n      auto program = t81::tisc::load_program(input.string());\n      if (policy_path) {\n        std::ifstream ifs(*policy_path);\n        if (!ifs) {"
+  },
+  {
+    "line": 6615,
+    "context": "    std::size_t mismatch_run = 0;\n    for (std::size_t run = 0; run < multi_run_count; ++run) {\n      auto program = t81::tisc::load_program(input.string());\n      if (policy_path) {\n        std::ifstream ifs(*policy_path);\n        if (!ifs) {\n          error(\"Could not open policy file: \" + policy_path->string());\n          return 1;\n        }\n        std::string content((std::istreambuf_iterator<char>(ifs)),\n                            std::istreambuf_iterator<char>());\n        program.axion_policy_text = content;\n      }\n      auto vm = t81::vm::make_interpreter_vm();\n      vm->load_program(program);\n      auto result = vm->run_to_halt();\n      std::string printed;\n      for (const auto& line : vm->state().printed_output) {"
+  },
+  {
+    "line": 7085,
+    "context": "    return t81::cli::run_tisc(input, policy_path, false, std::nullopt);\n  }\n  if (action == \"debug\") {\n    return t81::cli::debug_tisc(input, policy_path);\n  }\n  if (action == \"trace\") {\n    if (!trace_path) {\n      error(\"vm trace requires -o <trace.txt> or --out <trace.txt>.\");\n      return 1;\n    }\n    return t81::cli::run_tisc(input, policy_path, true, trace_path);\n  }\n  if (action == \"until\" || action == \"step\" || action == \"regs\" || action == \"stack\" ||\n      action == \"mem\") {\n    auto program = t81::tisc::load_program(input.string());\n    if (policy_path) {\n      std::ifstream ifs(*policy_path);\n      if (!ifs) {"
+  },
+  {
+    "line": 7096,
+    "context": "  }\n  if (action == \"until\" || action == \"step\" || action == \"regs\" || action == \"stack\" ||\n      action == \"mem\") {\n    auto program = t81::tisc::load_program(input.string());\n    if (policy_path) {\n      std::ifstream ifs(*policy_path);\n      if (!ifs) {\n        error(\"Could not open policy file: \" + policy_path->string());\n        return 1;\n      }\n      std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());\n      program.axion_policy_text = content;\n    }\n    auto vm = t81::vm::make_interpreter_vm();\n    vm->load_program(program);\n    std::optional<t81::vm::Trap> trap;\n    std::size_t executed_steps = 0;\n    bool reached_target_pc = false;"
+  },
+  {
+    "line": 7271,
+    "context": "                << \"  \\\"tag\\\": \" << static_cast<int>(state.memory_tags[*memory_addr]) << \",\\n\"\n                << \"  \\\"trap\\\": \";\n      if (trap)\n        std::cout << \"\\\"\" << json_escape(t81::vm::to_string(*trap)) << \"\\\"\\n\";\n      else\n        std::cout << \"null\\n\";\n      std::cout << \"}\\n\";\n    } else {\n      std::cout << \"Memory[\" << *memory_addr << \"]: \" << state.memory[*memory_addr]\n                << \" [tag=\" << static_cast<int>(state.memory_tags[*memory_addr]) << \"]\\n\";\n    }\n    return ok ? 0 : 1;\n  }\n  if (action == \"state\") {\n    auto program = t81::tisc::load_program(input.string());\n    if (policy_path) {\n      std::ifstream ifs(*policy_path);\n      if (!ifs) {"
+  },
+  {
+    "line": 7282,
+    "context": "    return ok ? 0 : 1;\n  }\n  if (action == \"state\") {\n    auto program = t81::tisc::load_program(input.string());\n    if (policy_path) {\n      std::ifstream ifs(*policy_path);\n      if (!ifs) {\n        error(\"Could not open policy file: \" + policy_path->string());\n        return 1;\n      }\n      std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());\n      program.axion_policy_text = content;\n    }\n    auto vm = t81::vm::make_interpreter_vm();\n    vm->load_program(program);\n    auto result = vm->run_to_halt();\n    const auto& state = vm->state();\n    const auto& ctx = state.contexts.empty() ? t81::vm::ThreadContext{} : state.contexts.front();"
+  },
+  {
+    "line": 7323,
+    "context": "    std::cout << \"Halted:        \" << (state.halted ? \"yes\" : \"no\") << \"\\n\";\n    std::cout << \"PC:            \" << ctx.pc << \"\\n\";\n    std::cout << \"SP:            \" << ctx.sp << \"\\n\";\n    std::cout << \"Memory words:  \" << state.memory.size() << \"\\n\";\n    std::cout << \"Trace entries: \" << state.trace.size() << \"\\n\";\n    std::cout << \"Axion events:  \" << state.axion_log.size() << \"\\n\";\n    std::cout << \"Printed lines: \" << state.printed_output.size() << \"\\n\";\n    if (!ok) {\n      std::cout << \"Trap:          \" << t81::vm::to_string(result.error()) << \"\\n\";\n      return 1;\n    }\n    return 0;\n  }\n  if (action == \"profile\" || action == \"explain-trap\") {\n    auto program = t81::tisc::load_program(input.string());\n    if (policy_path) {\n      std::ifstream ifs(*policy_path);\n      if (!ifs) {"
+  },
+  {
+    "line": 7334,
+    "context": "    return 0;\n  }\n  if (action == \"profile\" || action == \"explain-trap\") {\n    auto program = t81::tisc::load_program(input.string());\n    if (policy_path) {\n      std::ifstream ifs(*policy_path);\n      if (!ifs) {\n        error(\"Could not open policy file: \" + policy_path->string());\n        return 1;\n      }\n      std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());\n      program.axion_policy_text = content;\n    }\n    auto vm = t81::vm::make_interpreter_vm();\n    vm->load_program(program);\n    auto result = vm->run_to_halt();\n    const auto& state = vm->state();\n    const auto& ctx = state.contexts.empty() ? t81::vm::ThreadContext{} : state.contexts.front();"
+  },
+  {
+    "line": 7547,
+    "context": "      }\n      std::cout << \"  ]\\n}\\n\";\n    } else {\n      for (const auto& [tier, label] : tiers) {\n        std::cout << \"Tier \" << tier << \": \" << label << \"\\n\";\n      }\n    }\n    return 0;\n  }\n\n  if (input.empty() || input.extension() != \".tisc\") {\n    error(\"tier \" + action + \" expects a .tisc input file.\");\n    return 1;\n  }\n  auto program = t81::tisc::load_program(input.string());\n  const int required_tier = required_tier_for_program(program);\n\n  if (action == \"check\") {"
+  },
+  {
+    "line": 7622,
+    "context": "        return 0;\n      } else if (input1.empty())\n        input1 = fs::path(tok);\n      else if (input2.empty())\n        input2 = fs::path(tok);\n      else {\n        error(\"tisc diff: unexpected argument '\" + tok + \"'.\");\n        return 1;\n      }\n    }\n    if (input1.empty() || input2.empty()) {\n      error(\"tisc diff requires two .tisc input files. Run 't81 help tisc diff'.\");\n      return 1;\n    }\n    const auto prog1 = t81::tisc::load_program(input1.string());\n    const auto prog2 = t81::tisc::load_program(input2.string());\n    auto insn_eq = [](const t81::tisc::Insn& x, const t81::tisc::Insn& y) {\n      return x.opcode == y.opcode && x.a == y.a && x.b == y.b && x.c == y.c &&"
+  },
+  {
+    "line": 7623,
+    "context": "      } else if (input1.empty())\n        input1 = fs::path(tok);\n      else if (input2.empty())\n        input2 = fs::path(tok);\n      else {\n        error(\"tisc diff: unexpected argument '\" + tok + \"'.\");\n        return 1;\n      }\n    }\n    if (input1.empty() || input2.empty()) {\n      error(\"tisc diff requires two .tisc input files. Run 't81 help tisc diff'.\");\n      return 1;\n    }\n    const auto prog1 = t81::tisc::load_program(input1.string());\n    const auto prog2 = t81::tisc::load_program(input2.string());\n    auto insn_eq = [](const t81::tisc::Insn& x, const t81::tisc::Insn& y) {\n      return x.opcode == y.opcode && x.a == y.a && x.b == y.b && x.c == y.c &&\n             x.literal_kind == y.literal_kind;"
+  },
+  {
+    "line": 7703,
+    "context": "\n  if (input.empty()) {\n    error(\"tisc \" + action + \" requires an input file.\");\n    return 1;\n  }\n  if (action != \"encode\" && input.extension() != \".tisc\") {\n    error(\"tisc \" + action + \" expects a .tisc input file.\");\n    return 1;\n  }\n\n  if (action == \"disasm\") {\n    return t81::cli::disasm_tisc(input);\n  }\n  if (action == \"validate\") {\n    auto program = t81::tisc::load_program(input.string());\n    if (as_json) {\n      std::cout << \"{\\n\";\n      std::cout << \"  \\\"schema\\\": \\\"t81.tisc-validate.v1\\\",\\n\";"
+  },
+  {
+    "line": 7722,
+    "context": "      std::cout << \"  \\\"program\\\": \\\"\" << json_escape(input.string()) << \"\\\",\\n\";\n      std::cout << \"  \\\"instructions\\\": \" << program.insns.size() << \",\\n\";\n      std::cout << \"  \\\"float_pool\\\": \" << program.float_pool.size() << \",\\n\";\n      std::cout << \"  \\\"tensor_pool\\\": \" << program.tensor_pool.size() << \"\\n\";\n      std::cout << \"}\\n\";\n    } else {\n      std::cout << \"TISC artifact valid: \" << input.string() << \"\\n\";\n      std::cout << \"Instructions: \" << program.insns.size() << \"\\n\";\n      std::cout << \"Float pool:   \" << program.float_pool.size() << \"\\n\";\n      std::cout << \"Tensor pool:  \" << program.tensor_pool.size() << \"\\n\";\n    }\n    return 0;\n  }\n  if (action == \"stats\") {\n    auto program = t81::tisc::load_program(input.string());\n    std::map<std::string, std::size_t> opcode_counts;\n    for (const auto& insn : program.insns) {\n      ++opcode_counts[std::string(t81::tisc::opcode_name(insn.opcode))];"
+  },
+  {
+    "line": 7765,
+    "context": "  }\n  if (action == \"encode\") {\n    std::ifstream in(input, std::ios::binary);\n    if (!in) {\n      error(\"tisc encode: could not open input file: \" + input.string());\n      return 1;\n    }\n    const std::string text((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());\n    auto program_res = t81::tisc::base81_view::parse(text);\n    if (!program_res) {\n      error(\"tisc encode: failed to parse Base81 view: \" + program_res.error().explain().str());\n      return 1;\n    }\n    const fs::path out_path = output.value_or(input.stem().string() + \".tisc\");\n    t81::tisc::save_program(program_res.value(), out_path.string());\n    if (as_json) {\n      std::cout << \"{\\n\"\n                << \"  \\\"schema\\\": \\\"t81.tisc-encode.v1\\\",\\n\""
+  },
+  {
+    "line": 7780,
+    "context": "    if (as_json) {\n      std::cout << \"{\\n\"\n                << \"  \\\"schema\\\": \\\"t81.tisc-encode.v1\\\",\\n\"\n                << \"  \\\"ok\\\": true,\\n\"\n                << \"  \\\"input\\\": \\\"\" << json_escape(input.string()) << \"\\\",\\n\"\n                << \"  \\\"output\\\": \\\"\" << json_escape(out_path.string()) << \"\\\",\\n\"\n                << \"  \\\"instructions\\\": \" << program_res.value().insns.size() << \"\\n\"\n                << \"}\\n\";\n    } else {\n      std::cout << \"Encoded TISC artifact: \" << out_path.string() << \"\\n\";\n    }\n    return 0;\n  }\n  if (action == \"decode\") {\n    const auto program = t81::tisc::load_program(input.string());\n    const std::string rendered = t81::tisc::base81_view::render(program);\n    if (output) {\n      std::ofstream out(*output, std::ios::binary | std::ios::trunc);"
+  },
+  {
+    "line": 8084,
+    "context": "  fs::path tisc_path = input;\n  std::optional<TempTiscFile> temp_tisc;\n  if (input.extension() == \".t81\") {\n    temp_tisc.emplace(input.stem().string());\n    const int compile_rc = t81::cli::compile(input, temp_tisc->path);\n    if (compile_rc != 0) {\n      return compile_rc;\n    }\n    tisc_path = temp_tisc->path;\n  } else if (input.extension() != \".tisc\") {\n    error(\"memory-stats expects a .t81 or .tisc input file.\");\n    return 1;\n  }\n\n  auto program = t81::tisc::load_program(tisc_path.string());\n  auto vm = t81::vm::make_interpreter_vm();\n  vm->load_program(program);\n  auto result = vm->run_to_halt();"
+  },
+  {
+    "line": 8086,
+    "context": "  if (input.extension() == \".t81\") {\n    temp_tisc.emplace(input.stem().string());\n    const int compile_rc = t81::cli::compile(input, temp_tisc->path);\n    if (compile_rc != 0) {\n      return compile_rc;\n    }\n    tisc_path = temp_tisc->path;\n  } else if (input.extension() != \".tisc\") {\n    error(\"memory-stats expects a .t81 or .tisc input file.\");\n    return 1;\n  }\n\n  auto program = t81::tisc::load_program(tisc_path.string());\n  auto vm = t81::vm::make_interpreter_vm();\n  vm->load_program(program);\n  auto result = vm->run_to_halt();\n  const auto& state = vm->state();\n  const auto& ctx = state.contexts.empty() ? t81::vm::ThreadContext{} : state.contexts.front();"
+  }
+]
