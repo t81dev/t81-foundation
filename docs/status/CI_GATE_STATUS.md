@@ -1,25 +1,22 @@
 # CI Gate Status
 
 Status: Active
-Last Updated: 2026-11-05
+Last Updated: 2026-11-13
 Owner: @t81dev
 Reference Mode: Rolling operational status page
 Current Main Head: Track current `main` in GitHub; do not treat this page as a single-SHA release snapshot
 
 
-## October 21 enforcement and CI audit
+## November 13 enforcement and CI audit
 
-The merged PR #537 experiment found that the configured CanonFS text-policy hook
-allowed its denied, revoked, and malformed-policy output cases. Historical
-implementation/compliance entries below do not establish enforcement at that
-boundary. Production hardening and a separately labeled arm D are under test;
-no full inventory or system-wide security result is claimed.
-
-AI Experiments CI run [39644888844](https://github.com/t81dev/t81-foundation/actions/runs/39644888844)
-failed in the status-document freshness check (three documents aged eight days,
-limit seven), before configuration or compilation. This failure is independent
-of the opt-in experiment. These status notes record that audit without changing
-freshness limits or claiming that subsequent CI stages have passed.
+- **Retained PR #537 boundary limitation:** The merged PR #537 experiment found that the configured CanonFS text-policy hook allowed its denied, revoked, and malformed-policy output cases. Historical entries below do not establish enforcement at that boundary; no full inventory or system-wide security result is claimed.
+- **Current `main` (`fbfe4f5a2d4439f5ff479014301560764de39c99`) observed CI posture:**
+  - Passing: `Format Check` (`43426313414`), `CodeQL` (`43426313318`), `Cross-Platform Determinism Verification` (`43426313339` / `43427773138`), `Documentation` (`43426313303`), and `pages-build-deployment` (`43426311828`).
+  - Failing: `T81 Foundation CI` (`43426313391`) failed on `build / windows-x86_64 / clang-cl` (`131890862407`), `build / windows-x86_64 / msvc` (`131890862560`), and `quality gate / required` (`131907428729`).
+- **PR #782 (`fix/windows-ci-baseline-repairs`, unmerged) observed CI posture:**
+  - At `125a1897b7e7e068ef6d576d97c487295c7203a7`, `T81 Foundation CI` (`43419383525`) passed **404/404** CTest tests on both `build / windows-x86_64 / msvc` (`131867735744`) and `build / windows-x86_64 / clang-cl` (`131867735702`). Subsequent test/audit commits up to `c1fddc53dd03990b3475f5986ba4e53d8a12c00e` have not yet completed a full Windows CI cycle and are not merged into `main`.
+  - `AI Experiments CI` run [43529007245](https://github.com/t81dev/t81-foundation/actions/runs/43529007245/job/132241756918) (job `132241756918`) failed at `Validate AI status document freshness` (`age_days=8 > max_age_days=7` on `AI_RFC_BACKLOG.md`, `CI_WORKFLOW_CONFIRMATION.md`, and `CI_GATE_STATUS.md`), independent of PR #782's code changes.
+- **Historical table limitation:** The `Repro Ledger` (`2026-02-28`) and `Governance and Hygiene Gates` (`2026-03-05`) status tables below are retained historical records and should not be read as newly re-verified at `fbfe4f5a2` beyond the runs explicitly cited above.
 
 
 ## Purpose
@@ -200,6 +197,15 @@ tracked here and must be addressed unless explicitly deferred.
 
 ## Known Failures
 
+### Windows CI Baseline & AI Status Freshness — Active (2026-11-13)
+
+| Field | Value |
+| :--- | :--- |
+| **Workflows** | `ci.yml` (`T81 Foundation CI`), `ai-experiments-ci.yml` (`AI Experiments CI`) |
+| **Observed Runs** | `43426313391` on `main` (`fbfe4f5a2`): `build / windows-x86_64 / clang-cl` (`131890862407`), `build / windows-x86_64 / msvc` (`131890862560`), `quality gate / required` (`131907428729`) failed. `43529007245` on PR #782 (`c1fddc53d`, job `132241756918`): `Validate AI status document freshness` failed (`age_days=8 > max_age_days=7`). |
+| **Resolution Path** | PR #782 (`fix/windows-ci-baseline-repairs`, unmerged) repairs the Windows CI baseline; a separate docs-only PR refreshes `AI_RFC_BACKLOG.md`, `CI_WORKFLOW_CONFIRMATION.md`, and `CI_GATE_STATUS.md`. |
+| **Blocking Release** | Yes — `quality gate / required` is a required branch-protection context on `main`. |
+
 ### TLOADHASH Tests — Closed (2026-03-15)
 
 | Field | Value |
@@ -211,17 +217,14 @@ tracked here and must be addressed unless explicitly deferred.
 | **Blocking Release** | No — resolved |
 | **Tracking** | R-18 closed in `docs/status/ACTIVE_RISKS.md` |
 
-### Jekyll Pages Build — Mitigating
+### Jekyll Pages Build — Resolved on Current Main
 
 | Field | Value |
 | :--- | :--- |
-| **Workflow** | `documentation.yml` |
-| **Gate** | `build` (GitHub Pages / Jekyll) |
-| **Run** | `22514402961` |
-| **Root Cause** | Jekyll renders `third_party/llama.cpp/examples/model-conversion/scripts/embedding/modelcard.template` — Liquid `{{ }}` syntax causes a Jekyll Liquid rendering error |
-| **Classification** | Mitigating — non-required workflow; no impact on C++ release artifact, determinism, or DCP guarantees |
+| **Workflow** | `documentation.yml`, `pages-build-deployment` |
+| **Gate** | `Documentation` (`43426313303`), `pages-build-deployment` (`43426311828`) on `main` (`fbfe4f5a2`) |
+| **Classification** | Resolved on `main` (`fbfe4f5a2`); historical `run 22514402961` Liquid error in `third_party/llama.cpp` no longer reproduces after `_config.yml` exclusion |
 | **Decision** | DEC-005 in `docs/status/DECISION_LOG.md` |
-| **Resolution Path** | Root `_config.yml` now excludes `third_party/`; verify on next Pages/Jekyll run |
 | **Blocking Release** | No |
 
 ### 2026-03-14 CI Incident — Resolved
