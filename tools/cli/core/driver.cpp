@@ -1096,7 +1096,7 @@ int compile(const fs::path& input, const fs::path& output, const std::string& so
             std::shared_ptr<t81::weights::ModelFile> weights_model, bool announce_success) {
   verbose("Compiling " + input.string() + " → " + output.string());
 
-  std::string diag_name = source_name.empty() ? input.string() : source_name;
+  std::string diag_name = source_name.empty() ? input.generic_string() : source_name;
   std::string source;
   if (source_override.empty()) {
     if (!fs::exists(input)) {
