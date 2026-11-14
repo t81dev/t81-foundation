@@ -1,0 +1,178 @@
+{
+  "backtraceGraph" : 
+  {
+    "commands" : 
+    [
+      "add_test"
+    ],
+    "files" : 
+    [
+      "D:/a/t81-foundation/t81-foundation/source/experiments/scg08_arithmetic_work/CMakeLists.txt"
+    ],
+    "nodes" : 
+    [
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 17,
+        "parent" : 0
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 23,
+        "parent" : 2
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 30,
+        "parent" : 4
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 36,
+        "parent" : 6
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 44,
+        "parent" : 8
+      }
+    ]
+  },
+  "kind" : "ctestInfo",
+  "tests" : 
+  [
+    {
+      "backtrace" : 1,
+      "command" : 
+      [
+        "D:/a/t81-foundation/t81-foundation/build/experiments/scg08_arithmetic_work/t81_exp_scg08_01_test.exe"
+      ],
+      "config" : "Release",
+      "name" : "t81_exp_scg08_01_test",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 60.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "D:/a/t81-foundation/t81-foundation/build/experiments/scg08_arithmetic_work"
+        }
+      ]
+    },
+    {
+      "backtrace" : 3,
+      "command" : 
+      [
+        "C:/hostedtoolcache/windows/Python/3.12.10/x64/python.exe",
+        "D:/a/t81-foundation/t81-foundation/source/experiments/scg08_arithmetic_work/test_result_rejection.py",
+        "D:/a/t81-foundation/t81-foundation/build/experiments/scg08_arithmetic_work/t81_exp_scg08_01_test.exe"
+      ],
+      "config" : "Release",
+      "name" : "t81_exp_scg08_01_result_rejection",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 150.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "D:/a/t81-foundation/t81-foundation/build/experiments/scg08_arithmetic_work"
+        }
+      ]
+    },
+    {
+      "backtrace" : 5,
+      "command" : 
+      [
+        "C:/hostedtoolcache/windows/Python/3.12.10/x64/python.exe",
+        "D:/a/t81-foundation/t81-foundation/source/experiments/scg08_arithmetic_work/test_result_rejection_driver.py"
+      ],
+      "config" : "Release",
+      "name" : "t81_exp_scg08_01_result_rejection_driver",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 30.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "D:/a/t81-foundation/t81-foundation/build/experiments/scg08_arithmetic_work"
+        }
+      ]
+    },
+    {
+      "backtrace" : 7,
+      "command" : 
+      [
+        "C:/hostedtoolcache/windows/Python/3.12.10/x64/python.exe",
+        "D:/a/t81-foundation/t81-foundation/source/scripts/ci/validate_scg08_gate1_evidence.py",
+        "D:/a/t81-foundation/t81-foundation/source/experiments/scg08_arithmetic_work/gate1_evidence_record.json",
+        "D:/a/t81-foundation/t81-foundation/source/experiments/scg08_arithmetic_work/evidence_schema.json"
+      ],
+      "config" : "Release",
+      "name" : "t81_exp_scg08_01_schema_validation",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 30.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "D:/a/t81-foundation/t81-foundation/build/experiments/scg08_arithmetic_work"
+        }
+      ]
+    },
+    {
+      "backtrace" : 9,
+      "command" : 
+      [
+        "C:/hostedtoolcache/windows/Python/3.12.10/x64/python.exe",
+        "D:/a/t81-foundation/t81-foundation/source/scripts/ci/validate_scg08_gate1_evidence.py",
+        "--test-negative"
+      ],
+      "config" : "Release",
+      "name" : "t81_exp_scg08_01_schema_negative_validation",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 30.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "D:/a/t81-foundation/t81-foundation/build/experiments/scg08_arithmetic_work"
+        }
+      ]
+    }
+  ],
+  "version" : 
+  {
+    "major" : 1,
+    "minor" : 0
+  }
+}
