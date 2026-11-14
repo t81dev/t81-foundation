@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "clang++",
+    "-std=c++23",
+    "-DNDEBUG",
+    "-I",
+    "include",
+    "tools/tisc_base81.cpp",
+    "isa/encoding.cpp",
+    "isa/base81_view.cpp",
+    "codec/base81.cpp",
+    "-o",
+    "/private/tmp/t81-raw-base81-current"
+  ],
+  "exit": 1
+}

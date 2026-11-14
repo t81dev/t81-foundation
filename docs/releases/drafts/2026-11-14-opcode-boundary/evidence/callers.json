@@ -1,0 +1,2498 @@
+[
+  {
+    "file": "benchmarks/BM_DeterminismValidation.cpp",
+    "line": 96,
+    "nearest_function": "std::pair<int, int> measure_determinism(const Program& program, int n) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "benchmarks/BM_DeterminismValidation.cpp",
+    "line": 119,
+    "nearest_function": "static void BM_VMRun_Arith(benchmark::State& state) {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "benchmarks/BM_DeterminismValidation.cpp",
+    "line": 136,
+    "nearest_function": "static void BM_VMRun_ArithChain(benchmark::State& state) {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "benchmarks/BM_GovernedWorkflows.cpp",
+    "line": 366,
+    "nearest_function": "static void BM_GovernedVMRun_Arith_NoPolicy(benchmark::State& state) {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "benchmarks/BM_GovernedWorkflows.cpp",
+    "line": 379,
+    "nearest_function": "static void BM_GovernedVMRun_Arith_AllowPolicy(benchmark::State& state) {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "benchmarks/BM_GovernedWorkflows.cpp",
+    "line": 390,
+    "nearest_function": "static void BM_GovernedObservability_Arith_NoPolicy(benchmark::State& state) {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "benchmarks/BM_GovernedWorkflows.cpp",
+    "line": 410,
+    "nearest_function": "static void BM_GovernedObservability_Arith_AllowPolicy(benchmark::State& state) {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "benchmarks/BM_GovernedWorkflows.cpp",
+    "line": 431,
+    "nearest_function": "static void BM_GovernedRender_Arith_NoPolicy(benchmark::State& state) {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "benchmarks/BM_GovernedWorkflows.cpp",
+    "line": 457,
+    "nearest_function": "static void BM_GovernedRender_Arith_AllowPolicy(benchmark::State& state) {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "benchmarks/BM_GovernedWorkflows.cpp",
+    "line": 483,
+    "nearest_function": "static void BM_GovernedEmit_Arith_NoPolicy(benchmark::State& state) {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "benchmarks/BM_GovernedWorkflows.cpp",
+    "line": 519,
+    "nearest_function": "static void BM_GovernedEmit_Arith_AllowPolicy(benchmark::State& state) {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "benchmarks/BM_GovernedWorkflows.cpp",
+    "line": 923,
+    "nearest_function": "static void BM_GovernedTensorLoad_LocalWeights_NoPolicy(benchmark::State& state) {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "benchmarks/BM_GovernedWorkflows.cpp",
+    "line": 937,
+    "nearest_function": "static void BM_GovernedTensorLoad_LocalWeights_AllowPolicy(benchmark::State& state) {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "benchmarks/BM_GovernedWorkflows.cpp",
+    "line": 958,
+    "nearest_function": "static void BM_GovernedTensorLoad_CanonFSHash_NoPolicy(benchmark::State& state) {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "benchmarks/BM_GovernedWorkflows.cpp",
+    "line": 981,
+    "nearest_function": "static void BM_GovernedTensorLoad_CanonFSHash_AllowPolicy(benchmark::State& state) {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "benchmarks/BM_GovernedWorkflows.cpp",
+    "line": 1003,
+    "nearest_function": "static void BM_GovernedTensorLoad_HashFixture_NoPolicy(benchmark::State& state) {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "benchmarks/BM_GovernedWorkflows.cpp",
+    "line": 1024,
+    "nearest_function": "static void BM_GovernedTensorLoad_HashFixture_AllowPolicy(benchmark::State& state) {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "benchmarks/BM_NativeWeightsExecution.cpp",
+    "line": 783,
+    "nearest_function": "void benchmark_program_loop(benchmark::State& state, const t81::tisc::Program& program, int steps_per_iter) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "benchmarks/BM_TensorPromotion.cpp",
+    "line": 52,
+    "nearest_function": "static void BM_TensorPromotion(benchmark::State& state) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "examples/ai-and-inference/ai-integration/llama32_demo.cpp",
+    "line": 179,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "examples/ai-and-inference/ai-integration/self_patch_demo.cpp",
+    "line": 70,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "examples/governance/accountable-computation/runner.cpp",
+    "line": 79,
+    "nearest_function": "int main(int argc, char** argv) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "examples/governance/axion_guard_trace.cpp",
+    "line": 34,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(*program);"
+  },
+  {
+    "file": "examples/governance/axion_policy_runner.cpp",
+    "line": 91,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "examples/governance/axion_policy_trace.cpp",
+    "line": 76,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "examples/research/object-interface/runner.cpp",
+    "line": 106,
+    "nearest_function": "int main(int argc, char** argv) {",
+    "source": "vm->load_program(parsed.value());"
+  },
+  {
+    "file": "examples/research/validated-descriptors/runner.cpp",
+    "line": 62,
+    "nearest_function": "std::string run_tisc(const std::string& data, const fs::path&) {",
+    "source": "vm->load_program(parsed.value());"
+  },
+  {
+    "file": "experiments/architecture_challenge/arm_a.cpp",
+    "line": 107,
+    "nearest_function": "int main(int argc, char** argv) {",
+    "source": "machine->load_program(p);"
+  },
+  {
+    "file": "experiments/base01_b1_foundation/native.cpp",
+    "line": 144,
+    "nearest_function": "static void vm_checks() {",
+    "source": "machine->load_program(p);"
+  },
+  {
+    "file": "experiments/base01_lane_a/runner.cpp",
+    "line": 93,
+    "nearest_function": "int main(int argc, char** argv) {",
+    "source": "machine->load_program(p); // setup outside any future timing interval"
+  },
+  {
+    "file": "experiments/base01_r75_semantics/probe.cpp",
+    "line": 114,
+    "nearest_function": "static void run_case(const std::string& name, const t81::tisc::Program& p, bool expected_halt,",
+    "source": "machine->load_program(p);"
+  },
+  {
+    "file": "experiments/base01_r75_semantics/probe.cpp",
+    "line": 163,
+    "nearest_function": "static void run_case(const std::string& name, const t81::tisc::Program& p, bool expected_halt,",
+    "source": "plain->load_program(p);"
+  },
+  {
+    "file": "experiments/base01_r75_semantics/probe.cpp",
+    "line": 204,
+    "nearest_function": "static void completion_and_reload() {",
+    "source": "machine->load_program(micro_program());"
+  },
+  {
+    "file": "experiments/base01_r75_semantics/probe.cpp",
+    "line": 213,
+    "nearest_function": "static void completion_and_reload() {",
+    "source": "machine->load_program(micro_program());"
+  },
+  {
+    "file": "experiments/base01_r75_semantics/probe.cpp",
+    "line": 247,
+    "nearest_function": "static void side_exit_and_reused_trace() {",
+    "source": "machine->load_program(meso_program());"
+  },
+  {
+    "file": "experiments/base01_r75_semantics/probe.cpp",
+    "line": 249,
+    "nearest_function": "static void side_exit_and_reused_trace() {",
+    "source": "machine->load_program(micro_program());"
+  },
+  {
+    "file": "experiments/base01_r75_semantics/probe.cpp",
+    "line": 264,
+    "nearest_function": "static void side_exit_and_reused_trace() {",
+    "source": "empty->load_program(no_instructions);"
+  },
+  {
+    "file": "experiments/deterministic_provenance/runner.cpp",
+    "line": 76,
+    "nearest_function": "int main(int argc, char** argv) {",
+    "source": "warm->load_program(workload(x, divisor, mode));"
+  },
+  {
+    "file": "experiments/deterministic_provenance/runner.cpp",
+    "line": 87,
+    "nearest_function": "int main(int argc, char** argv) {",
+    "source": "machine->load_program(p);"
+  },
+  {
+    "file": "experiments/integrated_system_advantage/parity_probe.cpp",
+    "line": 58,
+    "nearest_function": "int main(int argc, char** argv) {",
+    "source": "vm->load_program(*program);"
+  },
+  {
+    "file": "ffi/python/__init__.py",
+    "line": 21,
+    "nearest_function": "(top-level)",
+    "source": ">>> vm.load_program(prog)"
+  },
+  {
+    "file": "include/t81/axion/nondeterminism_detector.hpp",
+    "line": 29,
+    "nearest_function": "(top-level)",
+    "source": "*   vm->load_program(p); vm->run_to_halt();   // run 2 \u2014 det detects any divergence"
+  },
+  {
+    "file": "include/t81/dpe/task_runner.hpp",
+    "line": 71,
+    "nearest_function": "(top-level)",
+    "source": "/// (via set_memory_word()) after load_program() and before the"
+  },
+  {
+    "file": "include/t81/isa/binary_io.hpp",
+    "line": 10,
+    "nearest_function": "void save_program(const Program& program, const std::string& path);",
+    "source": "void save_program(const Program& program, const std::string& path);"
+  },
+  {
+    "file": "include/t81/isa/binary_io.hpp",
+    "line": 11,
+    "nearest_function": "Program load_program(const std::string& path);",
+    "source": "Program load_program(const std::string& path);"
+  },
+  {
+    "file": "include/t81/vm/vm.hpp",
+    "line": 30,
+    "nearest_function": "(top-level)",
+    "source": "virtual void load_program(const t81::tisc::Program& program) = 0;"
+  },
+  {
+    "file": "include/t81/vm/vm.hpp",
+    "line": 37,
+    "nearest_function": "(top-level)",
+    "source": "/// No-op if `word_index` is out of range.  Must be called after load_program()."
+  },
+  {
+    "file": "include/t81/vm/vm.hpp",
+    "line": 41,
+    "nearest_function": "(top-level)",
+    "source": "/// No-op if `word_index` is out of range.  Must be called after load_program()."
+  },
+  {
+    "file": "isa/binary_io.cpp",
+    "line": 278,
+    "nearest_function": "void save_program(const Program& program, const std::string& path) {",
+    "source": "void save_program(const Program& program, const std::string& path) {"
+  },
+  {
+    "file": "isa/binary_io.cpp",
+    "line": 308,
+    "nearest_function": "Program load_program(const std::string& path) {",
+    "source": "Program load_program(const std::string& path) {"
+  },
+  {
+    "file": "lang/python/t81_python.cpp",
+    "line": 240,
+    "nearest_function": "(top-level)",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "scripts/fix_vm_final.py",
+    "line": 22,
+    "nearest_function": "(top-level)",
+    "source": "virtual void load_program(const t81::tisc::Program& program) = 0;"
+  },
+  {
+    "file": "tests/cpp/agent_constructs_test.cpp",
+    "line": 212,
+    "nearest_function": "static void test_vm_agent_invoke() {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/cpp/axion_agent_invoke_policy_test.cpp",
+    "line": 76,
+    "nearest_function": "static void test_no_policy_allow() {",
+    "source": "vm->load_program(make_agent_invoke_program());"
+  },
+  {
+    "file": "tests/cpp/axion_agent_invoke_policy_test.cpp",
+    "line": 91,
+    "nearest_function": "static void test_policy_text_allow() {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/cpp/axion_agent_invoke_policy_test.cpp",
+    "line": 106,
+    "nearest_function": "static void test_policy_text_deny() {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/cpp/axion_agent_invoke_policy_test.cpp",
+    "line": 128,
+    "nearest_function": "static void test_injected_engine_deny() {",
+    "source": "vm->load_program(make_agent_invoke_program());"
+  },
+  {
+    "file": "tests/cpp/axion_agent_invoke_policy_test.cpp",
+    "line": 142,
+    "nearest_function": "static void test_audit_log_agent_invoke_entry() {",
+    "source": "vm->load_program(make_agent_invoke_program());"
+  },
+  {
+    "file": "tests/cpp/axion_enum_guard_test.cpp",
+    "line": 56,
+    "nearest_function": "int main() {",
+    "source": "[[maybe_unused]] auto compiled = t81::tisc::load_program(tisc_path.string());"
+  },
+  {
+    "file": "tests/cpp/axion_enum_guard_test.cpp",
+    "line": 58,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(compiled);"
+  },
+  {
+    "file": "tests/cpp/axion_heap_compaction_trace_test.cpp",
+    "line": 40,
+    "nearest_function": "int main() {",
+    "source": "vm_ok->load_program(program_ok);"
+  },
+  {
+    "file": "tests/cpp/axion_heap_compaction_trace_test.cpp",
+    "line": 56,
+    "nearest_function": "int main() {",
+    "source": "vm_fail->load_program(program_fail);"
+  },
+  {
+    "file": "tests/cpp/axion_instruction_counter_test.cpp",
+    "line": 35,
+    "nearest_function": "void test_instruction_counter_axion_engine() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/axion_log_determinism_test.cpp",
+    "line": 31,
+    "nearest_function": "void test_bounds_fault_log() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/axion_log_determinism_test.cpp",
+    "line": 74,
+    "nearest_function": "void test_tensor_fault_log() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/axion_loop_metadata_test.cpp",
+    "line": 66,
+    "nearest_function": "int main() {",
+    "source": "[[maybe_unused]] auto compiled = t81::tisc::load_program(tisc_path.string());"
+  },
+  {
+    "file": "tests/cpp/axion_loop_metadata_test.cpp",
+    "line": 90,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(compiled);"
+  },
+  {
+    "file": "tests/cpp/axion_match_metadata_test.cpp",
+    "line": 59,
+    "nearest_function": "int main() {",
+    "source": "[[maybe_unused]] auto compiled = t81::tisc::load_program(tisc_path.string());"
+  },
+  {
+    "file": "tests/cpp/axion_match_metadata_test.cpp",
+    "line": 66,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(compiled);"
+  },
+  {
+    "file": "tests/cpp/axion_nested_guard_test.cpp",
+    "line": 44,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/axion_policy_allow_deny_determinism_test.cpp",
+    "line": 32,
+    "nearest_function": "RunSummary run_once(const t81::tisc::Program& program, std::size_t max_steps) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/axion_policy_conformance_matrix_test.cpp",
+    "line": 32,
+    "nearest_function": "RunResult run_program(const t81::tisc::Program& p, std::size_t max_steps) {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/axion_policy_gc_trace_test.cpp",
+    "line": 44,
+    "nearest_function": "int main() {",
+    "source": "vm_ok->load_program(program_ok);"
+  },
+  {
+    "file": "tests/cpp/axion_policy_gc_trace_test.cpp",
+    "line": 62,
+    "nearest_function": "int main() {",
+    "source": "vm_fail->load_program(program_fail);"
+  },
+  {
+    "file": "tests/cpp/axion_policy_invariants_test.cpp",
+    "line": 34,
+    "nearest_function": "RunSummary run_with_policy(std::string policy_text) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/axion_policy_match_guard_test.cpp",
+    "line": 44,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/axion_policy_match_guard_test.cpp",
+    "line": 62,
+    "nearest_function": "int main() {",
+    "source": "vm_fail->load_program(program_fail);"
+  },
+  {
+    "file": "tests/cpp/axion_policy_segment_event_test.cpp",
+    "line": 25,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/axion_policy_segment_event_test.cpp",
+    "line": 43,
+    "nearest_function": "int main() {",
+    "source": "vm_fail->load_program(program_fail);"
+  },
+  {
+    "file": "tests/cpp/axion_recursion_guardrails_test.cpp",
+    "line": 25,
+    "nearest_function": "static void test_policy_recursion_limit_applies_to_call_chain() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/axion_segment_trace_test.cpp",
+    "line": 59,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/cli_debugger_test.cpp",
+    "line": 44,
+    "nearest_function": "void create_dummy_tisc(const std::filesystem::path& path) {",
+    "source": "t81::tisc::save_program(prog, path.string());"
+  },
+  {
+    "file": "tests/cpp/cli_debugger_test.cpp",
+    "line": 56,
+    "nearest_function": "void create_memory_tisc(const std::filesystem::path& path) {",
+    "source": "t81::tisc::save_program(prog, path.string());"
+  },
+  {
+    "file": "tests/cpp/cli_stdlib_fixtures_test.cpp",
+    "line": 104,
+    "nearest_function": "bool run_module(const Module& mod) {",
+    "source": "auto program = t81::tisc::load_program(tisc_path.string());"
+  },
+  {
+    "file": "tests/cpp/cli_stdlib_fixtures_test.cpp",
+    "line": 108,
+    "nearest_function": "bool run_module(const Module& mod) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/cli_structural_types_test.cpp",
+    "line": 61,
+    "nearest_function": "int main() {",
+    "source": "[[maybe_unused]] auto program = t81::tisc::load_program(tisc_path.string());"
+  },
+  {
+    "file": "tests/cpp/dpe/task_runner_test.cpp",
+    "line": 51,
+    "nearest_function": "static void test_single_task_epoch_matches_direct_execution() {",
+    "source": "direct_vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/dpe/task_runner_test.cpp",
+    "line": 104,
+    "nearest_function": "static void test_multi_register_program_equivalence() {",
+    "source": "direct_vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/e2e_advanced_features_test.cpp",
+    "line": 44,
+    "nearest_function": "(top-level)",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/e2e_advanced_features_test.cpp",
+    "line": 82,
+    "nearest_function": "(top-level)",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/e2e_arithmetic_test.cpp",
+    "line": 24,
+    "nearest_function": "void test_addition() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/e2e_arithmetic_test.cpp",
+    "line": 48,
+    "nearest_function": "void test_subtraction() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/e2e_arithmetic_test.cpp",
+    "line": 72,
+    "nearest_function": "void test_multiplication() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/e2e_arithmetic_test.cpp",
+    "line": 96,
+    "nearest_function": "void test_division() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/e2e_axion_trace_test.cpp",
+    "line": 38,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/e2e_compile_determinism_test.cpp",
+    "line": 33,
+    "nearest_function": "static std::vector<std::string> run_and_capture_prints(const tisc::Program& program) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/e2e_compile_determinism_test.cpp",
+    "line": 77,
+    "nearest_function": "static void test_compile_twice_golden_fixture_pack() {",
+    "source": "const auto bytecode_a = tisc::encode(*program_a);"
+  },
+  {
+    "file": "tests/cpp/e2e_compile_determinism_test.cpp",
+    "line": 78,
+    "nearest_function": "static void test_compile_twice_golden_fixture_pack() {",
+    "source": "const auto bytecode_b = tisc::encode(*program_b);"
+  },
+  {
+    "file": "tests/cpp/e2e_enum_metadata_determinism_test.cpp",
+    "line": 103,
+    "nearest_function": "static void test_enum_metadata_is_deterministic_and_canonical() {",
+    "source": "const auto bytecode_a = tisc::encode(*program_a);"
+  },
+  {
+    "file": "tests/cpp/e2e_enum_metadata_determinism_test.cpp",
+    "line": 104,
+    "nearest_function": "static void test_enum_metadata_is_deterministic_and_canonical() {",
+    "source": "const auto bytecode_b = tisc::encode(*program_b);"
+  },
+  {
+    "file": "tests/cpp/e2e_enum_metadata_determinism_test.cpp",
+    "line": 224,
+    "nearest_function": "static void test_fallback_and_explicit_module_path_metadata() {",
+    "source": "const tisc::Program fallback_prog = tisc::load_program(fallback_out.string());"
+  },
+  {
+    "file": "tests/cpp/e2e_enum_metadata_determinism_test.cpp",
+    "line": 231,
+    "nearest_function": "static void test_fallback_and_explicit_module_path_metadata() {",
+    "source": "const tisc::Program explicit_prog = tisc::load_program(explicit_out.string());"
+  },
+  {
+    "file": "tests/cpp/e2e_if_statement_test.cpp",
+    "line": 25,
+    "nearest_function": "void test_if_statement_true() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/e2e_if_statement_test.cpp",
+    "line": 50,
+    "nearest_function": "void test_if_statement_false() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/e2e_if_statement_test.cpp",
+    "line": 75,
+    "nearest_function": "void test_if_else_statement() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/e2e_let_statement_test.cpp",
+    "line": 33,
+    "nearest_function": "void test_let_statement_e2e() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/e2e_loop_statement_test.cpp",
+    "line": 35,
+    "nearest_function": "(top-level)",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/e2e_match_expression_test.cpp",
+    "line": 35,
+    "nearest_function": "(top-level)",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/e2e_match_metadata_determinism_test.cpp",
+    "line": 57,
+    "nearest_function": "static RunResult run_and_collect(const tisc::Program& program) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/e2e_option_result_function_test.cpp",
+    "line": 33,
+    "nearest_function": "(top-level)",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/e2e_option_result_test.cpp",
+    "line": 34,
+    "nearest_function": "(top-level)",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/e2e_option_type_test.cpp",
+    "line": 41,
+    "nearest_function": "void test_option_type_e2e() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/e2e_print_runtime_test.cpp",
+    "line": 39,
+    "nearest_function": "static std::vector<std::string> run_and_capture_prints(const std::string& source) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/gguf_import_bridge_test.cpp",
+    "line": 183,
+    "nearest_function": "void run_synthetic_family_vm_execution(t81::weights::ModelFile imported,",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/cpp/gguf_import_bridge_test.cpp",
+    "line": 416,
+    "nearest_function": "int main() {",
+    "source": "tinyllama_vm->load_program(tinyllama_program);"
+  },
+  {
+    "file": "tests/cpp/jit_canonfs_cache_test.cpp",
+    "line": 125,
+    "nearest_function": "static std::int64_t exec_trace(JitTrace* trace, const std::vector<Insn>& insns) {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/cpp/jit_canonfs_cache_test.cpp",
+    "line": 139,
+    "nearest_function": "static std::pair<std::int64_t, t81::vm::ValueTag> exec_trace_program(JitTrace* trace,",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/cpp/jit_repro_oracle_test.cpp",
+    "line": 141,
+    "nearest_function": "static CanonHash81 state_hash(const Program& prog) {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/cpp/jit_tensor_trace_equivalence_test.cpp",
+    "line": 62,
+    "nearest_function": "Snapshot run_once(const Program& p) {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/jit_trace_equivalence_test.cpp",
+    "line": 206,
+    "nearest_function": "Snapshot run_program(const Program& program) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/jit_trace_equivalence_test.cpp",
+    "line": 497,
+    "nearest_function": "bool test_jit_swar_policy_enforcement() {",
+    "source": "vm->load_program(make_hot_swar_tensor_program());"
+  },
+  {
+    "file": "tests/cpp/lang_literal_pool_test.cpp",
+    "line": 23,
+    "nearest_function": "void run_and_check(const std::string& src,",
+    "source": "vm->load_program(prog_res.value());"
+  },
+  {
+    "file": "tests/cpp/reflection_non_interference_test.cpp",
+    "line": 28,
+    "nearest_function": "void test_reflection_non_interference() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/symbolic_vm_test.cpp",
+    "line": 70,
+    "nearest_function": "void test_symbolic_rewrite() {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/cpp/test_axion_evidence_loop_closure_corrected.cpp",
+    "line": 35,
+    "nearest_function": "void test_axion_policy_loading() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/test_axion_evidence_loop_closure_corrected.cpp",
+    "line": 74,
+    "nearest_function": "void test_axion_deterministic_logging() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/test_axion_evidence_loop_closure_corrected.cpp",
+    "line": 115,
+    "nearest_function": "void test_axion_vm_bridge_integrity() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/test_axion_evidence_loop_closure_corrected.cpp",
+    "line": 170,
+    "nearest_function": "void test_policy_enforcement_boundaries() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/test_axion_evidence_loop_closure_corrected.cpp",
+    "line": 195,
+    "nearest_function": "void test_policy_enforcement_boundaries() {",
+    "source": "vm2->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/test_axion_opcodes.cpp",
+    "line": 41,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/test_axion_recursion_limit_ext.cpp",
+    "line": 30,
+    "nearest_function": "void test_recursion_limit() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/test_bitwise.cpp",
+    "line": 15,
+    "nearest_function": "(top-level)",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/test_code_protection.cpp",
+    "line": 28,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/cpp/test_collections_scaffold.cpp",
+    "line": 97,
+    "nearest_function": "void test_collections_execution() {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/cpp/test_complex_determinism.cpp",
+    "line": 33,
+    "nearest_function": "int main() {",
+    "source": "save_program(program, test_file);"
+  },
+  {
+    "file": "tests/cpp/test_complex_determinism.cpp",
+    "line": 36,
+    "nearest_function": "int main() {",
+    "source": "Program loaded = load_program(test_file);"
+  },
+  {
+    "file": "tests/cpp/test_complex_determinism.cpp",
+    "line": 60,
+    "nearest_function": "int main() {",
+    "source": "Program round_trip = load_program(test_file);"
+  },
+  {
+    "file": "tests/cpp/test_complex_determinism.cpp",
+    "line": 61,
+    "nearest_function": "int main() {",
+    "source": "save_program(round_trip, \"/tmp/complex_round_trip.bin\");"
+  },
+  {
+    "file": "tests/cpp/test_complex_determinism.cpp",
+    "line": 62,
+    "nearest_function": "int main() {",
+    "source": "Program final_round_trip = load_program(\"/tmp/complex_round_trip.bin\");"
+  },
+  {
+    "file": "tests/cpp/test_complex_serialization.cpp",
+    "line": 31,
+    "nearest_function": "int main() {",
+    "source": "save_program(original_program, test_file);"
+  },
+  {
+    "file": "tests/cpp/test_complex_serialization.cpp",
+    "line": 34,
+    "nearest_function": "int main() {",
+    "source": "Program loaded_program = load_program(test_file);"
+  },
+  {
+    "file": "tests/cpp/test_concurrency.cpp",
+    "line": 35,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/test_infinite_opcodes.cpp",
+    "line": 57,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/cpp/test_reflective_opcodes.cpp",
+    "line": 68,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/cpp/test_resource_monitoring.cpp",
+    "line": 69,
+    "nearest_function": "static void test_max_tensors() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/test_resource_monitoring.cpp",
+    "line": 127,
+    "nearest_function": "static void test_max_tensor_elements() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/test_resource_monitoring.cpp",
+    "line": 195,
+    "nearest_function": "static void test_max_symbolic_nodes() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/test_t81lang_traceability_enforcement.cpp",
+    "line": 206,
+    "nearest_function": "void test_runtime_semantics_consistency() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/test_tier3_opcodes.cpp",
+    "line": 54,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/cpp/test_tier4_distributed.cpp",
+    "line": 23,
+    "nearest_function": "void test_gossip() {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/cpp/test_tier4_distributed.cpp",
+    "line": 55,
+    "nearest_function": "void test_merge() {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/cpp/test_tier4_distributed.cpp",
+    "line": 114,
+    "nearest_function": "void test_sync() {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/cpp/test_tier4_distributed.cpp",
+    "line": 138,
+    "nearest_function": "void test_merge_prefers_newest_tick() {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/cpp/test_vm_deterministic_fault.cpp",
+    "line": 31,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(create_program(insns));"
+  },
+  {
+    "file": "tests/cpp/test_vm_deterministic_fault.cpp",
+    "line": 58,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(create_program(insns));"
+  },
+  {
+    "file": "tests/cpp/test_vm_deterministic_fault.cpp",
+    "line": 77,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(create_program(insns));"
+  },
+  {
+    "file": "tests/cpp/test_vm_literal_pool_extension.cpp",
+    "line": 34,
+    "nearest_function": "void test_i2f_deterministic_extension() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/test_vm_literal_pool_extension.cpp",
+    "line": 83,
+    "nearest_function": "void test_i2frac_deterministic_extension() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/test_vm_literal_pool_extension.cpp",
+    "line": 122,
+    "nearest_function": "void test_loadimm_bigint_handle_extension() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/test_vm_literal_pool_extension.cpp",
+    "line": 150,
+    "nearest_function": "void test_frac2i_bigint_overflow_preserves_integer_class() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/test_vm_literal_pool_extension.cpp",
+    "line": 174,
+    "nearest_function": "void test_bigint_integer_arithmetic_extension() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/test_vm_literal_pool_extension.cpp",
+    "line": 197,
+    "nearest_function": "void test_int2bigint_materializes_handle() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/test_vm_literal_pool_extension.cpp",
+    "line": 223,
+    "nearest_function": "void test_bigint_arithmetic_preserves_bigint_tag_for_small_results() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/test_vm_neural_opcodes.cpp",
+    "line": 15,
+    "nearest_function": "(top-level)",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/tier4_vm_test.cpp",
+    "line": 34,
+    "nearest_function": "void run_tier4_test() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/tier4_vm_test.cpp",
+    "line": 68,
+    "nearest_function": "void run_determinism_test() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/tier4_vm_test.cpp",
+    "line": 96,
+    "nearest_function": "void run_denial_test() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/tisc_binary_io_determinism_test.cpp",
+    "line": 62,
+    "nearest_function": "static bool test_save_program_is_bit_stable_for_same_program() {",
+    "source": "t81::tisc::save_program(program, f1.string());"
+  },
+  {
+    "file": "tests/cpp/tisc_binary_io_determinism_test.cpp",
+    "line": 63,
+    "nearest_function": "static bool test_save_program_is_bit_stable_for_same_program() {",
+    "source": "t81::tisc::save_program(program, f2.string());"
+  },
+  {
+    "file": "tests/cpp/tisc_binary_io_determinism_test.cpp",
+    "line": 80,
+    "nearest_function": "static bool test_save_program_is_bit_stable_for_same_program() {",
+    "source": "const auto loaded = t81::tisc::load_program(f1.string());"
+  },
+  {
+    "file": "tests/cpp/tisc_binary_io_determinism_test.cpp",
+    "line": 104,
+    "nearest_function": "static bool test_save_program_is_bit_stable_for_same_program() {",
+    "source": "t81::tisc::save_program(loaded, f3.string());"
+  },
+  {
+    "file": "tests/cpp/tisc_binary_io_determinism_test.cpp",
+    "line": 130,
+    "nearest_function": "static bool test_corrupt_size_throws() {",
+    "source": "t81::tisc::load_program(f.string());"
+  },
+  {
+    "file": "tests/cpp/tisc_binary_io_determinism_test.cpp",
+    "line": 156,
+    "nearest_function": "static bool test_truncated_stream_throws() {",
+    "source": "t81::tisc::load_program(f.string());"
+  },
+  {
+    "file": "tests/cpp/tisc_binary_metadata_roundtrip_property_test.cpp",
+    "line": 244,
+    "nearest_function": "bool test_binary_metadata_roundtrip_property() {",
+    "source": "t81::tisc::save_program(original, f1.string());"
+  },
+  {
+    "file": "tests/cpp/tisc_binary_metadata_roundtrip_property_test.cpp",
+    "line": 245,
+    "nearest_function": "bool test_binary_metadata_roundtrip_property() {",
+    "source": "const auto l1 = t81::tisc::load_program(f1.string());"
+  },
+  {
+    "file": "tests/cpp/tisc_binary_metadata_roundtrip_property_test.cpp",
+    "line": 246,
+    "nearest_function": "bool test_binary_metadata_roundtrip_property() {",
+    "source": "t81::tisc::save_program(l1, f2.string());"
+  },
+  {
+    "file": "tests/cpp/tisc_binary_metadata_roundtrip_property_test.cpp",
+    "line": 247,
+    "nearest_function": "bool test_binary_metadata_roundtrip_property() {",
+    "source": "const auto l2 = t81::tisc::load_program(f2.string());"
+  },
+  {
+    "file": "tests/cpp/tisc_binary_metadata_roundtrip_property_test.cpp",
+    "line": 248,
+    "nearest_function": "bool test_binary_metadata_roundtrip_property() {",
+    "source": "t81::tisc::save_program(l2, f3.string());"
+  },
+  {
+    "file": "tests/cpp/tisc_opcode_family_semantics_test.cpp",
+    "line": 20,
+    "nearest_function": "std::expected<t81::vm::State, t81::vm::Trap> run_program(const t81::tisc::Program& p,",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/tisc_opcode_matrix_test.cpp",
+    "line": 62,
+    "nearest_function": "static void test_full_opcode_roundtrip_encoding() {",
+    "source": "auto bytes = t81::tisc::encode(program);"
+  },
+  {
+    "file": "tests/cpp/tisc_opcode_matrix_test.cpp",
+    "line": 63,
+    "nearest_function": "static void test_full_opcode_roundtrip_encoding() {",
+    "source": "auto decoded = t81::tisc::decode(bytes);"
+  },
+  {
+    "file": "tests/cpp/tisc_semantic_equivalence_test.cpp",
+    "line": 24,
+    "nearest_function": "bool check_add_semantics() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/tisc_semantic_equivalence_test.cpp",
+    "line": 38,
+    "nearest_function": "bool check_div_zero_trap_semantics() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/tisc_semantic_equivalence_test.cpp",
+    "line": 55,
+    "nearest_function": "bool check_jump_if_zero_semantics() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/tisc_semantic_equivalence_test.cpp",
+    "line": 73,
+    "nearest_function": "bool check_option_result_semantics() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/tisc_type_alias_io_test.cpp",
+    "line": 41,
+    "nearest_function": "void test_type_alias_io_roundtrip() {",
+    "source": "t81::tisc::save_program(program, temp_file.string());"
+  },
+  {
+    "file": "tests/cpp/tisc_type_alias_io_test.cpp",
+    "line": 43,
+    "nearest_function": "void test_type_alias_io_roundtrip() {",
+    "source": "[[maybe_unused]] auto loaded = t81::tisc::load_program(temp_file.string());"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_attention_conformance_test.cpp",
+    "line": 70,
+    "nearest_function": "int main() {",
+    "source": "vm1->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_attention_conformance_test.cpp",
+    "line": 94,
+    "nearest_function": "int main() {",
+    "source": "vm2->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_attention_conformance_test.cpp",
+    "line": 128,
+    "nearest_function": "int main() {",
+    "source": "vm3->load_program(float_prog);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_attention_conformance_test.cpp",
+    "line": 137,
+    "nearest_function": "int main() {",
+    "source": "vm4->load_program(float_prog);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_embed_conformance_test.cpp",
+    "line": 52,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_embed_conformance_test.cpp",
+    "line": 92,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_gather_axis1_test.cpp",
+    "line": 62,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_gather_axis1_test.cpp",
+    "line": 105,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_gather_axis1_test.cpp",
+    "line": 135,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_gather_conformance_test.cpp",
+    "line": 62,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_gather_conformance_test.cpp",
+    "line": 101,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_qmatmul_conformance_test.cpp",
+    "line": 57,
+    "nearest_function": "int main() {",
+    "source": "vm1->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_qmatmul_conformance_test.cpp",
+    "line": 78,
+    "nearest_function": "int main() {",
+    "source": "vm2->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_qmatmul_conformance_test.cpp",
+    "line": 109,
+    "nearest_function": "int main() {",
+    "source": "vm_bad->load_program(bad);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_scatter_aliasing_test.cpp",
+    "line": 54,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_scatter_aliasing_test.cpp",
+    "line": 90,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_scatter_conformance_test.cpp",
+    "line": 66,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_scatter_conformance_test.cpp",
+    "line": 115,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_shared_helper_parity_test.cpp",
+    "line": 57,
+    "nearest_function": "void test_attention_parity() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_shared_helper_parity_test.cpp",
+    "line": 79,
+    "nearest_function": "void test_embed_parity() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_shared_helper_parity_test.cpp",
+    "line": 104,
+    "nearest_function": "void test_qmatmul_parity() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_shared_helper_parity_test.cpp",
+    "line": 133,
+    "nearest_function": "void test_qmatmul_fractional_scale_parity() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_wload_canonfs_audit_test.cpp",
+    "line": 62,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_wload_canonfs_audit_test.cpp",
+    "line": 128,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_wload_conformance_test.cpp",
+    "line": 56,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_phase1_wload_conformance_test.cpp",
+    "line": 92,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_ai_predispatch_deny_audit_test.cpp",
+    "line": 20,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_axreport_policy_deny_fail_closed_test.cpp",
+    "line": 35,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_bounds_test.cpp",
+    "line": 13,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_bounds_trace_test.cpp",
+    "line": 23,
+    "nearest_function": "static int run_and_expect(std::vector<t81::tisc::Insn> insns, t81::vm::Trap expected,",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_determinism_property_test.cpp",
+    "line": 44,
+    "nearest_function": "bool run_and_capture(const Program& program, Snapshot* out) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_determinism_property_test.cpp",
+    "line": 214,
+    "nearest_function": "int main() {",
+    "source": "const auto enc_a = t81::tisc::encode(p);"
+  },
+  {
+    "file": "tests/cpp/vm_determinism_property_test.cpp",
+    "line": 215,
+    "nearest_function": "int main() {",
+    "source": "const auto enc_b = t81::tisc::encode(p);"
+  },
+  {
+    "file": "tests/cpp/vm_extended_ops_test.cpp",
+    "line": 47,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_extended_ops_test.cpp",
+    "line": 70,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_extended_ops_test.cpp",
+    "line": 81,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_extended_ops_test.cpp",
+    "line": 98,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_extended_ops_test.cpp",
+    "line": 129,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_fault_family_determinism_matrix_test.cpp",
+    "line": 32,
+    "nearest_function": "RunSummary run_program(const t81::tisc::Program& program, std::size_t max_steps = 256) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_fault_test.cpp",
+    "line": 13,
+    "nearest_function": "(top-level)",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_fault_test.cpp",
+    "line": 62,
+    "nearest_function": "void run_injected_fault_test() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_ffi_bridge_test.cpp",
+    "line": 359,
+    "nearest_function": "void test_vm_ffi_call_uses_encoded_symbol() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_ffi_bridge_test.cpp",
+    "line": 385,
+    "nearest_function": "void test_vm_ffi_call_success_writes_result_register() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_ffi_bridge_test.cpp",
+    "line": 426,
+    "nearest_function": "void test_vm_ffi_call_unary_argument_round_trip() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_ffi_bridge_test.cpp",
+    "line": 477,
+    "nearest_function": "void test_vm_ffi_call_system_string_argument_round_trip() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_ffi_bridge_test.cpp",
+    "line": 518,
+    "nearest_function": "void test_vm_ffi_call_system_double_argument_round_trip() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_ffi_bridge_test.cpp",
+    "line": 556,
+    "nearest_function": "void test_vm_ffi_register_reads_symbol_registers() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_ffi_bridge_test.cpp",
+    "line": 596,
+    "nearest_function": "void test_vm_ffi_call_binary_argument_round_trip() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_ffi_bridge_test.cpp",
+    "line": 640,
+    "nearest_function": "void test_vm_ffi_call_string_argument_round_trip() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_ffi_bridge_test.cpp",
+    "line": 678,
+    "nearest_function": "void test_vm_ffi_call_string_result_round_trip() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_ffi_bridge_test.cpp",
+    "line": 727,
+    "nearest_function": "void test_vm_ffi_call_double_argument_round_trip() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_ffi_bridge_test.cpp",
+    "line": 770,
+    "nearest_function": "void test_vm_ffi_call_double_result_round_trip() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_ffi_bridge_test.cpp",
+    "line": 812,
+    "nearest_function": "void test_vm_ffi_call_bytes_argument_round_trip() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_ffi_bridge_test.cpp",
+    "line": 850,
+    "nearest_function": "void test_vm_ffi_call_bytes_result_round_trip() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_ffi_bridge_test.cpp",
+    "line": 903,
+    "nearest_function": "void test_vm_ffi_call_mixed_argument_round_trip() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_ffi_bridge_test.cpp",
+    "line": 941,
+    "nearest_function": "void test_vm_ffi_call_string_list_result_round_trip() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_ffi_bridge_test.cpp",
+    "line": 988,
+    "nearest_function": "void test_vm_ffi_call_string_list_argument_round_trip() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_ffi_bridge_test.cpp",
+    "line": 1022,
+    "nearest_function": "void test_vm_ffi_call_emits_audit_trail() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_ffi_bridge_test.cpp",
+    "line": 1070,
+    "nearest_function": "void test_vm_ffi_call_int_list_result_round_trip() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_ffi_bridge_test.cpp",
+    "line": 1111,
+    "nearest_function": "void test_vm_ffi_quarantine_fails_closed() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_float_fraction_ops_test.cpp",
+    "line": 35,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_float_fraction_ops_test.cpp",
+    "line": 59,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_float_fraction_ops_test.cpp",
+    "line": 82,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_float_fraction_ops_test.cpp",
+    "line": 105,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_float_fraction_ops_test.cpp",
+    "line": 120,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_float_fraction_ops_test.cpp",
+    "line": 136,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_gc_safepoint_test.cpp",
+    "line": 88,
+    "nearest_function": "static void test_gcsafepoint_increments_gc_cycles() {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/cpp/vm_gc_safepoint_test.cpp",
+    "line": 118,
+    "nearest_function": "static void test_interval_trigger_fires() {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/cpp/vm_gc_safepoint_test.cpp",
+    "line": 140,
+    "nearest_function": "static void test_gc_axion_deny_causes_security_fault() {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/cpp/vm_gc_test.cpp",
+    "line": 25,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/cpp/vm_illegal_test.cpp",
+    "line": 12,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(bad_reg);"
+  },
+  {
+    "file": "tests/cpp/vm_illegal_test.cpp",
+    "line": 20,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(bad_jump);"
+  },
+  {
+    "file": "tests/cpp/vm_illegal_test.cpp",
+    "line": 29,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(bad_op);"
+  },
+  {
+    "file": "tests/cpp/vm_jit_per_instruction_policy_test.cpp",
+    "line": 45,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_jump_flags_test.cpp",
+    "line": 29,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_jump_flags_test.cpp",
+    "line": 47,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_jump_flags_test.cpp",
+    "line": 64,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_jump_flags_test.cpp",
+    "line": 82,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_load_store_test.cpp",
+    "line": 16,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_load_store_test.cpp",
+    "line": 26,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(bad);"
+  },
+  {
+    "file": "tests/cpp/vm_memory_test.cpp",
+    "line": 17,
+    "nearest_function": "std::unique_ptr<t81::vm::IVirtualMachine> run_program(const std::vector<t81::tisc::Insn>& insns) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_memory_test.cpp",
+    "line": 27,
+    "nearest_function": "std::unique_ptr<t81::vm::IVirtualMachine> run_program(const std::vector<t81::tisc::Insn>& insns) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_memory_test.cpp",
+    "line": 118,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_memory_test.cpp",
+    "line": 181,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_memory_test.cpp",
+    "line": 250,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_memory_test.cpp",
+    "line": 277,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_memory_test.cpp",
+    "line": 280,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_memory_test.cpp",
+    "line": 330,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_metarefine_writecode_denial_test.cpp",
+    "line": 18,
+    "nearest_function": "static void check_batch(bool deny, bool invalid_target) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_mixed_workload_conformance_matrix_test.cpp",
+    "line": 68,
+    "nearest_function": "RunSummary run_once(const t81::tisc::Program& program) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_neg_jumps_test.cpp",
+    "line": 16,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_neg_jumps_test.cpp",
+    "line": 35,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_neg_jumps_test.cpp",
+    "line": 52,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_neg_jumps_test.cpp",
+    "line": 69,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_neg_jumps_test.cpp",
+    "line": 86,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_neg_jumps_test.cpp",
+    "line": 102,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_new_opcodes_test.cpp",
+    "line": 14,
+    "nearest_function": "(top-level)",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_policy_parse_fail_closed_test.cpp",
+    "line": 26,
+    "nearest_function": "void run_policy_parse_fail_closed_test() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_policy_parse_fail_closed_test.cpp",
+    "line": 65,
+    "nearest_function": "void run_policy_unknown_clause_fail_closed_test() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_predispatch_policy_deny_logging_test.cpp",
+    "line": 28,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_print_test.cpp",
+    "line": 38,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_print_test.cpp",
+    "line": 57,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_print_test.cpp",
+    "line": 67,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_reflection_test.cpp",
+    "line": 16,
+    "nearest_function": "std::unique_ptr<t81::vm::IVirtualMachine> run_program(const std::vector<t81::tisc::Insn>& insns) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_reflection_test.cpp",
+    "line": 65,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_reflection_tier2_test.cpp",
+    "line": 19,
+    "nearest_function": "std::unique_ptr<t81::vm::IVirtualMachine> run_program(const std::vector<t81::tisc::Insn>& insns,",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_rfc0034_ternary_native_test.cpp",
+    "line": 62,
+    "nearest_function": "int test_twmatmul_exact() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_rfc0034_ternary_native_test.cpp",
+    "line": 98,
+    "nearest_function": "int test_tquant_determinism() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_rfc0034_ternary_native_test.cpp",
+    "line": 136,
+    "nearest_function": "int test_ternaccum_bigint() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_rfc0034_ternary_native_test.cpp",
+    "line": 163,
+    "nearest_function": "int test_tact_step_determinism() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_rfc0034_ternary_native_test.cpp",
+    "line": 206,
+    "nearest_function": "int test_tact_quarantine_gate() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_rfc0034_ternary_native_test.cpp",
+    "line": 239,
+    "nearest_function": "int test_tact_deny_after_quarantine() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_rfc0034_ternary_native_test.cpp",
+    "line": 285,
+    "nearest_function": "int test_wload_allowed_ternary_model_hashes() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_rfc0034_ternary_native_test.cpp",
+    "line": 315,
+    "nearest_function": "int test_wload_denies_non_whitelisted_ternary_model_hash() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_rfc0034_ternary_native_test.cpp",
+    "line": 353,
+    "nearest_function": "int test_promote_to_tensor_denies_non_whitelisted_ternary_model_hash() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_rfc0034_ternary_native_test.cpp",
+    "line": 391,
+    "nearest_function": "int test_twmatmul_denies_non_whitelisted_ternary_model_hash() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_rfc0034_ternary_native_test.cpp",
+    "line": 431,
+    "nearest_function": "int test_wload_ternary_weight_domain_check() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_rfc0034_ternary_native_test.cpp",
+    "line": 468,
+    "nearest_function": "int test_wload_ternary_weight_domain_check_disabled() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_rfc0040_swar_test.cpp",
+    "line": 61,
+    "nearest_function": "int test_tnot_swar_tensor() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_rfc0040_swar_test.cpp",
+    "line": 84,
+    "nearest_function": "int test_tand_tor_swar_tensor() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_rfc0040_swar_test.cpp",
+    "line": 107,
+    "nearest_function": "int test_swar_shape_fault() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_rfc0040_swar_test.cpp",
+    "line": 122,
+    "nearest_function": "int test_swar_type_fault_on_non_exact_trit_tensor() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_rfc0040_swar_test.cpp",
+    "line": 141,
+    "nearest_function": "int test_swar_axion_log_reasons() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_state_transition_conformance_matrix_test.cpp",
+    "line": 46,
+    "nearest_function": "RunSummary run_and_summarize(const t81::tisc::Program& program, std::size_t max_steps) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_state_transition_invariants_test.cpp",
+    "line": 46,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_stubbed_opcode_fail_closed_test.cpp",
+    "line": 27,
+    "nearest_function": "void run_async_fail_closed(t81::tisc::Insn insn, std::string_view opname) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_stubbed_opcode_fail_closed_test.cpp",
+    "line": 58,
+    "nearest_function": "void run_privileged_fail_closed(t81::tisc::Opcode opcode, std::string_view opname) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_system_registers_deterministic_test.cpp",
+    "line": 31,
+    "nearest_function": "void run_lineage_signature_test() {",
+    "source": "vm_a1->load_program(a);"
+  },
+  {
+    "file": "tests/cpp/vm_system_registers_deterministic_test.cpp",
+    "line": 32,
+    "nearest_function": "void run_lineage_signature_test() {",
+    "source": "vm_a2->load_program(a);"
+  },
+  {
+    "file": "tests/cpp/vm_system_registers_deterministic_test.cpp",
+    "line": 33,
+    "nearest_function": "void run_lineage_signature_test() {",
+    "source": "vm_b->load_program(b);"
+  },
+  {
+    "file": "tests/cpp/vm_system_registers_deterministic_test.cpp",
+    "line": 51,
+    "nearest_function": "void run_constitutional_mask_test() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_tensor_get_set_conformance_test.cpp",
+    "line": 24,
+    "nearest_function": "void run_get_set_success_int_value() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_tensor_get_set_conformance_test.cpp",
+    "line": 54,
+    "nearest_function": "void run_get_set_success_float_handle_value() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_tensor_get_set_conformance_test.cpp",
+    "line": 82,
+    "nearest_function": "void run_get_bad_index_type_fault() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_tensor_get_set_conformance_test.cpp",
+    "line": 99,
+    "nearest_function": "void run_identity_copy_preserves_tensor_authority() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_tensor_get_set_conformance_test.cpp",
+    "line": 143,
+    "nearest_function": "void run_get_set_immediate_visibility_and_repeatability() {",
+    "source": "vm->load_program(build_program());"
+  },
+  {
+    "file": "tests/cpp/vm_tensor_get_set_conformance_test.cpp",
+    "line": 191,
+    "nearest_function": "void run_identity_copy_mutation_does_not_alias_source() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_tensor_get_set_conformance_test.cpp",
+    "line": 230,
+    "nearest_function": "void run_set_out_of_bounds_fault_is_deterministic() {",
+    "source": "vm->load_program(build_program());"
+  },
+  {
+    "file": "tests/cpp/vm_tensor_get_set_conformance_test.cpp",
+    "line": 265,
+    "nearest_function": "void run_mixed_write_kind_transition_is_deterministic() {",
+    "source": "vm->load_program(build_program());"
+  },
+  {
+    "file": "tests/cpp/vm_tensor_provenance_trace_test.cpp",
+    "line": 53,
+    "nearest_function": "void run_tensor_provenance_trace_contract() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_tensor_shape_faults_test.cpp",
+    "line": 13,
+    "nearest_function": "(top-level)",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_tensor_test.cpp",
+    "line": 36,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_tensor_test.cpp",
+    "line": 175,
+    "nearest_function": "int main() {",
+    "source": "native_exp_vm->load_program(native_exp_program);"
+  },
+  {
+    "file": "tests/cpp/vm_tensor_test.cpp",
+    "line": 250,
+    "nearest_function": "int main() {",
+    "source": "native_rms_vm->load_program(native_rmsnorm_program);"
+  },
+  {
+    "file": "tests/cpp/vm_tensor_test.cpp",
+    "line": 280,
+    "nearest_function": "int main() {",
+    "source": "native_rope_vm->load_program(native_rope_program);"
+  },
+  {
+    "file": "tests/cpp/vm_tensor_test.cpp",
+    "line": 306,
+    "nearest_function": "int main() {",
+    "source": "native_embed_vm->load_program(native_embed_program);"
+  },
+  {
+    "file": "tests/cpp/vm_tensor_test.cpp",
+    "line": 333,
+    "nearest_function": "int main() {",
+    "source": "native_twmatmul_vm->load_program(native_twmatmul_program);"
+  },
+  {
+    "file": "tests/cpp/vm_tensor_test.cpp",
+    "line": 373,
+    "nearest_function": "int main() {",
+    "source": "native_tattn_vm->load_program(native_tattn_program);"
+  },
+  {
+    "file": "tests/cpp/vm_tensor_test.cpp",
+    "line": 410,
+    "nearest_function": "int main() {",
+    "source": "vm_chk->load_program(chk);"
+  },
+  {
+    "file": "tests/cpp/vm_tier_promotion_test.cpp",
+    "line": 49,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_tisc_v04_extensions_test.cpp",
+    "line": 48,
+    "nearest_function": "int test_read_isa_version() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_tisc_v04_extensions_test.cpp",
+    "line": 70,
+    "nearest_function": "int test_vadd_elementwise() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_tisc_v04_extensions_test.cpp",
+    "line": 96,
+    "nearest_function": "int test_vadd_shape_fault() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_tisc_v04_extensions_test.cpp",
+    "line": 122,
+    "nearest_function": "int test_vfma_multiply_accumulate() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_tisc_v04_extensions_test.cpp",
+    "line": 149,
+    "nearest_function": "int test_vfma_shape_fault() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_tisc_v04_extensions_test.cpp",
+    "line": 171,
+    "nearest_function": "int test_vload_reshape() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_tisc_v04_extensions_test.cpp",
+    "line": 197,
+    "nearest_function": "int test_vload_shape_fault() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_tisc_v04_extensions_test.cpp",
+    "line": 219,
+    "nearest_function": "int test_vstore_validated_copy() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_tisc_v04_extensions_test.cpp",
+    "line": 245,
+    "nearest_function": "int test_vstore_shape_fault() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_tisc_v04_extensions_test.cpp",
+    "line": 267,
+    "nearest_function": "int test_v04_axion_trace() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_tloadhash_canonical_fixed_test.cpp",
+    "line": 111,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_tloadhash_canonical_fixed_test.cpp",
+    "line": 131,
+    "nearest_function": "int main() {",
+    "source": "exact_vm->load_program(exact_program);"
+  },
+  {
+    "file": "tests/cpp/vm_tloadhash_conformance_test.cpp",
+    "line": 80,
+    "nearest_function": "void run_tloadhash_success_case() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_tloadhash_conformance_test.cpp",
+    "line": 118,
+    "nearest_function": "void run_tloadhash_decode_fault_case() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_tloadhash_conformance_test.cpp",
+    "line": 144,
+    "nearest_function": "void run_tloadhash_ambiguous_payload_fail_closed_case() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_tloadhash_conformance_test.cpp",
+    "line": 175,
+    "nearest_function": "void run_tloadhash_invalid_header_cases() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_tloadhash_conformance_test.cpp",
+    "line": 190,
+    "nearest_function": "void run_tloadhash_invalid_header_cases() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_tloadhash_conformance_test.cpp",
+    "line": 219,
+    "nearest_function": "void run_tloadhash_canonfs_miss_case() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_tloadhash_conformance_test.cpp",
+    "line": 239,
+    "nearest_function": "void run_tloadhash_policy_deny_case() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_tloadhash_conformance_test.cpp",
+    "line": 276,
+    "nearest_function": "void run_tloadhash_policy_violation_case() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_tloadhash_custom_driver_test.cpp",
+    "line": 77,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_tloadhash_decodefault_determinism_matrix_test.cpp",
+    "line": 76,
+    "nearest_function": "RunSummary run_once(const t81::tisc::Program& program,",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/cpp/vm_tloadhash_decodefault_determinism_matrix_test.cpp",
+    "line": 189,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(c.program);"
+  },
+  {
+    "file": "tests/cpp/vm_trace_test.cpp",
+    "line": 25,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/vm_workload_determinism_tiers_test.cpp",
+    "line": 31,
+    "nearest_function": "std::uint64_t signature_for_program(const t81::tisc::Program& p, bool* ok) {",
+    "source": "vm->load_program(p);"
+  },
+  {
+    "file": "tests/cpp/weights_load_test.cpp",
+    "line": 33,
+    "nearest_function": "int main() {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tests/fuzz/fuzz_vm.cpp",
+    "line": 68,
+    "nearest_function": "(top-level)",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "tests/python/test_bindings.py",
+    "line": 35,
+    "nearest_function": "(top-level)",
+    "source": "vm_temp.load_program(program)"
+  },
+  {
+    "file": "tests/python/test_bindings.py",
+    "line": 48,
+    "nearest_function": "(top-level)",
+    "source": "vm.load_program(program)"
+  },
+  {
+    "file": "tools/cli/core/driver.cpp",
+    "line": 1122,
+    "nearest_function": "int compile(const fs::path& input, const fs::path& output, const std::string& source_override,",
+    "source": "t81::tisc::save_program(*program, output.string());"
+  },
+  {
+    "file": "tools/cli/core/driver.cpp",
+    "line": 1235,
+    "nearest_function": "int repl(const std::shared_ptr<t81::weights::ModelFile>& weights_model,",
+    "source": "vm->load_program(*program);"
+  },
+  {
+    "file": "tools/cli/core/driver.cpp",
+    "line": 1412,
+    "nearest_function": "int run_tisc(const fs::path& path, const std::optional<fs::path>& policy_path, bool trace_enabled,",
+    "source": "auto program = t81::tisc::load_program(path.string());"
+  },
+  {
+    "file": "tools/cli/core/driver.cpp",
+    "line": 1432,
+    "nearest_function": "int run_tisc(const fs::path& path, const std::optional<fs::path>& policy_path, bool trace_enabled,",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tools/cli/core/driver.cpp",
+    "line": 1505,
+    "nearest_function": "int disasm_tisc(const fs::path& path) {",
+    "source": "auto program = t81::tisc::load_program(path.string());"
+  },
+  {
+    "file": "tools/cli/core/driver.cpp",
+    "line": 1539,
+    "nearest_function": "int debug_tisc(const fs::path& path, const std::optional<fs::path>& policy_path,",
+    "source": "auto program = t81::tisc::load_program(path.string());"
+  },
+  {
+    "file": "tools/cli/core/driver.cpp",
+    "line": 1558,
+    "nearest_function": "int debug_tisc(const fs::path& path, const std::optional<fs::path>& policy_path,",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tools/cli/core/driver.cpp",
+    "line": 2405,
+    "nearest_function": "int run_trace_replay(const TraceArgs& args) {",
+    "source": "auto program = t81::tisc::load_program(tisc_path.string());"
+  },
+  {
+    "file": "tools/cli/core/driver.cpp",
+    "line": 2407,
+    "nearest_function": "int run_trace_replay(const TraceArgs& args) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tools/cli/core/driver.cpp",
+    "line": 3083,
+    "nearest_function": "int run_llvm(const LLVMArgs& la) {",
+    "source": "prog = t81::tisc::load_program(la.input.string());"
+  },
+  {
+    "file": "tools/cli/core/driver.cpp",
+    "line": 3199,
+    "nearest_function": "int run_mlir(const MlirArgs& ma) {",
+    "source": "prog = t81::tisc::load_program(ma.input.string());"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 5364,
+    "nearest_function": "int run_axion(const Args& args) {",
+    "source": "auto program = t81::tisc::load_program(simulate_file);"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 5366,
+    "nearest_function": "int run_axion(const Args& args) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 6033,
+    "nearest_function": "bool capture_determinism_run_record(const fs::path& input,",
+    "source": "auto program = t81::tisc::load_program(input.string());"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 6044,
+    "nearest_function": "bool capture_determinism_run_record(const fs::path& input,",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 6315,
+    "nearest_function": "int run_determinism_command(const char* command_name, const Args& args) {",
+    "source": "auto program = t81::tisc::load_program(input.string());"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 6326,
+    "nearest_function": "int run_determinism_command(const char* command_name, const Args& args) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 6603,
+    "nearest_function": "int run_determinism_command(const char* command_name, const Args& args) {",
+    "source": "auto program = t81::tisc::load_program(input.string());"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 6615,
+    "nearest_function": "int run_determinism_command(const char* command_name, const Args& args) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 7085,
+    "nearest_function": "int run_vm_command(const Args& args) {",
+    "source": "auto program = t81::tisc::load_program(input.string());"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 7096,
+    "nearest_function": "int run_vm_command(const Args& args) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 7271,
+    "nearest_function": "int run_vm_command(const Args& args) {",
+    "source": "auto program = t81::tisc::load_program(input.string());"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 7282,
+    "nearest_function": "int run_vm_command(const Args& args) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 7323,
+    "nearest_function": "int run_vm_command(const Args& args) {",
+    "source": "auto program = t81::tisc::load_program(input.string());"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 7334,
+    "nearest_function": "int run_vm_command(const Args& args) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 7547,
+    "nearest_function": "int run_tier_command(const Args& args) {",
+    "source": "auto program = t81::tisc::load_program(input.string());"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 7622,
+    "nearest_function": "int run_tisc_command(const Args& args) {",
+    "source": "const auto prog1 = t81::tisc::load_program(input1.string());"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 7623,
+    "nearest_function": "int run_tisc_command(const Args& args) {",
+    "source": "const auto prog2 = t81::tisc::load_program(input2.string());"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 7703,
+    "nearest_function": "int run_tisc_command(const Args& args) {",
+    "source": "auto program = t81::tisc::load_program(input.string());"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 7722,
+    "nearest_function": "int run_tisc_command(const Args& args) {",
+    "source": "auto program = t81::tisc::load_program(input.string());"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 7765,
+    "nearest_function": "int run_tisc_command(const Args& args) {",
+    "source": "t81::tisc::save_program(program_res.value(), out_path.string());"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 7780,
+    "nearest_function": "int run_tisc_command(const Args& args) {",
+    "source": "const auto program = t81::tisc::load_program(input.string());"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 8084,
+    "nearest_function": "int run_memory_stats(const Args& args) {",
+    "source": "auto program = t81::tisc::load_program(tisc_path.string());"
+  },
+  {
+    "file": "tools/cli/core/main.cpp",
+    "line": 8086,
+    "nearest_function": "int run_memory_stats(const Args& args) {",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "tools/playground/src/wasm_api.cpp",
+    "line": 78,
+    "nearest_function": "std::string t81_run_impl(const std::string& source) {",
+    "source": "vm->load_program(*maybe_program);"
+  },
+  {
+    "file": "vm/ai_backend/backend_adapter.cpp",
+    "line": 65,
+    "nearest_function": "AiDispatchResult T81VmBackend::run_ai_opcode(",
+    "source": "vm->load_program(prog);"
+  },
+  {
+    "file": "vm/decoder.cpp",
+    "line": 1076,
+    "nearest_function": "DecodeExecutionResult execute_decode_program(const BuiltDecodeProgram& built,",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "vm/dpe/task_runner.cpp",
+    "line": 36,
+    "nearest_function": "DpeTaskResult DpeTaskRunner::run_direct(",
+    "source": "vm->load_program(program);"
+  },
+  {
+    "file": "vm/test_csi_end_to_end.cpp",
+    "line": 80,
+    "nearest_function": "(top-level)",
+    "source": "bool load_success = vm_->load_program(program);"
+  },
+  {
+    "file": "vm/test_csi_end_to_end.cpp",
+    "line": 112,
+    "nearest_function": "(top-level)",
+    "source": "bool load_success = vm_->load_program(program);"
+  },
+  {
+    "file": "vm/test_csi_end_to_end.cpp",
+    "line": 132,
+    "nearest_function": "(top-level)",
+    "source": "bool load_success = vm_->load_program(program);"
+  },
+  {
+    "file": "vm/test_csi_end_to_end.cpp",
+    "line": 153,
+    "nearest_function": "(top-level)",
+    "source": "vm_->load_program(chain_program);"
+  },
+  {
+    "file": "vm/test_csi_end_to_end.cpp",
+    "line": 188,
+    "nearest_function": "(top-level)",
+    "source": "vm_->load_program(simple_program);"
+  },
+  {
+    "file": "vm/test_csi_vm_dispatch.cpp",
+    "line": 98,
+    "nearest_function": "(top-level)",
+    "source": "bool load_success = vm_->load_program(program);"
+  },
+  {
+    "file": "vm/test_csi_vm_dispatch.cpp",
+    "line": 150,
+    "nearest_function": "(top-level)",
+    "source": "bool load_success = vm_->load_program(program);"
+  },
+  {
+    "file": "vm/test_csi_vm_dispatch.cpp",
+    "line": 190,
+    "nearest_function": "(top-level)",
+    "source": "bool load_success = vm_->load_program(program);"
+  },
+  {
+    "file": "vm/test_csi_vm_dispatch.cpp",
+    "line": 217,
+    "nearest_function": "(top-level)",
+    "source": "vm_->load_program(bad_reg_program);"
+  },
+  {
+    "file": "vm/test_csi_vm_dispatch.cpp",
+    "line": 234,
+    "nearest_function": "(top-level)",
+    "source": "vm_->load_program(no_chain_program);"
+  },
+  {
+    "file": "vm/test_csi_vm_dispatch.cpp",
+    "line": 278,
+    "nearest_function": "(top-level)",
+    "source": "bool load_success = vm_->load_program(mixed_program);"
+  },
+  {
+    "file": "vm/vm.cpp",
+    "line": 311,
+    "nearest_function": "DivergenceReport DeterminismDetector::check_against_previous() const {",
+    "source": "void load_program(const t81::tisc::Program& program) override {"
+  }
+]
