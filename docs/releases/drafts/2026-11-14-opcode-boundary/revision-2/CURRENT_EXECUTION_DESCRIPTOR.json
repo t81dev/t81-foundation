@@ -1,0 +1,72 @@
+{
+  "status": "PROPOSED; not registered or approved; not an executable profile",
+  "purpose": "minimum descriptive binding to the existing hosted interpreter; no new ISA semantics",
+  "target": "existing hosted non-JIT interpreter",
+  "source_revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+  "source_tree": "abbe3ffa64688f9df17242cbaca3c07746cd3540",
+  "opcode_map": {
+    "path": "evidence/opcode-map.tsv",
+    "encoding": "ASCII lines decimal-byte TAB existing opcode_name LF, ascending byte",
+    "sha256": "41d1fd9102a4b297b58bee39ba8660bad6314cb616c619f6821b09563f015c3e",
+    "named_values": 244,
+    "membership": "existing named opcode values only; names do not prove implemented behavior or verified conformance"
+  },
+  "literal_kinds": {
+    "Int": 0,
+    "Bool": 1,
+    "FloatHandle": 2,
+    "FractionHandle": 3,
+    "SymbolHandle": 4,
+    "TensorHandle": 5,
+    "ShapeHandle": 6,
+    "ComplexHandle": 7,
+    "BigIntHandle": 8
+  },
+  "program_operands": {
+    "A": "i32",
+    "B": "i64",
+    "C": "i32",
+    "literal_kind": "u8"
+  },
+  "raw_api": "unchanged raw13 with three i32 operands; not full Program serialization",
+  "payload_codec": "separate explicitly selected native saved-Program codec; not inferred from execution descriptor",
+  "build_binding_required": [
+    "exact binary digest and build record",
+    "compiler, target ABI, flags and all feature definitions",
+    "deterministic math configuration",
+    "native/portable int128 capability selection",
+    "supported payload ABI and enabled runtime features"
+  ],
+  "execution_inputs_separate": [
+    "program bytes and artifact binding",
+    "policy and authorization context",
+    "weights/model binding if used",
+    "injected entropy, budgets, tier/configuration and host-service settings"
+  ],
+  "existing_semantic_anchors": {
+    "Load/Store": "current direct memory addresses B/A, not proposed register-indirect semantics",
+    "JumpIfZero/JumpIfNotZero": "current immediate target A and tested register B",
+    "TXor": "current clamped-trit wrapped difference",
+    "faults": "existing VM trap enum, tick/PC/trace and policy behavior unchanged; no atomic-fault redesign"
+  },
+  "implementation_sources": {
+    "include/t81/isa/opcodes.hpp": "f9459c3b93c583f36addf19df1a5f5930a298eee5e3916abb8139f3eeb46e35a",
+    "include/t81/isa/program.hpp": "ff8cf5ea48284515cce4440187a5be484ba95646895263defa0978ed1a8226e9",
+    "vm/vm.cpp": "2ed93572891bc9e32f7525270c7ff6a88edb3d5f22529e3f19195f71cb1ff998",
+    "vm/runtime_state_helpers.cpp": "6b079bf4a8315614d267bb6945b36fa3fa60305be8ecd677bcbaae1392a8dbe7",
+    "include/t81/vm/state.hpp": "1d14cb912618a918c52e6f4f025169f29a86b397b9fe6d698e0990ac738f3dcc",
+    "include/t81/vm/traps.hpp": "54eb75403402997a4b4a101344723a1daf992cf4121072021c1dc9a6a5fde10a",
+    "isa/binary_io.cpp": "797d3fe424136cb9109811b1bc47de4b453791d12bc0f860c7dcc96947de6aec",
+    "isa/encoding.cpp": "d9fd81f87e9b6b47c55c8ddf5e7bdeef95e0ce48a965b1973e23526c32f2a391"
+  },
+  "qualification": "Source-inspected anchors; no new VM execution. Descriptor association with a binary requires review/build/test evidence. No cross-platform equivalence claim.",
+  "non_claims": [
+    "not normative tisc-v2.0 or TISC v1.1.0 certification",
+    "not acceptance of all existing extensions or stub behavior",
+    "not a DCP promotion",
+    "not source-to-binary authentication",
+    "not a v1.9.4 evaluator",
+    "not admission authorization"
+  ],
+  "implementation_semantics_reference": "existing implementation at source_tree; discrepancies against normative specs remain unresolved"
+}

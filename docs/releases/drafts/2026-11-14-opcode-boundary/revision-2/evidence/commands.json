@@ -1,0 +1,22 @@
+{
+  "compile": {
+    "argv": [
+      "clang++",
+      "-std=c++23",
+      "-DNDEBUG",
+      "-I",
+      "include",
+      "docs/releases/drafts/2026-11-14-opcode-boundary/revision-2/evidence/descriptor_inspection.cpp",
+      "-o",
+      "/private/tmp/t81-descriptor-inspection"
+    ],
+    "exit": 0
+  },
+  "run": {
+    "argv": [
+      "/private/tmp/t81-descriptor-inspection"
+    ],
+    "exit": 0
+  },
+  "scope": "header/name/sizeof inspection only, no VM execution"
+}

@@ -1,0 +1,14 @@
+b901a800e026ad11ba0239861a015e93003b6e63c32beb28d2c087269bb320a6  docs/releases/drafts/2026-11-14-opcode-boundary/README.md
+37bd567abe20968a3cfed246689dcdac1dbff575caedcb6ed42fdff8af5a3fcd  docs/architecture/adr/ADR-PROPOSED-artifact-admission-boundary.md
+1e8578f9d687b0faa94509e64771f0e6421a64cfbe7892c8138683674f87067f  docs/releases/drafts/2026-11-14-opcode-boundary/revision-2/CURRENT_EXECUTION_DESCRIPTOR.json
+62a9b487b98e016dffdb1780175325596719bf7f17292b23a454162c2378729f  docs/releases/drafts/2026-11-14-opcode-boundary/revision-2/DESCRIPTOR.md
+f2b0c153e7db8dc3ee9fd99d072dde0759b32ec27ae1d4b9ba34dff407d50575  docs/releases/drafts/2026-11-14-opcode-boundary/revision-2/FREEZE_AND_WITNESS_CHANGES.md
+f846908f4bd1e2d9221a70559dd4b5f1a0e02a53849163d9f8899f91d06fc5c9  docs/releases/drafts/2026-11-14-opcode-boundary/revision-2/RESOURCE_CAPS.md
+126de268a44225e3c7cce6aee95affcdabd8fe541d95ec4c75659812646d47c1  docs/releases/drafts/2026-11-14-opcode-boundary/revision-2/TRUST_BOUNDARIES.md
+be97cb1fa0f3ece9873ddc8108ffc16b2da977a0454355708f44fe01ef26d22b  docs/releases/drafts/2026-11-14-opcode-boundary/revision-2/evidence/cap-observations.json
+704898bca71f5e2dff2d4b5be96f94f4a778ef1f3452eac50e525813958599a8  docs/releases/drafts/2026-11-14-opcode-boundary/revision-2/evidence/commands.json
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  docs/releases/drafts/2026-11-14-opcode-boundary/revision-2/evidence/compile.log
+5ed0bebf76582af71c24d9c8572cf7cd617abda07dfe6b4a940b901f92ff4e75  docs/releases/drafts/2026-11-14-opcode-boundary/revision-2/evidence/descriptor_inspection.cpp
+a2bac9f00f967e8083446ff00f3bda5eae4a08a0ac28fc4425d31e2f4638c994  docs/releases/drafts/2026-11-14-opcode-boundary/revision-2/evidence/object-sizes.log
+41d1fd9102a4b297b58bee39ba8660bad6314cb616c619f6821b09563f015c3e  docs/releases/drafts/2026-11-14-opcode-boundary/revision-2/evidence/opcode-map.tsv
+a5c1b10c298be01b4effbf00cf0c3ecce909c08c6469ddc26c97342e18707155  docs/releases/drafts/2026-11-14-opcode-boundary/revision-2/evidence/revision-validation.json
