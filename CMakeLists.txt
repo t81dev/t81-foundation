@@ -22,6 +22,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Options.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Compiler.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Int128.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Sanitizers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Dependencies.cmake)
 add_subdirectory(src)
@@ -1064,6 +1065,7 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   target_link_libraries(vm_ffi_bridge_test PRIVATE t81_vm t81_isa t81_core)
   target_compile_definitions(
     vm_ffi_bridge_test PRIVATE T81_VM_FFI_TESTLIB_PATH="$<TARGET_FILE:ffi_bridge_testlib>")
+  add_dependencies(vm_ffi_bridge_test ffi_bridge_testlib)
 
   # RFC-0037 — TNN stdlib (std.tnn.* builtins → RFC-0034 TISC opcodes)
   add_executable(tnn_stdlib_test tests/cpp/tnn_stdlib_test.cpp)
@@ -1336,6 +1338,26 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
 
   add_executable(test_bigint_robust_features tests/cpp/test_bigint_robust_features.cpp)
   target_link_libraries(test_bigint_robust_features PRIVATE t81_core)
+  add_executable(t81_int128_test tests/cpp/t81_int128_test.cpp)
+  target_link_libraries(t81_int128_test PRIVATE t81_core)
+  add_executable(t81_process_capture_test
+    tests/cpp/process_capture_test.cpp
+    tools/cli/core/process_capture.cpp)
+  target_include_directories(t81_process_capture_test PRIVATE ${PROJECT_SOURCE_DIR})
+  target_compile_features(t81_process_capture_test PRIVATE ${T81_CXX_STD_FEATURE})
+  find_package(Threads REQUIRED)
+  target_link_libraries(t81_process_capture_test PRIVATE Threads::Threads)
+  if(WIN32)
+    target_link_libraries(t81_process_capture_test PRIVATE advapi32)
+  endif()
+  if(MINGW)
+    target_link_options(t81_process_capture_test PRIVATE -municode)
+  endif()
+  # Execute the fallback even on hosts with a native __int128 backend.
+  add_executable(t81_int128_portable_test tests/cpp/t81_int128_test.cpp)
+  target_include_directories(t81_int128_portable_test PRIVATE ${PROJECT_SOURCE_DIR}/include)
+  target_compile_features(t81_int128_portable_test PRIVATE ${T81_CXX_STD_FEATURE})
+  target_compile_definitions(t81_int128_portable_test PRIVATE T81_FORCE_PORTABLE_INT128=1)
 
   add_executable(test_bigint_multilimb_ext tests/cpp/test_bigint_multilimb_ext.cpp)
   target_link_libraries(test_bigint_multilimb_ext PRIVATE t81_core)
@@ -1692,6 +1714,9 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     axion_hybrid_mlp_policy_test
     test_bigint_multilimb_ext
     test_bigint_robust_features
+    t81_int128_test
+    t81_process_capture_test
+    t81_int128_portable_test
     t81_bigint_v1_perf
     bigint_perf_guardrail_test
     t81_bigint_allocation_pathology_test
@@ -1733,8 +1758,10 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   endforeach()
   # Golden interchange fixtures live in the source tree, including out-of-tree builds.
   set_tests_properties(canonfs_interchange_test PROPERTIES WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+  set_tests_properties(t81_process_capture_test PROPERTIES TIMEOUT 60)
   set_tests_properties(jit_trace_equivalence_test PROPERTIES TIMEOUT 240)
   add_test(NAME t81_cli_repro_hash_test COMMAND $<TARGET_FILE:cli_repro_hash_test> $<TARGET_FILE:t81>)
+  set_tests_properties(t81_cli_repro_hash_test PROPERTIES WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
   add_test(NAME canonfs_cli_portable_storage_test
     COMMAND ${Python3_EXECUTABLE}
       ${PROJECT_SOURCE_DIR}/tests/python/test_canonfs_cli_portable_storage.py

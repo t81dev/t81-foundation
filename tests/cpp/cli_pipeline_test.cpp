@@ -79,9 +79,10 @@ int main() {
               "expected diagnostic text missing"))
     return 1;
 
-  [[maybe_unused]] size_t path_pos = output.find(fail_src.string());
+  [[maybe_unused]] const std::string expected_diag_path = fail_src.generic_string();
+  [[maybe_unused]] size_t path_pos = output.find(expected_diag_path);
   if (!expect(path_pos != std::string::npos, "diagnostic missing source path")) return 1;
-  [[maybe_unused]] size_t first_colon = output.find(':', path_pos + fail_src.string().size());
+  [[maybe_unused]] size_t first_colon = output.find(':', path_pos + expected_diag_path.size());
   if (!expect(first_colon != std::string::npos, "diagnostic missing line separator")) return 1;
   if (!expect(output.find(":", first_colon + 1) != std::string::npos,
               "diagnostic missing column separator"))
