@@ -805,6 +805,7 @@ jobs:
           path: |
             .github/logs/build-and-test.log
             build/ctest-results.xml
+            build/native-int128-probe.log
             build/artifacts/vm_workload_determinism_signatures.log
           if-no-files-found: warn
 

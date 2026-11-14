@@ -1,0 +1,140 @@
+Start testing: Nov 12 18:05 EST
+----------------------------------------------------------
+279/423 Testing: vm_ffi_bridge_test
+279/423 Test: vm_ffi_bridge_test
+Command: "/Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build/vm_ffi_bridge_test"
+Directory: /Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build
+"vm_ffi_bridge_test" start time: Nov 12 18:05 EST
+Output:
+----------------------------------------------------------
+=== VM FFI bridge tests ===
+expected successful binary FFI call through VM bridge, got trap FFILoadError
+<end of output>
+Test time =   0.61 sec
+----------------------------------------------------------
+Test Failed.
+"vm_ffi_bridge_test" end time: Nov 12 18:05 EST
+"vm_ffi_bridge_test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+288/423 Testing: test_bigint_multilimb_ext
+288/423 Test: test_bigint_multilimb_ext
+Command: "/Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build/test_bigint_multilimb_ext"
+Directory: /Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build
+"test_bigint_multilimb_ext" start time: Nov 12 18:05 EST
+Output:
+----------------------------------------------------------
+BigInt str: +--+--0-+-0--00--0++---000-+0++000+--0+-+0
+test_multilimb_addition passed!
+<end of output>
+Test time =   0.27 sec
+----------------------------------------------------------
+Test Passed.
+"test_bigint_multilimb_ext" end time: Nov 12 18:05 EST
+"test_bigint_multilimb_ext" time elapsed: 00:00:00
+----------------------------------------------------------
+
+289/423 Testing: test_bigint_robust_features
+289/423 Test: test_bigint_robust_features
+Command: "/Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build/test_bigint_robust_features"
+Directory: /Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build
+"test_bigint_robust_features" start time: Nov 12 18:05 EST
+Output:
+----------------------------------------------------------
+Robust BigInt Features Tests Passed
+<end of output>
+Test time =   0.29 sec
+----------------------------------------------------------
+Test Passed.
+"test_bigint_robust_features" end time: Nov 12 18:05 EST
+"test_bigint_robust_features" time elapsed: 00:00:00
+----------------------------------------------------------
+
+302/423 Testing: t81_simd_api_test
+302/423 Test: t81_simd_api_test
+Command: "/Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build/t81_simd_api_test"
+Directory: /Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build
+"t81_simd_api_test" start time: Nov 12 18:05 EST
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.25 sec
+----------------------------------------------------------
+Test Passed.
+"t81_simd_api_test" end time: Nov 12 18:05 EST
+"t81_simd_api_test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+303/423 Testing: t81_arithmetic_backend_equivalence_test
+303/423 Test: t81_arithmetic_backend_equivalence_test
+Command: "/Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build/t81_arithmetic_backend_equivalence_test"
+Directory: /Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build
+"t81_arithmetic_backend_equivalence_test" start time: Nov 12 18:05 EST
+Output:
+----------------------------------------------------------
+Axion trap: T81BigInt::to_int64: overflow
+Axion trap: T81BigInt::to_int64: overflow
+[RFC-0049] negation: scalar oracle == T81BigInt...
+  PASS
+[RFC-0049] addition: scalar oracle == T81BigInt...
+  PASS
+[RFC-0049] subtraction: scalar oracle == T81BigInt, identity a-b=a+(-b)...
+  PASS
+[RFC-0049] multiplication: T81BigInt vs int64 reference...
+[RFC-0049] multiplication: repeated-addition oracle (small n)...
+  PASS
+[RFC-0049] comparison: value-based, matches int64 ordering...
+  PASS
+[RFC-0049] overflow policy: T81BigInt is unbounded (arbitrary precision)...
+  PASS
+[RFC-0049] carry propagation: boundary cases...
+  PASS
+All RFC-0049 arithmetic conformance tests passed.
+<end of output>
+Test time =   0.40 sec
+----------------------------------------------------------
+Test Passed.
+"t81_arithmetic_backend_equivalence_test" end time: Nov 12 18:05 EST
+"t81_arithmetic_backend_equivalence_test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+304/423 Testing: t81_cli_repro_hash_test
+304/423 Test: t81_cli_repro_hash_test
+Command: "/Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build/cli_repro_hash_test" "/Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build/t81"
+Directory: /Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build
+"t81_cli_repro_hash_test" start time: Nov 12 18:05 EST
+Output:
+----------------------------------------------------------
+cli repro hash test passed!
+<end of output>
+Test time =   1.99 sec
+----------------------------------------------------------
+Test Passed.
+"t81_cli_repro_hash_test" end time: Nov 12 18:05 EST
+"t81_cli_repro_hash_test" time elapsed: 00:00:01
+----------------------------------------------------------
+
+306/423 Testing: t81_cli_contract_test_runner
+306/423 Test: t81_cli_contract_test_runner
+Command: "/Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build/t81_cli_contract_test" "/Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build/t81"
+Directory: /Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build
+"t81_cli_contract_test_runner" start time: Nov 12 18:05 EST
+Output:
+----------------------------------------------------------
+[cli] /Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build/t81 help compile
+[cli] /Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build/t81 code check /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-cli-contract-invalid-9979089843330773277.t81
+[cli] /Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build/t81 --help
+[cli] /Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build/t81 help advanced
+[cli] /Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build/t81 help benchmark
+[cli] /Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build/t81 bench
+[cli] /Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/build/t81 help model
+test check failed: (fs::exists(safetensors_fixture)) at /Users/t81dev/Code/t81-foundation/.cache/main-baseline-check-worktree/tests/cpp/cli_contract_test.cpp:549
+<end of output>
+Test time =   0.54 sec
+----------------------------------------------------------
+Test Failed.
+"t81_cli_contract_test_runner" end time: Nov 12 18:05 EST
+"t81_cli_contract_test_runner" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Nov 12 18:05 EST

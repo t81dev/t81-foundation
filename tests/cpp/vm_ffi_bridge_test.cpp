@@ -152,18 +152,6 @@ void register_success_target() {
                                         .required_capabilities = {},
                                     },
                                     t81::ffi::FFIFunction{
-                                        .name = system_string_function_name(),
-                                        .type = t81::ffi::FFIType::Deterministic,
-                                        .library_name = system_library_name(),
-                                        .version_hash = "bridge-success-v1",
-                                        .param_types = {"string"},
-                                        .return_type = "int64_t",
-                                        .is_variadic = false,
-                                        .policy_reason = "VM bridge external string regression",
-                                        .resource_quota = 64,
-                                        .required_capabilities = {},
-                                    },
-                                    t81::ffi::FFIFunction{
                                         .name = system_double_function_name(),
                                         .type = t81::ffi::FFIType::Deterministic,
                                         .library_name = system_double_library_name(),
@@ -176,6 +164,18 @@ void register_success_target() {
                                         .required_capabilities = {},
                                     },
 #endif
+                                    t81::ffi::FFIFunction{
+                                        .name = system_string_function_name(),
+                                        .type = t81::ffi::FFIType::Deterministic,
+                                        .library_name = system_library_name(),
+                                        .version_hash = "bridge-success-v1",
+                                        .param_types = {"string"},
+                                        .return_type = "int64_t",
+                                        .is_variadic = false,
+                                        .policy_reason = "VM bridge external string regression",
+                                        .resource_quota = 64,
+                                        .required_capabilities = {},
+                                    },
                                 });
   if (!result && result.error().find("already registered") == std::string::npos) {
     std::cerr << "unexpected FFI registry error: " << result.error() << "\n";

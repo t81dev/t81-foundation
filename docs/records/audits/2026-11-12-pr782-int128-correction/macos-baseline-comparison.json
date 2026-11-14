@@ -1,0 +1,16 @@
+[
+  {
+    "name": "unchanged-main",
+    "revision": "88300f14c1da1066ad6db25d31be0e8e912b3ef0",
+    "source_worktree_status": "",
+    "log_sha256": "0d14070b128ec4f91500db64677416cbe44c8d11b52919e4ca17629a174ab4e9",
+    "classification": "retained local execution log; copied without rerunning; root causes not combined"
+  },
+  {
+    "name": "reviewed-head",
+    "revision": "33064f9d9d1a47b0df7702a167a4110b473db263",
+    "source_worktree_status": "",
+    "log_sha256": "7a2cdc2840b2a801b10b864e82ca51d2bd563fa94b609e1c01476716a2994594",
+    "classification": "retained local execution log; copied without rerunning; root causes not combined"
+  }
+]
