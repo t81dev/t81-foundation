@@ -1,0 +1,23 @@
+{
+  "base_sha": "4d5f3586c04a69c520e613166291c0974877628d",
+  "unchanged_sha256": {
+    "experiments/scg08_arithmetic_work/exact_oracle_adapter.hpp": "33713dc889068b557e6117363d26dbfb5b0b801607cae1059939a817b6aba928",
+    "experiments/scg08_arithmetic_work/tier1_markov_harness.hpp": "b772b6a3f2f45607db4fdfbd7fc782fd5ff4a9092f6762c7dfcc17b05033a380",
+    "experiments/scg08_arithmetic_work/tier2_work_harness.hpp": "aed93e7d21fd92316356c89e97930545038ebd724cfe62824129e2e248710599",
+    "experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md": "97d53fba8be955a394777546366a9ab05cda3fc13537625a1516656c3443628f",
+    "experiments/scg08_arithmetic_work/gate1_evidence_record.json": "da027863a69ee39f80161175b9328645ac43672de6d25a350388057a48a9aff0",
+    "spec/rfcs/RFC-00E1-balanced-ternary-multi-precision-arithmetic-contract.md": "1af813c053f68c937627c3aea5a4c8e173ac6057e4b15f6e47fa2f3e425978b6"
+  },
+  "production_diff_empty": true,
+  "preserved_original_files": 9,
+  "retained_assertion_invocations_including_macro": 120,
+  "removed_posix_process_assertions": [
+    "pipe(pipefd) == 0, \"Pipe creation failed for negative oracle test\"",
+    "pid >= 0, \"Fork failed for negative oracle test\"",
+    "WIFEXITED(status) && WEXITSTATUS(status) == 1, \"Corrupted oracle validation case must exit fail-closed with code 1\"",
+    " stderr_output.find(\"INVALID EXPERIMENT (CORRECTNESS DEFECT: ORACLE MISMATCH)\") != std::string::npos, \"Corrupted oracle validation case must emit mandatory oracle-mismatch diagnostic on stderr\"",
+    "pid_budget >= 0, \"Fork failed for trial budget negative test\"",
+    "WIFEXITED(status_budget) && WEXITSTATUS(status_budget) == 1, \"Cumulative trial budget exceeded must exit fail-closed with code 1\""
+  ],
+  "replacement_checks": "Python requires exact exit 1 and correct stderr diagnostic"
+}

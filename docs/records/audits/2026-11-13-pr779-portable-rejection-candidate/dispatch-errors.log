@@ -1,0 +1,3 @@
+['--negative', 'unknown'] exit=2 stderr='Usage: t81_exp_scg08_01_test [--negative CASE] (known case required)\n'
+['--negative'] exit=2 stderr='Usage: t81_exp_scg08_01_test [--negative CASE] (known case required)\n'
+['--bogus'] exit=2 stderr='Usage: t81_exp_scg08_01_test [--negative CASE] (known case required)\n'
