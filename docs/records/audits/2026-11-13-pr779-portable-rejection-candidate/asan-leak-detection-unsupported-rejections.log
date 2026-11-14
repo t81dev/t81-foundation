@@ -1,0 +1,1 @@
+numerical-equality: unexpected status/output: CompletedProcess(args=['/private/tmp/t81-pr779-portable-asan', '--negative', 'numerical-equality'], returncode=-6, stdout='', stderr='==59254==AddressSanitizer: detect_leaks is not supported on this platform.\n')
