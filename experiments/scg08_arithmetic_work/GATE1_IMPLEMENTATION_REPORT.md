@@ -86,7 +86,7 @@ $$W_{\text{ops}} = \text{OP}_{\text{ALU\_ADD\_SUB}} + 3 \cdot \text{OP}_{\text{A
 
 ### 5.1 Inline Review Findings Reconciliation
 1. **Finding 1 (P1 - Binary Primitive Arithmetic Accounting in `mul64()` and caller):**
-   - *Audit:* Evaluated `mul64()` and caller accumulator additions in `mul_binary()`. `mul64()` decomposes 64x64 into 4 32x32 multiplications (`u0*v0`, `u1*v0`, `u0*v1`, `u1*v1`) and 3 intermediate 64-bit additions (`w0 >> 32 + ...`, `+ u0*v1`, `u1*v1 + w2`). In the caller loop, each limb product adds `lo` and `carry` into the result accumulator (`sum1 = cur + lo`, `sum2 = sum1 + carry`) and accumulates carry (`carry = hi + c1 + c2`), totaling 4 primitive additions per inner iteration.
+   - *Audit:* Evaluated `mul64()` and caller accumulator additions in `mul_binary()`. `mul64()` decomposes 64x64 into 4 32x32 multiplications (`u0*v0`, `u1*v0`, `u0*v1`, `u1*v1`) and 4 helper 64-bit additions (`u1*v0 + (w0 >> 32)`, `w1 += u0*v1`, `w2 += (w1 >> 32)`, `hi = u1*v1 + w2`). In the caller loop, each limb product adds `lo` and `carry` into the result accumulator (`sum1 = cur + lo`, `sum2 = sum1 + carry`) and accumulates carry (`carry = hi + c1 + c2`), totaling 4 caller additions per inner iteration (8 additions per inner product step before carry propagation).
    - *Resolution:* Reconciled `acc.op_alu_mul` and `acc.op_alu_add_sub` in `mul64()` and `mul_binary()` to track all executed primitive arithmetic operations without distorting accounting semantics.
 2. **Finding 2 (P2 - Binary Condition Evaluation Accounting):**
    - *Audit:* Audited executed conditional evaluations across zero, sparse, dense, and carry-propagating inputs.
@@ -277,3 +277,34 @@ Raw local validation logs (temporary review artifacts; not committed):
 - `/tmp/t81-scg08-reconciliation-schema.log` — SHA-256 `b6bfdd65661223786be3592b412ba9125da7161133adca418b13ab9a4cd27e8e`.
 - `/tmp/t81-scg08-reconciliation-negative.log` — SHA-256 `532d3f1107843cbbf566eff335dea162c76655d8af0761bada605b992d3e225f`.
 - `/tmp/t81-scg08-reconciliation-arithmetic.log` — SHA-256 `ce3982d46aa5066fb23e11e1c4e78c17bc961473e61e0b0d333cf1f8384b794d`.
+
+
+## 10. RFC-00E1 Scientific Contract Corrections (`d3a6cf55517a3098d7bae91b07c72694bc3472da`)
+
+Following independent Codex review of baseline `d3a6cf55517a3098d7bae91b07c72694bc3472da` (`CORRECTIONS REQUIRED`), the five substantive findings were resolved without altering historical evidence in `gate1_evidence_record.json` or retrospectively changing preregistered thresholds:
+
+1. **P1 — Oracle Validation (`exact_oracle_adapter.hpp`, `tier2_work_harness.hpp`, `test_exp_scg08_01.cpp`):**
+   - Implemented `evaluate_oracle_validation_report()` populating all five `OracleValidationReport` fields (`numerical_equality`, `overflow_classification`, `canonical_digits`, `sign_handling`, `absence_of_truncation`) across both input operands and computed ternary/binary addition and multiplication results.
+   - Enforced result-level overflow classification against $\mathcal{D}_{\text{signed},B} = [-2^{B-1}, 2^{B-1}-1]$ and exact accumulator bounds ($[-2^B, 2^B-2]$ for addition and $[-2^{B-1}(2^{B-1}-1), 2^{2B-2}]$ for multiplication), stored `T81Limb27` tryte range $[-13, +13]$ validated **before** any `TRYTE_TO_TRITS[tryte + 13]` or `ADD_TABLE[tryte + 13]` lookup in `to_trits()`, `add_ternary()`, `mul_ternary()`, and `evaluate_oracle_validation_report()`, canonical output trit vector equality against `oracle_to_canonical_trits<N>()`, result sign correctness (leading non-zero trit sign and binary sign-magnitude invariants rejecting `-0`), and absence of high-order trit/limb truncation.
+   - Exercised `oracle_rep.all_passed()` as an active fail-closed acceptance condition and added deterministic negative tests (including subprocess tests exercising corrupted `T81Limb27` storage with tryte `+14` and negative product bound violations below $-2^{B-1}(2^{B-1}-1)$) for all five dimensions.
+2. **P1 — Operation-Accounting Consistency (`RFC-00E1`, `tier2_work_harness.hpp`):**
+   - Removed the claim that $W_{\text{ops}}$ represents unbiased total computational work, documenting it as a stipulated kernel event proxy alongside the separate H02 carry-resolution timing model and elementary operations-per-bit model.
+   - Documented the multiplication weight $3$ on `op_alu_mul` as a stipulated modeling convention and disclosed the operations inside `T81Limb27::addc()`, `mul64()`, normalization, and conversion that are excluded from $W_{\text{ops}}$.
+3. **P1 — Counter Correctness (`tier2_work_harness.hpp`, `test_exp_scg08_01.cpp`):**
+   - Reconciled `add_binary` same-sign addition to count both primitive additions in `a.limbs[i] + b.limbs[i] + carry` (`2 * InLimbs` in `op_alu_add_sub`) and both conditional evaluations per input limb (`carry != 0` and the selected carry predicate `sum <= a.limbs[i]` or `sum < a.limbs[i]`, giving `1 + 2 * InLimbs` in `op_branch_cond`), while removing the `op_alu_add_sub` increment from pure extension-limb data copies (`res.limbs[i] = carry`).
+   - Reconciled `add_ternary` to count the scalar carry combination `carry_in = c1 + c2` (`op_alu_add_sub += 1` per active carry-in limb $K_{\text{cin}}$) and removed the `op_alu_add_sub` increment from extension-limb copy placement (`res.limbs[i] = c_limb`), giving closed-form $\text{op\_alu\_add\_sub} = \text{InLimbs} + 2 K_{\text{cin}}$ and $W_{\text{ops}} = 39\,\text{InLimbs} + 40\,K_{\text{cin}} + \text{OutLimbs}$.
+4. **P1 — Ternary Conversion Costs (`tier2_work_harness.hpp`, `RFC-00E1`, `test_exp_scg08_01.cpp`):**
+   - Added non-aggregating diagnostic conversion counters (`conv_limb_unpacks`, `conv_limb_repacks`, `conv_tryte_decodes`, `conv_tryte_encodes`) to `OperationAccounting` to audit `to_trits()`, `from_trits_window()`, and `from_trits()` repacking costs without silently altering $W_{\text{ops}}$ or historical evidence, including `conv_limb_repacks = OutLimbs + 2` in `mul_ternary` (reflecting the 2 temporary `unit_limb` constructions via `from_trits_window` during `a.to_trits()` and `b.to_trits()` plus `OutLimbs` output limbs in `from_trits()`).
+5. **P2 — Binary Multiplication (`RFC-00E1`, `tier2_work_harness.hpp`, `test_exp_scg08_01.cpp`, `GATE1_IMPLEMENTATION_REPORT.md`):**
+   - Reconciled contract and explanatory text with `mul64()` control flow: 4 primitive 32x32 multiplications and 4 helper 64-bit additions in `mul64()`, plus 4 caller accumulator additions in `mul_binary()`, totaling 8 additions per inner product step before carry propagation.
+
+### Preserved Historical Evidence vs. Reconciled Deterministic Expected Counts (`val_max`, `val_max`)
+| Band ($B$) | Historical `add_ternary` $W_{\text{ops}}$ (`2dd3cc62e5`) | Reconciled `add_ternary` $W_{\text{ops}}$ (`op_alu_add_sub`) | Historical `add_binary` $W_{\text{ops}}$ (`2dd3cc62e5`) | Reconciled `add_binary` $W_{\text{ops}}$ (`op_alu_add_sub` / `op_branch_cond`) | `mul_ternary` $W_{\text{ops}}$ (Unchanged) | `mul_binary` $W_{\text{ops}}$ (Unchanged) |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **64** | 80 | 80 (2) | 4 | 5 (2 / 3) | 5,826 | 29 |
+| **128** | 161 | 161 (5) | 6 | 9 (4 / 5) | 17,218 | 103 |
+| **256** | 359 | 361 (12) | 10 | 17 (8 / 9) | 79,750 | 389 |
+| **512** | 714 | 720 (24) | 18 | 33 (16 / 17) | 296,182 | 1,513 |
+| **1024** | 1,350 | 1,360 (44) | 34 | 65 (32 / 33) | 1,208,742 | 5,969 |
+
+*Governance Posture:* `RFC-00E1` remains **DRAFT**; formal Gate 1 acceptance remains **WITHHELD**; Gate 2 remains **STRICT NO-GO**.

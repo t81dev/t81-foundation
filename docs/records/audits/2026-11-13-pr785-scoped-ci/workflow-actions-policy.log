@@ -1,0 +1,2 @@
+workflow action audit: total=116 pinned_sha=109 tagged=7 unknown=0
+ERROR: tagged references 7 exceed allowed maximum 0

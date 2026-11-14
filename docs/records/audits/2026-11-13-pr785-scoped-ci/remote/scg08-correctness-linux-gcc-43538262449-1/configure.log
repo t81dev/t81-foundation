@@ -1,0 +1,24 @@
+-- The C compiler identification is GNU 14.2.0
+-- The CXX compiler identification is GNU 14.2.0
+-- The ASM compiler identification is GNU
+-- Found assembler: /usr/bin/gcc-14
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/gcc-14 - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/g++-14 - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- [t81] T81_ENABLE_DPE=ON -- building DPE task graph (RFC-DPE-0002 through RFC-DPE-0009)
+-- Found Python3: /opt/hostedtoolcache/Python/3.12.16/x64/bin/python (found version "3.12.16") found components: Interpreter
+-- Performing Test COMPILER_HAS_AVX2
+-- Performing Test COMPILER_HAS_AVX2 - Success
+-- Performing Test COMPILER_HAS_FMA
+-- Performing Test COMPILER_HAS_FMA - Success
+-- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+-- Configuring done (10.7s)
+-- Generating done (0.4s)
+-- Build files have been written to: /home/runner/work/t81-foundation/t81-foundation/build

@@ -20,6 +20,19 @@ if(T81_BUILD_TESTS)
   set_tests_properties(t81_exp_scg08_01_test PROPERTIES TIMEOUT 60)
 
   find_package(Python3 COMPONENTS Interpreter REQUIRED)
+  add_test(NAME t81_exp_scg08_01_result_rejection
+    COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_result_rejection.py
+      $<TARGET_FILE:t81_exp_scg08_01_test>
+  )
+  set_tests_properties(t81_exp_scg08_01_result_rejection PROPERTIES TIMEOUT 150)
+
+  add_test(NAME t81_exp_scg08_01_result_rejection_driver
+    COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_result_rejection_driver.py
+  )
+  set_tests_properties(t81_exp_scg08_01_result_rejection_driver PROPERTIES TIMEOUT 30)
+
   add_test(NAME t81_exp_scg08_01_schema_validation
     COMMAND ${Python3_EXECUTABLE}
       ${PROJECT_SOURCE_DIR}/scripts/ci/validate_scg08_gate1_evidence.py
