@@ -1,0 +1,15 @@
+Test project /private/tmp/t81-pr779-portable-build
+    Start 391: t81_exp_scg08_01_test
+1/5 Test #391: t81_exp_scg08_01_test .........................   Passed    0.73 sec
+    Start 392: t81_exp_scg08_01_result_rejection
+2/5 Test #392: t81_exp_scg08_01_result_rejection .............   Passed    0.13 sec
+    Start 393: t81_exp_scg08_01_result_rejection_driver
+3/5 Test #393: t81_exp_scg08_01_result_rejection_driver ......   Passed    0.16 sec
+    Start 394: t81_exp_scg08_01_schema_validation
+4/5 Test #394: t81_exp_scg08_01_schema_validation ............   Passed    0.05 sec
+    Start 395: t81_exp_scg08_01_schema_negative_validation
+5/5 Test #395: t81_exp_scg08_01_schema_negative_validation ...   Passed    0.05 sec
+
+100% tests passed, 0 tests failed out of 5
+
+Total Test time (real) =   1.14 sec

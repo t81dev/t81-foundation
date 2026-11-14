@@ -1,0 +1,17 @@
+Compiler: /usr/bin/c++
+Compiler ID/version: AppleClang 21.0.0.21000101
+Target: 
+Configuration: Release
+C++ standard: 23
+Native signed int128 compile/link: TRUE
+Change Dir: '/private/tmp/t81-pr782-backend.1QyjlA/build-review/native-int128-probe/CMakeFiles/CMakeTmp'
+
+Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_f1389/fast
+/Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_f1389.dir/build.make CMakeFiles/cmTC_f1389.dir/build
+Building CXX object CMakeFiles/cmTC_f1389.dir/native_int128.cpp.o
+/usr/bin/c++ -DNDEBUG  -O3 -DNDEBUG -std=gnu++23 -fPIE   -Wall -Wextra -Wpedantic -MD -MT CMakeFiles/cmTC_f1389.dir/native_int128.cpp.o -MF CMakeFiles/cmTC_f1389.dir/native_int128.cpp.o.d -o CMakeFiles/cmTC_f1389.dir/native_int128.cpp.o -c /private/tmp/t81-pr782-backend.1QyjlA/cmake/probes/native_int128.cpp
+Linking CXX executable cmTC_f1389
+/opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f1389.dir/link.txt --verbose=1
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/cmTC_f1389.dir/native_int128.cpp.o -o cmTC_f1389
+
+

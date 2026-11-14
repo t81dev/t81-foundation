@@ -1,0 +1,53 @@
+{
+  "pr778_revision": "56ad0d57b90487d153b35ccfdeb134fcc858adf7",
+  "pr779_base_revision": "4d5f3586c04a69c520e613166291c0974877628d",
+  "main_comparison_revision": "fbfe4f5a2d4439f5ff479014301560764de39c99",
+  "original_execution": "author-reported; not authenticated or independently reproduced by preservation",
+  "files": [
+    {
+      "source_path": "docs/records/audits/2026-11-11-rfc00e1-corrections/LastTest.log",
+      "retained_path": "docs/records/audits/2026-11-11-rfc00e1-corrections/LastTest.log",
+      "sha256": "1a709fb2dbdbdca1c903ec8212151b57c09df0b59e69f52a897c38b5dc26bcc1"
+    },
+    {
+      "source_path": "docs/records/audits/2026-11-11-rfc00e1-corrections/build.log",
+      "retained_path": "docs/records/audits/2026-11-11-rfc00e1-corrections/build.log",
+      "sha256": "f6ddbf3f2b8d6d64f34113f8c215c393fc961c5da0acb8bab3efa95221e9ba3a"
+    },
+    {
+      "source_path": "docs/records/audits/2026-11-11-rfc00e1-corrections/configure-cached.log",
+      "retained_path": "docs/records/audits/2026-11-11-rfc00e1-corrections/configure-cached.log",
+      "sha256": "4fb70fea9f2bfc73600afe126a77579ae5bceceba365692d8619854ba2a4cf4a"
+    },
+    {
+      "source_path": "docs/records/audits/2026-11-11-rfc00e1-corrections/configure-default-interrupted.log",
+      "retained_path": "docs/records/audits/2026-11-11-rfc00e1-corrections/configure-default-interrupted.log",
+      "sha256": "083cd5adac98ba98197232316b3141a6ab426f6714d9ceaa231de3224ab2c3f8"
+    },
+    {
+      "source_path": "docs/records/audits/2026-11-11-rfc00e1-corrections/configure-dns-failure.log",
+      "retained_path": "docs/records/audits/2026-11-11-rfc00e1-corrections/configure-dns-failure.log",
+      "sha256": "6b6d16a81dd555491d89f4b17b82f11a963234a6253b0430e90f7263e0698f55"
+    },
+    {
+      "source_path": "docs/records/audits/2026-11-11-rfc00e1-corrections/ctest.log",
+      "retained_path": "docs/records/audits/2026-11-11-rfc00e1-corrections/ctest.log",
+      "sha256": "3efe6383c32055d440a7722a02252d827ebae9f9eef5222ab9bf8af5210ebfc6"
+    },
+    {
+      "source_path": "docs/records/audits/2026-11-11-rfc00e1-corrections/development-183-trials.log",
+      "retained_path": "docs/records/audits/2026-11-11-rfc00e1-corrections/development-183-trials.log",
+      "sha256": "79c5730ade8f931cc746f4a34bc90d1e52c3181718c6e19eac31f233fc389eb2"
+    },
+    {
+      "source_path": "docs/records/audits/2026-11-11-rfc00e1-corrections/manifest.json",
+      "retained_path": "docs/records/audits/2026-11-11-rfc00e1-corrections/manifest.json",
+      "sha256": "0dc28fcc41d9d1393643624ce043e940b7e4e91efc3782c2842630bfe96804ce"
+    },
+    {
+      "source_path": "experiments/scg08_arithmetic_work/CONTRACT_CORRECTIONS.md",
+      "retained_path": "docs/records/audits/2026-11-11-rfc00e1-corrections/CONTRACT_CORRECTIONS.pr778.md",
+      "sha256": "2f4ecbbffdcbccb511d64731dbab34d32f53625eedcea51bb3b567921fa3507d"
+    }
+  ]
+}
