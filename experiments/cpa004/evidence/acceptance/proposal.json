@@ -1,0 +1,51 @@
+{
+  "attribution": {
+    "kind": "agent",
+    "model": null,
+    "name": "Codex",
+    "role": "Prior CPA-001 proposal author and CPA-002 corrective agent, same conversation. Separate mathematical implementation and hosted observation; not independent-person scientific review."
+  },
+  "evidence": [
+    {
+      "relationship": "context",
+      "scope": "Canonical H07 auditability hypothesis; this proposal tests a prerequisite engineering property, not H07 comparative advantage. H01-H08 and Hanoi/CWEB lineage remain unchanged.",
+      "source_ref": "register"
+    }
+  ],
+  "expected_artifacts": [
+    "program.raw13 and SHA-256 freeze manifest",
+    "oracle.py, complete oracle trace and normalized expected records",
+    "raw hosted observations, exact commands and normalized comparisons",
+    "freestanding-contract.json and normalized-record.schema.json",
+    "source pins, dependency versions and schema validation record",
+    "future guest build/serial evidence only after separate authorization"
+  ],
+  "falsification_criterion": "Any difference in admitted arithmetic, canonical single-trit logic, general registers/tags, flags, logical memory effects, instruction-boundary trap class/PC, or normalized result record; different bytes; output without post-ExitBootServices evidence; or host execution substituted for guest evaluation. Timeout is inconclusive/failure, never Halt.",
+  "human_authorization": {
+    "human": null,
+    "record": "Future freestanding implementation/execution authorization is not requested or granted by this proposal. The user CPA-003 request explicitly authorizes oracle/artifact preparation and hosted verification only; no governance activation or merge.",
+    "status": "not_requested"
+  },
+  "hypothesis_id": "H07",
+  "id": "T81-CPA-003-FROZEN-DEMONSTRATOR-PROPOSAL",
+  "matched_control": "Unmodified hosted make_interpreter_vm consuming existing tisc::decode output, empty pools/metadata, default explicit allow-all configuration and no CanonFS root. Independent mathematical oracle: exact integer arithmetic, sign-trit NOT/min/max/wrapped difference and manually reviewed control flow. No timing or efficiency comparison is proposed.",
+  "measurement_plan": "Compare all 25 initial/post-step normalized records with all R0..R80 values/tags, flags, PC, SP, global halt state and all logical memory values/tags. Three fresh hosted processes observed 24 executed instructions, PC27/SP283 and zero differences. Future guest records require separate authorization, post-ExitBootServices evidence, the identical buffer, 64-instruction limit and 30-second deadline; retain raw records and classify every difference. No comparative performance inference.",
+  "method": "Use frozen program.raw13: 351 bytes, 27 canonical opcode/u8 and signed-i32 LE operand records, SHA-256 b0649777cfa1c9e0fa1febb8bdfb1191c5cd3deea0d313791a4a32d5f207c80b. Independent Python integer/trit model and independent byte reader are retained in oracle.py, complete state trace in oracle-trace.json. Existing C++ decoder and encoder roundtrip the same bytes; unchanged make_interpreter_vm with explicit make_allow_all_engine, empty pools/metadata and no CanonFS root supplies fresh hosted observations. See freestanding-contract.json for exact system formulas and comparison projection. No freestanding evaluator was implemented. The proposed future experiment must explicitly accept this implementation profile or resolve the source/spec discrepancies first; see discrepancy-register.json. The oracle is not changed to make contradictory specifications agree.",
+  "repository_revision": "803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4",
+  "research_question": "Can unchanged canonical 13-byte TISC instruction bytes produce equal admitted computational state transitions in the existing hosted interpreter and a separately implemented bounded freestanding AArch64 evaluator?",
+  "resource_requirements": [
+    "Initial target AArch64 QEMU TCG, one vCPU, 512 MiB guest RAM; this is an emulator configuration, not VM footprint",
+    "32 KiB proposed static evaluator workspace excluding kernel image/native stack; verify map-file size before acceptance",
+    "No dynamic allocation; maximum 64 instructions; three boots with 30-second deadlines; no benchmark or dedicated physical hardware requirement"
+  ],
+  "schema": "t81.research-commons.experiment-proposal.v1",
+  "security_requirements": [
+    "Existing kernel security boundaries and governance activation remain unchanged",
+    "No host network, shared folders, FFI, model execution or persistent disks needed; serial capture only",
+    "Reject malformed bytes and outside-profile programs before computational effects; outside-domain arithmetic is an experiment admission failure, never a newly invented TISC overflow trap",
+    "No claims of full Axion-policy or CanonFS conformance; maintain existing hosted pre-dispatch policy path",
+    "Human authorization and independent oracle review required before new implementation/experimental execution"
+  ],
+  "status": "proposed",
+  "uncertainty": "Oracle and frozen artifact agree with three fresh hosted executions at pinned main. No guest evaluator exists or was executed here. Cross-profile agreement, negative trap paths, other platforms, performance and full Axion/CanonFS contracts remain unvalidated. Schema validation checks shape, not these scientific claims. Normative memory/control-flow prose conflicts with actual raw13 operand interpretation; mathematical agreement is limited to the pinned hosted profile. Human profile clarification/acceptance remains a prerequisite, not an implicit ISA change."
+}

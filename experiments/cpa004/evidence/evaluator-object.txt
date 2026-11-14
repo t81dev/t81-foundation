@@ -1,0 +1,2931 @@
+
+File: /tmp/cpa004-build/ternaryos/qemu_slice6/BOOTAA64_cpa004.obj
+Format: COFF-ARM64
+Arch: aarch64
+AddressSize: 64bit
+Sections [
+  Section {
+    Number: 1
+    Name: .text (2E 74 65 78 74 00 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 4672
+    PointerToRawData: 0xA64
+    PointerToRelocations: 0x1CA4
+    PointerToLineNumbers: 0x0
+    RelocationCount: 180
+    LineNumberCount: 0
+    Characteristics [ (0x60300020)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_CODE (0x20)
+      IMAGE_SCN_MEM_EXECUTE (0x20000000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 2
+    Name: .data (2E 64 61 74 61 00 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 0
+    PointerToRawData: 0x23AC
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0xC0300040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_MEM_READ (0x40000000)
+      IMAGE_SCN_MEM_WRITE (0x80000000)
+    ]
+  }
+  Section {
+    Number: 3
+    Name: .bss (2E 62 73 73 00 00 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 14816
+    PointerToRawData: 0x0
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0xC0800080)
+      IMAGE_SCN_ALIGN_128BYTES (0x800000)
+      IMAGE_SCN_CNT_UNINITIALIZED_DATA (0x80)
+      IMAGE_SCN_MEM_READ (0x40000000)
+      IMAGE_SCN_MEM_WRITE (0x80000000)
+    ]
+  }
+  Section {
+    Number: 4
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 8
+    PointerToRawData: 0x23AC
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 5
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 16
+    PointerToRawData: 0x23B4
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40501040)
+      IMAGE_SCN_ALIGN_16BYTES (0x500000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 6
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 16
+    PointerToRawData: 0x23C4
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40501040)
+      IMAGE_SCN_ALIGN_16BYTES (0x500000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 7
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 559
+    PointerToRawData: 0x23D4
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40500040)
+      IMAGE_SCN_ALIGN_16BYTES (0x500000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 8
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 8
+    PointerToRawData: 0x2603
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 9
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 14
+    PointerToRawData: 0x260B
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 10
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 16
+    PointerToRawData: 0x2619
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 11
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 5
+    PointerToRawData: 0x2629
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 12
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 7
+    PointerToRawData: 0x262E
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 13
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 18
+    PointerToRawData: 0x2635
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 14
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 68
+    PointerToRawData: 0x2647
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40501040)
+      IMAGE_SCN_ALIGN_16BYTES (0x500000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 15
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 3
+    PointerToRawData: 0x268B
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 16
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 13
+    PointerToRawData: 0x268E
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 17
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 5
+    PointerToRawData: 0x269B
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 18
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 8
+    PointerToRawData: 0x26A0
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 19
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 5
+    PointerToRawData: 0x26A8
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 20
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 6
+    PointerToRawData: 0x26AD
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 21
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 4
+    PointerToRawData: 0x26B3
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 22
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 4
+    PointerToRawData: 0x26B7
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 23
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 4
+    PointerToRawData: 0x26BB
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 24
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 4
+    PointerToRawData: 0x26BF
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 25
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 11
+    PointerToRawData: 0x26C3
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 26
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 4
+    PointerToRawData: 0x26CE
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 27
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 5
+    PointerToRawData: 0x26D2
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 28
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 5
+    PointerToRawData: 0x26D7
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 29
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 4
+    PointerToRawData: 0x26DC
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 30
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 5
+    PointerToRawData: 0x26E0
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 31
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 14
+    PointerToRawData: 0x26E5
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 32
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 5
+    PointerToRawData: 0x26F3
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 33
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 15
+    PointerToRawData: 0x26F8
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 34
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 76
+    PointerToRawData: 0x2707
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40501040)
+      IMAGE_SCN_ALIGN_16BYTES (0x500000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 35
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 65
+    PointerToRawData: 0x2753
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40501040)
+      IMAGE_SCN_ALIGN_16BYTES (0x500000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 36
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 14
+    PointerToRawData: 0x2794
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 37
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 14
+    PointerToRawData: 0x27A2
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 38
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 5
+    PointerToRawData: 0x27B0
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 39
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 16
+    PointerToRawData: 0x27B5
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 40
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 11
+    PointerToRawData: 0x27C5
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 41
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 10
+    PointerToRawData: 0x27D0
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 42
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 7
+    PointerToRawData: 0x27DA
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 43
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 6
+    PointerToRawData: 0x27E1
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 44
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 6
+    PointerToRawData: 0x27E7
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 45
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 2
+    PointerToRawData: 0x27ED
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 46
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 12
+    PointerToRawData: 0x27EF
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 47
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 10
+    PointerToRawData: 0x27FB
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 48
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 2
+    PointerToRawData: 0x2805
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 49
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 16
+    PointerToRawData: 0x2807
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 50
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 7
+    PointerToRawData: 0x2817
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 51
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 11
+    PointerToRawData: 0x281E
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 52
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 18
+    PointerToRawData: 0x2829
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 53
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 13
+    PointerToRawData: 0x283B
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 54
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 13
+    PointerToRawData: 0x2848
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 55
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 22
+    PointerToRawData: 0x2855
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 56
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 2
+    PointerToRawData: 0x286B
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 57
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 20
+    PointerToRawData: 0x286D
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 58
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 80
+    PointerToRawData: 0x2881
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40501040)
+      IMAGE_SCN_ALIGN_16BYTES (0x500000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 59
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 12
+    PointerToRawData: 0x28D1
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 60
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 10
+    PointerToRawData: 0x28DD
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 61
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 8
+    PointerToRawData: 0x28E7
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40401040)
+      IMAGE_SCN_ALIGN_8BYTES (0x400000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 62
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 7
+    PointerToRawData: 0x28EF
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 63
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 5
+    PointerToRawData: 0x28F6
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 64
+    Name: .rdata (2E 72 64 61 74 61 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 6
+    PointerToRawData: 0x28FB
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x40301040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_LNK_COMDAT (0x1000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 65
+    Name: .debug$S (2E 64 65 62 75 67 24 53)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 80
+    PointerToRawData: 0x2901
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x42300040)
+      IMAGE_SCN_ALIGN_4BYTES (0x300000)
+      IMAGE_SCN_CNT_INITIALIZED_DATA (0x40)
+      IMAGE_SCN_MEM_DISCARDABLE (0x2000000)
+      IMAGE_SCN_MEM_READ (0x40000000)
+    ]
+  }
+  Section {
+    Number: 66
+    Name: .llvm_addrsig (2F 33 30 00 00 00 00 00)
+    VirtualSize: 0x0
+    VirtualAddress: 0x0
+    RawDataSize: 2
+    PointerToRawData: 0x2951
+    PointerToRelocations: 0x0
+    PointerToLineNumbers: 0x0
+    RelocationCount: 0
+    LineNumberCount: 0
+    Characteristics [ (0x100800)
+      IMAGE_SCN_ALIGN_1BYTES (0x100000)
+      IMAGE_SCN_LNK_REMOVE (0x800)
+    ]
+  }
+]
+Symbols [
+  Symbol {
+    Name: .text
+    Value: 0
+    Section: .text (1)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 4672
+      RelocationCount: 180
+      LineNumberCount: 0
+      Checksum: 0xC71F7C61
+      Number: 1
+      Selection: 0x0
+    }
+  }
+  Symbol {
+    Name: .data
+    Value: 0
+    Section: .data (2)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 0
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x0
+      Number: 2
+      Selection: 0x0
+    }
+  }
+  Symbol {
+    Name: .bss
+    Value: 0
+    Section: .bss (3)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 14816
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x0
+      Number: 3
+      Selection: 0x0
+    }
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (4)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 8
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x86DABAA9
+      Number: 4
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: __real@0000011b00000000
+    Value: 0
+    Section: .rdata (4)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (5)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 16
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xE020BD47
+      Number: 5
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: __xmm@0000000000000000102dca9c47fa0dc3
+    Value: 0
+    Section: .rdata (5)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (6)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 16
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xCCAA009E
+      Number: 6
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: __xmm@00000000000000010000000000000000
+    Value: 0
+    Section: .rdata (6)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (7)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 559
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xAB7D7EA7
+      Number: 7
+      Selection: 0x0
+    }
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (8)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 8
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x6A026DA4
+      Number: 8
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_07PANPENDC@running?$AA@
+    Value: 0
+    Section: .rdata (8)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (9)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 14
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x254DC1AA
+      Number: 9
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0O@LAJEHJC@DivisionFault?$AA@
+    Value: 0
+    Section: .rdata (9)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (10)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 16
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x2A01413F
+      Number: 10
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0BA@DJEFPFJF@TrapInstruction?$AA@
+    Value: 0
+    Section: .rdata (10)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (11)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 5
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xAB4EF6F9
+      Number: 11
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_04JCJDPOBL@trap?$AA@
+    Value: 0
+    Section: .rdata (11)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (12)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 7
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x8CE3D492
+      Number: 12
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_06OOHAPEBD@halted?$AA@
+    Value: 0
+    Section: .rdata (12)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (13)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 18
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x7AB31371
+      Number: 13
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0BC@OCFHCDMD@instruction_limit?$AA@
+    Value: 0
+    Section: .rdata (13)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (14)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 68
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x3006066F
+      Number: 14
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0EE@NPCOJHDN@?$FLcpa004?$FN?5live?5post?9ExitBootServi@
+    Value: 0
+    Section: .rdata (14)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (15)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 3
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xF2377BD9
+      Number: 15
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_02PCIJFNDE@?$AN?6?$AA@
+    Value: 0
+    Section: .rdata (15)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (16)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 13
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x99521C5
+      Number: 16
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0N@PJBOJILI@CPA004_EXIT?$DN?$AA@
+    Value: 0
+    Section: .rdata (16)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (17)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 5
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xE1870D58
+      Number: 17
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_04NIFKAFLK@Halt?$AA@
+    Value: 0
+    Section: .rdata (17)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (18)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 8
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xDA96BCF2
+      Number: 18
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_07EAELJMGE@LoadImm?$AA@
+    Value: 0
+    Section: .rdata (18)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (19)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 5
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xB6C25DA9
+      Number: 19
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_04IPBPFFEL@Load?$AA@
+    Value: 0
+    Section: .rdata (19)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (20)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 6
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xAAF2F8DF
+      Number: 20
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_05OEMPKGID@Store?$AA@
+    Value: 0
+    Section: .rdata (20)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (21)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 4
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x6DE7F207
+      Number: 21
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_03LDFMNCOE@Add?$AA@
+    Value: 0
+    Section: .rdata (21)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (22)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 4
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xF20C0EF0
+      Number: 22
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_03CMLHCOBD@Mul?$AA@
+    Value: 0
+    Section: .rdata (22)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (23)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 4
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x2A15E1B5
+      Number: 23
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_03PEKOMBFG@Div?$AA@
+    Value: 0
+    Section: .rdata (23)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (24)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 4
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x2B64A25E
+      Number: 24
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_03PFNPICLN@Mod?$AA@
+    Value: 0
+    Section: .rdata (24)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (25)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 11
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xE18E3F34
+      Number: 25
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0L@HFPGHBCH@JumpIfZero?$AA@
+    Value: 0
+    Section: .rdata (25)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (26)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 4
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xE691D656
+      Number: 26
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_03DICKPGLF@Cmp?$AA@
+    Value: 0
+    Section: .rdata (26)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (27)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 5
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xBE8076EA
+      Number: 27
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_04IHFNHOAI@TNot?$AA@
+    Value: 0
+    Section: .rdata (27)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (28)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 5
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xADE31EDA
+      Number: 28
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_04JEDOBGDI@TAnd?$AA@
+    Value: 0
+    Section: .rdata (28)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (29)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 4
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x22A0497C
+      Number: 29
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_03PMBLGJJP@TOr?$AA@
+    Value: 0
+    Section: .rdata (29)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (30)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 5
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x9DA8D92F
+      Number: 30
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_04KEHFNBMN@TXor?$AA@
+    Value: 0
+    Section: .rdata (30)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (31)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 14
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x2B4DB1A5
+      Number: 31
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0O@FAJDHJN@JumpIfNotZero?$AA@
+    Value: 0
+    Section: .rdata (31)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (32)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 5
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x6A8FD9FD
+      Number: 32
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_04FDFCNBBP@Trap?$AA@
+    Value: 0
+    Section: .rdata (32)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (33)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 15
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xDE391E92
+      Number: 33
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0P@PGBFOCIK@JumpIfNegative?$AA@
+    Value: 0
+    Section: .rdata (33)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (34)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 76
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x8EA0CC9F
+      Number: 34
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0EM@JBGHJCPJ@CPA004_OBSERVATION?$DN?$HL?$CCschema?$CC?3?$CCt8@
+    Value: 0
+    Section: .rdata (34)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (35)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 65
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x332C3C1F
+      Number: 35
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0EB@NBBODEJH@b0649777cfa1c9e0fa1febb8bdfb1191@
+    Value: 0
+    Section: .rdata (35)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (36)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 14
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x85D8F38B
+      Number: 36
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0O@KLJMHFLD@?$CC?0?$CCsequence?$CC?3?$AA@
+    Value: 0
+    Section: .rdata (36)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (37)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 14
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xFB008087
+      Number: 37
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0O@NFEEAGLP@?0?$CCpc_before?$CC?3?$AA@
+    Value: 0
+    Section: .rdata (37)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (38)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 5
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xF2668F6D
+      Number: 38
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_04MLLLIHIP@null?$AA@
+    Value: 0
+    Section: .rdata (38)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (39)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 16
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xA42401DE
+      Number: 39
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0BA@LHGALFHE@?0?$CCinstruction?$CC?3?$AA@
+    Value: 0
+    Section: .rdata (39)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (40)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 11
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x84F7A803
+      Number: 40
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0L@BAIPOGBA@?$HL?$CCopcode?$CC?3?$AA@
+    Value: 0
+    Section: .rdata (40)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (41)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 10
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x700B19C9
+      Number: 41
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_09GMHOIOEA@?0?$CCname?$CC?3?$CC?$AA@
+    Value: 0
+    Section: .rdata (41)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (42)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 7
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xEB74D0D
+      Number: 42
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_06GMCEGNIM@?$CC?0?$CCa?$CC?3?$AA@
+    Value: 0
+    Section: .rdata (42)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (43)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 6
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x4420CA56
+      Number: 43
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_05KBNJEAK@?0?$CCb?$CC?3?$AA@
+    Value: 0
+    Section: .rdata (43)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (44)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 6
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xFC9CAD33
+      Number: 44
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_05LCKBPDGP@?0?$CCc?$CC?3?$AA@
+    Value: 0
+    Section: .rdata (44)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (45)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 2
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x9A9107BB
+      Number: 45
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_01CELHOKLL@?$HN?$AA@
+    Value: 0
+    Section: .rdata (45)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (46)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 12
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x16741F8E
+      Number: 46
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0M@JCFOCGBO@?0?$CCstatus?$CC?3?$CC?$AA@
+    Value: 0
+    Section: .rdata (46)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (47)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 10
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x1BFE2D15
+      Number: 47
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_09HILLKJM@?$CC?0?$CCtrap?$CC?3?$AA@
+    Value: 0
+    Section: .rdata (47)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (48)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 2
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xA7B24620
+      Number: 48
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_01BJJEKLCA@?$CC?$AA@
+    Value: 0
+    Section: .rdata (48)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (49)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 16
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x64FF58BD
+      Number: 49
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0BA@HHLLOMBH@?0?$CCstate?$CC?3?$HL?$CCpc?$CC?3?$AA@
+    Value: 0
+    Section: .rdata (49)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (50)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 7
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x895481A1
+      Number: 50
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_06OLMHKBCA@?0?$CCsp?$CC?3?$AA@
+    Value: 0
+    Section: .rdata (50)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (51)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 11
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x1B87F0BC
+      Number: 51
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0L@IPPPLOKP@?0?$CChalted?$CC?3?$AA@
+    Value: 0
+    Section: .rdata (51)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (52)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 18
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x612F9F7B
+      Number: 52
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0BC@PJMLKPMJ@?0?$CCflags?$CC?3?$HL?$CCzero?$CC?3?$AA@
+    Value: 0
+    Section: .rdata (52)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (53)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 13
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x9F377D28
+      Number: 53
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0N@GPLMMEFF@?0?$CCnegative?$CC?3?$AA@
+    Value: 0
+    Section: .rdata (53)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (54)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 13
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x565C0AE4
+      Number: 54
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0N@KGNHLDJJ@?0?$CCpositive?$CC?3?$AA@
+    Value: 0
+    Section: .rdata (54)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (55)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 22
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x108AFCEE
+      Number: 55
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0BG@EHFMLCPB@?$HN?0?$CCregister_values?$CC?3?$FL?$AA@
+    Value: 0
+    Section: .rdata (55)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (56)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 2
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x39316BAE
+      Number: 56
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_01IHBHIGKO@?0?$AA@
+    Value: 0
+    Section: .rdata (56)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (57)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 20
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x7FE239F8
+      Number: 57
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0BE@IPMIFNIK@?$FN?0?$CCregister_tags?$CC?3?$FL?$AA@
+    Value: 0
+    Section: .rdata (57)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (58)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 80
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x90F01081
+      Number: 58
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0FA@OBCMPHJI@?$FN?0?$CCmemory?$CC?3?$HL?$CCword_count?$CC?31563?0?$CCd@
+    Value: 0
+    Section: .rdata (58)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (59)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 12
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x1A75843A
+      Number: 59
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_0M@JOFPLNKK@?$HL?$CCaddress?$CC?3?$AA@
+    Value: 0
+    Section: .rdata (59)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (60)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 10
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xE2047D65
+      Number: 60
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_09POHBOKOM@?0?$CCvalue?$CC?3?$AA@
+    Value: 0
+    Section: .rdata (60)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (61)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 8
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x7A8BCDCB
+      Number: 61
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_07OAFGONFN@?0?$CCtag?$CC?3?$AA@
+    Value: 0
+    Section: .rdata (61)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (62)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 7
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x9F9EB18E
+      Number: 62
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_06PNANJBAP@?$FN?$HN?$HN?$HN?$AN?6?$AA@
+    Value: 0
+    Section: .rdata (62)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (63)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 5
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x87D41B41
+      Number: 63
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_04LOAJBDKD@true?$AA@
+    Value: 0
+    Section: .rdata (63)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .rdata
+    Value: 0
+    Section: .rdata (64)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 6
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x4532B3EA
+      Number: 64
+      Selection: Any (0x2)
+    }
+  }
+  Symbol {
+    Name: ??_C@_05LAPONLG@false?$AA@
+    Value: 0
+    Section: .rdata (64)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .debug$S
+    Value: 0
+    Section: .debug$S (65)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 80
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0xF305FE2A
+      Number: 65
+      Selection: 0x0
+    }
+  }
+  Symbol {
+    Name: .llvm_addrsig
+    Value: 0
+    Section: .llvm_addrsig (66)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 1
+    AuxSectionDef {
+      Length: 2
+      RelocationCount: 0
+      LineNumberCount: 0
+      Checksum: 0x97D0B41B
+      Number: 66
+      Selection: 0x0
+    }
+  }
+  Symbol {
+    Name: @feat.00
+    Value: 0
+    Section: IMAGE_SYM_ABSOLUTE (-1)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: cpa004_evaluate
+    Value: 0
+    Section: .text (1)
+    BaseType: Null (0x0)
+    ComplexType: Function (0x2)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: ?name@?A0xF93CFFF4@@YAPEBDE@Z
+    Value: 2284
+    Section: .text (1)
+    BaseType: Null (0x0)
+    ComplexType: Function (0x2)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: kCpa004Program
+    Value: 208
+    Section: .rdata (7)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: ?state@?A0xF93CFFF4@@3UMachine@?A0xF93CFFF4@@A
+    Value: 0
+    Section: .bss (3)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: ?observation@?A0xF93CFFF4@@YAXP6AXPEBD@ZHPEBUInstruction@?A0xF93CFFF4@@00@Z
+    Value: 2532
+    Section: .text (1)
+    BaseType: Null (0x0)
+    ComplexType: Function (0x2)
+    StorageClass: Static (0x3)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: cpa004_run
+    Value: 4460
+    Section: .text (1)
+    BaseType: Null (0x0)
+    ComplexType: Function (0x2)
+    StorageClass: External (0x2)
+    AuxSymbolCount: 0
+  }
+  Symbol {
+    Name: .file
+    Value: 0
+    Section: IMAGE_SYM_DEBUG (-2)
+    BaseType: Null (0x0)
+    ComplexType: Null (0x0)
+    StorageClass: File (0x67)
+    AuxSymbolCount: 2
+    AuxFileRecord {
+      FileName: cpa004_evaluator.cpp
+    }
+  }
+]

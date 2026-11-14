@@ -1,0 +1,67 @@
+{
+  "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]",
+  "interpreter": "/private/tmp/t81-h04-enforcement-venv/bin/python",
+  "jsonschema_version": "4.23.0",
+  "proposal_schema_sha256": "7021b1d9a97a1a410d9b23b1acdbc5ff4a0a3f24b4f41a2b60bd6e7a63dfe529",
+  "observation_schema_sha256": "cc8adc5796e63b38608ba6691c9690724dbe7add6dafa096d66fb5c7b15a7569",
+  "validation": "Draft202012Validator.check_schema plus iter_errors against actual JSON documents",
+  "results": [
+    {
+      "path": "original/T81-CPA-001-experiment-proposal.json",
+      "valid": true,
+      "errors": []
+    },
+    {
+      "path": "proposal.json",
+      "valid": true,
+      "errors": []
+    },
+    {
+      "path": "oracle-normalized.json",
+      "records": 25,
+      "valid": true,
+      "errors": []
+    },
+    {
+      "path": "evidence/hosted-1.normalized.json",
+      "records": 25,
+      "valid": true,
+      "errors": []
+    },
+    {
+      "path": "evidence/hosted-2.normalized.json",
+      "records": 25,
+      "valid": true,
+      "errors": []
+    },
+    {
+      "path": "evidence/hosted-3.normalized.json",
+      "records": 25,
+      "valid": true,
+      "errors": []
+    },
+    {
+      "path": "evidence/hosted-1.raw.jsonl",
+      "records": 25,
+      "valid": true,
+      "errors": [],
+      "check": "full raw array lengths/domains checked before accepting sparse projection; no zip truncation masking"
+    },
+    {
+      "path": "evidence/hosted-2.raw.jsonl",
+      "records": 25,
+      "valid": true,
+      "errors": [],
+      "check": "full raw array lengths/domains checked before accepting sparse projection; no zip truncation masking"
+    },
+    {
+      "path": "evidence/hosted-3.raw.jsonl",
+      "records": 25,
+      "valid": true,
+      "errors": [],
+      "check": "full raw array lengths/domains checked before accepting sparse projection; no zip truncation masking"
+    }
+  ],
+  "all_valid": true,
+  "limitation": "Schema validation establishes shape only, not correctness, authentic authorization, independent review or experimental acceptance."
+}

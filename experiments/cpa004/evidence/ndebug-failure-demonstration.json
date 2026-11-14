@@ -1,0 +1,31 @@
+{
+  "temporary_mutation": "Expected Halt instead of Unsupported for undefined opcode 0xff; production/test sources unchanged",
+  "commands": [
+    {
+      "command": [
+        "/opt/homebrew/opt/llvm/bin/clang++",
+        "-std=c++17",
+        "-O2",
+        "-DNDEBUG",
+        "-Iternaryos/hal",
+        "-I/tmp/cpa004-build/ternaryos/generated",
+        "/tmp/cpa004-results/admission-deliberate-failure.cpp",
+        "ternaryos/hal/cpa004_evaluator.cpp",
+        "-o",
+        "/tmp/cpa004-results/admission-deliberate-failure"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/cpa004-results/admission-deliberate-failure"
+      ],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "CPA004 admission check failed: deliberately wrong expected status\n"
+    }
+  ],
+  "meaningful_failure": true
+}
