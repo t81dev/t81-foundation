@@ -10,13 +10,15 @@ Current Main Head: Track current `main` in GitHub; do not treat this page as a s
 ## November 13 enforcement and CI audit
 
 - **Retained PR #537 boundary limitation:** The merged PR #537 experiment found that the configured CanonFS text-policy hook allowed its denied, revoked, and malformed-policy output cases. Historical entries below do not establish enforcement at that boundary; no full inventory or system-wide security result is claimed.
-- **Current `main` (`fbfe4f5a2d4439f5ff479014301560764de39c99`) observed CI posture:**
-  - Passing: `Format Check` (`43426313414`), `CodeQL` (`43426313318`), `Cross-Platform Determinism Verification` (`43426313339` / `43427773138`), `Documentation` (`43426313303`), and `pages-build-deployment` (`43426311828`).
-  - Failing: `T81 Foundation CI` (`43426313391`) failed on `build / windows-x86_64 / clang-cl` (`131890862407`), `build / windows-x86_64 / msvc` (`131890862560`), and `quality gate / required` (`131907428729`).
-- **PR #782 (`fix/windows-ci-baseline-repairs`, unmerged) observed CI posture:**
-  - At `125a1897b7e7e068ef6d576d97c487295c7203a7`, `T81 Foundation CI` (`43419383525`) passed **404/404** CTest tests on both `build / windows-x86_64 / msvc` (`131867735744`) and `build / windows-x86_64 / clang-cl` (`131867735702`). Subsequent test/audit commits up to `c1fddc53dd03990b3475f5986ba4e53d8a12c00e` have not yet completed a full Windows CI cycle and are not merged into `main`.
-  - `AI Experiments CI` run [43529007245](https://github.com/t81dev/t81-foundation/actions/runs/43529007245/job/132241756918) (job `132241756918`) failed at `Validate AI status document freshness` (`age_days=8 > max_age_days=7` on `AI_RFC_BACKLOG.md`, `CI_WORKFLOW_CONFIRMATION.md`, and `CI_GATE_STATUS.md`), independent of PR #782's code changes.
-- **Historical table limitation:** The `Repro Ledger` (`2026-02-28`) and `Governance and Hygiene Gates` (`2026-03-05`) status tables below are retained historical records and should not be read as newly re-verified at `fbfe4f5a2` beyond the runs explicitly cited above.
+- **Repaired `main` (`fce139671d2e462b1c7f957139e1664b3b244e1f`, PR #782 merged) observed CI posture (partial at 2026-11-13 inspection):**
+  - Passing: `Format Check` (`43548962309`), `Documentation` (`43548962360`), and `pages build and deployment` (`43548961304`).
+  - In progress at inspection: `CodeQL` (`43548962422`), `Cross-Platform Determinism Verification` (`43548962321`), `T81 Speed Oracle` (`43548962307`), and `QEMU Boot (x86_64)` (`43548962276`).
+  - Failing: `T81 Foundation CI` (`43548962310`) failed on `lint / spec & docs` (`132306728299`) and `quality gate / required` (`132306799772`) (upstream `lint / spec & docs` failure prevented Windows jobs from running in `43548962310`); `AI Experiments CI` (`43548962318`) failed on stale AI status document freshness prior to PR #784 merging.
+- **Historical pre-merge `main` (`fbfe4f5a2d4439f5ff479014301560764de39c99`) and PR #782 (`fix/windows-ci-baseline-repairs`, now merged) observed CI posture:**
+  - Pre-merge `main` (`fbfe4f5a2d4439f5ff479014301560764de39c99`): Passing were `Format Check` (`43426313414`), `CodeQL` (`43426313318`), `Cross-Platform Determinism Verification` (`43426313339` / `43427773138`), `Documentation` (`43426313303`), and `pages-build-deployment` (`43426311828`); failing was `T81 Foundation CI` (`43426313391`) on `build / windows-x86_64 / clang-cl` (`131890862407`), `build / windows-x86_64 / msvc` (`131890862560`), and `quality gate / required` (`131907428729`).
+  - Pre-merge PR #782 at `125a1897b7e7e068ef6d576d97c487295c7203a7`: `T81 Foundation CI` (`43419383525`) passed **404/404** CTest tests on both `build / windows-x86_64 / msvc` (`131867735744`) and `build / windows-x86_64 / clang-cl` (`131867735702`). Subsequent test/audit commits up to `c1fddc53dd03990b3475f5986ba4e53d8a12c00e` (merged into `main` as `fce139671d2e462b1c7f957139e1664b3b244e1f`) did not have a completed post-merge Windows CI run at inspection.
+  - Pre-merge PR #782 at `c1fddc53dd03990b3475f5986ba4e53d8a12c00e`: `AI Experiments CI` run [43529007245](https://github.com/t81dev/t81-foundation/actions/runs/43529007245/job/132241756918) (job `132241756918`) failed at `Validate AI status document freshness` (`age_days=8 > max_age_days=7` on `AI_RFC_BACKLOG.md`, `CI_WORKFLOW_CONFIRMATION.md`, and `CI_GATE_STATUS.md`), independent of PR #782's code changes.
+- **Historical table limitation:** The `Repro Ledger` (`2026-02-28`) and `Governance and Hygiene Gates` (`2026-03-05`) status tables below are retained historical records and should not be read as newly re-verified at `fbfe4f5a2` or `fce139671d` beyond the runs explicitly cited above.
 
 
 ## Purpose
@@ -202,8 +204,8 @@ tracked here and must be addressed unless explicitly deferred.
 | Field | Value |
 | :--- | :--- |
 | **Workflows** | `ci.yml` (`T81 Foundation CI`), `ai-experiments-ci.yml` (`AI Experiments CI`) |
-| **Observed Runs** | `43426313391` on `main` (`fbfe4f5a2`): `build / windows-x86_64 / clang-cl` (`131890862407`), `build / windows-x86_64 / msvc` (`131890862560`), `quality gate / required` (`131907428729`) failed. `43529007245` on PR #782 (`c1fddc53d`, job `132241756918`): `Validate AI status document freshness` failed (`age_days=8 > max_age_days=7`). |
-| **Resolution Path** | PR #782 (`fix/windows-ci-baseline-repairs`, unmerged) repairs the Windows CI baseline; a separate docs-only PR refreshes `AI_RFC_BACKLOG.md`, `CI_WORKFLOW_CONFIRMATION.md`, and `CI_GATE_STATUS.md`. |
+| **Observed Runs** | Historical pre-merge `main` (`fbfe4f5a2`): `43426313391` failed on `build / windows-x86_64 / clang-cl` (`131890862407`), `build / windows-x86_64 / msvc` (`131890862560`), `quality gate / required` (`131907428729`). Pre-merge PR #782 (`c1fddc53d`): `43529007245` (job `132241756918`) failed `Validate AI status document freshness` (`age_days=8 > max_age_days=7`). Repaired `main` (`fce139671d`, PR #782 merged): `43548962310` failed at `lint / spec & docs` (`132306728299`) and `quality gate / required` (`132306799772`), and `43548962318` failed on stale AI status docs prior to PR #784 merging. |
+| **Resolution Path** | PR #782 merged into `main` (`fce139671d`) to address the Windows CI baseline; PR #784 (`docs/refresh-ai-status-docs-2026-11-13`) refreshes `AI_RFC_BACKLOG.md`, `CI_WORKFLOW_CONFIRMATION.md`, and `CI_GATE_STATUS.md`. |
 | **Blocking Release** | Yes — `quality gate / required` is a required branch-protection context on `main`. |
 
 ### TLOADHASH Tests — Closed (2026-03-15)
