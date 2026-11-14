@@ -1,0 +1,169 @@
+{
+  "status": "DRAFT / HOLD; recommendation only",
+  "client_date": "2026-11-14",
+  "client_timezone": "America/New_York",
+  "baseline_tag": "v1.9.4",
+  "baseline_commit": "295fc67245179f1b26e5284c70520019e72bb6c3",
+  "main_commit": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+  "pending_pr780_head": "c08c211bd3475d8b09e35648f84c6b5c0a7e31a2",
+  "pending_pr780_state": "open draft; excluded",
+  "recommended_runtime_version": "2.0.0",
+  "recommendation_basis": [
+    "Observable opcode byte reassignment against released v1.9.4 headers",
+    "Legacy nonempty unmarked CanonFS stores now require explicit migration",
+    "Public T81Fraction noexcept member-function contract removed; differential consumer compile reproduced"
+  ],
+  "version_bumps_performed": false,
+  "tag_or_publication_performed": false,
+  "author": "Codex; contributor to included Windows/capture and #787 work; not independent review",
+  "model_identity": null,
+  "environment": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "python": "3.14.3",
+    "compiler": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin\n"
+  },
+  "scope": {
+    "commits": 448,
+    "first_parent_entries": 341,
+    "changed_files": 1643,
+    "header_files_changed": 39
+  },
+  "observed_metadata": {
+    "cmake": "1.9.1",
+    "config_header": "1.9.1",
+    "python_distribution": "1.9.2",
+    "last_published_tag": "v1.9.4"
+  },
+  "audited_sources": {
+    ".github/workflows/release.yml": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "f37e13d1bcd8e372ea62bd80ffbd91a5fa260e677cd328d26aec74f47a2ef86a",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/.github/workflows/release.yml"
+    },
+    ".github/workflows/python-wheels.yml": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "bf5095b487b73204bee51ddd4467737d4eda30caa0c774754f227fe560df4339",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/.github/workflows/python-wheels.yml"
+    },
+    ".github/workflows/docker.yml": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "a1558660e66b8dbead5aab0851f9f202eb0445b4a49bdaa47786d83e51932dab",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/.github/workflows/docker.yml"
+    },
+    "Dockerfile": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "67e6680aa47bf4ab387e97fc7d9c9917cf6edb768326e40cc1d81c51a11a65af",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/Dockerfile"
+    },
+    "install.sh": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "5b7b7a125c1ad5beacb4d524cfb7e2e02ab7246afb23c4e3cf450bf5ed2e68bf",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/install.sh"
+    },
+    "install.ps1": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "362b066ede8b69e53828ef83ca4b8c8e7b8be37aef20a374c4af60871cd394f7",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/install.ps1"
+    },
+    "pyproject.toml": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "72e743a320df89ae977c0ba11bf906434dcb442125b64ef543bf3c0d3e6444db",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/pyproject.toml"
+    },
+    "CMakeLists.txt": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "5a6bcaeff9d419ede349bf0532880f961e20f9c5dad11e15e8c82b6e6abdf19b",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/CMakeLists.txt"
+    },
+    "include/t81/config.hpp": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "638d14215bfc7998a8b84cefd2bc787ce9c975b106cebfcb05f9822ab3c8064a",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/include/t81/config.hpp"
+    },
+    "include/t81/config.hpp.in": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "d814d28651c36df56cf2851ce07ad2549bf3fa875d1568dc10de00a2b0ef5e04",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/include/t81/config.hpp.in"
+    },
+    "src/direct_api/CMakeLists.txt": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "392e10c7192f64e05ce3f668f0644c7bbe6de808ccfe67bff8da34748086c670",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/src/direct_api/CMakeLists.txt"
+    },
+    "src/ffi/CMakeLists.txt": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "991288418f349bb405404da05dff4ee3d060aead3992240c4bd5b9c662185203",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/src/ffi/CMakeLists.txt"
+    },
+    "cmake/T81Config.cmake.in": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "f5c9e17fcd741f4fe8591743683ecdd0932d4673e849cfc1a2fedf24535ab061",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/cmake/T81Config.cmake.in"
+    },
+    "cmake/T81FoundationConfig.cmake.in": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "edd7420e74f29139410ef44d6d906a33e437e10698603d1165ee986b8cc6eedb",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/cmake/T81FoundationConfig.cmake.in"
+    },
+    "docs/reference/VERSIONING.md": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "fa6070bb9f05c46f186acccafa35f48ecac0a61eb7a874af7e7812efaf610734",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/reference/VERSIONING.md"
+    },
+    "docs/product/RELEASE_DISCIPLINE.md": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "cb31a11ba95e07755d4487d1fff6888d3785394a8502994aa3f6cf720252c61a",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/product/RELEASE_DISCIPLINE.md"
+    },
+    ".github/RELEASE_TEMPLATE.md": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "636f1e90b02ef555e879be64108a040bde097c0b1589c47a7e9cf6881f7d225a",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/.github/RELEASE_TEMPLATE.md"
+    },
+    "docs/governance/DETERMINISM_SURFACE_REGISTRY.md": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "b4181e2cac6d67087767462aac831f015ab31f4a7651013f3b2405ab9b658bc0",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/governance/DETERMINISM_SURFACE_REGISTRY.md"
+    },
+    "spec/rfcs/RFC-00D6-versioned-tisc-state-transition-contract.md": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "98f1a287bb07705f7dedd527709024bbd9d3900769245f0b1d472481e5cef27a",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/spec/rfcs/RFC-00D6-versioned-tisc-state-transition-contract.md"
+    },
+    "docs/status/DECISION_LOG.md": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "a47449dbd62ac5868b8d262a4ea221afb6f4ecd88f6913b4214559b8a85e7ca5",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/status/DECISION_LOG.md"
+    },
+    "isa/encoding.cpp": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "d9fd81f87e9b6b47c55c8ddf5e7bdeef95e0ce48a965b1973e23526c32f2a391",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/isa/encoding.cpp"
+    },
+    "isa/binary_io.cpp": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "797d3fe424136cb9109811b1bc47de4b453791d12bc0f860c7dcc96947de6aec",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/isa/binary_io.cpp"
+    },
+    "include/t81/canonfs/storage_key.hpp": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "81d2193b6bf52d09398dbc0d411ad658d9a4f8c50ab7b6ed58d1172838db0fc3",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/include/t81/canonfs/storage_key.hpp"
+    },
+    "fs/persistent_driver.cpp": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "07a90e40dd791d15b7fc10879f5459fd93be009e3dd4a2a58f3852896df14fe5",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/fs/persistent_driver.cpp"
+    },
+    "include/t81/types/T81Fraction.hpp": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "ed344e406be5ef59859e771477161ab4ad9347e367c9bdc87c4f05a85d50bc5a",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/include/t81/types/T81Fraction.hpp"
+    },
+    "include/t81/types/cell.hpp": {
+      "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "sha256": "f75058f0919b40346fd9caef3300014665cf259ebfb7052b8910828c8953f550",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/include/t81/types/cell.hpp"
+    }
+  }
+}

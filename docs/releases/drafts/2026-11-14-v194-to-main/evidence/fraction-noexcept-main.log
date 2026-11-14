@@ -1,0 +1,4 @@
+docs/releases/drafts/2026-11-14-v194-to-main/evidence/fraction_noexcept_compat.cpp:4:17: error: cannot initialize a variable of type 'OldPlusContract' (aka 'Fraction (Fraction::*)(const Fraction &) const noexcept') with an rvalue of type 'T81Fraction<13> (Fraction::*)(const T81Fraction<13> &) const': different exception specifications
+    4 | OldPlusContract consumer = &Fraction::operator+;
+      |                 ^          ~~~~~~~~~~~~~~~~~~~~
+1 error generated.

@@ -1,0 +1,40 @@
+[
+  {
+    "source": "v194",
+    "argv": [
+      "clang++",
+      "-std=c++23",
+      "-I",
+      "/private/tmp/t81-release-baseline-v194/include",
+      "docs/releases/drafts/2026-11-14-v194-to-main/evidence/wire_opcode_probe.cpp",
+      "/private/tmp/t81-release-baseline-v194/isa/encoding.cpp",
+      "-o",
+      "/private/tmp/t81-wire-probe-v194"
+    ],
+    "compile_exit": 0,
+    "run_exit": 0,
+    "run_argv": [
+      "/private/tmp/t81-wire-probe-v194"
+    ],
+    "output": "VLoad record size=13 first-byte=194\n"
+  },
+  {
+    "source": "main",
+    "argv": [
+      "clang++",
+      "-std=c++23",
+      "-I",
+      "include",
+      "docs/releases/drafts/2026-11-14-v194-to-main/evidence/wire_opcode_probe.cpp",
+      "isa/encoding.cpp",
+      "-o",
+      "/private/tmp/t81-wire-probe-main"
+    ],
+    "compile_exit": 0,
+    "run_exit": 0,
+    "run_argv": [
+      "/private/tmp/t81-wire-probe-main"
+    ],
+    "output": "VLoad record size=13 first-byte=240\n"
+  }
+]

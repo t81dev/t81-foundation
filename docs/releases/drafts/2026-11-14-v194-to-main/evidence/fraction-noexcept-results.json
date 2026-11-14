@@ -1,0 +1,28 @@
+[
+  {
+    "source": "v194",
+    "argv": [
+      "clang++",
+      "-std=c++23",
+      "-I",
+      "/private/tmp/t81-release-baseline-v194/include",
+      "docs/releases/drafts/2026-11-14-v194-to-main/evidence/fraction_noexcept_compat.cpp",
+      "-o",
+      "/private/tmp/t81-fraction-compat-v194"
+    ],
+    "exit_code": 0
+  },
+  {
+    "source": "main",
+    "argv": [
+      "clang++",
+      "-std=c++23",
+      "-I",
+      "include",
+      "docs/releases/drafts/2026-11-14-v194-to-main/evidence/fraction_noexcept_compat.cpp",
+      "-o",
+      "/private/tmp/t81-fraction-compat-main"
+    ],
+    "exit_code": 1
+  }
+]
