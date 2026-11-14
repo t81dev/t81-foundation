@@ -1,0 +1,8 @@
+docs/releases/drafts/2026-11-14-v194-to-main/evidence/noexcept_consumer.cpp:2:18: error: no template named 'T81Fraction' in namespace 't81'; did you mean 't81::v1::T81Fraction'?
+    2 | using Fraction = t81::T81Fraction<13>;
+      |                  ^~~~~~~~~~~~~~~~
+      |                  t81::v1::T81Fraction
+/private/tmp/t81-release-baseline-v194/include/t81/types/T81Fraction.hpp:27:7: note: 't81::v1::T81Fraction' declared here
+   27 | class T81Fraction {
+      |       ^
+1 error generated.

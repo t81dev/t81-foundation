@@ -1,0 +1,58 @@
+[
+  {
+    "check": "Cell arithmetic unchanged",
+    "argv": [
+      "git",
+      "diff",
+      "--exit-code",
+      "295fc67245179f1b26e5284c70520019e72bb6c3",
+      "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "--",
+      "include/t81/types/cell.hpp"
+    ],
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "check": "C API and Python binding sources unchanged",
+    "argv": [
+      "git",
+      "diff",
+      "--exit-code",
+      "295fc67245179f1b26e5284c70520019e72bb6c3",
+      "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "--",
+      "ffi/c_api",
+      "lang/python",
+      "ffi/python"
+    ],
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "check": "Reused library source tree equals main",
+    "argv": [
+      "git",
+      "diff",
+      "--exit-code",
+      "d71b526c35592a7e5f96ed32a2bbf5807613f962",
+      "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2"
+    ],
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "check": "Tracked worktree source unchanged",
+    "argv": [
+      "git",
+      "diff",
+      "--exit-code"
+    ],
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "check": "All packet JSON parses",
+    "result": "pass"
+  }
+]

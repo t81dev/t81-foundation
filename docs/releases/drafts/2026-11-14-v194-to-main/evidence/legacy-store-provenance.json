@@ -1,0 +1,22 @@
+{
+  "source_sha": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+  "argv": [
+    "clang++",
+    "-std=c++23",
+    "-I",
+    "include",
+    "docs/releases/drafts/2026-11-14-v194-to-main/evidence/legacy_store_probe.cpp",
+    "/private/tmp/t81-pr787-synchronized-correctness/libt81_core.a",
+    "-o",
+    "/private/tmp/t81-legacy-store-release-probe"
+  ],
+  "compile_exit": 0,
+  "linked_archive_source": "d71b526c35592a7e5f96ed32a2bbf5807613f962",
+  "source_tree_identity_verified": true,
+  "linked_archive_sha256": "578b40558862c591fe3c82f62ac3a61d662837fe463d59cba1fda60342cee103",
+  "run_argv": [
+    "/private/tmp/t81-legacy-store-release-probe",
+    "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-release-legacy-ra4ptpu3"
+  ],
+  "run_exit": 0
+}

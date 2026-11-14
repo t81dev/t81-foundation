@@ -1,0 +1,341 @@
+9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2 Merge pull request #787 from t81dev/candidate/pr779-pr785-main-integration
+636024e9cdcea858a1c808e1550ac9d794be10bf Merge pull request #784 from t81dev/docs/refresh-ai-status-docs-2026-11-13
+fce139671d2e462b1c7f957139e1664b3b244e1f Merge pull request #782 from t81dev/fix/windows-ci-baseline-repairs
+fbfe4f5a2d4439f5ff479014301560764de39c99 Merge pull request #783 from t81dev/docs/ai-context-2026-11-13-integration-backlog
+88300f14c1da1066ad6db25d31be0e8e912b3ef0 Merge pull request #781 from t81dev/docs/ai-context-2026-11-12-holding-pattern
+d3a6cf55517a3098d7bae91b07c72694bc3472da Merge pull request #775 from t81dev/codex/scg08-gate1-evidence-reconciliation
+2a016ad5a3b5acae211ba8fffb1d60f4a89d6596 Merge pull request #777 from t81dev/governance/dec-015-c2-pr775-final
+e42f30af051ee596bc03e4343c4c34cafd37e5b8 Merge pull request #776 from t81dev/governance/dec-015-pr775-exception
+89223724038ff7dec349343469df4ea8389ede26 Merge pull request #772 from t81dev/fix/ci-backlog-portability-7023967684116356460
+b96022c6b8e313a0ccd6bed6f1057d5e2368d092 fix(frontend): reconcile PR #769 against current main baseline
+a4684582c9532061dc516836f10a8a0ed602d69f docs(scg08): publish statistical reconciliation and prospective RFC-00E1
+c297125d836de542053f394062598f496764bde5 Revise README.zh-CN.md for clarity and links
+55bd0aba12b7d008086e74150945a876367a8566 Update README.ru.md
+c111d083a46f288f125404b1209a0f794b710ad5 Revise headings and enhance readability in README.pt-BR
+c768bb9a85c5eee79964dff8d8134739d0b7a6bd Update README with language links and content clarity
+e5f58626e57a04a99dee623ab1e934e8ba3d312a Revise links and enhance clarity in README.es.md
+86983a47e0b6b980ac2b0437b837f5d23b8db526 Revise ROADMAP.md with updates and clarifications
+36b3849aa1e6297e88de2ec1655777793ab0b59e Merge pull request #765 from t81dev/fix/scg08-gate1-codex-findings-resolution-dbf107fd-9254086495189400913
+dbf107fda83a3755fa21d6b95caa3eb8ac450dd3 Merge pull request #763 from t81dev/feat/scg08-phase1-gate1-arithmetic-harness-11726708696323888098-10915230409052001903
+da656dee2fcb34da63b428fc7b3f827189431d00 Merge pull request #762 from t81dev/fix/arch-viz-003-defect-corrections-16362228556073063528
+8e6918fa98e19ee1476f91c97e82989b051a02e7 Merge pull request #759 from t81dev/feat/arch-viz-003-interactive-research-dashboard-11354439437640995350
+e24614d9b87a3f4852d678810cbe371453690833 Merge pull request #758 from t81dev/investigate/qemu-firmware-phase4
+6c9eaf1a2fc8368cd06f6dddbbdcd78e6606c0ce Merge pull request #757 from t81dev/investigate/qemu-uefi-phase3
+cd490f5b5c0496350682542b56424dd77bea6963 Merge pull request #756 from t81dev/fix/qemu-fail-closed
+ee0c7d90537eaa2dc4b522c1624fcabebf6e999b Merge pull request #755 from t81dev/diagnostics/arch-eng-002-phase1-drift-and-evidence-index-6973167829594744707
+9a3e307ad21135749d35a4f1a6a0d5820d0cc698 Merge pull request #754 from t81dev/docs/ai-context-2026-11-10-pr-reconciliation
+0bd0817e4b9dc879fffce18c59ea9ff781f7acb3 Merge pull request #753 from t81dev/jules-740092288091286887-b470c65c-4080835001575690737
+f085e9d8b7455fa08e81ed2ab45de297b22fcfa8 Merge pull request #749 from t81dev/jules-14736121055734489442-060ab07c
+e5c30560aa77c31184a14b03ed152a6deef5c1a3 docs(architecture): add complete visualization data foundation
+4f96cb24358bfd260e67387b2c4db2797b01236f fix(ci): restore root governance and provision model fixtures
+cfd60998fb0b55d8c2b56529cf4e3fb0a4c78ac3 docs(ai-context): refresh non-normative current-state overlay pointer
+965a76ca70640fa0b0fe3fd50eda2f394314e2cf docs(ai-context): point handoff entry to 2026-11-09 qualified status
+c70a601e7ebd1a4b07987852d7cd5c738518b4b3 docs(ai-context): point handoff entry to 2026-11-09 qualified status
+83ab3f55d44c9dbdbdfae97ceb20f00379b7aff1 docs(ai-context): add SCG-07 closure and SCG-08 pending research handoff
+8dec43ac2a9a702c9ae54229cf6891ee63f285c0 docs(continuity): complete SCG-07 Phase 6 consolidated arithmetic qualification
+38d79568ec86e8a8b372ba37c6d0ec3f0cb33205 docs(continuity): update SCG-07 Phase 6 CI attribution and audit
+db740e47cd00c2e8929ce154af7f5076cc970655 docs(continuity): publish SCG-07 Phase 6 arithmetic qualification
+ebaf2c575d61ce4315d835dd8bef909dbda43a17 docs(continuity): publish SCG-07 Phase 6 arithmetic qualification
+ecb1e32b9458a1a1df51d7cdd4a19496c0584103 fix(types): verify T81Limb54 Karatsuba multiplication correctness (F3)
+ae7956d6723cb6f30ac5541ed65f6d182cea7e8e fix(types): verify T81Limb54 Karatsuba multiplication correctness (F3)
+8497ffb8742266d499e0cf8c826857776238db98 fix(types): repair T81Limb54 reference multiplication correctness (F2)
+e4e3224477a7296f5fd6d78f84c7fec35b0d6f09 fix(types): repair T81Limb54 reference multiplication correctness (F2)
+5cc8d9457fd19ff2d85a5bda1fc1678d8e0124d1 fix(types): repair T81Limb27 multiplication correctness (F1)
+4d6d71b6b6c1e275249b908950ee65f985d5f08b fix(types): repair T81Limb27 multiplication correctness (F1)
+ca7a6b7af107d189bb0bf2958d5445f979dc2e5a fix(types): repair T81Limb27 multiplication correctness (F1)
+1604fd204346c0ca09d14abe6be6f2417170f741 fix(types): repair T81BigInt signed subtraction (F5)
+60e3f676e03824ad5074a27096127fcb23351dd6 fix(types): repair T81BigInt signed subtraction (F5)
+e24eba723c221dc895e20307d41a8c4ba97405d6 fix(types): repair T81Fraction F6/F7 exception safety
+c1b59a5e12a4c51b06e3a9d1ac09564abdc8c575 fix(types): repair T81Fraction F6/F7 exception safety
+48d981e5f45a85f95f2aeabb90285b75caadacd1 fix(types): repair T81Fraction F6/F7 exception safety
+15ae692b6ac19bf0bd9facb0ae63acaaa826d173 fix(types): repair T81Fraction F6/F7 exception safety
+7ba82e033d072e421b4851d156989203e503047e docs(continuity): reconcile PR #733 and PR #735 into canonical baseline
+83525453ae7fed7f61807ab501f2a5107b6f51b1 docs(continuity): reconcile SCG-06 attribution and prepare SCG-07 handoff
+e323556667627c7c5f8fb8d039af8a90a0eb3490 Revise T81 Foundation details in Chinese README
+e10bc1e78857ff29fdf5a7de29e69845f1ef43ec Update print statement from 'Hello' to 'Goodbye'
+9d8dbaed81ab14688a0f43b1d4960f1b2acc03f5 Update README.pt-BR.md with new content and structure
+2c4f67719ebb149d949566181dae73cbd19acba9 Revise README.es.md for accuracy and updates
+683edd0bc01d7b32c66d70fde9fb6cc5254a4318 docs(ai-context): link dated state index to 2026-11-08 status
+ee8b5d4688bbdae7a0640e1e260dae36b5468324 docs(ai-context): point EVIDENCE_AND_FINDINGS.md to 2026-11-08 status
+5019877a6c5577e694ae0f03a0f4d50b27898064 docs(ai-context): point ACTIVE_RESEARCH_HANDOFF.md to 2026-11-08 status
+4d6ed82eb396018ef58b3d68abd147ef4e7e004b docs(ai-context): point BOOTSTRAP.md to 2026-11-08 status
+12aa8236a0ec607aba0c204f3ec7c0fd161fe826 docs(ai-context): point START_HERE.md to 2026-11-08 status
+9cad294bf15f9d38dcbea3ed0cfedf1adc08193b docs(ai-context): add evidence-bounded T81 status through SCG-06
+e45c5435aa47d4ccb8f343798214eb917352c871 docs(continuity): revise SCG-04 maintainer decision record
+b8f7d9af78d0ff8f38847b4ccc1342b6d09aba99 docs(continuity): publish SCG-04 maintainer decision record
+b6ed932285866f2185c7d8da3d1f9ec22d194fc8 style(types,tests): SCG-03 closure & SCG-04 preparation
+2c3501e2807bb893076c5037231c3126b7f2bc72 fix(types,tests): repair T81Int mul & test verdicts
+64941caff9372f2e76dd3a0fb79aa6711a48b171 fix(h04-r03): finalize Phase 4 wire-frame retention atop PR #724 & PR #726
+0a547536649edf311ffbc1b85ebafccfb73604bb docs(ai-context): reconcile PR #722 with merged H04-R03-FC1 fixes
+50087972e078a09d7aff79cf6d8ae15db45c17ba docs(h04-r03): clarify in-process trust boundary and validation costs
+8ebff41e1f175a490bf0a1094785680997ba0eec fix(h04-r03): enforce immutable admission boundary for FC1 closure
+b03c55b28b9bd3308f4c0c22145f2b65dc7142ca fix(h04-r03): complete FC1 three-finding correctness closure
+eb6d5435955b0c4e7a5fc4d88ef07f356767b051 fix(h04-r03): resolve PR #679 review findings and retain FC1 evidence
+1103356ac867a88b3c3873a7e2e696d48378f424 docs(ai-context): date H04-R03 snapshot and quantify AVX2 negative result
+31a2afc076b4fe962d1a950ff64244d7d8a9cdb6 docs(ai-context): date H04-R03 snapshot and quantify AVX2 negative result
+b78e22fb3fd97f7439551ccbae568527d59392d1 docs(ai-context): date H04-R03 snapshot and quantify AVX2 negative result
+7e09a94fe17f97959173c1ebab07882ce697e808 docs(readme): foreground negative evidence and classify CPA scope
+9654fd2b05f0abd1af4f0f3d14318d5213b7c8c8 docs(rfc): enforce fail-closed profile conflicts and non-authoritative phrasing
+8cec0cbf77947499cc95e8f364b4fdbfab5ee197 docs(rfc): resolve Codex review findings on RFC-00D6
+8ce2fcf1accdbff3beea7a184228a5482d84a92d docs(rfc): draft RFC-00D6 versioned TISC state-transition contract
+d134407ae1059c4d7f6a9418177e695e0e5d3b51 docs(ai-context): surface CPA-006 evidence and ISA-002 decision gate (#713)
+117e7c6270fe5aeb298078e99a3b66d6b0457a39 docs(ai-context): append post-CPA006 and ISA001 continuity to ACTIVE_RESEARCH_HANDOFF.md
+19721652ddf9b1664cd828e0996105abd34464b8 docs(ai-context): append post-CPA006 and ISA001 continuity to DECISIONS_AND_GOVERNANCE.md
+fd1bedde260eaaeeea640d1888d3468e89831c01 docs(ai-context): append post-CPA006 and ISA001 continuity to EVIDENCE_AND_FINDINGS.md
+f72ac8b1fe37b2cf2773c883efeadfac43a824b9 docs(ai-context): append post-CPA006 and ISA001 continuity to SYSTEM_ARCHITECTURE.md
+eae8a9453e1a1d5bba4ebd4380824d82dd6f3f6a docs(ai-context): append post-CPA006 and ISA001 continuity to RESEARCH_IDENTITY.md
+3582add018c6f47302768b12757adf073027c380 docs(ai-context): append post-CPA006 and ISA001 continuity to START_HERE.md
+7afa4f1a424be6c65fab28f8e5bcf4fddc3ef762 docs(continuity): refresh public identity and AI research continuity for CPA-001..005
+ea6d031a8117341fe03013cc9d5473de1b07727d test(canonfs): resolve rollback symlink fixture in cli contract test
+d4d0b88d6edd013fae6604bb311bb6d8028eb0a9 test(canonfs): resolve portable snapshot path in symlink fixture
+d999f58f92080afe4c8c246147bf51bad9e7c88b fix(canonfs): portable storage key integration and validation
+e84730ab29e0c68d094d3fddd5f7e1321927c55d docs(status): refresh AI status document timestamps for CI compliance
+c8ce687a25e5e70b72cd226c43c7cc7ab9379838 fix(canonfs): complete portable storage integration and verify snapshot contracts
+9eaaff68e1c1255d41968b604e4046688e96fdbb fix(canonfs): resolve portable snapshot paths in CLI rollback and axion commands
+4b8ac25d172a2e74f3729b978639a64063c50e9f fix(canonfs): resolve portable snapshot paths in CLI rollback and axion commands
+803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4 docs(ai-context): update research continuity for Nov 4, 2026
+d836f7edb9b70608ef7476e82e98a0a89084d74b docs(audit): publish T81-SIA-001 system integration audit report
+9bbc4453ca136251448201cf9166c2bd167e1f67 Merge pull request #701 from t81dev/fix/windows-canonfs-storage-vm-debug
+63d876331f3e40aecb24353bf385ccbb88f3d5c3 Merge pull request #700 from t81dev/fix/base01-verified-correctness
+a98b22fb65c80f4225151cbcd5c6934ae076cbe1 docs(ai-context): link latest BASE-01 continuity snapshot
+0e26911a175e71bc4f53aa7366b9780263227bce docs(ai-context): record BASE-01 integration and B1 readiness boundary
+4f9edb9c3d434bbc89331fc1c428e375d71d3fba Merge pull request #695 from t81dev/jules-base01-pr694-acceptance-review-11033514251975573468
+52921bd08ff9a9d765d4f129791b5a98304b6b6e Merge pull request #694 from t81dev/base01-controlled-integration-2635015602689745970
+cda9135d36144d4de2771af174e52ac7b30a83c9 Merge PR #684: independent H04-R03 enforcement feasibility audit
+dbc8c1ac05aebf9f64dccc45968b75e891b6ff21 Merge pull request #683 from t81dev/exp-h04-r03-enforcement
+1c2fc645176030bb76e52e5deec0ee66ee5ecfbb Merge pull request #682 from t81dev/exp-h04-r03-phase-c
+927972f876d7be53b37e119a0be5b91d623edd95 Add PR #679 Independent Acceptance Review Report (#680)
+d8e1376a7a77902cc26269c6e8d4991bcde117a7 feat(research): implement EXP-H04-R03 Candidate A B729-µ5
+9514ce400745f951e13bf474617c9a2d761edb36 docs: clarify T81 research identity and adaptive execution hypotheses
+6e5ca4ea54923b2119bac117d6c5b70de71d2586 fix(ci): satisfy determinism claims check and docs link in README
+4fe55082912b704dfcd8dbce5f01cb65d2a76cce fix(ai-context): address Codex findings on PR #678 for R1/R2 adoption
+cb9e441f10371f2c704a12229eb4615ecd6ed13c fix(ai-context): correct retained M1 attribution in every dated view
+3ae19f92e5a89d3067119dd2b4a517681524dbe1 fix(ai-context): require revision provenance and restore pinned replay
+f8fc6501530c1a2a6fa4df9b9799370bdb18bd82 fix(ai-context): implement R1/R2 adoption corrections for PR #656
+8e44c0f667c62e0d4143bb93169fc3235d5ebd66 docs(research): reconcile EXP-H04-R03 Candidate A decision rules
+fdd695c53bf5426ff35ec8212302906380f8a505 docs(research): finalize EXP-H04-R03 Candidate A preregistration
+043cf31d0c3439e784e30706c0634e7332b3fd00 docs(research): correct EXP-H04-R03 Candidate A preregistration
+7fa0b88b8e088af60bf3195808b5c4204ae91a11 docs(research): specify EXP-H04-R03 Candidate A preregistration and resolve CI governance check
+93a1f06a8c5a45c08386677b70ed8710ce295d7b docs(research): specify EXP-H04-R03 Candidate A preregistration design
+1a6d5a36473004961248f0a85b2e06361ea2a38f docs(audit): reconcile PR #676 review findings and live backlog state
+94788e6e48cdbb8c8f5a46c7634f5f3fc2c8800d docs: relocate engineering audit package and address review findings
+98f848b1bb9abeb63fe64251d5df9a4790b05b8f docs(backlog): complete engineering backlog audit and critical path
+d3a6f35333ae70f50b52db698e302f04507f88f9 fix(ci): satisfy determinism claims check and docs link in README
+333ccb883d5e6f46a601cd16e07320e12c3106e0 docs(backlog): complete engineering backlog audit and critical path
+1d01c62df45c9ebb06f01677e18331ef77e016c5 fix(ternary): clang-format test and add cancellation-aware regression coverage
+2b01857e0d82d01ecf6c471df350435dcb3b4e5d fix(ternary): add ALWAYS_ASSERT and explicit 41-trit defect regression test
+bc88d728e4ad200819c426f146ba8900c323878d fix(ternary): correct decode_i64 overflow saturation and add regression tests
+1737a7ff5a267590338c0e7b513c95e95ccd6177 docs(ai-context): refresh BOOTSTRAP.md for AIOPT M2 review gates
+570456d6a9d4f15b9fb86efb16d14711dcd0826a docs(ai-context): refresh EVIDENCE_AND_FINDINGS.md for AIOPT M2 review gates
+c03864ac56698473a3bda9e886dfa8cbda5ba2fb docs(ai-context): refresh DECISIONS_AND_GOVERNANCE.md for AIOPT M2 review gates
+4d73ffcdb7a860af070966d0d998251a60820349 docs(ai-context): refresh ACTIVE_RESEARCH_HANDOFF.md for AIOPT M2 review gates
+e0644c8edff7de9c28cf4520c2808aa2b9007c9c docs(ai-context): refresh START_HERE.md for AIOPT M2 review gates
+1fe1cd7a9ca01402afcfa3d53c3305f0a1ba8263 docs: correct M2 comparison semantics and statistical gates
+5238c6a4f7da5af5263dc3d3534a03d90c544873 docs(research): address review feedback on AIOPT M2 assessment
+908c2c32c852fb41d48ec51cff4d4c7ed06cccb1 docs(research): publish AIOPT M2 adversarial design assessment
+005714caced20b7ce54c37c68808d0492c7567b7 Revise README for improved clarity and organization
+affeea65ba5de6c46bfad5d05cffa0e16bd7c2a6 docs(ai-context): reconcile scientific synthesis in ACTIVE_RESEARCH_HANDOFF.md
+1d34344bb886dcd8b248d25898ad066b9c83d568 docs(ai-context): reconcile scientific synthesis in EVIDENCE_AND_FINDINGS.md
+bbc8ac95edf2eda474b20349b2c43777b8131e85 docs(ai-context): reconcile scientific synthesis in RESEARCH_IDENTITY.md
+81deec2de3cbef744eff22b4e8a134c263d922db docs(ai-context): reconcile scientific synthesis in START_HERE.md
+e108fdad078f4d6dfcc427f1fd419ecbe48b4e05 docs(ai-context): reconcile dated continuity and ADM-2 local evidence in ACTIVE_RESEARCH_HANDOFF.md
+5f67aaaaec704c0b73a32077ebf666e776c88f88 docs(ai-context): reconcile dated continuity and ADM-2 local evidence in DECISIONS_AND_GOVERNANCE.md
+cf3087d7b4a7ac3fddc73cf054f560cf5d82256c docs(ai-context): reconcile dated continuity and ADM-2 local evidence in EVIDENCE_AND_FINDINGS.md
+dd7ad6fcba93468f65a1a1beaab02f402573830b docs(ai-context): reconcile dated continuity and ADM-2 local evidence in SYSTEM_ARCHITECTURE.md
+4df0c79fb4d644aaf5d9268af60446e9e685e627 docs(ai-context): reconcile dated continuity and ADM-2 local evidence in RESEARCH_IDENTITY.md
+6b0fafd8e4822f1861857703be13561d12e26f74 docs(ai-context): reconcile dated continuity and ADM-2 local evidence in BOOTSTRAP.md
+1e33e009a5fb7a2888a5c5fb43ead19ea91e15e9 docs(ai-context): reconcile dated continuity and ADM-2 local evidence in START_HERE.md
+8565dc96cff760fe15e6a2ecba7ea205fffb16b8 docs(ai-context): append Oct 31 verified research and ADM-2 reconciliation
+656e9a61a4dc634e49d640f6b7040a55eb21ae5d docs(ai-context): append Oct 31 verified research and ADM-2 reconciliation
+8399846576432f2b2bf563eed803d23e1283913f docs(ai-context): append Oct 31 verified research and ADM-2 reconciliation
+9054e0c86aee5af607d3ac84ae3584494eb5830b docs(ai-context): append Oct 31 verified research and ADM-2 reconciliation
+3e2392fe579682801db378837faca91bd2279fdf docs(ai-context): append Oct 31 verified research and ADM-2 reconciliation
+f775680aba7db200691c0f4e2a3174b0e7e51581 docs(ai-context): direct new AI sessions to latest handoff addenda
+a870c43ed55f76f3330fe0aeef8077834e43a932 docs(ai-context): record verified PR dispositions and governance decision gates
+b21c95375e12ef7ba3c13f0497d4c65bc33dca74 docs(ai-context): append CMP3 and governance handoff reconciliation
+0c078ffb929d1feaab2b82fefb9f8f9230c4dbdf Fix CMP3 F1/F2 integrity issues in patch and inventory
+872ac1b4c8a303fc5417d0b21551a430d0a50200 Add files via upload
+5f1b881ebccf7a9ab56f22be91608c45fc54c0e5 fix(cmp3): post-merge corrective pass for F1 and F2
+d721eed9038c50e5ca8fcf7ccdc64f04d881e634 Add files via upload
+b91803668a55599b715bb3c02f94eefc28dd4e6a fix(research): EXP-T81-COMP3-01/r1 Linux validation & T1-T8 readiness
+6864a810693a6034bd28be870ee38a180ba70ba0 test(h04): assert minimal signed binary width for canonical trit ranges
+88007ae681a2a4e882665a46235724185f57962b docs(h04): correct 41-trit signed binary coverage to 65 bits
+f000a017667b1599a3b608c7fab2a45a98a33289 fix(research): cancel shared overhead before H04 optimization comparisons
+cdd863f4e270f71b8075fb37ab4b97c6ab9bba42 docs(research): preserve raw configure failure log without whitespace lint errors
+a31a4931492d313a1d5142958f4d7464256f924b docs(research): reconcile H04 audit evidence and preserve unresolved questions
+3bd5f04e9ab47e39a39b281116c43576539fa446 fix(research): independently verify H04 optimization and concrete Base-243 packing
+9b71783cd5705dacf5ab46f5c58c5486ede2b75c docs(ai-context): add compact evidence-bounded AI bootstrap
+5fcc717e92311c4b383b2510223f466baf5a11d3 docs(ai-context): correct research evidence and authority handoff
+50693d725f06138e87d3eb06b38d3edabab4fb87 docs(ai-context): add T81 AI research continuity system
+f8ac77159ded2c4b93f4cc83abd48f6f35655468 docs(research): add H-CONV-01 integration reconciliation report
+ca7045c1214cfa8002aef09d649894fb2fc34d9d docs(research): add H-CONV-01 independent scientific review (#630)
+0662e0e637f47168e56ca4ddd66e8ee877473b38 fix(investigation-08): final comparator admission-parity integration (#627)
+afb686678f9be2909b926ac557182c83dc6e3945 fix(investigation-08): enforce mandatory architecture tensors in baseline comparator (#626)
+822f5a717e5f0fcd2becd385ba6f43294d851946 Revise and expand T81 Contributor Roadmap
+4e36c52a396454adbd4433c290b0302a61c08ea2 docs(research): correct Investigation 10A evidence and disposition (#625)
+934b93192a2aa80e352005193ac516e09a90f432 docs(research): add Investigation 10A physical storage evidence assessment (#624)
+9e3acd97524abf9f52905f84978c0305067dc154 test(ci): add historical regression test for root structure validator (#617) (#623)
+7daa18a2b90ef57ac05340e127b6451ea4a78c8c test(commons): assert authentic PR607 historical source bytes and digest (#620)
+e713ebcd5590f8607289ae05b3ca1a98ccc5ff14 docs(audit): resolve PR #615 Codex review findings and restore historical evidence source (#618)
+f3288b0ff55727282c7395ed14f4598add096706 docs(audit): resolve PR #611 Codex review findings and fix Research Commons Git dependencies (#615)
+903ea2fe653df0d636e0543f9788dd8442738045 docs(research): add Phase 1 Research Commons acceptance audit report (#611)
+fabc7aa90f70ead227ec257a1ae6833fa16ced40 docs(research): reconcile human-AI research initiative governance (#607) (#608)
+274421fd8e85c5b9bb4f165fce190715530f4e85 docs(research): establish T81 human-AI research initiative framework (#607)
+18bd6c78b1ec2c78a500a8e290cb004a062f513e docs: comprehensive RFC capability and evidence baseline audit packet (#606)
+c930b8c2ee7478782bf3c6d231bdd59984595ef2 docs: align root repository files with T81 research architecture (#600)
+391b9652502b2712e6838b132bc498e2c1f4f2ba Revise README for clarity and organization (#598)
+9a7e4da20903b3f2e692703930121b72fefb56bc fix(research): corrective closure of investigations 07 and 08 (#597)
+9c4a7f4607b2ac20e411b3f9d26d5522d44d8ecb Revise README for clarity and updated project focus
+d963bbaa724a4c4580b871c668802dc36b838432 docs: add Scientific Investigation 08 report and experiments (#596)
+a44f247790e8d76778e042b30a34547851a9eb36 feat(research): Scientific Investigation 07 — Ternary Dot-Product Hardware Feasibility (#595)
+06f5084a8d34dd90de96670eca6c02ac5e051ed6 docs(audit): corrective closure for Investigation 06 audit report (#594)
+790eec285c957bd5516f9c64b1002a0895f6b893 docs(audit): add Scientific Investigation 06 audit report (#593)
+0b666ff6576e41447c6264484f8af3a7aa8907d2 docs(research): Scientific Investigation 05 - Ternary vs Binary (#592)
+8043b8f17239864366cc79d9019df244bc8ef13e docs: add Scientific Investigation 04 validation report (#591)
+e41565e15fa42767706dcd02f3010e5e645f55b8 Implement exact rational C++23 conversion prototype (#590)
+00a78d91209155937b042abce87ea3fd896981bc docs: add Scientific Investigation 02 Gate 1B feasibility report (#589)
+cf33eae2e7e41169065330ba28396f2fb8f9fd2e Add Exact Rational Conversion Feasibility Report (#588)
+17f835453c1e16639ad7b9bff87bd15225e8912d Add numerical correctness assessment report (#587)
+275142788ebd02252b79112f7080b2792f78609c Fix Arm A execution provenance in durable witness (#586)
+827e10fc5c50e22379a8350ed00ad8e12baa7dc7 Fix durable witness historical verification, guest execution error handling, and contract limits validation (#585)
+6ae99e1a3949adbf986abe062271b6be37fd2023 Fix durable witness policy limits, validation, and verification status disaggregation (#584)
+5e45f01dac7023c06a35a4254d0278b023dab8fc research(s02): correct scientific integrity and regenerate pilot evidence (#583)
+551d5075f35355b9ef96d9ce659d71be0891ee27 feat(experiments): implement T81 Research Experiment S02 (#582)
+753980feb8227301e668c50c24be0f8fcaedb4a1 docs(research): add H09 research investigation & experiment spec (#581)
+01c85019319fd020922402ba356878e392cb2231 research(h04-r02): adaptive representation optimization & verification (#569)
+aecb71c3b9af2979d31051c38d071178e143b3a3 Merge pull request #568 from t81dev/docs/research-continuity-reconciliation-10272965892544367127
+2c96164096a4c1424efe2be0faa5663fbe650cc3 Merge pull request #567 from t81dev/docs/full-repo-reassessment-and-readme-reconstruction-3744199350841430165
+962fb5ef24b012f91a1a3d1cb18a12d2145e66f0 Merge pull request #566 from t81dev/corrective/required-doc-links
+16cc84068560327e2ad09ea38b07030bbbac0b59 Merge pull request #565 from t81dev/security/controlled-ai-authorization
+2ff7aac2da5613fe88f5dd6f4a9edc21de280ed0 Merge pull request #564 from t81dev/corrective/pr563-audit
+f6d4d680709c5c6c98b305628e04346f5ef61620 Merge pull request #563 from t81dev/docs/research-protocol-001-corrections-12664850865098082831
+ec1d99fc2c1c505c3eb058542c0684c3ecf60364 Merge pull request #562 from t81dev/docs/research-protocol-001-corrections-7188873703026082229
+6869f7c30c454b178c27983569b28b7ef09f4e91 docs(research): add Research Protocol 001 experiment protocol (#561)
+66b7905b98820816caf0c04bfbe938ea006e48e8 research: audit PR #558 security claims and update ADR to Conditional Decision D
+b159fc831e14c88b7b7602658590d7e239bb265c research: audit PR #558 security claims and update ADR to Conditional Decision D
+cf27bb784636667511d0aa26d2acd40667243935 research: audit PR #558 security claims and update ADR to Conditional Decision D
+78bfbf5def1e230c81e7a1d8b1cbfa1efb850d0e research: audit PR #558 security claims and update ADR to Conditional Decision D
+9a695dc8b8c2205a77955d14bedaa602e56face5 research: audit PR #558 security claims and update ADR to Conditional Decision D
+1ecba5f9962f97587e827b4db9e89dbc9819e6cd research: independent audit and durable witness decision
+0005ab675d2729b2795200e8c78ded43d4520b0d docs: keep proposal metadata free of trailing whitespace
+00a514d09becfb6aae0e95ad785853b891fd5ff8 design: specify checked floating-point conversion and exact reference corpus
+9a2c12c56a3e7eee02f9bf1041d267f5fbd76136 docs: record passing native provenance comparison and numerical exclusions
+58deac28a347c7449e08d5f048f4ff8aaa64db48 audit: preserve native failures and package CanonFS CI artifacts intact
+f2d67eb2f6a238109d8f88280d517edda5015101 fix(experiment): quarantine unsupported float conversions with exact audit
+ed26decb74e893fd56bd04c3f971cf58d424ffc7 experiment: preserve native ARM64 provenance measurements
+2a3965528a14b07edf3432329ecfe11cd5447b6f experiment: verify bounded governed execution and canonical provenance
+a472147f044cf62755c0009a932909a8e5c6c6c9 research: close ternary CPU experiments and select next hypothesis
+c8ad42530e96ce8296e417db06c2d048816c2d96 research: ternary inference cross-architecture break-even
+41b8bcf0f6a21d2de829cad059f2de63429e28a6 research: SIMD-native packed ternary matvec feasibility (#548)
+f3732689ae171053c5f123c4922727f2db83d79d research: validate packed ternary matvec performance (#547)
+d975946adab269dc8da27bdd8ffc4176f11d2271 Merge pull request #546 from t81dev/research-packed-ternary-matvec-performance-comparison-3592685759188062337
+7b4795e3fed82a181ea8433af184c6df736865bf research: adversarial validation of ternary arithmetic claims (#545)
+d53e88fa54994690129d77f28e0c1f3b094d26fa research: falsifiable ternary arithmetic and radix comparison
+d185bb2491a3cd40103d89aaee831264f28eec30 research: consolidate evidence and architecture decisions
+6977f49b3a2eba54d9776361a6026971ee529bfd experiment: validated computational object descriptors
+b4860a8a3065a679c2f5f12896cb1990d1633470 experiment: computational object interface comparison
+8a6dce4831bd84e23d499fa71900e959ba940875 experiment(canonfs): concurrent authorization and revocation
+dec74cfa4d7be321e0c28adb276a8dc2d278c502 fix(canonfs): fail-closed policy enforcement at write boundary
+634e0dc69a69cb148f81159ac8c7fc3225582149 experiment: falsifiable accountable computation baseline
+d1c24670470e74412ab96182a177a47e7127c68a Revise README for clarity and updated project focus
+c9d12ba2bcebe22ed3af5f105d7b2001f5ca8e8f docs: add Accountable Computation research framework and specifications
+61ed4ed92a200d585e935170eac8a71541b2b62b docs(research): add accountable computation experiment framework
+377eb0ff86ddfb3a8a99d56bc502dd8e05c333cc fix(ci): remove missing governed_ai_system.cpp from experimental CMake target
+cbe140ec655081d8503a399f48f8529e3e1d5474 fix(isa): restore frozen opcode values, fix formatting and status doc freshness
+9b71529e4a9c48d30690f691fed8ec723cd7000b fix(isa): restore frozen opcode values and fix gtest configuration
+7785cd316862499439d9e1eeae274f101b569837 docs: regenerate README.md for governed runtime positioning
+590e595e79b2e08dd699a8fb86fd216fc43b9310 fix(isa): resolve opcode enum collisions and restore frozen ISA mappings
+a84219b00f901ac494f20390718fccb1f2f555dd Fix ISA opcode enum collisions without changing frozen encodings
+d16920a86ec01ecc57f62a95c053ee189d71fc39 Fix ISA opcode enum collisions without changing frozen encodings
+435ab9455dd32a770fd35a519614d6fcb0542ba0 Add files via upload
+98738607d2bbe849d4023e6340b83c1f2d105c5f Add model diff summary counts
+22e3269f190081b05deb243b8a0f738c3518d573 Add model artifact review workflow
+ab51ff3561706b6c6fad1122f7d4a4a52d999fcd In-depth T81Lang capabilities exploration and opportunities analysis
+cc74c53ea9099aee262eb779e5ecd3f54138f36a Experiment with T81 OpenClaw skills integration
+6222c8212b7975d0a05cdcd71cc5b81eab076bab Enhance T81 OpenClaw skills documentation with comprehensive details
+2c185fbd9b8c13cb88dcfc863ee2eee0320f12ba Add comprehensive OpenClaw skill integration for T81 Foundation
+8d56582d6fdc80649932ccd414c82631dc464f5c feat: implement production-grade bundle-batch integration framework
+cb54c1757c58ce5847fbb9d3f4f94f39212b4a87 cleanup: remove experimental CLI tools and temporary files
+70b6491407785efe85a96e0555db2ef550ce9945 admin(testing);
+cc37835242f00b1fbfc6b21b20a4370687117fd3 feat: Complete CanonFS performance analysis system
+0e9b3489d4d580a19c48685f86b2169b81ec34a8 feat: CanonFS performance analysis system
+f56858aa7fef81af98d734b8c141374f904400d1 Create system_map.yaml for T81 Foundation architecture
+c4be62ecd8bf3675c92b2cb18698ffec788fe6cf fix: Create missing documentation files to resolve CI lint failures
+9da7900babf65339b473480c79a49875bf01200f feat: Add CanonFS performance monitoring integration
+2bc96178839336a2134028937a1fb27fec0b50d4 fix: Remove broken documentation links from README
+8e075d2619f2fd245bb0160ea6f2787ddace6256 fix: Complete CanonFS interchange engine implementation
+58b8c03b3e45c52468a496e5ac8035466d2e9cd9 fix: Add missing GTest dependencies to warn-strict CI job
+cfc5cbe5b9e9db9157ed5e6da0fc8754239735b6 fix: Resolve critical compilation errors and security vulnerabilities in CanonFS interchange engine
+14642af2b4aa0933e1d33bbb275bccc2fcc66b57 Fix CanonFS interchange engine compilation errors
+55c8d444b37f2c19b1c976a863b9c2732f8db364 Fix CanonFS interchange linking issues
+621f71ceae21319fb68275e5de49d2ce08cfaa20 Complete GTest dependency fixes for all CI jobs
+e9f4c9f3a63cf7f93d4154fd1a5c7c4145bbd9e7 Fix CI failures: Add GTest dependencies and formatting fixes
+43f0b869f78385b250d5a0f16ae3cb49e20b8bc8 Fix CLI contract test memory-stats path issue
+dd69fb51c99f19198c1d3d995e692b2c07f8d1aa Add QEMU/EFI toolchain fail-fast checks
+5ed447c6b58cfbbacd0273ba8b6f11150c413977 Begin CanonFS interchange refactoring for better code reusability
+05f4d199735ab017b3c26b0b38f850e341f19176 Add comprehensive CanonFS enhanced errors demo example
+36eaeaf46d2b1ca3858e840c4535c20b948ec7cc Add comprehensive CLI contract coverage for CanonFS error shapes
+4fc44b0eb20aa194cf91d6a1670974ff82fcdf4e Fix CanonFS negative test expectations based on actual behavior
+44bcdb4aec1b4ea7a7e05a4eb7d876cbb2ac6381 Add comprehensive CanonFS negative test coverage
+c602d32771c5df511f7d622138557e28195686d3 Improve CanonFS error handling consistency
+f5f06b27b4d0c9e8fb0609c5003ae2169c2b7c8f Add CanonFS enhanced error handling tests
+f886b1af00c9a280154714514bc1f735064d2087 Add CanonFS enhanced error handling documentation
+9e117fc93469a6294abdb2857bfc7332530a5745 Add enhanced CanonFS error handling framework
+ee973d1e44024f96faf976a53f97131bd9d5733b Add T81 bundle marketplace and cleanup experimental files
+8392168136de2302262455c26b14b675fc56852c Add T81-integrated bundle marketplace
+561195f140ac57fae0140be7da654ec06de1afdc Add AI bundle summary helper
+3c8fc3ccc8f45428411c3e8ebad8ab7062d8e621 Tighten RFC-00D1 partial export contract
+4cbe5be7409a08991f2cadc66a14ba42772e3480 Harden onboarding checklist logging
+f30d99719d50701d56ac32e26e6e191e35a7581c Add bundle-to-host-action integration example
+96fcfda9c81738f6d01c9da20fbec1d52ae582b1 Add AI bundle consumer conformance check
+1b330e3089d34087fb4f7796cc0afe10152a229f Add AI bundle integration matrix
+1d9e7e11436f6c9406f83338171e2bbf71b7bec7 Run stable baseline compliance tests in CI
+4f609ad4961d9d5c9b463b2f1dc57dc93a1241e7 Add stable baseline compliance gate
+d13a726fdc462b139e15fa6a685cea0374e6567a Strengthen operator guide framing
+8a4c6b5bc9989faf1dfb8573a9f147c29553d305 Add T81 operator guide
+4c6082209dc44084851d45542ba496f61e9f693e Harden QEMU production script portability
+e41e3365f4dd34394fc4ce5f8b65f0916526b1a0 Strengthen stable baseline contract
+35d8235305b6093c8bf57d904046eaa4ed273bfa Add stable baseline contract
+848d884b01dde2b7c61bb54e6c1fbb08c72c3eaa Align README with current buildable surfaces
+efe3232b56d495c408e4fee2985d2cc4221bd177 Add RFC-00D1 review checklist
+aa27a67aa05a40221c14fd3e79d2d2283fdaee65 Align RFC-00D1 fixture contract docs
+b07f44b9060db787ab5e31542cc32597be8d1590 Add route bundle consumer example
+828c20713b0b002ff905a4b8ef0ee5d3cc9af201 Freeze AI bundle v1 boundary
+3367a246f99379c892c2ca19ca23ff9da116f4e2 Add classify bundle consumer example
+215c46369f8472d963e33d146f2b7613dec3c62a Harden AI bundle consumer guardrail
+aa8711a660d0c72a6d7c27d7b64caeba6432ee9a Add AI bundle consumer example
+e04e45765dba15b24b3affc314788d115d153e65 Add AI object bundle consumption contract
+62fa966849679e03cf1d3cf8ad37ca5681e7548a Refresh first AI OS-object chain explainer
+a8484daf38ba6ffa514c5372abb132d380366585 Clarify RFC-00D1 frozen fixture coverage
+a00a11119a78cb7b7ea7da409cf697fe3d27d0e0 Clarify RFC-00D1 v1 fixture policy boundary
+efc4ccacc42f73936a318ddb00b9d560723a13bf Add RFC-00D1 export denial fixture
+42af1b9f2a1858116c4d6fcebe661e2e523f65b3 Apply DAIOS filter to roadmap
+e1216c1b27e01e681d5c5317b1a044f12aeee56a Operationalize DAIOS proposal filter
+48258ddacba2b3b84674f5300e3311acb11594c6 Expand DAIOS target architecture RFC
+a3ae418753eb107de07f441f4affa4f51510a260 Add DAIOS target architecture RFC
+a11e47b3389c7db5cb15372f34567000544e9be1 Add CanonFS export policy example
+63a7204ed86339b6a9ae605186f080b8a160cbb9 Record ternary-fabric convergence posture
+01aef46c913f35f5a2aa429dfa3cab5a9ceca35b Clarify RFC-00D1 build-against boundary
+88759554c96e3ed2ef42aa30d08ce819cd19551c Clarify bounded AI object family posture
+7aedf2bb719c313f3fcca4f98a5c0ab31380da56 Align bounded AI object family claims
+c23f8da29f0649e7c57017b7f77084497093a3f4 Reduce QEMU workflow maintenance drift
+b0aa416c4344d416b6921579aad6b87b52ffa774 Trim contributor entry docs
+07e4a463cfa76e9be7f2ca051eadba8b6e8085ba Add financial services demo materials
+8bc0ef1aa213c4ac22ffd2c536bd8a6a7174fbdf Harden contributor portability paths
+6eccdf2c09bd50741721b74dbc746bb2d46e8e28 Harden QEMU boot demo prerequisites
+e27423101eb78caa3132515645a421bc2e8623b1 Extract CanonFS interchange preflight errors
+1a09de3b91464fb63129fa181273fe3234cff8e6 Align CanonFS interchange example with contracts
+e8ec9f155d9de582251f74b9115d4cc5e48716da Pin CanonFS export target failure contract
+5b827c6990d3bac87dc05b8c62df79035e7b69db Harden CanonFS interchange error contracts
+34ba267fa02fa6b987ee3029d754956dd4b82162 Tighten CanonFS interchange denial reasons
+151b114516e24a3f46f5d08a62491631df9b9bc0 Document bounded family phase change
+b8b8e37aa66a9988f60a6c054b2922aff49ba419 Add bounded artifact family guardrail test
+50839576961f82d2b680a1edc59c7ff955002a91 Extract bounded artifact family rules
+8dcc0744390d2e0e137ef15082697457b6c511ab Tighten AI object truth-in-labeling
+8f4d278299458e51393bb0fa7cc9f2c8cfc9a802 Update bounded AI object family next steps
+a4bd12690a9a343a15ca4ec17133db57c58ff9da Add bounded AI object family status note
+7f519eef7680865e47b14c4a0c5564890388d88c Harden AI object family negative paths
+1652307dd74bdecb4971b4712e9e9a34c73e471a Add AI object family admission contract
+6336ab2cced1275dba74c5ad0df77475ceef25d4 Add bounded AI object family baseline note
+2034a2087a6fe1003a380491e50aef62d33e5c11 Add classify-fixed rule selection chain
+9de1c90de5c74a3351d45a99d523ad29908d8d3a Add AI object claim discipline memo

@@ -1,0 +1,11 @@
+Int2BigInt=193
+VLoad=240
+VStore=241
+VAdd=242
+VFma=243
+ReadIsaVersion=244
+GcSafepoint=245
+AgentInvoke=246
+TWMATMUL=194
+FFICall=200
+TOR_SWAR=220
