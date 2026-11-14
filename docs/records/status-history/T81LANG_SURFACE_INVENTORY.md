@@ -1,5 +1,21 @@
 # Language-Surface Inventory Audit
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Language-Surface Inventory Audit](#language-surface-inventory-audit)
+  - [Gaps Identified](#gaps-identified)
+  - [Determinism Classification](#determinism-classification)
+    - [Deterministic & Verified](#deterministic-&-verified)
+    - [Deterministic (New Tests Added)](#deterministic-new-tests-added)
+    - [Deterministic but Incompletely Tested](#deterministic-but-incompletely-tested)
+    - [Surface-Exposed but VM-Incomplete (Polyfills/Aliases)](#surface-exposed-but-vm-incomplete-polyfillsaliases)
+    - [Experimental / Reflective Deterministic Defaults](#experimental--reflective-deterministic-defaults)
+
+<!-- T81-TOC:END -->
+
+
 | Type | Backend Exists | Exposed in T81Lang | VM Opcode Coverage | Canonical Serialization | Determinism Tests | Status |
 | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
 | **Primitives** | | | | | | |

@@ -1,5 +1,40 @@
 # T81 Non-Deterministic Inference Strategy
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Non-Deterministic Inference Strategy](#t81-non-deterministic-inference-strategy)
+  - [Overview](#overview)
+  - [Core Principles](#core-principles)
+    - [1. Determinism First](#1-determinism-first)
+    - [2. Architectural Separation](#2-architectural-separation)
+  - [Implementation Strategy](#implementation-strategy)
+    - [Phase 1: Policy Framework Enhancement](#phase-1-policy-framework-enhancement)
+      - [AI Inference Policies](#ai-inference-policies)
+      - [Evidence Collection](#evidence-collection)
+    - [Phase 2: AI Backend Architecture](#phase-2-ai-backend-architecture)
+      - [Core Components](#core-components)
+      - [Configuration Schema](#configuration-schema)
+    - [Phase 3: Integration Points](#phase-3-integration-points)
+      - [CLI Integration](#cli-integration)
+- [Enable non-deterministic AI with explicit consent](#enable-non-deterministic-ai-with-explicit-consent)
+- [Strict deterministic mode (default)](#strict-deterministic-mode-default)
+- [External AI integration](#external-ai-integration)
+      - [VM Integration](#vm-integration)
+  - [Benefits](#benefits)
+  - [Implementation Timeline](#implementation-timeline)
+  - [Risk Mitigation](#risk-mitigation)
+    - [Technical Risks](#technical-risks)
+    - [Mitigation Strategies](#mitigation-strategies)
+  - [Success Metrics](#success-metrics)
+    - [Determinism Compliance](#determinism-compliance)
+    - [Performance Targets](#performance-targets)
+    - [Security & Compliance](#security-&-compliance)
+
+<!-- T81-TOC:END -->
+
+
 ## Overview
 
 This document outlines T81's approach to supporting non-deterministic AI inference while maintaining the project's core deterministic identity.

@@ -1,5 +1,17 @@
 # CI Workflow Confirmation
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [CI Workflow Confirmation](#ci-workflow-confirmation)
+  - [November 13 enforcement and CI audit](#november-13-enforcement-and-ci-audit)
+  - [AI Experiments CI Workflow](#ai-experiments-ci-workflow)
+    - [Triggers](#triggers)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Last Updated: 2026-11-13
 

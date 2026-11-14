@@ -1,5 +1,22 @@
 # Spec Drift Policy
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Spec Drift Policy](#spec-drift-policy)
+  - [1. Definition of Drift](#1-definition-of-drift)
+  - [2. Detection Mechanism](#2-detection-mechanism)
+  - [3. Remediation Policy](#3-remediation-policy)
+    - [A. If Implementation is Ahead (Orphaned Code)](#a-if-implementation-is-ahead-orphaned-code)
+    - [B. If Spec is Ahead (Ghost Spec)](#b-if-spec-is-ahead-ghost-spec)
+    - [C. If Conflict (Semantic Mismatch)](#c-if-conflict-semantic-mismatch)
+  - [4. Acceptable Drift](#4-acceptable-drift)
+  - [5. Freeze Implications](#5-freeze-implications)
+
+<!-- T81-TOC:END -->
+
+
 **Status:** Active
 **Enforcement:** Soft-Fail (Scanner available, CI blocked on Critical Drift)
 

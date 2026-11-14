@@ -1,5 +1,20 @@
 # ARCH-ENG-002 Phase 2: QEMU verification correctness repair
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [ARCH-ENG-002 Phase 2: QEMU verification correctness repair](#arch-eng-002-phase-2-qemu-verification-correctness-repair)
+  - [Authority and baseline](#authority-and-baseline)
+  - [Reproduction and implementation traceability](#reproduction-and-implementation-traceability)
+  - [Result meaning and implementation scope](#result-meaning-and-implementation-scope)
+  - [Executed checks and evidence levels](#executed-checks-and-evidence-levels)
+  - [Remaining boundaries](#remaining-boundaries)
+  - [Exact changed-file inventory](#exact-changed-file-inventory)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-11-10. Disposition: **READY FOR INDEPENDENT REVIEW** of the bounded
 engineering candidate. Full real-guest success is **NOT VERIFIED**.
 

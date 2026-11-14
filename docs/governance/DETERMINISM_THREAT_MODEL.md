@@ -1,5 +1,31 @@
 # Determinism Threat Model
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Determinism Threat Model](#determinism-threat-model)
+  - [1. Purpose](#1-purpose)
+  - [2. Threat Model Scope](#2-threat-model-scope)
+    - [Protected Assets](#protected-assets)
+    - [Adversary Classes](#adversary-classes)
+    - [Out of Scope](#out-of-scope)
+  - [3. Threat Categories](#3-threat-categories)
+    - [A. Compiler-Level Threats](#a-compiler-level-threats)
+    - [B. VM-Level Threats](#b-vm-level-threats)
+    - [C. Backend Equivalence Threats](#c-backend-equivalence-threats)
+    - [D. Spec Drift Threats](#d-spec-drift-threats)
+    - [E. Scheduling and Concurrency Threats](#e-scheduling-and-concurrency-threats)
+    - [F. CI / Governance Bypass Threats](#f-ci--governance-bypass-threats)
+    - [G. Artifact Integrity Threats](#g-artifact-integrity-threats)
+    - [H. Governed AGI Control Threats](#h-governed-agi-control-threats)
+  - [4. Known Residual Risks](#4-known-residual-risks)
+  - [5. Determinism Breach Classification](#5-determinism-breach-classification)
+  - [6. Review and Audit Process](#6-review-and-audit-process)
+
+<!-- T81-TOC:END -->
+
+
 ## 1. Purpose
 
 This document defines the threat landscape for T81's determinism guarantees. It identifies potential failure modes, adversarial vectors, and the mitigation strategies employed to ensure bit-exact reproducibility.

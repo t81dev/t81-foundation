@@ -1,5 +1,20 @@
 # T81 Foundation: Design Principles
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation: Design Principles](#t81-foundation-design-principles)
+  - [1. Core Philosophy](#1-core-philosophy)
+  - [2. Architectural Principles](#2-architectural-principles)
+  - [3. C++ Implementation Strategy](#3-c++-implementation-strategy)
+    - [Data Types](#data-types)
+    - [Match Pattern Semantics](#match-pattern-semantics)
+    - [Coding Conventions](#coding-conventions)
+
+<!-- T81-TOC:END -->
+
+
 This document captures the design principles, architectural invariants, and implementation strategies that guide development on the T81 Foundation project.
 
 ______________________________________________________________________

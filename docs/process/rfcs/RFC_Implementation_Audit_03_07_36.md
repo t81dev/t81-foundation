@@ -1,5 +1,14 @@
 # T81 Foundation: RFC Implementation Audit
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation: RFC Implementation Audit](#t81-foundation-rfc-implementation-audit)
+
+<!-- T81-TOC:END -->
+
+
 This document provides an audit of all RFCs in the repository, evaluating their implementation status based on codebase analysis, tests, and documentation.
 
 | RFC | Title | Status | Estimated Completion | Notes |

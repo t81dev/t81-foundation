@@ -1,5 +1,36 @@
 # T81 H04-R03-FC1 Evidence Receipt — Three-Finding Correctness Closure & Phase 4 Wire-Frame-Only Retention Enforcement
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 H04-R03-FC1 Evidence Receipt — Three-Finding Correctness Closure & Phase 4 Wire-Frame-Only Retention Enforcement](#t81-h04-r03-fc1-evidence-receipt-—-three-finding-correctness-closure-&-phase-4-wire-frame-only-retention-enforcement)
+  - [1. Executive Summary & Review Findings Resolution](#1-executive-summary-&-review-findings-resolution)
+    - [Per-Finding Dispositions](#per-finding-dispositions)
+  - [2. Retention Implementation & Boundary Analysis](#2-retention-implementation-&-boundary-analysis)
+    - [2.1 Wire-Frame-Only Retention Boundary Enforcement](#21-wire-frame-only-retention-boundary-enforcement)
+  - [3. Test Execution Verification & Provenance](#3-test-execution-verification-&-provenance)
+    - [Execution Environment](#execution-environment)
+    - [Test Commands and Results](#test-commands-and-results)
+- [1. Phase B baseline test suite (17 tests)](#1-phase-b-baseline-test-suite-17-tests)
+- [Result: Ran 17 tests - OK](#result-ran-17-tests---ok)
+- [2. Candidate A B729-µ5 correctness test suite (13 tests)](#2-candidate-a-b729-µ5-correctness-test-suite-13-tests)
+- [Result: Ran 13 tests - OK](#result-ran-13-tests---ok)
+- [3. Deterministic PRNG & workload generators (4 tests)](#3-deterministic-prng-&-workload-generators-4-tests)
+- [Result: Ran 4 tests - OK](#result-ran-4-tests---ok)
+- [4. Harness, retention, & statistical decision rules (13 tests)](#4-harness-retention-&-statistical-decision-rules-13-tests)
+- [Result: Ran 13 tests - OK](#result-ran-13-tests---ok)
+- [5. Measurement engine mock & lifecycle suite (15 tests)](#5-measurement-engine-mock-&-lifecycle-suite-15-tests)
+- [Result: Ran 15 tests - OK](#result-ran-15-tests---ok)
+- [6. Production process, enforcement & retention infrastructure (20 tests)](#6-production-process-enforcement-&-retention-infrastructure-20-tests)
+- [Result: Ran 20 tests - OK](#result-ran-20-tests---ok)
+- [7. Verification of execution freeze enforcement](#7-verification-of-execution-freeze-enforcement)
+- [Output: ERROR: Phase C performance measurement is FROZEN. Exit code: 1](#output-error-phase-c-performance-measurement-is-frozen-exit-code-1)
+  - [4. Frozen-Protocol Compatibility Analysis](#4-frozen-protocol-compatibility-analysis)
+
+<!-- T81-TOC:END -->
+
+
 **Document:** `docs/research/continuity/H04_R03_FC1_EVIDENCE_RECEIPT.md`
 **Date:** 2026-11-07
 **Task Anchor:** https://github.com/t81dev/t81-foundation/issues/723

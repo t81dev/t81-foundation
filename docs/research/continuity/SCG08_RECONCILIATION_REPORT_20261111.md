@@ -1,5 +1,25 @@
 # SCG-08 Carry Propagation & Arithmetic Work Reconciliation Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [SCG-08 Carry Propagation & Arithmetic Work Reconciliation Report](#scg-08-carry-propagation-&-arithmetic-work-reconciliation-report)
+  - [1. Executive Summary & Authoritative Dispositions](#1-executive-summary-&-authoritative-dispositions)
+  - [2. Statistical Protocol Reconciliation: Contiguous Markov Stream vs. Stratified Clustered Sequences](#2-statistical-protocol-reconciliation-contiguous-markov-stream-vs-stratified-clustered-sequences)
+    - [2.1 The Two Competing Experimental Designs](#21-the-two-competing-experimental-designs)
+    - [2.2 Mathematical Non-Equivalence: Boundary Transient Carry Deficit](#22-mathematical-non-equivalence-boundary-transient-carry-deficit)
+    - [2.3 Corrected Within-Stratum Centered Variance Estimator](#23-corrected-within-stratum-centered-variance-estimator)
+      - [Sampling Assumptions](#sampling-assumptions)
+      - [Estimator Definitions](#estimator-definitions)
+      - [Stratified Within-Stratum Centered Variance Formula](#stratified-within-stratum-centered-variance-formula)
+  - [3. Authoritative Provenance Register (Thresholds & Stopping Rules)](#3-authoritative-provenance-register-thresholds-&-stopping-rules)
+  - [4. Evidence Inventory & Traceability Matrix](#4-evidence-inventory-&-traceability-matrix)
+  - [5. Sequential Governance Roadmap to Gate 2](#5-sequential-governance-roadmap-to-gate-2)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `T81-SCG-08-RECONCILIATION-REPORT-20261111`
 **Classification:** Research Continuity & Mathematical Reconciliation
 **Date:** 2026-11-11

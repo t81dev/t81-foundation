@@ -1,5 +1,22 @@
 # ADR-0002: Deterministic Core Profile Product Boundary
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [ADR-0002: Deterministic Core Profile Product Boundary](#adr-0002-deterministic-core-profile-product-boundary)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Context](#context)
+  - [Decision](#decision)
+  - [Alternatives Considered](#alternatives-considered)
+  - [Consequences](#consequences)
+  - [References](#references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Accepted
 Date: 2026-02-25
 Version: 1.0.0

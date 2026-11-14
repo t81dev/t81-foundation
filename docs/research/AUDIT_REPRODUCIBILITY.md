@@ -1,5 +1,34 @@
 # T81 Foundation Architecture — Audit Reproducibility Record
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation Architecture — Audit Reproducibility Record](#t81-foundation-architecture-—-audit-reproducibility-record)
+  - [Executive Overview](#executive-overview)
+  - [1. Audit Environment & Revision Pinning](#1-audit-environment-&-revision-pinning)
+  - [2. Verification Commands & Execution Protocols](#2-verification-commands-&-execution-protocols)
+    - [2.1 Toolchain Build Protocol](#21-toolchain-build-protocol)
+- [Configure CMake with Architecture Challenge flags enabled](#configure-cmake-with-architecture-challenge-flags-enabled)
+- [Compile full target suite](#compile-full-target-suite)
+    - [2.2 Governance & Integrity Verification Checks](#22-governance-&-integrity-verification-checks)
+- [1. Verify TISC v1.1.0 ISA Freeze Integrity (209 opcodes)](#1-verify-tisc-v110-isa-freeze-integrity-209-opcodes)
+- [2. Verify Root Structure Whitelist](#2-verify-root-structure-whitelist)
+- [3. Verify Determinism Surface Claim Registry Alignment](#3-verify-determinism-surface-claim-registry-alignment)
+- [4. Verify Public C++ API SemVer Lockfile](#4-verify-public-c++-api-semver-lockfile)
+    - [2.3 Automated Test Suite Protocol](#23-automated-test-suite-protocol)
+- [Run full CTest suite in parallel](#run-full-ctest-suite-in-parallel)
+    - [2.4 Independent Scientific Oracle Verification Scripts](#24-independent-scientific-oracle-verification-scripts)
+- [1. Verify Checked Floating-Point Conversion Reference Contract](#1-verify-checked-floating-point-conversion-reference-contract)
+- [2. Verify Exact Rational Conversion Oracle](#2-verify-exact-rational-conversion-oracle)
+- [3. Verify Durable Witness Security Attack Scenarios](#3-verify-durable-witness-security-attack-scenarios)
+  - [3. Direct Test Execution Results](#3-direct-test-execution-results)
+  - [4. Audit Boundaries & Constraints](#4-audit-boundaries-&-constraints)
+  - [5. Artifact Deliverables Inventory](#5-artifact-deliverables-inventory)
+
+<!-- T81-TOC:END -->
+
+
 ## Executive Overview
 
 This document records the exact environment, pinned repository revision, commands, tool versions, and test execution outcomes for the T81 Foundation RFC Capability and Evidence Audit.

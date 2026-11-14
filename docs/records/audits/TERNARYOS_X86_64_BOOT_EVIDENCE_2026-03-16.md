@@ -1,5 +1,23 @@
 # TernaryOS x86_64 QEMU Boot Evidence
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [TernaryOS x86_64 QEMU Boot Evidence](#ternaryos-x86_64-qemu-boot-evidence)
+  - [Summary](#summary)
+  - [Probe Parameters](#probe-parameters)
+  - [Contract File Verification](#contract-file-verification)
+  - [Boot Report (`boot-report.txt`)](#boot-report-`boot-reporttxt`)
+  - [Startup Status (`startup-status.txt`)](#startup-status-`startup-statustxt`)
+  - [Key Evidence Points](#key-evidence-points)
+  - [TernaryOS Test Suite State (at time of boot evidence)](#ternaryos-test-suite-state-at-time-of-boot-evidence)
+  - [Relationship to RFC-00B5](#relationship-to-rfc-00b5)
+  - [Open Work](#open-work)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** 2026-03-16
 **Milestone:** TernaryOS bare-metal boot — QEMU x86_64 EFI lane
 **Status:** PASS — all 5 contract files verified

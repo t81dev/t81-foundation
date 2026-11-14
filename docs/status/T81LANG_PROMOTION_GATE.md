@@ -1,5 +1,25 @@
 # T81Lang Promotion Gate History (Draft -> Stable)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Promotion Gate History (Draft -> Stable)](#t81lang-promotion-gate-history-draft-->-stable)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Definitions](#definitions)
+  - [Gate Criteria](#gate-criteria)
+  - [Rerunnable Snapshot Procedure](#rerunnable-snapshot-procedure)
+  - [Current Gate Snapshot (2026-02-25)](#current-gate-snapshot-2026-02-25)
+  - [Promotion Decision Record (Implementation Maturity)](#promotion-decision-record-implementation-maturity)
+  - [Stable Closure Note (2026-03-19)](#stable-closure-note-2026-03-19)
+  - [Blocking Items (Post-Decision Maintenance)](#blocking-items-post-decision-maintenance)
+  - [Cross-References](#cross-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Owner: @t81dev
 Last Updated: 2026-03-19

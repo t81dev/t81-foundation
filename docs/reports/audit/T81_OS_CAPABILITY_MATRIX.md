@@ -1,5 +1,16 @@
 # T81 Foundation — Operating System Capability Matrix
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation — Operating System Capability Matrix](#t81-foundation-—-operating-system-capability-matrix)
+  - [1. Operating System Capability Evaluation Matrix](#1-operating-system-capability-evaluation-matrix)
+  - [2. Capability Audit Synthesis](#2-capability-audit-synthesis)
+
+<!-- T81-TOC:END -->
+
+
 **Audit Designation:** T81-SIA-001
 **Reference Document:** 18-Point Conventional OS Capability Assessment of Freestanding Axion OS
 **Evaluation Scope:** Standalone bare-metal/EFI binaries (`BOOTAA64.EFI`, `BOOTX64.EFI`), HAL implementations, and kernel drivers under `ternaryos/`.

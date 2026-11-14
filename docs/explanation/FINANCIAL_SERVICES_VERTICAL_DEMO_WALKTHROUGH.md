@@ -1,5 +1,27 @@
 # Financial Services Vertical Demo Walkthrough
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Financial Services Vertical Demo Walkthrough](#financial-services-vertical-demo-walkthrough)
+  - [Purpose](#purpose)
+  - [Demo Promise](#demo-promise)
+  - [Audience Translation](#audience-translation)
+  - [Demo Shape](#demo-shape)
+  - [Step 1 — Show a Denied Path First](#step-1-—-show-a-denied-path-first)
+  - [Step 2 — Run the Approved Bounded Classification Path](#step-2-—-run-the-approved-bounded-classification-path)
+  - [Step 3 — Call Out the Object Chain Explicitly](#step-3-—-call-out-the-object-chain-explicitly)
+  - [Step 4 — State the Control Value](#step-4-—-state-the-control-value)
+  - [Step 5 — Prove Deterministic Identity](#step-5-—-prove-deterministic-identity)
+  - [Short Spoken Track](#short-spoken-track)
+  - [What Not To Say](#what-not-to-say)
+  - [What The Audience Should Leave With](#what-the-audience-should-leave-with)
+  - [Follow-On Artifact](#follow-on-artifact)
+
+<!-- T81-TOC:END -->
+
+
 ## Purpose
 
 This walkthrough turns the current bounded `classify-fixed` composition into a

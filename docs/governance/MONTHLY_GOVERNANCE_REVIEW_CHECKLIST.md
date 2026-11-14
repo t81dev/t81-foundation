@@ -1,5 +1,20 @@
 # Monthly Governance Review Checklist
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Monthly Governance Review Checklist](#monthly-governance-review-checklist)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Review Inputs](#review-inputs)
+  - [Checklist](#checklist)
+  - [Output Artifact](#output-artifact)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Version: 1.0.0
 Owner: Governance / Project Management

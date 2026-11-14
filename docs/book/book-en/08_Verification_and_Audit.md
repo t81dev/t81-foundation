@@ -1,5 +1,26 @@
 # Chapter 8: Verification and Audit
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Chapter 8: Verification and Audit](#chapter-8-verification-and-audit)
+  - [8.1 Verification Methodology](#81-verification-methodology)
+  - [8.2 Determinism Scope and Audit Matrix](#82-determinism-scope-and-audit-matrix)
+  - [8.3 Reproducibility Gates](#83-reproducibility-gates)
+  - [8.4 Failure Implication and Response](#84-failure-implication-and-response)
+    - [Auditor Walkthrough](#auditor-walkthrough)
+    - [Role-Based Learning Path](#role-based-learning-path)
+    - [Worked Example](#worked-example)
+    - [Hands-On Lab](#hands-on-lab)
+    - [Cross-Chapter Continuity](#cross-chapter-continuity)
+    - [Expected Outcomes](#expected-outcomes)
+    - [Chapter Summary](#chapter-summary)
+    - [Read Next](#read-next)
+
+<!-- T81-TOC:END -->
+
+
 This chapter explains how T81 turns engineering activity into evidence-backed assurance. Verification is not a ceremonial step at release time; it is an ongoing practice that keeps claims aligned with reality.
 
 For onboarding, the key mindset is simple: if you cannot show evidence, you do not yet have a trustworthy claim.

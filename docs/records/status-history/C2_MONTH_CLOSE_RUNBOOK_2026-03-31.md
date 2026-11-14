@@ -1,5 +1,21 @@
 # C2 Month-Close Runbook (2026-03-31)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [C2 Month-Close Runbook (2026-03-31)](#c2-month-close-runbook-2026-03-31)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Preconditions](#preconditions)
+  - [Execution Steps (Run in Order)](#execution-steps-run-in-order)
+  - [Evidence Capture Template](#evidence-capture-template)
+  - [Cross-References](#cross-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Scheduled
 Owner: @t81dev
 Window: 2026-03-31 (UTC)

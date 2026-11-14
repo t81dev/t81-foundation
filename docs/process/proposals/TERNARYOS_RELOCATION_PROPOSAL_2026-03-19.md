@@ -1,5 +1,36 @@
 # TernaryOS Relocation Proposal
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [TernaryOS Relocation Proposal](#ternaryos-relocation-proposal)
+  - [Problem Statement](#problem-statement)
+  - [Evidence Reviewed](#evidence-reviewed)
+    - [Code / Build Wiring](#code--build-wiring)
+    - [Normative / Governance Sources](#normative--governance-sources)
+    - [Current Evidence / Runbooks](#current-evidence--runbooks)
+    - [Local Verification Performed](#local-verification-performed)
+  - [Findings](#findings)
+    - [1. RFC-00B9 User Environment Is the Strongest Relocation Candidate](#1-rfc-00b9-user-environment-is-the-strongest-relocation-candidate)
+    - [2. The Broader Kernel / Guest / Host Tooling Tree Is Not Ready To Move](#2-the-broader-kernel--guest--host-tooling-tree-is-not-ready-to-move)
+    - [3. The Tree Is Structurally Mixed](#3-the-tree-is-structurally-mixed)
+    - [4. Local Documentation Still Has Status Drift](#4-local-documentation-still-has-status-drift)
+    - [5. Test Coverage Is Real but Uneven in Signal Quality](#5-test-coverage-is-real-but-uneven-in-signal-quality)
+  - [Decision Summary](#decision-summary)
+    - [Do Not Move the Whole `experimental/ternaryos/` Tree](#do-not-move-the-whole-`experimentalternaryos`-tree)
+    - [Implemented Move: Narrow RFC-00B9 User Environment Slice](#implemented-move-narrow-rfc-00b9-user-environment-slice)
+  - [Proposed Scope for a Narrow Extraction](#proposed-scope-for-a-narrow-extraction)
+  - [Preconditions Before a Narrow Move](#preconditions-before-a-narrow-move)
+  - [Rollout Plan](#rollout-plan)
+    - [Phase 1: Status and Boundary Cleanup](#phase-1-status-and-boundary-cleanup)
+    - [Phase 2: Narrow User Environment Extraction](#phase-2-narrow-user-environment-extraction)
+    - [Phase 3: Follow-On Kernel Audit](#phase-3-follow-on-kernel-audit)
+  - [Recommendation](#recommendation)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** 2026-03-19  
 **Status:** Implemented for the RFC-00B9 user-environment boundary; broader kernel-lane relocation still proposed.  
 **Owner:** @t81dev

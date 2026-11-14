@@ -1,5 +1,36 @@
 # Bundle Integration Guide
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Bundle Integration Guide](#bundle-integration-guide)
+  - [1. Security Governance Integration](#1-security-governance-integration)
+    - [Scenario: Access Control System](#scenario-access-control-system)
+- [Usage](#usage)
+  - [2. Compliance Auditing Integration](#2-compliance-auditing-integration)
+    - [Scenario: Archive Decision Objects](#scenario-archive-decision-objects)
+- [Usage](#usage)
+- [Later verification](#later-verification)
+  - [3. Cross-System Handoff Integration](#3-cross-system-handoff-integration)
+    - [Scenario: Transfer Decisions Between Environments](#scenario-transfer-decisions-between-environments)
+- [Usage](#usage)
+- [Transfer production decision to staging](#transfer-production-decision-to-staging)
+  - [4. Release Gate Integration](#4-release-gate-integration)
+    - [Scenario: Use Bundle as Deployment Approval](#scenario-use-bundle-as-deployment-approval)
+- [Usage](#usage)
+  - [Integration Best Practices](#integration-best-practices)
+    - [1. Always Verify Bundle Schema](#1-always-verify-bundle-schema)
+    - [2. Handle Bundle Consumption Errors Gracefully](#2-handle-bundle-consumption-errors-gracefully)
+    - [3. Cache Bundle Data When Appropriate](#3-cache-bundle-data-when-appropriate)
+    - [4. Log All Bundle Operations](#4-log-all-bundle-operations)
+  - [Testing Your Integration](#testing-your-integration)
+- [Run composition tests to get real bundle refs](#run-composition-tests-to-get-real-bundle-refs)
+- [Use generated bundle refs in your integration code](#use-generated-bundle-refs-in-your-integration-code)
+
+<!-- T81-TOC:END -->
+
+
 This guide shows step-by-step how to integrate T81 decision bundles into common patterns from the integration matrix.
 
 ## 1. Security Governance Integration

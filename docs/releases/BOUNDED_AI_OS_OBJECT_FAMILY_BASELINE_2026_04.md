@@ -1,5 +1,21 @@
 # Bounded AI OS-Object Family Baseline (2026-04)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Bounded AI OS-Object Family Baseline (2026-04)](#bounded-ai-os-object-family-baseline-2026-04)
+  - [Baseline Identifier](#baseline-identifier)
+  - [Included In This Baseline](#included-in-this-baseline)
+  - [What Is Validated](#what-is-validated)
+  - [What Is Explicitly Not Claimed](#what-is-explicitly-not-claimed)
+  - [Intended Use](#intended-use)
+  - [Reference Surfaces Frozen By This Baseline](#reference-surfaces-frozen-by-this-baseline)
+  - [Current Boundary](#current-boundary)
+
+<!-- T81-TOC:END -->
+
+
 This note marks the first invariant-stable baseline for the current bounded
 deterministic AI OS-object family in T81.
 

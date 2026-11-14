@@ -1,5 +1,19 @@
 # Cognitive Tiers Reference
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Cognitive Tiers Reference](#cognitive-tiers-reference)
+  - [Tier 1: Symbolic-Recursive (T243)](#tier-1-symbolic-recursive-t243)
+  - [Tier 2: AGI-Recursive (T729)](#tier-2-agi-recursive-t729)
+  - [Tier 3: Hyper-Recursive (T2187)](#tier-3-hyper-recursive-t2187)
+  - [Tier 4: Distributed Universal (T6561)](#tier-4-distributed-universal-t6561)
+  - [Tier 5: Infinite Recursion (T19683)](#tier-5-infinite-recursion-t19683)
+
+<!-- T81-TOC:END -->
+
+
 This document outlines the implementation of the 5 cognitive tiers within the T81 ecosystem, corresponding to the T81 Specification (Chapters 7-11).
 
 ## Tier 1: Symbolic-Recursive (T243)

@@ -1,5 +1,21 @@
 # PackedTritVector Prototype Phase 2A Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [PackedTritVector Prototype Phase 2A Report](#packedtritvector-prototype-phase-2a-report)
+  - [1. Summary](#1-summary)
+  - [2. Phase 1 Report Tightening](#2-phase-1-report-tightening)
+  - [3. Phase 2A Compute Representation Prototype](#3-phase-2a-compute-representation-prototype)
+  - [4. Conformance and Representation-Invariance Verification](#4-conformance-and-representation-invariance-verification)
+  - [5. Benchmark Comparisons](#5-benchmark-comparisons)
+  - [6. Validation Results](#6-validation-results)
+  - [7. Phase 2B Recommendations and Remaining Gaps](#7-phase-2b-recommendations-and-remaining-gaps)
+
+<!-- T81-TOC:END -->
+
+
 ## 1. Summary
 
 This report documents the Phase 2A investigation into a compute-friendly trit representation for `PackedTritVector`.

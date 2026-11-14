@@ -1,5 +1,22 @@
 # CLI Replay Bundle Evidence
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [CLI Replay Bundle Evidence](#cli-replay-bundle-evidence)
+  - [Goal](#goal)
+  - [Command](#command)
+  - [Result](#result)
+  - [Covered Workflow Slice](#covered-workflow-slice)
+  - [Observed Stable Artifacts](#observed-stable-artifacts)
+  - [Observed Stable JSON Output Hashes](#observed-stable-json-output-hashes)
+  - [Artifact Paths](#artifact-paths)
+  - [Notes](#notes)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-03-19  
 Status: Pass  
 Schema: `t81.cli.replay-bundle.v1`

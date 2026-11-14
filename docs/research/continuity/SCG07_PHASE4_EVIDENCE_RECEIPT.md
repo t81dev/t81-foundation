@@ -1,5 +1,25 @@
 # SCG-07 Phase 4 Evidence Receipt: F2 T81Limb54 Reference Multiplication Correctness Repair
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [SCG-07 Phase 4 Evidence Receipt: F2 T81Limb54 Reference Multiplication Correctness Repair](#scg-07-phase-4-evidence-receipt-f2-t81limb54-reference-multiplication-correctness-repair)
+  - [1. Executive Summary](#1-executive-summary)
+  - [2. Inventory of Changed Files](#2-inventory-of-changed-files)
+  - [3. Finding F2 Root Cause & Repair Disposition](#3-finding-f2-root-cause-&-repair-disposition)
+    - [3.1 Pre-Repair Defect Mechanism](#31-pre-repair-defect-mechanism)
+    - [3.2 Phase 4 Mathematical Repair](#32-phase-4-mathematical-repair)
+  - [4. Verification Evidence](#4-verification-evidence)
+    - [4.1 Before and After Results for SCG-06 Reproducer (300 Trials)](#41-before-and-after-results-for-scg-06-reproducer-300-trials)
+    - [4.2 Independent Oracle Methodology & Truncation Verification](#42-independent-oracle-methodology-&-truncation-verification)
+    - [4.3 Test Execution Matrix](#43-test-execution-matrix)
+  - [5. CI Attribution & Inherited Baseline Failures](#5-ci-attribution-&-inherited-baseline-failures)
+  - [6. Scope Constraints & Remaining Limitations](#6-scope-constraints-&-remaining-limitations)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** T81-SCG-07-PHASE4-RECEIPT-001-R1
 **Author:** T81 Continuity Engineering Task Force (SCG-07)
 **Baseline Anchor:** Commit `5cc8d9457fd19ff2d85a5bda1fc1678d8e0124d1` (origin/main, merging PR #738)

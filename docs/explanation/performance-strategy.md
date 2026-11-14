@@ -1,5 +1,22 @@
 # Performance Architecture Strategy
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Performance Architecture Strategy](#performance-architecture-strategy)
+  - [1. Deep Optimization of `T81BigInt`](#1-deep-optimization-of-`t81bigint`)
+    - [Status: Completed](#status-completed)
+  - [2. Tensor Backend Strategy](#2-tensor-backend-strategy)
+    - [Status: In Progress](#status-in-progress)
+  - [2A. SWAR Dispatch Guidance](#2a-swar-dispatch-guidance)
+    - [Status: Implemented](#status-implemented)
+  - [3. CanonFS Scalability](#3-canonfs-scalability)
+    - [Status: Planned](#status-planned)
+
+<!-- T81-TOC:END -->
+
+
 **Last Updated:** March 18, 2026
 
 This document outlines the performance strategy for the T81 Foundation stack, focusing on balanced ternary arithmetic optimization and tensor backend architecture.

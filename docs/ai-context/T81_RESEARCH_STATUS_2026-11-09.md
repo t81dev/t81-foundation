@@ -1,5 +1,19 @@
 # T81 Foundation — AI Research Continuity Update (2026-11-09)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation — AI Research Continuity Update (2026-11-09)](#t81-foundation-—-ai-research-continuity-update-2026-11-09)
+  - [Executive handoff](#executive-handoff)
+  - [Arithmetic finding disposition (F1–F7)](#arithmetic-finding-disposition-f1–f7)
+  - [Decision and governance boundaries](#decision-and-governance-boundaries)
+  - [Research program: next decision](#research-program-next-decision)
+  - [Fast bootstrap for a new AI instance](#fast-bootstrap-for-a-new-ai-instance)
+
+<!-- T81-TOC:END -->
+
+
 **Class:** Non-normative, dated handoff; not an independent rerun, experiment authorization, or normative amendment.  
 **Repository:** https://github.com/t81dev/t81-foundation  
 **Observed `main`:** `8dec43ac2a9a702c9ae54229cf6891ee63f285c0` (GitHub branch inspection, 2026-11-09).  

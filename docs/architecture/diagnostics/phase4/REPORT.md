@@ -1,5 +1,23 @@
 # T81-ARCH-ENG-002 Phase 4: native firmware compatibility
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81-ARCH-ENG-002 Phase 4: native firmware compatibility](#t81-arch-eng-002-phase-4-native-firmware-compatibility)
+  - [Result and scope](#result-and-scope)
+  - [Reconciliation and input identities](#reconciliation-and-input-identities)
+  - [Diagnostic firmware provenance and method](#diagnostic-firmware-provenance-and-method)
+  - [Responsible returns in the instrumented counterpart](#responsible-returns-in-the-instrumented-counterpart)
+  - [Fixed compatibility matrix and native outcome](#fixed-compatibility-matrix-and-native-outcome)
+  - [Blockers and why no correction is promoted](#blockers-and-why-no-correction-is-promoted)
+  - [Regression, artifact and platform limits](#regression-artifact-and-platform-limits)
+  - [Reproduction and retention](#reproduction-and-retention)
+  - [Exact changed-file inventory](#exact-changed-file-inventory)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-11-10. **Disposition: BLOCKED.** No configuration in the bounded matrix
 passes all five checks. No observational exit or shell marker is presented as
 native acceptance, and no execution correction is proposed as established.

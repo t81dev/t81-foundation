@@ -1,5 +1,22 @@
 # T81 Foundation: Deep Research Analysis Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation: Deep Research Analysis Report](#t81-foundation-deep-research-analysis-report)
+  - [1. Project Overview](#1-project-overview)
+  - [2. Technical Architecture](#2-technical-architecture)
+    - [Ternary Computing Benefits & Quantization](#ternary-computing-benefits-&-quantization)
+  - [3. Code Analysis](#3-code-analysis)
+  - [4. Innovations and Contributions](#4-innovations-and-contributions)
+  - [5. Installation and Usage](#5-installation-and-usage)
+  - [6. Community and Impact](#6-community-and-impact)
+  - [7. Recommendations](#7-recommendations)
+
+<!-- T81-TOC:END -->
+
+
 ## 1. Project Overview
 The [T81 Foundation](https://github.com/t81dev/t81-foundation) is a deterministic, ternary-native computing architecture explicitly conceived by AI for AI. Its primary goal is to solve a fundamental issue in modern AI inference and scientific computing: floating-point drift and hardware-dependent nondeterminism. By enforcing mathematically rigorous reproducibility, auditable execution, and governed recursion boundaries, T81 seeks to replace "statistically similar" behavior with bit-exact, verifiable traces. 
 

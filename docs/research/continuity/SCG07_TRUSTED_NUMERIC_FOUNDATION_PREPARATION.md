@@ -1,5 +1,30 @@
 # SCG-07: Trusted Numeric Foundation — Engineering Handoff Preparation
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [SCG-07: Trusted Numeric Foundation — Engineering Handoff Preparation](#scg-07-trusted-numeric-foundation-—-engineering-handoff-preparation)
+  - [1. Executive Summary & Purpose](#1-executive-summary-&-purpose)
+    - [Fundamental Principle](#fundamental-principle)
+  - [2. Inventory of Arithmetic Defects and Component Boundaries](#2-inventory-of-arithmetic-defects-and-component-boundaries)
+  - [3. The Exception-Contract Incompatibility (F6 & F7)](#3-the-exception-contract-incompatibility-f6-&-f7)
+    - [3.1 Architectural Problem](#31-architectural-problem)
+    - [3.2 Dual-Surface Reconciliation Strategy](#32-dual-surface-reconciliation-strategy)
+  - [4. Proposed Independent Regression Tests for F6 and F7](#4-proposed-independent-regression-tests-for-f6-and-f7)
+    - [4.1 F6 Multiplicative Overflow Test Suite](#41-f6-multiplicative-overflow-test-suite)
+    - [4.2 F7 Floating-Point Conversion Test Suite](#42-f7-floating-point-conversion-test-suite)
+  - [5. `T81BigInt` Subtraction Sign & Borrow Invariants (F5)](#5-`t81bigint`-subtraction-sign-&-borrow-invariants-f5)
+    - [5.1 Root Cause in `T81BigInt::operator+`](#51-root-cause-in-`t81bigintoperator+`)
+    - [5.2 Required Invariant Contract](#52-required-invariant-contract)
+  - [6. Dependencies on SCG-04 Architectural Decisions](#6-dependencies-on-scg-04-architectural-decisions)
+  - [7. Proposed Repair Order and Acceptance Criteria](#7-proposed-repair-order-and-acceptance-criteria)
+    - [Acceptance Criteria for SCG-07](#acceptance-criteria-for-scg-07)
+  - [8. Explicit Authorization Requirements](#8-explicit-authorization-requirements)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** T81-SCG-07-PREP-001-R1
 **Author:** T81 Continuity Engineering Task Force (SCG-06 / SCG-07)
 **Status:** DRAFT / PREPARATORY / NON-NORMATIVE

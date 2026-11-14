@@ -1,5 +1,41 @@
 # AI CLI Milestone Evidence
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [AI CLI Milestone Evidence](#ai-cli-milestone-evidence)
+  - [Purpose](#purpose)
+  - [Build Evidence](#build-evidence)
+    - [Exact Commands from Clean Clone](#exact-commands-from-clean-clone)
+- [1. Fresh clone](#1-fresh-clone)
+- [2. Configure with AI experiments](#2-configure-with-ai-experiments)
+- [3. Build AI CLI](#3-build-ai-cli)
+- [4. Verify binary location](#4-verify-binary-location)
+    - [Expected Build Output](#expected-build-output)
+  - [CLI Evidence](#cli-evidence)
+    - [Expected Help Output](#expected-help-output)
+    - [Expected Model Inspect Output](#expected-model-inspect-output)
+    - [Expected Verify Output](#expected-verify-output)
+    - [Expected Error Handling Output](#expected-error-handling-output)
+  - [Smoke Test Evidence](#smoke-test-evidence)
+    - [Automated Test Script](#automated-test-script)
+  - [Repository Isolation Evidence](#repository-isolation-evidence)
+    - [Core Directories Verification](#core-directories-verification)
+    - [Build System Isolation](#build-system-isolation)
+  - [Compiler Compatibility Evidence](#compiler-compatibility-evidence)
+    - [Verified Working Configuration](#verified-working-configuration)
+    - [Known Issues Documented](#known-issues-documented)
+  - [RFC Compliance Evidence](#rfc-compliance-evidence)
+    - [RFC-00A0 (AI Experiment Sandbox)](#rfc-00a0-ai-experiment-sandbox)
+    - [RFC-00A7 (UX Integration)](#rfc-00a7-ux-integration)
+  - [Testing Evidence](#testing-evidence)
+    - [Manual Verification Steps](#manual-verification-steps)
+  - [Conclusion](#conclusion)
+
+<!-- T81-TOC:END -->
+
+
 Last Updated: 2026-03-06
 
 ## Purpose

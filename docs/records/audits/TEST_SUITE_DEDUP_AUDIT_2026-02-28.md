@@ -1,5 +1,41 @@
 # Test Suite Deduplication & Determinism-Preserving Condensation Audit
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Test Suite Deduplication & Determinism-Preserving Condensation Audit](#test-suite-deduplication-&-determinism-preserving-condensation-audit)
+  - [Executive Summary](#executive-summary)
+  - [Phase 1 — Inventory & Classification](#phase-1-—-inventory-&-classification)
+    - [Classification Table (Consolidation Candidates Only)](#classification-table-consolidation-candidates-only)
+    - [Files Confirmed Keep-Separate (no consolidation)](#files-confirmed-keep-separate-no-consolidation)
+  - [Phase 2 — Duplicate Detection Results](#phase-2-—-duplicate-detection-results)
+    - [A. Exact Duplicates](#a-exact-duplicates)
+    - [B. Structural Duplicates](#b-structural-duplicates)
+      - [B1. CLI Stdlib Fixture Tests — 98% structural identity](#b1-cli-stdlib-fixture-tests-—-98%-structural-identity)
+      - [B2. VM Workload Determinism — 65% structural identity](#b2-vm-workload-determinism-—-65%-structural-identity)
+      - [B3. VM Fail-Closed Stub Tests — 60% structural identity](#b3-vm-fail-closed-stub-tests-—-60%-structural-identity)
+      - [B4. BigInt Modular Inverse — 75% identical test vectors](#b4-bigint-modular-inverse-—-75%-identical-test-vectors)
+      - [B5. T81Float Special Values — ~70% overlap](#b5-t81float-special-values-—-~70%-overlap)
+    - [C. Layer Duplication](#c-layer-duplication)
+  - [Phase 3 — Determinism Safeguards](#phase-3-—-determinism-safeguards)
+  - [Phase 4 — Parameterization Strategy](#phase-4-—-parameterization-strategy)
+    - [CLI Stdlib Parameterized Harness](#cli-stdlib-parameterized-harness)
+    - [Shared Signature Utility Header](#shared-signature-utility-header)
+    - [Shared Fixture Utility Header](#shared-fixture-utility-header)
+  - [Phase 5 — Refactor Plan](#phase-5-—-refactor-plan)
+    - [Deletion Candidates](#deletion-candidates)
+    - [New/Modified Files](#newmodified-files)
+    - [Estimated Impact](#estimated-impact)
+  - [Phase 6 — Governance Protection](#phase-6-—-governance-protection)
+  - [Structural Similarity Matrix (Key Groups)](#structural-similarity-matrix-key-groups)
+  - [Execution Steps (Ordered, CI-Safe)](#execution-steps-ordered-ci-safe)
+  - [Rollback Strategy](#rollback-strategy)
+  - [Progress Tracker](#progress-tracker)
+
+<!-- T81-TOC:END -->
+
+
 Status: **Complete — 285/285 tests passing**
 Created: 2026-02-28
 Last Updated: 2026-02-28

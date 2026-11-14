@@ -1,5 +1,32 @@
 # T81 User Manual
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 User Manual](#t81-user-manual)
+  - [Table of Contents](#table-of-contents)
+  - [Installation & Building](#installation-&-building)
+    - [Prerequisites](#prerequisites)
+    - [Clone & Build](#clone-&-build)
+- [Release build (recommended)](#release-build-recommended)
+- [Or Debug build (better for stepping / tracing)](#or-debug-build-better-for-stepping--tracing)
+- [or just use ./build/t81 directly](#or-just-use-buildt81-directly)
+  - [First Program — Hello, Balanced Ternary](#first-program-—-hello-balanced-ternary)
+  - [Core Workflow: Edit → Compile → Run → Trace](#core-workflow-edit-→-compile-→-run-→-trace)
+  - [Working with Data Types](#working-with-data-types)
+  - [Tensors & Model Weights](#tensors-&-model-weights)
+    - [Canonizing Tensors](#canonizing-tensors)
+  - [Debugging & Inspection](#debugging-&-inspection)
+  - [Trace Analysis & Reproducibility](#trace-analysis-&-reproducibility)
+  - [Axion Policies & Safety](#axion-policies-&-safety)
+  - [Advanced Usage & Integration](#advanced-usage-&-integration)
+  - [Troubleshooting & FAQ](#troubleshooting-&-faq)
+  - [Next Steps & Resources](#next-steps-&-resources)
+
+<!-- T81-TOC:END -->
+
+
 This manual teaches you how to **install**, **build**, **use**, **debug**, and **extend** programs in the T81 ecosystem — a deterministic, ternary-native runtime stack.
 
 T81 prioritizes **bit-exact reproducibility**, **runtime governance** via Axion, and **auditable execution** over raw performance. It is especially suited for verifiable AI, cryptography, scientific computing, and high-stakes numerical workloads.

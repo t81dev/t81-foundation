@@ -1,5 +1,23 @@
 # T81 Deterministic AI OS-Object Substrate Reference Memo
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Deterministic AI OS-Object Substrate Reference Memo](#t81-deterministic-ai-os-object-substrate-reference-memo)
+  - [Executive Summary](#executive-summary)
+  - [Current Truthful Thesis](#current-truthful-thesis)
+  - [What Is Real and Proven Today](#what-is-real-and-proven-today)
+  - [Deterministic AI OS-Object Pipeline](#deterministic-ai-os-object-pipeline)
+  - [What Is Proven About Identity and Determinism](#what-is-proven-about-identity-and-determinism)
+  - [Stable vs Draft Surfaces](#stable-vs-draft-surfaces)
+  - [What an Outside Reader Could Still Misunderstand](#what-an-outside-reader-could-still-misunderstand)
+  - [Planning Ahead Without Breaking Discipline](#planning-ahead-without-breaking-discipline)
+  - [Final Assessment](#final-assessment)
+
+<!-- T81-TOC:END -->
+
+
 ## Executive Summary
 
 T81's strongest current technical story is not "general AI operating system."

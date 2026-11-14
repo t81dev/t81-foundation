@@ -1,5 +1,43 @@
 # T81 Contributor Roadmap
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Contributor Roadmap](#t81-contributor-roadmap)
+  - [Authoritative references](#authoritative-references)
+  - [Current research posture](#current-research-posture)
+    - [Evidence classifications](#evidence-classifications)
+  - [Phase 1: Establish trustworthy experimental comparators & Gate 1 qualifications](#phase-1-establish-trustworthy-experimental-comparators-&-gate-1-qualifications)
+    - [Active Research Tracks](#active-research-tracks)
+    - [Success criteria](#success-criteria)
+  - [Phase 2: Measure subsystem advantages under controlled conditions](#phase-2-measure-subsystem-advantages-under-controlled-conditions)
+    - [Experimental dimensions](#experimental-dimensions)
+    - [Measurement requirements](#measurement-requirements)
+    - [Success criteria](#success-criteria)
+  - [Phase 3: Resolve the physical ternary feasibility questions](#phase-3-resolve-the-physical-ternary-feasibility-questions)
+    - [Current limitation](#current-limitation)
+    - [Recommended work](#recommended-work)
+    - [Success criteria](#success-criteria)
+  - [Phase 4: Stabilize the contributor-facing runtime](#phase-4-stabilize-the-contributor-facing-runtime)
+    - [Recommended work](#recommended-work)
+    - [Success criteria](#success-criteria)
+  - [Phase 5: Harden the CanonFS interchange lane](#phase-5-harden-the-canonfs-interchange-lane)
+    - [Existing seed surface](#existing-seed-surface)
+    - [Recommended work](#recommended-work)
+    - [Success criteria](#success-criteria)
+  - [Phase 6: Evaluate narrowly scoped architectural extensions](#phase-6-evaluate-narrowly-scoped-architectural-extensions)
+  - [Phase 7: Keep the repository reliable to operate](#phase-7-keep-the-repository-reliable-to-operate)
+    - [Recommended work](#recommended-work)
+    - [Success criteria](#success-criteria)
+  - [What not to do next](#what-not-to-do-next)
+  - [Contributor decision rule](#contributor-decision-rule)
+  - [Near-term execution sequence](#near-term-execution-sequence)
+  - [Long-term research direction](#long-term-research-direction)
+
+<!-- T81-TOC:END -->
+
+
 **Engineering Maintenance, Experimental Validation, and Research Priorities**
 
 **Updated:** November 2026

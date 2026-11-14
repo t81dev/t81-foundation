@@ -1,5 +1,24 @@
 # SCG-07 Phase 2 Evidence Receipt: F5 T81BigInt Signed Subtraction Repair
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [SCG-07 Phase 2 Evidence Receipt: F5 T81BigInt Signed Subtraction Repair](#scg-07-phase-2-evidence-receipt-f5-t81bigint-signed-subtraction-repair)
+  - [1. Executive Summary](#1-executive-summary)
+  - [2. Inventory of Changed Files](#2-inventory-of-changed-files)
+  - [3. Finding F5 Root Cause & Repair Disposition](#3-finding-f5-root-cause-&-repair-disposition)
+    - [3.1 Pre-Repair Defect Mechanism](#31-pre-repair-defect-mechanism)
+    - [3.2 Phase 2 Mathematical Repair](#32-phase-2-mathematical-repair)
+  - [4. Verification Evidence](#4-verification-evidence)
+    - [4.1 Test Execution Matrix](#41-test-execution-matrix)
+    - [4.2 Independent Oracle Comparison & Algebraic Property Verification](#42-independent-oracle-comparison-&-algebraic-property-verification)
+  - [5. CI Attribution & Inherited Baseline Failures](#5-ci-attribution-&-inherited-baseline-failures)
+  - [6. Scope Constraints & Remaining Limitations](#6-scope-constraints-&-remaining-limitations)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** T81-SCG-07-PHASE2-RECEIPT-001-R1
 **Author:** T81 Continuity Engineering Task Force (SCG-07)
 **Baseline Anchor:** Commit `e24eba723c221dc895e20307d41a8c4ba97405d6` (origin/main, merging PR #736)

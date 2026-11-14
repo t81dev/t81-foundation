@@ -1,5 +1,28 @@
 # RFC-0030 Float-Domain Promotion Note
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [RFC-0030 Float-Domain Promotion Note](#rfc-0030-float-domain-promotion-note)
+  - [Problem](#problem)
+  - [Current Repo Behavior](#current-repo-behavior)
+  - [Proposed Model](#proposed-model)
+    - [1. Storage Axis](#1-storage-axis)
+    - [2. Arithmetic Axis](#2-arithmetic-axis)
+    - [3. Semantic Class Axis](#3-semantic-class-axis)
+  - [Recommended Short-Term Policy](#recommended-short-term-policy)
+  - [Primary RFC-0030 Question](#primary-rfc-0030-question)
+    - [Option A: Keep Current Public Classes](#option-a-keep-current-public-classes)
+    - [Option B: Introduce Deterministic Float-Domain Distinction](#option-b-introduce-deterministic-float-domain-distinction)
+  - [Recommendation](#recommendation)
+  - [Current Decision](#current-decision)
+  - [Reopen Conditions](#reopen-conditions)
+  - [Concrete Next Step](#concrete-next-step)
+
+<!-- T81-TOC:END -->
+
+
 Last Updated: 2026-03-14
 Owner: @t81dev
 Purpose: define the next design target for deterministic tensor math after the

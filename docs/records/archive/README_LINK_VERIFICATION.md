@@ -1,5 +1,19 @@
 # README.md Link Verification Summary
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [README.md Link Verification Summary](#readmemd-link-verification-summary)
+  - [Links Fixed in Root README.md](#links-fixed-in-root-readmemd)
+    - [✅ Documentation Section Links Updated](#✅-documentation-section-links-updated)
+    - [✅ All Other Links Verified](#✅-all-other-links-verified)
+  - [Verification Method](#verification-method)
+  - [Impact](#impact)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** March 6, 2026  
 **Status:** ✅ **ALL LINKS VERIFIED AND FIXED**
 

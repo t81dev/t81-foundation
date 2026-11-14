@@ -1,5 +1,18 @@
 # Maintenance burden and one bounded cleanup
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Maintenance burden and one bounded cleanup](#maintenance-burden-and-one-bounded-cleanup)
+  - [Duplication audit and disposition](#duplication-audit-and-disposition)
+  - [Preserve, freeze, and archive policy](#preserve-freeze-and-archive-policy)
+  - [Single implemented improvement](#single-implemented-improvement)
+  - [Validation of this consolidation](#validation-of-this-consolidation)
+
+<!-- T81-TOC:END -->
+
+
 Inventory baseline: `6977f49b3a2eba54d9776361a6026971ee529bfd`.
 Counts include tracked source, docs, fixtures and public trust material within
 these directories; they exclude caches and the rest of the repository. Exact

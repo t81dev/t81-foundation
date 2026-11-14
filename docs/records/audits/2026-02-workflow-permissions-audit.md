@@ -1,5 +1,17 @@
 # Workflow Permissions Audit
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Workflow Permissions Audit](#workflow-permissions-audit)
+  - [Summary](#summary)
+  - [Workflow Matrix](#workflow-matrix)
+  - [Recommendation](#recommendation)
+
+<!-- T81-TOC:END -->
+
+
 ## Summary
 
 - Total workflows: **11**

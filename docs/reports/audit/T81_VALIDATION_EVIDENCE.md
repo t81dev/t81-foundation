@@ -1,5 +1,25 @@
 # T81 Foundation — Validation Evidence & Test Log
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation — Validation Evidence & Test Log](#t81-foundation-—-validation-evidence-&-test-log)
+  - [1. Clean Repository Configuration & Native Build](#1-clean-repository-configuration-&-native-build)
+    - [Build Configuration Command](#build-configuration-command)
+    - [Observed Configuration Output](#observed-configuration-output)
+    - [Compilation Command & Target Verification](#compilation-command-&-target-verification)
+  - [2. Executed Non-Destructive Test Matrix](#2-executed-non-destructive-test-matrix)
+  - [3. Integrated Toolchain & Workflow Verification](#3-integrated-toolchain-&-workflow-verification)
+    - [Test Case 1: T81Lang Compilation to TISC](#test-case-1-t81lang-compilation-to-tisc)
+    - [Test Case 2: Deterministic VM Execution](#test-case-2-deterministic-vm-execution)
+    - [Test Case 3: CanonFS Object Hashing & Snapshot](#test-case-3-canonfs-object-hashing-&-snapshot)
+    - [Test Case 4: Fail-Closed Policy Enforcement](#test-case-4-fail-closed-policy-enforcement)
+  - [4. Tests Skipped or Requiring Dedicated Environments](#4-tests-skipped-or-requiring-dedicated-environments)
+
+<!-- T81-TOC:END -->
+
+
 **Audit Designation:** T81-SIA-001
 **Reference Document:** Empirical Validation Evidence, Build Records, and Non-Destructive Test Execution
 **Execution Environment:** Ubuntu 24.04 LTS (Linux x86_64, Kernel 6.6.137+)

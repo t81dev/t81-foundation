@@ -1,5 +1,35 @@
 # T81 Architecture & Research Status Dashboard Guide (`T81-ARCH-VIZ-003`)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Architecture & Research Status Dashboard Guide (`T81-ARCH-VIZ-003`)](#t81-architecture-&-research-status-dashboard-guide-`t81-arch-viz-003`)
+  - [1. Overview & Architecture](#1-overview-&-architecture)
+  - [2. Local Launch & Requirements](#2-local-launch-&-requirements)
+    - [2.1 Quick Launch (Local HTTP Server)](#21-quick-launch-local-http-server)
+- [Launch a lightweight static server pointing to the visualization directory](#launch-a-lightweight-static-server-pointing-to-the-visualization-directory)
+- [Navigate to: http://localhost:8080/docs/architecture/visualization/](#navigate-to-httplocalhost8080docsarchitecturevisualization)
+    - [2.2 Browser Support](#22-browser-support)
+  - [3. User Interface & Navigation](#3-user-interface-&-navigation)
+    - [3.1 3D Canvas Navigation](#31-3d-canvas-navigation)
+    - [3.2 Accessible 2D Structural Fallback](#32-accessible-2d-structural-fallback)
+    - [3.3 Layer Visibility & Filtering](#33-layer-visibility-&-filtering)
+    - [3.4 Execution Pathways & Architecture Gaps](#34-execution-pathways-&-architecture-gaps)
+  - [4. Evidence Overlays & Semantic Dimensions](#4-evidence-overlays-&-semantic-dimensions)
+    - [Crucial Semantic Distinction](#crucial-semantic-distinction)
+  - [5. Research Programs & Hypothesis Integration](#5-research-programs-&-hypothesis-integration)
+    - [5.1 SCG-01 through SCG-08 Boundaries](#51-scg-01-through-scg-08-boundaries)
+    - [5.2 TernaryOS & ARCH-ENG-002 Boundaries](#52-ternaryos-&-arch-eng-002-boundaries)
+    - [5.3 Hypothesis Register H01–H08 Dispositions & Linked Studies](#53-hypothesis-register-h01–h08-dispositions-&-linked-studies)
+  - [6. Pull Request Snapshot & Refresh Procedure](#6-pull-request-snapshot-&-refresh-procedure)
+    - [6.1 Data Provenance](#61-data-provenance)
+    - [6.2 Refresh Procedure](#62-refresh-procedure)
+  - [7. Known Limitations & Strict Boundaries](#7-known-limitations-&-strict-boundaries)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `T81-ARCH-VIZ-003-GUIDE-R2`
 **Authoritative Baseline:** `8e6918fa98e19ee1476f91c97e82989b051a02e7` (`origin/main`, post-PR #759)
 **Status:** Corrected & Verified under Pinned Baseline

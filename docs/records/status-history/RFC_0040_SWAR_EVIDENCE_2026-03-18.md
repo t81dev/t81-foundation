@@ -1,5 +1,16 @@
 # RFC-0040 SWAR Evidence Snapshot
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [RFC-0040 SWAR Evidence Snapshot](#rfc-0040-swar-evidence-snapshot)
+  - [Scope](#scope)
+  - [Verification](#verification)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Date: 2026-03-18
 Owner: @t81dev

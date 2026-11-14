@@ -1,5 +1,23 @@
 # BASE-01 B1 measurement contract — proposed design v0.1
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [BASE-01 B1 measurement contract — proposed design v0.1](#base-01-b1-measurement-contract-—-proposed-design-v01)
+  - [Fixed scope and evidence identities](#fixed-scope-and-evidence-identities)
+  - [Common measurement boundary](#common-measurement-boundary)
+  - [WL-ARITH-CODEC-I64](#wl-arith-codec-i64)
+  - [WL-VM-TISC-DETERMINISM-TIERS](#wl-vm-tisc-determinism-tiers)
+  - [WL-CANONFS-MEM-THROUGHPUT](#wl-canonfs-mem-throughput)
+  - [WL-RES-RUSAGE-METRICS — observer](#wl-res-rusage-metrics-—-observer)
+  - [WL-RES-ARTIFACT-SIZE — observer](#wl-res-artifact-size-—-observer)
+  - [Trial and statistical contract](#trial-and-statistical-contract)
+  - [Future authorization and evidence requirements](#future-authorization-and-evidence-requirements)
+
+<!-- T81-TOC:END -->
+
+
 **Status: DESIGN ONLY. Measurement authorization: absent.**
 Authored by Codex (GPT-6), independently of Jules' integration work, November 2,
 2026. Codex authored Lane A B0 and has that prior context; this design is not an

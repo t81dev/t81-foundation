@@ -1,5 +1,18 @@
 # AI OS-Object Chain Catalog
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [AI OS-Object Chain Catalog](#ai-os-object-chain-catalog)
+  - [Assess-Fixed Host Action Chain](#assess-fixed-host-action-chain)
+  - [Route-Fixed Path Selection Chain](#route-fixed-path-selection-chain)
+  - [Classify-Fixed Rule Selection Chain](#classify-fixed-rule-selection-chain)
+  - [Boundary](#boundary)
+
+<!-- T81-TOC:END -->
+
+
 This document lists the current bounded deterministic AI OS-object chains in
 T81.
 

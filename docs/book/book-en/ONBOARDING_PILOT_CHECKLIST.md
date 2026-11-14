@@ -1,5 +1,18 @@
 # Onboarding Pilot Checklist (1 Facilitator + 1 New User)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Onboarding Pilot Checklist (1 Facilitator + 1 New User)](#onboarding-pilot-checklist-1-facilitator-+-1-new-user)
+  - [Session Setup](#session-setup)
+  - [Pilot Flow](#pilot-flow)
+  - [Facilitator Scorecard](#facilitator-scorecard)
+  - [Capture Notes](#capture-notes)
+
+<!-- T81-TOC:END -->
+
+
 Use this script to run a real onboarding pilot before external publication.
 
 ## Session Setup

@@ -1,5 +1,24 @@
 # T81 SCG-03 Evidence Receipt — Correctness Repair for C05 and C11
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 SCG-03 Evidence Receipt — Correctness Repair for C05 and C11](#t81-scg-03-evidence-receipt-—-correctness-repair-for-c05-and-c11)
+  - [1. Executive Summary & Root Cause Analysis](#1-executive-summary-&-root-cause-analysis)
+    - [1.1 Contradiction C05: Intermediate Truncation and False Overflow in `T81Int<N>` Multiplication](#11-contradiction-c05-intermediate-truncation-and-false-overflow-in-`t81int<n>`-multiplication)
+    - [1.2 Contradiction C11: Ineffective Assertion-Based Test Verdicts Under Release Builds](#12-contradiction-c11-ineffective-assertion-based-test-verdicts-under-release-builds)
+    - [1.3 Post-Merge Formatting Reconciliation](#13-post-merge-formatting-reconciliation)
+  - [2. Inventory of Changed Files and Cryptographic Hashes](#2-inventory-of-changed-files-and-cryptographic-hashes)
+  - [3. Verification Evidence](#3-verification-evidence)
+    - [3.1 CTest & Regression Suite Execution](#31-ctest-&-regression-suite-execution)
+    - [3.2 Injected-Failure Verification](#32-injected-failure-verification)
+    - [3.3 GitHub Actions CI Results & Post-Merge Observations](#33-github-actions-ci-results-&-post-merge-observations)
+  - [4. Constraint & Non-Regression Attestation](#4-constraint-&-non-regression-attestation)
+
+<!-- T81-TOC:END -->
+
+
 **Document:** `docs/research/continuity/SCG03_EVIDENCE_RECEIPT.md`
 **Date:** 2026-11-08
 **Task Anchor:** SCG-03 Correctness Repair for C05 and C11 (Post-Merge Reconciliation)

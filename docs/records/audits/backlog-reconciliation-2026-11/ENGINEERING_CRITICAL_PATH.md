@@ -1,5 +1,32 @@
 # T81 Foundation — Critical Engineering Path & Review Queue
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation — Critical Engineering Path & Review Queue](#t81-foundation-—-critical-engineering-path-&-review-queue)
+  - [Executive Summary](#executive-summary)
+  - [The Prioritized Top-Ten Review Queue](#the-prioritized-top-ten-review-queue)
+    - [Rank 1: PR #675 — fix(ternary): correct decode_i64 overflow saturation and add regression tests](#rank-1-pr-#675-—-fixternary-correct-decode_i64-overflow-saturation-and-add-regression-tests)
+    - [Rank 2: PR #652 — Final Publication Corrections: Baseline Maintenance Repair and ADM-2 M1 Header Isolation](#rank-2-pr-#652-—-final-publication-corrections-baseline-maintenance-repair-and-adm-2-m1-header-isolation)
+    - [Rank 3: PR #641 — fix(ci): include direct API test source in Windows CI sparse checkout](#rank-3-pr-#641-—-fixci-include-direct-api-test-source-in-windows-ci-sparse-checkout)
+    - [Rank 4: PR #622 — test(ci): add regression tests for root structure validator](#rank-4-pr-#622-—-testci-add-regression-tests-for-root-structure-validator)
+    - [Rank 5: PR #664 — docs(research): final evidence reconciliation for baseline assessment](#rank-5-pr-#664-—-docsresearch-final-evidence-reconciliation-for-baseline-assessment)
+    - [Rank 6: PR #658 — EXP-H04-R03 Phase B Implementation: Deterministic Correctness & Reference Codecs](#rank-6-pr-#658-—-exp-h04-r03-phase-b-implementation-deterministic-correctness-&-reference-codecs)
+    - [Rank 7: PR #674 — docs: T81-AIOPT-001 M2 Adversarial Workload & Experimental Design Review](#rank-7-pr-#674-—-docs-t81-aiopt-001-m2-adversarial-workload-&-experimental-design-review)
+    - [Rank 8: PR #673 — docs(research): independent M2 protocol acceptance audit](#rank-8-pr-#673-—-docsresearch-independent-m2-protocol-acceptance-audit)
+    - [Rank 9: PR #666 — docs(research): independent scientific review of T81-AIOPT-001](#rank-9-pr-#666-—-docsresearch-independent-scientific-review-of-t81-aiopt-001)
+    - [Rank 10: PR #648 — Governance Authority Reconciliation Report](#rank-10-pr-#648-—-governance-authority-reconciliation-report)
+    - [Separation of Governance and Acceptance States](#separation-of-governance-and-acceptance-states)
+  - [Critical Path vs. Optional Architectural Expansion](#critical-path-vs-optional-architectural-expansion)
+    - [Stream A: Critical Correctness & Stability (Immediate Focus)](#stream-a-critical-correctness-&-stability-immediate-focus)
+    - [Stream B: Optional / Architectural Expansion (Hold / Superseded / Archive)](#stream-b-optional--architectural-expansion-hold--superseded--archive)
+  - [Dependency Blockers & Resolution Sequence](#dependency-blockers-&-resolution-sequence)
+    - [Provisional CI Failure Attribution](#provisional-ci-failure-attribution)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** November 2026
 **Auditor:** Jules (Engineering Auditor & Backlog Analyst)
 **Authority:** Read-only analysis and roadmap recommendation; no merge authority implied.

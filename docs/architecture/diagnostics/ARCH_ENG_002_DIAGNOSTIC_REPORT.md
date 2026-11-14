@@ -1,5 +1,28 @@
 # T81-ARCH-ENG-002 Phase 1: Architecture-Guided Engineering Diagnostics Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81-ARCH-ENG-002 Phase 1: Architecture-Guided Engineering Diagnostics Report](#t81-arch-eng-002-phase-1-architecture-guided-engineering-diagnostics-report)
+  - [1. Executive Summary](#1-executive-summary)
+  - [2. Architecture Drift Detection Audit](#2-architecture-drift-detection-audit)
+    - [2.1. Boundaries of Static Drift Detection (What It Establishes vs. What It Cannot)](#21-boundaries-of-static-drift-detection-what-it-establishes-vs-what-it-cannot)
+  - [3. Component Evidence Index Distribution & Summary Reconciliation](#3-component-evidence-index-distribution-&-summary-reconciliation)
+    - [Classification Criteria & Governance Rules:](#classification-criteria-&-governance-rules)
+  - [4. QEMU Verification Harness Case Study](#4-qemu-verification-harness-case-study)
+    - [4.1. Defect Catalog](#41-defect-catalog)
+      - [Defect 1: Arithmetic Evaluation Failure Under `set -e` (`((COMPLETED_TESTS++))`)](#defect-1-arithmetic-evaluation-failure-under-`set--e`-`completed_tests++`)
+      - [Defect 2: Inadequate Verification Assertions (Equating Log Existence with Verification Success)](#defect-2-inadequate-verification-assertions-equating-log-existence-with-verification-success)
+      - [Defect 3: Mismatched Output Directories Between Calling and Execution Scripts](#defect-3-mismatched-output-directories-between-calling-and-execution-scripts)
+      - [Defect 4: Invalid Working-Directory and Relative Path Assumptions](#defect-4-invalid-working-directory-and-relative-path-assumptions)
+      - [Defect 5: Host-Specific Hardcoded Path Dependencies](#defect-5-host-specific-hardcoded-path-dependencies)
+  - [5. Corrective Recommendation Blueprint (For Follow-On Repair PR)](#5-corrective-recommendation-blueprint-for-follow-on-repair-pr)
+  - [6. Limitations & Governance Boundaries](#6-limitations-&-governance-boundaries)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `T81-ARCH-ENG-002-DIAGNOSTIC-REPORT-001`
 **Authoritative Baseline:** `9a3e307ad21135749d35a4f1a6a0d5820d0cc698` (`origin/main`)
 **Timestamp:** 2026-11-10

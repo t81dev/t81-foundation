@@ -1,5 +1,21 @@
 # C2 Month-Close Preflight Report (2026-03-31)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [C2 Month-Close Preflight Report (2026-03-31)](#c2-month-close-preflight-report-2026-03-31)
+  - [Summary](#summary)
+  - [Command Outputs](#command-outputs)
+    - [C2 runbook consolidated check](#c2-runbook-consolidated-check)
+    - [Full local CTest sweep](#full-local-ctest-sweep)
+    - [Determinism slice](#determinism-slice)
+    - [Stdlib surface baseline](#stdlib-surface-baseline)
+    - [Stdlib promotion snapshot](#stdlib-promotion-snapshot)
+
+<!-- T81-TOC:END -->
+
+
 Generated (UTC): 2026-02-28 16:20:22Z
 Generator: `scripts/governance/c2_month_close_preflight.py`
 Overall: PASS

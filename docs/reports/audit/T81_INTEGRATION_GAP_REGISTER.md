@@ -1,5 +1,22 @@
 # T81 Foundation — Prioritized Integration Gap Register
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation — Prioritized Integration Gap Register](#t81-foundation-—-prioritized-integration-gap-register)
+  - [1. Summary of Identified Gaps](#1-summary-of-identified-gaps)
+  - [2. Detailed Gap Specifications](#2-detailed-gap-specifications)
+    - [GAP-001-TISC-IN-AXION: Embedding TISC VM into Freestanding Axion OS](#gap-001-tisc-in-axion-embedding-tisc-vm-into-freestanding-axion-os)
+    - [GAP-002-DYNAMIC-CANONFS: Dynamic Hash-Indexed CanonFS in Freestanding Kernel](#gap-002-dynamic-canonfs-dynamic-hash-indexed-canonfs-in-freestanding-kernel)
+    - [GAP-003-FREESTANDING-POLICY: Dynamic Axion Policy Ingestion in Axion OS](#gap-003-freestanding-policy-dynamic-axion-policy-ingestion-in-axion-os)
+    - [GAP-004-FREESTANDING-HEAP: Freestanding Dynamic Memory Allocator](#gap-004-freestanding-heap-freestanding-dynamic-memory-allocator)
+    - [GAP-005-PORTABLE-INTERCHANGE: Merging CanonFS Portability Repairs](#gap-005-portable-interchange-merging-canonfs-portability-repairs)
+    - [GAP-006-ROOT-GOVERNANCE: Resolving Root Directory Structure Invariant](#gap-006-root-governance-resolving-root-directory-structure-invariant)
+
+<!-- T81-TOC:END -->
+
+
 **Audit Designation:** T81-SIA-001
 **Reference Document:** Comprehensive Register of Identified Architectural & Integration Gaps
 **Objective:** Define the minimum viable engineering corrections and suggested acceptance tests to advance T81 toward an independent, fully integrated computing platform.

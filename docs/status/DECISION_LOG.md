@@ -1,5 +1,41 @@
 # Decision Log
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Decision Log](#decision-log)
+  - [Purpose](#purpose)
+  - [Decision Format](#decision-format)
+  - [Decisions](#decisions)
+    - [DEC-001 — TISC ISA Frozen at v1](#dec-001-—-tisc-isa-frozen-at-v1)
+    - [DEC-004 — RFC-0026 Phase-1 Opcode Set Extended: WLOAD, GATHER, SCATTER](#dec-004-—-rfc-0026-phase-1-opcode-set-extended-wload-gather-scatter)
+    - [DEC-003 — Documentation Content-Based Reorganization](#dec-003-—-documentation-content-based-reorganization)
+    - [DEC-002 — T81Lang Implementation Maturity Promoted to Beta](#dec-002-—-t81lang-implementation-maturity-promoted-to-beta)
+    - [DEC-003 — llama.cpp Integration Classified as Governed Non-DCP](#dec-003-—-llamacpp-integration-classified-as-governed-non-dcp)
+    - [DEC-004 — t81_llama_adapter Remains Internal / Build-Only](#dec-004-—-t81_llama_adapter-remains-internal--build-only)
+    - [DEC-005 — Jekyll Pages Build Failure Classified as Deferred](#dec-005-—-jekyll-pages-build-failure-classified-as-deferred)
+    - [DEC-006 — March 2026 Release Candidate: GO on `1ec312e3`](#dec-006-—-march-2026-release-candidate-go-on-`1ec312e3`)
+    - [DEC-007 — Test Suite Deduplication (Sprint Close 2026-02-28)](#dec-007-—-test-suite-deduplication-sprint-close-2026-02-28)
+    - [DEC-008 — CodeQL Push Trigger Added to `main`](#dec-008-—-codeql-push-trigger-added-to-`main`)
+    - [DEC-009 — Restore `expected.hpp` Fallback and Harden Format Diff Logic](#dec-009-—-restore-`expectedhpp`-fallback-and-harden-format-diff-logic)
+    - [DEC-010 — Close BG-07 via Deterministic BigInt Transport and Fail-Closed Narrowing](#dec-010-—-close-bg-07-via-deterministic-bigint-transport-and-fail-closed-narrowing)
+    - [DEC-006 — Deterministic Math Implementation for Test Coverage](#dec-006-—-deterministic-math-implementation-for-test-coverage)
+    - [DEC-011 — Fix CanonHash\<T81String\> Non-Determinism via serialize_canonical()](#dec-011-—-fix-canonhash\<t81string\>-non-determinism-via-serialize_canonical)
+    - [DEC-012 — Restore Canonical ci.yml and Apply CI Hardening Fixes](#dec-012-—-restore-canonical-ciyml-and-apply-ci-hardening-fixes)
+    - [DEC-013 — Extract IRGenerator to .cpp and Fix SA Dispatch Ordering](#dec-013-—-extract-irgenerator-to-cpp-and-fix-sa-dispatch-ordering)
+    - [DEC-014 — TLOADHASH Null-CanonFS: set_canonfs_root() API + Explicit Driver Attachment](#dec-014-—-tloadhash-null-canonfs-set_canonfs_root-api-+-explicit-driver-attachment)
+    - [DEC-015 — Conditional single-use CI-gate exception for PR #775 (SCG-08 Gate 1 evidence repair)](#dec-015-—-conditional-single-use-ci-gate-exception-for-pr-#775-scg-08-gate-1-evidence-repair)
+    - [DEC-015-C1 — Proposed factual erratum: CI job timeout versus CTest duration](#dec-015-c1-—-proposed-factual-erratum-ci-job-timeout-versus-ctest-duration)
+    - [DEC-015-C1-A — Maintainer approval of factual erratum](#dec-015-c1-a-—-maintainer-approval-of-factual-erratum)
+    - [DEC-015-C2 — Post-PR #776 baseline reconciliation and single-use PR #775 integration authorization](#dec-015-c2-—-post-pr-#776-baseline-reconciliation-and-single-use-pr-#775-integration-authorization)
+  - [Log Maintenance](#log-maintenance)
+  - [Cross-References](#cross-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Last Updated: 2026-03-19
 Owner: Project Management / Governance

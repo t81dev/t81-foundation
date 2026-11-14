@@ -1,5 +1,42 @@
 # Mission Alignment Execution Plan
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Mission Alignment Execution Plan](#mission-alignment-execution-plan)
+  - [Problem Statement](#problem-statement)
+  - [Goals](#goals)
+  - [Non-Goals](#non-goals)
+  - [Strategic Thesis](#strategic-thesis)
+  - [90-Day Plan](#90-day-plan)
+    - [Phase 1: Days 0-30](#phase-1-days-0-30)
+      - [1. CanonFS Contract Closure](#1-canonfs-contract-closure)
+      - [2. TernaryOS Promotion Audit](#2-ternaryos-promotion-audit)
+      - [3. Governance Surface Register](#3-governance-surface-register)
+    - [Phase 2: Days 31-60](#phase-2-days-31-60)
+      - [4. Replay Bundle Program](#4-replay-bundle-program)
+      - [5. Axion Hardening Pass](#5-axion-hardening-pass)
+      - [6. Comparative Benchmark Program](#6-comparative-benchmark-program)
+    - [Phase 3: Days 61-90](#phase-3-days-61-90)
+      - [7. CLI Surface Pruning and Normalization](#7-cli-surface-pruning-and-normalization)
+      - [8. Experimental Relocation Round 2](#8-experimental-relocation-round-2)
+      - [9. Operational Profile Definition](#9-operational-profile-definition)
+  - [Priority Issues](#priority-issues)
+    - [Critical](#critical)
+    - [High](#high)
+    - [Medium](#medium)
+  - [Suggested Work Breakdown](#suggested-work-breakdown)
+    - [Workstream A: Persistence and Provenance](#workstream-a-persistence-and-provenance)
+    - [Workstream B: Governance and Safety](#workstream-b-governance-and-safety)
+    - [Workstream C: Tooling and UX](#workstream-c-tooling-and-ux)
+    - [Workstream D: Promotion and Benchmarking](#workstream-d-promotion-and-benchmarking)
+  - [Acceptance Criteria](#acceptance-criteria)
+  - [Recommended Immediate Next Steps](#recommended-immediate-next-steps)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** 2026-03-19  
 **Status:** Proposed  
 **Owner:** @t81dev

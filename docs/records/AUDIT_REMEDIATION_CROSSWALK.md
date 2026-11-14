@@ -1,5 +1,61 @@
 # T81 Foundation Audit Remediation Crosswalk
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation Audit Remediation Crosswalk](#t81-foundation-audit-remediation-crosswalk)
+  - [Executive Summary](#executive-summary)
+  - [1. Floating-Point Drift Risk](#1-floating-point-drift-risk)
+    - [Current Status](#current-status)
+    - [Findings](#findings)
+    - [Risk Analysis](#risk-analysis)
+    - [Remediation Actions](#remediation-actions)
+    - [Proof Artifacts](#proof-artifacts)
+    - [Result: **VERIFIED FOR CURRENT TEST COVERAGE** - No more silent fallback, limited deterministic functionality](#result-**verified-for-current-test-coverage**---no-more-silent-fallback-limited-deterministic-functionality)
+  - [2. JIT Determinism Boundary](#2-jit-determinism-boundary)
+    - [Current Status](#current-status)
+    - [Findings](#findings)
+    - [Risk Analysis](#risk-analysis)
+    - [Remediation Actions](#remediation-actions)
+    - [Proof Artifacts](#proof-artifacts)
+  - [3. T81Map / Hash-Backed Nondeterminism Risk](#3-t81map--hash-backed-nondeterminism-risk)
+    - [Current Status](#current-status)
+    - [Findings](#findings)
+    - [Risk Analysis](#risk-analysis)
+    - [Remediation Actions](#remediation-actions)
+    - [Proof Artifacts](#proof-artifacts)
+    - [Result: **VERIFIED FOR CURRENT TEST COVERAGE** - Deterministic iteration available, boundaries clear](#result-**verified-for-current-test-coverage**---deterministic-iteration-available-boundaries-clear)
+  - [4. T81Lang Traceability Gap](#4-t81lang-traceability-gap)
+    - [Current Status](#current-status)
+    - [Findings](#findings)
+    - [Risk Analysis](#risk-analysis)
+    - [Remediation Actions](#remediation-actions)
+    - [Proof Artifacts](#proof-artifacts)
+    - [Result: **VERIFIED FOR CURRENT TEST COVERAGE** - Basic verification implemented, comprehensive traceability remains future work](#result-**verified-for-current-test-coverage**---basic-verification-implemented-comprehensive-traceability-remains-future-work)
+  - [5. Axion Maturity Gap](#5-axion-maturity-gap)
+    - [Current Status](#current-status)
+    - [Findings](#findings)
+    - [Risk Analysis](#risk-analysis)
+    - [Remediation Actions](#remediation-actions)
+    - [Proof Artifacts](#proof-artifacts)
+    - [Result: **VERIFIED FOR CURRENT TEST COVERAGE** - Basic evidence verified, advanced gaps remain](#result-**verified-for-current-test-coverage**---basic-evidence-verified-advanced-gaps-remain)
+  - [6. Tier Transition / Cognitive-Tier Orchestration Deferral](#6-tier-transition--cognitive-tier-orchestration-deferral)
+    - [Current Status](#current-status)
+    - [Findings](#findings)
+    - [Risk Analysis](#risk-analysis)
+    - [Remediation Actions](#remediation-actions)
+    - [Proof Artifacts](#proof-artifacts)
+  - [Remediation Priority Matrix](#remediation-priority-matrix)
+  - [Success Criteria](#success-criteria)
+  - [Files Requiring Changes](#files-requiring-changes)
+    - [Code Changes](#code-changes)
+    - [Documentation](#documentation)
+    - [CI/Testing](#citesting)
+
+<!-- T81-TOC:END -->
+
+
 **Generated:** 2026-03-06  
 **Audit Reference:** Repository Hardening Pass  
 **Scope:** Deterministic Core Profile (DCP) and Governance Boundaries

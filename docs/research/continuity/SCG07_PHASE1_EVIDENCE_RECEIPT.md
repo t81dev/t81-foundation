@@ -1,5 +1,26 @@
 # SCG-07 Phase 1 Evidence Receipt: F6/F7 Exception-Safety Repair
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [SCG-07 Phase 1 Evidence Receipt: F6/F7 Exception-Safety Repair](#scg-07-phase-1-evidence-receipt-f6f7-exception-safety-repair)
+  - [1. Executive Summary](#1-executive-summary)
+  - [2. Inventory of Changed Files](#2-inventory-of-changed-files)
+  - [3. Dispositions for F6 and F7](#3-dispositions-for-f6-and-f7)
+    - [3.1 Finding F6: `T81Fraction` Arithmetic Operator Exception Boundary](#31-finding-f6-`t81fraction`-arithmetic-operator-exception-boundary)
+    - [3.2 Finding F7: `T81Fraction::to_double()` Large-Width Truncation and Abort](#32-finding-f7-`t81fractionto_double`-large-width-truncation-and-abort)
+  - [4. Verification Evidence](#4-verification-evidence)
+    - [4.1 Regression Suite Execution](#41-regression-suite-execution)
+    - [4.2 Non-Regressions in Existing Test Suite](#42-non-regressions-in-existing-test-suite)
+  - [5. Baseline CI Comparison and Attribution](#5-baseline-ci-comparison-and-attribution)
+    - [5.1 Category A: Independently Verified Codebase Regressions (Inherited from Baseline)](#51-category-a-independently-verified-codebase-regressions-inherited-from-baseline)
+    - [5.2 Category B: Environmental and Runner-Infrastructure Failures](#52-category-b-environmental-and-runner-infrastructure-failures)
+  - [6. Merge-Policy Blockers and Residual Risks](#6-merge-policy-blockers-and-residual-risks)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** T81-SCG-07-PHASE1-RECEIPT-001-R1
 **Author:** T81 Continuity Engineering Task Force (SCG-07)
 **Baseline Anchor:** Commit `7ba82e033d072e421b4851d156989203e503047e` (origin/main, merging PR #735)

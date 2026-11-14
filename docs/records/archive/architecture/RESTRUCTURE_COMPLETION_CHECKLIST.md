@@ -1,5 +1,19 @@
 # Restructure Completion Checklist
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Restructure Completion Checklist](#restructure-completion-checklist)
+  - [Final Canonical Directory Tree](#final-canonical-directory-tree)
+  - [Phase Completion Status](#phase-completion-status)
+  - [Invariant Checks](#invariant-checks)
+  - [Validation Commands](#validation-commands)
+  - [Future Move Protocol](#future-move-protocol)
+
+<!-- T81-TOC:END -->
+
+
 This document is the closeout artifact for repository restructure Phases 1-9.
 
 ## Final Canonical Directory Tree

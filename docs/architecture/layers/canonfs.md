@@ -1,5 +1,21 @@
 # CanonFS Layer
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [CanonFS Layer](#canonfs-layer)
+  - [Purpose and Responsibilities](#purpose-and-responsibilities)
+  - [Principal Data Structures and Interfaces](#principal-data-structures-and-interfaces)
+  - [Data Flow](#data-flow)
+  - [Key Invariants / Guarantees](#key-invariants--guarantees)
+  - [Principal Failure Modes and Handling](#principal-failure-modes-and-handling)
+  - [Indeterminate](#indeterminate)
+  - [Evidence](#evidence)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active  
 Last Verified (UTC): 2026-02-26  
 Maturity: `Stable` (bounded persistence/integrity surface)

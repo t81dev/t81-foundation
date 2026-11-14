@@ -1,5 +1,23 @@
 # T81 Foundation — Freestanding Axion OS Boot Execution Trace
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation — Freestanding Axion OS Boot Execution Trace](#t81-foundation-—-freestanding-axion-os-boot-execution-trace)
+  - [1. Complete Boot Sequence Trace](#1-complete-boot-sequence-trace)
+  - [2. Detailed Stage-by-Stage Entry Trace](#2-detailed-stage-by-stage-entry-trace)
+    - [Stage 1: Firmware & Bootloader Entry](#stage-1-firmware-&-bootloader-entry)
+    - [Stage 2: ExitBootServices Transition](#stage-2-exitbootservices-transition)
+    - [Stage 3: Bare-Metal Hardware Initialization](#stage-3-bare-metal-hardware-initialization)
+    - [Stage 4: Freestanding C++ Bridge Handoff](#stage-4-freestanding-c++-bridge-handoff)
+    - [Stage 5: User-Space (EL0) Execution & System Call Handling](#stage-5-user-space-el0-execution-&-system-call-handling)
+    - [Stage 6: Interactive Shell & Cooperative Scheduler](#stage-6-interactive-shell-&-cooperative-scheduler)
+  - [3. Critical Boot Architecture Findings](#3-critical-boot-architecture-findings)
+
+<!-- T81-TOC:END -->
+
+
 **Audit Designation:** T81-SIA-001
 **Reference Document:** Boot Sequence & Bare-Metal Execution Analysis
 **Evaluated Target Architectures:** AArch64 (QEMU virt, cortex-a57) and x86_64 (QEMU q35 / VirtualBox)

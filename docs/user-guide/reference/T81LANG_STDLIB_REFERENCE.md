@@ -1,5 +1,20 @@
 # T81Lang Standard Library Reference
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Standard Library Reference](#t81lang-standard-library-reference)
+  - [1. Read This First](#1-read-this-first)
+  - [2. How to Use Modules](#2-how-to-use-modules)
+  - [3. Module Index](#3-module-index)
+  - [4. Determinism Notes](#4-determinism-notes)
+  - [5. Fixture-Driven Usage References](#5-fixture-driven-usage-references)
+  - [6. Upgrade Discipline](#6-upgrade-discipline)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-02-26  
 Status: Active  
 Scope: Current `lang/stdlib/std/*.t81` module surface

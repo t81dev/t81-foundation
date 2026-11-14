@@ -1,5 +1,28 @@
 # Research Report: Validation and Performance Analysis of Packed Ternary Matrix-Vector Multiplication
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Research Report: Validation and Performance Analysis of Packed Ternary Matrix-Vector Multiplication](#research-report-validation-and-performance-analysis-of-packed-ternary-matrix-vector-multiplication)
+  - [1. Executive Summary](#1-executive-summary)
+    - [Primary Conclusion & Final Decision: **STOP (CPU Ternary Kernel Optimization Frozen)**](#primary-conclusion-&-final-decision-**stop-cpu-ternary-kernel-optimization-frozen**)
+  - [2. Claim / Evidence Matrix](#2-claim--evidence-matrix)
+  - [3. Workload Benchmark Results](#3-workload-benchmark-results)
+    - [Benchmark Performance Summary](#benchmark-performance-summary)
+  - [4. Cost Separation: Packing, Unpacking, and Single-Use Execution](#4-cost-separation-packing-unpacking-and-single-use-execution)
+    - [Key Insight](#key-insight)
+  - [5. Architectural Comparison: Experiment Kernels vs T81 `QMATMUL`](#5-architectural-comparison-experiment-kernels-vs-t81-`qmatmul`)
+  - [6. Reproducibility & Commands](#6-reproducibility-&-commands)
+    - [Build Command](#build-command)
+    - [Verification Command](#verification-command)
+    - [CTest Target Execution](#ctest-target-execution)
+    - [Machine-Readable Output Path](#machine-readable-output-path)
+  - [7. Explicit Recommendation & Closure Reference](#7-explicit-recommendation-&-closure-reference)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `docs/research/PACKED_TERNARY_MATVEC_PERFORMANCE_REPORT.md`
 **Date:** April 2026
 **Status:** Frozen / STOP (Closed via Synthesis Report `TERNARY_RESEARCH_CLOSURE_AND_NEXT_HYPOTHESIS.md`)

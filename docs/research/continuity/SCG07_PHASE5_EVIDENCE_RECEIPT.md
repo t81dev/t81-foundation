@@ -1,5 +1,25 @@
 # SCG-07 Phase 5 Evidence Receipt: T81Limb54 Karatsuba Multiplication Correctness Verification (F3)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [SCG-07 Phase 5 Evidence Receipt: T81Limb54 Karatsuba Multiplication Correctness Verification (F3)](#scg-07-phase-5-evidence-receipt-t81limb54-karatsuba-multiplication-correctness-verification-f3)
+  - [1. Executive Summary](#1-executive-summary)
+  - [2. Scope Inventory](#2-scope-inventory)
+  - [3. Mathematical Analysis & Root-Cause Disentanglement](#3-mathematical-analysis-&-root-cause-disentanglement)
+    - [3.1 Karatsuba Decomposition Modulo $3^{54}$](#31-karatsuba-decomposition-modulo-$3^{54}$)
+    - [3.2 Analysis of Intermediate 28th-Trit Carry Discard](#32-analysis-of-intermediate-28th-trit-carry-discard)
+    - [3.3 Historical Attribution Reconciled](#33-historical-attribution-reconciled)
+  - [4. Verification Evidence](#4-verification-evidence)
+    - [4.1 Comparison Across SCG-06 300 Trials](#41-comparison-across-scg-06-300-trials)
+    - [4.2 Independent Oracle & Randomized Verification](#42-independent-oracle-&-randomized-verification)
+    - [4.3 Test Execution Matrix](#43-test-execution-matrix)
+  - [5. Inherited Baseline Failures & Scope Limitations](#5-inherited-baseline-failures-&-scope-limitations)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `T81-SCG-07-PHASE5-RECEIPT-001-R1`
 **Date:** 2026-11-09
 **Repository Baseline Anchor:** `8497ffb8742266d499e0cf8c826857776238db98` (`origin/main`, merging PR #738 and PR #739)

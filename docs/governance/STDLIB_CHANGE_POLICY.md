@@ -1,5 +1,19 @@
 # T81Lang Standard Library Change Policy
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Standard Library Change Policy](#t81lang-standard-library-change-policy)
+  - [1. Purpose](#1-purpose)
+  - [2. Change Classes](#2-change-classes)
+  - [3. Required Evidence By Class](#3-required-evidence-by-class)
+  - [4. Mandatory Gates](#4-mandatory-gates)
+  - [5. Claim Discipline](#5-claim-discipline)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-02-26  
 Status: Active Governance Policy
 

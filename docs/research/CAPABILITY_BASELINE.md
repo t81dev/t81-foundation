@@ -1,5 +1,45 @@
 # T81 Foundation Architecture — Comprehensive Capability Baseline
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation Architecture — Comprehensive Capability Baseline](#t81-foundation-architecture-—-comprehensive-capability-baseline)
+  - [Executive Overview](#executive-overview)
+    - [Evidence Level Definitions](#evidence-level-definitions)
+  - [1. Balanced-Ternary Arithmetic & Numerical Representations](#1-balanced-ternary-arithmetic-&-numerical-representations)
+    - [1.1 Native Trit Integer & SWAR Representation (`t81::T81`, `ExactTrit`)](#11-native-trit-integer-&-swar-representation-`t81t81`-`exacttrit`)
+    - [1.2 Deterministic Floating-Point Subsystem (`T81Float`, `soft_math`)](#12-deterministic-floating-point-subsystem-`t81float`-`soft_math`)
+    - [1.3 Exact Fraction & BigInt Arithmetic (`T81Fraction`, `T81BigInt`)](#13-exact-fraction-&-bigint-arithmetic-`t81fraction`-`t81bigint`)
+  - [2. TISC Architecture, Opcodes & Execution Model](#2-tisc-architecture-opcodes-&-execution-model)
+    - [2.1 Instruction Encoding & Machine State](#21-instruction-encoding-&-machine-state)
+    - [2.2 Interpreter Dispatch & Decoder](#22-interpreter-dispatch-&-decoder)
+  - [3. T81Lang Compiler & Runtime Infrastructure](#3-t81lang-compiler-&-runtime-infrastructure)
+    - [3.1 Lexer, Parser & AST](#31-lexer-parser-&-ast)
+    - [3.2 Semantic Analysis & IR Generator](#32-semantic-analysis-&-ir-generator)
+  - [4. T81VM Execution, Memory Model, Traces & JIT](#4-t81vm-execution-memory-model-traces-&-jit)
+    - [4.1 Memory Architecture & Stack/Heap](#41-memory-architecture-&-stackheap)
+    - [4.2 Deterministic Trace JIT Engine](#42-deterministic-trace-jit-engine)
+  - [5. SWAR, SIMD & Vector Acceleration](#5-swar-simd-&-vector-acceleration)
+    - [5.1 SWAR & SIMD Kernel Integration](#51-swar-&-simd-kernel-integration)
+  - [6. CanonFS Identity, Serialization & Persistence](#6-canonfs-identity-serialization-&-persistence)
+    - [6.1 Content-Addressable Storage & CanonHash81](#61-content-addressable-storage-&-canonhash81)
+  - [7. Axion Policy, Capabilities & Governance](#7-axion-policy-capabilities-&-governance)
+    - [7.1 Axion Policy Engine & APL](#71-axion-policy-engine-&-apl)
+  - [8. Deterministic Parallel Execution (DPE)](#8-deterministic-parallel-execution-dpe)
+    - [8.1 DPE Task Graph & Epoch Commitment](#81-dpe-task-graph-&-epoch-commitment)
+  - [9. AI Inference, Quantization & Tensor Infrastructure](#9-ai-inference-quantization-&-tensor-infrastructure)
+    - [9.1 Native Ternary & Quantized Inference Opcodes](#91-native-ternary-&-quantized-inference-opcodes)
+  - [10. Symbolic, Recursive & Cognitive Tier Mechanisms](#10-symbolic-recursive-&-cognitive-tier-mechanisms)
+    - [10.1 Cognition Tiers & Self-Model Ring Buffer](#101-cognition-tiers-&-self-model-ring-buffer)
+  - [11. TernaryOS, HAL, MMU & Kernel](#11-ternaryos-hal-mmu-&-kernel)
+    - [11.1 Axion Kernel, HAL & EL0 Userland](#111-axion-kernel-hal-&-el0-userland)
+  - [12. Governance, Specification Authority & Reproducibility](#12-governance-specification-authority-&-reproducibility)
+    - [12.1 Conformance Suites & CI Governance](#121-conformance-suites-&-ci-governance)
+
+<!-- T81-TOC:END -->
+
+
 ## Executive Overview
 
 This document establishes the official capability baseline for the T81 Foundation architecture. Every capability claim in this inventory is grounded in exact source file paths, public C++ APIs, TISC opcodes, T81Lang constructs, test executables, and empirical evidence recorded directly from the codebase at commit `c930b8c2ee7478782bf3c6d231bdd59984595ef2`.

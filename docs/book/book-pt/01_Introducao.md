@@ -1,5 +1,28 @@
 # Capítulo 1: Introdução
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Capítulo 1: Introdução](#capítulo-1-introdução)
+  - [1.1 Escopo e Definição](#11-escopo-e-definição)
+    - [1.1.1 Invariantes Centrais](#111-invariantes-centrais)
+  - [1.2 Arquitetura do Sistema](#12-arquitetura-do-sistema)
+    - [1.2.1 A Máquina Virtual TISC (T81VM)](#121-a-máquina-virtual-tisc-t81vm)
+    - [1.2.2 O Kernel de Segurança Axion](#122-o-kernel-de-segurança-axion)
+    - [1.2.3 Sistema de Arquivos Canônico (CanonFS)](#123-sistema-de-arquivos-canônico-canonfs)
+    - [1.2.4 Os Níveis Cognitivos](#124-os-níveis-cognitivos)
+  - [1.3 Missão de Computação Verificável](#13-missão-de-computação-verificável)
+    - [1.3.1 Inferência de IA Trustless](#131-inferência-de-ia-trustless)
+    - [1.3.2 Contratos Inteligentes e Consenso](#132-contratos-inteligentes-e-consenso)
+    - [1.3.3 Reprodutibilidade Científica](#133-reprodutibilidade-científica)
+  - [1.4 Terminologia](#14-terminologia)
+  - [1.5 Checklist de Verificação](#15-checklist-de-verificação)
+  - [Nota do Autor para a Próxima Revisão](#nota-do-autor-para-a-próxima-revisão)
+
+<!-- T81-TOC:END -->
+
+
 ## 1.1 Escopo e Definição
 
 **Status: Implementado e Testado**

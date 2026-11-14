@@ -1,5 +1,27 @@
 # Chapter 10: Cognitive Tiers and Distributed Compute
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Chapter 10: Cognitive Tiers and Distributed Compute](#chapter-10-cognitive-tiers-and-distributed-compute)
+    - [Tier Progression Map](#tier-progression-map)
+  - [10.1 The Cognitive Tier Model](#101-the-cognitive-tier-model)
+  - [10.2 Distributed Compute (Tier 4)](#102-distributed-compute-tier-4)
+  - [10.3 Trace-JIT and Advanced Runtime Paths](#103-trace-jit-and-advanced-runtime-paths)
+  - [10.4 Infinite Forms (Tier 5)](#104-infinite-forms-tier-5)
+    - [Tier Mapping Exercise](#tier-mapping-exercise)
+    - [Role-Based Learning Path](#role-based-learning-path)
+    - [Worked Example](#worked-example)
+    - [Hands-On Lab](#hands-on-lab)
+    - [Cross-Chapter Continuity](#cross-chapter-continuity)
+    - [Expected Outcomes](#expected-outcomes)
+    - [Chapter Summary](#chapter-summary)
+    - [Read Next](#read-next)
+
+<!-- T81-TOC:END -->
+
+
 This chapter introduces the scaling model for advanced workloads while preserving governance and determinism discipline. The tier framework exists to prevent capability growth from outrunning assurance controls.
 
 For onboarding, read tiers as maturity boundaries with explicit expectations, not as prestige labels.

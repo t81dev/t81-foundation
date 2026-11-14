@@ -1,5 +1,37 @@
 # Axion Stable Promotion Evidence
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Axion Stable Promotion Evidence](#axion-stable-promotion-evidence)
+  - [📋 **Executive Summary**](#📋-**executive-summary**)
+  - [🔍 **Promotion Requirements Analysis**](#🔍-**promotion-requirements-analysis**)
+    - [**Beta → Stable Requirements Met:**](#**beta-→-stable-requirements-met**)
+  - [🚀 **Major Implementation Accomplishments**](#🚀-**major-implementation-accomplishments**)
+    - [**✅ AX-M6 Verbatim Reason-String Implementation (NEW)**](#**✅-ax-m6-verbatim-reason-string-implementation-new**)
+  - [📊 **Test Coverage Evidence**](#📊-**test-coverage-evidence**)
+    - [**Comprehensive Test Suite:**](#**comprehensive-test-suite**)
+    - [**Critical Test Categories:**](#**critical-test-categories**)
+  - [🎯 **Post-Stable Work Items (Documented)**](#🎯-**post-stable-work-items-documented**)
+    - [**§2.5 Policy Subsystem Separation**](#**§25-policy-subsystem-separation**)
+    - [**Other Deferred Items:**](#**other-deferred-items**)
+  - [📈 **Production Readiness Assessment**](#📈-**production-readiness-assessment**)
+    - [**Implementation Maturity:**](#**implementation-maturity**)
+    - [**Risk Assessment:**](#**risk-assessment**)
+  - [✅ **Stable Promotion Recommendation**](#✅-**stable-promotion-recommendation**)
+    - [**Requirements Satisfaction:**](#**requirements-satisfaction**)
+    - [**Post-Stable Roadmap:**](#**post-stable-roadmap**)
+  - [🚀 **Strategic Impact**](#🚀-**strategic-impact**)
+    - [**Immediate Benefits:**](#**immediate-benefits**)
+    - [**Long-term Benefits:**](#**long-term-benefits**)
+  - [✅ **Promotion Conclusion**](#✅-**promotion-conclusion**)
+    - [**Implementation Status:**](#**implementation-status**)
+    - [**Governance Acceptance:**](#**governance-acceptance**)
+
+<!-- T81-TOC:END -->
+
+
 **Promotion Date:** 2026-03-15  
 **Surface:** Axion Governance Kernel  
 **Current Status:** Beta → **Stable Candidate**  

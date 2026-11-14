@@ -1,5 +1,28 @@
 # Determinism Audit Log
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Determinism Audit Log](#determinism-audit-log)
+  - [Log](#log)
+    - [2026-03-22 — VM Fuzzer: Three-Wave int-Narrowing OOB Security Fix](#2026-03-22-—-vm-fuzzer-three-wave-int-narrowing-oob-security-fix)
+    - [2026-03-22 — Axion AgentInvoke Runtime Integration Evidence](#2026-03-22-—-axion-agentinvoke-runtime-integration-evidence)
+    - [2026-03-22 — HostFloat Result Representation Fix (Track K) + Matmul Fast Path (Track L)](#2026-03-22-—-hostfloat-result-representation-fix-track-k-+-matmul-fast-path-track-l)
+    - [2026-03-19 — Axion Epoch Scheduler / Audit Parity Promotion](#2026-03-19-—-axion-epoch-scheduler--audit-parity-promotion)
+    - [2026-03-05 — Status Reconciliation Follow-Up](#2026-03-05-—-status-reconciliation-follow-up)
+    - [2026-02-27 — Data Types Determinism Audit](#2026-02-27-—-data-types-determinism-audit)
+    - [2026-02-28 — Language Surface Determinism Verification](#2026-02-28-—-language-surface-determinism-verification)
+    - [2026-02-26 — Structural Integrity Check](#2026-02-26-—-structural-integrity-check)
+    - [2026-02-25 — Verified Surface Audit (Baseline)](#2026-02-25-—-verified-surface-audit-baseline)
+    - [2026-02-26 — CodeQL Push Trigger Gap](#2026-02-26-—-codeql-push-trigger-gap)
+  - [Audit Cadence](#audit-cadence)
+  - [Adding Entries](#adding-entries)
+  - [Cross-References](#cross-references)
+
+<!-- T81-TOC:END -->
+
+
 Last Updated: 2026-03-22
 Owner: @t81dev
 

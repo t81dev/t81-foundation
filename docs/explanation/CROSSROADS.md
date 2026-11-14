@@ -1,5 +1,19 @@
 # CROSSROADS: The Strategic Future of the T81 Foundation
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [CROSSROADS: The Strategic Future of the T81 Foundation](#crossroads-the-strategic-future-of-the-t81-foundation)
+  - [1. The Determinism vs. Performance Frontier](#1-the-determinism-vs-performance-frontier)
+  - [2. The Compilation Horizon: Interpreter vs. JIT](#2-the-compilation-horizon-interpreter-vs-jit)
+  - [3. Hardware Sovereignty: Emulation vs. Silicon](#3-hardware-sovereignty-emulation-vs-silicon)
+  - [4. Ecosystem Positioning: General Purpose vs. High-Stakes](#4-ecosystem-positioning-general-purpose-vs-high-stakes)
+  - [Summary of Strategic Commitments](#summary-of-strategic-commitments)
+
+<!-- T81-TOC:END -->
+
+
 > **Status:** Conceptual / Strategic
 > **Last Updated:** February 10, 2026
 > **Purpose:** This document outlines the major strategic forks in the road ("crossroads") facing the T81 Foundation as it moves beyond v1.0. It analyzes the tensions between competing goals and proposes the path forward.

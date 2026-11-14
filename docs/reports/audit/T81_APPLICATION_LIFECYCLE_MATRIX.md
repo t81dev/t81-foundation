@@ -1,5 +1,28 @@
 # T81 Foundation — Application Lifecycle Matrix
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation — Application Lifecycle Matrix](#t81-foundation-—-application-lifecycle-matrix)
+  - [1. Application Lifecycle Comparative Matrix](#1-application-lifecycle-comparative-matrix)
+  - [2. End-to-End Application Trace: Hosted Runtime](#2-end-to-end-application-trace-hosted-runtime)
+    - [Step 1: Program Definition](#step-1-program-definition)
+    - [Step 2: Compilation to TISC](#step-2-compilation-to-tisc)
+    - [Step 3: Canonical Storage Registration](#step-3-canonical-storage-registration)
+    - [Step 4: Policy-Governed Execution](#step-4-policy-governed-execution)
+    - [Step 5: Policy Denial Verification](#step-5-policy-denial-verification)
+  - [3. End-to-End Application Trace: Freestanding Axion OS](#3-end-to-end-application-trace-freestanding-axion-os)
+    - [Step 1: Program Authoring in Native Assembly](#step-1-program-authoring-in-native-assembly)
+    - [Step 2: Cross-Compilation & Flat Binary Extraction](#step-2-cross-compilation-&-flat-binary-extraction)
+    - [Step 3: T81X Sector Packaging & Disk Injection](#step-3-t81x-sector-packaging-&-disk-injection)
+- [T81X Header: Magic (4B) + Version (1B) + Entry Offset (4B) + Code Size (4B)](#t81x-header-magic-4b-+-version-1b-+-entry-offset-4b-+-code-size-4b)
+    - [Step 4: Boot & Dispatch in QEMU](#step-4-boot-&-dispatch-in-qemu)
+  - [4. Lifecycle Assessment Summary](#4-lifecycle-assessment-summary)
+
+<!-- T81-TOC:END -->
+
+
 **Audit Designation:** T81-SIA-001
 **Reference Document:** Application Lifecycle Analysis (Hosted vs. Freestanding Axion OS)
 **Evaluated Application Workflows:** Compilation, Bytecode Emission, Binary Packaging, Model Ingestion, Policy Evaluation, Execution, Persistent Side Effects, Verification, and Failure Recovery.

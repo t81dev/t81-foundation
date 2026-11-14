@@ -1,5 +1,41 @@
 # T81 Strategic Positioning
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Strategic Positioning](#t81-strategic-positioning)
+  - [**Executive Decision: Deterministic AI Runtime**](#**executive-decision-deterministic-ai-runtime**)
+  - [**Positioning Rationale**](#**positioning-rationale**)
+    - [**What Actually Works (Production-Ready)**](#**what-actually-works-production-ready**)
+    - [**What's Experimental (Research-Grade)**](#**what's-experimental-research-grade**)
+  - [**Market Positioning Matrix**](#**market-positioning-matrix**)
+  - [**Recommended Messaging**](#**recommended-messaging**)
+    - [**Primary Message**](#**primary-message**)
+    - [**Key Differentiators**](#**key-differentiators**)
+    - [**Avoid These Messages**](#**avoid-these-messages**)
+  - [**Target Audiences**](#**target-audiences**)
+    - [**Primary Target: Production Systems**](#**primary-target-production-systems**)
+    - [**Secondary Target: Research & Development**](#**secondary-target-research-&-development**)
+    - [**Avoid These Audiences**](#**avoid-these-audiences**)
+  - [**Competitive Positioning**](#**competitive-positioning**)
+    - [**vs. Conventional AI Frameworks**](#**vs-conventional-ai-frameworks**)
+    - [**vs. Blockchain/Auditing Systems**](#**vs-blockchainauditing-systems**)
+    - [**vs. Traditional Governance**](#**vs-traditional-governance**)
+  - [**Implementation Roadmap**](#**implementation-roadmap**)
+    - [**Phase 1: Clarify Boundaries (Immediate)**](#**phase-1-clarify-boundaries-immediate**)
+    - [**Phase 2: Market Messaging (Next Quarter)**](#**phase-2-market-messaging-next-quarter**)
+    - [**Phase 3: Ecosystem Development (Future)**](#**phase-3-ecosystem-development-future**)
+  - [**Success Metrics**](#**success-metrics**)
+    - [**Technical Metrics**](#**technical-metrics**)
+    - [**Business Metrics**](#**business-metrics**)
+  - [**Risk Management**](#**risk-management**)
+    - [**Primary Risks**](#**primary-risks**)
+    - [**Mitigation Strategies**](#**mitigation-strategies**)
+
+<!-- T81-TOC:END -->
+
+
 ## **Executive Decision: Deterministic AI Runtime**
 
 After comprehensive analysis of codebase, test coverage, and tooling complexity, the T81 Foundation should be positioned as:

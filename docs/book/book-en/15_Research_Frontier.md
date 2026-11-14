@@ -1,5 +1,25 @@
 # Chapter 15: Research Frontier
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Chapter 15: Research Frontier](#chapter-15-research-frontier)
+  - [15.1 Ternary Hardware Acceleration](#151-ternary-hardware-acceleration)
+  - [15.2 Formal Verification Paths](#152-formal-verification-paths)
+  - [15.3 CanonFS as a Merkle Substrate](#153-canonfs-as-a-merkle-substrate)
+  - [15.4 Deterministic AI Inference at Scale](#154-deterministic-ai-inference-at-scale)
+    - [Research Planning Exercise](#research-planning-exercise)
+    - [Role-Based Learning Path](#role-based-learning-path)
+    - [Worked Example](#worked-example)
+    - [Hands-On Lab](#hands-on-lab)
+    - [Expected Outcomes](#expected-outcomes)
+    - [Chapter Summary](#chapter-summary)
+    - [Read Next](#read-next)
+
+<!-- T81-TOC:END -->
+
+
 The research frontier explores where T81 can evolve without compromising its core commitments. This chapter is intentionally forward-looking, but it keeps one discipline: speculative work must remain explicit about confidence, risk, and verification requirements.
 
 For onboarding, the message is clear: research is encouraged, but assurance language must remain honest.
