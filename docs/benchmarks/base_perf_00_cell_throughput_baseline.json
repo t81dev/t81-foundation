@@ -1,0 +1,290 @@
+{
+  "schema": "t81.benchmark.base_perf_00.v1",
+  "baseline_id": "BASE-PERF-00",
+  "title": "TCB-Core Cell Software Arithmetic Throughput Baseline",
+  "scope_notice": "Authorized bounded BASE-PERF-00 engineering measurement. Not an SCG-08 Gate 2 experiment; does not modify historical scientific evidence, ratify RFC-00E1, or evaluate comparative binary advantage.",
+  "git_identity": {
+    "repository": "https://github.com/t81dev/t81-foundation",
+    "baseline_main_sha": "d3a6cf55517a3098d7bae91b07c72694bc3472da",
+    "branch": "codex/base-perf-00-cell-throughput-baseline",
+    "production_cell_header_modified": false
+  },
+  "provenance": {
+    "raw_artifact": "docs/benchmarks/base_perf_00_cell_throughput_raw.json",
+    "raw_artifact_preserved_byte_for_byte": true,
+    "raw_artifact_timestamp": "2026-11-12T07:15:14-05:00",
+    "retained_execution_receipt": null,
+    "build_and_environment_assertions": "author-reported (unverified by retained receipt)",
+    "original_source_to_binary_binding": "unverified",
+    "reproduction_vs_authentication": "Fresh builds or reproductions on current source validate only the current working tree on the local host and do not authenticate or retroactively verify the original 2026-11-12T07:15:14-05:00 execution or its source-to-binary binding."
+  },
+  "environment_identity": {
+    "assertion_provenance": "author-reported (unverified by retained receipt)",
+    "host_name": "MacBook-Air.local",
+    "cpu_brand": "Apple M2",
+    "architecture": "arm64 (arm64-apple-darwin25.5.0)",
+    "logical_cores": 8,
+    "memory_bytes": 8589934592,
+    "os_version": "macOS 26.5.2 (Build 25F84)",
+    "kernel_version": "Darwin Kernel Version 25.5.0: Mon May 18 19:21:08 PDT 2026; root:xnu-12377.140.4~7/RELEASE_ARM64_T8112",
+    "sysctl_hv_vmm_present": 0,
+    "is_virtualized": false,
+    "host_classification": "HOST-LOCAL / PHYSICAL WORKSTATION (non-reference hardware)",
+    "compiler": "Apple clang version 21.0.0 (clang-2100.1.1.101)",
+    "cmake_version": "4.3",
+    "cmake_build_type": "Release",
+    "cxx_flags": "-O3 -DNDEBUG -std=gnu++23 -arch arm64 -fPIE -Wall -Wextra -Wpedantic",
+    "cxx_defines": "-DBENCHMARK_STATIC_DEFINE -DT81_DETERMINISTIC",
+    "simd_compile_target": "AVX2=0, SSE4.2=0, NEON=1",
+    "benchmark_library": "Google Benchmark v1.9.5",
+    "warmup_min_time_seconds": 0.05,
+    "benchmark_min_time_seconds": 0.05,
+    "repetitions": 5,
+    "timing_basis": "cpu_time_for_throughput (Google Benchmark items_per_second = completed_ops / cpu_time; UseRealTime() is not enabled); wall-clock batch iteration times (real_time_ns per 10,000-op iteration) are recorded separately; source labels in arith_throughput.cpp and roundtrip_accuracy.cpp corrected from timing=real_time to timing=cpu_time while raw JSON is preserved byte-for-byte",
+    "work_per_iteration_ops": 10000
+  },
+  "correctness_oracle": {
+    "oracle_reference": "Host int64_t exact integer arithmetic and C++ truncated integer division",
+    "verification_mode": "Untimed prevalidation before timed benchmark loops + standalone CTest executable t81_determinism_primitives_test",
+    "cell_representation": "5 balanced trits in {-1, 0, +1}, little-endian, exact range [-121, +121] (243 states)",
+    "exhaustive_domain_checks": {
+      "conversion_roundtrip": {
+        "domain": "[-121, +121]",
+        "states_tested": 243,
+        "states_passed": 243,
+        "out_of_range_overflow_verified": [-10000, -243, -122, 122, 243, 10000],
+        "failures": 0
+      },
+      "addition": {
+        "domain": "[-121, +121] x [-121, +121]",
+        "pairs_tested": 59049,
+        "in_range_exact_matches": 44287,
+        "out_of_range_overflow_exceptions_verified": 14762,
+        "failures": 0
+      },
+      "subtraction": {
+        "domain": "[-121, +121] x [-121, +121]",
+        "pairs_tested": 59049,
+        "in_range_exact_matches": 44287,
+        "out_of_range_overflow_exceptions_verified": 14762,
+        "failures": 0
+      },
+      "multiplication": {
+        "benchmark_safe_domain": "[-10, +10] x [-10, +10]",
+        "benchmark_safe_pairs_tested": 441,
+        "benchmark_safe_pairs_passed": 441,
+        "full_domain": "[-121, +121] x [-121, +121]",
+        "full_domain_pairs_tested": 59049,
+        "full_domain_succeeded_exact": 2553,
+        "full_domain_true_overflow_exceptions": 56144,
+        "full_domain_intermediate_shift_overflow_exceptions": 352,
+        "silent_corruptions": 0,
+        "note": "Cell::operator* uses 5-trit shift-and-add. Operands in [-10, +10] fit in three balanced trits (trits 0..2, 1+3+9=13 >= 10), whereas products in [-100, +100] can require five trits ([-121, +121]). Because operands fit in three trits, shifts stop at index 2, shifted operands (*this << i, i <= 2) have magnitude <= 90 <= 121, and partial sums remain representable in [-121, +121]; exhaustive testing confirms 441/441 pairs. Over the full [-121, +121]^2 domain (59,049 pairs), 352 pairs with |a*b| <= 121 throw std::overflow_error due to intermediate shift or partial-sum overflow."
+      },
+      "division": {
+        "domain": "[-121, +121] x [-121, +121]",
+        "pairs_tested": 59049,
+        "nonzero_divisor_exact_matches": 58806,
+        "division_by_zero_domain_error_verified": 243,
+        "failures": 0,
+        "note": "Cell::operator/ converts both operands via to_int(), checks divisor == 0, performs host int64_t division a / b, and converts back via Cell::from_int(a / b)."
+      }
+    },
+    "timed_workload_prevalidation": {
+      "prng": "std::mt19937_64",
+      "seed": "0x781",
+      "data_size": 10000,
+      "arith_operand_domain": "val_a, val_b uniform in [-10, +10] with val_b == 0 mapped to 1",
+      "roundtrip_operand_domain": "val uniform in [-121, +121]",
+      "prevalidated_operations_per_setup": 50000,
+      "oracle_failures": 0
+    }
+  },
+  "measurement_defects_repaired": [
+    {
+      "id": "DEFECT-1",
+      "location": "benchmarks/runner/arith_throughput.cpp",
+      "issue": "BM_ArithThroughput_T81Cell bundled +, -, *, and / in one loop and caught std::exception with continue while unconditionally crediting state.iterations() * DATA_SIZE * 4 items processed.",
+      "repair": "Added dedicated per-operation benchmarks (BM_CellAdd_T81Cell, BM_CellSub_T81Cell, BM_CellMul_T81Cell, BM_CellDiv_T81Cell), prevalidated all inputs in an untimed setup phase, tracked completed_ops and failed_ops explicitly, and failed the benchmark via SkipWithError if any exception occurs."
+    },
+    {
+      "id": "DEFECT-2",
+      "location": "benchmarks/runner/roundtrip_accuracy.cpp",
+      "issue": "BM_RoundtripAccuracy_T81Cell evaluated if (Cell::from_int(val).to_int() == val) inside the timed loop without DoNotOptimize barriers on the input int64_t, intermediate Cell, or output int64_t, mixing oracle branching into timing and permitting constexpr folding across from_int().to_int().",
+      "repair": "Moved oracle accuracy verification to the untimed setup_and_prevalidate_roundtrip() phase and added BM_CellRoundtrip_T81Cell (and updated BM_RoundtripAccuracy_T81Cell) with explicit DoNotOptimize(val), DoNotOptimize(cell), DoNotOptimize(roundtrip), and ClobberMemory() barriers."
+    },
+    {
+      "id": "DEFECT-3",
+      "location": "benchmarks/runner/benchmark_runner.cpp",
+      "issue": "CustomReporter::ReportRuns overwrote final_results[family] on each RT_Iteration run, discarding earlier repetitions and reporting only the final repetition instead of retaining all repetitions and reporting the median and spread.",
+      "repair": "Stored all per-repetition throughput and latency values in BenchmarkResult vectors, computed median throughput and latency across repetitions via ComputeMedian(), and added per-repetition raw/median/min/max/range/stddev/CV reporting."
+    },
+    {
+      "id": "DEFECT-4",
+      "location": "benchmarks/runner/arith_throughput.cpp, benchmarks/runner/benchmark_runner.cpp",
+      "issue": "arith_throughput.cpp labeled Cell vs int64_t with comparison=apples-to-apples and benchmark_runner.cpp defaulted FairnessFor to apples-to-apples whenever a ratio was computed.",
+      "repair": "Replaced unsupported apples-to-apples labels with comparison=not-evaluated and updated FairnessFor / UserRow in benchmark_runner.cpp to honor comparison=not-evaluated and comparison=semantic-tax without claiming comparative wins."
+    }
+  ],
+  "measurements": [
+    {
+      "operation": "cell_add",
+      "benchmark_name": "BM_CellAdd_T81Cell/repeats:5",
+      "semantics": "5-trit balanced-ternary unrolled ripple-carry addition with overflow check",
+      "domain": "[-10, +10]^2",
+      "work_per_iter_ops": 10000,
+      "iterations_per_repetition": 1177,
+      "repetitions": 5,
+      "failed_ops": 0,
+      "oracle_failures": 0,
+      "raw_repetitions": [
+        {"repetition_index": 0, "real_time_ns": 61039.86152586232, "cpu_time_ns": 60654.20560747669, "items_per_second": 164869029.27580878},
+        {"repetition_index": 1, "real_time_ns": 64593.20985578387, "cpu_time_ns": 62757.009345794264, "items_per_second": 159344750.55845156},
+        {"repetition_index": 2, "real_time_ns": 59422.224240983654, "cpu_time_ns": 59418.861512319454, "items_per_second": 168296728.4374285},
+        {"repetition_index": 3, "real_time_ns": 62667.19708733495, "cpu_time_ns": 61309.26083262525, "items_per_second": 163107495.7386956},
+        {"repetition_index": 4, "real_time_ns": 61550.23371489021, "cpu_time_ns": 61203.90824129153, "items_per_second": 163388258.81144384}
+      ],
+      "summary": {
+        "median_items_per_second": 163388258.81144384,
+        "median_mops_per_second": 163.38825881144384,
+        "mean_items_per_second": 163801252.56436566,
+        "min_items_per_second": 159344750.55845156,
+        "max_items_per_second": 168296728.4374285,
+        "range_items_per_second": 8951977.878976941,
+        "stddev_items_per_second": 3235031.7978584073,
+        "cv_percent": 1.9749737851285372,
+        "median_real_time_ns": 61550.233714890215,
+        "median_cpu_time_ns": 61203.90824129153
+      }
+    },
+    {
+      "operation": "cell_sub",
+      "benchmark_name": "BM_CellSub_T81Cell/repeats:5",
+      "semantics": "5-trit balanced-ternary unary trit negation followed by ripple-carry addition (*this + (-o))",
+      "domain": "[-10, +10]^2",
+      "work_per_iter_ops": 10000,
+      "iterations_per_repetition": 773,
+      "repetitions": 5,
+      "failed_ops": 0,
+      "oracle_failures": 0,
+      "raw_repetitions": [
+        {"repetition_index": 0, "real_time_ns": 83056.9753620923, "cpu_time_ns": 83036.22250970245, "items_per_second": 120429370.43326531},
+        {"repetition_index": 1, "real_time_ns": 78677.23155795642, "cpu_time_ns": 78097.02457956031, "items_per_second": 128045851.34754568},
+        {"repetition_index": 2, "real_time_ns": 72045.65458737053, "cpu_time_ns": 71923.67399741254, "items_per_second": 139036278.93591407},
+        {"repetition_index": 3, "real_time_ns": 71883.67915796393, "cpu_time_ns": 71855.10996119022, "items_per_second": 139168947.14100525},
+        {"repetition_index": 4, "real_time_ns": 71604.57184256318, "cpu_time_ns": 71604.13971539457, "items_per_second": 139656729.90063232}
+      ],
+      "summary": {
+        "median_items_per_second": 139036278.93591407,
+        "median_mops_per_second": 139.03627893591407,
+        "mean_items_per_second": 133267435.55167256,
+        "min_items_per_second": 120429370.43326531,
+        "max_items_per_second": 139656729.90063232,
+        "range_items_per_second": 19227359.46736701,
+        "stddev_items_per_second": 8674839.08919641,
+        "cv_percent": 6.509346453082204,
+        "median_real_time_ns": 72045.65458737055,
+        "median_cpu_time_ns": 71923.67399741254
+      }
+    },
+    {
+      "operation": "cell_mul",
+      "benchmark_name": "BM_CellMul_T81Cell/repeats:5",
+      "semantics": "5-trit balanced-ternary shift-and-add multiplication over multiplier trits",
+      "domain": "[-10, +10]^2",
+      "work_per_iter_ops": 10000,
+      "iterations_per_repetition": 157,
+      "repetitions": 5,
+      "failed_ops": 0,
+      "oracle_failures": 0,
+      "raw_repetitions": [
+        {"repetition_index": 0, "real_time_ns": 444534.235444086, "cpu_time_ns": 444535.0318471314, "items_per_second": 22495414.947272014},
+        {"repetition_index": 1, "real_time_ns": 448249.99970662745, "cpu_time_ns": 448178.343949048, "items_per_second": 22312546.188391622},
+        {"repetition_index": 2, "real_time_ns": 447778.9299265974, "cpu_time_ns": 447777.0700636926, "items_per_second": 22332541.500120997},
+        {"repetition_index": 3, "real_time_ns": 447331.7393760203, "cpu_time_ns": 447324.8407643313, "items_per_second": 22355118.895059086},
+        {"repetition_index": 4, "real_time_ns": 447542.99314419745, "cpu_time_ns": 447541.40127388743, "items_per_second": 22344301.4915176}
+      ],
+      "summary": {
+        "median_items_per_second": 22344301.4915176,
+        "median_mops_per_second": 22.3443014915176,
+        "mean_items_per_second": 22367984.604472265,
+        "min_items_per_second": 22312546.188391622,
+        "max_items_per_second": 22495414.947272014,
+        "range_items_per_second": 182868.75888039172,
+        "stddev_items_per_second": 72963.24452678212,
+        "cv_percent": 0.32619498724169283,
+        "median_real_time_ns": 447542.9931441974,
+        "median_cpu_time_ns": 447541.4012738875
+      }
+    },
+    {
+      "operation": "cell_div",
+      "benchmark_name": "BM_CellDiv_T81Cell/repeats:5",
+      "semantics": "Conversion-backed division: this->to_int(), divisor.to_int(), host int64_t a / b, Cell::from_int(a / b)",
+      "domain": "[-10, +10] x ([-10, +10] \\ {0})",
+      "work_per_iter_ops": 10000,
+      "embedded_conversions_per_op": 3,
+      "iterations_per_repetition": 349,
+      "repetitions": 5,
+      "failed_ops": 0,
+      "oracle_failures": 0,
+      "raw_repetitions": [
+        {"repetition_index": 0, "real_time_ns": 162343.36116679417, "cpu_time_ns": 162346.70487106085, "items_per_second": 61596568.94756324},
+        {"repetition_index": 1, "real_time_ns": 156346.22653001614, "cpu_time_ns": 156346.70487106073, "items_per_second": 63960414.18491684},
+        {"repetition_index": 2, "real_time_ns": 155759.07434627714, "cpu_time_ns": 155759.31232091555, "items_per_second": 64201618.83738099},
+        {"repetition_index": 3, "real_time_ns": 194861.03157504837, "cpu_time_ns": 194679.08309455484, "items_per_second": 51366586.69767332},
+        {"repetition_index": 4, "real_time_ns": 197257.64211651502, "cpu_time_ns": 197260.74498567433, "items_per_second": 50694323.397826716}
+      ],
+      "summary": {
+        "median_items_per_second": 61596568.94756324,
+        "median_mops_per_second": 61.59656894756324,
+        "mean_items_per_second": 58363902.41307223,
+        "min_items_per_second": 50694323.397826716,
+        "max_items_per_second": 64201618.83738099,
+        "range_items_per_second": 13507295.439554274,
+        "stddev_items_per_second": 6775597.381012199,
+        "cv_percent": 11.609226081316,
+        "median_real_time_ns": 162343.36116679417,
+        "median_cpu_time_ns": 162346.70487106085
+      }
+    },
+    {
+      "operation": "cell_roundtrip",
+      "benchmark_name": "BM_CellRoundtrip_T81Cell/repeats:5",
+      "semantics": "Full conversion round-trip: Cell::from_int(val) materialized via DoNotOptimize followed by cell.to_int() materialized via DoNotOptimize",
+      "domain": "[-121, +121]",
+      "work_per_iter_ops": 10000,
+      "iterations_per_repetition": 173,
+      "repetitions": 5,
+      "failed_ops": 0,
+      "oracle_failures": 0,
+      "raw_repetitions": [
+        {"repetition_index": 0, "real_time_ns": 403062.61877900775, "cpu_time_ns": 403063.583815028, "items_per_second": 24809981.35666146},
+        {"repetition_index": 1, "real_time_ns": 416819.3641985427, "cpu_time_ns": 413260.11560693604, "items_per_second": 24197834.78333848},
+        {"repetition_index": 2, "real_time_ns": 402577.54910608073, "cpu_time_ns": 402572.25433525984, "items_per_second": 24840261.32529257},
+        {"repetition_index": 3, "real_time_ns": 400279.3821253184, "cpu_time_ns": 400219.65317919024, "items_per_second": 24986279.210838012},
+        {"repetition_index": 4, "real_time_ns": 385010.3586083117, "cpu_time_ns": 385011.5606936408, "items_per_second": 25973246.055219475}
+      ],
+      "summary": {
+        "median_items_per_second": 24840261.32529257,
+        "median_mops_per_second": 24.84026132529257,
+        "mean_items_per_second": 24961520.546270002,
+        "min_items_per_second": 24197834.78333848,
+        "max_items_per_second": 25973246.055219475,
+        "range_items_per_second": 1775411.2718809955,
+        "stddev_items_per_second": 641304.4062871245,
+        "cv_percent": 2.569172038611865,
+        "median_real_time_ns": 402577.54910608067,
+        "median_cpu_time_ns": 402572.2543352599
+      }
+    }
+  ],
+  "dispositions": {
+    "NUMERICAL_CORRECTNESS": "PASS",
+    "MEASUREMENT_ACCOUNTING": "PASS",
+    "HOST_LOCAL_THROUGHPUT_BASELINE": "ESTABLISHED",
+    "REFERENCE_HARDWARE_BASELINE": "NOT ESTABLISHED",
+    "BINARY_COMPARATIVE_ADVANTAGE": "NOT EVALUATED"
+  }
+}
+
