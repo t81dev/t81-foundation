@@ -388,7 +388,7 @@ ______________________________________________________________________
 
 ## 6. Comprehensive Maintainer Decision Matrix
 
-The following decision matrix enumerates all unresolved semantic conflicts. Each item presents the competing alternatives, compatibility impact, and a proposed resolution requiring formal maintainer signature. **All items remain strictly PENDING REVIEW.**
+The following decision matrix enumerates all unresolved semantic conflicts. Each item presents the competing alternatives, compatibility impact, and a proposed resolution requiring formal maintainer signature. **DM-01–DM-08 remain strictly PENDING REVIEW; DM-09 has the scoped design disposition in Section 10.1, with freeze reviews and implementation pending.**
 
 | ID | Topic / Discrepancy | Option A | Option B | Option C (Alternative) | Historical Compatibility Impact | Proposed Resolution | Status |
 | :---: | :--- | :--- | :--- | :--- | :--- | :--- | :---: |
@@ -400,7 +400,7 @@ The following decision matrix enumerates all unresolved semantic conflicts. Each
 | **DM-06** | **Opcode Inventory Unification** | Freeze core strictly at 174; deprecate 175–246. | Expand canonical registry to 244 named opcodes matching header, reserving 221–223 and 247–255. | Retain 209 in registry and treat 210–246 as experimental unverified. | Option A breaks AI-native and SWAR instructions. Option B unifies header, test matrix, and specification. | **Proposed: Option B** (Unify at 244 opcodes pending maintainer sign-off). | **PENDING REVIEW** |
 | **DM-07** | **SWAR / Extension Collisions** | Ratify header assignments (205, 206, 207, 220). | Ratify registry assignments (212, 213, 214, 215). | Reallocate SWAR opcodes to a clean reserved block in 224–246. | C++ header and `tisc_opcode_matrix_test.cpp` already assert 205–207, 220. Registry values collide with polynomial opcodes. | **Proposed: Option A** (Ratify header assignments 205–207, 220). | **PENDING REVIEW** |
 | **DM-08** | **Register $R_0$ Invariance** | Enforce destination $R_0$ as `DecodeFault`. | Allow writes to $R_0$ but silently discard (hardwired zero). | Allow unrestricted writes to $R_0$. | CPA evaluators reject destination $R_0$ during operand admission. Discarding writes is standard in RISC (e.g., MIPS/RISC-V). | **Proposed: Option A** (Enforce destination R0 as DecodeFault). | **PENDING REVIEW** |
-| **DM-09** | **Profile Binding Mechanism** | Reject standalone `.raw13`; require CanonFS or container envelope. | Embed 16-byte magic header into all new bytecode binaries. | Allow raw binaries but require explicit CLI flag `--isa-profile`. | Raw binaries lack self-description. Option C provides seamless backward compatibility for testing. | **Proposed: Options B & C** (Container envelope for v2; CLI flag for raw binaries). | **PENDING REVIEW** |
+| **DM-09** | **Profile Binding Mechanism** | Reject unbound executable artifacts by default; preserve raw13 APIs. | Full saved-Program envelope: exact 64-byte framing in saved-program-container-v1.md. | Explicit supported descriptor/build binding; no guessing, translation or unsupported legacy execution. | Existing unversioned files reject; historical bytes/witnesses remain unchanged. | **Scoped design accepted: ADR-0007**; revised bounded B/C, not a new ISA profile or raw13 header change. | **DESIGN APPROVED IN SESSION; FREEZE REVIEWS / IMPLEMENTATION PENDING** |
 
 ______________________________________________________________________
 
@@ -479,3 +479,20 @@ Disposition:                 [ ] APPROVED FOR IMPLEMENTATION
                              [ ] REVISION REQUIRED
                              [ ] REJECTED
 ```
+
+## 10.1 Partial decision record — DM-09 only, 2026-11-14
+
+The maintainer approved reviewed revision 07968a9a307415bf8a7aa6f04056caa22db01c78
+at design level and authorized this documentation-only decision-and-freeze package.
+ADR-0007 and docs/records/decisions/2026-11-14-artifact-admission/SESSION_APPROVAL.md
+retain the actual instruction and its limits. DM-09 adopts the bounded full-Program
+envelope/binding design specified in saved-program-container-v1.md; raw13 APIs and
+historical bytes remain unchanged. The exact finalized package still requires
+formal review. This is not approval of the RFC's illustrative 16-byte header,
+tisc-v2.0 semantics, a translator or an unsupported legacy evaluator.
+
+**DM-01–DM-08 remain unchanged and pending review.** Existing Section 10 checkboxes
+and formal signature remain unfilled; no broad implementation authorization is
+asserted. Two freeze reviews, an eligible second maintainer, approved build
+association and qualified dual-witness transition remain prerequisites. No runtime,
+compiler-output switch, historical golden change, release or scientific promotion.

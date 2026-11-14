@@ -1,0 +1,7 @@
+{
+  "result": "PASS: documentation vectors and preservation only",
+  "historical_files_unchanged": 49,
+  "DM01_DM08_and_signature_unchanged": true,
+  "runtime_workflow_golden_changes": false,
+  "new_runtime_or_VM_verification": false
+}

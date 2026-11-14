@@ -1,0 +1,19 @@
+{
+  "status": "UNAPPROVED TEMPLATE; not a valid association",
+  "descriptor_sha256": "515f144f1639688c1d7f1d014143eec93a4eebacdcfbbf702a14ed234a18f317",
+  "binary_sha256": null,
+  "build_source_revision": null,
+  "build_source_tree": null,
+  "semantic_source_revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+  "semantic_equivalence_evidence": null,
+  "toolchain_and_target": null,
+  "feature_definitions": null,
+  "numeric_backends": null,
+  "payload_abi": null,
+  "supported_codec_variants": null,
+  "caps_policy_sha256": "d2fee1bb69c7029f5d5c5d1f181fca4c3e4bdabda981ed3c6d19842adedaa56d",
+  "commands_and_raw_evidence": null,
+  "review_records": [],
+  "association_version": 1,
+  "semantic_components": null
+}

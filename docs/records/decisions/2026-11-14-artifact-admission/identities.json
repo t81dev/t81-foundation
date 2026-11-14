@@ -1,0 +1,9 @@
+{
+  "descriptor_sha256": "515f144f1639688c1d7f1d014143eec93a4eebacdcfbbf702a14ed234a18f317",
+  "execution_profile": "hosted-sha256-515f144f1639688c1d7f1d014143eec93a4eebacdcfbbf702a14ed234a18f317",
+  "canonical_descriptor_encoding": "ASCII JSON; recursive ASCII lexicographic key order; compact commas/colons; no whitespace or terminal LF",
+  "resource_policy_sha256": "d2fee1bb69c7029f5d5c5d1f181fca4c3e4bdabda981ed3c6d19842adedaa56d",
+  "resource_policy_digest_input": "canonical compact JSON caps object; caps.json pretty display is not digest input",
+  "runtime_builds_approved": 0,
+  "scope": "identity finalized for draft review; no trusted runtime association installed"
+}
