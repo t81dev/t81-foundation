@@ -1,0 +1,14 @@
+0965ad6694ceeb674ee25341d09ed458c565fc498bd15e219d27c336ccb56dae  docs/architecture/adr/ADR-PROPOSED-adr0007-review-count-exception.md
+ffc3e8eed93ebab8214788522b73d55b7c308eb194956d53dba34440c2c157da  docs/governance/proposals/2026-11-14-adr0007-approval-exception/AUTHORITY_REVIEW.md
+e4cd2729661a9655769578d8b547b02fec0d8168105de1c7b4a59d9fa06e6ae3  docs/governance/proposals/2026-11-14-adr0007-approval-exception/MAINTAINER_DECISION.md
+688c7ad87cde646b5dddda24f58dc397689ea3e0ac0385c369947156e23b7309  docs/governance/proposals/2026-11-14-adr0007-approval-exception/PROPOSED_AMENDMENT.md
+1c3916bad1dcef2b3c6175ae43c08c4995fd8d654004db8ca45695889e50cd2f  docs/governance/proposals/2026-11-14-adr0007-approval-exception/README.md
+ea58d46963a4b1d7c5365ef36c7efd98cf0a83095c6aa44f69af287aa3fe2132  docs/governance/proposals/2026-11-14-adr0007-approval-exception/decision-template.json
+ad609b5d3c5bed30ee85c3e9d24b43d4cbdd88ac2f9da00ad4e9b95bc902ec12  docs/governance/proposals/2026-11-14-adr0007-approval-exception/evidence/connector-access.json
+59333d9a5a23a6674d9f594718c8b1a7bc1f7d2032d7190aff603bbf167d036d  docs/governance/proposals/2026-11-14-adr0007-approval-exception/evidence/github-read-commands.json
+4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945  docs/governance/proposals/2026-11-14-adr0007-approval-exception/evidence/main-effective-rules.json
+5446533d4c44a2badceb905ad0de1398eb734ba727aa1f7ec2792a73832efefa  docs/governance/proposals/2026-11-14-adr0007-approval-exception/evidence/main-protection.json
+4f0fbd7b19d468ed8d633b97f5df61164544f8fe0e46dd6890e588f406b8cf65  docs/governance/proposals/2026-11-14-adr0007-approval-exception/evidence/policy-excerpts.json
+c742522bcf843c2e267f024195d782c0d4920edf67210b45c2c27ab4c0aa68e5  docs/governance/proposals/2026-11-14-adr0007-approval-exception/evidence/policy-sources.json
+37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570  docs/governance/proposals/2026-11-14-adr0007-approval-exception/evidence/pr790-reviews.json
+40ecfa5204b7cd37fc98e99923904dbf18e484bef9c214d55adc1aec570deb05  docs/governance/proposals/2026-11-14-adr0007-approval-exception/evidence/verification.json

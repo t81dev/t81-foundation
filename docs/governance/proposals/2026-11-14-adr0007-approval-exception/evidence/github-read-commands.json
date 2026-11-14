@@ -1,0 +1,22 @@
+[
+  {
+    "argv": [
+      "gh",
+      "api",
+      "repos/t81dev/t81-foundation/branches/main/protection"
+    ],
+    "exit": 0,
+    "observed_at_utc": "2026-11-14T23:40:01.645217+00:00",
+    "result_file": "main-protection.json"
+  },
+  {
+    "argv": [
+      "gh",
+      "api",
+      "repos/t81dev/t81-foundation/rules/branches/main"
+    ],
+    "exit": 0,
+    "observed_at_utc": "2026-11-14T23:40:01.951159+00:00",
+    "result_file": "main-effective-rules.json"
+  }
+]
