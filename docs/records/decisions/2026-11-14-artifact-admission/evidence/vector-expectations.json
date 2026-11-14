@@ -1,0 +1,9 @@
+{
+  "scope": "documentation framing vector only; not a compiler output, historical golden, runtime acceptance or trusted association",
+  "manifest_bytes": 308,
+  "payload_bytes": 106,
+  "envelope_bytes": 478,
+  "internal_digest": "fd94bd863aa665e394dcb6d88d9269ab164107415737d7e766bde14c1d820601",
+  "whole_envelope_sha256": "6b4e2d8926422a83726d00300720d947804a471bd5f237f83aa4e9d6b17c0899",
+  "payload_sha256": "243bc89bf85ab982500c81a5936fe868dda1131d7bbda1fa86fe439fc50fc988"
+}

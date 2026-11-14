@@ -197,3 +197,18 @@ Determinism governance DOES mean:
 * scheduling may use internal parallelism, but observable ordering must remain deterministic
 
 This prevents overclaim drift.
+
+## Planned saved-program admission surface (ADR-0007)
+
+Design approval recorded for revision 07968a9a; **not implemented or Verified**.
+The exact saved-program-container-v1 draft, descriptor/build binding and resource
+caps are in ADR-0007's decision-and-freeze package. Classification while planned:
+**Experimental**; no DCP promotion, guarantee expansion or downgrade of the existing
+raw/numeric/VM entries. Public loader/default/serialization changes require the
+scoped freeze controls before implementation. New proof lanes are not installed.
+
+Future proof requirements: bounded nested parsing, default/conflict/unsupported
+rejection before VM construction, Release-active tests and failure injection,
+actual build associations, preserved historical witness and separately versioned
+new-container witness across qualified targets. Current header inspection and
+selected loader reproductions do not establish this new surface as Verified.

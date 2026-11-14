@@ -1,0 +1,15 @@
+{
+  "source_revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+  "codec": "native-program-v0-le64-i32-f64",
+  "source_sha256": {
+    "isa/binary_io.cpp": "797d3fe424136cb9109811b1bc47de4b453791d12bc0f860c7dcc96947de6aec",
+    "include/t81/isa/type_alias.hpp": "aa3b492544d51910f31305b8f632d51ac0c00a9f37db168aa5f62a3a3ac7d232",
+    "include/t81/types/T81BigInt.hpp": "8b4ebeb5f4a7cfae128d32c5eb62e5bd35502d9b2e9f5fbfae5a4e71e28b79de",
+    "include/t81/fraction.hpp": "9e940718b8d5aeb69a789b3c2fdc8369ba6727f792fbd134d25ca6702e17fab3",
+    "include/t81/tensor.hpp": "2dd365ec9ca11c51358d1b459ea979bfc68758d89b5276d131aa0f4047ea2bde",
+    "include/t81/types/T81Complex.hpp": "3a2684d8381f0d43d601554a9f1654ed40167c50fd20ceec5e20daa4a92bd9e1",
+    "include/t81/types/T81Float.hpp": "6360035708d3a4292a889af13c4202d928fe43dabf4f6016e5a40cd4cc910032",
+    "include/t81/types/T81Int.hpp": "42a666a422d10e157b5a9f508c854182478f8d6cef80722a322c78c95913256b"
+  },
+  "qualification": "No bounded decoder/build association approved. Existing emitted bytes define snapshot; implementation must prove bounded decoding for each declared variant."
+}

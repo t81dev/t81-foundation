@@ -1,0 +1,32 @@
+{
+  "source_revision": "07968a9a307415bf8a7aa6f04056caa22db01c78",
+  "design_approval": {
+    "status": "recorded from actual session instruction",
+    "record": "SESSION_APPROVAL.md",
+    "scope": "reviewed revision-2 direction/caps; not two formal freeze approvals"
+  },
+  "formal_reviews": [
+    {
+      "slot": 1,
+      "reviewer": "t81dev",
+      "role": "sole CODEOWNER",
+      "status": "pending",
+      "review_url": null,
+      "reviewed_commit": null,
+      "eligibility_note": "Owner identified; cannot approve own authored PR in GitHub. Session design approval is separate."
+    },
+    {
+      "slot": 2,
+      "reviewer": null,
+      "role": "second eligible maintainer required",
+      "status": "unassigned / blocking",
+      "review_url": null,
+      "reviewed_commit": null
+    }
+  ],
+  "known_pr789_reviews": 0,
+  "freeze_exception_approved": false,
+  "note": "Do not duplicate a sole reviewer or count AI/shared authorship as the second approval.",
+  "pr789_author": "t81dev",
+  "review_rule_source": "https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/reviewing-proposed-changes-in-a-pull-request"
+}

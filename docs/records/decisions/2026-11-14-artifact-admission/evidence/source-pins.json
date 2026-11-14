@@ -1,0 +1,12 @@
+{
+  "session_date": "2026-11-14",
+  "reviewed_revision": "07968a9a307415bf8a7aa6f04056caa22db01c78",
+  "main": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+  "pr789_head": "07968a9a307415bf8a7aa6f04056caa22db01c78",
+  "pr789_author": "t81dev",
+  "review_response": "pr789-reviews.json",
+  "review_response_url": "https://api.github.com/repos/t81dev/t81-foundation/pulls/789/reviews",
+  "adr_inventory_url": "https://api.github.com/repos/t81dev/t81-foundation/contents/docs/architecture/adr?ref=main",
+  "adr_numbering_observed": "0001 through 0006; 0007 selected",
+  "scope": "read-only metadata observations; no approval inferred"
+}

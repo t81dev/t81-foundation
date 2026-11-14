@@ -1,0 +1,14 @@
+{
+  "bigint_token_bytes_aggregate_max": 65536,
+  "bigint_token_bytes_max": 256,
+  "decoded_allocations_cumulative_bytes_max": 33554432,
+  "header_bytes": 64,
+  "instructions_max": 65536,
+  "manifest_bytes_max": 1024,
+  "metadata_bytes_aggregate_max": 1048576,
+  "payload_bytes_max": 8388608,
+  "policy_version": 1,
+  "pool_scalar_values_aggregate_max": 65536,
+  "structural_entries_aggregate_max": 16384,
+  "tensor_rank_max": 16
+}

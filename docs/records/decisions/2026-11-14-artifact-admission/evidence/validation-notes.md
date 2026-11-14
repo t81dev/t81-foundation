@@ -1,0 +1,1 @@
+The first captured validation attempt failed because shell stdout redirection created an empty validation.json before the JSON glob ran. This was a documentation validation-capture error, not a runtime parser result. The successful rerun captured output in memory and wrote validation.json only after completion.
