@@ -1,0 +1,13 @@
+WARNING: The directory '/Users/t81dev/Library/Caches/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+attrs==26.1.0
+greenlet==3.5.6
+iniconfig==2.3.1
+jsonschema==4.26.0
+jsonschema-specifications==2025.9.1
+packaging==26.3
+playwright==1.65.0
+pluggy==1.7.0
+Pygments==2.21.0
+pytest==9.2.0
+referencing==0.37.0
+rpds-py==2026.9.1
