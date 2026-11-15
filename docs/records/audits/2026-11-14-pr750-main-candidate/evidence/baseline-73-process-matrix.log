@@ -1,0 +1,139 @@
+vm-run-tisc-domain-missing: exit 0, expected 1
+vm-run-tisc-domain-missing: unexpected stdout before rejection
+vm-run-tisc-domain-missing: missing diagnostic: Could not open policy file:
+vm-run-tisc-domain-malformed: exit 0, expected 1
+vm-run-tisc-domain-malformed: unexpected stdout before rejection
+vm-run-tisc-domain-malformed: missing diagnostic: Could not parse policy file:
+vm-run-tisc-domain-empty: exit 0, expected 1
+vm-run-tisc-domain-empty: unexpected stdout before rejection
+vm-run-tisc-domain-empty: missing diagnostic: Could not parse policy file:
+vm-run-tisc-domain-deny: exit 0, expected 13
+vm-run-tisc-domain-deny: unexpected stdout before rejection
+vm-run-tisc-domain-deny: missing diagnostic: Execution trapped: SecurityFault
+vm-run-tisc-domain-deny: missing diagnostic: Instruction count limit exceeded: count=1 limit=0
+vm-run-tisc-domain-deny: missing diagnostic: compute executed: no
+vm-run-tisc-action-missing: exit 0, expected 1
+vm-run-tisc-action-missing: unexpected stdout before rejection
+vm-run-tisc-action-missing: missing diagnostic: Could not open policy file:
+vm-run-tisc-action-malformed: exit 0, expected 1
+vm-run-tisc-action-malformed: unexpected stdout before rejection
+vm-run-tisc-action-malformed: missing diagnostic: Could not parse policy file:
+vm-run-tisc-action-empty: exit 0, expected 1
+vm-run-tisc-action-empty: unexpected stdout before rejection
+vm-run-tisc-action-empty: missing diagnostic: Could not parse policy file:
+vm-run-tisc-action-deny: exit 0, expected 13
+vm-run-tisc-action-deny: unexpected stdout before rejection
+vm-run-tisc-action-deny: missing diagnostic: Execution trapped: SecurityFault
+vm-run-tisc-action-deny: missing diagnostic: Instruction count limit exceeded: count=1 limit=0
+vm-run-tisc-action-deny: missing diagnostic: compute executed: no
+vm-run-tisc-trailing-missing: exit 0, expected 1
+vm-run-tisc-trailing-missing: unexpected stdout before rejection
+vm-run-tisc-trailing-missing: missing diagnostic: Could not open policy file:
+vm-run-tisc-trailing-malformed: exit 0, expected 1
+vm-run-tisc-trailing-malformed: unexpected stdout before rejection
+vm-run-tisc-trailing-malformed: missing diagnostic: Could not parse policy file:
+vm-run-tisc-trailing-empty: exit 0, expected 1
+vm-run-tisc-trailing-empty: unexpected stdout before rejection
+vm-run-tisc-trailing-empty: missing diagnostic: Could not parse policy file:
+vm-run-tisc-trailing-deny: exit 0, expected 13
+vm-run-tisc-trailing-deny: unexpected stdout before rejection
+vm-run-tisc-trailing-deny: missing diagnostic: Execution trapped: SecurityFault
+vm-run-tisc-trailing-deny: missing diagnostic: Instruction count limit exceeded: count=1 limit=0
+vm-run-tisc-trailing-deny: missing diagnostic: compute executed: no
+vm-trace-tisc-domain-missing: exit 0, expected 1
+vm-trace-tisc-domain-missing: unexpected stdout before rejection
+vm-trace-tisc-domain-missing: missing diagnostic: Could not open policy file:
+vm-trace-tisc-domain-missing: rejected execution created a trace
+vm-trace-tisc-domain-malformed: exit 0, expected 1
+vm-trace-tisc-domain-malformed: unexpected stdout before rejection
+vm-trace-tisc-domain-malformed: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-domain-malformed: rejected execution created a trace
+vm-trace-tisc-domain-empty: exit 0, expected 1
+vm-trace-tisc-domain-empty: unexpected stdout before rejection
+vm-trace-tisc-domain-empty: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-domain-empty: rejected execution created a trace
+vm-trace-tisc-domain-deny: exit 0, expected 13
+vm-trace-tisc-domain-deny: unexpected stdout before rejection
+vm-trace-tisc-domain-deny: missing diagnostic: Execution trapped: SecurityFault
+vm-trace-tisc-domain-deny: missing diagnostic: Instruction count limit exceeded: count=1 limit=0
+vm-trace-tisc-domain-deny: missing diagnostic: compute executed: no
+vm-trace-tisc-domain-deny: rejected execution created a trace
+vm-trace-tisc-action-missing: exit 0, expected 1
+vm-trace-tisc-action-missing: unexpected stdout before rejection
+vm-trace-tisc-action-missing: missing diagnostic: Could not open policy file:
+vm-trace-tisc-action-missing: rejected execution created a trace
+vm-trace-tisc-action-malformed: exit 0, expected 1
+vm-trace-tisc-action-malformed: unexpected stdout before rejection
+vm-trace-tisc-action-malformed: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-action-malformed: rejected execution created a trace
+vm-trace-tisc-action-empty: exit 0, expected 1
+vm-trace-tisc-action-empty: unexpected stdout before rejection
+vm-trace-tisc-action-empty: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-action-empty: rejected execution created a trace
+vm-trace-tisc-action-deny: exit 0, expected 13
+vm-trace-tisc-action-deny: unexpected stdout before rejection
+vm-trace-tisc-action-deny: missing diagnostic: Execution trapped: SecurityFault
+vm-trace-tisc-action-deny: missing diagnostic: Instruction count limit exceeded: count=1 limit=0
+vm-trace-tisc-action-deny: missing diagnostic: compute executed: no
+vm-trace-tisc-action-deny: rejected execution created a trace
+vm-trace-tisc-trailing-missing: exit 0, expected 1
+vm-trace-tisc-trailing-missing: unexpected stdout before rejection
+vm-trace-tisc-trailing-missing: missing diagnostic: Could not open policy file:
+vm-trace-tisc-trailing-missing: rejected execution created a trace
+vm-trace-tisc-trailing-malformed: exit 0, expected 1
+vm-trace-tisc-trailing-malformed: unexpected stdout before rejection
+vm-trace-tisc-trailing-malformed: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-trailing-malformed: rejected execution created a trace
+vm-trace-tisc-trailing-empty: exit 0, expected 1
+vm-trace-tisc-trailing-empty: unexpected stdout before rejection
+vm-trace-tisc-trailing-empty: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-trailing-empty: rejected execution created a trace
+vm-trace-tisc-trailing-deny: exit 0, expected 13
+vm-trace-tisc-trailing-deny: unexpected stdout before rejection
+vm-trace-tisc-trailing-deny: missing diagnostic: Execution trapped: SecurityFault
+vm-trace-tisc-trailing-deny: missing diagnostic: Instruction count limit exceeded: count=1 limit=0
+vm-trace-tisc-trailing-deny: missing diagnostic: compute executed: no
+vm-trace-tisc-trailing-deny: rejected execution created a trace
+code-run-tisc-domain-missing: exit 0, expected 1
+code-run-tisc-domain-missing: unexpected stdout before rejection
+code-run-tisc-domain-malformed: exit 13, expected 1
+code-run-tisc-domain-malformed: missing diagnostic: Could not parse policy file:
+code-run-tisc-domain-empty: exit 0, expected 1
+code-run-tisc-domain-empty: unexpected stdout before rejection
+code-run-tisc-domain-empty: missing diagnostic: Could not parse policy file:
+code-run-tisc-action-missing: exit 0, expected 1
+code-run-tisc-action-missing: unexpected stdout before rejection
+code-run-tisc-action-malformed: exit 13, expected 1
+code-run-tisc-action-malformed: missing diagnostic: Could not parse policy file:
+code-run-tisc-action-empty: exit 0, expected 1
+code-run-tisc-action-empty: unexpected stdout before rejection
+code-run-tisc-action-empty: missing diagnostic: Could not parse policy file:
+code-run-tisc-trailing-missing: exit 0, expected 1
+code-run-tisc-trailing-missing: unexpected stdout before rejection
+code-run-tisc-trailing-malformed: exit 13, expected 1
+code-run-tisc-trailing-malformed: missing diagnostic: Could not parse policy file:
+code-run-tisc-trailing-empty: exit 0, expected 1
+code-run-tisc-trailing-empty: unexpected stdout before rejection
+code-run-tisc-trailing-empty: missing diagnostic: Could not parse policy file:
+code-run-t81-domain-missing: exit 0, expected 1
+code-run-t81-domain-missing: unexpected stdout before rejection
+code-run-t81-domain-malformed: exit 13, expected 1
+code-run-t81-domain-malformed: missing diagnostic: Could not parse policy file:
+code-run-t81-domain-empty: exit 0, expected 1
+code-run-t81-domain-empty: unexpected stdout before rejection
+code-run-t81-domain-empty: missing diagnostic: Could not parse policy file:
+code-run-t81-action-missing: exit 0, expected 1
+code-run-t81-action-missing: unexpected stdout before rejection
+code-run-t81-action-malformed: exit 13, expected 1
+code-run-t81-action-malformed: missing diagnostic: Could not parse policy file:
+code-run-t81-action-empty: exit 0, expected 1
+code-run-t81-action-empty: unexpected stdout before rejection
+code-run-t81-action-empty: missing diagnostic: Could not parse policy file:
+code-run-t81-trailing-missing: exit 0, expected 1
+code-run-t81-trailing-missing: unexpected stdout before rejection
+code-run-t81-trailing-malformed: exit 13, expected 1
+code-run-t81-trailing-malformed: missing diagnostic: Could not parse policy file:
+code-run-t81-trailing-empty: exit 0, expected 1
+code-run-t81-trailing-empty: unexpected stdout before rejection
+code-run-t81-trailing-empty: missing diagnostic: Could not parse policy file:
+FAIL: 73 CLI processes; 138 failed checks

@@ -1,0 +1,30 @@
+test_constant_bindings_and_no_sampling (test_foundation.AccountingTests.test_constant_bindings_and_no_sampling) ... ok
+test_lifecycle_identity_and_order (test_foundation.AccountingTests.test_lifecycle_identity_and_order) ... ok
+test_rss_normalization_and_unsupported (test_foundation.AccountingTests.test_rss_normalization_and_unsupported) ... ok
+test_selector_semantics (test_foundation.AccountingTests.test_selector_semantics) ... ok
+test_actual_worker_artifact (test_foundation.ArtifactTests.test_actual_worker_artifact) ... ok
+test_elf64_native_names_and_nobits (test_foundation.ArtifactTests.test_elf64_native_names_and_nobits) ... ok
+test_elf64_segment_metadata (test_foundation.ArtifactTests.test_elf64_segment_metadata) ... ok
+test_elf_malformed_tables_rejected (test_foundation.ArtifactTests.test_elf_malformed_tables_rejected) ... ok
+test_macho_invalid_commands_and_ranges_rejected (test_foundation.ArtifactTests.test_macho_invalid_commands_and_ranges_rejected) ... ok
+test_macho_native_names_and_zero_fill (test_foundation.ArtifactTests.test_macho_native_names_and_zero_fill) ... ok
+test_parser_memory_bound (test_foundation.ArtifactTests.test_parser_memory_bound) ... ok
+test_unsupported_formats_are_explicit (test_foundation.ArtifactTests.test_unsupported_formats_are_explicit) ... ok
+test_dirty_or_wrong_source_rejected (test_foundation.BoundaryTests.test_dirty_or_wrong_source_rejected) ... ok
+test_entire_manifest_is_pinned (test_foundation.BoundaryTests.test_entire_manifest_is_pinned) ... ok
+test_existing_independent_oracle_is_verbatim (test_foundation.BoundaryTests.test_existing_independent_oracle_is_verbatim) ... ok
+test_native_rejects_measurement_before_any_output (test_foundation.BoundaryTests.test_native_rejects_measurement_before_any_output) ... ok
+test_native_rejects_persistent_root_before_work (test_foundation.BoundaryTests.test_native_rejects_persistent_root_before_work) ... ok
+test_python_rejects_all_measurement_requests_before_work (test_foundation.BoundaryTests.test_python_rejects_all_measurement_requests_before_work) ... ok
+test_stale_native_identity_rejected_before_worker_launch (test_foundation.BoundaryTests.test_stale_native_identity_rejected_before_worker_launch) ... ok
+test_unsupported_execution_platform_precedes_source_access (test_foundation.BoundaryTests.test_unsupported_execution_platform_precedes_source_access) ... ok
+test_canonfs_independent_hash_and_bytes (test_foundation.WorkloadTests.test_canonfs_independent_hash_and_bytes) ... ok
+test_codec_retention_and_independent_oracle (test_foundation.WorkloadTests.test_codec_retention_and_independent_oracle) ... ok
+test_native_source_binding (test_foundation.WorkloadTests.test_native_source_binding) ... ok
+test_no_workload_promoted_to_measurement (test_foundation.WorkloadTests.test_no_workload_promoted_to_measurement) ... ok
+test_vm_provisional_scope_and_rejections (test_foundation.WorkloadTests.test_vm_provisional_scope_and_rejections) ... ok
+
+----------------------------------------------------------------------
+Ran 25 tests in 0.401s
+
+OK

@@ -2,6 +2,7 @@
 
 #include <any>
 #include <cstdint>
+#include <deque>
 #include <memory>
 #include <optional>
 #include <string>
@@ -30,11 +31,11 @@ struct SemanticSymbol {
   std::vector<Type> param_types;            // Only used for functions
   std::vector<std::string> generic_params;  // Generic function parameter names
   std::optional<std::int64_t> tier;         // Optional @tier(n) intent on functions
-  bool is_mutable = true;   // `let` bindings are immutable, `var` bindings are mutable
-  bool is_defined = false;  // Functions get declared first, defined later
-  bool is_pure = false;      // @pure annotation: function must have no observable side effects
-  bool is_attention = false; // @attention — RFC-0026 AI-M6: call sites lower to ATTN opcode
-  bool is_qmatmul = false;   // @qmatmul  — RFC-0026 AI-M6: call sites lower to QMATMUL opcode
+  bool is_mutable = true;     // `let` bindings are immutable, `var` bindings are mutable
+  bool is_defined = false;    // Functions get declared first, defined later
+  bool is_pure = false;       // @pure annotation: function must have no observable side effects
+  bool is_attention = false;  // @attention — RFC-0026 AI-M6: call sites lower to ATTN opcode
+  bool is_qmatmul = false;    // @qmatmul  — RFC-0026 AI-M6: call sites lower to QMATMUL opcode
   bool is_ternary_inference = false;  // @ternary_inference — alternate AI lowering surface
 };
 
@@ -96,6 +97,7 @@ struct ForeignFnInfo {
 
 class SemanticAnalyzer : public StmtVisitor, public ExprVisitor {
   friend class IRGenerator;
+  friend class ScopeLifetimeTestPeer;
 
 public:
   explicit SemanticAnalyzer(const std::vector<std::unique_ptr<Stmt>>& statements,
@@ -232,7 +234,7 @@ private:
 
   // Scoped symbol table
   using Scope = std::unordered_map<std::string, SemanticSymbol>;
-  std::vector<Scope> _scopes;
+  std::deque<Scope> _scopes;
   std::vector<const Type*> _expected_type_stack;
   std::unordered_map<const Expr*, Type> _expr_type_cache;
   std::unordered_map<std::string, size_t> _generic_arities;
@@ -247,7 +249,7 @@ private:
   std::unordered_map<const MapLiteralExpr*, std::vector<float>> _map_literal_data;
   std::unordered_map<std::string, RecordInfo> _record_definitions;
   std::unordered_map<std::string, EnumInfo> _enum_definitions;
-  std::unordered_map<std::string, AgentInfo> _agent_definitions;    // RFC-0015
+  std::unordered_map<std::string, AgentInfo> _agent_definitions;        // RFC-0015
   std::unordered_map<std::string, ForeignFnInfo> _foreign_definitions;  // RFC-0036
   const std::unordered_map<std::string, Type>* _current_type_env = nullptr;
 

@@ -1,3 +1,13 @@
+> **Latest operational status (2026-11-13):** Read [T81_RESEARCH_STATUS_2026-11-13.md](T81_RESEARCH_STATUS_2026-11-13.md) first. Supplied Codex reviews accept bounded #779/#780 changes; both remain draft/unmerged. #782 Windows builds and required quality gate now pass at the recorded head; CodeQL and final review remain pending. Five superseded PRs closed without merge; reconcile #778/#779 and preserve dependent work. Older overlays are historical. No scientific gate, release, or merge authority is granted.
+
+> **2026-11-12 holding-pattern overlay:** [T81_RESEARCH_STATUS_2026-11-12.md](T81_RESEARCH_STATUS_2026-11-12.md) supersedes older operational next-action guidance. Await independent review of draft PR #780 (BASE-PERF-00 candidate) and draft PR #779 (SCG-08 corrections). No merges, RFC ratification, or Gate 2 authorization implied.
+
+> **2026-11-10 operational overlay:** [T81_RESEARCH_STATUS_2026-11-10.md](T81_RESEARCH_STATUS_2026-11-10.md) supersedes prior operational next-action guidance. SCG-08 Phase 0 is merged (#753); #745 was closed unmerged. Phase 1 remains a separately gated contract, and current stacked PRs #747/#748/#750/#751/#752 need baseline and evidence review. Preserve all historical research negatives and bounded qualification claims.
+
+> **2026-11-09 operational overlay:** [T81_RESEARCH_STATUS_2026-11-09.md](T81_RESEARCH_STATUS_2026-11-09.md) supersedes the 2026-11-08 SCG-06/07 *next-action* wording below. SCG-07 Phase 6 PR #741 is merged; arithmetic F1–F7 are qualified within explicitly bounded contracts and test coverage. Next proposed work is SCG-08 Phase 0 research design only, pending Jules and independent review. Preserve older CPA/ISA/BASE findings and negative experiments.
+
+> **2026-11-08 operational overlay:** [T81_COMPLETE_STATUS_2026-11-08.md](T81_COMPLETE_STATUS_2026-11-08.md) is the newest verified cross-program handoff. Its SCG-03–06 and PR #732/#733 status supersedes dated 'next action' wording below; preserve CPA/ISA/BASE historical findings. Immediate action is bounded SCG-06 evidence correction and review, not unauthorized arithmetic implementation or benchmarking.
+
 # T81 Research Continuity — ACTIVE_RESEARCH_HANDOFF
 
 **Document ID:** `docs/ai-context/ACTIVE_RESEARCH_HANDOFF.md`
@@ -38,7 +48,7 @@ T81 is studying representation advantage (Track R), bounded deterministic/policy
 
 ## 3. Unresolved Architectural Contradictions
 
-1. **Software Compression vs CPU Execution Speed:** On-disk 2-bit tryte packing saves $75\%$ memory footprint, but SIMD vector decode instruction tax limits CPU MatVec execution speed to $75.3\%$ of INT8 AVX2 in cache.
+1. **Software Compression vs CPU Execution Speed:** In the historical cache-resident packed 2-bit ternary AVX2 matrix-vector benchmark, **12.91 GFLOP/s** versus **17.15 GFLOP/s** for native INT8 AVX2 means ternary reached **75.3%** of binary throughput (binary approximately **32.8%** faster); 2-bit packing reported a $75\%$ footprint reduction. These are bounded workload results, not general radix claims.
    *Resolution:* Retain 2-bit packing strictly for storage/interchange while treating CPU software arithmetic speedup as falsified.
 2. **Custom VM vs Runtime-Agnostic Governance:** [Research Protocol 001](../../experiments/research_001/RESEARCH_PROPOSAL.md) specifies a Wasmtime/OPA comparator, but the [precursor report](../../examples/governance/accountable-computation/REPORT.md) tested different local A/B/C arms. The observed B-arm authorization failures (90/150 negative requests) must remain visible.
    *Unresolved:* Equivalence or necessity cannot be concluded until the actual conventional comparator, identical threat model and [draft RFC-00D4](../../spec/rfcs/RFC-00D4-accountable-decision-bundle.md) conformance obligations are tested and accepted.
@@ -216,6 +226,94 @@ A follows pinned baseline `f775680aba7db200691c0f4e2a3174b0e7e51581`; B reported
 
 **PR #660 — baseline research inventory:** Head observed `114a5ef82960366d2326dc8d404ef4fcbe3da4ff`, open/unmerged. Independent Codex review of the earlier `aa8fe207ceacfc08dd0364cd48c6bd8a612d44a7` returned substantive findings; [six-item correction directive](https://github.com/t81dev/t81-foundation/pull/660#issuecomment-6552761518) is outstanding as of this snapshot. Treat RFC/capability/benchmark counts and evidence tiers as provisional pending final-SHA review.
 
+**H04-R03 historical status (as of 2026-11-02):** Candidate A implementation and correctness validation were reported; PRs #679/#680 were open and Phase C was not authorized. A 2026-11-06 repository check found both PRs merged, which does not by itself authorize performance measurement. Refresh live authorization before relying on this dated snapshot.
+
 **Workstream separation:** (1) scientific report and primary-source citation audit; (2) PR #660 evidence-inventory corrections; (3) separate baseline CI maintenance to unblock #658. None automatically authorizes the others. Preserve negative results and existing research scope. **No merge, benchmark, Phase C, protection bypass, or production claim is implied.**
 
 **Next AI-instance action:** Refresh main/PR heads and CI, read the canonical register and primary experiment packets, then advance the comprehensive report without inventing independent reproduction or re-running completed investigations by default.
+
+---
+
+## 2026-11-01 AIOPT-001 M2 handoff — latest inspected GitHub snapshot
+
+| PR | Role | Inspected head | Disposition |
+| --- | --- | --- | --- |
+| [#665](https://github.com/t81dev/t81-foundation/pull/665) | M1 correctness candidate | `e113e75f9bbbcc3ed0cc75f1ed15ff188ee062db` (earlier observation) | Local correctness evidence; independent acceptance not established |
+| [#669](https://github.com/t81dev/t81-foundation/pull/669) | M2 adversarial design assessment | `30bef63a433f95c8be7356a75d8f6971255b569a` (earlier observation) | Merged assessment, **not** experiment authorization |
+| [#671](https://github.com/t81dev/t81-foundation/pull/671) | B/C decision and S/A/T separation | `8892d094b6ec62728eb783cd7fb735cf3d57de5f` | Open/draft; recommendation only |
+| [#672](https://github.com/t81dev/t81-foundation/pull/672) | Revised polynomial protocol | `13e1828cc4f6cbeba1b37c18345eb68a5da98147` | Open/draft; workload **unaccepted** |
+| [#673](https://github.com/t81dev/t81-foundation/pull/673) | Codex independent protocol audit | `b8ab59ccb8183db9476d47259bd43de1ea34522a` | Open/draft; `PROTOCOL_REVISION_REQUIRED`, seven P1 blockers |
+| [#674](https://github.com/t81dev/t81-foundation/pull/674) | Jules adversarial workload critique, qualified | `4ab1fca95a8747d33d414d3e59fe8ed014c105f7` | Open/non-draft; polynomial redesign proposed, not validated |
+
+**What changed:** Original #672 encode/store/decode/reduce `(sum, nonzero_count)` task was challenged because input inspection can compute outputs and bypass the intended consumer. The revised proposal evaluates exact signed-trit coefficient polynomials modulo `2^64`, but sparse exponentiation versus Horner introduces an algorithm/representation confound. The draft now separates S (causal representation choice), A (algorithm routing), and T (genuinely ternary-specific mechanism). The latter has **no approved experiment**. Even at 5% density, proposed sparse payload can exceed two-bit packed payload for the earlier lengths, so no format crossover or speedup is guaranteed.
+
+**Open gates:** Choose whether M2 is bounded S/A research or deferred pending a T hypothesis; justify a real producer/consumer lifecycle; separate format from algorithm comparisons; freeze a trace, selectors, byte grammar, hardware, statistical method and practical threshold; independently clear seven P1 findings; reconcile M1; obtain explicit commit-scoped authorization. Do not implement, benchmark, merge, or claim radix superiority from these draft documents. These observations are dated; refresh actual GitHub heads and CI.
+
+---
+
+## 2026-11-05 CPA-001 through CPA-005 Research Handoff & Architecture Baseline
+
+### 1. Established Reality: Bounded Cross-Profile Implementation Works
+**Future AI research agents must NOT be asked to re-establish or re-verify whether the bounded cross-profile implementation works.**
+The CPA-004 experimental campaign established that:
+- The 351-byte canonical program (SHA-256 `b0649777...`) executes across 24 instructions and halts deterministically (PC=27, SP=283).
+- Hosted T81VM and freestanding Axion OS (AArch64 QEMU post-`ExitBootServices`) match the separately derived mathematical oracle at **all 25 observation boundaries** across registers, memory words, flags, and system registers.
+- All checks pass cleanly under `NDEBUG` on the tested snapshot base `803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4` (committed in `origin/experiment/cpa004-freestanding` at `b803bf916a1b1e44129f3a07abf96fa6103c51fc`).
+
+### 2. What Remains Unproven & Active Research Questions
+1. **Full ISA Conformance:** CPA-004 covers an admitted subset of 17 instructions on signed 64-bit integer values and scalar trits. It does not validate arbitrary big integers, floating point, fraction, vector/tensor operations, or the remaining 157+ opcodes.
+2. **Four Preserved Normative Discrepancies:**
+   - *Memory addressing:* Direct immediate address in implementation/semantics vs register-indirect `R[RS]` in `spec/tisc-spec.md`.
+   - *Branch target & condition:* Direct target + R[B] zero-testing in implementation/semantics vs register-indirect + FLAGS in `spec/tisc-spec.md`.
+   - *TXor interpretation:* Wrapped balanced difference `((lhs - rhs + 1) % 3) - 1` vs ambiguous "Sum" label.
+   - *Opcode inventories:* 174 capability-frozen opcodes vs 209 registry entries vs 244 named C++ header opcodes (with undefined opcodes 221–223 and 247–255).
+   *Directive:* Preserve these discrepancies; do not silently normalize or resolve them without explicit RFC approval.
+3. **Comparative Advantage:** Execution correctness across dual profiles is an engineering milestone (Track F). It does **not** prove ternary superiority (Track R). H01–H08 remain open research questions requiring matched, rigorous binary controls.
+
+### 3. Current Git & PR Status
+- Pinned test base: `803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4`.
+- Current `main`: `ea6d031a8117341fe03013cc9d5473de1b07727d`.
+- PR #709: **Open draft PR (unmerged)**; head `b803bf916a1b1e44129f3a07abf96fa6103c51fc` (`experiment/cpa004-freestanding`), base `ea6d031a8117341fe03013cc9d5473de1b07727d`.
+- CPA-005 baseline: pinned on `origin/experiment/cpa005-integration-base` (commit `f7e089590020508077607580da271b6570fa8f60`, integrated tree `70734fd5bcfe06978cea13b4d2d595d4dda71a12`).
+- PR #707: Open unmerged PR (CPA-002 opcode conformance repairs).
+- Working branch: Must preserve tested boundaries and avoid unauthorized merge operations.
+
+### 4. Primary Next Actions for Incoming Agents
+1. Treat bounded dual-profile TISC execution as an established foundation; build on it rather than re-litigating it.
+2. Advance the resolution of the four normative ISA discrepancies via formal specification drafts and maintainer review.
+3. Advance Track R comparative hypotheses (e.g., H04-R03 Candidate A Phase C gates, BASE-01 physical Linux prerequisites) without conflating software emulation correctness with physical hardware advantage.
+
+---
+
+## 2026-11-05 CURRENT HANDOFF — CPA-006 complete; ISA-001 awaiting maintainer decision
+
+**This is the newest operational handoff.** It supersedes earlier *current-status and next-action* sections, while preserving their historical reports and source pins.
+
+### Established and bounded
+- T81's implemented historical TISC profile has a working hosted T81VM and separate freestanding AArch64 QEMU evaluator after `ExitBootServices`. CPA-004/005: canonical 351-byte program, 24 executed instructions, 25 matching observation boundaries.
+- CPA-006: **PASS — BOUNDED CONFORMANCE** for 19/19 frozen-oracle cases; 57 hosted runs and 57 fresh QEMU boots; 1,190 validated state records; Halt, runtime trap, admission rejection and budget exhaustion. See [committed acceptance report](https://github.com/t81dev/t81-foundation/blob/514fa17cf5629a7aea9ebb1b035f01f3ef7687f3/experiments/cpa006/README.md). Do not claim full ISA conformance, independent-person replication, a complete OS or ternary-vs-binary performance advantage.
+- ISA-001: read-only source/lineage and normative-vs-implemented audit, **READY FOR MAINTAINER DECISION**. No implementation changes or new conformance executions. Its recommended normative interpretation is *not approved*.
+
+### Pinned GitHub integration snapshot (2026-11-05)
+| Surface | Observed identity and status |
+|---|---|
+| `main` | `7afa4f1a424be6c65fab28f8e5bcf4fddc3ef762` (PR #711 continuity refresh merged) |
+| PR #707 | Open, independent opcode matrix test repair; head `55223cbd3ee29b5391e151197fe6eee1b8889452` |
+| PR #709 | Open draft CPA-004 evaluator; head `b803bf916a1b1e44129f3a07abf96fa6103c51fc` |
+| CPA-005 integration snapshot | `f7e089590020508077607580da271b6570fa8f60`, tree `70734fd5bcfe06978cea13b4d2d595d4dda71a12` |
+| PR #710 | Merged into **experimental integration branch, not main**; merged result `514fa17cf5629a7aea9ebb1b035f01f3ef7687f3`, tree `f8f01f58901bfd9a57446a97df98bb8d481da022` |
+
+### Outstanding semantic decisions
+1. Direct-address implemented memory vs normative register-indirect memory.
+2. Immediate target / register-tested JZ/JNZ vs normative register-target / FLAGS branch semantics; LLVM/MLIR lowering diverges as well.
+3. Scalar TXor implemented wrapped difference vs ambiguous documentary 'XOR / Sum'.
+4. Core freeze 0–173, registry/header extension assignments and TVecSub/SWAR collisions.
+**No recommendation is accepted by implication.** Preserve historical CPA binaries and evidence; do not reinterpret raw 13-byte records without artifact-bound version selection.
+
+### Primary next action — T81-ISA-002 (documentation and maintainer review only)
+Draft a **versioned authoritative TISC state-transition RFC** with exact operands, tags, FLAGS, PC, traps, side-effect ordering, opcode manifests, profile selection and migration consequences. Present decision points and obtain explicit maintainer approval. Do not change production VM, freestanding evaluator, compiler lowering, tests, frozen CPA artifacts, or branches as part of the RFC drafting task.
+
+**After approval only:** authorize discriminating successor conformance tests and one cumulative main-integration candidate (CPA-004 + CPA-006; handle #707 separately). Then consider a separately preregistered H02 signed-rounding comparison with optimized binary and representation-conversion controls.
+
+### Handoff rules
+Do not restart feasibility experiments, silently resolve the spec, claim merged-to-main status from PR #710, overwrite negative research, or confuse verified content hashes with independently replicated execution. Refresh GitHub PR tips and main before any subsequent action.

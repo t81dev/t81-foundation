@@ -1,0 +1,229 @@
+{
+  "disposition": "R75 SEMANTICS ESTABLISHED",
+  "scope": "fresh single-context VM; exact six builders; factory default/builder policies; successful explicit Halt; no external register writes/overflow",
+  "ledger": [
+    {
+      "tier": "workload",
+      "interpreter_attempts": 163,
+      "trace_attempts": 243,
+      "successful_primary_dispatches": 406,
+      "failed_primary_dispatches": 0,
+      "guard_retries": 0,
+      "axion_side_exits": 0,
+      "final_r75": 406,
+      "step_calls": 244,
+      "trace_entries": 163,
+      "halt_included": 1,
+      "final_pc": 16,
+      "per_pc_successful_dispatches": {
+        "0": 1,
+        "1": 1,
+        "2": 1,
+        "3": 131,
+        "4": 131,
+        "5": 131,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1,
+        "10": 1,
+        "11": 1,
+        "12": 1,
+        "13": 1,
+        "14": 1,
+        "15": 1
+      }
+    },
+    {
+      "tier": "micro",
+      "interpreter_attempts": 5,
+      "trace_attempts": 0,
+      "successful_primary_dispatches": 5,
+      "failed_primary_dispatches": 0,
+      "guard_retries": 0,
+      "axion_side_exits": 0,
+      "final_r75": 5,
+      "step_calls": 5,
+      "trace_entries": 5,
+      "halt_included": 1,
+      "final_pc": 5,
+      "per_pc_successful_dispatches": {
+        "0": 1,
+        "1": 1,
+        "2": 1,
+        "3": 1,
+        "4": 1
+      }
+    },
+    {
+      "tier": "meso",
+      "interpreter_attempts": 157,
+      "trace_attempts": 93,
+      "successful_primary_dispatches": 250,
+      "failed_primary_dispatches": 0,
+      "guard_retries": 0,
+      "axion_side_exits": 0,
+      "final_r75": 250,
+      "step_calls": 188,
+      "trace_entries": 157,
+      "halt_included": 1,
+      "final_pc": 10,
+      "per_pc_successful_dispatches": {
+        "0": 1,
+        "1": 1,
+        "2": 1,
+        "3": 81,
+        "4": 81,
+        "5": 81,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1
+      }
+    },
+    {
+      "tier": "mixed",
+      "interpreter_attempts": 11,
+      "trace_attempts": 0,
+      "successful_primary_dispatches": 11,
+      "failed_primary_dispatches": 0,
+      "guard_retries": 0,
+      "axion_side_exits": 0,
+      "final_r75": 11,
+      "step_calls": 11,
+      "trace_entries": 11,
+      "halt_included": 1,
+      "final_pc": 11,
+      "per_pc_successful_dispatches": {
+        "0": 1,
+        "1": 1,
+        "2": 1,
+        "3": 1,
+        "4": 1,
+        "5": 1,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1,
+        "10": 1
+      }
+    },
+    {
+      "tier": "policy-heavy",
+      "interpreter_attempts": 7,
+      "trace_attempts": 0,
+      "successful_primary_dispatches": 7,
+      "failed_primary_dispatches": 0,
+      "guard_retries": 0,
+      "axion_side_exits": 0,
+      "final_r75": 7,
+      "step_calls": 7,
+      "trace_entries": 7,
+      "halt_included": 1,
+      "final_pc": 7,
+      "per_pc_successful_dispatches": {
+        "0": 1,
+        "1": 1,
+        "2": 1,
+        "3": 1,
+        "4": 1,
+        "5": 1,
+        "6": 1
+      }
+    },
+    {
+      "tier": "tensor-access",
+      "interpreter_attempts": 8,
+      "trace_attempts": 0,
+      "successful_primary_dispatches": 8,
+      "failed_primary_dispatches": 0,
+      "guard_retries": 0,
+      "axion_side_exits": 0,
+      "final_r75": 8,
+      "step_calls": 8,
+      "trace_entries": 8,
+      "halt_included": 1,
+      "final_pc": 8,
+      "per_pc_successful_dispatches": {
+        "0": 1,
+        "1": 1,
+        "2": 1,
+        "3": 1,
+        "4": 1,
+        "5": 1,
+        "6": 1,
+        "7": 1
+      }
+    }
+  ],
+  "negative_probes": [
+    "budget-and-reload",
+    "reused-trace",
+    "side-exit-and-implicit-halt"
+  ],
+  "historical_inputs_sha256": "86787727b57b249fb6be8285043ffd957d3efba8a2728db12f70397d4142d529",
+  "guard_counterexample": {
+    "attempts": 226,
+    "successful_primary_dispatches": 224,
+    "failed_div_attempts": 2
+  },
+  "performance_collection": false,
+  "verifier_negative_checks_passed": 3,
+  "source_sha": "cda9135d36144d4de2771af174e52ac7b30a83c9",
+  "design_reference": "64c3f71ff100ea16270f1a70497ac39860c1b772",
+  "source_tracked_bytes_sha256": "1c77b63826cd0adb7e5709a750fd6be3e7295bc3bbae9d94726e8c8cf2fa2c77",
+  "command": [
+    "/private/tmp/t81-r75-build/r75_correctness",
+    "--validate-only"
+  ],
+  "native_exit": 0,
+  "native_measurement_rejection": {
+    "returncode": 2,
+    "stderr": "correctness only: --validate-only required\n"
+  },
+  "raw_stdout_sha256": "3bec670484e06760fa78563f81da29f83dcdafe2156669f92eeb558dfc3f5713",
+  "binary_artifacts": [
+    {
+      "path": "/private/tmp/t81-r75-build/r75_correctness",
+      "sha256": "41e1bfb4415962b8a1efa52127260623f277436bb5e28522b931eb3fcd1e8ecf"
+    },
+    {
+      "path": "/private/tmp/t81-base01-source-build/libt81_axion.a",
+      "sha256": "3b77fcc20522b0ca11ba914e567d93ab3bbb8a574b96220103406a98f24c052e"
+    },
+    {
+      "path": "/private/tmp/t81-base01-source-build/libt81_core.a",
+      "sha256": "1acd346921d8784a8868d989a5939b5589b945ee89afc99743218054708e9f2b"
+    },
+    {
+      "path": "/private/tmp/t81-base01-source-build/libt81_experimental.a",
+      "sha256": "b3f92a6b2b5cf10f415bb2d54e710b53ce86abc1fcd5904aedb736a5f9f447d8"
+    },
+    {
+      "path": "/private/tmp/t81-base01-source-build/libt81_ffi.a",
+      "sha256": "28a08fcbe348a83a5c3004580a8e39a0452807f6498a7555e2f413a1e3b91fed"
+    },
+    {
+      "path": "/private/tmp/t81-base01-source-build/libt81_isa.a",
+      "sha256": "76e73b997bed31644f5658746eece665fbdef82db9cd575a4a3d683419b60bab"
+    },
+    {
+      "path": "/private/tmp/t81-base01-source-build/libt81_vm.a",
+      "sha256": "4ae76062822bc65bfc1581598e68060613de5183c9e4bc91027387eed4ee8998"
+    }
+  ],
+  "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin\n",
+  "runner_sha": "d3d6ed1e8000467165e1f9ed00cf34cc7e9e9efe",
+  "runner_files": {
+    "CMakeLists.txt": "5cfdaf35763a8afa43d4dedc52bce933fa141487ac0d283e3d1f57b163862e28",
+    "README.md": "36eb3f8410cb4a47907611e090539461d9346b5b2277e61d7487799f6dc3c449",
+    "probe.cpp": "ab1f5df87cb665f37fd16031c83efc6c979dd67229461877bcb975f0340f282b",
+    "verify.py": "803d8b4fe66745b4db76c37d3881e6ccfa33cf7c34154376cf6e113a93d778b8"
+  },
+  "environment": {
+    "T81_CANONFS_ROOT": "unset by verifier",
+    "platform": "darwin",
+    "machine": "arm64"
+  },
+  "source_compile_commands_sha256": "9dcda0bdb8c2fe19597e0f75fb7bfc53b94a2820ca0cf2211fb6ef5be5a571fd"
+}

@@ -257,7 +257,7 @@ InferenceResult ControlledAIBackend::inference_with_external_ai(const InferenceR
     result.success = true;
 
     if (request.temperature > 0.0) {
-      auto creativity_factor = rng.uniform_float(0.8, 1.2);
+      auto creativity_factor = rng.uniform_float(static_cast<float>(0.8), static_cast<float>(1.2));
       result.output_tokens = static_cast<size_t>(request.input_tokens * creativity_factor);
     } else {
       result.output_tokens = request.input_tokens;
@@ -280,7 +280,7 @@ InferenceResult ControlledAIBackend::inference_with_controlled_randomness(
     result.success = true;
 
     if (request.temperature > 0.0 && rng.is_enabled()) {
-      auto variance = rng.uniform_float(-0.1, 0.1);
+      auto variance = rng.uniform_float(static_cast<float>(-0.1), static_cast<float>(0.1));
       auto base_output = static_cast<float>(request.input_tokens);
       result.output_tokens = static_cast<size_t>(base_output * (1.0 + variance));
       result.output_text =

@@ -1,0 +1,14 @@
+BM_Kernel_TAnd_SWAR/16
+BM_Kernel_TAnd_SWAR/64
+BM_Kernel_TAnd_SWAR/256
+BM_Kernel_TAnd_SWAR/1024
+BM_Kernel_TAnd_SWAR/4096
+BM_Kernel_TAnd_SWAR/16384
+BM_Kernel_TAnd_SWAR/65536
+BM_Kernel_TAnd_AVX2/16
+BM_Kernel_TAnd_AVX2/64
+BM_Kernel_TAnd_AVX2/256
+BM_Kernel_TAnd_AVX2/1024
+BM_Kernel_TAnd_AVX2/4096
+BM_Kernel_TAnd_AVX2/16384
+BM_Kernel_TAnd_AVX2/65536

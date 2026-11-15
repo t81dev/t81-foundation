@@ -26,11 +26,13 @@ enum class BenchmarkProfile {
 };
 
 constexpr const char* kDefaultSmokeFilter =
-    "BM_(ArithThroughput|NegationSpeed|RoundtripAccuracy|overflow|PackingDensity|"
+    "BM_(CellAdd|CellSub|CellMul|CellDiv|CellRoundtrip|ArithThroughput|NegationSpeed|"
+    "RoundtripAccuracy|overflow|PackingDensity|"
     "MemoryBandwidth|Add_1024_bit|Add_2048_bit|T81LangCompile|LimbArithThroughput|"
     "LimbAdd_T81Native|LimbAdd_T81Limb|LimbAdd_Int128|vs_).*";
 constexpr const char* kDefaultFullFilter =
-    "BM_(ArithThroughput|NegationSpeed|RoundtripAccuracy|overflow|PackingDensity|"
+    "BM_(CellAdd|CellSub|CellMul|CellDiv|CellRoundtrip|ArithThroughput|NegationSpeed|"
+    "RoundtripAccuracy|overflow|PackingDensity|"
     "MemoryBandwidth|Add_.*|T81LangCompile|LimbArithThroughput|LimbAdd_.*|vs_.*|"
     "VMSimulation_.*|NativeCall_.*|TensorPromotion.*|Lexer_.*|Base81_.*|Overhead_.*|"
     "DPE_.*|Governed.*)";
@@ -152,7 +154,23 @@ struct BenchmarkResult {
   bool t81_work_defined = false;
   bool t81_native_work_defined = false;
   bool binary_work_defined = false;
+  std::vector<double> t81_rep_items_per_sec;
+  std::vector<double> t81_rep_latency_sec;
+  std::vector<double> t81_native_rep_items_per_sec;
+  std::vector<double> t81_native_rep_latency_sec;
+  std::vector<double> binary_rep_items_per_sec;
+  std::vector<double> binary_rep_latency_sec;
 };
+
+static double ComputeMedian(std::vector<double> values) {
+  if (values.empty()) return 0.0;
+  std::sort(values.begin(), values.end());
+  const std::size_t n = values.size();
+  if ((n % 2U) == 1U) {
+    return values[n / 2U];
+  }
+  return 0.5 * (values[(n / 2U) - 1U] + values[n / 2U]);
+}
 
 std::map<std::string, BenchmarkResult> final_results;
 std::mutex final_results_mutex;
@@ -659,7 +677,6 @@ public:
       }
 
       std::string summary;
-      double gops = 0.0;
       bool throughput_recorded = false;
       double items_per_second = 0.0;
       auto items_it = run.counters.find("items_per_second");
@@ -668,10 +685,7 @@ public:
         items_per_second = items_it->second;
       }
       if (items_per_second > 0.0) {
-        if (items_per_second > 0.0) {
-          gops = items_per_second / 1e9;
-          throughput_recorded = true;
-        }
+        throughput_recorded = true;
         summary = FormatThroughput(items_per_second);
         if (summary.empty()) {
           summary = "0 ops/s";
@@ -755,14 +769,29 @@ public:
         if (arg_rank < final_results[family].t81_arg_rank) {
           continue;
         }
+        if (arg_rank > final_results[family].t81_arg_rank) {
+          final_results[family].t81_rep_items_per_sec.clear();
+          final_results[family].t81_rep_latency_sec.clear();
+        }
         final_results[family].t81_arg_rank = arg_rank;
-        final_results[family].t81_result_str = summary;
-        final_results[family].t81_latency_seconds = latency;
-        final_results[family].t81_latency_str = latency_str;
+        if (latency > 0.0) {
+          final_results[family].t81_rep_latency_sec.push_back(latency);
+          const double med_lat = ComputeMedian(final_results[family].t81_rep_latency_sec);
+          final_results[family].t81_latency_seconds = med_lat;
+          final_results[family].t81_latency_str = FormatLatency(med_lat);
+        } else {
+          final_results[family].t81_latency_seconds = latency;
+          final_results[family].t81_latency_str = latency_str;
+        }
         if (!effective_label.empty()) final_results[family].t81_classic_note = effective_label;
         if (throughput_recorded) {
-          final_results[family].t81_result_val = gops;
+          final_results[family].t81_rep_items_per_sec.push_back(items_per_second);
+          const double med_items = ComputeMedian(final_results[family].t81_rep_items_per_sec);
+          final_results[family].t81_result_val = med_items / 1e9;
+          final_results[family].t81_result_str = FormatThroughput(med_items);
           final_results[family].has_t81_flow = true;
+        } else {
+          final_results[family].t81_result_str = summary;
         }
         if (bandwidth_recorded) {
           final_results[family].t81_bandwidth_val = bandwidth;
@@ -775,14 +804,30 @@ public:
         if (arg_rank < final_results[family].t81_native_arg_rank) {
           continue;
         }
+        if (arg_rank > final_results[family].t81_native_arg_rank) {
+          final_results[family].t81_native_rep_items_per_sec.clear();
+          final_results[family].t81_native_rep_latency_sec.clear();
+        }
         final_results[family].t81_native_arg_rank = arg_rank;
-        final_results[family].t81_native_result_str = summary;
-        final_results[family].t81_native_latency_seconds = latency;
-        final_results[family].t81_native_latency_str = latency_str;
+        if (latency > 0.0) {
+          final_results[family].t81_native_rep_latency_sec.push_back(latency);
+          const double med_lat = ComputeMedian(final_results[family].t81_native_rep_latency_sec);
+          final_results[family].t81_native_latency_seconds = med_lat;
+          final_results[family].t81_native_latency_str = FormatLatency(med_lat);
+        } else {
+          final_results[family].t81_native_latency_seconds = latency;
+          final_results[family].t81_native_latency_str = latency_str;
+        }
         if (!effective_label.empty()) final_results[family].t81_native_note = effective_label;
         if (throughput_recorded) {
-          final_results[family].t81_native_result_val = gops;
+          final_results[family].t81_native_rep_items_per_sec.push_back(items_per_second);
+          const double med_items =
+              ComputeMedian(final_results[family].t81_native_rep_items_per_sec);
+          final_results[family].t81_native_result_val = med_items / 1e9;
+          final_results[family].t81_native_result_str = FormatThroughput(med_items);
           final_results[family].has_t81_native_flow = true;
+        } else {
+          final_results[family].t81_native_result_str = summary;
         }
         if (bandwidth_recorded) {
           final_results[family].t81_native_bandwidth_val = bandwidth;
@@ -795,14 +840,29 @@ public:
         if (arg_rank < final_results[family].binary_arg_rank) {
           continue;
         }
+        if (arg_rank > final_results[family].binary_arg_rank) {
+          final_results[family].binary_rep_items_per_sec.clear();
+          final_results[family].binary_rep_latency_sec.clear();
+        }
         final_results[family].binary_arg_rank = arg_rank;
-        final_results[family].binary_result_str = summary;
-        final_results[family].binary_latency_seconds = latency;
-        final_results[family].binary_latency_str = latency_str;
+        if (latency > 0.0) {
+          final_results[family].binary_rep_latency_sec.push_back(latency);
+          const double med_lat = ComputeMedian(final_results[family].binary_rep_latency_sec);
+          final_results[family].binary_latency_seconds = med_lat;
+          final_results[family].binary_latency_str = FormatLatency(med_lat);
+        } else {
+          final_results[family].binary_latency_seconds = latency;
+          final_results[family].binary_latency_str = latency_str;
+        }
         if (!effective_label.empty()) final_results[family].binary_note = effective_label;
         if (throughput_recorded) {
-          final_results[family].binary_result_val = gops;
+          final_results[family].binary_rep_items_per_sec.push_back(items_per_second);
+          const double med_items = ComputeMedian(final_results[family].binary_rep_items_per_sec);
+          final_results[family].binary_result_val = med_items / 1e9;
+          final_results[family].binary_result_str = FormatThroughput(med_items);
           final_results[family].has_binary_flow = true;
+        } else {
+          final_results[family].binary_result_str = summary;
         }
         if (bandwidth_recorded) {
           final_results[family].binary_bandwidth_val = bandwidth;
@@ -815,14 +875,29 @@ public:
         if (arg_rank < final_results[family].t81_arg_rank) {
           continue;
         }
+        if (arg_rank > final_results[family].t81_arg_rank) {
+          final_results[family].t81_rep_items_per_sec.clear();
+          final_results[family].t81_rep_latency_sec.clear();
+        }
         final_results[family].t81_arg_rank = arg_rank;
-        final_results[family].t81_result_str = summary;
-        final_results[family].t81_latency_seconds = latency;
-        final_results[family].t81_latency_str = latency_str;
+        if (latency > 0.0) {
+          final_results[family].t81_rep_latency_sec.push_back(latency);
+          const double med_lat = ComputeMedian(final_results[family].t81_rep_latency_sec);
+          final_results[family].t81_latency_seconds = med_lat;
+          final_results[family].t81_latency_str = FormatLatency(med_lat);
+        } else {
+          final_results[family].t81_latency_seconds = latency;
+          final_results[family].t81_latency_str = latency_str;
+        }
         if (!effective_label.empty()) final_results[family].t81_classic_note = effective_label;
         if (throughput_recorded) {
-          final_results[family].t81_result_val = gops;
+          final_results[family].t81_rep_items_per_sec.push_back(items_per_second);
+          const double med_items = ComputeMedian(final_results[family].t81_rep_items_per_sec);
+          final_results[family].t81_result_val = med_items / 1e9;
+          final_results[family].t81_result_str = FormatThroughput(med_items);
           final_results[family].has_t81_flow = true;
+        } else {
+          final_results[family].t81_result_str = summary;
         }
         if (bandwidth_recorded) final_results[family].t81_bandwidth_val = bandwidth;
         if (bandwidth_recorded) final_results[family].has_t81_flow = true;
@@ -1198,6 +1273,38 @@ void GenerateMarkdownReport() {
                 << DisplayValue(native_throughput_ratio_cell) << std::setw(18)
                 << DisplayValue(native_latency_speedup_cell) << std::setw(25)
                 << DisplayValue(advantage_display) << DisplayValue(notes_display) << "\n";
+      if (!r.t81_rep_items_per_sec.empty()) {
+        std::vector<double> sorted = r.t81_rep_items_per_sec;
+        std::sort(sorted.begin(), sorted.end());
+        const double min_v = sorted.front();
+        const double max_v = sorted.back();
+        const double med_v = ComputeMedian(sorted);
+        double mean_v = 0.0;
+        for (double v : sorted) mean_v += v;
+        mean_v /= static_cast<double>(sorted.size());
+        double var_v = 0.0;
+        if (sorted.size() > 1U) {
+          for (double v : sorted) {
+            const double d = v - mean_v;
+            var_v += d * d;
+          }
+          var_v /= static_cast<double>(sorted.size() - 1U);
+        }
+        const double sd_v = std::sqrt(var_v);
+        const double cv_pct = (mean_v > 0.0) ? (100.0 * sd_v / mean_v) : 0.0;
+        std::cout << "  -> T81 repetitions (n=" << r.t81_rep_items_per_sec.size()
+                  << "): median=" << FormatThroughput(med_v)
+                  << ", min=" << FormatThroughput(min_v)
+                  << ", max=" << FormatThroughput(max_v)
+                  << ", range=" << FormatThroughput(max_v - min_v)
+                  << ", stddev=" << FormatThroughput(sd_v) << " (CV=" << std::fixed
+                  << std::setprecision(2) << cv_pct << "%); raw=[";
+        for (std::size_t idx = 0; idx < r.t81_rep_items_per_sec.size(); ++idx) {
+          if (idx > 0U) std::cout << ", ";
+          std::cout << FormatThroughput(r.t81_rep_items_per_sec[idx]);
+        }
+        std::cout << "]\n";
+      }
     }
   } else {
     std::cout
@@ -1230,9 +1337,9 @@ void GenerateMarkdownReport() {
     if (NameContains(name, "CanonFS")) return "CanonFS I/O";
     if (NameContains(name, "T81LangCompile") || NameContains(name, "Lexer"))
       return "Compiler & Language";
-    if (NameContains(name, "Limb") || NameContains(name, "Add_") || NameContains(name, "Arith") ||
-        NameContains(name, "overflow") || NameContains(name, "Roundtrip") ||
-        NameContains(name, "Negation")) {
+    if (NameContains(name, "Cell") || NameContains(name, "Limb") || NameContains(name, "Add_") ||
+        NameContains(name, "Arith") || NameContains(name, "overflow") ||
+        NameContains(name, "Roundtrip") || NameContains(name, "Negation")) {
       return "Core Arithmetic";
     }
     if (NameContains(name, "Tensor")) return "Tensor Math";
@@ -1244,6 +1351,12 @@ void GenerateMarkdownReport() {
     if (r.t81_classic_inconsistent || r.binary_inconsistent) return "defect: work mismatch";
     if (BinaryBaselineSemanticallyUnavoidable(r) || T81ClassicSemanticallyUnavoidable(r)) {
       return "semantic mismatch";
+    }
+    if (notes_display.find("comparison=not-evaluated") != std::string::npos) {
+      return "not-evaluated (representation-specific)";
+    }
+    if (notes_display.find("comparison=semantic-tax") != std::string::npos) {
+      return "semantic-tax (conversion overhead)";
     }
     if (notes_display.find("comparison=pipeline-advantage") != std::string::npos) {
       return "systems-path (pipeline-advantage)";
@@ -1259,6 +1372,8 @@ void GenerateMarkdownReport() {
     if (fairness.find("defect") != std::string::npos) return "low";
     if (fairness.find("semantic mismatch") != std::string::npos) return "low";
     if (fairness.find("missing baseline") != std::string::npos) return "low";
+    if (fairness.find("not-evaluated") != std::string::npos) return "medium";
+    if (fairness.find("semantic-tax") != std::string::npos) return "medium";
     if (fairness.find("systems-path") != std::string::npos) return "medium";
     if (r.throughput_ratio_computed && r.latency_speedup_computed) return "high";
     if (r.throughput_ratio_computed) return "medium";
@@ -1285,6 +1400,9 @@ void GenerateMarkdownReport() {
     const std::string throughput_ratio_cell = ResolveThroughputRatioCell(r);
     const std::string fairness = FairnessFor(r, notes_display);
     const std::string confidence = ConfidenceFor(r, fairness);
+    const bool comparison_disclaimed =
+        (fairness.find("not-evaluated") != std::string::npos ||
+         fairness.find("semantic-tax") != std::string::npos);
 
     UserRow row;
     row.name = r.name;
@@ -1293,14 +1411,15 @@ void GenerateMarkdownReport() {
     row.t81_iter = t81_latency_cell;
     row.binary_result = binary_result_cell;
     row.binary_iter = binary_latency_cell;
-    row.ratio = throughput_ratio_cell;
-    row.ratio_computed = r.throughput_ratio_computed;
+    row.ratio = comparison_disclaimed ? "not-evaluated (representation-specific)"
+                                      : throughput_ratio_cell;
+    row.ratio_computed = r.throughput_ratio_computed && !comparison_disclaimed;
     row.ratio_val = r.throughput_ratio_val;
     row.fairness = fairness;
     row.confidence = confidence;
     row.notes = notes_display.empty() ? "not-applicable (no annotation)" : notes_display;
 
-    if (r.throughput_ratio_computed) {
+    if (row.ratio_computed) {
       if (r.throughput_ratio_val > 1.05) {
         row.verdict = "T81 wins";
       } else if (r.throughput_ratio_val < 0.95) {
@@ -1317,6 +1436,9 @@ void GenerateMarkdownReport() {
         best_binary_ratio = r.throughput_ratio_val;
         worst_name = r.name;
       }
+    } else if (comparison_disclaimed) {
+      row.verdict = "Not evaluated";
+      ++semantic_mismatch;
     } else {
       row.verdict = "No baseline";
       if (fairness.find("semantic mismatch") != std::string::npos) {

@@ -243,7 +243,7 @@ struct KernelCallResult {
   std::optional<ipc::CanonMessage> message{};
   std::optional<KernelFaultRecord> fault{};
   std::optional<t81::canonfs::CanonRef> object_ref{};
-  std::vector<KernelCapabilityRecord> capabilities;
+  std::vector<KernelCapabilityRecord> capabilities{};
   bool executable_registered{false};
   bool executable_published{false};
   std::optional<KernelThreadSpawnDescriptor> executable_entry_descriptor{};
@@ -281,7 +281,7 @@ struct KernelCallResult {
   bool thread_active{false};
   bool thread_halted{false};
   bool thread_running{false};
-  std::string thread_label;
+  std::string thread_label{};
   std::size_t process_group_owned_page_count{0};
   std::size_t process_group_pending_fault_count{0};
   bool process_group_pager_needed{false};
@@ -316,12 +316,12 @@ struct KernelCallResult {
   uint64_t supervisor_service_lifecycle_transitions{0};
   std::optional<ProcessGroupId> supervisor_last_capability_transition_group_id{};
   std::optional<CapabilityRecordId> supervisor_last_capability_transition_record_id{};
-  std::vector<KernelCapabilityTransitionRecord> supervisor_capability_transition_history;
-  std::vector<KernelSupervisorServiceSummaryEntry> supervisor_services;
+  std::vector<KernelCapabilityTransitionRecord> supervisor_capability_transition_history{};
+  std::vector<KernelSupervisorServiceSummaryEntry> supervisor_services{};
   std::size_t supervisor_delegation_process_group_count{0};
   std::size_t supervisor_delegation_entry_count{0};
   std::size_t supervisor_delegated_capability_count{0};
-  std::vector<KernelDelegationSummaryEntry> supervisor_delegation_entries;
+  std::vector<KernelDelegationSummaryEntry> supervisor_delegation_entries{};
 };
 
 KernelCallResult axion_kernel_call(KernelRuntimeState& state,

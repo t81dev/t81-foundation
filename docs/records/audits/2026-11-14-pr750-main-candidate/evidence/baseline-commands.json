@@ -1,0 +1,56 @@
+[
+  {
+    "case": "baseline-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      ".",
+      "-B",
+      "/private/tmp/t81-pr750-main-release",
+      "-G",
+      "Ninja",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DT81_BUILD_TESTS=ON",
+      "-DT81_BUILD_TUI=OFF",
+      "-DT81_BUILD_BENCHMARKS=OFF",
+      "-DT81_BUILD_EXAMPLES=OFF",
+      "-DT81_BUILD_FUZZ_TESTS=OFF",
+      "-DT81_ENABLE_TERNARYOS=OFF",
+      "-DT81_STRICT_DETERMINISTIC_FLOAT=ON",
+      "-DT81_USE_CXX23=ON",
+      "-DFETCHCONTENT_SOURCE_DIR_ASIO=/Users/t81dev/Code/t81-foundation/build/_deps/asio-src",
+      "-DGTest_DIR=/private/tmp/t81-ci-googletest-install-2026-11-09/lib/cmake/GTest"
+    ],
+    "exit": 0,
+    "expected_exit": 0
+  },
+  {
+    "case": "baseline-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "/private/tmp/t81-pr750-main-release",
+      "--target",
+      "t81",
+      "cli_repro_hash_test",
+      "t81_process_capture_test",
+      "-j",
+      "4"
+    ],
+    "exit": 0,
+    "expected_exit": 0
+  },
+  {
+    "case": "baseline-73-process-matrix",
+    "argv": [
+      "python3",
+      "tests/python/test_cli_execution_policy.py",
+      "--t81-bin",
+      "/private/tmp/t81-pr750-main-release/t81",
+      "--receipt",
+      "docs/records/audits/2026-11-14-pr750-main-candidate/evidence/baseline-73-receipt.json"
+    ],
+    "exit": 1,
+    "expected_exit": 1
+  }
+]

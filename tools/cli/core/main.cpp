@@ -28,6 +28,8 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include "tools/cli/core/process_capture.hpp"
+#include "tools/cli/core/execution_policy.hpp"
 #include <thread>
 #include <tuple>
 #include <type_traits>
@@ -42,6 +44,11 @@
 #define NOMINMAX
 #endif
 #include <windows.h>
+#include <shellapi.h>
+// Windows GDI's ERROR macro collides with monitoring::AlertLevel::ERROR.
+#ifdef ERROR
+#undef ERROR
+#endif
 #elif defined(__APPLE__)
 #include <mach-o/dyld.h>
 #else
@@ -55,13 +62,13 @@
 #include <io.h>
 #endif
 
-#include "tools/cli/logging.hpp"
 #include "t81/axion/policy_validator.hpp"
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
-#include "t81/cli/artifact_family.hpp"
-#include "t81/canonfs/performance_cli.hpp"
 #include "t81/canonfs/interchange_ops.hpp"
+#include "t81/canonfs/performance_cli.hpp"
+#include "t81/canonfs/storage_key.hpp"
+#include "t81/cli/artifact_family.hpp"
 #include "t81/cli/driver.hpp"
 #include "t81/config.hpp"
 #include "t81/crypto/sha3.hpp"
@@ -79,6 +86,7 @@
 #include "t81/vm/vm.hpp"
 #include "t81/weights.hpp"
 #include "tools/cli/ai/ai_cli_shared.hpp"
+#include "tools/cli/logging.hpp"
 #include "vm/internal/memory_segments.hpp"
 #if defined(T81_HAS_LLAMA_CPP)
 #include "t81/experimental/llama_cpp_adapter.hpp"
@@ -2218,14 +2226,8 @@ std::optional<fs::path> find_repo_root(fs::path start);
 fs::path discover_repo_root();
 fs::path discover_build_dir();
 fs::path discover_canonfs_root();
-struct ProcessCaptureResult {
-  int exit_code = -1;
-  std::string stdout_text;
-  std::string stderr_text;
-};
-ProcessCaptureResult run_process_capture(
-    const std::vector<std::string>& argv, const std::optional<fs::path>& cwd = std::nullopt,
-    const std::vector<std::pair<std::string, std::string>>& env_overrides = {});
+using t81::cli::ProcessCaptureResult;
+using t81::cli::run_process_capture;
 const char* ir_opcode_name(t81::tisc::ir::Opcode op);
 const char* ir_primitive_name(t81::tisc::ir::PrimitiveKind kind);
 const char* ir_relation_name(t81::tisc::ir::ComparisonRelation relation);
@@ -5028,6 +5030,15 @@ int run_axion(const Args& args) {
     return count;
   };
 
+  auto snapshot_dir_path = [&](const fs::path& root,
+                               std::string_view canonical_hash) -> std::optional<fs::path> {
+    try {
+      return root / "snapshots" / t81::canonfs::snapshot_storage_key_v1(canonical_hash);
+    } catch (...) {
+      return std::nullopt;
+    }
+  };
+
   auto sorted_snapshot_hashes = [&](const fs::path& root) {
     std::vector<std::string> hashes;
     std::error_code ec;
@@ -5039,7 +5050,10 @@ int run_axion(const Args& args) {
       if (ec || !entry.is_directory()) {
         continue;
       }
-      hashes.push_back(entry.path().filename().string());
+      const auto parsed = t81::canonfs::parse_storage_key_v1(entry.path().filename().string());
+      if (parsed) {
+        hashes.push_back(parsed->h.to_string());
+      }
     }
     std::sort(hashes.begin(), hashes.end(), std::greater<std::string>{});
     return hashes;
@@ -5099,7 +5113,11 @@ int run_axion(const Args& args) {
     if (hash.empty()) {
       return lines;
     }
-    const fs::path manifest = canonfs_root / "snapshots" / hash / "MANIFEST.txt";
+    const auto dir = snapshot_dir_path(canonfs_root, hash);
+    if (!dir) {
+      return lines;
+    }
+    const fs::path manifest = *dir / "MANIFEST.txt";
     std::ifstream in(manifest, std::ios::binary);
     if (!in) {
       return lines;
@@ -5209,9 +5227,10 @@ int run_axion(const Args& args) {
     if (!state.present && tier_provided) {
       state.tier = target_tier;
     }
-    const bool state_snapshot_present =
-        state.active_snapshot &&
-        fs::exists(canonfs_root / "snapshots" / *state.active_snapshot / "MANIFEST.txt");
+    const auto active_dir = state.active_snapshot
+                                ? snapshot_dir_path(canonfs_root, *state.active_snapshot)
+                                : std::nullopt;
+    const bool state_snapshot_present = active_dir && fs::exists(*active_dir / "MANIFEST.txt");
     std::vector<std::string> issues;
     if (!canonfs_ready) {
       issues.emplace_back("canonfs_root_missing");
@@ -5704,7 +5723,19 @@ int run_canonfs_command(const Args& args) {
       return 1;
     }
     if (dry_run) {
-      const fs::path snapshot_dir = canonfs_root / "snapshots" / positional[0];
+      std::string hash_err;
+      if (!is_valid_snapshot_hash_text(positional[0])) {
+        error("canonfs rollback: invalid snapshot hash.");
+        return 1;
+      }
+      fs::path snapshot_dir;
+      try {
+        snapshot_dir =
+            canonfs_root / "snapshots" / t81::canonfs::snapshot_storage_key_v1(positional[0]);
+      } catch (...) {
+        error("canonfs rollback: invalid snapshot hash.");
+        return 1;
+      }
       const bool exists = fs::exists(snapshot_dir);
       if (as_json) {
         std::cout << "{\n"
@@ -6962,7 +6993,7 @@ int run_vm_command(const Args& args) {
     return 1;
   }
 
-  std::optional<fs::path> policy_path;
+  std::optional<fs::path> policy_path = args.policy;
   std::optional<fs::path> trace_path = args.output;
   std::optional<std::string> display_program;
   bool as_json = false;
@@ -7050,20 +7081,26 @@ int run_vm_command(const Args& args) {
     }
     return t81::cli::run_tisc(input, policy_path, true, trace_path);
   }
+  std::optional<std::string> policy_text;
+  if (policy_path) {
+    std::string content;
+    std::string diagnostic;
+    if (!t81::cli::detail::read_execution_policy(*policy_path, content, diagnostic)) {
+      error(diagnostic);
+      return 1;
+    }
+    policy_text = std::move(content);
+  }
   if (action == "until" || action == "step" || action == "regs" || action == "stack" ||
       action == "mem") {
     auto program = t81::tisc::load_program(input.string());
-    if (policy_path) {
-      std::ifstream ifs(*policy_path);
-      if (!ifs) {
-        error("Could not open policy file: " + policy_path->string());
-        return 1;
-      }
-      std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-      program.axion_policy_text = content;
-    }
+    if (policy_text) program.axion_policy_text = *policy_text;
     auto vm = t81::vm::make_interpreter_vm();
     vm->load_program(program);
+    if (policy_path && !vm->state().policy.has_value()) {
+      error("Could not apply requested policy: " + policy_path->string());
+      return 1;
+    }
     std::optional<t81::vm::Trap> trap;
     std::size_t executed_steps = 0;
     bool reached_target_pc = false;
@@ -7239,17 +7276,13 @@ int run_vm_command(const Args& args) {
   }
   if (action == "state") {
     auto program = t81::tisc::load_program(input.string());
-    if (policy_path) {
-      std::ifstream ifs(*policy_path);
-      if (!ifs) {
-        error("Could not open policy file: " + policy_path->string());
-        return 1;
-      }
-      std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-      program.axion_policy_text = content;
-    }
+    if (policy_text) program.axion_policy_text = *policy_text;
     auto vm = t81::vm::make_interpreter_vm();
     vm->load_program(program);
+    if (policy_path && !vm->state().policy.has_value()) {
+      error("Could not apply requested policy: " + policy_path->string());
+      return 1;
+    }
     auto result = vm->run_to_halt();
     const auto& state = vm->state();
     const auto& ctx = state.contexts.empty() ? t81::vm::ThreadContext{} : state.contexts.front();
@@ -7291,17 +7324,13 @@ int run_vm_command(const Args& args) {
   }
   if (action == "profile" || action == "explain-trap") {
     auto program = t81::tisc::load_program(input.string());
-    if (policy_path) {
-      std::ifstream ifs(*policy_path);
-      if (!ifs) {
-        error("Could not open policy file: " + policy_path->string());
-        return 1;
-      }
-      std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-      program.axion_policy_text = content;
-    }
+    if (policy_text) program.axion_policy_text = *policy_text;
     auto vm = t81::vm::make_interpreter_vm();
     vm->load_program(program);
+    if (policy_path && !vm->state().policy.has_value()) {
+      error("Could not apply requested policy: " + policy_path->string());
+      return 1;
+    }
     auto result = vm->run_to_halt();
     const auto& state = vm->state();
     const auto& ctx = state.contexts.empty() ? t81::vm::ThreadContext{} : state.contexts.front();
@@ -8606,91 +8635,6 @@ bool shell_command_available(const std::string& command) {
     }
   }
   return false;
-#endif
-}
-
-ProcessCaptureResult run_process_capture(
-    const std::vector<std::string>& argv, const std::optional<fs::path>& cwd,
-    const std::vector<std::pair<std::string, std::string>>& env_overrides) {
-  ProcessCaptureResult result;
-  if (argv.empty()) {
-    return result;
-  }
-#if defined(_WIN32)
-  (void)cwd;
-  (void)env_overrides;
-  std::string cmd;
-  for (std::size_t i = 0; i < argv.size(); ++i) {
-    if (i != 0) {
-      cmd.push_back(' ');
-    }
-    cmd += shell_escape(argv[i]);
-  }
-  TempCaptureFile out_file("capture", ".out");
-  TempCaptureFile err_file("capture", ".err");
-  cmd +=
-      " > " + shell_escape(out_file.path.string()) + " 2> " + shell_escape(err_file.path.string());
-  const int status = std::system(cmd.c_str());
-  if (status == -1) {
-    return result;
-  }
-  result.exit_code = decode_system_status(status);
-  std::ifstream out_stream(out_file.path, std::ios::binary);
-  std::ifstream err_stream(err_file.path, std::ios::binary);
-  result.stdout_text.assign((std::istreambuf_iterator<char>(out_stream)),
-                            std::istreambuf_iterator<char>());
-  result.stderr_text.assign((std::istreambuf_iterator<char>(err_stream)),
-                            std::istreambuf_iterator<char>());
-  return result;
-#else
-  TempCaptureFile out_file("capture", ".out");
-  TempCaptureFile err_file("capture", ".err");
-
-  std::vector<std::string> argv_storage = argv;
-  std::vector<char*> argv_ptrs;
-  argv_ptrs.reserve(argv_storage.size() + 1);
-  for (auto& item : argv_storage) {
-    argv_ptrs.push_back(item.data());
-  }
-  argv_ptrs.push_back(nullptr);
-
-  pid_t pid = fork();
-  if (pid == 0) {
-    int out_fd = open(out_file.path.c_str(), O_WRONLY | O_TRUNC);
-    int err_fd = open(err_file.path.c_str(), O_WRONLY | O_TRUNC);
-    if (out_fd == -1 || err_fd == -1) {
-      _exit(127);
-    }
-    if (dup2(out_fd, STDOUT_FILENO) == -1 || dup2(err_fd, STDERR_FILENO) == -1) {
-      _exit(127);
-    }
-    close(out_fd);
-    close(err_fd);
-    if (cwd && chdir(cwd->c_str()) != 0) {
-      _exit(127);
-    }
-    for (const auto& [key, value] : env_overrides) {
-      setenv(key.c_str(), value.c_str(), 1);
-    }
-    execvp(argv_ptrs[0], argv_ptrs.data());
-    _exit(127);
-  }
-  if (pid < 0) {
-    return result;
-  }
-
-  int status = 0;
-  if (waitpid(pid, &status, 0) == -1) {
-    return result;
-  }
-  result.exit_code = decode_system_status(status);
-  std::ifstream out_stream(out_file.path, std::ios::binary);
-  std::ifstream err_stream(err_file.path, std::ios::binary);
-  result.stdout_text.assign((std::istreambuf_iterator<char>(out_stream)),
-                            std::istreambuf_iterator<char>());
-  result.stderr_text.assign((std::istreambuf_iterator<char>(err_stream)),
-                            std::istreambuf_iterator<char>());
-  return result;
 #endif
 }
 
@@ -10655,10 +10599,71 @@ std::optional<std::string> removed_help_topic_recommendation(std::string_view to
   return std::nullopt;
 }
 
+#ifdef _WIN32
+static bool collect_windows_utf8_argv(std::vector<std::string>& storage, std::vector<char*>& ptrs,
+                                      std::string& error_message) {
+  int wargc = 0;
+  LPWSTR* wargv = CommandLineToArgvW(GetCommandLineW(), &wargc);
+  if (wargv == nullptr || wargc <= 0) {
+    if (wargv != nullptr) {
+      LocalFree(wargv);
+    }
+    error_message = "CommandLineToArgvW failed";
+    return false;
+  }
+
+  storage.clear();
+  ptrs.clear();
+  storage.reserve(static_cast<std::size_t>(wargc));
+
+  for (int i = 0; i < wargc; ++i) {
+    if (wargv[i] == nullptr || wargv[i][0] == L'\0') {
+      storage.emplace_back();
+      continue;
+    }
+    const int needed = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, wargv[i], -1, nullptr, 0,
+                                           nullptr, nullptr);
+    if (needed <= 0) {
+      LocalFree(wargv);
+      error_message = "Failed to convert Windows command-line argument to UTF-8";
+      return false;
+    }
+    std::string utf8(static_cast<std::size_t>(needed - 1), '\0');
+    const int written = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, wargv[i], -1,
+                                            utf8.data(), needed, nullptr, nullptr);
+    if (written <= 0) {
+      LocalFree(wargv);
+      error_message = "Failed to encode Windows command-line argument as UTF-8";
+      return false;
+    }
+    storage.push_back(std::move(utf8));
+  }
+
+  LocalFree(wargv);
+  ptrs.reserve(storage.size() + 1);
+  for (auto& arg : storage) {
+    ptrs.push_back(arg.data());
+  }
+  ptrs.push_back(nullptr);
+  return true;
+}
+#endif
+
 // ──────────────────────────────────────────────────────────────
 // Main
 // ──────────────────────────────────────────────────────────────
 int main(int argc, char* argv[]) {
+#ifdef _WIN32
+  std::vector<std::string> win_utf8_args;
+  std::vector<char*> win_utf8_argv;
+  std::string win_argv_error;
+  if (!collect_windows_utf8_argv(win_utf8_args, win_utf8_argv, win_argv_error)) {
+    std::cerr << "Error: " << win_argv_error << "\n";
+    return 1;
+  }
+  argc = static_cast<int>(win_utf8_args.size());
+  argv = win_utf8_argv.data();
+#endif
   g_json_error_mode = false;
   g_json_error_emitted = false;
   for (int i = 1; i < argc; ++i) {

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="(empty)"
+	tests="5"
+	failures="0"
+	disabled="0"
+	skipped="0"
+	hostname=""
+	time="8"
+	timestamp="2026-11-15T07:38:39"
+	>
+	<testcase name="t81_exp_scg08_01_schema_validation" classname="t81_exp_scg08_01_schema_validation" time="0.065257" status="run">
+		<properties/>
+		<system-out>[SCG-08 SCHEMA VALIDATION PASSED] Artifact gate1_evidence_record.json passes supported schema checks and domain rules for t81.scg08.carry-experiment.v1
+</system-out>
+	</testcase>
+	<testcase name="t81_exp_scg08_01_schema_negative_validation" classname="t81_exp_scg08_01_schema_negative_validation" time="0.194548" status="run">
+		<properties/>
+		<system-out>[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evaluated_implementation_sha must be string
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evaluated_implementation_sha is shorter than minLength
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha is shorter than minLength
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid timestamp_utc format: invalid-time (must be valid ISO-8601 UTC timestamp)
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid specification_version: v1.0 (expected T81-SCG-08-PHASE1-PROP-001-R3-ADDENDUM-06)
+[SCG-08 SCHEMA VALIDATION ERROR] Actual executed trials (1001) exceeded budget ceiling (1000)
+[SCG-08 SCHEMA VALIDATION ERROR] budget_enforced_fail_closed must be boolean true
+[SCG-08 SCHEMA VALIDATION ERROR] tier2_work.evaluated_bands must be a list of 5 evaluated bands
+[SCG-08 SCHEMA ...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="t81_exp_scg08_01_schema_json_files" classname="t81_exp_scg08_01_schema_json_files" time="3.99672" status="run">
+		<properties/>
+		<system-out>  JSON-file case 'valid' passed (exit 0)
+  JSON-file case 'truncated' passed (exit 1)
+  JSON-file case 'trailing data' passed (exit 1)
+  JSON-file case 'invalid UTF-8' passed (exit 1)
+  JSON-file case 'top-level null' passed (exit 1)
+  JSON-file case 'top-level array' passed (exit 1)
+  JSON-file case 'missing properties' passed (exit 1)
+  JSON-file case 'nested scalar object' passed (exit 1)
+  JSON-file case 'NaN declared field' passed (exit 1)
+  JSON-file case 'nonfinite extra field NaN' passed (exit 1)
+  JSON-file case 'nonfinite extra field Infinity' passed (exit 1)
+  JSON-file case 'nonfinite extra field -Infinity' passed (exit 1)
+  JSON-file case 'nonfinite extra field 1e999' passed (exit 1)
+  JSON-file case 'permitted finite extras' passed (exit 0)
+  JSON-file case 'generation SHA null' passed (exit 0)
+  JSON-file case 'generation SHA valid' passed (exit 0)
+  JSON-file case 'generation SHA boolean' passed (exit 1)
+  JSON-file case 'generation SHA invalid' passed (exit 1)
+  JSON-file case 'generation SHA...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="t81_exp_scg08_01_schema_negative_optimized" classname="t81_exp_scg08_01_schema_negative_optimized" time="0.353147" status="run">
+		<properties/>
+		<system-out>[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evaluated_implementation_sha must be string
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evaluated_implementation_sha is shorter than minLength
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha is shorter than minLength
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid timestamp_utc format: invalid-time (must be valid ISO-8601 UTC timestamp)
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid specification_version: v1.0 (expected T81-SCG-08-PHASE1-PROP-001-R3-ADDENDUM-06)
+[SCG-08 SCHEMA VALIDATION ERROR] Actual executed trials (1001) exceeded budget ceiling (1000)
+[SCG-08 SCHEMA VALIDATION ERROR] budget_enforced_fail_closed must be boolean true
+[SCG-08 SCHEMA VALIDATION ERROR] tier2_work.evaluated_bands must be a list of 5 evaluated bands
+[SCG-08 SCHEMA ...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="t81_exp_scg08_01_schema_json_files_optimized" classname="t81_exp_scg08_01_schema_json_files_optimized" time="3.77106" status="run">
+		<properties/>
+		<system-out>  JSON-file case 'valid' passed (exit 0)
+  JSON-file case 'truncated' passed (exit 1)
+  JSON-file case 'trailing data' passed (exit 1)
+  JSON-file case 'invalid UTF-8' passed (exit 1)
+  JSON-file case 'top-level null' passed (exit 1)
+  JSON-file case 'top-level array' passed (exit 1)
+  JSON-file case 'missing properties' passed (exit 1)
+  JSON-file case 'nested scalar object' passed (exit 1)
+  JSON-file case 'NaN declared field' passed (exit 1)
+  JSON-file case 'nonfinite extra field NaN' passed (exit 1)
+  JSON-file case 'nonfinite extra field Infinity' passed (exit 1)
+  JSON-file case 'nonfinite extra field -Infinity' passed (exit 1)
+  JSON-file case 'nonfinite extra field 1e999' passed (exit 1)
+  JSON-file case 'permitted finite extras' passed (exit 0)
+  JSON-file case 'generation SHA null' passed (exit 0)
+  JSON-file case 'generation SHA valid' passed (exit 0)
+  JSON-file case 'generation SHA boolean' passed (exit 1)
+  JSON-file case 'generation SHA invalid' passed (exit 1)
+  JSON-file case 'generation SHA...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+</testsuite>

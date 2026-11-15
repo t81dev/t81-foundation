@@ -1,0 +1,29 @@
+[
+  {
+    "case": "candidate-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "/private/tmp/t81-pr750-main-release",
+      "--target",
+      "t81",
+      "cli_repro_hash_test",
+      "t81_process_capture_test",
+      "-j",
+      "4"
+    ],
+    "exit": 0
+  },
+  {
+    "case": "candidate-expanded-matrix",
+    "argv": [
+      "python3",
+      "tests/python/test_cli_execution_policy.py",
+      "--t81-bin",
+      "/private/tmp/t81-pr750-main-release/t81",
+      "--receipt",
+      "docs/records/audits/2026-11-14-pr750-main-candidate/evidence/candidate-expanded-receipt.json"
+    ],
+    "exit": 1
+  }
+]

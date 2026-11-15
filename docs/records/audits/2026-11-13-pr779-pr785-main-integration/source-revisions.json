@@ -1,0 +1,42 @@
+{
+  "main_base": "fbfe4f5a2d4439f5ff479014301560764de39c99",
+  "accepted_contract": "4d5f3586c04a69c520e613166291c0974877628d",
+  "accepted_portable_tests": "300cdea8896d56c025f7099c0cdf0c41d7bd6237",
+  "evidence_packet": "8733abcd2ffc7ecb35ff8b61d9306472fced806b",
+  "historical_ci_harness": "b24cd1b1595f0e9c2c55a94a3cc0df89b57e83c1",
+  "historical_scoped_run": "https://github.com/t81dev/t81-foundation/actions/runs/43538262449",
+  "historical_run_source": "300cdea8896d56c025f7099c0cdf0c41d7bd6237",
+  "archived_ci_files": [
+    {
+      "source_revision": "b24cd1b1595f0e9c2c55a94a3cc0df89b57e83c1",
+      "source_path": ".github/workflows/scg08-correctness.yml",
+      "archive_path": "docs/records/audits/2026-11-13-pr779-pr785-main-integration/archived-ci/scg08-correctness.yml",
+      "git_blob": "358e1e5d524637412c568333f9eb12b0e944d0cb",
+      "sha256": "3686403dd08763ad5959c6bf087e799736eabf73e1592875e2e36b85ab420197",
+      "source_url": "https://github.com/t81dev/t81-foundation/blob/b24cd1b1595f0e9c2c55a94a3cc0df89b57e83c1/.github/workflows/scg08-correctness.yml"
+    },
+    {
+      "source_revision": "b24cd1b1595f0e9c2c55a94a3cc0df89b57e83c1",
+      "source_path": "scripts/ci/run_scg08_correctness.py",
+      "archive_path": "docs/records/audits/2026-11-13-pr779-pr785-main-integration/archived-ci/run_scg08_correctness.py",
+      "git_blob": "d5db1f7718d61a5cdb7d69684c5e14c8fe83f5a9",
+      "sha256": "b47b4f6df9ffd87e194530d0bc271b249fd6f7508259db3354aa394219120fce",
+      "source_url": "https://github.com/t81dev/t81-foundation/blob/b24cd1b1595f0e9c2c55a94a3cc0df89b57e83c1/scripts/ci/run_scg08_correctness.py"
+    },
+    {
+      "source_revision": "b24cd1b1595f0e9c2c55a94a3cc0df89b57e83c1",
+      "source_path": "scripts/ci/scg08-requirements.txt",
+      "archive_path": "docs/records/audits/2026-11-13-pr779-pr785-main-integration/archived-ci/scg08-requirements.txt",
+      "git_blob": "f4623be2d8dc41b9bda5971f13f68efb5aa8764f",
+      "sha256": "336c018db29d0de82b4d4bfc5f158a5484b29a91e35226b4362bb71fd120b544",
+      "source_url": "https://github.com/t81dev/t81-foundation/blob/b24cd1b1595f0e9c2c55a94a3cc0df89b57e83c1/scripts/ci/scg08-requirements.txt"
+    }
+  ],
+  "conflicts": [],
+  "applied_original_commits": [
+    "5bfc0e2b7f531c4cdeca53ed9e1172f551683da6",
+    "4d5f3586c04a69c520e613166291c0974877628d",
+    "ceb1560af3a386050c1a611270aaf03a72b405a1",
+    "300cdea8896d56c025f7099c0cdf0c41d7bd6237"
+  ]
+}

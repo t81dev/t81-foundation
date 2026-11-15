@@ -45,25 +45,31 @@ inline std::vector<Trit> encode_i64(int64_t x) {
 }
 
 // Decode balanced ternary → int64_t (safe, no __int128)
+// Evaluates most-significant-trit-first (Horner's method) with overflow saturation.
 inline int64_t decode_i64(const std::vector<Trit>& ds) {
   if (ds.empty()) return 0;
 
   int64_t result = 0;
-  int64_t power = 1;
+  for (auto it = ds.rbegin(); it != ds.rend(); ++it) {
+    int64_t value = trit_to_int(*it);
 
-  for (Trit t : ds) {
-    int64_t value = trit_to_int(t);
-    int64_t next = result + value * power;
-
-    // Overflow detection
-    if (value > 0 && next < result) return INT64_MAX;
-    if (value < 0 && next > result) return INT64_MIN;
-
-    result = next;
-    if (power > INT64_MAX / 3) {
-      return value > 0 ? INT64_MAX : INT64_MIN;
+    // Overflow detection before computing result * 3 + value
+    if (result > INT64_MAX / 3) {
+      return INT64_MAX;
     }
-    power *= 3;
+    if (result < -3074457345618258603LL) {
+      return INT64_MIN;
+    }
+    if (result == -3074457345618258603LL) {
+      if (value < 1) return INT64_MIN;
+      // When result == -3074457345618258603 and value == 1,
+      // mathematical value is exactly INT64_MIN (-9223372036854775808).
+      // Since (-3074457345618258603 * 3) is INT64_MIN - 1, compute without signed overflow:
+      result = (result + 1) * 3 - 2;
+      continue;
+    }
+
+    result = result * 3 + value;
   }
 
   return result;

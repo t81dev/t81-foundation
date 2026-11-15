@@ -1,0 +1,128 @@
+{
+  "pre_scg03": {
+    "F1": {
+      "compiled": true,
+      "returncode": 0,
+      "stdout": "t1_0=1 t1_1=0\nt2_0=0 t2_1=0 t2_2=0 t2_3=1",
+      "stderr": ""
+    },
+    "F2": {
+      "total_tested": 300,
+      "produced_nontrits": 130,
+      "max_abs_digit": 3,
+      "mathematical_value_mismatches": 141,
+      "classification_breakdown": {
+        "both_failures": 106,
+        "nontrits_only": 24,
+        "value_mismatch_only": 35,
+        "neither_passed": 135
+      }
+    },
+    "F3": {
+      "total_tested": 300,
+      "cohort_with_carry_loss": {
+        "cases": 68,
+        "exact_mismatches": 68
+      },
+      "cohort_without_carry_loss": {
+        "cases": 232,
+        "exact_mismatches": 231,
+        "explanation": "Karatsuba fails even without radical carry loss due to cascading multi-component defects, including the demonstrated T81Limb27::operator* Booth table scaling defect (F1) alongside intermediate subtraction and shift-addition errors"
+      },
+      "total_exact_mismatches": 299
+    },
+    "F4": {
+      "compiled": true,
+      "returncode": 0,
+      "stdout": "VAL:0",
+      "stderr": ""
+    },
+    "F5_debug": {
+      "compiled": true,
+      "returncode": -6,
+      "stdout": "",
+      "stderr": "terminate called without an active exception"
+    },
+    "F5_release": {
+      "compiled": true,
+      "returncode": 0,
+      "stdout": "NORMAL:EXCEPTION:to_std_chunks: borrow beyond MSB (input effectively negative)",
+      "stderr": ""
+    },
+    "F6": {
+      "compiled": true,
+      "returncode": 0,
+      "stdout": "NORMAL:is_zero=1",
+      "stderr": ""
+    },
+    "F7": {
+      "compiled": true,
+      "returncode": -6,
+      "stdout": "",
+      "stderr": "terminate called after throwing an instance of 'std::overflow_error'\n  what():  T81Int::to_int64(): value out of range (trits > 40)"
+    }
+  },
+  "post_scg03": {
+    "F1": {
+      "compiled": true,
+      "returncode": 0,
+      "stdout": "t1_0=1 t1_1=0\nt2_0=0 t2_1=0 t2_2=0 t2_3=1",
+      "stderr": ""
+    },
+    "F2": {
+      "total_tested": 300,
+      "produced_nontrits": 130,
+      "max_abs_digit": 3,
+      "mathematical_value_mismatches": 141,
+      "classification_breakdown": {
+        "both_failures": 106,
+        "nontrits_only": 24,
+        "value_mismatch_only": 35,
+        "neither_passed": 135
+      }
+    },
+    "F3": {
+      "total_tested": 300,
+      "cohort_with_carry_loss": {
+        "cases": 68,
+        "exact_mismatches": 68
+      },
+      "cohort_without_carry_loss": {
+        "cases": 232,
+        "exact_mismatches": 231,
+        "explanation": "Karatsuba fails even without radical carry loss due to cascading multi-component defects, including the demonstrated T81Limb27::operator* Booth table scaling defect (F1) alongside intermediate subtraction and shift-addition errors"
+      },
+      "total_exact_mismatches": 299
+    },
+    "F4": {
+      "compiled": true,
+      "returncode": 0,
+      "stdout": "TRAP:T81Int overflow",
+      "stderr": "Axion trap: T81Int overflow"
+    },
+    "F5_debug": {
+      "compiled": true,
+      "returncode": -6,
+      "stdout": "",
+      "stderr": "terminate called without an active exception"
+    },
+    "F5_release": {
+      "compiled": true,
+      "returncode": 0,
+      "stdout": "NORMAL:EXCEPTION:to_std_chunks: borrow beyond MSB (input effectively negative)",
+      "stderr": ""
+    },
+    "F6": {
+      "compiled": true,
+      "returncode": -6,
+      "stdout": "",
+      "stderr": "Axion trap: T81Int overflow\nterminate called after throwing an instance of 'std::overflow_error'\n  what():  T81Int overflow"
+    },
+    "F7": {
+      "compiled": true,
+      "returncode": -6,
+      "stdout": "",
+      "stderr": "terminate called after throwing an instance of 'std::overflow_error'\n  what():  T81Int::to_int64(): value out of range (trits > 40)"
+    }
+  }
+}

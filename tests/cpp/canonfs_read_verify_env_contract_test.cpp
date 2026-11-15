@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "t81/canonfs/canon_driver.hpp"
+#include "t81/canonfs/storage_key.hpp"
 
 namespace {
 
@@ -44,7 +45,7 @@ std::vector<std::byte> make_bytes(std::string_view text) {
 }
 
 bool tamper_first_byte(const std::filesystem::path& root, const t81::canonfs::CanonRef& ref) {
-  const auto object_path = root / "objects" / (ref.hash.h.to_string() + ".blk");
+  const auto object_path = root / "objects" / (t81::canonfs::storage_key_v1(ref.hash) + ".blk");
   std::fstream f(object_path, std::ios::in | std::ios::out | std::ios::binary);
   if (!f) return false;
   char first = '\0';

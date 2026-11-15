@@ -1,0 +1,137 @@
+[
+  {
+    "target": "t81_determinism_codec_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "t81_determinism_primitives_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "t81_determinism_float_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "t81_determinism_containers_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "t81_determinism_math_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "t81_determinism_vector_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "t81_determinism_new_types_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "test_deterministic_float_boundaries",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "test_map_determinism",
+    "exit_code": -6,
+    "status": "failed"
+  },
+  {
+    "target": "test_t81float_soft_math",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "t81_vm_determinism_property_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "t81_vm_deterministic_fault_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "t81_vm_fault_family_determinism_matrix_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "t81_vm_tloadhash_decodefault_determinism_matrix_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "t81_axion_log_determinism_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "t81_vm_system_registers_deterministic_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "t81_isa_binary_io_determinism_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "t81_vm_workload_determinism_tiers_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "t81_ternary_arith_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "t81_canonfs_driver_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "test_resource_monitoring",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "canonfs_read_verify_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "canonfs_read_verify_env_contract_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "canonfs_integrity_matrix_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "canonfs_identity_contract_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "t81_sha3_test",
+    "exit_code": 0,
+    "status": "passed"
+  },
+  {
+    "target": "t81_determinism_evidence_test",
+    "exit_code": 0,
+    "status": "passed"
+  }
+]

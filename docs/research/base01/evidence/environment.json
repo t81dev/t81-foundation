@@ -1,0 +1,16 @@
+{
+  "system": "Linux",
+  "release": "6.8.0",
+  "version": "#1 SMP PREEMPT_DYNAMIC Fri Feb 20 20:38:43 UTC 2026",
+  "machine": "x86_64",
+  "python_version": "3.12.13 (main, Mar  6 2026, 16:37:31) [GCC 13.3.0]",
+  "python_executable": "/home/jules/.pyenv/versions/3.12.13/bin/python3",
+  "cmake_version": "cmake version 3.28.3",
+  "ninja_version": "1.11.1",
+  "g++_version": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+  "git_version": "git version 2.53.0",
+  "audited_source_base": "cda9135d36144d4de2771af174e52ac7b30a83c9",
+  "pr694_head": "851cfef0ef16a56f59d3e933460af1d949cacdf9",
+  "pr695_base_commit": "88d03abda9a1245fdc0767ec2a3e5ef030d3e6d7",
+  "os_release": "PRETTY_NAME=\"Ubuntu 24.04.4 LTS\"\nNAME=\"Ubuntu\"\nVERSION_ID=\"24.04\"\nVERSION=\"24.04.4 LTS (Noble Numbat)\"\nVERSION_CODENAME=noble\nID=ubuntu\nID_LIKE=debian\nHOME_URL=\"https://www.ubuntu.com/\"\nSUPPORT_URL=\"https://help.ubuntu.com/\"\nBUG_REPORT_URL=\"https://bugs.launchpad.net/ubuntu/\"\nPRIVACY_POLICY_URL=\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"\nUBUNTU_CODENAME=noble\nLOGO=ubuntu-logo\n"
+}

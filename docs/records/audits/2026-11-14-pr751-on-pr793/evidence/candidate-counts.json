@@ -1,0 +1,17 @@
+{
+  "fake": {
+    "wrapper_calls": 40,
+    "stdout_response_count": 16,
+    "empty_stdout_count": 24
+  },
+  "real": {
+    "wrapper_calls": 44,
+    "stdout_response_count": 20,
+    "empty_stdout_count": 24
+  },
+  "absent": {
+    "wrapper_calls": 1,
+    "stdout_response_count": 0,
+    "empty_stdout_count": 1
+  }
+}

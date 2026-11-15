@@ -1,0 +1,1424 @@
+{
+  "environment": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]"
+  },
+  "binary": "/private/tmp/t81-pr750-main-release/t81",
+  "binary_sha256": "f6ce6dc1802c961c7d6f4082ee25c62baa05b65df5d8cab6f195d7c131a87ea5",
+  "test_sha256": "6cf71b9b5443a71e5d8497b85307920da7e8b2c2186cbf4edf4ece77ce569ee0",
+  "fixture_text": {
+    "sentinel.t81": "fn main() -> i32 { print(47); return 0; }\n",
+    "allow.apl": "(policy (tier 1) (max-instructions 1000))\n",
+    "deny.apl": "(policy (max-instructions 0))\n",
+    "malformed.apl": "(policy (max-instructions nope))\n",
+    "empty.apl": ""
+  },
+  "compiled_fixture_sha256": "dd37617aae8fc071e860bca7b910cf2cef1efd449102752f6cfeddae2bf45207",
+  "records": [
+    {
+      "case": "compile",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "build",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.t81",
+        "-o",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 0,
+      "stdout": "Compilation successful \u2192 /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc\n",
+      "stderr": ""
+    },
+    {
+      "case": "vm-run-tisc-domain-allow",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/allow.apl",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "47\nProgram terminated normally (10 axion event(s))\n",
+      "stderr": "",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-run-tisc-domain-missing",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not open policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-run-tisc-domain-malformed",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl: max-instructions requires integer\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-run-tisc-domain-empty",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl: policy must start with '('\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-run-tisc-domain-deny",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/deny.apl",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 13,
+      "expected_exit_code": 13,
+      "stdout": "",
+      "stderr": "error: Execution trapped: SecurityFault\nreason: Instruction count limit exceeded: count=1 limit=0\ncompute executed: no\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-run-tisc-action-allow",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "run",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/allow.apl",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "47\nProgram terminated normally (10 axion event(s))\n",
+      "stderr": "",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-run-tisc-action-missing",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "run",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not open policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-run-tisc-action-malformed",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "run",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl: max-instructions requires integer\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-run-tisc-action-empty",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "run",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl: policy must start with '('\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-run-tisc-action-deny",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "run",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/deny.apl",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 13,
+      "expected_exit_code": 13,
+      "stdout": "",
+      "stderr": "error: Execution trapped: SecurityFault\nreason: Instruction count limit exceeded: count=1 limit=0\ncompute executed: no\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-run-tisc-trailing-allow",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/allow.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "47\nProgram terminated normally (10 axion event(s))\n",
+      "stderr": "",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-run-tisc-trailing-missing",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not open policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-run-tisc-trailing-malformed",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl: max-instructions requires integer\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-run-tisc-trailing-empty",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl: policy must start with '('\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-run-tisc-trailing-deny",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/deny.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 13,
+      "expected_exit_code": 13,
+      "stdout": "",
+      "stderr": "error: Execution trapped: SecurityFault\nreason: Instruction count limit exceeded: count=1 limit=0\ncompute executed: no\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-run-tisc-no-policy",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "47\nProgram terminated normally (10 axion event(s))\n",
+      "stderr": "",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-run-tisc-unsupported-prefix",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/allow.apl",
+        "vm",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Unknown option: --policy\nRun '/private/tmp/t81-pr750-main-release/t81 help' for usage.\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-run-tisc-missing-policy-value",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "--policy"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Missing argument after --policy\nRun '/private/tmp/t81-pr750-main-release/t81 help' for usage.\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-trace-tisc-domain-allow",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/allow.apl",
+        "trace",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "-o",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/vm-trace-tisc-domain-allow.trace"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "47\nTrace written to /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/vm-trace-tisc-domain-allow.trace\n",
+      "stderr": "",
+      "trace_exists": true,
+      "trace_text": "PC=0 LoadImm\nPC=1 Call\nPC=4 Pop\nPC=5 LoadImm\nPC=6 Print\nPC=7 LoadImm\nPC=8 Push\nPC=9 Push\nPC=10 Ret\nPC=2 Pop\nPC=3 Halt\n",
+      "failures": []
+    },
+    {
+      "case": "vm-trace-tisc-domain-missing",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl",
+        "trace",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "-o",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/vm-trace-tisc-domain-missing.trace"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not open policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl\n",
+      "trace_exists": false,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-trace-tisc-domain-malformed",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl",
+        "trace",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "-o",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/vm-trace-tisc-domain-malformed.trace"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl: max-instructions requires integer\n",
+      "trace_exists": false,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-trace-tisc-domain-empty",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl",
+        "trace",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "-o",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/vm-trace-tisc-domain-empty.trace"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl: policy must start with '('\n",
+      "trace_exists": false,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-trace-tisc-domain-deny",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/deny.apl",
+        "trace",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "-o",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/vm-trace-tisc-domain-deny.trace"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 13,
+      "expected_exit_code": 13,
+      "stdout": "",
+      "stderr": "error: Execution trapped: SecurityFault\nreason: Instruction count limit exceeded: count=1 limit=0\ncompute executed: no\n",
+      "trace_exists": false,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-trace-tisc-action-allow",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "trace",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/allow.apl",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "-o",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/vm-trace-tisc-action-allow.trace"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "47\nTrace written to /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/vm-trace-tisc-action-allow.trace\n",
+      "stderr": "",
+      "trace_exists": true,
+      "trace_text": "PC=0 LoadImm\nPC=1 Call\nPC=4 Pop\nPC=5 LoadImm\nPC=6 Print\nPC=7 LoadImm\nPC=8 Push\nPC=9 Push\nPC=10 Ret\nPC=2 Pop\nPC=3 Halt\n",
+      "failures": []
+    },
+    {
+      "case": "vm-trace-tisc-action-missing",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "trace",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "-o",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/vm-trace-tisc-action-missing.trace"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not open policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl\n",
+      "trace_exists": false,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-trace-tisc-action-malformed",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "trace",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "-o",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/vm-trace-tisc-action-malformed.trace"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl: max-instructions requires integer\n",
+      "trace_exists": false,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-trace-tisc-action-empty",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "trace",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "-o",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/vm-trace-tisc-action-empty.trace"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl: policy must start with '('\n",
+      "trace_exists": false,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-trace-tisc-action-deny",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "trace",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/deny.apl",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "-o",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/vm-trace-tisc-action-deny.trace"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 13,
+      "expected_exit_code": 13,
+      "stdout": "",
+      "stderr": "error: Execution trapped: SecurityFault\nreason: Instruction count limit exceeded: count=1 limit=0\ncompute executed: no\n",
+      "trace_exists": false,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-trace-tisc-trailing-allow",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "trace",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/allow.apl",
+        "-o",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/vm-trace-tisc-trailing-allow.trace"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "47\nTrace written to /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/vm-trace-tisc-trailing-allow.trace\n",
+      "stderr": "",
+      "trace_exists": true,
+      "trace_text": "PC=0 LoadImm\nPC=1 Call\nPC=4 Pop\nPC=5 LoadImm\nPC=6 Print\nPC=7 LoadImm\nPC=8 Push\nPC=9 Push\nPC=10 Ret\nPC=2 Pop\nPC=3 Halt\n",
+      "failures": []
+    },
+    {
+      "case": "vm-trace-tisc-trailing-missing",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "trace",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl",
+        "-o",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/vm-trace-tisc-trailing-missing.trace"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not open policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl\n",
+      "trace_exists": false,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-trace-tisc-trailing-malformed",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "trace",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl",
+        "-o",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/vm-trace-tisc-trailing-malformed.trace"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl: max-instructions requires integer\n",
+      "trace_exists": false,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-trace-tisc-trailing-empty",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "trace",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl",
+        "-o",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/vm-trace-tisc-trailing-empty.trace"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl: policy must start with '('\n",
+      "trace_exists": false,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-trace-tisc-trailing-deny",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "trace",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/deny.apl",
+        "-o",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/vm-trace-tisc-trailing-deny.trace"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 13,
+      "expected_exit_code": 13,
+      "stdout": "",
+      "stderr": "error: Execution trapped: SecurityFault\nreason: Instruction count limit exceeded: count=1 limit=0\ncompute executed: no\n",
+      "trace_exists": false,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-trace-tisc-no-policy",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "trace",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "-o",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/vm-trace-tisc-none.trace"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "47\nTrace written to /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/vm-trace-tisc-none.trace\n",
+      "stderr": "",
+      "trace_exists": true,
+      "trace_text": "PC=0 LoadImm\nPC=1 Call\nPC=4 Pop\nPC=5 LoadImm\nPC=6 Print\nPC=7 LoadImm\nPC=8 Push\nPC=9 Push\nPC=10 Ret\nPC=2 Pop\nPC=3 Halt\n",
+      "failures": []
+    },
+    {
+      "case": "vm-trace-tisc-unsupported-prefix",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/allow.apl",
+        "vm",
+        "trace",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Unknown option: --policy\nRun '/private/tmp/t81-pr750-main-release/t81 help' for usage.\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "vm-trace-tisc-missing-policy-value",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "vm",
+        "trace",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "--policy"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Missing argument after --policy\nRun '/private/tmp/t81-pr750-main-release/t81 help' for usage.\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-tisc-domain-allow",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/allow.apl",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "47\nProgram terminated normally (10 axion event(s))\n",
+      "stderr": "",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-tisc-domain-missing",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not open policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-tisc-domain-malformed",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl: max-instructions requires integer\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-tisc-domain-empty",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl: policy must start with '('\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-tisc-domain-deny",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/deny.apl",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 13,
+      "expected_exit_code": 13,
+      "stdout": "",
+      "stderr": "error: Execution trapped: SecurityFault\nreason: Instruction count limit exceeded: count=1 limit=0\ncompute executed: no\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-tisc-action-allow",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/allow.apl",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "47\nProgram terminated normally (10 axion event(s))\n",
+      "stderr": "",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-tisc-action-missing",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not open policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-tisc-action-malformed",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl: max-instructions requires integer\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-tisc-action-empty",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl: policy must start with '('\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-tisc-action-deny",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/deny.apl",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 13,
+      "expected_exit_code": 13,
+      "stdout": "",
+      "stderr": "error: Execution trapped: SecurityFault\nreason: Instruction count limit exceeded: count=1 limit=0\ncompute executed: no\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-tisc-trailing-allow",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/allow.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "47\nProgram terminated normally (10 axion event(s))\n",
+      "stderr": "",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-tisc-trailing-missing",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not open policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-tisc-trailing-malformed",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl: max-instructions requires integer\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-tisc-trailing-empty",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl: policy must start with '('\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-tisc-trailing-deny",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/deny.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 13,
+      "expected_exit_code": 13,
+      "stdout": "",
+      "stderr": "error: Execution trapped: SecurityFault\nreason: Instruction count limit exceeded: count=1 limit=0\ncompute executed: no\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-tisc-no-policy",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "47\nProgram terminated normally (10 axion event(s))\n",
+      "stderr": "",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-tisc-unsupported-prefix",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/allow.apl",
+        "code",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Unknown option: --policy\nRun '/private/tmp/t81-pr750-main-release/t81 help' for usage.\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-tisc-missing-policy-value",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.tisc",
+        "--policy"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Missing argument after --policy\nRun '/private/tmp/t81-pr750-main-release/t81 help' for usage.\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-t81-domain-allow",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/allow.apl",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.t81"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "47\nProgram terminated normally (10 axion event(s))\n",
+      "stderr": "Compilation successful \u2192 /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-sentinel-13035711862227428090.tisc\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-t81-domain-missing",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.t81"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "Compilation successful \u2192 /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-sentinel-13042063799272970408.tisc\nerror: Could not open policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-t81-domain-malformed",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.t81"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "Compilation successful \u2192 /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-sentinel-17644485905319262080.tisc\nerror: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl: max-instructions requires integer\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-t81-domain-empty",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.t81"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "Compilation successful \u2192 /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-sentinel-12427074991414910993.tisc\nerror: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl: policy must start with '('\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-t81-domain-deny",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/deny.apl",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.t81"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 13,
+      "expected_exit_code": 13,
+      "stdout": "",
+      "stderr": "Compilation successful \u2192 /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-sentinel-10483830197251266924.tisc\nerror: Execution trapped: SecurityFault\nreason: Instruction count limit exceeded: count=1 limit=0\ncompute executed: no\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-t81-action-allow",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/allow.apl",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.t81"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "47\nProgram terminated normally (10 axion event(s))\n",
+      "stderr": "Compilation successful \u2192 /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-sentinel-6091463965310561793.tisc\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-t81-action-missing",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.t81"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "Compilation successful \u2192 /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-sentinel-100863938086495121.tisc\nerror: Could not open policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-t81-action-malformed",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.t81"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "Compilation successful \u2192 /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-sentinel-7397911157640627305.tisc\nerror: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl: max-instructions requires integer\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-t81-action-empty",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.t81"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "Compilation successful \u2192 /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-sentinel-8485924999625042681.tisc\nerror: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl: policy must start with '('\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-t81-action-deny",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/deny.apl",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.t81"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 13,
+      "expected_exit_code": 13,
+      "stdout": "",
+      "stderr": "Compilation successful \u2192 /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-sentinel-8772373946184154015.tisc\nerror: Execution trapped: SecurityFault\nreason: Instruction count limit exceeded: count=1 limit=0\ncompute executed: no\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-t81-trailing-allow",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.t81",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/allow.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "47\nProgram terminated normally (10 axion event(s))\n",
+      "stderr": "Compilation successful \u2192 /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-sentinel-1310719691508108746.tisc\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-t81-trailing-missing",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.t81",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "Compilation successful \u2192 /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-sentinel-8539943499691862078.tisc\nerror: Could not open policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/missing.apl\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-t81-trailing-malformed",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.t81",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "Compilation successful \u2192 /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-sentinel-12209811811116779291.tisc\nerror: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/malformed.apl: max-instructions requires integer\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-t81-trailing-empty",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.t81",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "Compilation successful \u2192 /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-sentinel-3846025779441630716.tisc\nerror: Could not parse policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/empty.apl: policy must start with '('\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-t81-trailing-deny",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.t81",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/deny.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 13,
+      "expected_exit_code": 13,
+      "stdout": "",
+      "stderr": "Compilation successful \u2192 /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-sentinel-6563474330610598672.tisc\nerror: Execution trapped: SecurityFault\nreason: Instruction count limit exceeded: count=1 limit=0\ncompute executed: no\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-t81-no-policy",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.t81"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "47\nProgram terminated normally (10 axion event(s))\n",
+      "stderr": "Compilation successful \u2192 /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-sentinel-11623621528080700436.tisc\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-t81-unsupported-prefix",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/allow.apl",
+        "code",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.t81"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Unknown option: --policy\nRun '/private/tmp/t81-pr750-main-release/t81 help' for usage.\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    },
+    {
+      "case": "code-run-t81-missing-policy-value",
+      "command": [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g/sentinel.t81",
+        "--policy"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 policy boundary 34_hgp_g",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "error: Missing argument after --policy\nRun '/private/tmp/t81-pr750-main-release/t81 help' for usage.\n",
+      "trace_exists": null,
+      "trace_text": null,
+      "failures": []
+    }
+  ],
+  "failures": []
+}

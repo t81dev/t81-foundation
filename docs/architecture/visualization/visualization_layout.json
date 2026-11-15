@@ -1,0 +1,262 @@
+{
+  "schema_version": "1.0.0",
+  "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
+  "rendering_engine": "Three.js / WebGL",
+  "coordinate_system": "Cartesian (X: Subsystem spread, Y: Layer elevation, Z: Component depth)",
+  "layer_elevations": {
+    "layer.1_lang": 600,
+    "layer.2_exec": 500,
+    "layer.3_num": 400,
+    "layer.4_services": 300,
+    "layer.5_os": 200,
+    "layer.6_hw": 100,
+    "layer.7_assurance": 0
+  },
+  "node_positions": {
+    "sub.layer.1_lang.frontend": {
+      "x": -375,
+      "y": 600,
+      "z": -100,
+      "color": "#4A90E2",
+      "cluster": "layer.1_lang"
+    },
+    "mod.frontend.lexer": {
+      "x": -125,
+      "y": 600,
+      "z": -100,
+      "color": "#4A90E2",
+      "cluster": "layer.1_lang"
+    },
+    "mod.frontend.parser": {
+      "x": 125,
+      "y": 600,
+      "z": -100,
+      "color": "#4A90E2",
+      "cluster": "layer.1_lang"
+    },
+    "mod.frontend.semantic_analyzer": {
+      "x": 375,
+      "y": 600,
+      "z": -100,
+      "color": "#4A90E2",
+      "cluster": "layer.1_lang"
+    },
+    "mod.frontend.ir_generator": {
+      "x": -375,
+      "y": 600,
+      "z": 100,
+      "color": "#4A90E2",
+      "cluster": "layer.1_lang"
+    },
+    "sub.layer.1_lang.cli": {
+      "x": -125,
+      "y": 600,
+      "z": 100,
+      "color": "#4A90E2",
+      "cluster": "layer.1_lang"
+    },
+    "mod.cli.weights_tool": {
+      "x": 125,
+      "y": 600,
+      "z": 100,
+      "color": "#4A90E2",
+      "cluster": "layer.1_lang"
+    },
+    "sub.layer.1_lang.toolchain_bridges": {
+      "x": 375,
+      "y": 600,
+      "z": 100,
+      "color": "#4A90E2",
+      "cluster": "layer.1_lang"
+    },
+    "sub.layer.2_exec.tisc_isa": {
+      "x": -375,
+      "y": 500,
+      "z": -100,
+      "color": "#50E3C2",
+      "cluster": "layer.2_exec"
+    },
+    "sub.layer.2_exec.t81vm": {
+      "x": -125,
+      "y": 500,
+      "z": -100,
+      "color": "#50E3C2",
+      "cluster": "layer.2_exec"
+    },
+    "mod.vm.interpreter_core": {
+      "x": 125,
+      "y": 500,
+      "z": -100,
+      "color": "#50E3C2",
+      "cluster": "layer.2_exec"
+    },
+    "mod.vm.system_registers": {
+      "x": 375,
+      "y": 500,
+      "z": -100,
+      "color": "#50E3C2",
+      "cluster": "layer.2_exec"
+    },
+    "sub.layer.2_exec.jit_engine": {
+      "x": -375,
+      "y": 500,
+      "z": 100,
+      "color": "#50E3C2",
+      "cluster": "layer.2_exec"
+    },
+    "sub.layer.2_exec.freestanding_runtime": {
+      "x": -125,
+      "y": 500,
+      "z": 100,
+      "color": "#50E3C2",
+      "cluster": "layer.2_exec"
+    },
+    "sub.layer.3_num.balanced_ternary_limbs": {
+      "x": -375,
+      "y": 400,
+      "z": -100,
+      "color": "#F5A623",
+      "cluster": "layer.3_num"
+    },
+    "sub.layer.3_num.fixed_width_integers": {
+      "x": -125,
+      "y": 400,
+      "z": -100,
+      "color": "#F5A623",
+      "cluster": "layer.3_num"
+    },
+    "sub.layer.3_num.multi_precision_bigint": {
+      "x": 125,
+      "y": 400,
+      "z": -100,
+      "color": "#F5A623",
+      "cluster": "layer.3_num"
+    },
+    "sub.layer.3_num.rational_fractions": {
+      "x": 375,
+      "y": 400,
+      "z": -100,
+      "color": "#F5A623",
+      "cluster": "layer.3_num"
+    },
+    "sub.layer.3_num.ternary_tensors": {
+      "x": -375,
+      "y": 400,
+      "z": 100,
+      "color": "#F5A623",
+      "cluster": "layer.3_num"
+    },
+    "sub.layer.3_num.soft_math": {
+      "x": -125,
+      "y": 400,
+      "z": 100,
+      "color": "#F5A623",
+      "cluster": "layer.3_num"
+    },
+    "sub.layer.4_services.axion_kernel": {
+      "x": -375,
+      "y": 300,
+      "z": -100,
+      "color": "#BD10E0",
+      "cluster": "layer.4_services"
+    },
+    "sub.layer.4_services.canonfs": {
+      "x": -125,
+      "y": 300,
+      "z": -100,
+      "color": "#BD10E0",
+      "cluster": "layer.4_services"
+    },
+    "sub.layer.4_services.codecs": {
+      "x": 125,
+      "y": 300,
+      "z": -100,
+      "color": "#BD10E0",
+      "cluster": "layer.4_services"
+    },
+    "sub.layer.4_services.crypto": {
+      "x": 375,
+      "y": 300,
+      "z": -100,
+      "color": "#BD10E0",
+      "cluster": "layer.4_services"
+    },
+    "sub.layer.5_os.ternaryos_kernel": {
+      "x": -375,
+      "y": 200,
+      "z": -100,
+      "color": "#B8E986",
+      "cluster": "layer.5_os"
+    },
+    "mod.ternaryos.scheduler": {
+      "x": -125,
+      "y": 200,
+      "z": -100,
+      "color": "#B8E986",
+      "cluster": "layer.5_os"
+    },
+    "mod.ternaryos.mmu": {
+      "x": 125,
+      "y": 200,
+      "z": -100,
+      "color": "#B8E986",
+      "cluster": "layer.5_os"
+    },
+    "sub.layer.5_os.daios_proposal": {
+      "x": 375,
+      "y": 200,
+      "z": -100,
+      "color": "#B8E986",
+      "cluster": "layer.5_os"
+    },
+    "sub.layer.6_hw.rtl_feasibility": {
+      "x": -375,
+      "y": 100,
+      "z": -100,
+      "color": "#E02020",
+      "cluster": "layer.6_hw"
+    },
+    "sub.layer.6_hw.simd_primitives": {
+      "x": -125,
+      "y": 100,
+      "z": -100,
+      "color": "#E02020",
+      "cluster": "layer.6_hw"
+    },
+    "sub.layer.6_hw.qemu_drivers": {
+      "x": 125,
+      "y": 100,
+      "z": -100,
+      "color": "#E02020",
+      "cluster": "layer.6_hw"
+    },
+    "sub.layer.7_assurance.hypothesis_register": {
+      "x": -375,
+      "y": 0,
+      "z": -100,
+      "color": "#9013FE",
+      "cluster": "layer.7_assurance"
+    },
+    "sub.layer.7_assurance.scg_continuity": {
+      "x": -125,
+      "y": 0,
+      "z": -100,
+      "color": "#9013FE",
+      "cluster": "layer.7_assurance"
+    },
+    "sub.layer.7_assurance.cpp_test_suite": {
+      "x": 125,
+      "y": 0,
+      "z": -100,
+      "color": "#9013FE",
+      "cluster": "layer.7_assurance"
+    },
+    "sub.layer.7_assurance.ci_governance": {
+      "x": 375,
+      "y": 0,
+      "z": -100,
+      "color": "#9013FE",
+      "cluster": "layer.7_assurance"
+    }
+  }
+}

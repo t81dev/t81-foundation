@@ -1,0 +1,22 @@
+{
+  "asio-sha.log": "1db88e64739323b59598202578f34c642ba34246ecac6810bae324ce3d6f323e",
+  "build.log": "84dfebea86668b8bd988b63a065b9de2134b1857ace195eeea6f919c4d486406",
+  "cmake-version.log": "30d9c504b2b91d7683a1b8d25f9f987cb24ff9f35fd553950540cd847f8e23de",
+  "CMakeCache.txt": "fb548505ae21c274b6fbe63d74a7f15fee6fbcf9ba4036dc3446a964d50f53c8",
+  "compiler-version.log": "aca7bfeb165025e3a1dc22ca168f52085e970a5602ab4379472e2ebee6f30daf",
+  "compile_commands.json": "b3c5af2a0bd0af9f0864fbd3d880b85ddb24d5b8f50d750c595858149008b236",
+  "configure.log": "9f80229046c86d58b781cbb2cac9fd6e4ea4d4586e5575a06f97647e60983fff",
+  "ctest-inventory.log": "5f7ddefa1e8c5a4bec1190e33d837830f8a321579b2c8c083665e35c69bc05be",
+  "ctest-version.log": "3bef7f0ca56ee4fe6cbd69e72a9a0465c99b650003d6089c7e6a3f080c03841d",
+  "ctest.log": "02795c53627156ceca3f366be1f8f9891a52ae522bc1631b1b8065358a58bcab",
+  "harness-sha.log": "13a0e57eea747910becd11803654baa8423eb5de871ef1d91ffe1f3046cac8ed",
+  "junit.xml": "f73f474de449c78cea64c651ab977fd9137debd9d7ae52af34732804edab5aa9",
+  "LastTest.log": "e97b5f31843a48e28a9117ea4d48f2e3fe3fa312ba20dc732ebe2eeb7a068b35",
+  "ninja-version.log": "f7204ca4d4bbe623e6045a5088ac906c5e1966b4fd2a11af9d156bad3327526f",
+  "python-packages.log": "91cdebca197d7bd6da12112f69ab7fa6a8fdeadffcb7d8fe12728138d47a47e4",
+  "setup.txt": "947cf3688f3b438bb8d677c634866641c5ea1834c35f43b85e8352565d1a77c4",
+  "source-clean-after.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "source-clean-before.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "source-sha.log": "f86ede355babe97c85d39a4c6b2d556d2225544e644a39389b32b072038b8cf5",
+  "summary.json": "2651e0240cfecb96835f8a8be23456d983921ce90e12364b77be7927a95d28d9"
+}

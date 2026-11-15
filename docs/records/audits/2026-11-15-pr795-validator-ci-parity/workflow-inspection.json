@@ -1,0 +1,94 @@
+{
+  "source_sha": "43747b60675444ab58f693713577d6cd42e3f234",
+  "workflows": {
+    ".github/workflows/ai-experiments-ci.yml": {
+      "sha256": "622e9da262a30c0bb428f9e1413c40c0e5e264853ce21ee4c05de20e3e6cdb6e",
+      "scg08_matches": []
+    },
+    ".github/workflows/ai-kms-rotation.yml": {
+      "sha256": "e06f375e5df53375d62b30020bf609ff0a360d8a2565eb98d1b3b057add50eff",
+      "scg08_matches": []
+    },
+    ".github/workflows/bench.yml": {
+      "sha256": "e5c44ab4e358b31cc0322adb78baaeb13779d36cd6f1b331e23fbf6add7e3169",
+      "scg08_matches": []
+    },
+    ".github/workflows/benchmark_packed_trit_vector.yml": {
+      "sha256": "97c73bf547038f72ca56d627f2eab69125bbbf819440ff4317681b99a4fe1518",
+      "scg08_matches": []
+    },
+    ".github/workflows/checked-float-contract.yml": {
+      "sha256": "adc20d8dcbfa9df46c09d9ea00d80aa5c32c4ebd710c29d0c32e58a82b09f1c2",
+      "scg08_matches": []
+    },
+    ".github/workflows/ci.yml": {
+      "sha256": "e7381a61fe67314b08aaf5c289657a3ec80934f90cb273f0769293de225b870e",
+      "scg08_matches": []
+    },
+    ".github/workflows/codeql.yml": {
+      "sha256": "a0ce18a4d883ad4ec14ccf1e4554f5814c6f231e33f35f07192a4e714b2f4efc",
+      "scg08_matches": []
+    },
+    ".github/workflows/cross-platform-determinism.yml": {
+      "sha256": "eca60ee1ea06759a41f8cb7ffd67699c0cc66604a8934a0fcdabd428b847ee36",
+      "scg08_matches": []
+    },
+    ".github/workflows/docker.yml": {
+      "sha256": "a1558660e66b8dbead5aab0851f9f202eb0445b4a49bdaa47786d83e51932dab",
+      "scg08_matches": []
+    },
+    ".github/workflows/documentation.yml": {
+      "sha256": "620b7a1c9cbe81f15570559c5d209584baa1761b748c74f297d248f66245c82a",
+      "scg08_matches": []
+    },
+    ".github/workflows/float-conversion-audit.yml": {
+      "sha256": "50fe7387f7bb7d1a4ecd2d2d45402f75a33bd8ebbf92fed4fd985fb6ed9eb8e0",
+      "scg08_matches": []
+    },
+    ".github/workflows/format.yml": {
+      "sha256": "6cebde95112465186adc675ed718d786e3996d8f1588fb0fe25da3bcfefd877e",
+      "scg08_matches": []
+    },
+    ".github/workflows/inference-bench.yml": {
+      "sha256": "99ee5394bb23d13efd2c32769f81734e1511e7017fa6ae29c28d36c8a30b9b37",
+      "scg08_matches": []
+    },
+    ".github/workflows/python-wheels.yml": {
+      "sha256": "bf5095b487b73204bee51ddd4467737d4eda30caa0c774754f227fe560df4339",
+      "scg08_matches": []
+    },
+    ".github/workflows/qemu-boot-x86.yml": {
+      "sha256": "8f3d80c7cc939da6b2dd860776212bd5587cb9e9abb8ef8824eb2aa79f381258",
+      "scg08_matches": []
+    },
+    ".github/workflows/qemu-boot.yml": {
+      "sha256": "5c24eaca0605dbe5c89d5cf5681f8d2fa8937325577b3c4a9ab7b461215f6e80",
+      "scg08_matches": []
+    },
+    ".github/workflows/qemu-verification.yml": {
+      "sha256": "8096ad5306f406406d5276a1c4fa1a3d85091e5499603ca35dd9a41c34afd1cf",
+      "scg08_matches": []
+    },
+    ".github/workflows/release.yml": {
+      "sha256": "f37e13d1bcd8e372ea62bd80ffbd91a5fa260e677cd328d26aec74f47a2ef86a",
+      "scg08_matches": []
+    },
+    ".github/workflows/repro-ledger.yml": {
+      "sha256": "2bdc809a10f44b54e806a1686568fc1a54c9087346f1018701ca2bf68e65136f",
+      "scg08_matches": []
+    },
+    ".github/workflows/research-commons.yml": {
+      "sha256": "0924887bdfae88521ce7a2eb087463a5731497d23d525e1e1f9db823d6a96d26",
+      "scg08_matches": []
+    },
+    ".github/workflows/runtime-contract.yml": {
+      "sha256": "2510748a29044c1c809b12fc84e731c878e90b40b60bcc9843a0d7cf78cf3145",
+      "scg08_matches": []
+    },
+    ".github/workflows/t81lang-repro-hash-refresh.yml": {
+      "sha256": "f11ca5f23fc5c66cf521c57edaf51670a52d90c834559f69ab1bfa10ada3ba57",
+      "scg08_matches": []
+    }
+  },
+  "conclusion": "No active workflow references SCG08 or enables T81_BUILD_EXPERIMENTS. Registration is gated by T81_BUILD_TESTS and T81_BUILD_EXPERIMENTS (default OFF)."
+}

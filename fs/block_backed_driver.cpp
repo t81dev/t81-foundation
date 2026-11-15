@@ -140,6 +140,9 @@ public:
   // ── Capabilities ──────────────────────────────────────────────────────────────
 
   Result<void> publish_capability(const CapabilityGrant& grant) override {
+    if (!axion_allow(OpKind::Publish, grant.target)) {
+      return Result<void>(t81::unexpect, Error::CapabilityError);
+    }
     auto raw = serialize_cap(grant);
     auto span = std::span<const std::byte>(raw.data(), raw.size());
     auto blk = pack(span);
@@ -152,6 +155,9 @@ public:
   }
 
   Result<void> revoke_capability(const CanonRef& ref) override {
+    if (!axion_allow(OpKind::Revoke, ref)) {
+      return Result<void>(t81::unexpect, Error::CapabilityError);
+    }
     caps_.erase(ref.hash);
     store_.remove(ref);
     store_.flush();
@@ -160,7 +166,10 @@ public:
 
   // ── Parity repair ────────────────────────────────────────────────────────────
 
-  Result<void> parity_repair_subtree(const CanonRef&) override {
+  Result<void> parity_repair_subtree(const CanonRef& ref) override {
+    if (!axion_allow(OpKind::Repair, ref)) {
+      return Result<void>(t81::unexpect, Error::CapabilityError);
+    }
     // Block store has no Reed-Solomon layer; rebuild the in-memory index from
     // on-device blocks.  This is the correct recovery action after power loss.
     store_.rebuild_index();
@@ -168,11 +177,10 @@ public:
   }
 
 private:
-  bool axion_allow(OpKind kind) const noexcept {
+  bool axion_allow(OpKind kind, const CanonRef& ref = {}) const noexcept {
     if (!hook_) return true;
-    const CanonRef nil{};
     try {
-      return hook_(kind, nil).allow;
+      return hook_(kind, ref).allow;
     } catch (...) {
       return false;
     }
