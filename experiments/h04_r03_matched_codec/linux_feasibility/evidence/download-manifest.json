@@ -1,0 +1,20 @@
+{
+  "initramfs-virt": {
+    "bytes": 9148794,
+    "sha256": "ec1af4a5653d8db70cee4d5ec8ec005c4586f64284810f5538f7217cdb7e0b79"
+  },
+  "iso": {
+    "bytes": 67108864,
+    "published_sha256": "1ceafa2ca068faf2925de977815681c182708f3c6cbfbad137f3ffc9324a03b4  alpine-virt-3.21.9-x86_64.iso",
+    "sha256": "1ceafa2ca068faf2925de977815681c182708f3c6cbfbad137f3ffc9324a03b4",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/x86_64/alpine-virt-3.21.9-x86_64.iso"
+  },
+  "modloop-virt": {
+    "bytes": 20983808,
+    "sha256": "09f6c5bcd565b4b851daffe8cc1aa17f48fdfb9fe42ab52e59cda7bcd2599240"
+  },
+  "vmlinuz-virt": {
+    "bytes": 11744256,
+    "sha256": "cf36621501708b6c264a8dd5193d4b661551326bb28b3b8b09e90c514854bfd1"
+  }
+}

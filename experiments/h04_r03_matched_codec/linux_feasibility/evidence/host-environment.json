@@ -1,0 +1,32 @@
+{
+  "author": "Codex",
+  "baseline": "dbc8c1ac05aebf9f64dccc45968b75e891b6ff21",
+  "host_platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "host_python": "3.14.3",
+  "host_uname": [
+    "Darwin",
+    "Mac.lan",
+    "25.5.0",
+    "Darwin Kernel Version 25.5.0: Tue Jun  9 22:27:52 PDT 2026; root:xnu-12377.121.10~1/RELEASE_ARM64_T8112",
+    "arm64",
+    "arm"
+  ],
+  "independent_reproduction": false,
+  "model": null,
+  "pr682_merge": "1c2fc645176030bb76e52e5deec0ee66ee5ecfbb",
+  "pr683_merge": "dbc8c1ac05aebf9f64dccc45968b75e891b6ff21",
+  "qemu_binary_sha256": "44a9a411a38b9664954fbb1d197ec003fd4c666075112166e5fc1f94a29f399a",
+  "qemu_version": "QEMU emulator version 10.2.2\nCopyright (c) 2003-2025 Fabrice Bellard and the QEMU Project developers\n",
+  "recorded_at_utc": "2026-11-03T00:39:03.723631+00:00",
+  "scope": "synthetic Linux feature/counterexample diagnostics; no codec arms executed",
+  "vm": {
+    "acceleration": "TCG",
+    "cpu": "max",
+    "dedicated_physical_host": false,
+    "host_filesystem_shared": false,
+    "machine": "q35",
+    "qualified": false,
+    "ram_mib": 1024,
+    "vcpus": 1
+  }
+}

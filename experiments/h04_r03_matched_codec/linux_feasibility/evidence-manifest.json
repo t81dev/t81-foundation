@@ -1,0 +1,75 @@
+{
+  "baseline": "dbc8c1ac05aebf9f64dccc45968b75e891b6ff21",
+  "files": {
+    "HOST_QUALIFICATION.md": {
+      "bytes": 7893,
+      "sha256": "4fadb94a1ffbda2d635dd9e14e7bd95bb3ea87d08af638537e1ad45766fd2f2d"
+    },
+    "REPORT.md": {
+      "bytes": 20094,
+      "sha256": "0104fec2df325743cd0957dc1e8c0c4a6498225ba2073ff76a45773b4ae742fb"
+    },
+    "REPRODUCE.md": {
+      "bytes": 11309,
+      "sha256": "0d6053919e58e98e8b204cd58bcb22f9e9f63ad268fb7a291f63d9eaa0ddfd24"
+    },
+    "containment_probe.c": {
+      "bytes": 6995,
+      "sha256": "2006031229d158ca25f5a7a54c1bab3fc541411bdb6878e66e61116d97fffcba"
+    },
+    "evidence/diagnostics.final.log": {
+      "bytes": 12339,
+      "sha256": "b9ed08749787e54c9ccaf7b715ff151842415f1f5bf5bce9f52d81724f46dbf5"
+    },
+    "evidence/diagnostics.first-controls-failure.log": {
+      "bytes": 9440,
+      "sha256": "67ce98fcb1dfcfb9f642dedf5862f2460831d5c2344147a96c7590f98d1b1443"
+    },
+    "evidence/download-failure.txt": {
+      "bytes": 156,
+      "sha256": "9e59c9f03d81824affdbcb077b3c6e7e7ef0b84632faca2cfb94cdb50e936a12"
+    },
+    "evidence/download-manifest.json": {
+      "bytes": 738,
+      "sha256": "25d0a2720c80b8e534ed6e22d8203e19b3c5a072241550bf0f7265b2d343291a"
+    },
+    "evidence/first-boot-failure.raw.log": {
+      "bytes": 25991,
+      "sha256": "cec94a3f17f3b1f9b0f2d8017c3e17dcaa8353f7f0ba4cdb2a44f298778a7e68"
+    },
+    "evidence/host-environment.json": {
+      "bytes": 1123,
+      "sha256": "3bec1b0035fdb1867c62cd476511afb809f4a6d8c53bc129901a5528446e5f47"
+    },
+    "evidence/kernel-source-manifest.json": {
+      "bytes": 1896,
+      "sha256": "7bdfc77df3221e608e7424cc152894e6304ccac3a83231dfa8ad62c636a5d845"
+    },
+    "evidence/successful-boot.raw.log": {
+      "bytes": 88177,
+      "sha256": "905f39db949f195f206a73b312c3af4cf77c1fe1fe9274b34785a9cf4eae7fd1"
+    },
+    "evidence/virtual-host-gaps.log": {
+      "bytes": 400,
+      "sha256": "9b5ff0a415cb873e44d2d236564bb13c3741536a97b9d1151744b15bad8416fb"
+    },
+    "guest_diagnostics.sh": {
+      "bytes": 2094,
+      "sha256": "cbd3b94d00a164a73837fb1d53c88726e959ec84be4bbb0d0d7fe7793b11a355"
+    },
+    "native_scratch_probe.py": {
+      "bytes": 1751,
+      "sha256": "266a526f969a5af615b81a151949700f80bcbbf15ced41177e3f1ef7798b77bb"
+    },
+    "requirements-to-evidence.json": {
+      "bytes": 5605,
+      "sha256": "b6a5c82ccddf7d866bb0475a0eba42928fe395066502b232139ee149330456d3"
+    },
+    "verify_evidence.py": {
+      "bytes": 5210,
+      "sha256": "1b287c6f0a3b5f7e425c19be8e5bf81bcea4d397fcb3558ce50558b967f9084a"
+    }
+  },
+  "schema": "t81.h04-r03.feasibility-evidence-manifest.v1",
+  "scope": "content identity only; not authenticity, independent reproduction or feasibility proof"
+}
