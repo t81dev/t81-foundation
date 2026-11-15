@@ -1,0 +1,22 @@
+# CMake generated Testfile for 
+# Source directory: /private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work
+# Build directory: /private/tmp/t81-pr795-parity-release/experiments/scg08_arithmetic_work
+# 
+# This file includes the relevant testing commands required for 
+# testing this directory and lists subdirectories to be tested as well.
+add_test(t81_exp_scg08_01_test "/private/tmp/t81-pr795-parity-release/experiments/scg08_arithmetic_work/t81_exp_scg08_01_test")
+set_tests_properties(t81_exp_scg08_01_test PROPERTIES  TIMEOUT "60" _BACKTRACE_TRIPLES "/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/CMakeLists.txt;17;add_test;/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/CMakeLists.txt;0;")
+add_test(t81_exp_scg08_01_result_rejection "/private/tmp/t81-pr795-parity-venv/bin/python" "/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/test_result_rejection.py" "/private/tmp/t81-pr795-parity-release/experiments/scg08_arithmetic_work/t81_exp_scg08_01_test")
+set_tests_properties(t81_exp_scg08_01_result_rejection PROPERTIES  TIMEOUT "150" _BACKTRACE_TRIPLES "/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/CMakeLists.txt;23;add_test;/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/CMakeLists.txt;0;")
+add_test(t81_exp_scg08_01_result_rejection_driver "/private/tmp/t81-pr795-parity-venv/bin/python" "/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/test_result_rejection_driver.py")
+set_tests_properties(t81_exp_scg08_01_result_rejection_driver PROPERTIES  TIMEOUT "30" _BACKTRACE_TRIPLES "/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/CMakeLists.txt;30;add_test;/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/CMakeLists.txt;0;")
+add_test(t81_exp_scg08_01_schema_validation "/private/tmp/t81-pr795-parity-venv/bin/python" "/private/tmp/t81-pr767-main-validator/scripts/ci/validate_scg08_gate1_evidence.py" "/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/gate1_evidence_record.json" "/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/evidence_schema.json")
+set_tests_properties(t81_exp_scg08_01_schema_validation PROPERTIES  TIMEOUT "30" _BACKTRACE_TRIPLES "/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/CMakeLists.txt;36;add_test;/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/CMakeLists.txt;0;")
+add_test(t81_exp_scg08_01_schema_negative_validation "/private/tmp/t81-pr795-parity-venv/bin/python" "/private/tmp/t81-pr767-main-validator/scripts/ci/validate_scg08_gate1_evidence.py" "--test-negative")
+set_tests_properties(t81_exp_scg08_01_schema_negative_validation PROPERTIES  TIMEOUT "30" _BACKTRACE_TRIPLES "/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/CMakeLists.txt;44;add_test;/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/CMakeLists.txt;0;")
+add_test(t81_exp_scg08_01_schema_json_files "/private/tmp/t81-pr795-parity-venv/bin/python" "/private/tmp/t81-pr767-main-validator/scripts/ci/validate_scg08_gate1_evidence.py" "--test-json-files")
+set_tests_properties(t81_exp_scg08_01_schema_json_files PROPERTIES  TIMEOUT "60" _BACKTRACE_TRIPLES "/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/CMakeLists.txt;52;add_test;/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/CMakeLists.txt;0;")
+add_test(t81_exp_scg08_01_schema_negative_optimized "/private/tmp/t81-pr795-parity-venv/bin/python" "-O" "/private/tmp/t81-pr767-main-validator/scripts/ci/validate_scg08_gate1_evidence.py" "--test-negative")
+set_tests_properties(t81_exp_scg08_01_schema_negative_optimized PROPERTIES  TIMEOUT "60" _BACKTRACE_TRIPLES "/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/CMakeLists.txt;59;add_test;/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/CMakeLists.txt;0;")
+add_test(t81_exp_scg08_01_schema_json_files_optimized "/private/tmp/t81-pr795-parity-venv/bin/python" "-O" "/private/tmp/t81-pr767-main-validator/scripts/ci/validate_scg08_gate1_evidence.py" "--test-json-files")
+set_tests_properties(t81_exp_scg08_01_schema_json_files_optimized PROPERTIES  TIMEOUT "60" _BACKTRACE_TRIPLES "/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/CMakeLists.txt;59;add_test;/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/CMakeLists.txt;0;")

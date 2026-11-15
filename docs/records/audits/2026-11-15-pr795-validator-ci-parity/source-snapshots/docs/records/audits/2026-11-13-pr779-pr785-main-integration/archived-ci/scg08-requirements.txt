@@ -1,0 +1,2 @@
+# Enables the existing validator's optional Draft 7 parity checks.
+jsonschema==4.26.0
