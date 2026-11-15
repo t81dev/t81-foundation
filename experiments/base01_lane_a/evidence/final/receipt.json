@@ -1,0 +1,201 @@
+{
+  "protocol": "BASE-01",
+  "lane": "A",
+  "phase": "B0",
+  "status": "validation passed",
+  "measurement_authorized": false,
+  "performance_samples": [],
+  "workloads": [
+    "WL-ARITH-CODEC-I64",
+    "WL-VM-TISC-DETERMINISM-TIERS",
+    "WL-CANONFS-MEM-THROUGHPUT",
+    "WL-RES-RUSAGE-METRICS",
+    "WL-RES-ARTIFACT-SIZE"
+  ],
+  "source_sha": "cda9135d36144d4de2771af174e52ac7b30a83c9",
+  "source_tracked_bytes_sha256": "1c77b63826cd0adb7e5709a750fd6be3e7295bc3bbae9d94726e8c8cf2fa2c77",
+  "runner_sha": "54c1a92ffe5c19871c3b1a68c71083ac87fc7f0c",
+  "runner_files": {
+    "CMakeLists.txt": "fc20977da5e0355bc63b3d3eab905a94a3936c4b25cc48792e920ed344bd9756",
+    "README.md": "b5e7009a1767ae529a26a1397178c43f5227084fffe3919d52b4d40e33a04281",
+    "VALIDATION.md": "45c3a008122ae61a099e94910c84156b45cf0240aab4e90eb4355a282b23b3b9",
+    "kernels.cpp": "4905a460d23a66766a041840fda30c03172a378f6ac3f8dd565c74b9717dc058",
+    "kernels.hpp": "76a0b3f80baad8a17d6014aaa75981f586397f2e1db417326a7ef23e4ec64c7f",
+    "lane_a.py": "845a7de4f8d9efb248db17a859aeb5d43986f1e7b2ad266353ada5d98e020428",
+    "measurement.hpp": "fea092ea2d656482e6488f913481fcb8a3cf5ac21a6cb4502621054152043096",
+    "phase-a-manifest.json": "1367b021f393594e4aab3bc4b52a7b76ca94ee70a49b8f0bda62aea96d46e4ea",
+    "proposal.json": "7fd223b187104687f4308da158d4afa03461c7587997fd20dd18bfa70da5eb59",
+    "runner.cpp": "8702df8edeea3aaf097fdb32003f96cb0278ca7c8202bb6c4587c1772ad181f2",
+    "test_lane_a.py": "6790046b7b3b44625764daa4b39e46fa23038a58ebd0ef8f337525c1b0f88676"
+  },
+  "manifest_commit": "ecd66137bacbce50e605cfc1466ec7d36131ba9e",
+  "manifest_sha256": "1367b021f393594e4aab3bc4b52a7b76ca94ee70a49b8f0bda62aea96d46e4ea",
+  "host": {
+    "os": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "kernel": "25.5.0",
+    "architecture": "arm64",
+    "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]",
+    "cpu": "Apple M2",
+    "memory_bytes": 8589934592,
+    "affinity": {
+      "applied_by_runner": false,
+      "status": "unsupported"
+    },
+    "frequency_control": {
+      "applied_by_runner": false,
+      "status": "uncontrolled"
+    },
+    "load_average": [
+      4.07568359375,
+      5.53271484375,
+      6.17236328125
+    ],
+    "sysctl": {
+      "hw.model": {
+        "returncode": 0,
+        "stdout": "Mac14,2",
+        "stderr": ""
+      },
+      "hw.memsize": {
+        "returncode": 0,
+        "stdout": "8589934592",
+        "stderr": ""
+      },
+      "hw.ncpu": {
+        "returncode": 0,
+        "stdout": "8",
+        "stderr": ""
+      },
+      "hw.physicalcpu": {
+        "returncode": 0,
+        "stdout": "8",
+        "stderr": ""
+      },
+      "hw.logicalcpu": {
+        "returncode": 0,
+        "stdout": "8",
+        "stderr": ""
+      },
+      "hw.cachelinesize": {
+        "returncode": 0,
+        "stdout": "128",
+        "stderr": ""
+      },
+      "hw.l1dcachesize": {
+        "returncode": 0,
+        "stdout": "65536",
+        "stderr": ""
+      },
+      "hw.l1icachesize": {
+        "returncode": 0,
+        "stdout": "131072",
+        "stderr": ""
+      },
+      "hw.l2cachesize": {
+        "returncode": 0,
+        "stdout": "4194304",
+        "stderr": ""
+      },
+      "machdep.cpu.brand_string": {
+        "returncode": 0,
+        "stdout": "Apple M2",
+        "stderr": ""
+      }
+    }
+  },
+  "compiler": {
+    "path": "/usr/bin/c++",
+    "version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin\n"
+  },
+  "input_identities": {
+    "WL-ARITH-CODEC-I64": "0fefb0e6b968e8c11556699700530d133505a0bac2013674a42203b10fcb54ef",
+    "WL-VM-TISC-DETERMINISM-TIERS": "86787727b57b249fb6be8285043ffd957d3efba8a2728db12f70397d4142d529",
+    "WL-CANONFS-MEM-THROUGHPUT": [
+      {
+        "bytes": 4096,
+        "sha256": "725bcd6c66d02acf6ebeab9c92410e010ea22e336876256aaf05a211f4ce1902"
+      },
+      {
+        "bytes": 65536,
+        "sha256": "fee47b1f0d7685a226fd5f2b9dd8f525038bbb05fe9d89a5d75c249edac868e3"
+      },
+      {
+        "bytes": 1048576,
+        "sha256": "5ae9782017a68037004b2bf806c77d324db4d915ed3725d84eb3121b2ad16061"
+      }
+    ]
+  },
+  "resource_observer": {
+    "status": "validated",
+    "scope": "orchestrator RUSAGE_SELF smoke check only",
+    "rss_units": "KiB",
+    "cpu_time_samples_retained": false
+  },
+  "artifacts": [
+    {
+      "path": "/private/tmp/t81-base01-native-build/base01_lane_a",
+      "bytes": 1459968,
+      "sha256": "e775b2d18bbcdc6f8ec8823be91264ba2c7e2f077b59d15066b62675f0289443"
+    },
+    {
+      "path": "/private/tmp/t81-base01-source-build/libt81_axion.a",
+      "bytes": 324664,
+      "sha256": "3b77fcc20522b0ca11ba914e567d93ab3bbb8a574b96220103406a98f24c052e"
+    },
+    {
+      "path": "/private/tmp/t81-base01-source-build/libt81_core.a",
+      "bytes": 1967048,
+      "sha256": "1acd346921d8784a8868d989a5939b5589b945ee89afc99743218054708e9f2b"
+    },
+    {
+      "path": "/private/tmp/t81-base01-source-build/libt81_experimental.a",
+      "bytes": 542832,
+      "sha256": "b3f92a6b2b5cf10f415bb2d54e710b53ce86abc1fcd5904aedb736a5f9f447d8"
+    },
+    {
+      "path": "/private/tmp/t81-base01-source-build/libt81_ffi.a",
+      "bytes": 108912,
+      "sha256": "28a08fcbe348a83a5c3004580a8e39a0452807f6498a7555e2f413a1e3b91fed"
+    },
+    {
+      "path": "/private/tmp/t81-base01-source-build/libt81_isa.a",
+      "bytes": 1220896,
+      "sha256": "76e73b997bed31644f5658746eece665fbdef82db9cd575a4a3d683419b60bab"
+    },
+    {
+      "path": "/private/tmp/t81-base01-source-build/libt81_vm.a",
+      "bytes": 2616168,
+      "sha256": "4ae76062822bc65bfc1581598e68060613de5183c9e4bc91027387eed4ee8998"
+    },
+    {
+      "path": "/private/tmp/t81-base01-source-build/t81_ternary_arith_test",
+      "bytes": 53640,
+      "sha256": "b96f27265db71f9313be79dedf78599cce7b4bb2cf0ed187a5de084860c83fcf"
+    },
+    {
+      "path": "/private/tmp/t81-base01-source-build/t81_vm_workload_determinism_tiers_test",
+      "bytes": 1415496,
+      "sha256": "35376c1de7bda2199b3cc5634d0582c3396e5f13b6a846c3b7c89bf57fa8a1d8"
+    },
+    {
+      "path": "/private/tmp/t81-base01-source-build/t81_canonfs_driver_test",
+      "bytes": 61160,
+      "sha256": "60c64f9fd049e167960368f5f6cd5b5740080ea873b17fb91d6de811b0641996"
+    },
+    {
+      "path": "/private/tmp/t81-base01-source-build/test_resource_monitoring",
+      "bytes": 1398648,
+      "sha256": "8d0bf74513f6451639d1350808dd03bedd0b0d1f1d22d5d457b46c60fd6b2d78"
+    }
+  ],
+  "sections": {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/llvm-size",
+      "-A",
+      "/private/tmp/t81-base01-native-build/base01_lane_a"
+    ],
+    "returncode": 0,
+    "status": "captured"
+  },
+  "readiness": "B0 validated on this host; B1 blocked pending authorization and host qualification"
+}

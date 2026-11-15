@@ -1,0 +1,19 @@
+{
+  "base": "c2ab68e582c9f773ce94a9e13bcb805016f07dd4",
+  "original_pr767": "bd77c00122ff9cc63097d0ee2cd88895266878cc",
+  "original_pr766": "a763ab6876bf07b8ae7c529656cdd2e5d9cf3766",
+  "historical_artifacts": {
+    "experiments/scg08_arithmetic_work/evidence_schema.json": {
+      "sha256": "46874e8caad8a971c9fb7e5d6d5087a1d73c812c439e221c39ab5fee2fe5814a",
+      "unchanged_from_base": true
+    },
+    "experiments/scg08_arithmetic_work/gate1_evidence_record.json": {
+      "sha256": "da027863a69ee39f80161175b9328645ac43672de6d25a350388057a48a9aff0",
+      "unchanged_from_base": true
+    },
+    "experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md": {
+      "sha256": "97d53fba8be955a394777546366a9ab05cda3fc13537625a1516656c3443628f",
+      "unchanged_from_base": true
+    }
+  }
+}

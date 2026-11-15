@@ -1,0 +1,25 @@
+{
+  "classification": "QEMU-EXECUTION VERIFIED: rejection only; full successful guest verification NOT VERIFIED",
+  "code_commit": "5beffd4058c609b1387896da0c796cfb4e4dae20",
+  "command": "QEMU_IMG=drivers/qemu/production_image/qemu_slice6_guest.img OUTPUT_DIR=/private/tmp/t81-qemu-real-final VERIFICATION_TIMEOUT=40 bash drivers/qemu/scripts/automated_verification.sh",
+  "exit": 1,
+  "stdout": "Results: /private/tmp/t81-qemu-real-final/ternaryos-verification-s3074v7d\nTernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nTests Completed: 2/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: failure output in serial.log\n",
+  "qemu_version": "QEMU emulator version 10.2.2\nCopyright (c) 2003-2025 Fabrice Bellard and the QEMU Project developers\n",
+  "input_sha256": {
+    "drivers/qemu/production_image/qemu_slice6_guest.img": "e4e0df2a3c5640367d451ef7379a87e55c8efb7624e8a4746372236f9a06089d",
+    "/opt/homebrew/share/qemu/edk2-aarch64-code.fd": "47765fe344818cbc464b1c14ae658fb4b854f5c2ceffa982411731eb4865594d"
+  },
+  "attempt_path": "/private/tmp/t81-qemu-real-final/ternaryos-verification-s3074v7d",
+  "retained_files": {
+    "command.json": "[\n  \"/opt/homebrew/bin/qemu-system-aarch64\",\n  \"-machine\",\n  \"virt,gic-version=3\",\n  \"-cpu\",\n  \"cortex-a57\",\n  \"-m\",\n  \"512\",\n  \"-smp\",\n  \"1\",\n  \"-nographic\",\n  \"-bios\",\n  \"/opt/homebrew/share/qemu/edk2-aarch64-code.fd\",\n  \"-drive\",\n  \"file=/private/tmp/t81-qemu-real-final/ternaryos-verification-s3074v7d/guest.img,format=raw,if=none,id=hd0\",\n  \"-device\",\n  \"virtio-blk-device,drive=hd0\",\n  \"-monitor\",\n  \"none\",\n  \"-qmp\",\n  \"unix:/tmp/t81-qmp-wa4yzkfp/qmp,server=on,wait=off\",\n  \"-chardev\",\n  \"socket,id=serial0,path=/tmp/t81-qmp-wa4yzkfp/serial,server=on,wait=off,logfile=/private/tmp/t81-qemu-real-final/ternaryos-verification-s3074v7d/serial.log\",\n  \"-serial\",\n  \"chardev:serial0\"\n]\n",
+    "qmp.log": "{\"QMP\": {\"version\": {\"qemu\": {\"micro\": 2, \"minor\": 2, \"major\": 10}, \"package\": \"\"}, \"capabilities\": [\"oob\"]}}\r\n{\"return\": {}}\r\n{\"return\": {\"status\": \"running\", \"running\": true}}\r\n{\"return\": {}}\r\n",
+    "serial.log": "UEFI firmware (version edk2-stable202408-prebuilt.qemu.org built at 16:28:50 on Sep 12 2024)\r\nArmTrngLib could not be correctly initialized.\r\nError: Image at 0005FDB6000 start failed: 00000001\r\n",
+    "qemu.log": "qemu-system-aarch64: terminating on signal 15 from pid 99945 (<unknown process>)\n",
+    "verification_summary.txt": "TernaryOS bounded QEMU verification (not OS qualification)\nmonitor_test: CHECK COMPLETED\nmemory_analysis: CHECK COMPLETED\nTests Completed: 2/5\nQEMU exit and final evidence: NOT PASSED\nStatus: VERIFICATION FAILED\nDetail: failure output in serial.log\n"
+  },
+  "ram_sample": {
+    "bytes": 4096,
+    "sha256": "1e6252a7285209b0d3f97c5709cbbacb22437f805a03d85b1378eb31a4d18c19"
+  },
+  "limitations": "The tracked image was not rebuilt; no firmware/kernel cause established beyond the captured UEFI failures. Full image copy and RAM sample remain at the attempt path outside version control."
+}

@@ -1,4 +1,4 @@
-#include <cassert>
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <t81/crypto/sha3.hpp>
@@ -16,7 +16,7 @@ static void run_test(const std::string& input, const std::string& expected_hex,
     std::cerr << "Test '" << label << "' failed!" << std::endl;
     std::cerr << "Expected: " << expected_hex << std::endl;
     std::cerr << "Actual:   " << actual_hex << std::endl;
-    assert(false && "SHA3-512 mismatch");
+    std::exit(EXIT_FAILURE);
   } else {
     std::cout << "Test '" << label << "' passed." << std::endl;
   }

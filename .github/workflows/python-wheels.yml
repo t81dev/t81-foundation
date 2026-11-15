@@ -44,10 +44,10 @@ jobs:
             cibw_archs: aarch64
             qemu: true
           - name: macos-arm64
-            os: macos-14          # Apple Silicon runner — native arm64
+            os: macos-15          # Apple Silicon runner — native arm64
             cibw_archs: arm64
           - name: macos-x86_64
-            os: macos-13          # Intel runner — native x86_64
+            os: macos-15-intel    # Intel runner — native x86_64
             cibw_archs: x86_64
           - name: windows-amd64
             os: windows-latest
@@ -64,7 +64,7 @@ jobs:
 
       - name: Set up QEMU (Linux aarch64 emulation)
         if: matrix.qemu
-        uses: docker/setup-qemu-action@v4
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4
         with:
           platforms: aarch64
 
@@ -125,6 +125,6 @@ jobs:
           merge-multiple: true
 
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # release/v1
         # OIDC trusted publishing — no PYPI_API_TOKEN secret required.
         # The 'environment: pypi' setting above gates the OIDC token issuance.

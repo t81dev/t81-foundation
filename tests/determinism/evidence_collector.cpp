@@ -228,6 +228,7 @@ static void test_write_schema() {
 
   std::ifstream f(out);
   std::string content((std::istreambuf_iterator<char>(f)), {});
+  f.close();  // Windows cannot remove the evidence directory while this handle is open.
 
   check(contains(content, "schema_version=evidence-schema-v1"),
         "[C06-05] schema_version line present");

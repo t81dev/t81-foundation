@@ -37,8 +37,9 @@ To overcome trit-level storage overhead, the project introduced Base-81 digit gr
 Modern T81 Foundation integrates Track R alternative representations with Track F systems substrate:
 - Bit-exact cross-platform determinism (DCP) and soft-float math ([RFC-0030](../../spec/rfcs/RFC-0030-deterministic-math-subsystem.md)).
 - Pre-side-effect policy authorization kernel (Axion).
-- Content-addressed artifact storage and foreign file system interchange (CanonFS / [RFC-00D1](../../spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md)).
-- DAIOS Target Architecture ([RFC-00D2](../../spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md)).
+- Content-addressed artifact storage and portable storage keys (CanonFS / [RFC-00D1](../../spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md)).
+- Dual TISC execution profiles: hosted virtual machine (`t81_vm`) and freestanding bare-metal microkernel (`ternaryos` / Axion HAL on AArch64 QEMU).
+- DAIOS Target Architecture ([RFC-00D2](../../spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md)), maintained as an independent forward-looking research direction.
 
 ---
 
@@ -155,3 +156,40 @@ The project preserves the exact identities, formal claims, baselines, assumption
 1. **Software CPU Speed Claims:** Software ternary arithmetic or SWAR tryte unpacking on binary ALUs is deemed **FALSIFIED and FROZEN** for CPU execution speed.
 2. **Overhead Overhead Domination:** Any theoretical radix advantage that vanishes after accounting for index decoding, digit packing, or conversion overhead is deemed **NOT SUPPORTED**.
 3. **Unchecked Overclaims:** Asserting that a software prototype or CI green check proves physical silicon superiority is deemed a **SCIENTIFIC VIOLATION**.
+
+---
+
+## 2026-10-31 reconciliation note
+
+Research identity and canonical H01–H08 hypothesis identifiers are unchanged. ADM-2 candidate implementation work and CMP3 protocol reconciliation are engineering/research activities, not new proof of ternary representation advantage. Preserve the canonical hypothesis register and separate local operator reports from independently reproduced results.
+
+---
+
+## 2026-10-31 comprehensive assessment: interpretive synthesis (non-normative)
+
+The research program has evolved from Knuth/discrete-mathematics and Hanoi/CWEB investigations into a multi-track experimental framework: representation science (R), deterministic governed systems engineering (F), and AI-assisted research methodology (M). This is an **interpretation of the documented lineage**, not a new hypothesis, RFC, or claim of product readiness.
+
+**The governing discrimination question** is whether a measured advantage arises from *ternary representation itself*, or from compression, adaptive precision, caching, SIMD, policy enforcement, or other representation-independent design choices. A mathematical radix property is not a physical or software speedup. Negative matched comparisons constrain tested implementations/workloads; they do not falsify all future ternary substrates.
+
+**Canonical identities:** H07 asks about comparative auditability against equivalently authorized/evidenced conventional runtime alternatives; tested policy behavior is not comparative superiority or security certification. H08 asks whether AI-assisted scientific research improves discovery/trustworthiness under independent audit; do not conflate it with H09-E1 recursive-cognition investigations. The JSON register remains authoritative if this synthesis differs.
+
+---
+
+## 2026-11-05 CPA research milestone note
+
+The completion of CPA-001 through CPA-005 establishes that T81 is an **implemented, working experimental computing architecture**. Bounded cross-profile execution of TISC bytecode between hosted T81VM and freestanding Axion OS (AArch64 QEMU) matches the independently derived mathematical oracle across 25 observation boundaries.
+
+Crucially, **execution correctness must be distinguished from comparative computational advantage**:
+1. Proving that the TISC interpreter and freestanding evaluator produce bit-exact identical register, memory, flag, and system-register traces proves that the dual-profile architecture functions.
+2. It does **not** prove that ternary arithmetic, ternary memory, or ternary execution outperforms, uses less energy than, or is denser than conventional binary computers.
+3. Comparative ternary advantage remains an open scientific question governed by H01–H08, requiring matched, rigorous binary controls.
+
+---
+
+## 2026-11-05 post-CPA-006 scientific identity and open question
+
+CPA-006 extends the previously demonstrated bounded TISC cross-profile result from one canonical program to **19 independently frozen conformance cases** with 57 hosted executions, 57 fresh freestanding AArch64 QEMU boots and 1,190 validated state records, as reported in the [CPA-006 acceptance record](https://github.com/t81dev/t81-foundation/blob/514fa17cf5629a7aea9ebb1b035f01f3ef7687f3/experiments/cpa006/README.md). This is an engineering conformance result for the *implemented historical profile*, not evidence of universal ISA correctness or ternary advantage. It does not change canonical H01–H08 definitions or their evidence tiers.
+
+**Program identity:** T81 is the experimental computational architecture; TISC is the computational instruction contract; hosted T81VM and freestanding Axion/TernaryOS are distinct execution profiles; DAIOS remains a separate experimental direction. The freestanding CPA evaluator is not a completed general-purpose operating system or native three-state processor.
+
+**Next scientific discriminator:** Following formal ISA reconciliation, a separately authorized H02 signed-rounding study may compare balanced-ternary digit truncation/correction for division by `3^k` with optimized conventional integer division at identical exact-rounding semantics. Require an exact-integer oracle, matched value domain, an optimized binary comparator, a binary encoding of the same ternary digits as an attribution control, conversion/storage costs, fixed workload, and a preregistered falsifier. This is a proposal, not an executed experiment; earlier Hanoi arithmetic failures and negative binary-host performance findings remain intact.

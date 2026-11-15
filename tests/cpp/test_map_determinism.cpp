@@ -1,3 +1,4 @@
+#undef NDEBUG
 #include "t81/types/T81Map.hpp"
 #include "t81/types/T81Symbol.hpp"
 #include "t81/types/T81String.hpp"

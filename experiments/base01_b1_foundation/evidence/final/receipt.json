@@ -1,0 +1,461 @@
+{
+  "schema": "base01.b1-foundation.validation.v1",
+  "status": "PASS",
+  "mode": "correctness-only",
+  "source_sha": "cda9135d36144d4de2771af174e52ac7b30a83c9",
+  "source_tracked_bytes_sha256": "1c77b63826cd0adb7e5709a750fd6be3e7295bc3bbae9d94726e8c8cf2fa2c77",
+  "runner_sha": "5dd196aa1876ac352d50bb0fdfea1ccb42817f0e",
+  "runner_files": {
+    "AUTHORIZATION_INTERFACE.md": "59a413e30cc3620fa7fbfee9dd1a98eebae0b1001225c4d5a7b18cc4cafc8809",
+    "CMakeLists.txt": "0ce9e545bc173170ff151d172d0aebafc358a311cbd8f573121227078703f9c8",
+    "READINESS.md": "84edfda3bbe792ea79e5cabfa5cb7eb0466cfcb8ff35b8edb5087e07f77ce42b",
+    "README.md": "05abec41fff6b8dc5136b8bf73e8cec875764d9afc5923da9ac9284063fe8a1a",
+    "RETENTION_AND_BOUNDS.md": "7200602e73ddb67059f277350ec589acb7e4b2995b98bb43ff013c2906e7f64c",
+    "codec.cpp": "cc3e0b8dd010de71dec7a8aaadb010f0d2570efdc9b62d547f280ef632068103",
+    "codec.hpp": "72c4ac31a7d73041b88aa3bdd70dbe124c99d216d8dc540bc3ebb9fbc6c013e3",
+    "harness.py": "78593c21a639a879cf869b4a9831f5fb5b26dc57f1ee9f38dd6c85ddfd530137",
+    "native.cpp": "543ab287e12f4393689e478a5ecf34d9c0e5b39eab0fa1bc161e879cb7984fc4",
+    "observers.py": "08992e3ea7f81c5d899e8a0b19710e27a41b0a4efbe50ee838560b34bafe1b1b",
+    "oracle.py": "d9c5d305245e9ed94908c2cae71beb537f324b70926f5631ea30a424ad987bcb",
+    "phase-a-manifest.json": "1367b021f393594e4aab3bc4b52a7b76ca94ee70a49b8f0bda62aea96d46e4ea",
+    "test_foundation.py": "eb48f2a9debd61155b1661afc925a3c394225245a133f087f53cb1d293cafc69"
+  },
+  "manifest_commit": "ecd66137bacbce50e605cfc1466ec7d36131ba9e",
+  "manifest_sha256": "1367b021f393594e4aab3bc4b52a7b76ca94ee70a49b8f0bda62aea96d46e4ea",
+  "native_identity": "ba3ba798808b310168d8b73b4529533fed18675fb616aee8eb90a60149229b1b",
+  "worker": {
+    "pid": 31149,
+    "parent_pid": 31145,
+    "complete": true,
+    "returncode": 0,
+    "resource_samples": []
+  },
+  "codec": {
+    "input_sha256": "0fefb0e6b968e8c11556699700530d133505a0bac2013674a42203b10fcb54ef",
+    "retention": {
+      "inputs": 1031,
+      "encoded_outputs": 1031,
+      "decoded_outputs": 1031,
+      "trit_capacity": 65921,
+      "trit_bytes": 1,
+      "vector_object_bytes": 24,
+      "accounted_container_bytes": 107161
+    },
+    "oracle": "verbatim B0 arbitrary-precision positional check"
+  },
+  "canonfs": [
+    {
+      "bytes": 4096,
+      "payload_sha256": "725bcd6c66d02acf6ebeab9c92410e010ea22e336876256aaf05a211f4ce1902",
+      "expected_canonhash": "0ef03619c896d9694f13b525bde07582dcc6a6c1b04fe2d8e3caf5ee4daba40a",
+      "retained_refs": 2,
+      "retained_reads": 2,
+      "accounted_payload_bytes": 12288
+    },
+    {
+      "bytes": 65536,
+      "payload_sha256": "fee47b1f0d7685a226fd5f2b9dd8f525038bbb05fe9d89a5d75c249edac868e3",
+      "expected_canonhash": "9ad5626a6913267d510d36920bd68816f24f0c2ee7070a9f0c659f340647c351",
+      "retained_refs": 2,
+      "retained_reads": 2,
+      "accounted_payload_bytes": 196608
+    },
+    {
+      "bytes": 1048576,
+      "payload_sha256": "5ae9782017a68037004b2bf806c77d324db4d915ed3725d84eb3121b2ad16061",
+      "expected_canonhash": "4c1182f19f5163adc36a3c06f51467cf846c49fa21619d4137c7f3ca7fdeeea5",
+      "retained_refs": 2,
+      "retained_reads": 2,
+      "accounted_payload_bytes": 3145728
+    }
+  ],
+  "vm": {
+    "status": "PROVISIONAL PASS",
+    "reference": "7ef553d221ed668f333ff4429012ee0c9378cd13",
+    "input_sha256": "86787727b57b249fb6be8285043ffd957d3efba8a2728db12f70397d4142d529",
+    "independent_review": "not established; no readiness promotion",
+    "final_r75": [
+      406,
+      5,
+      250,
+      11,
+      7,
+      8
+    ],
+    "retention": [
+      {
+        "tier": "workload",
+        "memory_words": 1552,
+        "trace_entries": 163,
+        "axion_events": 344
+      },
+      {
+        "tier": "micro",
+        "memory_words": 1541,
+        "trace_entries": 5,
+        "axion_events": 0
+      },
+      {
+        "tier": "meso",
+        "memory_words": 1546,
+        "trace_entries": 157,
+        "axion_events": 140
+      },
+      {
+        "tier": "mixed",
+        "memory_words": 1547,
+        "trace_entries": 11,
+        "axion_events": 8
+      },
+      {
+        "tier": "policy-heavy",
+        "memory_words": 1543,
+        "trace_entries": 7,
+        "axion_events": 6
+      },
+      {
+        "tier": "tensor-access",
+        "memory_words": 1544,
+        "trace_entries": 8,
+        "axion_events": 14
+      }
+    ]
+  },
+  "workloads": {
+    "WL-ARITH-CODEC-I64": {
+      "engineering": "ENGINEERING COMPLETE \u2014 AWAITING QUALIFICATION",
+      "reason": "1031 retained encode/decode outputs checked; no timing qualification",
+      "eligibility": {
+        "correctness_only": true,
+        "qualification": false,
+        "measurement": false
+      }
+    },
+    "WL-VM-TISC-DETERMINISM-TIERS": {
+      "engineering": "ENGINEERING PARTIAL",
+      "reason": "PROVISIONAL reference pending independent review; no R75 generalization",
+      "eligibility": {
+        "correctness_only": true,
+        "qualification": false,
+        "measurement": false
+      }
+    },
+    "WL-CANONFS-MEM-THROUGHPUT": {
+      "engineering": "ENGINEERING COMPLETE \u2014 AWAITING QUALIFICATION",
+      "reason": "memory-only retained outputs and independent hashlib CanonHash expectations checked",
+      "eligibility": {
+        "correctness_only": true,
+        "qualification": false,
+        "measurement": false
+      }
+    },
+    "WL-RES-RUSAGE-METRICS": {
+      "engineering": "ENGINEERING PARTIAL",
+      "reason": "unit/selector/lifecycle validation only; real resource collector intentionally absent",
+      "eligibility": {
+        "correctness_only": true,
+        "qualification": false,
+        "measurement": false
+      }
+    },
+    "WL-RES-ARTIFACT-SIZE": {
+      "engineering": "ENGINEERING COMPLETE \u2014 AWAITING QUALIFICATION",
+      "reason": "bounded ELF64-LE/Mach-O64-LE metadata parsers; unsupported formats explicit",
+      "eligibility": {
+        "correctness_only": true,
+        "qualification": false,
+        "measurement": false
+      }
+    }
+  },
+  "artifacts": [
+    {
+      "sha256": "9ff2b8b2a57ee3cdf0deb292bf2df124c6e4adb2f1accd5412792b26d224f5b6",
+      "file_bytes": 1460416,
+      "parser": "base01-static-v1",
+      "status": "SUPPORTED",
+      "sections": [
+        {
+          "name": "__text",
+          "segment": "__TEXT",
+          "type": 0,
+          "flags": 2147484672,
+          "address": 4294971120,
+          "memory_bytes": 768700,
+          "file_offset": 3824,
+          "file_bytes": 768700,
+          "alignment_exponent": 2
+        },
+        {
+          "name": "__stubs",
+          "segment": "__TEXT",
+          "type": 8,
+          "flags": 2147484680,
+          "address": 4295739820,
+          "memory_bytes": 1464,
+          "file_offset": 772524,
+          "file_bytes": 1464,
+          "alignment_exponent": 2
+        },
+        {
+          "name": "__init_offsets",
+          "segment": "__TEXT",
+          "type": 22,
+          "flags": 22,
+          "address": 4295741284,
+          "memory_bytes": 2348,
+          "file_offset": 773988,
+          "file_bytes": 2348,
+          "alignment_exponent": 2
+        },
+        {
+          "name": "__const",
+          "segment": "__TEXT",
+          "type": 0,
+          "flags": 0,
+          "address": 4295743632,
+          "memory_bytes": 9632,
+          "file_offset": 776336,
+          "file_bytes": 9632,
+          "alignment_exponent": 4
+        },
+        {
+          "name": "__gcc_except_tab",
+          "segment": "__TEXT",
+          "type": 0,
+          "flags": 0,
+          "address": 4295753264,
+          "memory_bytes": 43276,
+          "file_offset": 785968,
+          "file_bytes": 43276,
+          "alignment_exponent": 2
+        },
+        {
+          "name": "__cstring",
+          "segment": "__TEXT",
+          "type": 2,
+          "flags": 2,
+          "address": 4295796540,
+          "memory_bytes": 21072,
+          "file_offset": 829244,
+          "file_bytes": 21072,
+          "alignment_exponent": 0
+        },
+        {
+          "name": "__unwind_info",
+          "segment": "__TEXT",
+          "type": 0,
+          "flags": 0,
+          "address": 4295817612,
+          "memory_bytes": 8184,
+          "file_offset": 850316,
+          "file_bytes": 8184,
+          "alignment_exponent": 2
+        },
+        {
+          "name": "__eh_frame",
+          "segment": "__TEXT",
+          "type": 11,
+          "flags": 1744830475,
+          "address": 4295825800,
+          "memory_bytes": 80,
+          "file_offset": 858504,
+          "file_bytes": 80,
+          "alignment_exponent": 3
+        },
+        {
+          "name": "__got",
+          "segment": "__DATA_CONST",
+          "type": 6,
+          "flags": 6,
+          "address": 4295835648,
+          "memory_bytes": 2552,
+          "file_offset": 868352,
+          "file_bytes": 2552,
+          "alignment_exponent": 3
+        },
+        {
+          "name": "__const",
+          "segment": "__DATA_CONST",
+          "type": 0,
+          "flags": 0,
+          "address": 4295838200,
+          "memory_bytes": 4416,
+          "file_offset": 870904,
+          "file_bytes": 4416,
+          "alignment_exponent": 3
+        },
+        {
+          "name": "__data",
+          "segment": "__DATA",
+          "type": 0,
+          "flags": 0,
+          "address": 4295852032,
+          "memory_bytes": 265312,
+          "file_offset": 884736,
+          "file_bytes": 265312,
+          "alignment_exponent": 6
+        },
+        {
+          "name": "__bss",
+          "segment": "__DATA",
+          "type": 1,
+          "flags": 1,
+          "address": 4296117344,
+          "memory_bytes": 336,
+          "file_offset": 0,
+          "file_bytes": 0,
+          "alignment_exponent": 3
+        }
+      ],
+      "segments": [
+        {
+          "name": "__PAGEZERO",
+          "address": 0,
+          "memory_bytes": 4294967296,
+          "file_offset": 0,
+          "file_bytes": 0,
+          "maxprot": 0,
+          "initprot": 0,
+          "flags": 0
+        },
+        {
+          "name": "__TEXT",
+          "address": 4294967296,
+          "memory_bytes": 868352,
+          "file_offset": 0,
+          "file_bytes": 868352,
+          "maxprot": 5,
+          "initprot": 5,
+          "flags": 0
+        },
+        {
+          "name": "__DATA_CONST",
+          "address": 4295835648,
+          "memory_bytes": 16384,
+          "file_offset": 868352,
+          "file_bytes": 16384,
+          "maxprot": 3,
+          "initprot": 3,
+          "flags": 16
+        },
+        {
+          "name": "__DATA",
+          "address": 4295852032,
+          "memory_bytes": 278528,
+          "file_offset": 884736,
+          "file_bytes": 278528,
+          "maxprot": 3,
+          "initprot": 3,
+          "flags": 0
+        },
+        {
+          "name": "__LINKEDIT",
+          "address": 4296130560,
+          "memory_bytes": 311296,
+          "file_offset": 1163264,
+          "file_bytes": 297152,
+          "maxprot": 1,
+          "initprot": 1,
+          "flags": 0
+        }
+      ],
+      "format": "Mach-O64-LE",
+      "machine": 16777228,
+      "subtype": 0,
+      "object_type": 2,
+      "path": "/private/tmp/t81-b1-foundation-build/foundation_check"
+    },
+    {
+      "sha256": "4ae76062822bc65bfc1581598e68060613de5183c9e4bc91027387eed4ee8998",
+      "file_bytes": 2616168,
+      "parser": "base01-static-v1",
+      "status": "UNSUPPORTED",
+      "sections": [],
+      "segments": [],
+      "reason": "unknown, archive, fat, 32-bit or unsupported-endian artifact",
+      "path": "/private/tmp/t81-base01-source-build/libt81_vm.a"
+    },
+    {
+      "sha256": "3b77fcc20522b0ca11ba914e567d93ab3bbb8a574b96220103406a98f24c052e",
+      "file_bytes": 324664,
+      "parser": "base01-static-v1",
+      "status": "UNSUPPORTED",
+      "sections": [],
+      "segments": [],
+      "reason": "unknown, archive, fat, 32-bit or unsupported-endian artifact",
+      "path": "/private/tmp/t81-base01-source-build/libt81_axion.a"
+    },
+    {
+      "sha256": "76e73b997bed31644f5658746eece665fbdef82db9cd575a4a3d683419b60bab",
+      "file_bytes": 1220896,
+      "parser": "base01-static-v1",
+      "status": "UNSUPPORTED",
+      "sections": [],
+      "segments": [],
+      "reason": "unknown, archive, fat, 32-bit or unsupported-endian artifact",
+      "path": "/private/tmp/t81-base01-source-build/libt81_isa.a"
+    },
+    {
+      "sha256": "b3f92a6b2b5cf10f415bb2d54e710b53ce86abc1fcd5904aedb736a5f9f447d8",
+      "file_bytes": 542832,
+      "parser": "base01-static-v1",
+      "status": "UNSUPPORTED",
+      "sections": [],
+      "segments": [],
+      "reason": "unknown, archive, fat, 32-bit or unsupported-endian artifact",
+      "path": "/private/tmp/t81-base01-source-build/libt81_experimental.a"
+    },
+    {
+      "sha256": "28a08fcbe348a83a5c3004580a8e39a0452807f6498a7555e2f413a1e3b91fed",
+      "file_bytes": 108912,
+      "parser": "base01-static-v1",
+      "status": "UNSUPPORTED",
+      "sections": [],
+      "segments": [],
+      "reason": "unknown, archive, fat, 32-bit or unsupported-endian artifact",
+      "path": "/private/tmp/t81-base01-source-build/libt81_ffi.a"
+    },
+    {
+      "sha256": "1acd346921d8784a8868d989a5939b5589b945ee89afc99743218054708e9f2b",
+      "file_bytes": 1967048,
+      "parser": "base01-static-v1",
+      "status": "UNSUPPORTED",
+      "sections": [],
+      "segments": [],
+      "reason": "unknown, archive, fat, 32-bit or unsupported-endian artifact",
+      "path": "/private/tmp/t81-base01-source-build/libt81_core.a"
+    }
+  ],
+  "platform": {
+    "os": "Darwin",
+    "kernel": "25.5.0",
+    "architecture": "arm64",
+    "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]"
+  },
+  "oracle_providers": {
+    "codec": "accepted B0 pure Python positional oracle",
+    "canonhash": {
+      "algorithm": "SHA3-512 prefix",
+      "prefix_bytes": 32,
+      "module": "_hashlib"
+    }
+  },
+  "compiler": {
+    "path": "/usr/bin/c++",
+    "version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin\n"
+  },
+  "resource_observer": {
+    "status": "FIXTURE/SELECTOR VALIDATION ONLY",
+    "samples": [],
+    "accounting_collector": "not implemented",
+    "selector_bindings": {
+      "status": "SUPPORTED",
+      "RUSAGE_SELF": 0,
+      "RUSAGE_CHILDREN": -1,
+      "samples_collected": false
+    }
+  },
+  "measurement_enabled": false,
+  "performance_samples": []
+}

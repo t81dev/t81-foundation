@@ -1,0 +1,178 @@
+{
+  "backtraceGraph" : 
+  {
+    "commands" : 
+    [
+      "add_test"
+    ],
+    "files" : 
+    [
+      "/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/CMakeLists.txt"
+    ],
+    "nodes" : 
+    [
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 36,
+        "parent" : 0
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 44,
+        "parent" : 2
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 52,
+        "parent" : 4
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 59,
+        "parent" : 6
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 59,
+        "parent" : 8
+      }
+    ]
+  },
+  "kind" : "ctestInfo",
+  "tests" : 
+  [
+    {
+      "backtrace" : 1,
+      "command" : 
+      [
+        "/private/tmp/t81-pr795-parity-venv/bin/python",
+        "/private/tmp/t81-pr767-main-validator/scripts/ci/validate_scg08_gate1_evidence.py",
+        "/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/gate1_evidence_record.json",
+        "/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/evidence_schema.json"
+      ],
+      "name" : "t81_exp_scg08_01_schema_validation",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 30.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr795-parity-release/experiments/scg08_arithmetic_work"
+        }
+      ]
+    },
+    {
+      "backtrace" : 3,
+      "command" : 
+      [
+        "/private/tmp/t81-pr795-parity-venv/bin/python",
+        "/private/tmp/t81-pr767-main-validator/scripts/ci/validate_scg08_gate1_evidence.py",
+        "--test-negative"
+      ],
+      "name" : "t81_exp_scg08_01_schema_negative_validation",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 30.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr795-parity-release/experiments/scg08_arithmetic_work"
+        }
+      ]
+    },
+    {
+      "backtrace" : 5,
+      "command" : 
+      [
+        "/private/tmp/t81-pr795-parity-venv/bin/python",
+        "/private/tmp/t81-pr767-main-validator/scripts/ci/validate_scg08_gate1_evidence.py",
+        "--test-json-files"
+      ],
+      "name" : "t81_exp_scg08_01_schema_json_files",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 60.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr795-parity-release/experiments/scg08_arithmetic_work"
+        }
+      ]
+    },
+    {
+      "backtrace" : 7,
+      "command" : 
+      [
+        "/private/tmp/t81-pr795-parity-venv/bin/python",
+        "-O",
+        "/private/tmp/t81-pr767-main-validator/scripts/ci/validate_scg08_gate1_evidence.py",
+        "--test-negative"
+      ],
+      "name" : "t81_exp_scg08_01_schema_negative_optimized",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 60.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr795-parity-release/experiments/scg08_arithmetic_work"
+        }
+      ]
+    },
+    {
+      "backtrace" : 9,
+      "command" : 
+      [
+        "/private/tmp/t81-pr795-parity-venv/bin/python",
+        "-O",
+        "/private/tmp/t81-pr767-main-validator/scripts/ci/validate_scg08_gate1_evidence.py",
+        "--test-json-files"
+      ],
+      "name" : "t81_exp_scg08_01_schema_json_files_optimized",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 60.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr795-parity-release/experiments/scg08_arithmetic_work"
+        }
+      ]
+    }
+  ],
+  "version" : 
+  {
+    "major" : 1,
+    "minor" : 0
+  }
+}

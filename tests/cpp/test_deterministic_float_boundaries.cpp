@@ -1,3 +1,4 @@
+#undef NDEBUG
 #include "t81/types/T81Float.hpp"
 #include <cassert>
 #include <iostream>

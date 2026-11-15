@@ -29,7 +29,7 @@ namespace t81 {
 // ======================================================================
 class T81IOStream {
   enum class Kind { STDIN, STDOUT, STDERR, FILE_READ, FILE_WRITE };
-  Kind kind_;
+  [[maybe_unused]] Kind kind_;
   FILE* handle_{nullptr};
   T81String path_;  // for files
   mutable T81List<T81Time> timestamps_;

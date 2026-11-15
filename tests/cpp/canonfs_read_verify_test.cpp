@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "t81/canonfs/canon_driver.hpp"
+#include "t81/canonfs/storage_key.hpp"
 
 namespace {
 
@@ -55,7 +56,7 @@ int main() {
                                         std::span<const std::byte>(payload.data(), payload.size()));
   if (!expect(write_res.has_value(), "write_object failed")) return 1;
 
-  const auto hash_text = write_res.value().hash.h.to_string();
+  const auto hash_text = storage_key_v1(write_res.value().hash);
   driver.reset();
 
   const auto object_path = root / "objects" / (hash_text + ".blk");

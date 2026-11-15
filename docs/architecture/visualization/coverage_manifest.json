@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.1.0",
+  "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
+  "description": "Coverage manifest identifying which repository components and relationship categories are represented versus not yet mapped.",
+  "repository_directories": {
+    "total_top_level_directories": 35,
+    "mapped_count": 18,
+    "unmapped_count": 17,
+    "mapped": {
+      "codec": "sub.layer.4_services.codecs",
+      "crypto": "sub.layer.4_services.crypto",
+      "docs": "sub.layer.7_assurance.hypothesis_register, sub.layer.7_assurance.scg_continuity",
+      "drivers": "sub.layer.6_hw.qemu_drivers",
+      "experiments": "sub.layer.6_hw.rtl_feasibility",
+      "fs": "sub.layer.4_services.canonfs",
+      "include": "sub.layer.3_num.*, sub.layer.4_services.*, sub.layer.2_exec.*",
+      "inference": "sub.layer.6_hw.simd_primitives",
+      "isa": "sub.layer.2_exec.tisc_isa, sub.layer.3_num.soft_math",
+      "kernel": "sub.layer.4_services.axion_kernel",
+      "lang": "sub.layer.1_lang.frontend, sub.layer.1_lang.toolchain_bridges",
+      "scripts": "sub.layer.7_assurance.ci_governance",
+      "spec": "sub.layer.2_exec.tisc_isa, sub.layer.5_os.daios_proposal",
+      "src": "sub.layer.6_hw.simd_primitives",
+      "ternaryos": "sub.layer.5_os.ternaryos_kernel, mod.ternaryos.scheduler, mod.ternaryos.mmu",
+      "tests": "sub.layer.7_assurance.cpp_test_suite",
+      "tools": "sub.layer.1_lang.cli, mod.cli.weights_tool",
+      "vm": "sub.layer.2_exec.t81vm, mod.vm.interpreter_core, mod.vm.system_registers, sub.layer.2_exec.jit_engine"
+    },
+    "unmapped": {
+      "artifacts": "Directory artifacts/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+      "benchmarks": "Directory benchmarks/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+      "cmake": "Directory cmake/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+      "contracts": "Directory contracts/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+      "customer_tools": "Directory customer_tools/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+      "development_tests": "Directory development_tests/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+      "examples": "Directory examples/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+      "execution_reports": "Directory execution_reports/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+      "experimental": "Directory experimental/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+      "ffi": "Directory ffi/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+      "logs": "Directory logs/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+      "market-demos": "Directory market-demos/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+      "market_analysis": "Directory market_analysis/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+      "review": "Directory review/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+      "skills": "Directory skills/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+      "strategic_docs": "Directory strategic_docs/ not yet explicitly modeled as standalone nodes in visualization dataset.",
+      "third_party": "Directory third_party/ not yet explicitly modeled as standalone nodes in visualization dataset."
+    }
+  },
+  "relationship_categories": {
+    "represented": [
+      "containment",
+      "function_invocation",
+      "instruction_dispatch",
+      "runtime_data_flow",
+      "compile_time_dependency",
+      "link_dependency",
+      "test_coverage",
+      "research_or_evidence_relationship",
+      "architectural_design_relationship"
+    ],
+    "not_yet_mapped": [
+      "dynamic_ffi_binding",
+      "rpc_network_dispatch",
+      "memory_mapped_io_peripheral_bus",
+      "hardware_interrupt_routing",
+      "build_artifact_generation"
+    ]
+  },
+  "coverage_metrics": {
+    "total_nodes_defined": 35,
+    "total_edges_defined": 32,
+    "total_interfaces_defined": 6,
+    "total_execution_pathways_defined": 9,
+    "top_level_directory_representation_percentage": 51.43
+  }
+}

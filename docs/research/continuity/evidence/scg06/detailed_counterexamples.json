@@ -1,0 +1,106 @@
+{
+  "F1": {
+    "component": "t81::core::T81Limb27",
+    "operation": "operator*(T81Limb27, T81Limb27)",
+    "table": "BOOTH27_TABLE",
+    "counterexample": {
+      "input_a_trytes": [1, 0, 0, 0, 0, 0, 0, 0, 0],
+      "input_b_trytes": [2, 0, 0, 0, 0, 0, 0, 0, 0],
+      "input_a_int": 1,
+      "input_b_int": 2,
+      "expected_product_int": 2,
+      "expected_product_trits": [-1, 1, 0, 0],
+      "observed_product_trits": [0, 0, 0, 1],
+      "observed_product_int": 27,
+      "explanation": "tryte 2 has pattern b0=2, b1=0 -> 2. BOOTH27_TABLE maps pattern 2 to mul=1, shift_trytes=1. In operator*, shift_trits = shift_trytes * 3 = 3 trits (factor of 27). The product is scaled by 27 instead of 2."
+    }
+  },
+  "F2": {
+    "component": "t81::core::T81Limb54",
+    "operation": "reference_mul(T81Limb54, T81Limb54)",
+    "counterexample": {
+      "input_a": "54 trits all set to +1",
+      "input_b": "54 trits all set to +1",
+      "expected": "valid balanced ternary trits in {-1, 0, 1} encoding mathematical square",
+      "observed": "15 out of 54 output trits contain invalid digit values (e.g. +3, -3)",
+      "explanation": "Accumulator sum at position 53 reaches 54. The normalization loop performs single-step carry sum - 3 with carry=1 only if sum >= 2. A single subtraction reduces 54 to 51, leaving invalid digits in the array."
+    }
+  },
+  "F3": {
+    "component": "t81::core::T81Limb54",
+    "operation": "karatsuba(T81Limb54, T81Limb54)",
+    "counterexample": {
+      "input_x": "low 27 trits all +1, trit[27] = +1 (high limb = 1)",
+      "input_y": "low 27 trits all +1, trit[27] = +1 (high limb = 1)",
+      "radical_sum": "x0 + x1 produces carry_out = +1",
+      "observed": "T81Limb27::operator+ returns addc(other).first, silently discarding carry_out",
+      "explanation": "Karatsuba evaluates mid = (x0 + x1) * (y0 + y1). Discarding the 28th-trit carry corrupts the intermediate term in 66/200 pseudo-random cases."
+    }
+  },
+  "F4": {
+    "component": "t81::T81Int<N>",
+    "operation": "operator*(T81Int<10>, T81Int<10>)",
+    "counterexample": {
+      "input_a": 243,
+      "input_b": 243,
+      "mathematical_product": 59049,
+      "n10_capacity": [-29524, 29524],
+      "pre_scg03": {
+        "result": 0,
+        "mechanism": "shift-and-add truncated intermediate trits modulo 3^10, silently producing 0"
+      },
+      "post_scg03": {
+        "result": "std::overflow_error: T81Int overflow",
+        "mechanism": "2N-trit convolution accumulated full product 59049 and trapped on high-trit non-zero"
+      }
+    }
+  },
+  "F5": {
+    "component": "t81::v1::T81BigInt",
+    "operation": "operator-(T81BigInt, T81BigInt)",
+    "counterexample": {
+      "input_x": "(3^79 + 7)",
+      "input_y": "(3^79 + 11)",
+      "expected_difference": -4,
+      "pre_and_post_debug": {
+        "exit_status": "SIGABRT (code -6 / 134)",
+        "mechanism": "Single-limb fallback sets negative_ = false and invokes normalize(), which calls verify_invariants(). verify_invariants() finds limbs_.back().sign_trit() == Trit::N and calls std::terminate()."
+      },
+      "pre_and_post_release": {
+        "exit_status": "NORMAL (exit code 0)",
+        "output": "to_std_chunks: borrow beyond MSB (input effectively negative)",
+        "mechanism": "In NDEBUG builds, verify_invariants() is a no-op. The unnormalized negative limb flows into to_std_chunks(), which throws std::runtime_error."
+      }
+    }
+  },
+  "F6": {
+    "component": "t81::v1::T81Fraction<81>",
+    "operation": "operator*(T81Fraction<81>, T81Fraction<81>)",
+    "counterexample": {
+      "input_a": "(3^45) / 1",
+      "input_b": "(3^45) / 1",
+      "mathematical_numerator": "3^90 (exceeds 81 trits)",
+      "pre_scg03": {
+        "result": "Fraction with numerator 0 / 1",
+        "exit_status": "NORMAL (code 0)",
+        "mechanism": "Underlying T81Int<81>::operator* silently wrapped numerator to 0"
+      },
+      "post_scg03": {
+        "result": "std::terminate() called after throwing std::overflow_error",
+        "exit_status": "SIGABRT (code -6 / 134)",
+        "mechanism": "Underlying T81Int<81>::operator* now throws std::overflow_error. Because T81Fraction::operator* is marked noexcept, the uncaught exception terminates the process."
+      }
+    }
+  },
+  "F7": {
+    "component": "t81::v1::T81Fraction<81>",
+    "operation": "to_double() noexcept",
+    "counterexample": {
+      "input_fraction": "(3^45) / 1",
+      "numerator_trits": 46,
+      "expected": "Exact or approximate double floating point conversion, or documented checked failure",
+      "observed": "SIGABRT (code -6 / 134) across both pre-SCG-03 and post-SCG-03",
+      "mechanism": "to_double() is declared noexcept. It calls num_.to_int64(). T81Int::to_int64() throws std::overflow_error for trits > 40. The exception escapes noexcept, invoking std::terminate()."
+    }
+  }
+}

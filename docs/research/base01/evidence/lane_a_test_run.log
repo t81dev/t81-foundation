@@ -1,0 +1,19 @@
+=== STDOUT ===
+
+=== STDERR ===
+test_actual_resource_smoke_and_negative_invariants (test_b0_acceptance.B0Acceptance.test_actual_resource_smoke_and_negative_invariants) ... ok
+test_full_manifest_identity_is_required (test_b0_acceptance.B0Acceptance.test_full_manifest_identity_is_required) ... ok
+test_native_gate_rejects_alternate_arguments_and_environment (test_b0_acceptance.B0Acceptance.test_native_gate_rejects_alternate_arguments_and_environment) ... ok
+test_retained_evidence_and_historical_implementation_identity (test_b0_acceptance.B0Acceptance.test_retained_evidence_and_historical_implementation_identity) ... ok
+test_codec_oracle_rejects_tampering (test_lane_a.Contract.test_codec_oracle_rejects_tampering) ... ok
+test_frozen_and_unknown_flags_rejected (test_lane_a.Contract.test_frozen_and_unknown_flags_rejected) ... ok
+test_linux_macos_rss_units (test_lane_a.Contract.test_linux_macos_rss_units) ... ok
+test_measure_gate_precedes_all_work (test_lane_a.Contract.test_measure_gate_precedes_all_work) ... ok
+test_no_environment_override (test_lane_a.Contract.test_no_environment_override) ... ok
+test_source_identity_fails_wrong_revision_and_dirty_bytes (test_lane_a.Contract.test_source_identity_fails_wrong_revision_and_dirty_bytes) ... ok
+test_statistics_definitions (test_lane_a.Contract.test_statistics_definitions) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.589s
+
+OK

@@ -1,0 +1,4 @@
+# Preserve exact diagnostic/tool output, including generated whitespace.
+*.log -whitespace
+*.txt -whitespace
+final/*.txt -whitespace

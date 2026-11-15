@@ -1,0 +1,63 @@
+{
+  "scope": "fresh correctness-only acceptance rechecks; historical receipt not regenerated",
+  "correctness_executables": [
+    {
+      "command": [
+        "/private/tmp/t81-base01-source-build/t81_ternary_arith_test"
+      ],
+      "returncode": 0,
+      "stdout": "ternary_arith ok\n",
+      "stderr": "",
+      "matches_historical_result": true
+    },
+    {
+      "command": [
+        "/private/tmp/t81-base01-source-build/t81_vm_workload_determinism_tiers_test"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "",
+      "matches_historical_result": true
+    },
+    {
+      "command": [
+        "/private/tmp/t81-base01-source-build/t81_canonfs_driver_test"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "",
+      "matches_historical_result": true
+    },
+    {
+      "command": [
+        "/private/tmp/t81-base01-source-build/test_resource_monitoring"
+      ],
+      "returncode": 0,
+      "stdout": "Running test_max_tensors...\ntest_max_tensors passed.\nRunning test_max_tensor_elements...\ntest_max_tensor_elements passed.\nRunning test_max_symbolic_nodes...\ntest_max_symbolic_nodes passed.\n",
+      "stderr": "",
+      "matches_historical_result": true
+    }
+  ],
+  "vm_signature_log_sha256": "c48bf3a260d6fefa700d8ff107c068662ebb7cc6b975b9f7411ef6f8b44ed954",
+  "native": {
+    "command": [
+      "/private/tmp/t81-base01-native-build/base01_lane_a",
+      "--validate-only"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout_sha256": "0b9649ade609175242b599940eba5245e0c48947d09cfbb1d1108d4e0d32345c",
+    "raw_stdout_reference": "../final/native-validation.json",
+    "matches_historical_native_output": true
+  },
+  "interval_symbol_check": {
+    "command": [
+      "nm",
+      "-C",
+      "/private/tmp/t81-base01-native-build/CMakeFiles/base01_lane_a.dir/runner.cpp.o"
+    ],
+    "base01_interval_instantiated": false,
+    "steady_clock_reference": false
+  },
+  "performance_samples": []
+}

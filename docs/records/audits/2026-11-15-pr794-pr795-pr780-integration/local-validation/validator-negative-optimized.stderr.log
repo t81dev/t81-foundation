@@ -1,0 +1,94 @@
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evaluated_implementation_sha must be string
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evaluated_implementation_sha is shorter than minLength
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha is shorter than minLength
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid timestamp_utc format: invalid-time (must be valid ISO-8601 UTC timestamp)
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid specification_version: v1.0 (expected T81-SCG-08-PHASE1-PROP-001-R3-ADDENDUM-06)
+[SCG-08 SCHEMA VALIDATION ERROR] Actual executed trials (1001) exceeded budget ceiling (1000)
+[SCG-08 SCHEMA VALIDATION ERROR] budget_enforced_fail_closed must be boolean true
+[SCG-08 SCHEMA VALIDATION ERROR] tier2_work.evaluated_bands must be a list of 5 evaluated bands
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 weighted total w_ops_add_ternary (999) does not match measured counters formula (80)
+[SCG-08 SCHEMA VALIDATION ERROR] Missing required property: evidence.tier2_work.evaluated_bands[0].counters_add_ternary.op_alu_add_sub
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier1_markov.ternary.f_occ must be number
+[SCG-08 SCHEMA VALIDATION ERROR] all_dimensions_passed must be boolean true
+[SCG-08 SCHEMA VALIDATION ERROR] dimensions_verified must list all 5 dimensions
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_op must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].bit_width must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits is below the schema minimum
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].bit_width must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].bit_width must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].bit_width must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].bit_width must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].bit_width is below the schema minimum
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].bit_width must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits is below the schema minimum
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].add_trits_min must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].add_trits_min must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].add_trits_min must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].add_trits_min must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].add_trits_min is below the schema minimum
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].add_trits_min must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].mul_trits_min must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].mul_trits_min must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].mul_trits_min must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].mul_trits_min must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].mul_trits_min is below the schema minimum
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].mul_trits_min must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_op must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_op must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_op must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_op must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_op is below the schema minimum
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_op must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_add must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_add must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_add must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_add must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_add is below the schema minimum
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_add must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_mul must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_mul must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_mul must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_mul must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_mul is below the schema minimum
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_mul must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_ternary must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_ternary must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_ternary must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_ternary must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_ternary is below the schema minimum
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_ternary must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_ternary must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_ternary must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_ternary must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_ternary must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_ternary is below the schema minimum
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_ternary must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_binary must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_binary must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_binary must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_binary must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_binary is below the schema minimum
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_binary must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_binary must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_binary must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_binary must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_binary must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_binary is below the schema minimum
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_binary must be integer
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha is shorter than minLength
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha is longer than maxLength
+[SCG-08 SCHEMA VALIDATION ERROR] Missing required property: evidence.git_context.evidence_generation_sha
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_generation_sha is shorter than minLength

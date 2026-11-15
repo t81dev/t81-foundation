@@ -1,15 +1,44 @@
+#include "../../tools/cli/core/process_capture.hpp"
 #include "t81/cli/driver.hpp"
+#include "t81/frontend/ir_generator.hpp"
+#include "t81/frontend/parser.hpp"
+#include "t81/frontend/semantic_analyzer.hpp"
+#include "t81/isa/binary_emitter.hpp"
+#include "t81/isa/binary_io.hpp"
 #include "t81/isa/encoding.hpp"
 
 #include <algorithm>
+#include <chrono>
+#include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <random>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
 #include "test_runtime_check.hpp"
+
+namespace {
+struct LocalTestFailure : std::runtime_error {
+  using std::runtime_error::runtime_error;
+};
+
+void check_or_throw(bool condition, const char* expr, const char* file, int line) {
+  if (condition) {
+    return;
+  }
+  std::ostringstream msg;
+  msg << "test check failed: (" << expr << ") at " << file << ":" << line;
+  throw LocalTestFailure(msg.str());
+}
+}  // namespace
+
+#undef T81_TEST_CHECK
+#define T81_TEST_CHECK(expr) check_or_throw(static_cast<bool>(expr), #expr, __FILE__, __LINE__)
 
 using namespace t81;
 namespace fs = std::filesystem;
@@ -76,8 +105,228 @@ static void test_enum_metadata_is_deterministic_and_canonical() {
   T81_TEST_CHECK(bytecode_a == bytecode_b);
 }
 
-int main() {
-  test_enum_metadata_is_deterministic_and_canonical();
-  std::cout << "e2e enum metadata determinism test passed!\n";
-  return 0;
+struct OwnedTempDir {
+  fs::path path;
+  bool owned = false;
+
+  OwnedTempDir() = default;
+  OwnedTempDir(const OwnedTempDir&) = delete;
+  OwnedTempDir& operator=(const OwnedTempDir&) = delete;
+  OwnedTempDir(OwnedTempDir&& other) noexcept : path(std::move(other.path)), owned(other.owned) {
+    other.owned = false;
+    other.path.clear();
+  }
+  OwnedTempDir& operator=(OwnedTempDir&& other) noexcept {
+    if (this != &other) {
+      cleanup();
+      path = std::move(other.path);
+      owned = other.owned;
+      other.owned = false;
+      other.path.clear();
+    }
+    return *this;
+  }
+  ~OwnedTempDir() { cleanup(); }
+
+  void cleanup() noexcept {
+    if (owned && !path.empty()) {
+      std::error_code ec;
+      fs::remove_all(path, ec);
+      owned = false;
+    }
+  }
+};
+
+static bool try_create_exclusive_dir(const fs::path& candidate, OwnedTempDir& out,
+                                     std::error_code& ec) {
+  out.cleanup();
+  out.path.clear();
+  ec.clear();
+  if (fs::create_directory(candidate, ec) && !ec) {
+    out.path = candidate;
+    out.owned = true;
+    return true;
+  }
+  return false;
+}
+
+static OwnedTempDir create_exclusive_temp_dir(const std::string& prefix) {
+  const fs::path base = fs::temp_directory_path();
+  std::random_device rd;
+  std::mt19937_64 rng(
+      (static_cast<std::uint64_t>(rd()) << 32) ^
+      static_cast<std::uint64_t>(std::chrono::steady_clock::now().time_since_epoch().count()));
+
+  for (int attempt = 0; attempt < 128; ++attempt) {
+    std::ostringstream name;
+    name << prefix << "-" << std::hex << std::setw(16) << std::setfill('0') << rng();
+    OwnedTempDir dir;
+    std::error_code ec;
+    if (try_create_exclusive_dir(base / name.str(), dir, ec)) {
+      return dir;
+    }
+    if (ec && ec != std::errc::file_exists) {
+      std::error_code exists_ec;
+      if (!fs::exists(base / name.str(), exists_ec)) {
+        throw std::runtime_error("Failed to create exclusive temp directory: " + ec.message());
+      }
+    }
+  }
+  throw std::runtime_error("Exhausted attempts creating exclusive temp directory");
+}
+
+static void test_exclusive_dir_preserves_preexisting_contents() {
+  OwnedTempDir existing_dir = create_exclusive_temp_dir("t81-enum-preexisting");
+  T81_TEST_CHECK(existing_dir.owned);
+
+  const fs::path sentinel = existing_dir.path / "keep.txt";
+  {
+    std::ofstream out(sentinel, std::ios::binary | std::ios::trunc);
+    T81_TEST_CHECK(static_cast<bool>(out));
+    out << "preserve-me\n";
+  }
+
+  {
+    OwnedTempDir collided;
+    std::error_code ec;
+    const bool created = try_create_exclusive_dir(existing_dir.path, collided, ec);
+    T81_TEST_CHECK(!created);
+    T81_TEST_CHECK(!collided.owned);
+  }
+
+  T81_TEST_CHECK(fs::exists(existing_dir.path));
+  T81_TEST_CHECK(fs::exists(sentinel));
+  T81_TEST_CHECK(read_text(sentinel) == "preserve-me\n");
+}
+
+static void test_fallback_and_explicit_module_path_metadata() {
+  OwnedTempDir temp_root = create_exclusive_temp_dir("t81-enum-module-path");
+  T81_TEST_CHECK(temp_root.owned);
+  const fs::path nested_dir = temp_root.path / "sub";
+  std::error_code ec;
+  T81_TEST_CHECK(fs::create_directory(nested_dir, ec) && !ec);
+
+  const fs::path fallback_src = nested_dir / "fallback.t81";
+  const fs::path fallback_out = temp_root.path / "fallback.tisc";
+  {
+    std::ofstream out(fallback_src, std::ios::binary | std::ios::trunc);
+    T81_TEST_CHECK(static_cast<bool>(out));
+    out << "enum Color { Red; Blue; };\n"
+        << "fn main() -> i32 { return 0; }\n";
+  }
+
+  const fs::path explicit_out = temp_root.path / "explicit.tisc";
+
+  T81_TEST_CHECK(cli::compile(fallback_src, fallback_out, "", "", nullptr, false) == 0);
+  T81_TEST_CHECK(cli::compile(fallback_src, explicit_out, "", "Core.Explicit", nullptr, false) ==
+                 0);
+
+  const tisc::Program fallback_prog = tisc::load_program(fallback_out.string());
+  T81_TEST_CHECK(!fallback_prog.type_aliases.empty());
+  const std::string& fallback_mod = fallback_prog.type_aliases.front().module_path;
+  T81_TEST_CHECK(fallback_mod == fallback_src.generic_string());
+  T81_TEST_CHECK(fallback_mod.find('/') != std::string::npos);
+  T81_TEST_CHECK(fallback_mod.find('\\') == std::string::npos);
+
+  const tisc::Program explicit_prog = tisc::load_program(explicit_out.string());
+  T81_TEST_CHECK(!explicit_prog.type_aliases.empty());
+  T81_TEST_CHECK(explicit_prog.type_aliases.front().module_path == "Core.Explicit");
+
+  // Also verify AST-level explicit module(...) attribute preserves value over fallback
+  // _source_name.
+  const std::string ast_src = "enum Mode { Fast; Safe; };\nfn main() -> i32 { return 0; }\n";
+  frontend::Lexer lexer(ast_src);
+  frontend::Parser parser(lexer, fallback_src.generic_string());
+  auto stmts = parser.parse();
+  T81_TEST_CHECK(!parser.had_error());
+  T81_TEST_CHECK(!stmts.empty());
+  const auto* enum_decl = dynamic_cast<const frontend::EnumDecl*>(stmts.front().get());
+  T81_TEST_CHECK(enum_decl != nullptr);
+  std::vector<frontend::EnumDecl::Variant> moved_variants;
+  for (const auto& v : enum_decl->variants) {
+    moved_variants.push_back(frontend::EnumDecl::Variant{v.name, nullptr});
+  }
+  stmts[0] = std::make_unique<frontend::EnumDecl>(enum_decl->name, std::move(moved_variants),
+                                                  enum_decl->schema_version,
+                                                  std::optional<std::string>("Core.AttrModule"));
+
+  frontend::SemanticAnalyzer analyzer(stmts, fallback_src.generic_string());
+  analyzer.analyze();
+  T81_TEST_CHECK(!analyzer.had_error());
+  frontend::IRGenerator ir_gen;
+  ir_gen.attach_semantic_analyzer(&analyzer);
+  auto ir = ir_gen.generate(stmts);
+  tisc::BinaryEmitter emitter;
+  tisc::Program ast_prog = emitter.emit(ir);
+  T81_TEST_CHECK(!ast_prog.type_aliases.empty());
+  T81_TEST_CHECK(ast_prog.type_aliases.front().module_path == "Core.AttrModule");
+}
+
+static void run_injected_owned_dir_failure_child(const fs::path& record_file,
+                                                 const fs::path& preexisting_dir) {
+  OwnedTempDir owned = create_exclusive_temp_dir("t81-enum-inject-owned");
+  T81_TEST_CHECK(owned.owned);
+  {
+    std::ofstream out(record_file, std::ios::binary | std::ios::trunc);
+    T81_TEST_CHECK(static_cast<bool>(out));
+    out << owned.path.string();
+  }
+
+  OwnedTempDir collided;
+  std::error_code ec;
+  T81_TEST_CHECK(!try_create_exclusive_dir(preexisting_dir, collided, ec));
+  T81_TEST_CHECK(!collided.owned);
+
+  T81_TEST_CHECK(false && "injected failure inside owned-dir scope");
+}
+
+static void test_injected_failure_unwinds_owned_dir_and_preserves_preexisting(
+    const char* self_exe) {
+  OwnedTempDir outer = create_exclusive_temp_dir("t81-enum-inject-outer");
+  T81_TEST_CHECK(outer.owned);
+
+  const fs::path preexisting_dir = outer.path / "preexisting";
+  std::error_code ec;
+  T81_TEST_CHECK(fs::create_directory(preexisting_dir, ec) && !ec);
+  const fs::path sentinel = preexisting_dir / "keep.txt";
+  {
+    std::ofstream out(sentinel, std::ios::binary | std::ios::trunc);
+    T81_TEST_CHECK(static_cast<bool>(out));
+    out << "untouched-on-failure\n";
+  }
+
+  const fs::path record_file = outer.path / "owned_dir_path.txt";
+  const cli::ProcessCaptureResult result = cli::run_process_capture(
+      {self_exe, "--inject-owned-dir-failure", record_file.string(), preexisting_dir.string()});
+
+  T81_TEST_CHECK(result.error_message.empty());
+  T81_TEST_CHECK(result.exit_code != 0);
+  T81_TEST_CHECK(result.stderr_text.find("test check failed:") != std::string::npos);
+  const std::string owned_dir_str = read_text(record_file);
+  T81_TEST_CHECK(!owned_dir_str.empty());
+  T81_TEST_CHECK(!fs::exists(fs::path(owned_dir_str)));
+  T81_TEST_CHECK(fs::exists(preexisting_dir));
+  T81_TEST_CHECK(fs::exists(sentinel));
+  T81_TEST_CHECK(read_text(sentinel) == "untouched-on-failure\n");
+}
+
+int main(int argc, char** argv) {
+  try {
+    if (argc == 4 && std::string(argv[1]) == "--inject-owned-dir-failure") {
+      run_injected_owned_dir_failure_child(fs::path(argv[2]), fs::path(argv[3]));
+      return 0;
+    }
+    test_enum_metadata_is_deterministic_and_canonical();
+    test_exclusive_dir_preserves_preexisting_contents();
+    test_fallback_and_explicit_module_path_metadata();
+    test_injected_failure_unwinds_owned_dir_and_preserves_preexisting(argv[0]);
+    std::cout << "e2e enum metadata determinism test passed!\n";
+    return 0;
+  } catch (const LocalTestFailure& e) {
+    std::cerr << e.what() << "\n";
+    return 1;
+  } catch (const std::exception& e) {
+    std::cerr << "unexpected test exception: " << e.what() << "\n";
+    return 1;
+  }
 }

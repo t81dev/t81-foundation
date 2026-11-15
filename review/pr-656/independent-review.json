@@ -1,0 +1,50 @@
+{
+  "id": "pr-656-implementation-review",
+  "status": "proposed",
+  "hypothesis_id": "H08",
+  "attribution": {
+    "name": "Codex",
+    "kind": "agent",
+    "model": null,
+    "role": "implementation reviewer and corrective patch author"
+  },
+  "repository_revision": "7daafeb55ae241e21cfbe4bdb4a74bb911595fa7",
+  "evidence": [
+    {
+      "source_ref": "review/pr-656/original-results.json",
+      "relationship": "contradictory",
+      "scope": "Original Python validation bypasses and schema discrepancies"
+    },
+    {
+      "source_ref": "review/pr-656/corrected-results.json",
+      "relationship": "supporting",
+      "scope": "Corrected implementation agrees with the reference schema on the retained corpus"
+    }
+  ],
+  "uncertainty": "Implementation review supporting H08 evidence discipline; no test of H08 comparative scientific benefit. AI-assisted, one local host, no independent human scientific validation or hosted CI.",
+  "human_authorization": {
+    "status": "authorized",
+    "human": null,
+    "record": "Current user request: review PR 656, execute validator and adversarial checks, make only necessary corrective changes on a separate branch; do not merge, modify historical evidence or activate governance."
+  },
+  "schema": "t81.research-commons.independent-review.v1",
+  "target": "PR 656 at 7daafeb55ae241e21cfbe4bdb4a74bb911595fa7",
+  "independence": {
+    "relationship_to_author": "No authorship of the reviewed head in this session; reviewer authored corrections and harness.",
+    "prior_context": "Repository AGENTS instructions and PR metadata/source; no prior authoring context supplied.",
+    "independent_execution": true,
+    "limitations": "Implementation review supporting H08 evidence discipline; no test of H08 comparative scientific benefit. AI-assisted, one local host, no independent human scientific validation or hosted CI."
+  },
+  "adversarial_checks": [
+    "131 fixtures in normal and optimized Python; every fixture, command, cwd, exit and stream retained.",
+    "Draft 2020-12 with explicit date FormatChecker; 16 path-resolution checks per version.",
+    "Read-only live GitHub head and PR-list checks; source-reported scientific claims inspected without experiment execution."
+  ],
+  "findings": [
+    "Optimization removes assert checks.",
+    "False constants accept numeric zero without optimization.",
+    "Date, purpose, integer and regex semantics disagree.",
+    "Unreferenced protocol delegation string is not authorization evidence."
+  ],
+  "verdict": "changes_requested"
+}

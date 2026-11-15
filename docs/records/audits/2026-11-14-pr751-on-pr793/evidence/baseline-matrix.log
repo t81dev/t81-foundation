@@ -1,0 +1,142 @@
+fake/normal: exit 1, expected 0
+fake/normal: missing expected JSON output
+fake/json-before: exit 1, expected 0
+fake/json-before: missing expected JSON output
+fake/json-after: exit 1, expected 0
+fake/json-after: missing expected JSON output
+fake/absolute: exit 1, expected 0
+fake/absolute: missing expected JSON output
+fake/symlink-explicitly-allowed: exit 1, expected 0
+fake/symlink-explicitly-allowed: missing expected JSON output
+fake/literal:space name.apl: exit 1, expected 0
+fake/literal:space name.apl: missing expected JSON output
+fake/literal:single'quote.apl: exit 1, expected 0
+fake/literal:single'quote.apl: missing expected JSON output
+fake/literal:double"quote.apl: exit 1, expected 0
+fake/literal:double"quote.apl: missing expected JSON output
+fake/literal:raw;|&<>*?[]{}!.apl: exit 1, expected 0
+fake/literal:raw;|&<>*?[]{}!.apl: missing expected JSON output
+fake/literal:literal$(printf AUDIT_CANARY).apl: exit 1, expected 0
+fake/literal:literal$(printf AUDIT_CANARY).apl: missing expected JSON output
+fake/literal:dollar$(printf CANARY > canary-dollar).apl: exit 1, expected 0
+fake/literal:dollar$(printf CANARY > canary-dollar).apl: missing expected JSON output
+fake/literal:backtick`printf CANARY > canary-backtick`.apl: exit 1, expected 0
+fake/literal:backtick`printf CANARY > canary-backtick`.apl: missing expected JSON output
+fake/literal:$HOME (data).apl: exit 1, expected 0
+fake/literal:$HOME (data).apl: missing expected JSON output
+fake/literal:quote";printf CANARY > canary-quote;printf ".apl: exit 1, expected 0
+fake/literal:quote";printf CANARY > canary-quote;printf ".apl: missing expected JSON output
+fake/literal:--help.apl: exit 1, expected 0
+fake/literal:--help.apl: missing expected JSON output
+fake/missing: exit 1, expected 2
+fake/empty-path: exit 1, expected 2
+fake/empty-after-separator: exit 1, expected 2
+fake/strict-unsupported: exit 1, expected 2
+fake/policy-unsupported: exit 1, expected 2
+fake/output-unsupported: exit 1, expected 2
+fake/store-unsupported: exit 0, expected 2
+fake/store-unsupported: unexpected persistent filesystem change
+fake/store-unsupported: backend unexpectedly reached on rejected arguments
+fake/boolean-value: exit 1, expected 2
+fake/boolean-assignment: exit 1, expected 2
+fake/duplicate-flag: exit 1, expected 2
+fake/extra-positional: exit 0, expected 2
+fake/extra-positional: unexpected persistent filesystem change
+fake/extra-positional: backend unexpectedly reached on rejected arguments
+fake/unsupported-operation: exit 0, expected 2
+fake/unsupported-operation: unexpected persistent filesystem change
+fake/unsupported-operation: backend unexpectedly reached on rejected arguments
+fake/legacy-dispatch-injection: exit 0, expected 2
+fake/legacy-dispatch-injection: unexpected persistent filesystem change
+fake/legacy-dispatch-injection: backend unexpectedly reached on rejected arguments
+fake/legacy-unquoted-operation: exit 0, expected 2
+fake/legacy-unquoted-operation: unexpected persistent filesystem change
+fake/legacy-unquoted-operation: backend unexpectedly reached on rejected arguments
+fake/legacy-quote-breakout: exit 0, expected 2
+fake/legacy-quote-breakout: unexpected persistent filesystem change
+fake/legacy-quote-breakout: backend unexpectedly reached on rejected arguments
+fake/no-separator-leading-dash: exit 1, expected 2
+fake/separator-missing: exit 1, expected 2
+fake/separator-extra: exit 1, expected 2
+fake/wrong-suffix: exit 1, expected 2
+fake/missing-path: exit 1, expected 2
+fake/directory: exit 1, expected 2
+fake/broken-symlink: exit 1, expected 2
+fake/fifo: exit 1, expected 2
+fake/unreadable-file: exit 1, expected 2
+fake/exit-propagation: exit 1, expected 23
+fake/exit-propagation: missing expected JSON output
+real/normal: exit 1, expected 0
+real/normal: missing expected JSON output
+real/json-before: exit 1, expected 0
+real/json-before: missing expected JSON output
+real/json-after: exit 1, expected 0
+real/json-after: missing expected JSON output
+real/absolute: exit 1, expected 0
+real/absolute: missing expected JSON output
+real/symlink-explicitly-allowed: exit 1, expected 0
+real/symlink-explicitly-allowed: missing expected JSON output
+real/literal:space name.apl: exit 1, expected 0
+real/literal:space name.apl: missing expected JSON output
+real/literal:single'quote.apl: exit 1, expected 0
+real/literal:single'quote.apl: missing expected JSON output
+real/literal:double"quote.apl: exit 1, expected 0
+real/literal:double"quote.apl: missing expected JSON output
+real/literal:raw;|&<>*?[]{}!.apl: exit 1, expected 0
+real/literal:raw;|&<>*?[]{}!.apl: missing expected JSON output
+real/literal:literal$(printf AUDIT_CANARY).apl: exit 1, expected 0
+real/literal:literal$(printf AUDIT_CANARY).apl: missing expected JSON output
+real/literal:dollar$(printf CANARY > canary-dollar).apl: exit 1, expected 0
+real/literal:dollar$(printf CANARY > canary-dollar).apl: missing expected JSON output
+real/literal:backtick`printf CANARY > canary-backtick`.apl: exit 1, expected 0
+real/literal:backtick`printf CANARY > canary-backtick`.apl: missing expected JSON output
+real/literal:$HOME (data).apl: exit 1, expected 0
+real/literal:$HOME (data).apl: missing expected JSON output
+real/literal:quote";printf CANARY > canary-quote;printf ".apl: exit 1, expected 0
+real/literal:quote";printf CANARY > canary-quote;printf ".apl: missing expected JSON output
+real/literal:--help.apl: exit 1, expected 0
+real/literal:--help.apl: missing expected JSON output
+real/missing: exit 1, expected 2
+real/empty-path: exit 1, expected 2
+real/empty-after-separator: exit 1, expected 2
+real/strict-unsupported: exit 1, expected 2
+real/policy-unsupported: exit 1, expected 2
+real/output-unsupported: exit 1, expected 2
+real/store-unsupported: exit 1, expected 2
+real/store-unsupported: unexpected persistent filesystem change
+real/store-unsupported: backend unexpectedly reached on rejected arguments
+real/boolean-value: exit 1, expected 2
+real/boolean-assignment: exit 1, expected 2
+real/duplicate-flag: exit 1, expected 2
+real/extra-positional: exit 1, expected 2
+real/extra-positional: unexpected persistent filesystem change
+real/extra-positional: backend unexpectedly reached on rejected arguments
+real/unsupported-operation: exit 1, expected 2
+real/unsupported-operation: unexpected persistent filesystem change
+real/unsupported-operation: backend unexpectedly reached on rejected arguments
+real/legacy-dispatch-injection: exit 1, expected 2
+real/legacy-dispatch-injection: unexpected persistent filesystem change
+real/legacy-dispatch-injection: backend unexpectedly reached on rejected arguments
+real/legacy-unquoted-operation: exit 1, expected 2
+real/legacy-unquoted-operation: unexpected persistent filesystem change
+real/legacy-unquoted-operation: backend unexpectedly reached on rejected arguments
+real/legacy-quote-breakout: exit 1, expected 2
+real/legacy-quote-breakout: unexpected persistent filesystem change
+real/no-separator-leading-dash: exit 1, expected 2
+real/separator-missing: exit 1, expected 2
+real/separator-extra: exit 1, expected 2
+real/wrong-suffix: exit 1, expected 2
+real/missing-path: exit 1, expected 2
+real/directory: exit 1, expected 2
+real/broken-symlink: exit 1, expected 2
+real/fifo: exit 1, expected 2
+real/unreadable-file: exit 1, expected 2
+real/compiled-policy: exit 1, expected 0
+real/compiled-policy: missing expected JSON output
+real/parse-failure:bad.apl: missing expected JSON output
+real/parse-failure:empty.apl: missing expected JSON output
+real/parse-failure:invalid.axionb: missing expected JSON output
+real/deny-policy-is-data: exit 1, expected 0
+real/deny-policy-is-data: missing expected JSON output
+absent/missing-cli: exit 126, expected 127
+FAIL: 86 process receipts; 141 failed checks; real CLI included

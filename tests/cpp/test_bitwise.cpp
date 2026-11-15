@@ -3,7 +3,7 @@
 #include "t81/vm/traps.hpp"
 #include "t81/vm/vm.hpp"
 
-#include <cassert>
+#include <cstdlib>
 #include <iostream>
 #include <vector>
 
@@ -20,13 +20,19 @@ t81::vm::Trap run_until_trap(const std::vector<t81::tisc::Insn>& insns) {
   return t81::vm::Trap::None;
 }
 
+void require(bool condition, const char* msg = "Assertion failed") {
+  if (!condition) {
+    std::cerr << "FATAL: " << msg << std::endl;
+    std::abort();
+  }
+}
+
 void run_expect_success(const std::vector<t81::tisc::Insn>& insns) {
   t81::vm::Trap t = run_until_trap(insns);
   if (t != t81::vm::Trap::None) {
     std::cerr << "Trap: " << (int)t << "\n";
   }
-  assert(t == t81::vm::Trap::None);
-  (void)t;
+  require(t == t81::vm::Trap::None, "expected execution to succeed without trap");
 }
 }  // namespace
 

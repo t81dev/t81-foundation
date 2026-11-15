@@ -1,0 +1,15 @@
+$ ['/opt/homebrew/opt/python@3.14/bin/python3.14', '-B', 'experiments/scg08_arithmetic_work/test_result_rejection.py', '/private/tmp/t81-pr779-portable-release']
+numerical-equality: rejected with exit 1 and required diagnostic
+overflow-classification: rejected with exit 1 and required diagnostic
+negative-product-bound: rejected with exit 1 and required diagnostic
+canonical-trits: rejected with exit 1 and required diagnostic
+stored-tryte-validation: rejected with exit 1 and required diagnostic
+stored-tryte-decode: rejected with exit 1 and required diagnostic
+stored-tryte-add: rejected with exit 1 and required diagnostic
+stored-tryte-mul: rejected with exit 1 and required diagnostic
+sign-handling: rejected with exit 1 and required diagnostic
+binary-truncation: rejected with exit 1 and required diagnostic
+ternary-truncation: rejected with exit 1 and required diagnostic
+budget: rejected with exit 1 and required diagnostic
+
+exit=0

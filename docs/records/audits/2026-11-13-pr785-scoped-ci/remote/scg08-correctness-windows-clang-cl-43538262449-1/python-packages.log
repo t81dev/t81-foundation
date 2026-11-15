@@ -1,0 +1,14 @@
+argcomplete==3.7.2
+attrs==26.1.0
+click==8.5.0
+colorama==0.4.6
+filelock==4.2.7
+jsonschema==4.26.0
+jsonschema-specifications==2025.9.1
+packaging==26.3
+pipx==1.18.12
+platformdirs==4.14.3
+referencing==0.37.0
+rpds-py==2026.9.1
+typing_extensions==4.16.0
+userpath==1.9.2

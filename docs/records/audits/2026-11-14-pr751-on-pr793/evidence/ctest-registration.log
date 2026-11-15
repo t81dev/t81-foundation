@@ -1,0 +1,142 @@
+{
+  "backtraceGraph" : 
+  {
+    "commands" : 
+    [
+      "add_test"
+    ],
+    "files" : 
+    [
+      "/Users/t81dev/Code/t81-foundation/.cache/pr751-on-pr793-wrapper/CMakeLists.txt"
+    ],
+    "nodes" : 
+    [
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 0
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1763,
+        "parent" : 2
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1772,
+        "parent" : 4
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1777,
+        "parent" : 6
+      }
+    ]
+  },
+  "kind" : "ctestInfo",
+  "tests" : 
+  [
+    {
+      "backtrace" : 1,
+      "command" : 
+      [
+        "/private/tmp/t81-pr751-on-pr793-release/t81_process_capture_test"
+      ],
+      "name" : "t81_process_capture_test",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 60.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr751-on-pr793-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 3,
+      "command" : 
+      [
+        "/opt/homebrew/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr751-on-pr793-wrapper/tests/python/test_cli_execution_policy.py",
+        "--t81-bin",
+        "/private/tmp/t81-pr751-on-pr793-release/t81"
+      ],
+      "name" : "t81_cli_execution_policy_test",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 180.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr751-on-pr793-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 5,
+      "command" : 
+      [
+        "/opt/homebrew/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr751-on-pr793-wrapper/tests/python/test_skill_policy_boundary.py",
+        "--bash",
+        "/bin/bash",
+        "--t81-bin",
+        "/private/tmp/t81-pr751-on-pr793-release/t81"
+      ],
+      "name" : "t81_skill_policy_boundary_test",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 90.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr751-on-pr793-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 7,
+      "command" : 
+      [
+        "/private/tmp/t81-pr751-on-pr793-release/cli_repro_hash_test",
+        "/private/tmp/t81-pr751-on-pr793-release/t81"
+      ],
+      "name" : "t81_cli_repro_hash_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/Users/t81dev/Code/t81-foundation/.cache/pr751-on-pr793-wrapper"
+        }
+      ]
+    }
+  ],
+  "version" : 
+  {
+    "major" : 1,
+    "minor" : 0
+  }
+}
