@@ -2,9 +2,9 @@
 #include <cstddef>
 #include <iostream>
 #include <string_view>
-#include "test_runtime_check.hpp"
 #include "t81/isa/encoding.hpp"
 #include "t81/vm/vm.hpp"
+#include "test_runtime_check.hpp"
 
 // Characterize compatibility without silently choosing between conflicting frozen
 // documents. --require-normative fails on the four unambiguous prose divergences.
@@ -35,8 +35,7 @@ tisc::Program round_trip(const tisc::Program& p) {
 void memory_cases() {
   for (auto op : {Opcode::Load, Opcode::Store}) {
     tisc::Program p;
-    p.insns = {{op, op == Opcode::Load ? 2 : 5, op == Opcode::Load ? 5 : 1},
-               {Opcode::Halt}};
+    p.insns = {{op, op == Opcode::Load ? 2 : 5, op == Opcode::Load ? 5 : 1}, {Opcode::Halt}};
     auto machine = vm::make_interpreter_vm();
     machine->load_program(round_trip(p));
     machine->set_register(5, 6);
@@ -63,8 +62,8 @@ void branch_cases() {
   for (auto op : {Opcode::JumpIfZero, Opcode::JumpIfNotZero}) {
     for (bool same_predicate : {false, true}) {
       tisc::Program p;
-      p.insns = {{Opcode::Cmp, 7, 8}, {op, 5, 6}, {Opcode::Halt}, {Opcode::Halt},
-                 {Opcode::Halt}, {Opcode::Halt}, {Opcode::Halt}};
+      p.insns = {{Opcode::Cmp, 7, 8}, {op, 5, 6},     {Opcode::Halt}, {Opcode::Halt},
+                 {Opcode::Halt},      {Opcode::Halt}, {Opcode::Halt}};
       auto machine = vm::make_interpreter_vm();
       machine->load_program(round_trip(p));
       machine->set_register(5, 6);  // §5.7 target R[A]; hosted target A
@@ -78,32 +77,32 @@ void branch_cases() {
       auto actual = machine->state().contexts[0].pc;
       T81_TEST_CHECK(actual == (same_predicate ? 5u : 2u));
       T81_TEST_CHECK(actual != 6);  // prose condition is true; target R[5]=6
-      std::cout << (zero ? "JumpIfZero" : "JumpIfNotZero")
-                << " same_predicate=" << same_predicate << " actual_pc=" << actual
-                << " normative_pc=6\n";
+      std::cout << (zero ? "JumpIfZero" : "JumpIfNotZero") << " same_predicate=" << same_predicate
+                << " actual_pc=" << actual << " normative_pc=6\n";
       ++divergences;
     }
   }
 }
 
 void txor_cases() {
-  constexpr int difference[3][3] = {{0,-1,1}, {1,0,-1}, {-1,1,0}};
-  constexpr int sum_candidate[3][3] = {{1,-1,0}, {-1,0,1}, {0,1,-1}};
+  constexpr int difference[3][3] = {{0, -1, 1}, {1, 0, -1}, {-1, 1, 0}};
+  constexpr int sum_candidate[3][3] = {{1, -1, 0}, {-1, 0, 1}, {0, 1, -1}};
   int sum_mismatches = 0;
-  for (int lhs = -1; lhs <= 1; ++lhs) for (int rhs = -1; rhs <= 1; ++rhs) {
-    tisc::Program p;
-    p.insns = {{Opcode::TXor, 3, 1, 2}, {Opcode::Halt}};
-    auto machine = vm::make_interpreter_vm();
-    machine->load_program(round_trip(p));
-    machine->set_register(1, lhs);
-    machine->set_register(2, rhs);
-    T81_TEST_CHECK(machine->step().has_value());
-    auto actual = machine->state().contexts[0].registers[3];
-    T81_TEST_CHECK(actual == difference[lhs+1][rhs+1]);
-    sum_mismatches += actual != sum_candidate[lhs+1][rhs+1];
-    std::cout << "TXor lhs=" << lhs << " rhs=" << rhs << " actual=" << actual
-              << " sum_candidate=" << sum_candidate[lhs+1][rhs+1] << '\n';
-  }
+  for (int lhs = -1; lhs <= 1; ++lhs)
+    for (int rhs = -1; rhs <= 1; ++rhs) {
+      tisc::Program p;
+      p.insns = {{Opcode::TXor, 3, 1, 2}, {Opcode::Halt}};
+      auto machine = vm::make_interpreter_vm();
+      machine->load_program(round_trip(p));
+      machine->set_register(1, lhs);
+      machine->set_register(2, rhs);
+      T81_TEST_CHECK(machine->step().has_value());
+      auto actual = machine->state().contexts[0].registers[3];
+      T81_TEST_CHECK(actual == difference[lhs + 1][rhs + 1]);
+      sum_mismatches += actual != sum_candidate[lhs + 1][rhs + 1];
+      std::cout << "TXor lhs=" << lhs << " rhs=" << rhs << " actual=" << actual
+                << " sum_candidate=" << sum_candidate[lhs + 1][rhs + 1] << '\n';
+    }
   T81_TEST_CHECK(sum_mismatches == 6);
 }
 }  // namespace
