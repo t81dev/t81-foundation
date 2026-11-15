@@ -1,0 +1,122 @@
+{
+  "schema": "t81.mco-preregistered-corpus.v1",
+  "parent_commit": "cd7d4620cbaff265f1ddaf68367437e371cd084d",
+  "scope": "research fixtures, schema/data review and oracle design; zero candidate or mutation execution",
+  "cases": 60,
+  "guard_assignments": 729,
+  "event_plans": 24,
+  "files": {
+    ".gitattributes": {
+      "bytes": 14,
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9"
+    },
+    "ANALYZABILITY.md": {
+      "bytes": 5126,
+      "sha256": "f3b1c7e59feba7c567a3d40d45d947440f846ba81d80adca996d55112624104f"
+    },
+    "AUDIT.md": {
+      "bytes": 9017,
+      "sha256": "386fc43347a9ec3ebe10fa141b0491f60af09a254280425f119763ea87f09973"
+    },
+    "CORPUS.md": {
+      "bytes": 8166,
+      "sha256": "9a056c5e3c1902e06ee1b25cba2326ce9721b1e2e7a15c8ab8cdb545b4166240"
+    },
+    "DECISION.md": {
+      "bytes": 7970,
+      "sha256": "b0f92a984576df860a4b673ff657388fb62a311b34f226b4b903e00729d17185"
+    },
+    "EXPERIMENT_PROPOSAL.md": {
+      "bytes": 10158,
+      "sha256": "ff4060664a326957c9e1b48f0738b6c667ca5590d077bd6363926c32e293ec4b"
+    },
+    "FORMAL_MODEL.md": {
+      "bytes": 17673,
+      "sha256": "673368dc37cfb5c30689194d3e5cb2d8f1615e79e5110e895e34776625296851"
+    },
+    "HANDOFF.md": {
+      "bytes": 8027,
+      "sha256": "dc1d3841338cecda64ec1418772c111cbf02d122e941f337f40b1ee1d5987fa4"
+    },
+    "MUTATION_EXPECTATIONS.md": {
+      "bytes": 3169,
+      "sha256": "276d4ba24fa43572320b1cdc50ee568b03f14086915e11e5cb2566375e7c7373"
+    },
+    "ORACLE_SPEC.md": {
+      "bytes": 11995,
+      "sha256": "c51f53387b786ac7cdf5c04348a921b61a0bec7cab1fec022071a376daf7369b"
+    },
+    "PRIOR_ART.md": {
+      "bytes": 7712,
+      "sha256": "64f3a6e8b9e168a533611cc33263b3d974ab057334f9577c0284467e01c1beb9"
+    },
+    "RESEARCH_QUESTION.md": {
+      "bytes": 10475,
+      "sha256": "1e9a3748a3cdaa5f1b489b86738b46826db84891e9de29b8f1958b33a2961f04"
+    },
+    "THREAT_MODEL.md": {
+      "bytes": 7745,
+      "sha256": "0c8e12f99b94d9ec729704e89a4964d3c99a3be18015237b10207a7bd702405a"
+    },
+    "corpus/CASE_INDEX.md": {
+      "bytes": 5521,
+      "sha256": "5453b21a5ff418231e0d77fa20606e684783247758916c82dca01fe503e65ae9"
+    },
+    "corpus/cases.jsonl": {
+      "bytes": 310617,
+      "sha256": "d36e1c61d2e48bf78583ee5a0e5343aaca4d8efd1f01f3cf8b1342d7abcae80e"
+    },
+    "corpus/event-permutations.jsonl": {
+      "bytes": 8769,
+      "sha256": "1e9a1ea249d371189f72d8b833b84825515dafd11167296d328654b84c0fabb1"
+    },
+    "corpus/guard-assignments.jsonl": {
+      "bytes": 51002,
+      "sha256": "23dc47db86656b9e834ae0cc1630915bc73245cf9295e6b1a3d076cf56451df3"
+    },
+    "corpus/objects.json": {
+      "bytes": 5511,
+      "sha256": "862c207e6147984add0f512924a69fddab28dcb186efb5399a28bc70b3bb1af6"
+    },
+    "review/check_packet.py": {
+      "bytes": 12603,
+      "sha256": "78a5543886859dff44b928e5c6c73e6349a8721df0269ce6dd7a1ca4418d8f8a"
+    },
+    "review/make_corpus.py": {
+      "bytes": 24142,
+      "sha256": "d3bf1432c73924b38f0a65516690e773835c7e42460cba18ca3a76fc3af5878e"
+    },
+    "review/request-schema-probes.json": {
+      "bytes": 149,
+      "sha256": "44891dfdffc87af76e823b0d6837db13da7419f78a3346c385095f51e43bf58f"
+    },
+    "review/requirements.txt": {
+      "bytes": 107,
+      "sha256": "5bf6d53930534ae6cbfe3242813b04d60c69599efe0b8bd7b8168ed6330615f0"
+    },
+    "review/response-schema-probes.json": {
+      "bytes": 149,
+      "sha256": "44891dfdffc87af76e823b0d6837db13da7419f78a3346c385095f51e43bf58f"
+    },
+    "review/validation.json": {
+      "bytes": 3011,
+      "sha256": "e1f3fcb662b1b9a1c652c541a85a00446626131dba33b001fbfccb0ec16526f9"
+    },
+    "schemas/request.cd7d4620.json": {
+      "bytes": 1158,
+      "sha256": "77977876730dce128c6b4f7c6b6f664025f3b47d7a959fcf8cb52ec1659b3ff5"
+    },
+    "schemas/request.json": {
+      "bytes": 1250,
+      "sha256": "e7cf10f29b57a7760d04d8eb5474c431cd39f8fb6be6851c6a52893e020665fc"
+    },
+    "schemas/response.cd7d4620.json": {
+      "bytes": 999,
+      "sha256": "1f1e5a9d556458c465b7e25b75b583dbf8d7e9c82ba13156f00cbe391b4d05af"
+    },
+    "schemas/response.json": {
+      "bytes": 1091,
+      "sha256": "ff402c113b5586537b4f77c471df8bc173250a3e7a6ff8a7c4bb854f70d28719"
+    }
+  }
+}
