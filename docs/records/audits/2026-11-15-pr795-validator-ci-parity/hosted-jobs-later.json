@@ -1,0 +1,1475 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Action completed."
+    }
+  ],
+  "structuredContent": {
+    "jobs": [
+      {
+        "id": 132811940416,
+        "name": "lint / spec & docs",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Set up Python 3.12",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Start log capture",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Install Python tools",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "Check Markdown links (lychee)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "Check DeepWiki links with bounded retries",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7
+          },
+          {
+            "name": "Verify repository structure",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8
+          },
+          {
+            "name": "Verify ARCHITECTURE.md target table matches CMake",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 9
+          },
+          {
+            "name": "Verify TISC v1.1.0 Freeze Integrity",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 10
+          },
+          {
+            "name": "Enforce AI experiment sandbox boundary (RFC-00A0)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 11
+          },
+          {
+            "name": "Enforce architecture coherence invariants",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 12
+          },
+          {
+            "name": "Enforce workflow action pinning policy",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 13
+          },
+          {
+            "name": "Enforce workflow permissions policy",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 14
+          },
+          {
+            "name": "Run governance policy structure/license/artifact checks",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15
+          },
+          {
+            "name": "Run governance audit wrapper",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16
+          },
+          {
+            "name": "Job Failure Summary",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 17
+          },
+          {
+            "name": "Post Set up Python 3.12",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 33
+          },
+          {
+            "name": "Post Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 34
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 35
+          }
+        ]
+      },
+      {
+        "id": 132811940613,
+        "name": "governance-metrics",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Enforce determinism registry claims",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Run governance metrics",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Upload report",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 10
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 11
+          }
+        ]
+      },
+      {
+        "id": 132811941588,
+        "name": "experimental architectures / group anchor",
+        "status": "completed",
+        "conclusion": "skipped",
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": null
+      },
+      {
+        "id": 132811941986,
+        "name": "experimental / ascend cann sanity",
+        "status": "completed",
+        "conclusion": "skipped",
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": null
+      },
+      {
+        "id": 132811942096,
+        "name": "experimental / oneapi sycl sanity",
+        "status": "completed",
+        "conclusion": "skipped",
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": null
+      },
+      {
+        "id": 132812537920,
+        "name": "gate / determinism repeatability / linux-x86_64 / clang",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Install Dependencies",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Configure CMake",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Build repeatability target",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "Verify same-machine repeatability",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "Upload repeatability artifacts",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7
+          },
+          {
+            "name": "Post Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 14
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15
+          }
+        ]
+      },
+      {
+        "id": 132812537932,
+        "name": "warn-strict / clang / linux",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Install clang-18 and dependencies",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Configure (warn-strict preset)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Build (warnings-as-errors)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "Upload warning log on failure",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 6
+          },
+          {
+            "name": "Post Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 12
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 13
+          }
+        ]
+      },
+      {
+        "id": 132812537938,
+        "name": "architecture / invariants (informational)",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Run dependency firewall check",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Run legacy path check",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Run restructure verification (optional invariant)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "Post Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 10
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 11
+          }
+        ]
+      },
+      {
+        "id": 132812537973,
+        "name": "benchmark / vm workload gate",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Install Dependencies",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Configure CMake (bench-enabled)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Build benchmark runner",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "Run VM workload benchmark slice",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "Enforce VM workload benchmark guardrail",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7
+          },
+          {
+            "name": "Post Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 14
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15
+          }
+        ]
+      },
+      {
+        "id": 132812537974,
+        "name": "product / dcp integrity (informational)",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Verify DCP and governance documents exist",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Verify DCP/registry surface alignment",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Verify public headers are under include/t81 only",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "Post Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 10
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 11
+          }
+        ]
+      },
+      {
+        "id": 132812537982,
+        "name": "gate / determinism slice / linux-x86_64 / clang",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Install Dependencies",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Configure CMake",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Build",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 5
+          },
+          {
+            "name": "Run determinism slice",
+            "status": "pending",
+            "conclusion": null,
+            "number": 6
+          },
+          {
+            "name": "Post Checkout repository",
+            "status": "pending",
+            "conclusion": null,
+            "number": 12
+          }
+        ]
+      },
+      {
+        "id": 132812537994,
+        "name": "cxx-std / linux-x86_64 / clang / OFF",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Install Dependencies (Ubuntu)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Configure CMake",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Build",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 5
+          },
+          {
+            "name": "Provision model fixtures",
+            "status": "pending",
+            "conclusion": null,
+            "number": 6
+          },
+          {
+            "name": "Test",
+            "status": "pending",
+            "conclusion": null,
+            "number": 7
+          },
+          {
+            "name": "Post Checkout repository",
+            "status": "pending",
+            "conclusion": null,
+            "number": 14
+          }
+        ]
+      },
+      {
+        "id": 132812537995,
+        "name": "fuzzing / frontend",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Install Dependencies",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Configure and Build",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Run Fuzzer",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "Post Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 10
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 11
+          }
+        ]
+      },
+      {
+        "id": 132812538006,
+        "name": "build / sanitizers",
+        "status": "queued",
+        "conclusion": null,
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": null
+      },
+      {
+        "id": 132812538011,
+        "name": "gate / tritwise-determinism / no-simd",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Install Dependencies",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Configure CMake",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Build",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "Run Equivalence Tests",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "Run Benchmark Smoke Test",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 7
+          },
+          {
+            "name": "Post Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 14
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15
+          }
+        ]
+      },
+      {
+        "id": 132812538022,
+        "name": "cxx-std / linux-x86_64 / clang / ON",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Install Dependencies (Ubuntu)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Configure CMake",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Build",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 5
+          },
+          {
+            "name": "Provision model fixtures",
+            "status": "pending",
+            "conclusion": null,
+            "number": 6
+          },
+          {
+            "name": "Test",
+            "status": "pending",
+            "conclusion": null,
+            "number": 7
+          },
+          {
+            "name": "Post Checkout repository",
+            "status": "pending",
+            "conclusion": null,
+            "number": 14
+          }
+        ]
+      },
+      {
+        "id": 132812538033,
+        "name": "static analysis / clang-tidy",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Install Dependencies",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Configure CMake",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Run clang-tidy",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 5
+          },
+          {
+            "name": "Post Checkout repository",
+            "status": "pending",
+            "conclusion": null,
+            "number": 10
+          }
+        ]
+      },
+      {
+        "id": 132812538040,
+        "name": "formal verification / ternary logic",
+        "status": "queued",
+        "conclusion": null,
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": null
+      },
+      {
+        "id": 132812538044,
+        "name": "benchmark / linux-x86_64",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Install Dependencies",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Configure benchmark build",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Build benchmark runner",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 5
+          },
+          {
+            "name": "Run benchmark runner",
+            "status": "pending",
+            "conclusion": null,
+            "number": 6
+          },
+          {
+            "name": "Enforce SIMD benchmark non-regression thresholds",
+            "status": "pending",
+            "conclusion": null,
+            "number": 7
+          },
+          {
+            "name": "Upload benchmark artifacts",
+            "status": "pending",
+            "conclusion": null,
+            "number": 8
+          },
+          {
+            "name": "Post Checkout repository",
+            "status": "pending",
+            "conclusion": null,
+            "number": 16
+          }
+        ]
+      },
+      {
+        "id": 132812538073,
+        "name": "gate / axion epoch determinism / linux-x86_64 / clang",
+        "status": "queued",
+        "conclusion": null,
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": null
+      },
+      {
+        "id": 132812538102,
+        "name": "gate / tritwise-determinism / avx2-asan",
+        "status": "queued",
+        "conclusion": null,
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": null
+      },
+      {
+        "id": 132813211734,
+        "name": "build / windows-x86_64 / msvc",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Checkout repository",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 2
+          },
+          {
+            "name": "Checkout repository (Windows sparse)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Start log capture",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Install Dependencies (Ubuntu)",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 5
+          },
+          {
+            "name": "Install Dependencies (macOS)",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 6
+          },
+          {
+            "name": "Install Dependencies (Windows)",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 7
+          },
+          {
+            "name": "Checkout GoogleTest for macOS GCC",
+            "status": "pending",
+            "conclusion": null,
+            "number": 8
+          },
+          {
+            "name": "Build GoogleTest with the selected GCC toolchain",
+            "status": "pending",
+            "conclusion": null,
+            "number": 9
+          },
+          {
+            "name": "Configure ccache",
+            "status": "pending",
+            "conclusion": null,
+            "number": 10
+          },
+          {
+            "name": "Cache ccache",
+            "status": "pending",
+            "conclusion": null,
+            "number": 11
+          },
+          {
+            "name": "Cache CMake build directory",
+            "status": "pending",
+            "conclusion": null,
+            "number": 12
+          },
+          {
+            "name": "Setup MSVC/cl environment (Windows)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 13
+          },
+          {
+            "name": "Force clean build directory on Windows (fresh compile)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 14
+          },
+          {
+            "name": "Configure CMake",
+            "status": "pending",
+            "conclusion": null,
+            "number": 15
+          },
+          {
+            "name": "Build",
+            "status": "pending",
+            "conclusion": null,
+            "number": 16
+          },
+          {
+            "name": "Provision model fixtures",
+            "status": "pending",
+            "conclusion": null,
+            "number": 17
+          },
+          {
+            "name": "Verify CLI docs parity (single matrix lane)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 18
+          },
+          {
+            "name": "Run CLI docs smoke examples (single matrix lane)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 19
+          },
+          {
+            "name": "Verify CLI JSON schema contracts (single matrix lane)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 20
+          },
+          {
+            "name": "Run model-artifact review smoke (single matrix lane)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 21
+          },
+          {
+            "name": "Verify stable baseline docs and platform test surfaces",
+            "status": "pending",
+            "conclusion": null,
+            "number": 22
+          },
+          {
+            "name": "Run stable baseline compliance tests (single matrix lane)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 23
+          },
+          {
+            "name": "Run AI bundle consumer conformance checks (single matrix lane)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 24
+          },
+          {
+            "name": "Test",
+            "status": "pending",
+            "conclusion": null,
+            "number": 25
+          },
+          {
+            "name": "Run T3_K reproducibility gates",
+            "status": "pending",
+            "conclusion": null,
+            "number": 26
+          },
+          {
+            "name": "Run T81Lang compile determinism gates",
+            "status": "pending",
+            "conclusion": null,
+            "number": 27
+          },
+          {
+            "name": "Provision llama.cpp fixture from sanctioned source (optional)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 28
+          },
+          {
+            "name": "Init llama.cpp submodule (optional repro gate)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 29
+          },
+          {
+            "name": "Configure/Build llama.cpp optional repro target",
+            "status": "pending",
+            "conclusion": null,
+            "number": 30
+          },
+          {
+            "name": "Run llama.cpp reproducibility gate (optional)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 31
+          },
+          {
+            "name": "Upload build artifacts",
+            "status": "pending",
+            "conclusion": null,
+            "number": 32
+          },
+          {
+            "name": "Upload T3_K hash artifact",
+            "status": "pending",
+            "conclusion": null,
+            "number": 33
+          },
+          {
+            "name": "Upload T81Lang hash artifact",
+            "status": "pending",
+            "conclusion": null,
+            "number": 34
+          },
+          {
+            "name": "Upload llama.cpp hash artifact (optional)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 35
+          },
+          {
+            "name": "Show ccache stats",
+            "status": "pending",
+            "conclusion": null,
+            "number": 36
+          },
+          {
+            "name": "Job Failure Summary",
+            "status": "pending",
+            "conclusion": null,
+            "number": 37
+          },
+          {
+            "name": "Post Checkout repository (Windows sparse)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 74
+          }
+        ]
+      },
+      {
+        "id": 132813211750,
+        "name": "build / macos-arm64 / clang",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Checkout repository (Windows sparse)",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 3
+          },
+          {
+            "name": "Start log capture",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Install Dependencies (Ubuntu)",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 5
+          },
+          {
+            "name": "Install Dependencies (macOS)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "Install Dependencies (Windows)",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 7
+          },
+          {
+            "name": "Checkout GoogleTest for macOS GCC",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 8
+          },
+          {
+            "name": "Build GoogleTest with the selected GCC toolchain",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 9
+          },
+          {
+            "name": "Configure ccache",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 10
+          },
+          {
+            "name": "Cache ccache",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 11
+          },
+          {
+            "name": "Cache CMake build directory",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 12
+          },
+          {
+            "name": "Setup MSVC/cl environment (Windows)",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 13
+          },
+          {
+            "name": "Force clean build directory on Windows (fresh compile)",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 14
+          },
+          {
+            "name": "Configure CMake",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15
+          },
+          {
+            "name": "Build",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 16
+          },
+          {
+            "name": "Provision model fixtures",
+            "status": "pending",
+            "conclusion": null,
+            "number": 17
+          },
+          {
+            "name": "Verify CLI docs parity (single matrix lane)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 18
+          },
+          {
+            "name": "Run CLI docs smoke examples (single matrix lane)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 19
+          },
+          {
+            "name": "Verify CLI JSON schema contracts (single matrix lane)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 20
+          },
+          {
+            "name": "Run model-artifact review smoke (single matrix lane)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 21
+          },
+          {
+            "name": "Verify stable baseline docs and platform test surfaces",
+            "status": "pending",
+            "conclusion": null,
+            "number": 22
+          },
+          {
+            "name": "Run stable baseline compliance tests (single matrix lane)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 23
+          },
+          {
+            "name": "Run AI bundle consumer conformance checks (single matrix lane)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 24
+          },
+          {
+            "name": "Test",
+            "status": "pending",
+            "conclusion": null,
+            "number": 25
+          },
+          {
+            "name": "Run T3_K reproducibility gates",
+            "status": "pending",
+            "conclusion": null,
+            "number": 26
+          },
+          {
+            "name": "Run T81Lang compile determinism gates",
+            "status": "pending",
+            "conclusion": null,
+            "number": 27
+          },
+          {
+            "name": "Provision llama.cpp fixture from sanctioned source (optional)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 28
+          },
+          {
+            "name": "Init llama.cpp submodule (optional repro gate)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 29
+          },
+          {
+            "name": "Configure/Build llama.cpp optional repro target",
+            "status": "pending",
+            "conclusion": null,
+            "number": 30
+          },
+          {
+            "name": "Run llama.cpp reproducibility gate (optional)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 31
+          },
+          {
+            "name": "Upload build artifacts",
+            "status": "pending",
+            "conclusion": null,
+            "number": 32
+          },
+          {
+            "name": "Upload T3_K hash artifact",
+            "status": "pending",
+            "conclusion": null,
+            "number": 33
+          },
+          {
+            "name": "Upload T81Lang hash artifact",
+            "status": "pending",
+            "conclusion": null,
+            "number": 34
+          },
+          {
+            "name": "Upload llama.cpp hash artifact (optional)",
+            "status": "pending",
+            "conclusion": null,
+            "number": 35
+          },
+          {
+            "name": "Show ccache stats",
+            "status": "pending",
+            "conclusion": null,
+            "number": 36
+          },
+          {
+            "name": "Job Failure Summary",
+            "status": "pending",
+            "conclusion": null,
+            "number": 37
+          },
+          {
+            "name": "Post Cache CMake build directory",
+            "status": "pending",
+            "conclusion": null,
+            "number": 72
+          },
+          {
+            "name": "Post Cache ccache",
+            "status": "pending",
+            "conclusion": null,
+            "number": 73
+          },
+          {
+            "name": "Post Checkout repository",
+            "status": "pending",
+            "conclusion": null,
+            "number": 74
+          }
+        ]
+      },
+      {
+        "id": 132813211761,
+        "name": "build / windows-x86_64 / clang-cl",
+        "status": "queued",
+        "conclusion": null,
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": null
+      },
+      {
+        "id": 132813211769,
+        "name": "build / linux-arm64 / clang",
+        "status": "queued",
+        "conclusion": null,
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": null
+      },
+      {
+        "id": 132813211777,
+        "name": "build / linux-x86_64 / gcc",
+        "status": "queued",
+        "conclusion": null,
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": null
+      },
+      {
+        "id": 132813211812,
+        "name": "build / macos-x86_64 / gcc",
+        "status": "queued",
+        "conclusion": null,
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": null
+      },
+      {
+        "id": 132813211851,
+        "name": "build / linux-x86_64 / clang",
+        "status": "queued",
+        "conclusion": null,
+        "run_id": 43714148467,
+        "logs_url": null,
+        "steps": null
+      }
+    ]
+  },
+  "isError": false
+}

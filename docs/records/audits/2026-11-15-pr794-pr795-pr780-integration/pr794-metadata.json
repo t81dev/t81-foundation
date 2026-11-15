@@ -1,0 +1,47 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Action completed."
+    }
+  ],
+  "structuredContent": {
+    "url": "https://github.com/t81dev/t81-foundation/pull/794",
+    "number": 794,
+    "state": "open",
+    "merged": false,
+    "mergeable": true,
+    "draft": true,
+    "body": "The policy-validation wrapper delegates to a general shell dispatcher that assembles a command string. This bounded replacement retains #751's fixed argv invocation `t81 policy validate <literal-path> --json`, rejects unsupported operations/options before backend execution, and limits the advertised entry point to syntax/metadata inspection.\n\n**Depends on #793** at `15b6b2b63fe056d68f959d658a351eba603ce6ea`. This PR targets `candidate/pr750-main-explicit-policy`, not main. Integrate #793 first, then refresh/retarget this PR and obtain applicable hosted checks. Original #751 at `b68853335264d0758124a359f705fb5fbb8dfdc3` and its branch remain unchanged; no legacy #747/#750 stack is imported.\n\nFour active files: wrapper, skill documentation, Python harness and UNIX CMake test registration. Wrapper/documentation/harness bytes exactly match pinned #751. CMake adds exactly its ten registration lines while preserving #793's policy-test timeout and #782's repro working directory. No CLI, VM, Axion evaluator, policy model, arithmetic, process capture, golden or existing historical evidence changes.\n\nFresh native macOS ARM64, Bash 3.2, AppleClang 21, C++23 Release/`-DNDEBUG`:\n\n- Same harness and same fresh real CLI: original wrapper **86 process receipts / 141 failed checks**; candidate **86 / zero**.\n- **Fake mode:** 40 wrapper calls: 16 exact-argv backend responses and 24 pre-backend rejections. These establish dispatch behavior, not policy validity.\n- **Real-configured mode:** 44 wrapper calls: 20 native validation responses and 24 pre-backend rejections. Native cases cover text/compiled policies, malformed/empty input, compiled-byte rejection, schema/input identity and literal spaces, quotes, metacharacters and option-shaped filenames.\n- One missing-backend probe and one successful policy-compilation setup complete the 86 receipts. No unreadable-file probe skipped.\n- Negative controls retain 12 persistent-artifact-change cases, including store creation and command-substitution canaries before backend rejection. Candidate has zero fixture-tree changes.\n- Registered wrapper, execution-policy (249 processes), repro-hash and process-capture tests: **4/4 passed**. Bash syntax and source whitespace checks pass.\n\nA zero-budget policy is valid metadata; wrapper validation does not install an execution policy or authorize execution. The separately rerun #793 execution matrix preserves that distinction.\n\n[Durable evidence](https://github.com/t81dev/t81-foundation/blob/c17557ffb4ad54a0e299e47e8bdb9dd5bebf8a59/docs/records/audits/2026-11-14-pr751-on-pr793/README.md) contains 29 audit files (469,764 bytes), exact source/binary hashes, commands, all process receipts, negative controls and source comparisons. Implementation commit: `24596a28d5aebe75ebb86edc1f4a97b377953538`; following commit adds evidence only.\n\nLimits: readable-file symlinks remain allowed; checks do not prevent TOCTOU or provide containment, allowlists, resource limits or sandboxing. Trusted PATH/host/shell/environment remain prerequisites. Other wrappers remain unchanged and outside this boundary. Artifact observations cover the fixture tree, not every host effect. Linux Bash and Windows/WSL are not locally qualified. Main-target CI/CodeQL/format filters do not automatically qualify this stacked base; no workflow bypass is added. Raw evidence whitespace is retained.\n\nPrepared and executed by Codex within the shared maintenance effort; not independent review. Draft only: no merge, policy expansion or scientific-gate advancement.",
+    "title": "fix(skills): constrain policy validation wrapper (depends on #793)",
+    "base": "main",
+    "base_sha": "c2ab68e582c9f773ce94a9e13bcb805016f07dd4",
+    "head": "candidate/pr751-on-pr793-wrapper",
+    "head_sha": "5f5751ae9b9f634f2af2cb020afef6f9e2cd610d",
+    "head_repo_id": 1101585698,
+    "head_repo_full_name": "t81dev/t81-foundation",
+    "merge_commit_sha": "90d83b3739cd8326478d84c21baeb73946e34da4",
+    "user": {
+      "login": "t81dev",
+      "name": "t81dev",
+      "email": null,
+      "avatar_url": "https://avatars.githubusercontent.com/u/207451414?v=4",
+      "id": 207451414
+    },
+    "requested_reviewers": null,
+    "requested_team_reviewers": null,
+    "diff": null,
+    "comments": null,
+    "created_at": "2026-11-15T02:24:15Z",
+    "updated_at": "2026-11-15T12:19:23Z",
+    "closed_at": null,
+    "merged_at": null,
+    "commits": 3,
+    "changed_files": 33,
+    "additions": 9515,
+    "deletions": 144,
+    "display_url": "https://github.com/t81dev/t81-foundation/pull/794",
+    "display_title": "fix(skills): constrain policy validation wrapper (depends on #793)"
+  },
+  "isError": false
+}
