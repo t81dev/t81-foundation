@@ -21,7 +21,7 @@ std::int64_t mul_int(std::int64_t lhs, std::int64_t rhs) {
 
 std::int64_t neg_int(std::int64_t value) {
   // Standard two's-complement negation: -INT64_MIN wraps to INT64_MIN without UB.
-  return static_cast<std::int64_t>(-static_cast<std::uint64_t>(value));
+  return static_cast<std::int64_t>(std::uint64_t{0} - static_cast<std::uint64_t>(value));
 }
 
 bool div_int(std::int64_t lhs, std::int64_t rhs, std::int64_t* out) {
