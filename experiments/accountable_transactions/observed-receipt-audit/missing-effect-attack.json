@@ -1,0 +1,81 @@
+{
+  "candidate": {
+    "arm": "A",
+    "case": "valid",
+    "category": "in-model",
+    "expected": "committed",
+    "ledger": {
+      "effects": [],
+      "receipts": [
+        {
+          "body": {
+            "effect": {
+              "payload": "8491 25000\n",
+              "sha256": "a82423f2d94037e89ab048a6bd251805aa4186a24fef9e4777b42cf8099ae6f5"
+            },
+            "ledger": "907b3500-e37c-4e9c-98ef-5c170b4bd22a",
+            "limit": 50000,
+            "policy_version": 1,
+            "protocol": "witnessed-po-v1",
+            "request": {
+              "order": "8491",
+              "price": 250,
+              "units": 100
+            },
+            "status": "committed",
+            "transaction": "4e17f636-9c1f-4f33-85cb-02c5402293d6",
+            "witness": "8906deba368a03f97253f2c0c683cfff45319122d588775db1e848f5b8c23056"
+          },
+          "signature": "57e1ab43a2c1a1afa8c350fa97ef23d082d6ba4f95afa7180fc2ddddb3580385ced5ee8e53bf2debd812fa2e85c16174a47346acf373dc938b95415ae229e20b"
+        }
+      ],
+      "transactions": [
+        [
+          "4e17f636-9c1f-4f33-85cb-02c5402293d6",
+          "committed"
+        ]
+      ]
+    },
+    "observed": {
+      "outcome": "committed",
+      "response": {
+        "authorization_ns": 708,
+        "commit_ns": 9982084,
+        "receipt": {
+          "body": {
+            "effect": {
+              "payload": "8491 25000\n",
+              "sha256": "a82423f2d94037e89ab048a6bd251805aa4186a24fef9e4777b42cf8099ae6f5"
+            },
+            "ledger": "907b3500-e37c-4e9c-98ef-5c170b4bd22a",
+            "limit": 50000,
+            "policy_version": 1,
+            "protocol": "witnessed-po-v1",
+            "request": {
+              "order": "8491",
+              "price": 250,
+              "units": 100
+            },
+            "status": "committed",
+            "transaction": "4e17f636-9c1f-4f33-85cb-02c5402293d6",
+            "witness": "8906deba368a03f97253f2c0c683cfff45319122d588775db1e848f5b8c23056"
+          },
+          "signature": "57e1ab43a2c1a1afa8c350fa97ef23d082d6ba4f95afa7180fc2ddddb3580385ced5ee8e53bf2debd812fa2e85c16174a47346acf373dc938b95415ae229e20b"
+        },
+        "signing_ns": 1203250,
+        "status": "committed"
+      }
+    },
+    "passed": true,
+    "remaining_attack_surface": "Key theft, witness compromise, rollback, availability and external business truth remain outside claim.",
+    "trust_assumptions": [
+      "honest isolated witness and OS",
+      "no durable-state rollback",
+      "externally pinned key/epoch/request/policy",
+      "local ledger effect only"
+    ]
+  },
+  "expected": "reject",
+  "observed": "signed outbox lacks corresponding committed observed effect",
+  "mutation": "Remove observed ledger effects from both aggregate row and per-case outcome; retain valid signed outbox and all hashes."
+}

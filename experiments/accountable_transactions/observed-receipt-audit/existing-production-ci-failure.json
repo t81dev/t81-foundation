@@ -1,0 +1,33 @@
+{
+  "run_url": "https://github.com/t81dev/t81-foundation/actions/runs/40049127990",
+  "baseline_sources": {
+    "src/direct_api/t81_direct_api.cpp": {
+      "base_sha256": "fc77cea3a8687514a02be3890ce2075ae20ad92056b60d790d0d7eb96034a4bf",
+      "head_sha256": "fc77cea3a8687514a02be3890ce2075ae20ad92056b60d790d0d7eb96034a4bf",
+      "unchanged": true
+    },
+    "src/direct_api/t81_direct_api_v3.cpp": {
+      "base_sha256": "d6b7f10b86e97008163935aa427d02b4758d207e5553a63de77995a7b5b6a73e",
+      "head_sha256": "d6b7f10b86e97008163935aa427d02b4758d207e5553a63de77995a7b5b6a73e",
+      "unchanged": true
+    },
+    "include/t81/ai_backend/controlled_ai_backend.hpp": {
+      "base_sha256": "4c2c7bed94c782106b96dc8817f31fb59b26f596b7e3b4e7690c7c4f339fa6cf",
+      "head_sha256": "4c2c7bed94c782106b96dc8817f31fb59b26f596b7e3b4e7690c7c4f339fa6cf",
+      "unchanged": true
+    }
+  },
+  "errors": [
+    "determinism / macos-arm64\tUNKNOWN STEP\t2026-10-24T01:21:01.5534490Z /Applications/Xcode_26.6.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__memory/unique_ptr.h:75:19: error: invalid application of 'sizeof' to an incomplete type 't81::ai_backend::ControlledRandomness'",
+    "determinism / macos-arm64\tUNKNOWN STEP\t2026-10-24T01:21:01.9053010Z /Applications/Xcode_26.6.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__memory/unique_ptr.h:75:19: error: invalid application of 'sizeof' to an incomplete type 't81::ai_backend::t81::axion::PolicyEngine'",
+    "determinism / macos-arm64\tUNKNOWN STEP\t2026-10-24T01:21:02.2501690Z /Applications/Xcode_26.6.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__memory/unique_ptr.h:759:30: error: no matching constructor for initialization of 't81::ai_backend::ControlledAIBackend'",
+    "determinism / macos-arm64\tUNKNOWN STEP\t2026-10-24T01:21:02.4065410Z /Users/runner/work/t81-foundation/t81-foundation/src/direct_api/t81_direct_api.cpp:178:25: error: no member named 'has_value' in 't81::weights::ModelFile'",
+    "determinism / macos-arm64\tUNKNOWN STEP\t2026-10-24T01:21:02.4383850Z /Users/runner/work/t81-foundation/t81-foundation/src/direct_api/t81_direct_api.cpp:182:36: error: no member named 'value' in 't81::weights::ModelFile'",
+    "determinism / linux-x86_64\tUNKNOWN STEP\t2026-10-24T01:20:07.1302795Z                  from /usr/include/c++/14/system_error:43,",
+    "determinism / linux-x86_64\tUNKNOWN STEP\t2026-10-24T01:20:23.0757663Z /home/runner/work/t81-foundation/t81-foundation/src/direct_api/t81_direct_api.cpp:178:25: error: \u2018struct t81::weights::ModelFile\u2019 has no member named \u2018has_value\u2019",
+    "determinism / linux-x86_64\tUNKNOWN STEP\t2026-10-24T01:20:23.0764453Z /home/runner/work/t81-foundation/t81-foundation/src/direct_api/t81_direct_api.cpp:182:36: error: \u2018struct t81::weights::ModelFile\u2019 has no member named \u2018value\u2019",
+    "determinism / linux-x86_64\tUNKNOWN STEP\t2026-10-24T01:20:23.0776719Z /usr/include/c++/14/bits/unique_ptr.h:1076:30: error: no matching function for call to \u2018t81::ai_backend::ControlledAIBackend::ControlledAIBackend(std::unique_ptr<t81::axion::PolicyEngine>)\u2019",
+    "determinism / linux-x86_64\tUNKNOWN STEP\t2026-10-24T01:20:23.0827287Z /usr/include/c++/14/bits/unique_ptr.h:91:23: error: invalid application of \u2018sizeof\u2019 to incomplete type \u2018t81::ai_backend::ControlledRandomness\u2019",
+    "determinism / linux-x86_64\tUNKNOWN STEP\t2026-10-24T01:20:23.0838218Z /usr/include/c++/14/bits/unique_ptr.h:91:23: error: invalid application of \u2018sizeof\u2019 to incomplete type \u2018t81::ai_backend::t81::axion::PolicyEngine\u2019"
+  ]
+}

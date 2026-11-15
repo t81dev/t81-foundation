@@ -1,0 +1,5 @@
+cryptography==46.0.3
+wasmtime==38.0.0
+importlib_resources==6.5.2
+cffi==2.0.0
+pycparser==2.23

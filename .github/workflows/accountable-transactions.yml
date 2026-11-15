@@ -1,0 +1,67 @@
+name: Accountable transaction research
+on:
+  pull_request:
+    paths:
+      - 'experiments/accountable_transactions/**'
+      - '.github/workflows/accountable-transactions.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            cc: gcc-14
+            cxx: g++-14
+          - os: macos-14
+            cc: clang
+            cxx: clang++
+          - os: windows-2022
+            cc: cl
+            cxx: cl
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
+        with:
+          python-version: '3.14'
+      - uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
+        if: runner.os == 'Windows'
+      - name: Linux toolchain
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -qq && sudo apt-get install -y gcc-14 g++-14 ninja-build
+      - name: Install pinned dependencies
+        run: python -m pip install -r experiments/accountable_transactions/requirements.txt
+      - name: Configure and build isolated calculator
+        run: |
+          cmake -S experiments/accountable_transactions -B witness-build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
+          cmake --build witness-build --target accountable_arm_a --parallel 4
+      - name: Adversarial checks and raw evidence
+        run: |
+          runner=witness-build/accountable_arm_a
+          if [ '${{ runner.os }}' = Windows ]; then runner="$runner.exe"; fi
+          python experiments/accountable_transactions/test_protocol.py --runner "$runner" --output research/tests
+      - name: Cold and steady measurements
+        if: always()
+        run: |
+          runner=witness-build/accountable_arm_a
+          if [ '${{ runner.os }}' = Windows ]; then runner="$runner.exe"; fi
+          python experiments/accountable_transactions/measure.py --runner "$runner" --output research/measurements --repetitions 10
+      - name: Export public evidence
+        if: always()
+        run: python experiments/accountable_transactions/preserve.py research public-evidence
+      - name: Independently audit public receipts and effect bytes
+        run: python experiments/accountable_transactions/audit_public.py public-evidence
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        if: always()
+        with:
+          name: accountable-transactions-${{ matrix.os }}
+          path: public-evidence
+          if-no-files-found: error
