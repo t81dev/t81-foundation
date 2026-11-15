@@ -1,0 +1,6 @@
+[1/5] Building CXX object src/tools/CMakeFiles/t81_tool_cli.dir/__/__/tools/cli/core/driver.cpp.o
+[2/5] Building CXX object src/tools/CMakeFiles/t81_tool_cli.dir/__/__/tools/cli/core/main.cpp.o
+[3/5] Building CXX object src/tools/CMakeFiles/t81.dir/__/__/tools/cli/core/main.cpp.o
+[4/5] Linking CXX static library libt81_tool_cli.a
+[5/5] Linking CXX executable t81
+ld: warning: ignoring duplicate libraries: 'libt81_axion.a', 'libt81_core.a', 'libt81_decode.a', 'libt81_isa.a', 'libt81_lang_frontend.a', 'libt81_math_quantization.a', 'libt81_tool_cli.a', 'libt81_vm.a'

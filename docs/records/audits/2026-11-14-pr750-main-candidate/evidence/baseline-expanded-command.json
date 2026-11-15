@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "python3",
+    "tests/python/test_cli_execution_policy.py",
+    "--t81-bin",
+    "/private/tmp/t81-pr750-unfixed-main-t81",
+    "--receipt",
+    "docs/records/audits/2026-11-14-pr750-main-candidate/evidence/baseline-expanded-receipt.json"
+  ],
+  "exit": 1,
+  "expected_exit": 1
+}

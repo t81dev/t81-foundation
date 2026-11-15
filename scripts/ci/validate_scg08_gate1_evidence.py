@@ -7,10 +7,14 @@ Includes rigorous negative test mode (--test-negative).
 
 import copy
 import json
+import math
 import os
 import re
 import sys
+import subprocess
+import tempfile
 from pathlib import Path
+from datetime import datetime, timedelta
 
 SHA_REGEX = re.compile(r"^[0-9a-f]{40}$")
 ISO8601_REGEX = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$")
@@ -33,6 +37,23 @@ def compute_expected_w_ops(counters: dict) -> int:
     )
 
 
+def reject_json_constant(value):
+    raise ValueError(f"Nonfinite JSON constant: {value}")
+
+
+def parse_finite_float(value):
+    result = float(value)
+    if not math.isfinite(result):
+        raise ValueError(f"JSON number outside finite float range: {value}")
+    return result
+
+
+def load_json(stream):
+    # Python otherwise accepts NaN/Infinity tokens, including in extra fields
+    # that the schema intentionally permits without interpreting their contents.
+    return json.load(stream, parse_constant=reject_json_constant, parse_float=parse_finite_float)
+
+
 def validate_evidence(evidence_path: Path, schema_path: Path):
     if not evidence_path.is_file():
         fail(f"Evidence file not found: {evidence_path}")
@@ -41,21 +62,124 @@ def validate_evidence(evidence_path: Path, schema_path: Path):
 
     try:
         with open(evidence_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
+            data = load_json(f)
     except Exception as e:
         fail(f"Failed to parse evidence JSON: {e}")
 
     try:
         with open(schema_path, "r", encoding="utf-8") as f:
-            schema = json.load(f)
+            schema = load_json(f)
     except Exception as e:
         fail(f"Failed to parse schema JSON: {e}")
 
     validate_dict(data, schema)
-    print(f"[SCG-08 SCHEMA VALIDATION PASSED] Artifact {evidence_path.name} conforms to {schema.get('$id')}")
+    print(f"[SCG-08 SCHEMA VALIDATION PASSED] Artifact {evidence_path.name} passes supported schema checks and domain rules for {schema.get('$id')}")
+
+
+def validate_schema_definition(schema, path="schema"):
+    """Preflight the bounded keyword set used by the current evidence schema.
+
+    This is not a general Draft 7 meta-schema or ECMAScript regex validator.
+    Visit even absent optional properties so unsupported constraints fail closed.
+    """
+    supported = {
+        "$schema", "$id", "title", "description", "type", "enum", "required",
+        "properties", "items", "pattern", "additionalProperties", "minimum",
+        "minLength", "maxLength",
+    }
+    types = {"object", "array", "string", "integer", "number", "boolean", "null"}
+    if not isinstance(schema, dict):
+        fail(f"{path}: schema must be an object")
+    if set(schema) - supported:
+        fail(f"{path}: unsupported schema keywords: {sorted(set(schema) - supported)}")
+    expected = schema.get("type")
+    if "type" in schema:
+        declared = expected if isinstance(expected, list) else [expected]
+        if not declared or any(not isinstance(t, str) or t not in types for t in declared):
+            fail(f"{path}: unsupported schema type")
+    if "enum" in schema and (
+        not isinstance(schema["enum"], list) or not schema["enum"]
+        or any(not isinstance(v, str) for v in schema["enum"])
+    ):
+        fail(f"{path}: only non-empty string enums are supported")
+    if "required" in schema and (
+        not isinstance(schema["required"], list)
+        or any(not isinstance(k, str) for k in schema["required"])
+    ):
+        fail(f"{path}: required must be an array of strings")
+    if "additionalProperties" in schema and type(schema["additionalProperties"]) is not bool:
+        fail(f"{path}: only boolean additionalProperties is supported")
+    for key in ("minLength", "maxLength"):
+        if key in schema and (type(schema[key]) is not int or schema[key] < 0):
+            fail(f"{path}: {key} must be a non-negative integer")
+    if "minimum" in schema and (
+        type(schema["minimum"]) not in (int, float)
+        or (type(schema["minimum"]) is float and not math.isfinite(schema["minimum"]))
+    ):
+        fail(f"{path}: minimum must be finite numeric")
+    if "pattern" in schema:
+        if not isinstance(schema["pattern"], str):
+            fail(f"{path}: pattern must be a string")
+        try:
+            re.compile(schema["pattern"])
+        except re.error as exc:
+            fail(f"{path}: invalid supported regex pattern: {exc}")
+    properties = schema.get("properties", {})
+    if not isinstance(properties, dict):
+        fail(f"{path}: properties must be an object")
+    for key, child in properties.items():
+        validate_schema_definition(child, f"{path}.properties.{key}")
+    if "items" in schema:
+        validate_schema_definition(schema["items"], f"{path}.items")
+
+
+def validate_schema_shape(value, schema, path="evidence"):
+    """Apply supported schema constraints; domain rules below are additional.
+
+    Integer fields deliberately require Python ints, including under Python -O.
+    Patterns use Python search semantics for the current ASCII-compatible regexes.
+    """
+    valid_types = {
+        "object": isinstance(value, dict), "array": isinstance(value, list),
+        "string": isinstance(value, str), "integer": type(value) is int,
+        "number": type(value) in (int, float), "boolean": type(value) is bool,
+        "null": value is None,
+    }
+    expected = schema.get("type")
+    declared = expected if isinstance(expected, list) else [expected]
+    if expected is not None and not any(valid_types[t] for t in declared):
+        fail(f"{path} must be {expected}")
+    if type(value) is float and not math.isfinite(value):
+        fail(f"{path} must be finite")
+    if "enum" in schema and value not in schema["enum"]:
+        fail(f"{path} is outside the schema enum")
+    if type(value) in (int, float) and "minimum" in schema and value < schema["minimum"]:
+        fail(f"{path} is below the schema minimum")
+    if isinstance(value, str):
+        if "minLength" in schema and len(value) < schema["minLength"]:
+            fail(f"{path} is shorter than minLength")
+        if "maxLength" in schema and len(value) > schema["maxLength"]:
+            fail(f"{path} is longer than maxLength")
+        if "pattern" in schema and re.search(schema["pattern"], value) is None:
+            fail(f"{path} does not match the schema pattern")
+    if isinstance(value, dict):
+        for key in schema.get("required", []):
+            if key not in value:
+                fail(f"Missing required property: {path}.{key}")
+        properties = schema.get("properties", {})
+        for key, item in value.items():
+            if key in properties:
+                validate_schema_shape(item, properties[key], f"{path}.{key}")
+            elif schema.get("additionalProperties") is False:
+                fail(f"Unexpected property: {path}.{key}")
+    elif isinstance(value, list) and "items" in schema:
+        for idx, item in enumerate(value):
+            validate_schema_shape(item, schema["items"], f"{path}[{idx}]")
 
 
 def validate_dict(data: dict, schema: dict):
+    validate_schema_definition(schema)
+    validate_schema_shape(data, schema)
     if not isinstance(data, dict):
         fail("Top-level evidence artifact must be a JSON object")
 
@@ -82,17 +206,39 @@ def validate_dict(data: dict, schema: dict):
 
     # timestamp_utc validation
     ts = data.get("timestamp_utc")
-    if not isinstance(ts, str) or not ISO8601_REGEX.match(ts):
+    if not isinstance(ts, str) or not ISO8601_REGEX.fullmatch(ts):
         fail(f"Invalid timestamp_utc format: {ts} (must be valid ISO-8601 UTC timestamp)")
+
+    try:
+        parsed_ts = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    except ValueError:
+        fail(f"Invalid timestamp_utc calendar value: {ts}")
+    if parsed_ts.utcoffset() != timedelta(0):
+        fail("timestamp_utc must have UTC offset zero")
 
     # git_context
     gc = data.get("git_context")
-    if not isinstance(gc, dict) or "baseline_sha" not in gc or "head_sha" not in gc:
-        fail("Invalid git_context: must be an object with baseline_sha and head_sha")
-    for sha_key in ["baseline_sha", "head_sha"]:
+    if not isinstance(gc, dict):
+        fail("Invalid git_context: must be an object")
+    required_git_props = ["baseline_sha", "evaluated_implementation_sha"]
+    for req_prop in required_git_props:
+        if req_prop not in gc:
+            fail(f"Invalid git_context: missing required property {req_prop}")
+    for sha_key in required_git_props:
         sha_val = gc[sha_key]
-        if not isinstance(sha_val, str) or not SHA_REGEX.match(sha_val):
+        if not isinstance(sha_val, str) or not SHA_REGEX.fullmatch(sha_val):
             fail(f"Invalid {sha_key}: {sha_val} (must be non-null 40-character hexadecimal SHA)")
+    if "evidence_generation_sha" not in gc:
+        fail("Invalid git_context: missing required property evidence_generation_sha")
+    generation_sha = gc["evidence_generation_sha"]
+    if generation_sha is not None and (
+        not isinstance(generation_sha, str) or not SHA_REGEX.fullmatch(generation_sha)
+    ):
+        fail("Invalid evidence_generation_sha: must be null (unverified) or a 40-character hexadecimal SHA")
+    if "evidence_publication_sha" in gc:
+        pub_sha = gc["evidence_publication_sha"]
+        if not isinstance(pub_sha, str) or not SHA_REGEX.fullmatch(pub_sha):
+            fail(f"Invalid evidence_publication_sha: {pub_sha!r} (must be a non-null 40-character hexadecimal SHA)")
 
     # trial_budget
     tb = data.get("trial_budget")
@@ -168,6 +314,25 @@ def validate_dict(data: dict, schema: dict):
             if prop not in b:
                 fail(f"Missing band property: {prop} in band {idx}")
 
+        # Enforce strict integer type on scalar properties (rejecting bools, nulls, strings, floats)
+        scalar_props = [
+            "bit_width",
+            "operand_trits",
+            "add_trits_min",
+            "mul_trits_min",
+            "ternary_limbs_op",
+            "ternary_limbs_add",
+            "ternary_limbs_mul",
+            "w_ops_add_ternary",
+            "w_ops_mul_ternary",
+            "w_ops_add_binary",
+            "w_ops_mul_binary",
+        ]
+        for prop in scalar_props:
+            val = b[prop]
+            if type(val) is not int or val < 0:
+                fail(f"Band {b.get('bit_width')} property {prop} must be a non-negative integer (found {type(val).__name__}: {val!r})")
+
         # Validate primitive counter objects and reconcile with weighted total W_ops
         counter_mappings = [
             ("counters_add_ternary", "w_ops_add_ternary"),
@@ -223,8 +388,9 @@ def run_negative_tests(schema_path: Path):
         "status": "READY_FOR_INDEPENDENT_GATE1_IMPLEMENTATION_REVIEW",
         "timestamp_utc": "2026-11-10T22:30:00Z",
         "git_context": {
-            "baseline_sha": "cd490f5b5c0496350682542b56424dd77bea6963",
-            "head_sha": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3",
+            "baseline_sha": "dbf107fda83a3755fa21d6b95caa3eb8ac450dd3",
+            "evaluated_implementation_sha": "2dd3cc62e526942cdcbed6d100770c08c26ab2fe",
+            "evidence_generation_sha": None,
         },
         "trial_budget": {
             "max_cumulative_trials_ceiling": 1000,
@@ -287,8 +453,11 @@ def run_negative_tests(schema_path: Path):
     }
 
     negative_cases = [
-        ("null head_sha", lambda d: d["git_context"].__setitem__("head_sha", None)),
-        ("invalid short head_sha", lambda d: d["git_context"].__setitem__("head_sha", "abc123")),
+        ("null evaluated_implementation_sha", lambda d: d["git_context"].__setitem__("evaluated_implementation_sha", None)),
+        ("invalid short evaluated_implementation_sha", lambda d: d["git_context"].__setitem__("evaluated_implementation_sha", "abc123")),
+        ("null evidence_publication_sha", lambda d: d["git_context"].__setitem__("evidence_publication_sha", None)),
+        ("non-string evidence_publication_sha", lambda d: d["git_context"].__setitem__("evidence_publication_sha", 12345)),
+        ("invalid publication sha format", lambda d: d["git_context"].__setitem__("evidence_publication_sha", "invalid-sha")),
         ("malformed timestamp", lambda d: d.__setitem__("timestamp_utc", "invalid-time")),
         ("wrong specification version", lambda d: d.__setitem__("specification_version", "v1.0")),
         ("budget ceiling exceeded", lambda d: d["trial_budget"].__setitem__("actual_cumulative_trials_executed", 1001)),
@@ -299,10 +468,46 @@ def run_negative_tests(schema_path: Path):
         ("boolean instead of number", lambda d: d["tier1_markov"]["ternary"].__setitem__("f_occ", True)),
         ("oracle passed False", lambda d: d["oracle_verification"].__setitem__("all_dimensions_passed", False)),
         ("oracle dimensions missing", lambda d: d["oracle_verification"].__setitem__("dimensions_verified", ["dim1"])),
+        ("operand_trits is null", lambda d: d["tier2_work"]["evaluated_bands"][0].__setitem__("operand_trits", None)),
+        ("ternary_limbs_op is not integer", lambda d: d["tier2_work"]["evaluated_bands"][0].__setitem__("ternary_limbs_op", "not an integer")),
+        ("bit_width boolean True", lambda d: d["tier2_work"]["evaluated_bands"][0].__setitem__("bit_width", True)),
+        ("operand_trits float", lambda d: d["tier2_work"]["evaluated_bands"][0].__setitem__("operand_trits", 41.5)),
+        ("negative operand_trits", lambda d: d["tier2_work"]["evaluated_bands"][0].__setitem__("operand_trits", -1)),
     ]
 
+    # Exercise every scalar field against each invalid JSON/Python value class.
+    scalar_props = [
+        "bit_width", "operand_trits", "add_trits_min", "mul_trits_min",
+        "ternary_limbs_op", "ternary_limbs_add", "ternary_limbs_mul",
+        "w_ops_add_ternary", "w_ops_mul_ternary", "w_ops_add_binary", "w_ops_mul_binary",
+    ]
+    parity_cases = []
+    for prop in scalar_props:
+        for value in [True, None, "not an integer", 41.5, -1, 41.0]:
+            desc = f"scalar {prop}: {value!r} ({type(value).__name__})"
+            mutate = lambda d, p=prop, v=value: d["tier2_work"]["evaluated_bands"][0].__setitem__(p, v)
+            negative_cases.append((desc, mutate))
+            # Draft 7 treats integral floats as integers; the stdlib validator
+            # deliberately enforces Python int. Report this boundary explicitly.
+            if not (type(value) is float and value.is_integer()):
+                parity_cases.append((desc, mutate))
+
+    publication_cases = [
+        ("null publication", None), ("boolean publication", True),
+        ("numeric publication", 12345), ("float publication", 1.5),
+        ("short publication", "abc123"), ("newline publication", "a" * 40 + "\n"),
+    ]
+    for desc, value in publication_cases:
+        mutate = lambda d, v=value: d["git_context"].__setitem__("evidence_publication_sha", v)
+        negative_cases.append((desc, mutate))
+        parity_cases.append((desc, mutate))
+    negative_cases.extend([
+        ("missing generation revision", lambda d: d["git_context"].pop("evidence_generation_sha")),
+        ("invalid generation revision", lambda d: d["git_context"].__setitem__("evidence_generation_sha", "unknown")),
+    ])
+
     with open(schema_path, "r", encoding="utf-8") as f:
-        schema = json.load(f)
+        schema = load_json(f)
 
     # First verify base_valid passes
     validate_dict(base_valid, schema)
@@ -313,9 +518,9 @@ def run_negative_tests(schema_path: Path):
         failed_as_expected = False
         try:
             validate_dict(test_doc, schema)
-        except SystemExit:
-            failed_as_expected = True
-        except Exception:
+        except SystemExit as exc:
+            if exc.code != 1:
+                raise
             failed_as_expected = True
 
         if not failed_as_expected:
@@ -323,7 +528,152 @@ def run_negative_tests(schema_path: Path):
             sys.exit(1)
         print(f"  ✓ Case '{desc}' properly rejected fail-closed")
 
+    # Publication identity is optional; validate both omission and a valid value.
+    published = copy.deepcopy(base_valid)
+    published["git_context"]["evidence_publication_sha"] = "a" * 40
+    validate_dict(published, schema)
+    print(f"[SCG-08 NEGATIVE TEST SUITE] {len(negative_cases)} negative cases passed; publication omission and valid SHA accepted.")
+
+    try:
+        from jsonschema import Draft7Validator
+    except ImportError:
+        print("[SCG-08 SCHEMA PARITY] NOT RUN: optional jsonschema dependency unavailable.")
+    else:
+        Draft7Validator.check_schema(schema)
+        validator = Draft7Validator(schema)
+        validator.validate(base_valid)
+        validator.validate(published)
+        for desc, mutate in parity_cases:
+            doc = copy.deepcopy(base_valid)
+            mutate(doc)
+            if validator.is_valid(doc):
+                raise RuntimeError(f"JSON Schema unexpectedly accepted {desc}")
+        print(f"[SCG-08 SCHEMA PARITY] {len(parity_cases)} rejection cases and 2 positive records passed.")
+        print("[SCG-08 SCHEMA PARITY] Integral floats: Draft 7 accepts mathematical integers; stdlib validation intentionally rejects all Python floats.")
+
     print("[SCG-08 NEGATIVE TEST SUITE] All negative test cases passed successfully.")
+
+
+def run_json_file_tests(evidence_path: Path, schema_path: Path):
+    """Exercise file parsing and CLI rejection separately from dict fixtures."""
+    valid_text = evidence_path.read_text(encoding="utf-8")
+    valid = json.loads(valid_text)
+    nonfinite = copy.deepcopy(valid)
+    nonfinite["tier1_markov"]["ternary"]["f_occ"] = float("nan")
+    nested = copy.deepcopy(valid)
+    nested["tier2_work"]["evaluated_bands"][0]["counters_add_binary"]["op_alu_mul"] = {}
+    cases = [
+        ("valid", valid_text.encode(), 0),
+        ("truncated", b'{"schema_id":', 1),
+        ("trailing data", valid_text.encode() + b'{}', 1),
+        ("invalid UTF-8", b'\xff', 1),
+        ("top-level null", b'null', 1),
+        ("top-level array", b'[]', 1),
+        ("missing properties", b'{}', 1),
+        ("nested scalar object", json.dumps(nested).encode(), 1),
+        ("NaN declared field", json.dumps(nonfinite).encode(), 1),
+    ]
+    for token in ("NaN", "Infinity", "-Infinity", "1e999"):
+        # Even uninterpreted extra properties must contain parseable finite JSON.
+        text = valid_text.rstrip()[:-1] + ', "extra": ' + token + '}'
+        cases.append((f"nonfinite extra field {token}", text.encode(), 1))
+    extra = copy.deepcopy(valid)
+    extra["extra"] = {"nested": [1, "permitted"]}
+    cases.append(("permitted finite extras", json.dumps(extra).encode(), 0))
+    # Current-main provenance controls must survive the reconciled checks.
+    evidence_cases = [
+        ("generation SHA null", ("git_context", "evidence_generation_sha"), None, 0),
+        ("generation SHA valid", ("git_context", "evidence_generation_sha"), "a" * 40, 0),
+        ("generation SHA boolean", ("git_context", "evidence_generation_sha"), True, 1),
+        ("generation SHA invalid", ("git_context", "evidence_generation_sha"), "unknown", 1),
+        ("generation SHA newline", ("git_context", "evidence_generation_sha"), "a" * 40 + "\n", 1),
+        ("publication SHA valid", ("git_context", "evidence_publication_sha"), "b" * 40, 0),
+        ("publication SHA null", ("git_context", "evidence_publication_sha"), None, 1),
+        ("baseline SHA null", ("git_context", "baseline_sha"), None, 1),
+        ("implementation SHA newline", ("git_context", "evaluated_implementation_sha"), "a" * 40 + "\n", 1),
+        ("impossible calendar date", ("timestamp_utc",), "2026-02-30T12:00:00Z", 1),
+        ("invalid hour", ("timestamp_utc",), "2026-11-10T25:00:00Z", 1),
+        ("nonzero UTC offset", ("timestamp_utc",), "2026-11-10T12:00:00+01:00", 1),
+        ("timestamp newline", ("timestamp_utc",), "2026-11-10T12:00:00Z\n", 1),
+        ("valid leap day", ("timestamp_utc",), "2024-02-29T12:00:00Z", 0),
+        ("explicit zero offset", ("timestamp_utc",), "2026-11-10T12:00:00+00:00", 0),
+        ("nested array item", ("oracle_verification", "dimensions_verified", 0), {}, 1),
+        ("negative counter", ("tier2_work", "evaluated_bands", 0, "counters_add_binary", "op_alu_mul"), -1, 1),
+        ("boolean counter", ("tier2_work", "evaluated_bands", 0, "counters_add_binary", "op_alu_mul"), False, 1),
+    ]
+    for label, keys, value, expected in evidence_cases:
+        doc = copy.deepcopy(valid)
+        target = doc
+        for key in keys[:-1]:
+            target = target[key]
+        target[keys[-1]] = value
+        cases.append((label, json.dumps(doc).encode(), expected))
+    missing_generation = copy.deepcopy(valid)
+    missing_generation["git_context"].pop("evidence_generation_sha")
+    cases.append(("missing generation SHA", json.dumps(missing_generation).encode(), 1))
+    schema_text = schema_path.read_text(encoding="utf-8")
+    unsupported = json.loads(schema_text)
+    unsupported["maximum"] = 0
+    schema_cases = [
+        ("truncated schema", b'{"type":', 1),
+        ("invalid UTF-8 schema", b'\xff', 1),
+        ("null schema", b'null', 1),
+        ("array schema", b'[]', 1),
+        ("unsupported schema constraint", json.dumps(unsupported).encode(), 1),
+    ]
+    # Supply constraints different from domain rules to prove schema enforcement.
+    schema_mutations = [
+        ("schema pattern", ("properties", "experiment_id", "pattern"), "^OTHER$", 1),
+        ("schema minimum", ("properties", "trial_budget", "properties", "max_cumulative_trials_ceiling", "minimum"), 10**100, 1),
+        ("schema minLength", ("properties", "experiment_id", "minLength"), 100, 1),
+        ("schema maxLength", ("properties", "experiment_id", "maxLength"), 1, 1),
+        ("schema nested type", ("properties", "oracle_verification", "properties", "dimensions_verified", "items", "type"), "integer", 1),
+        ("schema false extras", ("additionalProperties",), False, 1),
+        ("schema malformed type", ("type",), {}, 1),
+        ("schema empty type union", ("type",), [], 1),
+        ("schema malformed properties", ("properties",), [], 1),
+        ("schema malformed required", ("required",), True, 1),
+        ("schema malformed enum", ("enum",), [None], 1),
+        ("schema malformed minimum", ("minimum",), True, 1),
+        ("schema malformed length", ("minLength",), -1, 1),
+        ("schema invalid pattern", ("pattern",), "[", 1),
+        ("schema non-string pattern", ("pattern",), [], 1),
+        ("schema unsupported optional constraint", ("properties", "absent",), {"maximum": 3}, 1),
+        ("schema malformed optional items", ("properties", "absent",), {"items": []}, 1),
+        ("schema nonboolean extras", ("additionalProperties",), {}, 1),
+        ("schema explicit true extras", ("additionalProperties",), True, 0),
+    ]
+    for label, keys, value, expected in schema_mutations:
+        doc = json.loads(schema_text)
+        target = doc
+        for key in keys[:-1]:
+            target = target[key]
+        target[keys[-1]] = value
+        schema_cases.append((label, json.dumps(doc).encode(), expected))
+    file_cases = [(label, payload, schema_text.encode(), expected)
+                  for label, payload, expected in cases]
+    file_cases += [(label, json.dumps(extra).encode() if label == "schema false extras" else valid_text.encode(), payload, expected)
+                   for label, payload, expected in schema_cases]
+    with tempfile.TemporaryDirectory(prefix="scg08-json-files-") as scratch:
+        path = Path(scratch) / "evidence.json"
+        schema_file = Path(scratch) / "schema.json"
+        for label, payload, schema_payload, expected in file_cases:
+            path.write_bytes(payload)
+            schema_file.write_bytes(schema_payload)
+            command = [sys.executable]
+            if sys.flags.optimize:
+                command.append("-O")
+            command += [str(Path(__file__).resolve()), str(path), str(schema_file)]
+            result = subprocess.run(command, capture_output=True, text=True, timeout=10)
+            if result.returncode != expected or "Traceback" in result.stderr:
+                fail(f"JSON-file case {label}: exit {result.returncode}, expected {expected}: {result.stderr}")
+            if expected and (
+                "[SCG-08 SCHEMA VALIDATION ERROR]" not in result.stderr
+                or "[SCG-08 SCHEMA VALIDATION PASSED]" in result.stdout
+            ):
+                fail(f"JSON-file case {label} did not use the intended rejection path")
+            print(f"  JSON-file case '{label}' passed (exit {expected})")
+    print(f"[SCG-08 JSON FILE TEST SUITE] All {len(file_cases)} cases passed.")
 
 
 def main():
@@ -333,6 +683,10 @@ def main():
 
     if "--test-negative" in sys.argv:
         run_negative_tests(schema_path)
+        return
+
+    if "--test-json-files" in sys.argv:
+        run_json_file_tests(evidence_path, schema_path)
         return
 
     if len(sys.argv) > 1 and not sys.argv[1].startswith("--"):

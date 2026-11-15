@@ -1,0 +1,34 @@
+[
+  {
+    "argv": [
+      "python3",
+      "scripts/ci/audit_workflow_actions.py",
+      "--repo-root",
+      "/private/tmp/t81-pr767-main-validator",
+      "--max-tagged",
+      "0",
+      "--max-unknown",
+      "0"
+    ],
+    "exit_code": 1,
+    "stdout": "workflow action audit: total=111 pinned_sha=104 tagged=7 unknown=0\nERROR: tagged references 7 exceed allowed maximum 0\n",
+    "stderr": "",
+    "source_base": "c2ab68e582c9f773ce94a9e13bcb805016f07dd4",
+    "note": "PR795 retains the same relevant workflow files as base main."
+  },
+  {
+    "argv": [
+      "python3",
+      "scripts/ci/audit_workflow_permissions.py",
+      "--repo-root",
+      "/private/tmp/t81-pr767-main-validator",
+      "--max-missing",
+      "0"
+    ],
+    "exit_code": 1,
+    "stdout": "workflow permissions audit: total=22 explicit=21 missing=1 write_scoped=8\nERROR: missing explicit permissions 1 exceed allowed maximum 0\n",
+    "stderr": "  - .github/workflows/qemu-boot-x86.yml\n",
+    "source_base": "c2ab68e582c9f773ce94a9e13bcb805016f07dd4",
+    "note": "PR795 retains the same relevant workflow files as base main."
+  }
+]

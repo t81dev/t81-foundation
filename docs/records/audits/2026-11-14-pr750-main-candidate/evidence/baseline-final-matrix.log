@@ -1,0 +1,671 @@
+vm-run-tisc-domain-missing: exit 0, expected 1
+vm-run-tisc-domain-missing: unexpected stdout before rejection
+vm-run-tisc-domain-missing: missing diagnostic: Could not open policy file:
+vm-run-tisc-domain-malformed: exit 0, expected 1
+vm-run-tisc-domain-malformed: unexpected stdout before rejection
+vm-run-tisc-domain-malformed: missing diagnostic: Could not parse policy file:
+vm-run-tisc-domain-empty: exit 0, expected 1
+vm-run-tisc-domain-empty: unexpected stdout before rejection
+vm-run-tisc-domain-empty: missing diagnostic: Could not parse policy file:
+vm-run-tisc-domain-overflow: exit 0, expected 1
+vm-run-tisc-domain-overflow: unexpected stdout before rejection
+vm-run-tisc-domain-overflow: missing diagnostic: Could not parse policy file:
+vm-run-tisc-domain-trailing: exit 0, expected 1
+vm-run-tisc-domain-trailing: unexpected stdout before rejection
+vm-run-tisc-domain-trailing: missing diagnostic: Could not parse policy file:
+vm-run-tisc-domain-read-error: exit 0, expected 1
+vm-run-tisc-domain-read-error: unexpected stdout before rejection
+vm-run-tisc-domain-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-run-tisc-domain-deny: exit 0, expected 13
+vm-run-tisc-domain-deny: unexpected stdout before rejection
+vm-run-tisc-domain-deny: missing diagnostic: Execution trapped: SecurityFault
+vm-run-tisc-domain-deny: missing diagnostic: Instruction count limit exceeded: count=1 limit=0
+vm-run-tisc-domain-deny: missing diagnostic: compute executed: no
+vm-run-tisc-action-missing: exit 0, expected 1
+vm-run-tisc-action-missing: unexpected stdout before rejection
+vm-run-tisc-action-missing: missing diagnostic: Could not open policy file:
+vm-run-tisc-action-malformed: exit 0, expected 1
+vm-run-tisc-action-malformed: unexpected stdout before rejection
+vm-run-tisc-action-malformed: missing diagnostic: Could not parse policy file:
+vm-run-tisc-action-empty: exit 0, expected 1
+vm-run-tisc-action-empty: unexpected stdout before rejection
+vm-run-tisc-action-empty: missing diagnostic: Could not parse policy file:
+vm-run-tisc-action-overflow: exit 0, expected 1
+vm-run-tisc-action-overflow: unexpected stdout before rejection
+vm-run-tisc-action-overflow: missing diagnostic: Could not parse policy file:
+vm-run-tisc-action-trailing: exit 0, expected 1
+vm-run-tisc-action-trailing: unexpected stdout before rejection
+vm-run-tisc-action-trailing: missing diagnostic: Could not parse policy file:
+vm-run-tisc-action-read-error: exit 0, expected 1
+vm-run-tisc-action-read-error: unexpected stdout before rejection
+vm-run-tisc-action-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-run-tisc-action-deny: exit 0, expected 13
+vm-run-tisc-action-deny: unexpected stdout before rejection
+vm-run-tisc-action-deny: missing diagnostic: Execution trapped: SecurityFault
+vm-run-tisc-action-deny: missing diagnostic: Instruction count limit exceeded: count=1 limit=0
+vm-run-tisc-action-deny: missing diagnostic: compute executed: no
+vm-run-tisc-trailing-missing: exit 0, expected 1
+vm-run-tisc-trailing-missing: unexpected stdout before rejection
+vm-run-tisc-trailing-missing: missing diagnostic: Could not open policy file:
+vm-run-tisc-trailing-malformed: exit 0, expected 1
+vm-run-tisc-trailing-malformed: unexpected stdout before rejection
+vm-run-tisc-trailing-malformed: missing diagnostic: Could not parse policy file:
+vm-run-tisc-trailing-empty: exit 0, expected 1
+vm-run-tisc-trailing-empty: unexpected stdout before rejection
+vm-run-tisc-trailing-empty: missing diagnostic: Could not parse policy file:
+vm-run-tisc-trailing-overflow: exit 0, expected 1
+vm-run-tisc-trailing-overflow: unexpected stdout before rejection
+vm-run-tisc-trailing-overflow: missing diagnostic: Could not parse policy file:
+vm-run-tisc-trailing-trailing: exit 0, expected 1
+vm-run-tisc-trailing-trailing: unexpected stdout before rejection
+vm-run-tisc-trailing-trailing: missing diagnostic: Could not parse policy file:
+vm-run-tisc-trailing-read-error: exit 0, expected 1
+vm-run-tisc-trailing-read-error: unexpected stdout before rejection
+vm-run-tisc-trailing-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-run-tisc-trailing-deny: exit 0, expected 13
+vm-run-tisc-trailing-deny: unexpected stdout before rejection
+vm-run-tisc-trailing-deny: missing diagnostic: Execution trapped: SecurityFault
+vm-run-tisc-trailing-deny: missing diagnostic: Instruction count limit exceeded: count=1 limit=0
+vm-run-tisc-trailing-deny: missing diagnostic: compute executed: no
+vm-run-tisc-empty-policy-argument: exit 0, expected 1
+vm-run-tisc-empty-policy-argument: unexpected stdout before rejection
+vm-run-tisc-empty-policy-argument: missing diagnostic: Could not open policy file:
+vm-run-tisc-missing-output-False: exit 0, expected 1
+vm-run-tisc-missing-output-False: unexpected stdout before rejection
+vm-run-tisc-missing-output-False: missing diagnostic: Could not open policy file:
+vm-run-tisc-missing-output-False: unintended fixture/output/temp artifacts: ['vm-run-tisc-missing-output-False.trace']
+vm-run-tisc-missing-output-False: rejected execution created a trace
+vm-run-tisc-missing-output-True: exit 0, expected 1
+vm-run-tisc-missing-output-True: unexpected stdout before rejection
+vm-run-tisc-missing-output-True: missing diagnostic: Could not open policy file:
+vm-run-tisc-missing-output-True: unintended fixture/output/temp artifacts: ['vm-run-tisc-missing-output-True.trace']
+vm-run-tisc-missing-output-True: rejected execution modified pre-existing output
+vm-run-tisc-malformed-output-False: exit 0, expected 1
+vm-run-tisc-malformed-output-False: unexpected stdout before rejection
+vm-run-tisc-malformed-output-False: missing diagnostic: Could not parse policy file:
+vm-run-tisc-malformed-output-False: unintended fixture/output/temp artifacts: ['vm-run-tisc-malformed-output-False.trace']
+vm-run-tisc-malformed-output-False: rejected execution created a trace
+vm-run-tisc-malformed-output-True: exit 0, expected 1
+vm-run-tisc-malformed-output-True: unexpected stdout before rejection
+vm-run-tisc-malformed-output-True: missing diagnostic: Could not parse policy file:
+vm-run-tisc-malformed-output-True: unintended fixture/output/temp artifacts: ['vm-run-tisc-malformed-output-True.trace']
+vm-run-tisc-malformed-output-True: rejected execution modified pre-existing output
+vm-run-tisc-empty-output-False: exit 0, expected 1
+vm-run-tisc-empty-output-False: unexpected stdout before rejection
+vm-run-tisc-empty-output-False: missing diagnostic: Could not parse policy file:
+vm-run-tisc-empty-output-False: unintended fixture/output/temp artifacts: ['vm-run-tisc-empty-output-False.trace']
+vm-run-tisc-empty-output-False: rejected execution created a trace
+vm-run-tisc-empty-output-True: exit 0, expected 1
+vm-run-tisc-empty-output-True: unexpected stdout before rejection
+vm-run-tisc-empty-output-True: missing diagnostic: Could not parse policy file:
+vm-run-tisc-empty-output-True: unintended fixture/output/temp artifacts: ['vm-run-tisc-empty-output-True.trace']
+vm-run-tisc-empty-output-True: rejected execution modified pre-existing output
+vm-run-tisc-overflow-output-False: exit 0, expected 1
+vm-run-tisc-overflow-output-False: unexpected stdout before rejection
+vm-run-tisc-overflow-output-False: missing diagnostic: Could not parse policy file:
+vm-run-tisc-overflow-output-False: unintended fixture/output/temp artifacts: ['vm-run-tisc-overflow-output-False.trace']
+vm-run-tisc-overflow-output-False: rejected execution created a trace
+vm-run-tisc-overflow-output-True: exit 0, expected 1
+vm-run-tisc-overflow-output-True: unexpected stdout before rejection
+vm-run-tisc-overflow-output-True: missing diagnostic: Could not parse policy file:
+vm-run-tisc-overflow-output-True: unintended fixture/output/temp artifacts: ['vm-run-tisc-overflow-output-True.trace']
+vm-run-tisc-overflow-output-True: rejected execution modified pre-existing output
+vm-run-tisc-trailing-output-False: exit 0, expected 1
+vm-run-tisc-trailing-output-False: unexpected stdout before rejection
+vm-run-tisc-trailing-output-False: missing diagnostic: Could not parse policy file:
+vm-run-tisc-trailing-output-False: unintended fixture/output/temp artifacts: ['vm-run-tisc-trailing-output-False.trace']
+vm-run-tisc-trailing-output-False: rejected execution created a trace
+vm-run-tisc-trailing-output-True: exit 0, expected 1
+vm-run-tisc-trailing-output-True: unexpected stdout before rejection
+vm-run-tisc-trailing-output-True: missing diagnostic: Could not parse policy file:
+vm-run-tisc-trailing-output-True: unintended fixture/output/temp artifacts: ['vm-run-tisc-trailing-output-True.trace']
+vm-run-tisc-trailing-output-True: rejected execution modified pre-existing output
+vm-run-tisc-read-error-output-False: exit 0, expected 1
+vm-run-tisc-read-error-output-False: unexpected stdout before rejection
+vm-run-tisc-read-error-output-False: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-run-tisc-read-error-output-False: unintended fixture/output/temp artifacts: ['vm-run-tisc-read-error-output-False.trace']
+vm-run-tisc-read-error-output-False: rejected execution created a trace
+vm-run-tisc-read-error-output-True: exit 0, expected 1
+vm-run-tisc-read-error-output-True: unexpected stdout before rejection
+vm-run-tisc-read-error-output-True: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-run-tisc-read-error-output-True: unintended fixture/output/temp artifacts: ['vm-run-tisc-read-error-output-True.trace']
+vm-run-tisc-read-error-output-True: rejected execution modified pre-existing output
+vm-run-tisc-deny-output-False: exit 0, expected 13
+vm-run-tisc-deny-output-False: unexpected stdout before rejection
+vm-run-tisc-deny-output-False: missing diagnostic: Execution trapped: SecurityFault
+vm-run-tisc-deny-output-False: missing diagnostic: Instruction count limit exceeded: count=1 limit=0
+vm-run-tisc-deny-output-False: missing diagnostic: compute executed: no
+vm-run-tisc-deny-output-False: unintended fixture/output/temp artifacts: ['vm-run-tisc-deny-output-False.trace']
+vm-run-tisc-deny-output-False: rejected execution created a trace
+vm-run-tisc-deny-output-True: exit 0, expected 13
+vm-run-tisc-deny-output-True: unexpected stdout before rejection
+vm-run-tisc-deny-output-True: missing diagnostic: Execution trapped: SecurityFault
+vm-run-tisc-deny-output-True: missing diagnostic: Instruction count limit exceeded: count=1 limit=0
+vm-run-tisc-deny-output-True: missing diagnostic: compute executed: no
+vm-run-tisc-deny-output-True: unintended fixture/output/temp artifacts: ['vm-run-tisc-deny-output-True.trace']
+vm-run-tisc-deny-output-True: rejected execution modified pre-existing output
+vm-trace-tisc-domain-missing: exit 0, expected 1
+vm-trace-tisc-domain-missing: unexpected stdout before rejection
+vm-trace-tisc-domain-missing: missing diagnostic: Could not open policy file:
+vm-trace-tisc-domain-missing: unintended fixture/output/temp artifacts: ['vm-trace-tisc-domain-missing.trace']
+vm-trace-tisc-domain-missing: rejected execution created a trace
+vm-trace-tisc-domain-malformed: exit 0, expected 1
+vm-trace-tisc-domain-malformed: unexpected stdout before rejection
+vm-trace-tisc-domain-malformed: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-domain-malformed: unintended fixture/output/temp artifacts: ['vm-trace-tisc-domain-malformed.trace']
+vm-trace-tisc-domain-malformed: rejected execution created a trace
+vm-trace-tisc-domain-empty: exit 0, expected 1
+vm-trace-tisc-domain-empty: unexpected stdout before rejection
+vm-trace-tisc-domain-empty: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-domain-empty: unintended fixture/output/temp artifacts: ['vm-trace-tisc-domain-empty.trace']
+vm-trace-tisc-domain-empty: rejected execution created a trace
+vm-trace-tisc-domain-overflow: exit 0, expected 1
+vm-trace-tisc-domain-overflow: unexpected stdout before rejection
+vm-trace-tisc-domain-overflow: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-domain-overflow: unintended fixture/output/temp artifacts: ['vm-trace-tisc-domain-overflow.trace']
+vm-trace-tisc-domain-overflow: rejected execution created a trace
+vm-trace-tisc-domain-trailing: exit 0, expected 1
+vm-trace-tisc-domain-trailing: unexpected stdout before rejection
+vm-trace-tisc-domain-trailing: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-domain-trailing: unintended fixture/output/temp artifacts: ['vm-trace-tisc-domain-trailing.trace']
+vm-trace-tisc-domain-trailing: rejected execution created a trace
+vm-trace-tisc-domain-read-error: exit 0, expected 1
+vm-trace-tisc-domain-read-error: unexpected stdout before rejection
+vm-trace-tisc-domain-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-trace-tisc-domain-read-error: unintended fixture/output/temp artifacts: ['vm-trace-tisc-domain-read-error.trace']
+vm-trace-tisc-domain-read-error: rejected execution created a trace
+vm-trace-tisc-domain-deny: exit 0, expected 13
+vm-trace-tisc-domain-deny: unexpected stdout before rejection
+vm-trace-tisc-domain-deny: missing diagnostic: Execution trapped: SecurityFault
+vm-trace-tisc-domain-deny: missing diagnostic: Instruction count limit exceeded: count=1 limit=0
+vm-trace-tisc-domain-deny: missing diagnostic: compute executed: no
+vm-trace-tisc-domain-deny: unintended fixture/output/temp artifacts: ['vm-trace-tisc-domain-deny.trace']
+vm-trace-tisc-domain-deny: rejected execution created a trace
+vm-trace-tisc-action-missing: exit 0, expected 1
+vm-trace-tisc-action-missing: unexpected stdout before rejection
+vm-trace-tisc-action-missing: missing diagnostic: Could not open policy file:
+vm-trace-tisc-action-missing: unintended fixture/output/temp artifacts: ['vm-trace-tisc-action-missing.trace']
+vm-trace-tisc-action-missing: rejected execution created a trace
+vm-trace-tisc-action-malformed: exit 0, expected 1
+vm-trace-tisc-action-malformed: unexpected stdout before rejection
+vm-trace-tisc-action-malformed: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-action-malformed: unintended fixture/output/temp artifacts: ['vm-trace-tisc-action-malformed.trace']
+vm-trace-tisc-action-malformed: rejected execution created a trace
+vm-trace-tisc-action-empty: exit 0, expected 1
+vm-trace-tisc-action-empty: unexpected stdout before rejection
+vm-trace-tisc-action-empty: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-action-empty: unintended fixture/output/temp artifacts: ['vm-trace-tisc-action-empty.trace']
+vm-trace-tisc-action-empty: rejected execution created a trace
+vm-trace-tisc-action-overflow: exit 0, expected 1
+vm-trace-tisc-action-overflow: unexpected stdout before rejection
+vm-trace-tisc-action-overflow: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-action-overflow: unintended fixture/output/temp artifacts: ['vm-trace-tisc-action-overflow.trace']
+vm-trace-tisc-action-overflow: rejected execution created a trace
+vm-trace-tisc-action-trailing: exit 0, expected 1
+vm-trace-tisc-action-trailing: unexpected stdout before rejection
+vm-trace-tisc-action-trailing: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-action-trailing: unintended fixture/output/temp artifacts: ['vm-trace-tisc-action-trailing.trace']
+vm-trace-tisc-action-trailing: rejected execution created a trace
+vm-trace-tisc-action-read-error: exit 0, expected 1
+vm-trace-tisc-action-read-error: unexpected stdout before rejection
+vm-trace-tisc-action-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-trace-tisc-action-read-error: unintended fixture/output/temp artifacts: ['vm-trace-tisc-action-read-error.trace']
+vm-trace-tisc-action-read-error: rejected execution created a trace
+vm-trace-tisc-action-deny: exit 0, expected 13
+vm-trace-tisc-action-deny: unexpected stdout before rejection
+vm-trace-tisc-action-deny: missing diagnostic: Execution trapped: SecurityFault
+vm-trace-tisc-action-deny: missing diagnostic: Instruction count limit exceeded: count=1 limit=0
+vm-trace-tisc-action-deny: missing diagnostic: compute executed: no
+vm-trace-tisc-action-deny: unintended fixture/output/temp artifacts: ['vm-trace-tisc-action-deny.trace']
+vm-trace-tisc-action-deny: rejected execution created a trace
+vm-trace-tisc-trailing-missing: exit 0, expected 1
+vm-trace-tisc-trailing-missing: unexpected stdout before rejection
+vm-trace-tisc-trailing-missing: missing diagnostic: Could not open policy file:
+vm-trace-tisc-trailing-missing: unintended fixture/output/temp artifacts: ['vm-trace-tisc-trailing-missing.trace']
+vm-trace-tisc-trailing-missing: rejected execution created a trace
+vm-trace-tisc-trailing-malformed: exit 0, expected 1
+vm-trace-tisc-trailing-malformed: unexpected stdout before rejection
+vm-trace-tisc-trailing-malformed: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-trailing-malformed: unintended fixture/output/temp artifacts: ['vm-trace-tisc-trailing-malformed.trace']
+vm-trace-tisc-trailing-malformed: rejected execution created a trace
+vm-trace-tisc-trailing-empty: exit 0, expected 1
+vm-trace-tisc-trailing-empty: unexpected stdout before rejection
+vm-trace-tisc-trailing-empty: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-trailing-empty: unintended fixture/output/temp artifacts: ['vm-trace-tisc-trailing-empty.trace']
+vm-trace-tisc-trailing-empty: rejected execution created a trace
+vm-trace-tisc-trailing-overflow: exit 0, expected 1
+vm-trace-tisc-trailing-overflow: unexpected stdout before rejection
+vm-trace-tisc-trailing-overflow: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-trailing-overflow: unintended fixture/output/temp artifacts: ['vm-trace-tisc-trailing-overflow.trace']
+vm-trace-tisc-trailing-overflow: rejected execution created a trace
+vm-trace-tisc-trailing-trailing: exit 0, expected 1
+vm-trace-tisc-trailing-trailing: unexpected stdout before rejection
+vm-trace-tisc-trailing-trailing: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-trailing-trailing: unintended fixture/output/temp artifacts: ['vm-trace-tisc-trailing-trailing.trace']
+vm-trace-tisc-trailing-trailing: rejected execution created a trace
+vm-trace-tisc-trailing-read-error: exit 0, expected 1
+vm-trace-tisc-trailing-read-error: unexpected stdout before rejection
+vm-trace-tisc-trailing-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-trace-tisc-trailing-read-error: unintended fixture/output/temp artifacts: ['vm-trace-tisc-trailing-read-error.trace']
+vm-trace-tisc-trailing-read-error: rejected execution created a trace
+vm-trace-tisc-trailing-deny: exit 0, expected 13
+vm-trace-tisc-trailing-deny: unexpected stdout before rejection
+vm-trace-tisc-trailing-deny: missing diagnostic: Execution trapped: SecurityFault
+vm-trace-tisc-trailing-deny: missing diagnostic: Instruction count limit exceeded: count=1 limit=0
+vm-trace-tisc-trailing-deny: missing diagnostic: compute executed: no
+vm-trace-tisc-trailing-deny: unintended fixture/output/temp artifacts: ['vm-trace-tisc-trailing-deny.trace']
+vm-trace-tisc-trailing-deny: rejected execution created a trace
+vm-trace-tisc-empty-policy-argument: exit 0, expected 1
+vm-trace-tisc-empty-policy-argument: unexpected stdout before rejection
+vm-trace-tisc-empty-policy-argument: missing diagnostic: Could not open policy file:
+vm-trace-tisc-missing-output-False: exit 0, expected 1
+vm-trace-tisc-missing-output-False: unexpected stdout before rejection
+vm-trace-tisc-missing-output-False: missing diagnostic: Could not open policy file:
+vm-trace-tisc-missing-output-False: unintended fixture/output/temp artifacts: ['vm-trace-tisc-missing-output-False.trace']
+vm-trace-tisc-missing-output-False: rejected execution created a trace
+vm-trace-tisc-missing-output-True: exit 0, expected 1
+vm-trace-tisc-missing-output-True: unexpected stdout before rejection
+vm-trace-tisc-missing-output-True: missing diagnostic: Could not open policy file:
+vm-trace-tisc-missing-output-True: unintended fixture/output/temp artifacts: ['vm-trace-tisc-missing-output-True.trace']
+vm-trace-tisc-missing-output-True: rejected execution modified pre-existing output
+vm-trace-tisc-malformed-output-False: exit 0, expected 1
+vm-trace-tisc-malformed-output-False: unexpected stdout before rejection
+vm-trace-tisc-malformed-output-False: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-malformed-output-False: unintended fixture/output/temp artifacts: ['vm-trace-tisc-malformed-output-False.trace']
+vm-trace-tisc-malformed-output-False: rejected execution created a trace
+vm-trace-tisc-malformed-output-True: exit 0, expected 1
+vm-trace-tisc-malformed-output-True: unexpected stdout before rejection
+vm-trace-tisc-malformed-output-True: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-malformed-output-True: unintended fixture/output/temp artifacts: ['vm-trace-tisc-malformed-output-True.trace']
+vm-trace-tisc-malformed-output-True: rejected execution modified pre-existing output
+vm-trace-tisc-empty-output-False: exit 0, expected 1
+vm-trace-tisc-empty-output-False: unexpected stdout before rejection
+vm-trace-tisc-empty-output-False: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-empty-output-False: unintended fixture/output/temp artifacts: ['vm-trace-tisc-empty-output-False.trace']
+vm-trace-tisc-empty-output-False: rejected execution created a trace
+vm-trace-tisc-empty-output-True: exit 0, expected 1
+vm-trace-tisc-empty-output-True: unexpected stdout before rejection
+vm-trace-tisc-empty-output-True: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-empty-output-True: unintended fixture/output/temp artifacts: ['vm-trace-tisc-empty-output-True.trace']
+vm-trace-tisc-empty-output-True: rejected execution modified pre-existing output
+vm-trace-tisc-overflow-output-False: exit 0, expected 1
+vm-trace-tisc-overflow-output-False: unexpected stdout before rejection
+vm-trace-tisc-overflow-output-False: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-overflow-output-False: unintended fixture/output/temp artifacts: ['vm-trace-tisc-overflow-output-False.trace']
+vm-trace-tisc-overflow-output-False: rejected execution created a trace
+vm-trace-tisc-overflow-output-True: exit 0, expected 1
+vm-trace-tisc-overflow-output-True: unexpected stdout before rejection
+vm-trace-tisc-overflow-output-True: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-overflow-output-True: unintended fixture/output/temp artifacts: ['vm-trace-tisc-overflow-output-True.trace']
+vm-trace-tisc-overflow-output-True: rejected execution modified pre-existing output
+vm-trace-tisc-trailing-output-False: exit 0, expected 1
+vm-trace-tisc-trailing-output-False: unexpected stdout before rejection
+vm-trace-tisc-trailing-output-False: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-trailing-output-False: unintended fixture/output/temp artifacts: ['vm-trace-tisc-trailing-output-False.trace']
+vm-trace-tisc-trailing-output-False: rejected execution created a trace
+vm-trace-tisc-trailing-output-True: exit 0, expected 1
+vm-trace-tisc-trailing-output-True: unexpected stdout before rejection
+vm-trace-tisc-trailing-output-True: missing diagnostic: Could not parse policy file:
+vm-trace-tisc-trailing-output-True: unintended fixture/output/temp artifacts: ['vm-trace-tisc-trailing-output-True.trace']
+vm-trace-tisc-trailing-output-True: rejected execution modified pre-existing output
+vm-trace-tisc-read-error-output-False: exit 0, expected 1
+vm-trace-tisc-read-error-output-False: unexpected stdout before rejection
+vm-trace-tisc-read-error-output-False: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-trace-tisc-read-error-output-False: unintended fixture/output/temp artifacts: ['vm-trace-tisc-read-error-output-False.trace']
+vm-trace-tisc-read-error-output-False: rejected execution created a trace
+vm-trace-tisc-read-error-output-True: exit 0, expected 1
+vm-trace-tisc-read-error-output-True: unexpected stdout before rejection
+vm-trace-tisc-read-error-output-True: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-trace-tisc-read-error-output-True: unintended fixture/output/temp artifacts: ['vm-trace-tisc-read-error-output-True.trace']
+vm-trace-tisc-read-error-output-True: rejected execution modified pre-existing output
+vm-trace-tisc-deny-output-False: exit 0, expected 13
+vm-trace-tisc-deny-output-False: unexpected stdout before rejection
+vm-trace-tisc-deny-output-False: missing diagnostic: Execution trapped: SecurityFault
+vm-trace-tisc-deny-output-False: missing diagnostic: Instruction count limit exceeded: count=1 limit=0
+vm-trace-tisc-deny-output-False: missing diagnostic: compute executed: no
+vm-trace-tisc-deny-output-False: unintended fixture/output/temp artifacts: ['vm-trace-tisc-deny-output-False.trace']
+vm-trace-tisc-deny-output-False: rejected execution created a trace
+vm-trace-tisc-deny-output-True: exit 0, expected 13
+vm-trace-tisc-deny-output-True: unexpected stdout before rejection
+vm-trace-tisc-deny-output-True: missing diagnostic: Execution trapped: SecurityFault
+vm-trace-tisc-deny-output-True: missing diagnostic: Instruction count limit exceeded: count=1 limit=0
+vm-trace-tisc-deny-output-True: missing diagnostic: compute executed: no
+vm-trace-tisc-deny-output-True: unintended fixture/output/temp artifacts: ['vm-trace-tisc-deny-output-True.trace']
+vm-trace-tisc-deny-output-True: rejected execution modified pre-existing output
+code-run-tisc-domain-missing: exit 0, expected 1
+code-run-tisc-domain-missing: unexpected stdout before rejection
+code-run-tisc-domain-malformed: exit 13, expected 1
+code-run-tisc-domain-malformed: missing diagnostic: Could not parse policy file:
+code-run-tisc-domain-empty: exit 0, expected 1
+code-run-tisc-domain-empty: unexpected stdout before rejection
+code-run-tisc-domain-empty: missing diagnostic: Could not parse policy file:
+code-run-tisc-domain-overflow: missing diagnostic: Could not parse policy file:
+code-run-tisc-domain-trailing: exit 13, expected 1
+code-run-tisc-domain-trailing: missing diagnostic: Could not parse policy file:
+code-run-tisc-domain-read-error: exit 0, expected 1
+code-run-tisc-domain-read-error: unexpected stdout before rejection
+code-run-tisc-domain-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+code-run-tisc-action-missing: exit 0, expected 1
+code-run-tisc-action-missing: unexpected stdout before rejection
+code-run-tisc-action-malformed: exit 13, expected 1
+code-run-tisc-action-malformed: missing diagnostic: Could not parse policy file:
+code-run-tisc-action-empty: exit 0, expected 1
+code-run-tisc-action-empty: unexpected stdout before rejection
+code-run-tisc-action-empty: missing diagnostic: Could not parse policy file:
+code-run-tisc-action-overflow: missing diagnostic: Could not parse policy file:
+code-run-tisc-action-trailing: exit 13, expected 1
+code-run-tisc-action-trailing: missing diagnostic: Could not parse policy file:
+code-run-tisc-action-read-error: exit 0, expected 1
+code-run-tisc-action-read-error: unexpected stdout before rejection
+code-run-tisc-action-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+code-run-tisc-trailing-missing: exit 0, expected 1
+code-run-tisc-trailing-missing: unexpected stdout before rejection
+code-run-tisc-trailing-malformed: exit 13, expected 1
+code-run-tisc-trailing-malformed: missing diagnostic: Could not parse policy file:
+code-run-tisc-trailing-empty: exit 0, expected 1
+code-run-tisc-trailing-empty: unexpected stdout before rejection
+code-run-tisc-trailing-empty: missing diagnostic: Could not parse policy file:
+code-run-tisc-trailing-overflow: missing diagnostic: Could not parse policy file:
+code-run-tisc-trailing-trailing: exit 13, expected 1
+code-run-tisc-trailing-trailing: missing diagnostic: Could not parse policy file:
+code-run-tisc-trailing-read-error: exit 0, expected 1
+code-run-tisc-trailing-read-error: unexpected stdout before rejection
+code-run-tisc-trailing-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+code-run-tisc-empty-policy-argument: exit 0, expected 1
+code-run-tisc-empty-policy-argument: unexpected stdout before rejection
+code-run-tisc-missing-output-False: exit 0, expected 1
+code-run-tisc-missing-output-False: unexpected stdout before rejection
+code-run-tisc-missing-output-False: unintended fixture/output/temp artifacts: ['code-run-tisc-missing-output-False.trace']
+code-run-tisc-missing-output-False: rejected execution created a trace
+code-run-tisc-missing-output-True: exit 0, expected 1
+code-run-tisc-missing-output-True: unexpected stdout before rejection
+code-run-tisc-missing-output-True: unintended fixture/output/temp artifacts: ['code-run-tisc-missing-output-True.trace']
+code-run-tisc-missing-output-True: rejected execution modified pre-existing output
+code-run-tisc-malformed-output-False: exit 13, expected 1
+code-run-tisc-malformed-output-False: missing diagnostic: Could not parse policy file:
+code-run-tisc-malformed-output-True: exit 13, expected 1
+code-run-tisc-malformed-output-True: missing diagnostic: Could not parse policy file:
+code-run-tisc-empty-output-False: exit 0, expected 1
+code-run-tisc-empty-output-False: unexpected stdout before rejection
+code-run-tisc-empty-output-False: missing diagnostic: Could not parse policy file:
+code-run-tisc-empty-output-False: unintended fixture/output/temp artifacts: ['code-run-tisc-empty-output-False.trace']
+code-run-tisc-empty-output-False: rejected execution created a trace
+code-run-tisc-empty-output-True: exit 0, expected 1
+code-run-tisc-empty-output-True: unexpected stdout before rejection
+code-run-tisc-empty-output-True: missing diagnostic: Could not parse policy file:
+code-run-tisc-empty-output-True: unintended fixture/output/temp artifacts: ['code-run-tisc-empty-output-True.trace']
+code-run-tisc-empty-output-True: rejected execution modified pre-existing output
+code-run-tisc-overflow-output-False: missing diagnostic: Could not parse policy file:
+code-run-tisc-overflow-output-True: missing diagnostic: Could not parse policy file:
+code-run-tisc-trailing-output-False: exit 13, expected 1
+code-run-tisc-trailing-output-False: missing diagnostic: Could not parse policy file:
+code-run-tisc-trailing-output-True: exit 13, expected 1
+code-run-tisc-trailing-output-True: missing diagnostic: Could not parse policy file:
+code-run-tisc-read-error-output-False: exit 0, expected 1
+code-run-tisc-read-error-output-False: unexpected stdout before rejection
+code-run-tisc-read-error-output-False: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+code-run-tisc-read-error-output-False: unintended fixture/output/temp artifacts: ['code-run-tisc-read-error-output-False.trace']
+code-run-tisc-read-error-output-False: rejected execution created a trace
+code-run-tisc-read-error-output-True: exit 0, expected 1
+code-run-tisc-read-error-output-True: unexpected stdout before rejection
+code-run-tisc-read-error-output-True: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+code-run-tisc-read-error-output-True: unintended fixture/output/temp artifacts: ['code-run-tisc-read-error-output-True.trace']
+code-run-tisc-read-error-output-True: rejected execution modified pre-existing output
+code-run-t81-domain-missing: exit 0, expected 1
+code-run-t81-domain-missing: unexpected stdout before rejection
+code-run-t81-domain-malformed: exit 13, expected 1
+code-run-t81-domain-malformed: missing diagnostic: Could not parse policy file:
+code-run-t81-domain-empty: exit 0, expected 1
+code-run-t81-domain-empty: unexpected stdout before rejection
+code-run-t81-domain-empty: missing diagnostic: Could not parse policy file:
+code-run-t81-domain-overflow: missing diagnostic: Could not parse policy file:
+code-run-t81-domain-trailing: exit 13, expected 1
+code-run-t81-domain-trailing: missing diagnostic: Could not parse policy file:
+code-run-t81-domain-read-error: exit 0, expected 1
+code-run-t81-domain-read-error: unexpected stdout before rejection
+code-run-t81-domain-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+code-run-t81-action-missing: exit 0, expected 1
+code-run-t81-action-missing: unexpected stdout before rejection
+code-run-t81-action-malformed: exit 13, expected 1
+code-run-t81-action-malformed: missing diagnostic: Could not parse policy file:
+code-run-t81-action-empty: exit 0, expected 1
+code-run-t81-action-empty: unexpected stdout before rejection
+code-run-t81-action-empty: missing diagnostic: Could not parse policy file:
+code-run-t81-action-overflow: missing diagnostic: Could not parse policy file:
+code-run-t81-action-trailing: exit 13, expected 1
+code-run-t81-action-trailing: missing diagnostic: Could not parse policy file:
+code-run-t81-action-read-error: exit 0, expected 1
+code-run-t81-action-read-error: unexpected stdout before rejection
+code-run-t81-action-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+code-run-t81-trailing-missing: exit 0, expected 1
+code-run-t81-trailing-missing: unexpected stdout before rejection
+code-run-t81-trailing-malformed: exit 13, expected 1
+code-run-t81-trailing-malformed: missing diagnostic: Could not parse policy file:
+code-run-t81-trailing-empty: exit 0, expected 1
+code-run-t81-trailing-empty: unexpected stdout before rejection
+code-run-t81-trailing-empty: missing diagnostic: Could not parse policy file:
+code-run-t81-trailing-overflow: missing diagnostic: Could not parse policy file:
+code-run-t81-trailing-trailing: exit 13, expected 1
+code-run-t81-trailing-trailing: missing diagnostic: Could not parse policy file:
+code-run-t81-trailing-read-error: exit 0, expected 1
+code-run-t81-trailing-read-error: unexpected stdout before rejection
+code-run-t81-trailing-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+code-run-t81-empty-policy-argument: exit 0, expected 1
+code-run-t81-empty-policy-argument: unexpected stdout before rejection
+code-run-t81-missing-output-False: exit 0, expected 1
+code-run-t81-missing-output-False: unexpected stdout before rejection
+code-run-t81-missing-output-False: unintended fixture/output/temp artifacts: ['code-run-t81-missing-output-False.trace']
+code-run-t81-missing-output-False: rejected execution created a trace
+code-run-t81-missing-output-True: exit 0, expected 1
+code-run-t81-missing-output-True: unexpected stdout before rejection
+code-run-t81-missing-output-True: unintended fixture/output/temp artifacts: ['code-run-t81-missing-output-True.trace']
+code-run-t81-missing-output-True: rejected execution modified pre-existing output
+code-run-t81-malformed-output-False: exit 13, expected 1
+code-run-t81-malformed-output-False: missing diagnostic: Could not parse policy file:
+code-run-t81-malformed-output-True: exit 13, expected 1
+code-run-t81-malformed-output-True: missing diagnostic: Could not parse policy file:
+code-run-t81-empty-output-False: exit 0, expected 1
+code-run-t81-empty-output-False: unexpected stdout before rejection
+code-run-t81-empty-output-False: missing diagnostic: Could not parse policy file:
+code-run-t81-empty-output-False: unintended fixture/output/temp artifacts: ['code-run-t81-empty-output-False.trace']
+code-run-t81-empty-output-False: rejected execution created a trace
+code-run-t81-empty-output-True: exit 0, expected 1
+code-run-t81-empty-output-True: unexpected stdout before rejection
+code-run-t81-empty-output-True: missing diagnostic: Could not parse policy file:
+code-run-t81-empty-output-True: unintended fixture/output/temp artifacts: ['code-run-t81-empty-output-True.trace']
+code-run-t81-empty-output-True: rejected execution modified pre-existing output
+code-run-t81-overflow-output-False: missing diagnostic: Could not parse policy file:
+code-run-t81-overflow-output-True: missing diagnostic: Could not parse policy file:
+code-run-t81-trailing-output-False: exit 13, expected 1
+code-run-t81-trailing-output-False: missing diagnostic: Could not parse policy file:
+code-run-t81-trailing-output-True: exit 13, expected 1
+code-run-t81-trailing-output-True: missing diagnostic: Could not parse policy file:
+code-run-t81-read-error-output-False: exit 0, expected 1
+code-run-t81-read-error-output-False: unexpected stdout before rejection
+code-run-t81-read-error-output-False: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+code-run-t81-read-error-output-False: unintended fixture/output/temp artifacts: ['code-run-t81-read-error-output-False.trace']
+code-run-t81-read-error-output-False: rejected execution created a trace
+code-run-t81-read-error-output-True: exit 0, expected 1
+code-run-t81-read-error-output-True: unexpected stdout before rejection
+code-run-t81-read-error-output-True: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+code-run-t81-read-error-output-True: unintended fixture/output/temp artifacts: ['code-run-t81-read-error-output-True.trace']
+code-run-t81-read-error-output-True: rejected execution modified pre-existing output
+vm-debug-missing-preflight: exit 0, expected 1
+vm-debug-missing-preflight: unexpected stdout before rejection
+vm-debug-missing-preflight: missing diagnostic: Could not open policy file:
+vm-debug-malformed-preflight: exit 0, expected 1
+vm-debug-malformed-preflight: unexpected stdout before rejection
+vm-debug-malformed-preflight: missing diagnostic: Could not parse policy file:
+vm-debug-empty-preflight: exit 0, expected 1
+vm-debug-empty-preflight: unexpected stdout before rejection
+vm-debug-empty-preflight: missing diagnostic: Could not parse policy file:
+vm-debug-overflow-preflight: exit 0, expected 1
+vm-debug-overflow-preflight: unexpected stdout before rejection
+vm-debug-overflow-preflight: missing diagnostic: Could not parse policy file:
+vm-debug-trailing-preflight: exit 0, expected 1
+vm-debug-trailing-preflight: unexpected stdout before rejection
+vm-debug-trailing-preflight: missing diagnostic: Could not parse policy file:
+vm-debug-read-error-preflight: exit 0, expected 1
+vm-debug-read-error-preflight: unexpected stdout before rejection
+vm-debug-read-error-preflight: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-until-missing-preflight: exit 0, expected 1
+vm-until-missing-preflight: invalid CLI JSON error contract
+vm-until-missing-preflight: missing diagnostic: Could not open policy file:
+vm-until-malformed-preflight: exit 0, expected 1
+vm-until-malformed-preflight: invalid CLI JSON error contract
+vm-until-malformed-preflight: missing diagnostic: Could not parse policy file:
+vm-until-empty-preflight: exit 0, expected 1
+vm-until-empty-preflight: invalid CLI JSON error contract
+vm-until-empty-preflight: missing diagnostic: Could not parse policy file:
+vm-until-overflow-preflight: exit 0, expected 1
+vm-until-overflow-preflight: invalid CLI JSON error contract
+vm-until-overflow-preflight: missing diagnostic: Could not parse policy file:
+vm-until-trailing-preflight: exit 0, expected 1
+vm-until-trailing-preflight: invalid CLI JSON error contract
+vm-until-trailing-preflight: missing diagnostic: Could not parse policy file:
+vm-until-read-error-preflight: exit 0, expected 1
+vm-until-read-error-preflight: invalid CLI JSON error contract
+vm-until-read-error-preflight: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-until-zero-budget: exit 0, expected 1
+vm-until-zero-budget: missing stdout diagnostic: SecurityFault
+vm-step-missing-preflight: exit 0, expected 1
+vm-step-missing-preflight: invalid CLI JSON error contract
+vm-step-missing-preflight: missing diagnostic: Could not open policy file:
+vm-step-malformed-preflight: exit 0, expected 1
+vm-step-malformed-preflight: invalid CLI JSON error contract
+vm-step-malformed-preflight: missing diagnostic: Could not parse policy file:
+vm-step-empty-preflight: exit 0, expected 1
+vm-step-empty-preflight: invalid CLI JSON error contract
+vm-step-empty-preflight: missing diagnostic: Could not parse policy file:
+vm-step-overflow-preflight: exit 0, expected 1
+vm-step-overflow-preflight: invalid CLI JSON error contract
+vm-step-overflow-preflight: missing diagnostic: Could not parse policy file:
+vm-step-trailing-preflight: exit 0, expected 1
+vm-step-trailing-preflight: invalid CLI JSON error contract
+vm-step-trailing-preflight: missing diagnostic: Could not parse policy file:
+vm-step-read-error-preflight: exit 0, expected 1
+vm-step-read-error-preflight: invalid CLI JSON error contract
+vm-step-read-error-preflight: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-step-zero-budget: exit 0, expected 1
+vm-step-zero-budget: missing stdout diagnostic: SecurityFault
+vm-regs-missing-preflight: exit 0, expected 1
+vm-regs-missing-preflight: invalid CLI JSON error contract
+vm-regs-missing-preflight: missing diagnostic: Could not open policy file:
+vm-regs-malformed-preflight: exit 0, expected 1
+vm-regs-malformed-preflight: invalid CLI JSON error contract
+vm-regs-malformed-preflight: missing diagnostic: Could not parse policy file:
+vm-regs-empty-preflight: exit 0, expected 1
+vm-regs-empty-preflight: invalid CLI JSON error contract
+vm-regs-empty-preflight: missing diagnostic: Could not parse policy file:
+vm-regs-overflow-preflight: exit 0, expected 1
+vm-regs-overflow-preflight: invalid CLI JSON error contract
+vm-regs-overflow-preflight: missing diagnostic: Could not parse policy file:
+vm-regs-trailing-preflight: exit 0, expected 1
+vm-regs-trailing-preflight: invalid CLI JSON error contract
+vm-regs-trailing-preflight: missing diagnostic: Could not parse policy file:
+vm-regs-read-error-preflight: exit 0, expected 1
+vm-regs-read-error-preflight: invalid CLI JSON error contract
+vm-regs-read-error-preflight: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-regs-zero-budget: exit 0, expected 1
+vm-regs-zero-budget: missing stdout diagnostic: SecurityFault
+vm-stack-missing-preflight: exit 0, expected 1
+vm-stack-missing-preflight: invalid CLI JSON error contract
+vm-stack-missing-preflight: missing diagnostic: Could not open policy file:
+vm-stack-malformed-preflight: exit 0, expected 1
+vm-stack-malformed-preflight: invalid CLI JSON error contract
+vm-stack-malformed-preflight: missing diagnostic: Could not parse policy file:
+vm-stack-empty-preflight: exit 0, expected 1
+vm-stack-empty-preflight: invalid CLI JSON error contract
+vm-stack-empty-preflight: missing diagnostic: Could not parse policy file:
+vm-stack-overflow-preflight: exit 0, expected 1
+vm-stack-overflow-preflight: invalid CLI JSON error contract
+vm-stack-overflow-preflight: missing diagnostic: Could not parse policy file:
+vm-stack-trailing-preflight: exit 0, expected 1
+vm-stack-trailing-preflight: invalid CLI JSON error contract
+vm-stack-trailing-preflight: missing diagnostic: Could not parse policy file:
+vm-stack-read-error-preflight: exit 0, expected 1
+vm-stack-read-error-preflight: invalid CLI JSON error contract
+vm-stack-read-error-preflight: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-stack-zero-budget: exit 0, expected 1
+vm-stack-zero-budget: missing stdout diagnostic: SecurityFault
+vm-mem-missing-preflight: exit 0, expected 1
+vm-mem-missing-preflight: invalid CLI JSON error contract
+vm-mem-missing-preflight: missing diagnostic: Could not open policy file:
+vm-mem-malformed-preflight: exit 0, expected 1
+vm-mem-malformed-preflight: invalid CLI JSON error contract
+vm-mem-malformed-preflight: missing diagnostic: Could not parse policy file:
+vm-mem-empty-preflight: exit 0, expected 1
+vm-mem-empty-preflight: invalid CLI JSON error contract
+vm-mem-empty-preflight: missing diagnostic: Could not parse policy file:
+vm-mem-overflow-preflight: exit 0, expected 1
+vm-mem-overflow-preflight: invalid CLI JSON error contract
+vm-mem-overflow-preflight: missing diagnostic: Could not parse policy file:
+vm-mem-trailing-preflight: exit 0, expected 1
+vm-mem-trailing-preflight: invalid CLI JSON error contract
+vm-mem-trailing-preflight: missing diagnostic: Could not parse policy file:
+vm-mem-read-error-preflight: exit 0, expected 1
+vm-mem-read-error-preflight: invalid CLI JSON error contract
+vm-mem-read-error-preflight: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-mem-zero-budget: exit 0, expected 1
+vm-mem-zero-budget: missing stdout diagnostic: SecurityFault
+vm-state-missing-preflight: exit 0, expected 1
+vm-state-missing-preflight: invalid CLI JSON error contract
+vm-state-missing-preflight: missing diagnostic: Could not open policy file:
+vm-state-malformed-preflight: exit 0, expected 1
+vm-state-malformed-preflight: invalid CLI JSON error contract
+vm-state-malformed-preflight: missing diagnostic: Could not parse policy file:
+vm-state-empty-preflight: exit 0, expected 1
+vm-state-empty-preflight: invalid CLI JSON error contract
+vm-state-empty-preflight: missing diagnostic: Could not parse policy file:
+vm-state-overflow-preflight: exit 0, expected 1
+vm-state-overflow-preflight: invalid CLI JSON error contract
+vm-state-overflow-preflight: missing diagnostic: Could not parse policy file:
+vm-state-trailing-preflight: exit 0, expected 1
+vm-state-trailing-preflight: invalid CLI JSON error contract
+vm-state-trailing-preflight: missing diagnostic: Could not parse policy file:
+vm-state-read-error-preflight: exit 0, expected 1
+vm-state-read-error-preflight: invalid CLI JSON error contract
+vm-state-read-error-preflight: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-state-zero-budget: exit 0, expected 1
+vm-state-zero-budget: missing stdout diagnostic: SecurityFault
+vm-profile-missing-preflight: exit 0, expected 1
+vm-profile-missing-preflight: invalid CLI JSON error contract
+vm-profile-missing-preflight: missing diagnostic: Could not open policy file:
+vm-profile-malformed-preflight: exit 0, expected 1
+vm-profile-malformed-preflight: invalid CLI JSON error contract
+vm-profile-malformed-preflight: missing diagnostic: Could not parse policy file:
+vm-profile-empty-preflight: exit 0, expected 1
+vm-profile-empty-preflight: invalid CLI JSON error contract
+vm-profile-empty-preflight: missing diagnostic: Could not parse policy file:
+vm-profile-overflow-preflight: exit 0, expected 1
+vm-profile-overflow-preflight: invalid CLI JSON error contract
+vm-profile-overflow-preflight: missing diagnostic: Could not parse policy file:
+vm-profile-trailing-preflight: exit 0, expected 1
+vm-profile-trailing-preflight: invalid CLI JSON error contract
+vm-profile-trailing-preflight: missing diagnostic: Could not parse policy file:
+vm-profile-read-error-preflight: exit 0, expected 1
+vm-profile-read-error-preflight: invalid CLI JSON error contract
+vm-profile-read-error-preflight: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-profile-zero-budget: exit 0, expected 1
+vm-profile-zero-budget: missing stdout diagnostic: SecurityFault
+vm-explain-trap-missing-preflight: exit 0, expected 1
+vm-explain-trap-missing-preflight: invalid CLI JSON error contract
+vm-explain-trap-missing-preflight: missing diagnostic: Could not open policy file:
+vm-explain-trap-malformed-preflight: exit 0, expected 1
+vm-explain-trap-malformed-preflight: invalid CLI JSON error contract
+vm-explain-trap-malformed-preflight: missing diagnostic: Could not parse policy file:
+vm-explain-trap-empty-preflight: exit 0, expected 1
+vm-explain-trap-empty-preflight: invalid CLI JSON error contract
+vm-explain-trap-empty-preflight: missing diagnostic: Could not parse policy file:
+vm-explain-trap-overflow-preflight: exit 0, expected 1
+vm-explain-trap-overflow-preflight: invalid CLI JSON error contract
+vm-explain-trap-overflow-preflight: missing diagnostic: Could not parse policy file:
+vm-explain-trap-trailing-preflight: exit 0, expected 1
+vm-explain-trap-trailing-preflight: invalid CLI JSON error contract
+vm-explain-trap-trailing-preflight: missing diagnostic: Could not parse policy file:
+vm-explain-trap-read-error-preflight: exit 0, expected 1
+vm-explain-trap-read-error-preflight: invalid CLI JSON error contract
+vm-explain-trap-read-error-preflight: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-explain-trap-zero-budget: exit 0, expected 1
+vm-explain-trap-zero-budget: missing stdout diagnostic: SecurityFault
+FAIL: 249 CLI processes; 670 failed checks

@@ -1,0 +1,43 @@
+{
+  "files": {
+    "experiments/scg08_arithmetic_work/exact_oracle_adapter.hpp": {
+      "matches_revision": "4d5f3586c04a69c520e613166291c0974877628d",
+      "sha256": "33713dc889068b557e6117363d26dbfb5b0b801607cae1059939a817b6aba928"
+    },
+    "experiments/scg08_arithmetic_work/tier1_markov_harness.hpp": {
+      "matches_revision": "4d5f3586c04a69c520e613166291c0974877628d",
+      "sha256": "b772b6a3f2f45607db4fdfbd7fc782fd5ff4a9092f6762c7dfcc17b05033a380"
+    },
+    "experiments/scg08_arithmetic_work/tier2_work_harness.hpp": {
+      "matches_revision": "4d5f3586c04a69c520e613166291c0974877628d",
+      "sha256": "aed93e7d21fd92316356c89e97930545038ebd724cfe62824129e2e248710599"
+    },
+    "experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md": {
+      "matches_revision": "4d5f3586c04a69c520e613166291c0974877628d",
+      "sha256": "97d53fba8be955a394777546366a9ab05cda3fc13537625a1516656c3443628f"
+    },
+    "spec/rfcs/RFC-00E1-balanced-ternary-multi-precision-arithmetic-contract.md": {
+      "matches_revision": "4d5f3586c04a69c520e613166291c0974877628d",
+      "sha256": "1af813c053f68c937627c3aea5a4c8e173ac6057e4b15f6e47fa2f3e425978b6"
+    },
+    "experiments/scg08_arithmetic_work/CMakeLists.txt": {
+      "matches_revision": "300cdea8896d56c025f7099c0cdf0c41d7bd6237",
+      "sha256": "77d2885492b096324dc5e30177caecc5845cafdaa2e32f9b5be9f619c5a43386"
+    },
+    "experiments/scg08_arithmetic_work/test_exp_scg08_01.cpp": {
+      "matches_revision": "300cdea8896d56c025f7099c0cdf0c41d7bd6237",
+      "sha256": "af14faef06980f412f095c91335022e71d21cd870c53ddf64a377685a5ef30ed"
+    },
+    "experiments/scg08_arithmetic_work/test_result_rejection.py": {
+      "matches_revision": "300cdea8896d56c025f7099c0cdf0c41d7bd6237",
+      "sha256": "4777fe004fd6f5a4049d3ec25222b50205e092bad7957573de03eaca584685f3"
+    },
+    "experiments/scg08_arithmetic_work/test_result_rejection_driver.py": {
+      "matches_revision": "300cdea8896d56c025f7099c0cdf0c41d7bd6237",
+      "sha256": "5f301c739a075cf0c7d9f08ea6945eb4322646fe30b7dc980397b102e811ac93"
+    }
+  },
+  "copied_packet_files": 96,
+  "packet_byte_identical": true,
+  "archived_ci_not_active": true
+}

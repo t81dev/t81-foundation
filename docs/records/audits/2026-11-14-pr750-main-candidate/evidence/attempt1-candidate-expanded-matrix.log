@@ -1,0 +1,119 @@
+vm-run-tisc-domain-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-run-tisc-action-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-run-tisc-trailing-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-run-tisc-read-error-output-False: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-run-tisc-read-error-output-True: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-trace-tisc-domain-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-trace-tisc-action-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-trace-tisc-trailing-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-trace-tisc-empty-policy-argument: missing diagnostic: Could not open policy file:
+vm-trace-tisc-read-error-output-False: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-trace-tisc-read-error-output-True: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+code-run-tisc-domain-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+code-run-tisc-action-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+code-run-tisc-trailing-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+code-run-tisc-read-error-output-False: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+code-run-tisc-read-error-output-True: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+code-run-t81-domain-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+code-run-t81-action-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+code-run-t81-trailing-read-error: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+code-run-t81-read-error-output-False: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+code-run-t81-read-error-output-True: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-debug-read-error-preflight: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-until-missing-preflight: unexpected stdout before rejection
+vm-until-missing-preflight: missing diagnostic: Could not open policy file:
+vm-until-malformed-preflight: unexpected stdout before rejection
+vm-until-malformed-preflight: missing diagnostic: Could not parse policy file:
+vm-until-empty-preflight: unexpected stdout before rejection
+vm-until-empty-preflight: missing diagnostic: Could not parse policy file:
+vm-until-overflow-preflight: unexpected stdout before rejection
+vm-until-overflow-preflight: missing diagnostic: Could not parse policy file:
+vm-until-trailing-preflight: unexpected stdout before rejection
+vm-until-trailing-preflight: missing diagnostic: Could not parse policy file:
+vm-until-read-error-preflight: unexpected stdout before rejection
+vm-until-read-error-preflight: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-step-missing-preflight: unexpected stdout before rejection
+vm-step-missing-preflight: missing diagnostic: Could not open policy file:
+vm-step-malformed-preflight: unexpected stdout before rejection
+vm-step-malformed-preflight: missing diagnostic: Could not parse policy file:
+vm-step-empty-preflight: unexpected stdout before rejection
+vm-step-empty-preflight: missing diagnostic: Could not parse policy file:
+vm-step-overflow-preflight: unexpected stdout before rejection
+vm-step-overflow-preflight: missing diagnostic: Could not parse policy file:
+vm-step-trailing-preflight: unexpected stdout before rejection
+vm-step-trailing-preflight: missing diagnostic: Could not parse policy file:
+vm-step-read-error-preflight: unexpected stdout before rejection
+vm-step-read-error-preflight: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-regs-missing-preflight: unexpected stdout before rejection
+vm-regs-missing-preflight: missing diagnostic: Could not open policy file:
+vm-regs-malformed-preflight: unexpected stdout before rejection
+vm-regs-malformed-preflight: missing diagnostic: Could not parse policy file:
+vm-regs-empty-preflight: unexpected stdout before rejection
+vm-regs-empty-preflight: missing diagnostic: Could not parse policy file:
+vm-regs-overflow-preflight: unexpected stdout before rejection
+vm-regs-overflow-preflight: missing diagnostic: Could not parse policy file:
+vm-regs-trailing-preflight: unexpected stdout before rejection
+vm-regs-trailing-preflight: missing diagnostic: Could not parse policy file:
+vm-regs-read-error-preflight: unexpected stdout before rejection
+vm-regs-read-error-preflight: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-stack-missing-preflight: unexpected stdout before rejection
+vm-stack-missing-preflight: missing diagnostic: Could not open policy file:
+vm-stack-malformed-preflight: unexpected stdout before rejection
+vm-stack-malformed-preflight: missing diagnostic: Could not parse policy file:
+vm-stack-empty-preflight: unexpected stdout before rejection
+vm-stack-empty-preflight: missing diagnostic: Could not parse policy file:
+vm-stack-overflow-preflight: unexpected stdout before rejection
+vm-stack-overflow-preflight: missing diagnostic: Could not parse policy file:
+vm-stack-trailing-preflight: unexpected stdout before rejection
+vm-stack-trailing-preflight: missing diagnostic: Could not parse policy file:
+vm-stack-read-error-preflight: unexpected stdout before rejection
+vm-stack-read-error-preflight: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-mem-missing-preflight: unexpected stdout before rejection
+vm-mem-missing-preflight: missing diagnostic: Could not open policy file:
+vm-mem-malformed-preflight: unexpected stdout before rejection
+vm-mem-malformed-preflight: missing diagnostic: Could not parse policy file:
+vm-mem-empty-preflight: unexpected stdout before rejection
+vm-mem-empty-preflight: missing diagnostic: Could not parse policy file:
+vm-mem-overflow-preflight: unexpected stdout before rejection
+vm-mem-overflow-preflight: missing diagnostic: Could not parse policy file:
+vm-mem-trailing-preflight: unexpected stdout before rejection
+vm-mem-trailing-preflight: missing diagnostic: Could not parse policy file:
+vm-mem-read-error-preflight: unexpected stdout before rejection
+vm-mem-read-error-preflight: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-state-missing-preflight: unexpected stdout before rejection
+vm-state-missing-preflight: missing diagnostic: Could not open policy file:
+vm-state-malformed-preflight: unexpected stdout before rejection
+vm-state-malformed-preflight: missing diagnostic: Could not parse policy file:
+vm-state-empty-preflight: unexpected stdout before rejection
+vm-state-empty-preflight: missing diagnostic: Could not parse policy file:
+vm-state-overflow-preflight: unexpected stdout before rejection
+vm-state-overflow-preflight: missing diagnostic: Could not parse policy file:
+vm-state-trailing-preflight: unexpected stdout before rejection
+vm-state-trailing-preflight: missing diagnostic: Could not parse policy file:
+vm-state-read-error-preflight: unexpected stdout before rejection
+vm-state-read-error-preflight: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-profile-missing-preflight: unexpected stdout before rejection
+vm-profile-missing-preflight: missing diagnostic: Could not open policy file:
+vm-profile-malformed-preflight: unexpected stdout before rejection
+vm-profile-malformed-preflight: missing diagnostic: Could not parse policy file:
+vm-profile-empty-preflight: unexpected stdout before rejection
+vm-profile-empty-preflight: missing diagnostic: Could not parse policy file:
+vm-profile-overflow-preflight: unexpected stdout before rejection
+vm-profile-overflow-preflight: missing diagnostic: Could not parse policy file:
+vm-profile-trailing-preflight: unexpected stdout before rejection
+vm-profile-trailing-preflight: missing diagnostic: Could not parse policy file:
+vm-profile-read-error-preflight: unexpected stdout before rejection
+vm-profile-read-error-preflight: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+vm-explain-trap-missing-preflight: unexpected stdout before rejection
+vm-explain-trap-missing-preflight: missing diagnostic: Could not open policy file:
+vm-explain-trap-malformed-preflight: unexpected stdout before rejection
+vm-explain-trap-malformed-preflight: missing diagnostic: Could not parse policy file:
+vm-explain-trap-empty-preflight: unexpected stdout before rejection
+vm-explain-trap-empty-preflight: missing diagnostic: Could not parse policy file:
+vm-explain-trap-overflow-preflight: unexpected stdout before rejection
+vm-explain-trap-overflow-preflight: missing diagnostic: Could not parse policy file:
+vm-explain-trap-trailing-preflight: unexpected stdout before rejection
+vm-explain-trap-trailing-preflight: missing diagnostic: Could not parse policy file:
+vm-explain-trap-read-error-preflight: unexpected stdout before rejection
+vm-explain-trap-read-error-preflight: missing one of diagnostics: ('Could not open policy file:', 'Could not read policy file:')
+FAIL: 249 CLI processes; 118 failed checks
