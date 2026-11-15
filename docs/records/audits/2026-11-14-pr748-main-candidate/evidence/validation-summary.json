@@ -1,0 +1,43 @@
+{
+  "base": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+  "original_pr_head": "7a3cdf850a143758eb1355ebb8747368e6ca72cb",
+  "tested_code_commit": "8e236dba8a1a61568ef4d916afab55f7b5ce45bf",
+  "candidate_branch": "candidate/pr748-main-policy-metadata",
+  "production_blob_equals_original": true,
+  "patch_conflicts": false,
+  "baseline_expected_failure": 1,
+  "release_selected_tests": "3/3 pass",
+  "ASan_UBSan_selected_tests": "3/3 pass",
+  "metadata_matrix": {
+    "negative": 21,
+    "positive_controls": 6
+  },
+  "source_and_JSON_validation": "pass",
+  "remaining_platforms": "not executed; no integration readiness claim",
+  "original_branch_mutation": false,
+  "push_merge_remote_CI": false,
+  "scientific_gate_advancement": false,
+  "source_diff_check": {
+    "argv": [
+      "git",
+      "diff",
+      "--check",
+      "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+      "--",
+      "fs/block_backed_driver.cpp",
+      "tests/cpp/canonfs_policy_boundary_test.cpp"
+    ],
+    "exit": 0
+  },
+  "full_packet_diff_check": {
+    "argv": [
+      "git",
+      "diff",
+      "--check",
+      "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2"
+    ],
+    "exit": 2,
+    "reason": "raw evidence contains original whitespace; preserved, not normalized",
+    "log": "raw-artifact-diff-check.log"
+  }
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "name": "candidate-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "/private/tmp/t81-pr748-main-release",
+      "--target",
+      "canonfs_policy_boundary_test",
+      "canonfs_persistent_driver_test",
+      "canonfs_axion_trace_test",
+      "-j",
+      "4"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "candidate-ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "/private/tmp/t81-pr748-main-release",
+      "--output-on-failure",
+      "-V",
+      "-R",
+      "^(canonfs_policy_boundary_test|canonfs_persistent_driver_test|canonfs_axion_trace_test)$"
+    ],
+    "exit": 0
+  }
+]
