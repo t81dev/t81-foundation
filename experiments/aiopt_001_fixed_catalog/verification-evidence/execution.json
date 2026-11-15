@@ -1,0 +1,109 @@
+{
+  "examined_head": "b83414f0b04563cecae1c3741ceba7692dd81a11",
+  "validated_source_commit": "32d7f9a885d527772227d0d13d108f5de3483497",
+  "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]",
+  "python_executable": "/opt/homebrew/opt/python@3.14/bin/python3.14",
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "commands": [
+    {
+      "label": "final-normal-1/subject",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/private/tmp/t81-aiopt-m1-verify/experiments/aiopt_001_fixed_catalog/m1.py"
+      ],
+      "cwd": "/private/tmp/t81-aiopt-m1-verify",
+      "exit_code": 0
+    },
+    {
+      "label": "final-normal-1/verification",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/private/tmp/t81-aiopt-m1-verify/experiments/aiopt_001_fixed_catalog/verify_m1.py",
+        "--output",
+        "/private/tmp/t81-aiopt-m1-verify/experiments/aiopt_001_fixed_catalog/verification-evidence/final-normal-1.verification.json"
+      ],
+      "cwd": "/private/tmp/t81-aiopt-m1-verify",
+      "exit_code": 0
+    },
+    {
+      "label": "final-normal-2/subject",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/private/tmp/t81-aiopt-m1-verify/experiments/aiopt_001_fixed_catalog/m1.py"
+      ],
+      "cwd": "/private/tmp/t81-aiopt-m1-verify",
+      "exit_code": 0
+    },
+    {
+      "label": "final-normal-2/verification",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/private/tmp/t81-aiopt-m1-verify/experiments/aiopt_001_fixed_catalog/verify_m1.py",
+        "--output",
+        "/private/tmp/t81-aiopt-m1-verify/experiments/aiopt_001_fixed_catalog/verification-evidence/final-normal-2.verification.json"
+      ],
+      "cwd": "/private/tmp/t81-aiopt-m1-verify",
+      "exit_code": 0
+    },
+    {
+      "label": "final-optimized-1/subject",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "-O",
+        "/private/tmp/t81-aiopt-m1-verify/experiments/aiopt_001_fixed_catalog/m1.py"
+      ],
+      "cwd": "/private/tmp/t81-aiopt-m1-verify",
+      "exit_code": 0
+    },
+    {
+      "label": "final-optimized-1/verification",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "-O",
+        "/private/tmp/t81-aiopt-m1-verify/experiments/aiopt_001_fixed_catalog/verify_m1.py",
+        "--output",
+        "/private/tmp/t81-aiopt-m1-verify/experiments/aiopt_001_fixed_catalog/verification-evidence/final-optimized-1.verification.json"
+      ],
+      "cwd": "/private/tmp/t81-aiopt-m1-verify",
+      "exit_code": 0
+    },
+    {
+      "label": "final-optimized-2/subject",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "-O",
+        "/private/tmp/t81-aiopt-m1-verify/experiments/aiopt_001_fixed_catalog/m1.py"
+      ],
+      "cwd": "/private/tmp/t81-aiopt-m1-verify",
+      "exit_code": 0
+    },
+    {
+      "label": "final-optimized-2/verification",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "-O",
+        "/private/tmp/t81-aiopt-m1-verify/experiments/aiopt_001_fixed_catalog/verify_m1.py",
+        "--output",
+        "/private/tmp/t81-aiopt-m1-verify/experiments/aiopt_001_fixed_catalog/verification-evidence/final-optimized-2.verification.json"
+      ],
+      "cwd": "/private/tmp/t81-aiopt-m1-verify",
+      "exit_code": 0
+    }
+  ],
+  "independent_check_executions": 53096,
+  "independent_checks_passed": 53096,
+  "independent_checks_failed": 0,
+  "independent_checks_skipped": 0,
+  "canonical_digest": "21bd3c7f69e35d32cd5d5b847f34e0e1f2c5218e76d1ffb0db7327bde47966c9",
+  "implementation_sha256": "4e7a07c3f52421e0df6725a4675b00cf9af2186260af545d72be8680ef6ac07e",
+  "verifier_sha256": "399471c92238577a528dd2628a60a2a2e143841e44526d40960adfd481a93549",
+  "same_mode_machine_outputs_identical": true
+}

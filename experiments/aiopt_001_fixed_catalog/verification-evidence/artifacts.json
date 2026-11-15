@@ -1,0 +1,237 @@
+{
+  "examined_head": "b83414f0b04563cecae1c3741ceba7692dd81a11",
+  "validated_source_commit": "32d7f9a885d527772227d0d13d108f5de3483497",
+  "self_excluded": "experiments/aiopt_001_fixed_catalog/verification-evidence/artifacts.json",
+  "files": [
+    {
+      "path": "docs/research/aiopt/T81-AIOPT-001-M1-PROTOCOL.md",
+      "sha256": "43319857285adeff42f8387bbfabb9506d260b74e4f6b297f6eed1ca21cbc6e4",
+      "bytes": 9432
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/M1_VERIFICATION_REPORT.md",
+      "sha256": "7da36bc3e9f7ded05174e71af9b97d459ec7ecbf848dfa81f0c0ab31d19949ce",
+      "bytes": 13916
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/README.md",
+      "sha256": "585ba53bab771c05b97feb6686e52bf9e9b97a99c91714a1845951f271c6dfe3",
+      "bytes": 2883
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/m1.py",
+      "sha256": "4e7a07c3f52421e0df6725a4675b00cf9af2186260af545d72be8680ef6ac07e",
+      "bytes": 7073
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/baseline-assertion-line-hits.json",
+      "sha256": "c161823e63a5027423f5130104770653ad932a5f2670eb5234e20247a279b11f",
+      "bytes": 858
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/baseline-defects.json",
+      "sha256": "19871d99e85ac0488273d44d9b7b1ef2922801bfebd7e46fc02c07d4e640df76",
+      "bytes": 2620
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/baseline-independent-initial-fixture.json",
+      "sha256": "e05236f30a8ee23352d2642c219e67d2fda39b19fac6827d4cf993096f549882",
+      "bytes": 36744
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/baseline-independent-optimized.json",
+      "sha256": "1fc1299f15c6148d5f2af7964490078571b59fdfc49de2fdc37f6d75b46673bc",
+      "bytes": 38194
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/baseline-independent.json",
+      "sha256": "e43b24a5806e2e1bdfdd71aad4962d9813aea9186c88c0141a563e0ea524e9e2",
+      "bytes": 37712
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/baseline-instrumented-normal.json",
+      "sha256": "ab7eb62d4e709987698ffec8eeca61d37e9543b5372fd7791ff0bb3c31b84087",
+      "bytes": 500
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/baseline-instrumented-optimized.json",
+      "sha256": "d1fcbb0305fbc5d1e3460ed53c0d30ebe405ae086016189ecf69529aba6a63f8",
+      "bytes": 499
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/baseline-run-1.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/baseline-run-1.stdout.json",
+      "sha256": "f09d698cd846e3a2f5bdbf29819c09201fd29ed52a6ece37d6388c375135a943",
+      "bytes": 359
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/baseline-run-2.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/baseline-run-2.stdout.json",
+      "sha256": "f09d698cd846e3a2f5bdbf29819c09201fd29ed52a6ece37d6388c375135a943",
+      "bytes": 359
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/corrected-precommit-independent-optimized.json",
+      "sha256": "b592d5098b4eb300c86e492bd7f3afdfd3ad713328680ad3eb9640b4e16d5315",
+      "bytes": 17474
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/corrected-precommit-independent.json",
+      "sha256": "17e9cecc96eaee77a35e77fe81a5e418e904f27d871e52d0a67f469d7eeb5c2e",
+      "bytes": 17474
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/discrepancy-record.json",
+      "sha256": "507734cab2430529e8a5d3a16a12a932ca169621156bcf51d867605ff011380d",
+      "bytes": 2529
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/execution.json",
+      "sha256": "161e74ea032a0fab93e12b6b8ce855eccdd11020a53c13256d5fcc2f7987d838",
+      "bytes": 4012
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-active-checks-normal.json",
+      "sha256": "281e020ba0fb1cc97de7d79d4bc0b90ab4727953df0267eabef27929521514e1",
+      "bytes": 472
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-active-checks-optimized.json",
+      "sha256": "281e020ba0fb1cc97de7d79d4bc0b90ab4727953df0267eabef27929521514e1",
+      "bytes": 472
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-normal-1.subject.json",
+      "sha256": "e2ca2b22c75363a9cfa1a33d7bb0fa5fd7db1cc4e7410bc02791fe6aee537a74",
+      "bytes": 359
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-normal-1.subject.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-normal-1.verification.json",
+      "sha256": "ed6ea8daf895232f9d9662fdeac5d9dfa2f66bb65a1deb602be71565a21f76e5",
+      "bytes": 17474
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-normal-1.verification.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-normal-1.verification.stdout",
+      "sha256": "a9d0ddace19ddbbff2f7ddda87e33295c49af26e28767f47d9342e9ebcfe52f1",
+      "bytes": 1213
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-normal-2.subject.json",
+      "sha256": "e2ca2b22c75363a9cfa1a33d7bb0fa5fd7db1cc4e7410bc02791fe6aee537a74",
+      "bytes": 359
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-normal-2.subject.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-normal-2.verification.json",
+      "sha256": "ed6ea8daf895232f9d9662fdeac5d9dfa2f66bb65a1deb602be71565a21f76e5",
+      "bytes": 17474
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-normal-2.verification.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-normal-2.verification.stdout",
+      "sha256": "a9d0ddace19ddbbff2f7ddda87e33295c49af26e28767f47d9342e9ebcfe52f1",
+      "bytes": 1213
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-optimized-1.subject.json",
+      "sha256": "e2ca2b22c75363a9cfa1a33d7bb0fa5fd7db1cc4e7410bc02791fe6aee537a74",
+      "bytes": 359
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-optimized-1.subject.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-optimized-1.verification.json",
+      "sha256": "39ea5ab00529695944fec64c053f2a93c84cc44ff6e96c42f6909ae6e6c03e01",
+      "bytes": 17474
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-optimized-1.verification.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-optimized-1.verification.stdout",
+      "sha256": "f6a94381e917a9f5abbb7dd50c1a98847e8dbd03a1c4eaae14232546100f5ad2",
+      "bytes": 1213
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-optimized-2.subject.json",
+      "sha256": "e2ca2b22c75363a9cfa1a33d7bb0fa5fd7db1cc4e7410bc02791fe6aee537a74",
+      "bytes": 359
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-optimized-2.subject.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-optimized-2.verification.json",
+      "sha256": "39ea5ab00529695944fec64c053f2a93c84cc44ff6e96c42f6909ae6e6c03e01",
+      "bytes": 17474
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-optimized-2.verification.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/final-optimized-2.verification.stdout",
+      "sha256": "f6a94381e917a9f5abbb7dd50c1a98847e8dbd03a1c4eaae14232546100f5ad2",
+      "bytes": 1213
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/initial-verify-fixture.py",
+      "sha256": "78829f0878456622a88d509d20ee874588e02738f725b80219e9486c5eb80e63",
+      "bytes": 11945
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/reproduction-record.json",
+      "sha256": "2a7e1aeaa3402763c6aaf5543ae602e2b71a6f2692e9608e5501236a56142a86",
+      "bytes": 4668
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/review-record.json",
+      "sha256": "50aecf95e9d72569a6c8cb6598b3376f9d342ccc20f060f57ceefaf6e89c335a",
+      "bytes": 3017
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verification-evidence/schema-validation.json",
+      "sha256": "1d9bd7b3f42b95dc2918f87837466cca6b7a90f6f83493f02b4d2b5dcfe4e865",
+      "bytes": 290
+    },
+    {
+      "path": "experiments/aiopt_001_fixed_catalog/verify_m1.py",
+      "sha256": "399471c92238577a528dd2628a60a2a2e143841e44526d40960adfd481a93549",
+      "bytes": 13835
+    }
+  ]
+}

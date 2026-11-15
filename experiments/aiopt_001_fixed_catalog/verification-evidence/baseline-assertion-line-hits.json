@@ -1,0 +1,24 @@
+{
+  "source_commit": "b83414f0b04563cecae1c3741ceba7692dd81a11",
+  "scope": "Executed source-line counts; no timing",
+  "optimization_modes": {
+    "0": {
+      "error_category_assertion_line109_hits": 604,
+      "byte_roundtrip_assertion_line125_hits": 81,
+      "swar_roundtrip_assertion_line126_hits": 81,
+      "byte_filter_assertion_line127_hits": 81,
+      "swar_filter_assertion_line128_hits": 81,
+      "predicate_assertion_line130_hits": 3240,
+      "reported_malformed_assertions": 604
+    },
+    "1": {
+      "error_category_assertion_line109_hits": 0,
+      "byte_roundtrip_assertion_line125_hits": 0,
+      "swar_roundtrip_assertion_line126_hits": 0,
+      "byte_filter_assertion_line127_hits": 0,
+      "swar_filter_assertion_line128_hits": 0,
+      "predicate_assertion_line130_hits": 0,
+      "reported_malformed_assertions": 604
+    }
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "examined_head": "b83414f0b04563cecae1c3741ceba7692dd81a11",
+  "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]",
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "expect_error_calls": {
+    "INVALID_ENCODING": 544,
+    "INVALID_LENGTH": 15,
+    "INVALID_TRIT": 36,
+    "INVALID_CATALOG": 9
+  },
+  "executed_malformed_expectations": 604,
+  "reported_malformed": 604,
+  "probes": [
+    {
+      "label": "oracle/one-shot-catalog",
+      "returned": []
+    },
+    {
+      "label": "oracle/boolean-catalog",
+      "returned": [
+        0
+      ]
+    },
+    {
+      "label": "oracle/float-catalog",
+      "returned": [
+        0
+      ]
+    },
+    {
+      "label": "oracle/none-catalog",
+      "exception": "TypeError",
+      "code": null,
+      "message": "'NoneType' object is not iterable"
+    },
+    {
+      "label": "filter_bytes/one-shot-catalog",
+      "returned": []
+    },
+    {
+      "label": "filter_bytes/boolean-catalog",
+      "returned": [
+        0
+      ]
+    },
+    {
+      "label": "filter_bytes/float-catalog",
+      "returned": [
+        0
+      ]
+    },
+    {
+      "label": "filter_bytes/none-catalog",
+      "exception": "TypeError",
+      "code": null,
+      "message": "'NoneType' object is not iterable"
+    },
+    {
+      "label": "filter_swar/one-shot-catalog",
+      "returned": []
+    },
+    {
+      "label": "filter_swar/boolean-catalog",
+      "returned": [
+        0
+      ]
+    },
+    {
+      "label": "filter_swar/float-catalog",
+      "exception": "TypeError",
+      "code": null,
+      "message": "unsupported operand type(s) for <<: 'float' and 'int'"
+    },
+    {
+      "label": "filter_swar/none-catalog",
+      "exception": "TypeError",
+      "code": null,
+      "message": "'NoneType' object is not iterable"
+    },
+    {
+      "label": "oracle/none-input",
+      "exception": "TypeError",
+      "code": null,
+      "message": "object of type 'NoneType' has no len()"
+    },
+    {
+      "label": "encode_bytes/none-input",
+      "exception": "TypeError",
+      "code": null,
+      "message": "object of type 'NoneType' has no len()"
+    },
+    {
+      "label": "encode_swar/none-input",
+      "exception": "TypeError",
+      "code": null,
+      "message": "object of type 'NoneType' has no len()"
+    },
+    {
+      "label": "decode_bytes/none-input",
+      "exception": "TypeError",
+      "code": null,
+      "message": "object of type 'NoneType' has no len()"
+    },
+    {
+      "label": "filter_bytes/none-input",
+      "exception": "TypeError",
+      "code": null,
+      "message": "object of type 'NoneType' has no len()"
+    }
+  ]
+}

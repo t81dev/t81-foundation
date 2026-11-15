@@ -1,0 +1,2345 @@
+{
+  "canonical_result_digest": "21bd3c7f69e35d32cd5d5b847f34e0e1f2c5218e76d1ffb0db7327bde47966c9",
+  "checks": {
+    "all_swar_payloads": 512,
+    "catalog": 1,
+    "encodings": 162,
+    "error_precedence": 47,
+    "filter_outputs": 243,
+    "invalid_byte_types": 56,
+    "invalid_byte_values": 2024,
+    "invalid_catalogs": 45,
+    "invalid_swar_types_range": 22,
+    "invalid_trits": 84,
+    "mathematics": 6,
+    "predicate_decisions": 9720,
+    "reference": 81,
+    "roundtrips": 162,
+    "runner_integrity": 6,
+    "supported_bytes": 4,
+    "supported_catalogs": 6,
+    "unexpected_types": 61,
+    "uniqueness": 2,
+    "wrong_lengths": 30
+  },
+  "failures": [
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "oracle/none",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "encode_bytes/none",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "encode_swar/none",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_ENCODING",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "decode_bytes/none",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_ENCODING",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "filter_bytes/none",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "oracle/integer",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "encode_bytes/integer",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "encode_swar/integer",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_ENCODING",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "decode_bytes/integer",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_ENCODING",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "filter_bytes/integer",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "oracle/bool",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "encode_bytes/bool",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "encode_swar/bool",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_ENCODING",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "decode_bytes/bool",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_ENCODING",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "filter_bytes/bool",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "oracle/float",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "encode_bytes/float",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "encode_swar/float",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_ENCODING",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "decode_bytes/float",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_ENCODING",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "filter_bytes/float",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "oracle/string",
+      "observed": {
+        "code": "INVALID_TRIT",
+        "exception": "ContractError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "encode_bytes/string",
+      "observed": {
+        "code": "INVALID_TRIT",
+        "exception": "ContractError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "encode_swar/string",
+      "observed": {
+        "code": "INVALID_TRIT",
+        "exception": "ContractError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "oracle/dictionary",
+      "observed": {
+        "code": "INVALID_TRIT",
+        "exception": "ContractError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "encode_bytes/dictionary",
+      "observed": {
+        "code": "INVALID_TRIT",
+        "exception": "ContractError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "encode_swar/dictionary",
+      "observed": {
+        "code": "INVALID_TRIT",
+        "exception": "ContractError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "oracle/set",
+      "observed": {
+        "code": "INVALID_TRIT",
+        "exception": "ContractError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "encode_bytes/set",
+      "observed": {
+        "code": "INVALID_TRIT",
+        "exception": "ContractError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "encode_swar/set",
+      "observed": {
+        "code": "INVALID_TRIT",
+        "exception": "ContractError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "oracle/iterator",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "encode_bytes/iterator",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "encode_swar/iterator",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_ENCODING",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "decode_bytes/iterator",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_ENCODING",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "filter_bytes/iterator",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "oracle/hostile",
+      "observed": {
+        "code": null,
+        "exception": "AssertionError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "encode_bytes/hostile",
+      "observed": {
+        "code": null,
+        "exception": "AssertionError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_LENGTH",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "encode_swar/hostile",
+      "observed": {
+        "code": null,
+        "exception": "AssertionError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_ENCODING",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "decode_bytes/hostile",
+      "observed": {
+        "code": null,
+        "exception": "AssertionError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_ENCODING",
+        "exception": "ContractError"
+      },
+      "group": "unexpected_types",
+      "label": "filter_bytes/hostile",
+      "observed": {
+        "code": null,
+        "exception": "AssertionError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "invalid_catalogs",
+      "label": "oracle/boolean",
+      "observed": "accepted"
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "error_precedence",
+      "label": "oracle/boolean",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "invalid_catalogs",
+      "label": "filter_bytes/boolean",
+      "observed": "accepted"
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "error_precedence",
+      "label": "filter_bytes/boolean",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "invalid_catalogs",
+      "label": "filter_swar/boolean",
+      "observed": "accepted"
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "error_precedence",
+      "label": "filter_swar/boolean",
+      "observed": {
+        "code": "INVALID_ENCODING",
+        "exception": "ContractError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "invalid_catalogs",
+      "label": "oracle/float",
+      "observed": "accepted"
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "error_precedence",
+      "label": "oracle/float",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "invalid_catalogs",
+      "label": "filter_bytes/float",
+      "observed": "accepted"
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "error_precedence",
+      "label": "filter_bytes/float",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "invalid_catalogs",
+      "label": "filter_swar/float",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "error_precedence",
+      "label": "filter_swar/float",
+      "observed": {
+        "code": "INVALID_ENCODING",
+        "exception": "ContractError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "invalid_catalogs",
+      "label": "oracle/none",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "error_precedence",
+      "label": "oracle/none",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "invalid_catalogs",
+      "label": "filter_bytes/none",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "error_precedence",
+      "label": "filter_bytes/none",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "invalid_catalogs",
+      "label": "filter_swar/none",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "error_precedence",
+      "label": "filter_swar/none",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "invalid_catalogs",
+      "label": "oracle/integer",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "error_precedence",
+      "label": "oracle/integer",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "invalid_catalogs",
+      "label": "filter_bytes/integer",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "error_precedence",
+      "label": "filter_bytes/integer",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "invalid_catalogs",
+      "label": "filter_swar/integer",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "error_precedence",
+      "label": "filter_swar/integer",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "invalid_catalogs",
+      "label": "oracle/dictionary",
+      "observed": "accepted"
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "error_precedence",
+      "label": "oracle/dictionary",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "invalid_catalogs",
+      "label": "filter_bytes/dictionary",
+      "observed": "accepted"
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "error_precedence",
+      "label": "filter_bytes/dictionary",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "invalid_catalogs",
+      "label": "filter_swar/dictionary",
+      "observed": "accepted"
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "error_precedence",
+      "label": "filter_swar/dictionary",
+      "observed": {
+        "code": "INVALID_ENCODING",
+        "exception": "ContractError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "invalid_catalogs",
+      "label": "oracle/generator",
+      "observed": "accepted"
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "error_precedence",
+      "label": "oracle/generator",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "invalid_catalogs",
+      "label": "filter_bytes/generator",
+      "observed": "accepted"
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "error_precedence",
+      "label": "filter_bytes/generator",
+      "observed": {
+        "code": null,
+        "exception": "TypeError"
+      }
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "invalid_catalogs",
+      "label": "filter_swar/generator",
+      "observed": "accepted"
+    },
+    {
+      "expected": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      },
+      "group": "error_precedence",
+      "label": "filter_swar/generator",
+      "observed": {
+        "code": "INVALID_ENCODING",
+        "exception": "ContractError"
+      }
+    },
+    {
+      "expected": [
+        0
+      ],
+      "group": "supported_catalogs",
+      "label": "oracle/list",
+      "observed": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      }
+    },
+    {
+      "expected": [
+        0
+      ],
+      "group": "supported_catalogs",
+      "label": "filter_bytes/list",
+      "observed": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      }
+    },
+    {
+      "expected": [
+        0
+      ],
+      "group": "supported_catalogs",
+      "label": "filter_swar/list",
+      "observed": {
+        "code": "INVALID_CATALOG",
+        "exception": "ContractError"
+      }
+    },
+    {
+      "expected": 81,
+      "group": "runner_integrity",
+      "label": "byte valid calls",
+      "observed": 0
+    },
+    {
+      "expected": 81,
+      "group": "runner_integrity",
+      "label": "swar valid calls",
+      "observed": 0
+    },
+    {
+      "expected": true,
+      "group": "runner_integrity",
+      "label": "wrong valid adapter result rejected",
+      "observed": false
+    },
+    {
+      "expected": true,
+      "group": "runner_integrity",
+      "label": "wrong error category rejected",
+      "observed": false
+    }
+  ],
+  "instrumented_malformed_calls": {
+    "INVALID_CATALOG": 9,
+    "INVALID_ENCODING": 544,
+    "INVALID_LENGTH": 15,
+    "INVALID_TRIT": 36
+  },
+  "instrumented_valid_filter_calls": {},
+  "observations": [
+    {
+      "byte": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "input": [
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "matches": [
+        0
+      ],
+      "swar": 0
+    },
+    {
+      "byte": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "input": [
+        -1,
+        -1,
+        -1,
+        0
+      ],
+      "matches": [
+        1
+      ],
+      "swar": 64
+    },
+    {
+      "byte": [
+        0,
+        0,
+        0,
+        2
+      ],
+      "input": [
+        -1,
+        -1,
+        -1,
+        1
+      ],
+      "matches": [
+        2
+      ],
+      "swar": 128
+    },
+    {
+      "byte": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "input": [
+        -1,
+        -1,
+        0,
+        -1
+      ],
+      "matches": [
+        3
+      ],
+      "swar": 16
+    },
+    {
+      "byte": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "input": [
+        -1,
+        -1,
+        0,
+        0
+      ],
+      "matches": [
+        4
+      ],
+      "swar": 80
+    },
+    {
+      "byte": [
+        0,
+        0,
+        1,
+        2
+      ],
+      "input": [
+        -1,
+        -1,
+        0,
+        1
+      ],
+      "matches": [
+        5
+      ],
+      "swar": 144
+    },
+    {
+      "byte": [
+        0,
+        0,
+        2,
+        0
+      ],
+      "input": [
+        -1,
+        -1,
+        1,
+        -1
+      ],
+      "matches": [
+        6
+      ],
+      "swar": 32
+    },
+    {
+      "byte": [
+        0,
+        0,
+        2,
+        1
+      ],
+      "input": [
+        -1,
+        -1,
+        1,
+        0
+      ],
+      "matches": [
+        7
+      ],
+      "swar": 96
+    },
+    {
+      "byte": [
+        0,
+        0,
+        2,
+        2
+      ],
+      "input": [
+        -1,
+        -1,
+        1,
+        1
+      ],
+      "matches": [
+        8
+      ],
+      "swar": 160
+    },
+    {
+      "byte": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "input": [
+        -1,
+        0,
+        -1,
+        -1
+      ],
+      "matches": [
+        9
+      ],
+      "swar": 4
+    },
+    {
+      "byte": [
+        0,
+        1,
+        0,
+        1
+      ],
+      "input": [
+        -1,
+        0,
+        -1,
+        0
+      ],
+      "matches": [
+        10
+      ],
+      "swar": 68
+    },
+    {
+      "byte": [
+        0,
+        1,
+        0,
+        2
+      ],
+      "input": [
+        -1,
+        0,
+        -1,
+        1
+      ],
+      "matches": [
+        11
+      ],
+      "swar": 132
+    },
+    {
+      "byte": [
+        0,
+        1,
+        1,
+        0
+      ],
+      "input": [
+        -1,
+        0,
+        0,
+        -1
+      ],
+      "matches": [
+        12
+      ],
+      "swar": 20
+    },
+    {
+      "byte": [
+        0,
+        1,
+        1,
+        1
+      ],
+      "input": [
+        -1,
+        0,
+        0,
+        0
+      ],
+      "matches": [
+        13
+      ],
+      "swar": 84
+    },
+    {
+      "byte": [
+        0,
+        1,
+        1,
+        2
+      ],
+      "input": [
+        -1,
+        0,
+        0,
+        1
+      ],
+      "matches": [
+        14
+      ],
+      "swar": 148
+    },
+    {
+      "byte": [
+        0,
+        1,
+        2,
+        0
+      ],
+      "input": [
+        -1,
+        0,
+        1,
+        -1
+      ],
+      "matches": [
+        15
+      ],
+      "swar": 36
+    },
+    {
+      "byte": [
+        0,
+        1,
+        2,
+        1
+      ],
+      "input": [
+        -1,
+        0,
+        1,
+        0
+      ],
+      "matches": [
+        16
+      ],
+      "swar": 100
+    },
+    {
+      "byte": [
+        0,
+        1,
+        2,
+        2
+      ],
+      "input": [
+        -1,
+        0,
+        1,
+        1
+      ],
+      "matches": [
+        17
+      ],
+      "swar": 164
+    },
+    {
+      "byte": [
+        0,
+        2,
+        0,
+        0
+      ],
+      "input": [
+        -1,
+        1,
+        -1,
+        -1
+      ],
+      "matches": [
+        18
+      ],
+      "swar": 8
+    },
+    {
+      "byte": [
+        0,
+        2,
+        0,
+        1
+      ],
+      "input": [
+        -1,
+        1,
+        -1,
+        0
+      ],
+      "matches": [
+        19
+      ],
+      "swar": 72
+    },
+    {
+      "byte": [
+        0,
+        2,
+        0,
+        2
+      ],
+      "input": [
+        -1,
+        1,
+        -1,
+        1
+      ],
+      "matches": [
+        20
+      ],
+      "swar": 136
+    },
+    {
+      "byte": [
+        0,
+        2,
+        1,
+        0
+      ],
+      "input": [
+        -1,
+        1,
+        0,
+        -1
+      ],
+      "matches": [
+        21
+      ],
+      "swar": 24
+    },
+    {
+      "byte": [
+        0,
+        2,
+        1,
+        1
+      ],
+      "input": [
+        -1,
+        1,
+        0,
+        0
+      ],
+      "matches": [
+        22
+      ],
+      "swar": 88
+    },
+    {
+      "byte": [
+        0,
+        2,
+        1,
+        2
+      ],
+      "input": [
+        -1,
+        1,
+        0,
+        1
+      ],
+      "matches": [
+        23
+      ],
+      "swar": 152
+    },
+    {
+      "byte": [
+        0,
+        2,
+        2,
+        0
+      ],
+      "input": [
+        -1,
+        1,
+        1,
+        -1
+      ],
+      "matches": [
+        24
+      ],
+      "swar": 40
+    },
+    {
+      "byte": [
+        0,
+        2,
+        2,
+        1
+      ],
+      "input": [
+        -1,
+        1,
+        1,
+        0
+      ],
+      "matches": [
+        25
+      ],
+      "swar": 104
+    },
+    {
+      "byte": [
+        0,
+        2,
+        2,
+        2
+      ],
+      "input": [
+        -1,
+        1,
+        1,
+        1
+      ],
+      "matches": [
+        26
+      ],
+      "swar": 168
+    },
+    {
+      "byte": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "input": [
+        0,
+        -1,
+        -1,
+        -1
+      ],
+      "matches": [
+        27
+      ],
+      "swar": 1
+    },
+    {
+      "byte": [
+        1,
+        0,
+        0,
+        1
+      ],
+      "input": [
+        0,
+        -1,
+        -1,
+        0
+      ],
+      "matches": [
+        28
+      ],
+      "swar": 65
+    },
+    {
+      "byte": [
+        1,
+        0,
+        0,
+        2
+      ],
+      "input": [
+        0,
+        -1,
+        -1,
+        1
+      ],
+      "matches": [
+        29
+      ],
+      "swar": 129
+    },
+    {
+      "byte": [
+        1,
+        0,
+        1,
+        0
+      ],
+      "input": [
+        0,
+        -1,
+        0,
+        -1
+      ],
+      "matches": [
+        30
+      ],
+      "swar": 17
+    },
+    {
+      "byte": [
+        1,
+        0,
+        1,
+        1
+      ],
+      "input": [
+        0,
+        -1,
+        0,
+        0
+      ],
+      "matches": [
+        31
+      ],
+      "swar": 81
+    },
+    {
+      "byte": [
+        1,
+        0,
+        1,
+        2
+      ],
+      "input": [
+        0,
+        -1,
+        0,
+        1
+      ],
+      "matches": [
+        32
+      ],
+      "swar": 145
+    },
+    {
+      "byte": [
+        1,
+        0,
+        2,
+        0
+      ],
+      "input": [
+        0,
+        -1,
+        1,
+        -1
+      ],
+      "matches": [
+        33
+      ],
+      "swar": 33
+    },
+    {
+      "byte": [
+        1,
+        0,
+        2,
+        1
+      ],
+      "input": [
+        0,
+        -1,
+        1,
+        0
+      ],
+      "matches": [
+        34
+      ],
+      "swar": 97
+    },
+    {
+      "byte": [
+        1,
+        0,
+        2,
+        2
+      ],
+      "input": [
+        0,
+        -1,
+        1,
+        1
+      ],
+      "matches": [
+        35
+      ],
+      "swar": 161
+    },
+    {
+      "byte": [
+        1,
+        1,
+        0,
+        0
+      ],
+      "input": [
+        0,
+        0,
+        -1,
+        -1
+      ],
+      "matches": [
+        36
+      ],
+      "swar": 5
+    },
+    {
+      "byte": [
+        1,
+        1,
+        0,
+        1
+      ],
+      "input": [
+        0,
+        0,
+        -1,
+        0
+      ],
+      "matches": [
+        37
+      ],
+      "swar": 69
+    },
+    {
+      "byte": [
+        1,
+        1,
+        0,
+        2
+      ],
+      "input": [
+        0,
+        0,
+        -1,
+        1
+      ],
+      "matches": [
+        38
+      ],
+      "swar": 133
+    },
+    {
+      "byte": [
+        1,
+        1,
+        1,
+        0
+      ],
+      "input": [
+        0,
+        0,
+        0,
+        -1
+      ],
+      "matches": [
+        39
+      ],
+      "swar": 21
+    },
+    {
+      "byte": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "input": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matches": [],
+      "swar": 85
+    },
+    {
+      "byte": [
+        1,
+        1,
+        1,
+        2
+      ],
+      "input": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "matches": [],
+      "swar": 149
+    },
+    {
+      "byte": [
+        1,
+        1,
+        2,
+        0
+      ],
+      "input": [
+        0,
+        0,
+        1,
+        -1
+      ],
+      "matches": [],
+      "swar": 37
+    },
+    {
+      "byte": [
+        1,
+        1,
+        2,
+        1
+      ],
+      "input": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "matches": [],
+      "swar": 101
+    },
+    {
+      "byte": [
+        1,
+        1,
+        2,
+        2
+      ],
+      "input": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "matches": [],
+      "swar": 165
+    },
+    {
+      "byte": [
+        1,
+        2,
+        0,
+        0
+      ],
+      "input": [
+        0,
+        1,
+        -1,
+        -1
+      ],
+      "matches": [],
+      "swar": 9
+    },
+    {
+      "byte": [
+        1,
+        2,
+        0,
+        1
+      ],
+      "input": [
+        0,
+        1,
+        -1,
+        0
+      ],
+      "matches": [],
+      "swar": 73
+    },
+    {
+      "byte": [
+        1,
+        2,
+        0,
+        2
+      ],
+      "input": [
+        0,
+        1,
+        -1,
+        1
+      ],
+      "matches": [],
+      "swar": 137
+    },
+    {
+      "byte": [
+        1,
+        2,
+        1,
+        0
+      ],
+      "input": [
+        0,
+        1,
+        0,
+        -1
+      ],
+      "matches": [],
+      "swar": 25
+    },
+    {
+      "byte": [
+        1,
+        2,
+        1,
+        1
+      ],
+      "input": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "matches": [],
+      "swar": 89
+    },
+    {
+      "byte": [
+        1,
+        2,
+        1,
+        2
+      ],
+      "input": [
+        0,
+        1,
+        0,
+        1
+      ],
+      "matches": [],
+      "swar": 153
+    },
+    {
+      "byte": [
+        1,
+        2,
+        2,
+        0
+      ],
+      "input": [
+        0,
+        1,
+        1,
+        -1
+      ],
+      "matches": [],
+      "swar": 41
+    },
+    {
+      "byte": [
+        1,
+        2,
+        2,
+        1
+      ],
+      "input": [
+        0,
+        1,
+        1,
+        0
+      ],
+      "matches": [],
+      "swar": 105
+    },
+    {
+      "byte": [
+        1,
+        2,
+        2,
+        2
+      ],
+      "input": [
+        0,
+        1,
+        1,
+        1
+      ],
+      "matches": [],
+      "swar": 169
+    },
+    {
+      "byte": [
+        2,
+        0,
+        0,
+        0
+      ],
+      "input": [
+        1,
+        -1,
+        -1,
+        -1
+      ],
+      "matches": [],
+      "swar": 2
+    },
+    {
+      "byte": [
+        2,
+        0,
+        0,
+        1
+      ],
+      "input": [
+        1,
+        -1,
+        -1,
+        0
+      ],
+      "matches": [],
+      "swar": 66
+    },
+    {
+      "byte": [
+        2,
+        0,
+        0,
+        2
+      ],
+      "input": [
+        1,
+        -1,
+        -1,
+        1
+      ],
+      "matches": [],
+      "swar": 130
+    },
+    {
+      "byte": [
+        2,
+        0,
+        1,
+        0
+      ],
+      "input": [
+        1,
+        -1,
+        0,
+        -1
+      ],
+      "matches": [],
+      "swar": 18
+    },
+    {
+      "byte": [
+        2,
+        0,
+        1,
+        1
+      ],
+      "input": [
+        1,
+        -1,
+        0,
+        0
+      ],
+      "matches": [],
+      "swar": 82
+    },
+    {
+      "byte": [
+        2,
+        0,
+        1,
+        2
+      ],
+      "input": [
+        1,
+        -1,
+        0,
+        1
+      ],
+      "matches": [],
+      "swar": 146
+    },
+    {
+      "byte": [
+        2,
+        0,
+        2,
+        0
+      ],
+      "input": [
+        1,
+        -1,
+        1,
+        -1
+      ],
+      "matches": [],
+      "swar": 34
+    },
+    {
+      "byte": [
+        2,
+        0,
+        2,
+        1
+      ],
+      "input": [
+        1,
+        -1,
+        1,
+        0
+      ],
+      "matches": [],
+      "swar": 98
+    },
+    {
+      "byte": [
+        2,
+        0,
+        2,
+        2
+      ],
+      "input": [
+        1,
+        -1,
+        1,
+        1
+      ],
+      "matches": [],
+      "swar": 162
+    },
+    {
+      "byte": [
+        2,
+        1,
+        0,
+        0
+      ],
+      "input": [
+        1,
+        0,
+        -1,
+        -1
+      ],
+      "matches": [],
+      "swar": 6
+    },
+    {
+      "byte": [
+        2,
+        1,
+        0,
+        1
+      ],
+      "input": [
+        1,
+        0,
+        -1,
+        0
+      ],
+      "matches": [],
+      "swar": 70
+    },
+    {
+      "byte": [
+        2,
+        1,
+        0,
+        2
+      ],
+      "input": [
+        1,
+        0,
+        -1,
+        1
+      ],
+      "matches": [],
+      "swar": 134
+    },
+    {
+      "byte": [
+        2,
+        1,
+        1,
+        0
+      ],
+      "input": [
+        1,
+        0,
+        0,
+        -1
+      ],
+      "matches": [],
+      "swar": 22
+    },
+    {
+      "byte": [
+        2,
+        1,
+        1,
+        1
+      ],
+      "input": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "matches": [],
+      "swar": 86
+    },
+    {
+      "byte": [
+        2,
+        1,
+        1,
+        2
+      ],
+      "input": [
+        1,
+        0,
+        0,
+        1
+      ],
+      "matches": [],
+      "swar": 150
+    },
+    {
+      "byte": [
+        2,
+        1,
+        2,
+        0
+      ],
+      "input": [
+        1,
+        0,
+        1,
+        -1
+      ],
+      "matches": [],
+      "swar": 38
+    },
+    {
+      "byte": [
+        2,
+        1,
+        2,
+        1
+      ],
+      "input": [
+        1,
+        0,
+        1,
+        0
+      ],
+      "matches": [],
+      "swar": 102
+    },
+    {
+      "byte": [
+        2,
+        1,
+        2,
+        2
+      ],
+      "input": [
+        1,
+        0,
+        1,
+        1
+      ],
+      "matches": [],
+      "swar": 166
+    },
+    {
+      "byte": [
+        2,
+        2,
+        0,
+        0
+      ],
+      "input": [
+        1,
+        1,
+        -1,
+        -1
+      ],
+      "matches": [],
+      "swar": 10
+    },
+    {
+      "byte": [
+        2,
+        2,
+        0,
+        1
+      ],
+      "input": [
+        1,
+        1,
+        -1,
+        0
+      ],
+      "matches": [],
+      "swar": 74
+    },
+    {
+      "byte": [
+        2,
+        2,
+        0,
+        2
+      ],
+      "input": [
+        1,
+        1,
+        -1,
+        1
+      ],
+      "matches": [],
+      "swar": 138
+    },
+    {
+      "byte": [
+        2,
+        2,
+        1,
+        0
+      ],
+      "input": [
+        1,
+        1,
+        0,
+        -1
+      ],
+      "matches": [],
+      "swar": 26
+    },
+    {
+      "byte": [
+        2,
+        2,
+        1,
+        1
+      ],
+      "input": [
+        1,
+        1,
+        0,
+        0
+      ],
+      "matches": [],
+      "swar": 90
+    },
+    {
+      "byte": [
+        2,
+        2,
+        1,
+        2
+      ],
+      "input": [
+        1,
+        1,
+        0,
+        1
+      ],
+      "matches": [],
+      "swar": 154
+    },
+    {
+      "byte": [
+        2,
+        2,
+        2,
+        0
+      ],
+      "input": [
+        1,
+        1,
+        1,
+        -1
+      ],
+      "matches": [],
+      "swar": 42
+    },
+    {
+      "byte": [
+        2,
+        2,
+        2,
+        1
+      ],
+      "input": [
+        1,
+        1,
+        1,
+        0
+      ],
+      "matches": [],
+      "swar": 106
+    },
+    {
+      "byte": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "input": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "matches": [],
+      "swar": 170
+    }
+  ],
+  "optimization_flag": 1,
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "python": "3.14.3",
+  "source_commit": "b83414f0b04563cecae1c3741ceba7692dd81a11",
+  "status": "FAIL",
+  "tests_executed": 13274,
+  "tests_failed": 82,
+  "tests_passed": 13192,
+  "tests_skipped": 0
+}
