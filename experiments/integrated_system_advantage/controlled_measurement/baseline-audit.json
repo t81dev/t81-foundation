@@ -1,0 +1,135 @@
+{
+  "schema": "t81.investigation08.baseline-audit.v1",
+  "date": "2026-10-28",
+  "baseline_revision": "0662e0e637f47168e56ca4ddd66e8ee877473b38",
+  "baseline_tree": "32c4996e0e9bf7557442da9dd92dcf5f3409cfa9",
+  "merged_pr": {
+    "number": 627,
+    "merged": true,
+    "merge_commit": "0662e0e637f47168e56ca4ddd66e8ee877473b38",
+    "accepted_head": "351d88f3d31853e9fc4fb08e56c57b473467fd62",
+    "whole_tree_equal_to_accepted_head": true,
+    "source": "https://github.com/t81dev/t81-foundation/pull/627"
+  },
+  "static_checks": {
+    "mandatory_tensor_names": [
+      "lm_head.weight",
+      "model.embed_tokens.weight",
+      "model.layers.0.mlp.down_proj.weight",
+      "model.layers.0.mlp.gate_proj.weight",
+      "model.layers.0.mlp.up_proj.weight",
+      "model.layers.0.self_attn.k_proj.weight",
+      "model.layers.0.self_attn.o_proj.weight",
+      "model.layers.0.self_attn.q_proj.weight",
+      "model.layers.0.self_attn.v_proj.weight",
+      "model.layers.1.self_attn.k_proj.weight",
+      "model.layers.1.self_attn.q_proj.weight",
+      "model.layers.1.self_attn.v_proj.weight",
+      "model.norm.weight"
+    ],
+    "mandatory_count": 13,
+    "gate_methods": [
+      "test_original_and_normalized_inputs",
+      "test_valid_nonsymmetric_mutations",
+      "test_tokenizer_changes_and_wrapped_ties",
+      "test_policy_denials_and_syntax",
+      "test_malformed_models",
+      "test_trial_isolation_across_invocations",
+      "test_binary_identity_tamper_and_independent_recovery"
+    ],
+    "gate_method_count": 7,
+    "ctest_registration_count": 1,
+    "comparator_uses_t81vm": false,
+    "comparator_dependency_review": "Imports hashlib/json/os/re/struct/time/typing; computation and CAS are Python implementations; no subprocess/FFI/VM invocation in baseline_stack.py"
+  },
+  "fresh_gate_run": false,
+  "fresh_build": false,
+  "new_confirmatory_performance_observations": 0,
+  "prior_acceptance": {
+    "relationship": "Same Codex session/reviewer; independent prior execution of Jules-authored comparator, not a newly independent reviewer or newly executed gate",
+    "outcome": "All 13 externally specified omitted-tensor cases and numerical/identity/replay checks passed; remaining CTest registration finding corrected by accepted_head",
+    "retained_external_packet_sha256": {
+      "REVIEW.md": "5d369a43c2f623a785712307d14b073d5d4e280915243d7b7fb582e31f779383",
+      "admission.json": "709b36a059c7621275ca153ae0e8ec145a9d3532ff3d99fbbf032279c0b53b88",
+      "independent-checks.json": "dff13fd0472b076bb91b6b8e27ae2c3a618403434df3a6665c298d03e6ec9a79",
+      "protocol-checks.json": "3a496172c87b9d7313176a55c190baf9a42e0d9fb443d023414b9415291ad79a"
+    },
+    "availability": "Prior-session external review records; hashes preserve identity, not new repository-hosted raw evidence"
+  },
+  "source_sha256": {
+    "CMakeLists.txt": "3d978712a691a282bee3031b73f5a81346192f270be3d4361f668c3974b33064",
+    "cmake/Options.cmake": "c9d905ab40219fabf8dff9cf5e52b2f82d62af3c5acaf421d3cd332c22d00536",
+    "include/t81/tritwise/profiling.hpp": "804e6e76cbd56de4e389ee766556c1044c19e99f1ceac770c07a586cf12970ef",
+    "tools/cli/ai/ai_cli_shared.cpp": "63c38230924a327e40235a62b17b51a962aa3f211c0ff1bafabfb11a5937d30b",
+    "experiments/integrated_system_advantage/baseline_stack.py": "6cf75b3fc38ea5cd09153d1681337c6b95fea3616e84cb79032cd3414e707d2c",
+    "experiments/integrated_system_advantage/test_differential_parity.py": "d10a4a1b286c279d31f74ab62a73d25b24196ca59b449756d71c1226bca3774b",
+    "experiments/integrated_system_advantage/parity_probe.cpp": "6b85c9bace8442f233fa6898fe1358d28d7bb89eda31d7adb24719442eece641",
+    "experiments/integrated_system_advantage/ablation_runner.py": "5a4ce5659069d32b86d53eb8be6eb13f9770fcb85367b7f101c2c054f89abc33",
+    "experiments/integrated_system_advantage/run_experiments.py": "9d747a0645bf13e74f0770d15e47d6500e57a8495c3e236ac225d6fb38465eee",
+    "experiments/integrated_system_advantage/baseline_worker.py": "0f1b5b5a706169844c13840c78047d9b6119c859cf23d3a480c8d72e85c9ef17",
+    "experiments/integrated_system_advantage/README.md": "ab71cf4068135eb21c824ceb1bf3bb0292db4888082e93aa223e135af3b1835c",
+    "experiments/integrated_system_advantage/CORRECTIVE_REVIEW.md": "96320601be16ba581e3daf6a7442324d8fe665898de5a86321fd776ee0ab5d0a"
+  },
+  "retained_historical_evidence": {
+    "current_packet": "observations-2026-10-27-corrective.json",
+    "packet_sha256": "303d0aa2f541dd53c9c41f9693fdaa6b44fd952db35f55d9b13079196c684191",
+    "source_archive": "observations-2026-10-27-sources.tar.gz",
+    "archive_sha256": "de625428d51ee368abbf8e808e3c0804c32982a88060d2d722820e685cc46795",
+    "identity_checks_passed": true,
+    "scope": "Existing smoke evidence remains unchanged; no timing values reused for confirmatory inference"
+  },
+  "protocol_audit": {
+    "accepted_i08_statistical_threshold_found": false,
+    "existing_minimum_pairs": 30,
+    "existing_smoke_pairs_per_condition": 3,
+    "missing": [
+      "accepted practical significance margin",
+      "confidence interval and multiplicity method",
+      "statistical fixed-sample/exclusion rules",
+      "common persisted-input/recovery obligations",
+      "attempt-level failure retention"
+    ],
+    "unrelated_thresholds_not_adopted": [
+      "Investigation07 1.25x area threshold",
+      "Investigation09 footprint criterion",
+      "initiative roadmap examples",
+      "S02 proposed rubric"
+    ]
+  },
+  "instrumentation": {
+    "t81_task_phase_clock_found": false,
+    "python_phase_clocks": true,
+    "tritwise_profile": "Default OFF; operation counts and byte histograms, not durations",
+    "t81_phase_values": "null",
+    "replay_mismatch": "T81 reruns with original fixture files; conventional bundle recovers CAS inputs",
+    "persistence_mismatch": "Comparator persists four inputs plus result/provenance/bundle; T81 task persists result/provenance"
+  },
+  "environment": {
+    "hardware": "Apple M2",
+    "model": "Mac14,2",
+    "logical_cpus": 8,
+    "ram_bytes": 8589934592,
+    "os": "macOS 26.5.2 (25F84)",
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]",
+    "compiler": "AppleClang 21.0.0 clang-2100.1.1.101 /usr/bin/clang++",
+    "cmake": "4.3.0",
+    "ninja": "1.13.2",
+    "future_measurement_identity_manifest": "Required before first timing; no new executables or model fixtures generated"
+  },
+  "commands_executed": [
+    "GitHub get_pr_info(627), git/ref/heads/main reads",
+    "git diff 351d88f3 0662e0e6 -- experiments/integrated_system_advantage CMakeLists.txt",
+    "AST inspection of 13 tensor names and seven test methods (no implementation execution)",
+    "Source inspection and rg protocol/instrumentation searches",
+    "Existing packet/archive SHA-256 verification",
+    "sysctl -n hw.model hw.ncpu hw.memsize machdep.cpu.brand_string (initial sandbox denied; approved read-only escalation succeeded)",
+    "sw_vers; /usr/bin/clang++ --version; python3 --version; cmake --version; ninja --version",
+    "Commons get_hypothesis H07 read-only discovery"
+  ],
+  "proposed_protocol_sha256": "1a436040b7506c2f9818e23544e27860a2808c020a86827f25945d097001fcb6",
+  "preparation_checks": {
+    "initial_commons_validation": "Rejected unindexed relative evidence refs; changed proposal evidence refs to existing canonical Commons source IDs without changing its index",
+    "protocol_status": "Candidate hash only; no approval or freezing/measurement authorization claimed"
+  }
+}

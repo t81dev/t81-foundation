@@ -1,0 +1,12 @@
+test_binary_identity_tamper_and_independent_recovery (__main__.DifferentialParityTest.test_binary_identity_tamper_and_independent_recovery) ... ok
+test_malformed_models (__main__.DifferentialParityTest.test_malformed_models) ... ok
+test_original_and_normalized_inputs (__main__.DifferentialParityTest.test_original_and_normalized_inputs) ... ok
+test_policy_denials_and_syntax (__main__.DifferentialParityTest.test_policy_denials_and_syntax) ... ok
+test_tokenizer_changes_and_wrapped_ties (__main__.DifferentialParityTest.test_tokenizer_changes_and_wrapped_ties) ... ok
+test_trial_isolation_across_invocations (__main__.DifferentialParityTest.test_trial_isolation_across_invocations) ... ok
+test_valid_nonsymmetric_mutations (__main__.DifferentialParityTest.test_valid_nonsymmetric_mutations) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 246.130s
+
+OK

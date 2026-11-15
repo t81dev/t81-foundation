@@ -1,0 +1,22 @@
+test_files_removed_before_new_process_recovery_and_tamper (__main__.RealWorkflowTests.test_files_removed_before_new_process_recovery_and_tamper) ... ok
+test_policy_denial_and_invalid_model_leave_no_objects (__main__.RealWorkflowTests.test_policy_denial_and_invalid_model_leave_no_objects) ... ok
+test_real_seven_obligations_and_populated_condition (__main__.RealWorkflowTests.test_real_seven_obligations_and_populated_condition) ... ok
+test_disk_failure_prevents_spawn (__main__.RetentionTests.test_disk_failure_prevents_spawn) ... ok
+test_incomplete_pair_keeps_successful_first_arm (__main__.RetentionTests.test_incomplete_pair_keeps_successful_first_arm) ... ok
+test_missing_executable_nonzero_and_raw_output (__main__.RetentionTests.test_missing_executable_nonzero_and_raw_output) ... ok
+test_partial_record_preserved_and_stops (__main__.RetentionTests.test_partial_record_preserved_and_stops) ... ok
+test_timeout_is_retained (__main__.RetentionTests.test_timeout_is_retained) ... ok
+test_exact_sample_and_balance (__main__.ScheduleTests.test_exact_sample_and_balance) ... ok
+test_frozen_bytes_and_no_overwrite (__main__.ScheduleTests.test_frozen_bytes_and_no_overwrite) ... ok
+test_analysis_does_not_import_execution_or_comparator (__main__.StatisticalTests.test_analysis_does_not_import_execution_or_comparator) ... ok
+test_exact_boundaries_and_neighbors (__main__.StatisticalTests.test_exact_boundaries_and_neighbors) ... ok
+test_indices_with_independent_pascal_oracle (__main__.StatisticalTests.test_indices_with_independent_pascal_oracle) ... ok
+test_order_statistics_not_zero_based_or_unpaired (__main__.StatisticalTests.test_order_statistics_not_zero_based_or_unpaired) ... ok
+test_overall_exhaustive_mixed_and_unresolved (__main__.StatisticalTests.test_overall_exhaustive_mixed_and_unresolved) ... ok
+test_refuse_missing_duplicate_failed_validation_and_bad_durations (__main__.StatisticalTests.test_refuse_missing_duplicate_failed_validation_and_bad_durations) ... ok
+test_synthetic_inference_and_environment_guard (__main__.StatisticalTests.test_synthetic_inference_and_environment_guard) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 116.820s
+
+OK
