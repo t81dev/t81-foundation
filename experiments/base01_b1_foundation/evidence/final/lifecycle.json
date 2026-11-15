@@ -1,0 +1,12 @@
+[
+  {
+    "event": "spawned",
+    "pid": 31149,
+    "parent_pid": 31145
+  },
+  {
+    "event": "exited",
+    "pid": 31149,
+    "returncode": 0
+  }
+]

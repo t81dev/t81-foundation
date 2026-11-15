@@ -1,0 +1,92 @@
+{
+  "id": "pr-656-implementation-review",
+  "status": "proposed",
+  "hypothesis_id": "H08",
+  "attribution": {
+    "name": "Codex",
+    "kind": "agent",
+    "model": null,
+    "role": "implementation reviewer and corrective patch author"
+  },
+  "repository_revision": "7daafeb55ae241e21cfbe4bdb4a74bb911595fa7",
+  "evidence": [
+    {
+      "source_ref": "review/pr-656/original-results.json",
+      "relationship": "contradictory",
+      "scope": "Original Python validation bypasses and schema discrepancies"
+    },
+    {
+      "source_ref": "review/pr-656/corrected-results.json",
+      "relationship": "supporting",
+      "scope": "Corrected implementation agrees with the reference schema on the retained corpus"
+    }
+  ],
+  "uncertainty": "Implementation review supporting H08 evidence discipline; no test of H08 comparative scientific benefit. AI-assisted, one local host, no independent human scientific validation or hosted CI.",
+  "human_authorization": {
+    "status": "authorized",
+    "human": null,
+    "record": "Current user request: review PR 656, execute validator and adversarial checks, make only necessary corrective changes on a separate branch; do not merge, modify historical evidence or activate governance."
+  },
+  "schema": "t81.research-commons.reproducibility-report.v1",
+  "target": "PR 656 validator and isolated corrective patch",
+  "environment": "Python 3.14.3 matrix; Python 3.12.13 and 3.9.6 positive smoke checks; jsonschema 4.26.0; dependencies in requirements.txt",
+  "commands": [
+    "python3 scripts/validate_current_state.py",
+    "python3 -O scripts/validate_current_state.py",
+    ".venv-pr656/bin/python review/pr-656/check.py --original --output review/pr-656/original-results.json",
+    ".venv-pr656/bin/python review/pr-656/check.py --output review/pr-656/corrected-results.json",
+    "git diff --check"
+  ],
+  "artifact_identities": [
+    {
+      "path": "review/pr-656/REPORT.md",
+      "sha256": "a2c5819dac6dc18120fab3e2df6ca009bdbc8b2756fa8bda6280bc87ccf4c8a9"
+    },
+    {
+      "path": "review/pr-656/check.py",
+      "sha256": "f5f6270c36763ff8feab416bacf5d50ca03aadc45dbffef97564839f0fab2837"
+    },
+    {
+      "path": "review/pr-656/commons.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "review/pr-656/commons.stdout.txt",
+      "sha256": "e71052118759ee614d09f5212a79f9a54e359eb8d06752bf70ea251e7c69d13c"
+    },
+    {
+      "path": "review/pr-656/corrected-results.json",
+      "sha256": "53b1d07c583ebb349632f2543805571a77734f99979e53d3751dd57e0c549900"
+    },
+    {
+      "path": "review/pr-656/live-github.json",
+      "sha256": "88ee3ce66a0b266179ffe84fa6acd377d362bbc0581e1a5132f7580cba3c5179"
+    },
+    {
+      "path": "review/pr-656/main-observation.json",
+      "sha256": "219a0cfeb996dfafd15f70d01ed5576ab0b3583c7d3453855ac5c8ca79fd303a"
+    },
+    {
+      "path": "review/pr-656/original-results.json",
+      "sha256": "fdb981d0b71a10b4f69cf2cff2f27588608117c0ac14edecc06854d97ae26b4a"
+    },
+    {
+      "path": "review/pr-656/pr-metadata.json",
+      "sha256": "9056d6fc0e023c27ed2687df15ea97065f258a9be53a845e27a6f399926917cd"
+    },
+    {
+      "path": "review/pr-656/publication-checks.json",
+      "sha256": "13bb3168eb0d1951d3b9fef068164fcfcea2181a1cf1fbf278fb278e941df970"
+    },
+    {
+      "path": "review/pr-656/requirements.txt",
+      "sha256": "5bf6d53930534ae6cbfe3242813b04d60c69599efe0b8bd7b8168ed6330615f0"
+    }
+  ],
+  "outcome": "reproduced_in_scope",
+  "failures": [
+    "Original: 107 mismatches across 278 executions (9 normal, 98 optimized).",
+    "Setup dependency/network/sandbox and shell wrapper failures are recorded in REPORT.md."
+  ],
+  "scope": "Reproduced original implementation defects, preserved negative receipts, and verified local correction on 131 fixtures. No scientific finding, authorization, freshness or cross-platform certification."
+}

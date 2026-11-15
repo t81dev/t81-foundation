@@ -1,0 +1,71 @@
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/candidate-runtime.diff:7: trailing whitespace.
++ 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/candidate-runtime.diff:17: trailing whitespace.
++ 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/candidate-runtime.diff:26: trailing whitespace.
++ 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/candidate-runtime.diff:28: trailing whitespace.
++ 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/candidate-runtime.diff:39: trailing whitespace.
++ 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/candidate-runtime.diff:65: trailing whitespace.
++ 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/candidate-runtime.diff:247: trailing whitespace.
++ 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/original-pr748.patch:7: trailing whitespace.
++ 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/original-pr748.patch:17: trailing whitespace.
++ 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/original-pr748.patch:26: trailing whitespace.
++ 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/original-pr748.patch:28: trailing whitespace.
++ 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/original-pr748.patch:39: trailing whitespace.
++ 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/original-pr748.patch:65: trailing whitespace.
++ 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/original-pr748.patch:222: trailing whitespace.
++ 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/release-CMakeCache.txt:670: new blank line at EOF.
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/release-ctest-registration.json:2: trailing whitespace.
++  "backtraceGraph" : 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/release-ctest-registration.json:4: trailing whitespace.
++    "commands" : 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/release-ctest-registration.json:8: trailing whitespace.
++    "files" : 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/release-ctest-registration.json:12: trailing whitespace.
++    "nodes" : 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/release-ctest-registration.json:44: trailing whitespace.
++  "tests" : 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/release-ctest-registration.json:48: trailing whitespace.
++      "command" : 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/release-ctest-registration.json:53: trailing whitespace.
++      "properties" : 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/release-ctest-registration.json:63: trailing whitespace.
++      "command" : 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/release-ctest-registration.json:68: trailing whitespace.
++      "properties" : 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/release-ctest-registration.json:78: trailing whitespace.
++      "command" : 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/release-ctest-registration.json:83: trailing whitespace.
++      "properties" : 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/release-ctest-registration.json:92: trailing whitespace.
++  "version" : 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/release-native-int128-probe.log:3: trailing whitespace.
++Target: 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/release-native-int128-probe.log:12: new blank line at EOF.
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/sanitizer-CMakeCache.txt:670: new blank line at EOF.
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/sanitizer-native-int128-probe.log:3: trailing whitespace.
++Target: 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/sanitizer-native-int128-probe.log:12: new blank line at EOF.
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/test-extension.diff:24: trailing whitespace.
++ 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/test-extension.diff:37: trailing whitespace.
++ 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/test-extension.diff:41: trailing whitespace.
++ 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/test-extension.diff:84: trailing whitespace.
++ 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/test-extension.diff:100: trailing whitespace.
++ 
+docs/records/audits/2026-11-14-pr748-main-candidate/evidence/test-extension.diff:100: new blank line at EOF.

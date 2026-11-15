@@ -1,0 +1,33 @@
+name: QEMU verification control flow
+on:
+  pull_request:
+    paths:
+      - 'drivers/qemu/scripts/**'
+      - 'ternaryos/automated_verification.sh'
+      - 'ternaryos/production_qemu_setup.sh'
+      - 'tests/qemu/**'
+      - '.github/workflows/qemu-verification.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'drivers/qemu/scripts/**'
+      - 'ternaryos/automated_verification.sh'
+      - 'ternaryos/production_qemu_setup.sh'
+      - 'tests/qemu/**'
+      - '.github/workflows/qemu-verification.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  mock-execution:
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, macos-15]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Bash syntax
+        run: bash -n drivers/qemu/scripts/automated_verification.sh drivers/qemu/scripts/verify_production.sh ternaryos/automated_verification.sh ternaryos/production_qemu_setup.sh
+      - name: Isolated mock QMP and serial checks (no QEMU execution)
+        run: python3 tests/qemu/test_verification.py

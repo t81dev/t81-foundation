@@ -1,0 +1,94 @@
+name: SCG08 pinned correctness
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/scg08-correctness.yml'
+      - 'scripts/ci/run_scg08_correctness.py'
+      - 'scripts/ci/scg08-requirements.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  correctness:
+    name: scg08 correctness / ${{ matrix.toolchain }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    env:
+      PYTHONUTF8: '1'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            toolchain: linux-gcc
+            cc: gcc-14
+            cxx: g++-14
+          - os: windows-2025
+            toolchain: windows-msvc
+            cc: cl
+            cxx: cl
+          - os: windows-2025
+            toolchain: windows-clang-cl
+            cc: clang-cl
+            cxx: clang-cl
+    steps:
+      - name: Enable long checkout paths on Windows
+        if: runner.os == 'Windows'
+        run: git config --global core.longpaths true
+
+      - name: Checkout CI harness
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: harness
+          persist-credentials: false
+          sparse-checkout: scripts/ci
+
+      # Full checkout deliberately includes experiments/, unlike the general CI.
+      - name: Checkout exact PR785 candidate
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: 300cdea8896d56c025f7099c0cdf0c41d7bd6237
+          path: source
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
+        with:
+          python-version: '3.12'
+
+      - name: Install schema parity dependency
+        run: |
+          python -c "from pathlib import Path; Path('evidence').mkdir(exist_ok=True); Path('evidence/setup.txt').write_text('Pinned source 300cdea8896d56c025f7099c0cdf0c41d7bd6237; setup failures remain in the job log.', encoding='utf-8')"
+          python -m pip install -r harness/scripts/ci/scg08-requirements.txt
+
+      - name: Install Linux build tools
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends cmake ninja-build gcc-14 g++-14
+
+      - name: Configure Windows compiler environment
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
+        with:
+          arch: x64
+
+      - name: Build and run only the five correctness tests
+        env:
+          SCG08_CC: ${{ matrix.cc }}
+          SCG08_CXX: ${{ matrix.cxx }}
+          SCG08_TOOLCHAIN: ${{ matrix.toolchain }}
+        run: python harness/scripts/ci/run_scg08_correctness.py --source source --build build --evidence evidence
+
+      - name: Retain commands, identities, test logs and failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: scg08-correctness-${{ matrix.toolchain }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 90

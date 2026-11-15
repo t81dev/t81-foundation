@@ -1,0 +1,3 @@
+TAnd AVX2/16384: 103.71 ns vs SWAR 111.46 ns; ratio=0.9305
+TAnd AVX2/65536: 392.49 ns vs SWAR 480.93 ns; ratio=0.8161
+Regression check passed: 14 results, 2 comparator pairs checked.

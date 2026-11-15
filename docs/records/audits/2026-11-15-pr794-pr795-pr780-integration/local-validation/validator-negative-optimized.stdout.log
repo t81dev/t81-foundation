@@ -1,0 +1,99 @@
+[SCG-08 NEGATIVE TEST SUITE] Running negative schema tests...
+  ✓ Case 'null evaluated_implementation_sha' properly rejected fail-closed
+  ✓ Case 'invalid short evaluated_implementation_sha' properly rejected fail-closed
+  ✓ Case 'null evidence_publication_sha' properly rejected fail-closed
+  ✓ Case 'non-string evidence_publication_sha' properly rejected fail-closed
+  ✓ Case 'invalid publication sha format' properly rejected fail-closed
+  ✓ Case 'malformed timestamp' properly rejected fail-closed
+  ✓ Case 'wrong specification version' properly rejected fail-closed
+  ✓ Case 'budget ceiling exceeded' properly rejected fail-closed
+  ✓ Case 'budget boolean False' properly rejected fail-closed
+  ✓ Case 'missing tier2 band' properly rejected fail-closed
+  ✓ Case 'mismatched weighted total W_ops' properly rejected fail-closed
+  ✓ Case 'missing primitive counter' properly rejected fail-closed
+  ✓ Case 'boolean instead of number' properly rejected fail-closed
+  ✓ Case 'oracle passed False' properly rejected fail-closed
+  ✓ Case 'oracle dimensions missing' properly rejected fail-closed
+  ✓ Case 'operand_trits is null' properly rejected fail-closed
+  ✓ Case 'ternary_limbs_op is not integer' properly rejected fail-closed
+  ✓ Case 'bit_width boolean True' properly rejected fail-closed
+  ✓ Case 'operand_trits float' properly rejected fail-closed
+  ✓ Case 'negative operand_trits' properly rejected fail-closed
+  ✓ Case 'scalar bit_width: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar bit_width: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar bit_width: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar bit_width: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar bit_width: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar bit_width: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'scalar operand_trits: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar operand_trits: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar operand_trits: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar operand_trits: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar operand_trits: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar operand_trits: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'scalar add_trits_min: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar add_trits_min: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar add_trits_min: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar add_trits_min: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar add_trits_min: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar add_trits_min: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'scalar mul_trits_min: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar mul_trits_min: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar mul_trits_min: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar mul_trits_min: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar mul_trits_min: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar mul_trits_min: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_op: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_op: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_op: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_op: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_op: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_op: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_add: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_add: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_add: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_add: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_add: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_add: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_mul: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_mul: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_mul: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_mul: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_mul: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_mul: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_ternary: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_ternary: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_ternary: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_ternary: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_ternary: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_ternary: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_ternary: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_ternary: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_ternary: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_ternary: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_ternary: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_ternary: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_binary: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_binary: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_binary: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_binary: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_binary: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_binary: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_binary: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_binary: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_binary: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_binary: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_binary: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_binary: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'null publication' properly rejected fail-closed
+  ✓ Case 'boolean publication' properly rejected fail-closed
+  ✓ Case 'numeric publication' properly rejected fail-closed
+  ✓ Case 'float publication' properly rejected fail-closed
+  ✓ Case 'short publication' properly rejected fail-closed
+  ✓ Case 'newline publication' properly rejected fail-closed
+  ✓ Case 'missing generation revision' properly rejected fail-closed
+  ✓ Case 'invalid generation revision' properly rejected fail-closed
+[SCG-08 NEGATIVE TEST SUITE] 94 negative cases passed; publication omission and valid SHA accepted.
+[SCG-08 SCHEMA PARITY] 61 rejection cases and 2 positive records passed.
+[SCG-08 SCHEMA PARITY] Integral floats: Draft 7 accepts mathematical integers; stdlib validation intentionally rejects all Python floats.
+[SCG-08 NEGATIVE TEST SUITE] All negative test cases passed successfully.

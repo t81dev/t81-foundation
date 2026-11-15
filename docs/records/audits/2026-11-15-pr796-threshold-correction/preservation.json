@@ -1,0 +1,57 @@
+{
+  "correction_base": "b48e1a4da29784860a528e5397f896c73bc48450",
+  "accepted_components": [
+    {
+      "source_pr": "794",
+      "source_head": "5f5751ae9b9f634f2af2cb020afef6f9e2cd610d",
+      "accepted_file_count": 33,
+      "working_bytes_and_git_identity_preserved": true
+    },
+    {
+      "source_pr": "795",
+      "source_head": "43747b60675444ab58f693713577d6cd42e3f234",
+      "accepted_file_count": 8,
+      "working_bytes_and_git_identity_preserved": true
+    },
+    {
+      "source_pr": "780",
+      "source_head": "c08c211bd3475d8b09e35648f84c6b5c0a7e31a2",
+      "accepted_file_count": 7,
+      "working_bytes_and_git_identity_preserved": true
+    }
+  ],
+  "protected_artifacts": {
+    "include/t81/types/cell.hpp": {
+      "sha256": "f75058f0919b40346fd9caef3300014665cf259ebfb7052b8910828c8953f550",
+      "unchanged_from_main": true
+    },
+    "experiments/scg08_arithmetic_work/gate1_evidence_record.json": {
+      "sha256": "da027863a69ee39f80161175b9328645ac43672de6d25a350388057a48a9aff0",
+      "unchanged_from_main": true
+    },
+    "experiments/scg08_arithmetic_work/evidence_schema.json": {
+      "sha256": "46874e8caad8a971c9fb7e5d6d5087a1d73c812c439e221c39ab5fee2fe5814a",
+      "unchanged_from_main": true
+    },
+    "experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md": {
+      "sha256": "97d53fba8be955a394777546366a9ab05cda3fc13537625a1516656c3443628f",
+      "unchanged_from_main": true
+    },
+    "docs/reference/benchmarks.md": {
+      "sha256": "0bf10e39e9c07c18c3142bafa85a4075c365c11f16c21b7bba93e6ad30c1f958",
+      "unchanged_from_main": true
+    },
+    "docs/reference/benchmarks_engineering.md": {
+      "sha256": "ec055d2cb1a6a179cddc0fa28015d51eb573e266ba77ba264c1a7a6da0faa3fe",
+      "unchanged_from_main": true
+    },
+    "docs/benchmarks/base_perf_00_cell_throughput_raw.json": {
+      "sha256": "5f051ecf260f3bea68443473623f1c7c180f4df0fe9bc612b96a7ba9d334ada2",
+      "unchanged_from_pr780": true
+    },
+    "docs/benchmarks/base_perf_00_cell_throughput_baseline.json": {
+      "sha256": "5eef9d7fa3db4fef20bcc8ee9fee417a2e37e854756a2411f4a7e117f671d30d",
+      "unchanged_from_pr780": true
+    }
+  }
+}

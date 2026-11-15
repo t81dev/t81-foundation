@@ -1,0 +1,3 @@
+  - .github/workflows/qemu-boot-x86.yml
+workflow permissions audit: total=23 explicit=22 missing=1 write_scoped=8
+ERROR: missing explicit permissions 1 exceed allowed maximum 0

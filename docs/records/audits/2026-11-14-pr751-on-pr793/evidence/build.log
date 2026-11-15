@@ -1,0 +1,100 @@
+[1/99] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/canonfs_interchange.cpp.o
+[2/99] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/isa/encoding.cpp.o
+[3/99] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/isa/types/bigint.cpp.o
+[4/99] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/isa/types/fraction.cpp.o
+[5/99] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/canonfs_json_renderer.cpp.o
+[6/99] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/canonfs_interchange_engine.cpp.o
+[7/99] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/in_memory_driver.cpp.o
+[8/99] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/vm/determinism/canon_hash81.cpp.o
+[9/99] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/canonfs_interchange_ops.cpp.o
+[10/99] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/persistent_driver.cpp.o
+[11/99] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/block_backed_driver.cpp.o
+[12/99] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/base81.cpp.o
+[13/99] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/isa/math/t81_soft_math/t81_soft_math.cpp.o
+[14/99] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/base243.cpp.o
+[15/99] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/base81_balanced.cpp.o
+[16/99] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/base81_packed.cpp.o
+[17/99] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/crypto/sha3.cpp.o
+[18/99] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/metadata.cpp.o
+[19/99] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/trit_packing.cpp.o
+[20/99] Building CXX object src/core/CMakeFiles/t81_tracing.dir/__/__/vm/tracing/canonhash81.cpp.o
+[21/99] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/hanoi/error.cpp.o
+[22/99] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/experimental/cog/v1/symbolic_graph.cpp.o
+[23/99] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/hanoi/in_memory_kernel.cpp.o
+[24/99] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/tiers/cog/tier2/reflective.cpp.o
+[25/99] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/tiers/cog/tier3/recursive.cpp.o
+[26/99] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/experimental/setun/bridge.cpp.o
+[27/99] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/tiers/cog/promotion.cpp.o
+[28/99] Linking CXX static library libt81_core.a
+[29/99] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/distributed/distributed.cpp.o
+[30/99] Building CXX object src/isa/CMakeFiles/t81_isa.dir/__/__/isa/pretty_printer.cpp.o
+[31/99] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/tiers/cog/tier4/tier4_loop.cpp.o
+[32/99] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/tiers/cog/tier5/infinite.cpp.o
+[33/99] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/axion_api.cpp.o
+[34/99] Building CXX object src/isa/CMakeFiles/t81_isa.dir/__/__/isa/binary_emitter.cpp.o
+[35/99] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/engine.cpp.o
+[36/99] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/ethics.cpp.o
+[37/99] Building CXX object src/isa/CMakeFiles/t81_isa.dir/__/__/isa/binary_io.cpp.o
+[38/99] Building CXX object src/isa/CMakeFiles/t81_isa.dir/__/__/isa/base81_view.cpp.o
+[39/99] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/policy_engine.cpp.o
+[40/99] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/nondeterminism_detector.cpp.o
+[41/99] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/policy_serialization.cpp.o
+[42/99] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/ai_hooks.cpp.o
+[43/99] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/ai_model_loader.cpp.o
+[44/99] Linking CXX static library libt81_experimental.a
+[45/99] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/canonfs_hook.cpp.o
+[46/99] Linking CXX static library libt81_isa.a
+[47/99] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/policy_validator.cpp.o
+[48/99] Linking CXX static library libt81_axion.a
+[49/99] Building CXX object src/isa/CMakeFiles/t81_math_quantization.dir/__/__/isa/math/quantization/ternary_codec.cpp.o
+[50/99] Building CXX object src/lang/CMakeFiles/t81_lang_frontend.dir/__/__/lang/frontend/lexer.cpp.o
+[51/99] Building CXX object src/lang/CMakeFiles/t81_lang_frontend.dir/__/__/lang/frontend/builtin_registry.cpp.o
+[52/99] Building CXX object src/ffi/CMakeFiles/t81_ffi.dir/__/__/ffi/ffi_dispatcher.cpp.o
+[53/99] Linking CXX static library libt81_ffi.a
+[54/99] Building CXX object src/lang/CMakeFiles/t81_lang_frontend.dir/__/__/lang/frontend/symbol_table.cpp.o
+[55/99] Building CXX object src/lang/CMakeFiles/t81_lang_frontend.dir/__/__/lang/frontend/parser.cpp.o
+[56/99] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/tier_limits.cpp.o
+[57/99] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/value_ops.cpp.o
+[58/99] Building CXX object src/lang/CMakeFiles/t81_lang_frontend.dir/__/__/lang/frontend/ir_generator.cpp.o
+[59/99] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/memory_segments.cpp.o
+[60/99] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/policy_trace_bridge.cpp.o
+[61/99] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/runtime_state_helpers.cpp.o
+[62/99] Building CXX object src/lang/CMakeFiles/t81_lang_frontend.dir/__/__/lang/frontend/semantic_analyzer.cpp.o
+[63/99] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/gc_helpers.cpp.o
+[64/99] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/ffi_dispatcher.cpp.o
+[65/99] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/vm.cpp.o
+[66/99] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/ai_backend/backend_adapter.cpp.o
+[67/99] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/tensor_helpers.cpp.o
+[68/99] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/ffi/ffi_dispatcher.cpp.o
+[69/99] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/decode_state.cpp.o
+[70/99] Building CXX object src/tools/CMakeFiles/t81_tool_model.dir/__/__/tools/model/gguf_import_bridge.cpp.o
+[71/99] Building CXX object src/tools/CMakeFiles/t81_tool_model.dir/__/__/tools/model/weights_t81w_emitter.cpp.o
+[72/99] Linking CXX static library libt81_math_quantization.a
+[73/99] Linking CXX static library libt81_lang_frontend.a
+[74/99] Building CXX object src/vm/CMakeFiles/t81_jit.dir/__/__/vm/jit/jit_trace_cache.cpp.o
+[75/99] Building CXX object src/vm/CMakeFiles/t81_jit.dir/__/__/vm/jit/jit_compiler.cpp.o
+[76/99] Linking CXX static library libt81_vm.a
+[77/99] Building CXX object src/tools/CMakeFiles/t81_tool_cli.dir/__/__/tools/cli/ai/t81_ai_cli.cpp.o
+[78/99] Building CXX object src/tools/CMakeFiles/t81_tool_cli.dir/__/__/tools/cli/core/artifact_family.cpp.o
+[79/99] Building CXX object src/tools/CMakeFiles/t81_tool_model.dir/__/__/tools/model/weights.cpp.o
+[80/99] Linking CXX static library libt81_tool_model.a
+[81/99] Building CXX object src/tools/CMakeFiles/t81_tool_cli.dir/__/__/tools/cli/core/canonize_tensor.cpp.o
+[82/99] Building CXX object src/tools/CMakeFiles/t81_decode.dir/__/__/vm/decoder.cpp.o
+[83/99] Building CXX object src/tools/CMakeFiles/t81_tool_cli.dir/__/__/tools/cli/core/debugger.cpp.o
+[84/99] Building CXX object src/tools/CMakeFiles/t81_tool_cli.dir/__/__/tools/cli/ai/ai_cli_shared.cpp.o
+[85/99] Building CXX object src/tools/CMakeFiles/t81_tool_cli.dir/__/__/tools/cli/core/process_capture.cpp.o
+[86/99] Building CXX object src/tools/CMakeFiles/t81_tool_cli.dir/__/__/tools/cli/canonfs_tools/canonfs_performance_standalone.cpp.o
+[87/99] Building CXX object src/tools/CMakeFiles/t81_tool_cli.dir/__/__/tools/diagnostics/ternary_codec_metrics.cpp.o
+[88/99] Linking CXX static library libt81_decode.a
+[89/99] Building CXX object CMakeFiles/cli_repro_hash_test.dir/tests/cpp/cli_repro_hash_test.cpp.o
+[90/99] Building CXX object CMakeFiles/t81_process_capture_test.dir/tests/cpp/process_capture_test.cpp.o
+[91/99] Building CXX object CMakeFiles/t81_process_capture_test.dir/tools/cli/core/process_capture.cpp.o
+[92/99] Building CXX object src/tools/CMakeFiles/t81_tool_cli.dir/__/__/tools/cli/core/driver.cpp.o
+[93/99] Linking CXX executable cli_repro_hash_test
+[94/99] Linking CXX executable t81_process_capture_test
+[95/99] Building CXX object src/tools/CMakeFiles/t81.dir/__/__/tools/cli/ai/ai_cli_shared.cpp.o
+[96/99] Building CXX object src/tools/CMakeFiles/t81_tool_cli.dir/__/__/tools/cli/core/main.cpp.o
+[97/99] Linking CXX static library libt81_tool_cli.a
+[98/99] Building CXX object src/tools/CMakeFiles/t81.dir/__/__/tools/cli/core/main.cpp.o
+[99/99] Linking CXX executable t81
+ld: warning: ignoring duplicate libraries: 'libt81_axion.a', 'libt81_core.a', 'libt81_decode.a', 'libt81_isa.a', 'libt81_lang_frontend.a', 'libt81_math_quantization.a', 'libt81_tool_cli.a', 'libt81_vm.a'

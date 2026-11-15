@@ -29,7 +29,7 @@ bool tensors_are_matmul_compatible(const t81::weights::NativeTensor& lhs,
 
 std::size_t native_tensor_shape_complexity(const t81::weights::NativeTensor& tensor) {
   std::size_t product = 1;
-  for (std::uint32_t dim : tensor.shape) {
+  for (const auto dim : tensor.shape) {
     if (dim == 0) {
       return 0;
     }
@@ -980,11 +980,21 @@ BuiltDecodeProgram build_decode_program(const DecodeRequest& request) {
     if (result.logits_row_probe_supported) {
       result.probe_kind = "llama_two_layer_attention_row_logits_sample";
       source << "  let lm_head: i32 = std.tensor.load(\"lm_head.weight\");\n";
-      for (std::size_t i = 0; i < result.sampled_token_ids.size(); ++i) {
-        source << "  let row" << i << ": Tensor = std.tnn.embed(lm_head, "
-               << result.sampled_token_ids[i] << ");\n"
-               << "  let score" << i << ": T81Float = std.tnn.accum(row" << i << ", attn1);\n"
-               << "  print(score" << i << ");\n";
+      if (request.greedy_full_vocab) {
+        // Reuse loop registers for the full vocabulary. Unrolling one row/score pair
+        // per token exhausts the VM's R0..R242 register file as context grows.
+        source << "  for token_id in 0.." << result.logits_vocab_size << " {\n"
+               << "    let row: Tensor = std.tnn.embed(lm_head, token_id);\n"
+               << "    let score: T81Float = std.tnn.accum(row, attn1);\n"
+               << "    print(score);\n"
+               << "  }\n";
+      } else {
+        for (std::size_t i = 0; i < result.sampled_token_ids.size(); ++i) {
+          source << "  let row" << i << ": Tensor = std.tnn.embed(lm_head, "
+                 << result.sampled_token_ids[i] << ");\n"
+                 << "  let score" << i << ": T81Float = std.tnn.accum(row" << i << ", attn1);\n"
+                 << "  print(score" << i << ");\n";
+        }
       }
       for (std::size_t i = 0; i < result.hidden_carry_row_ids.size(); ++i) {
         source << "  let carry_row" << i << ": Tensor = std.tnn.embed(lm_head, "

@@ -1,0 +1,123 @@
+{
+  "base_head": "b48e1a4da29784860a528e5397f896c73bc48450",
+  "scope": "Correction tests and archived input replay; no new benchmark measurement.",
+  "commands": [
+    {
+      "label": "normal-tests",
+      "argv": [
+        "python3",
+        "tests/python/test_simd_regression.py"
+      ],
+      "cwd": "/private/tmp/t81-pr794-pr795-pr780-integration",
+      "recorded_utc": "2026-11-15T15:00:00.430902+00:00",
+      "exit_code": 0,
+      "stdout": "Verified 46 rejection cases directly and through the actual workflow threshold pipeline.\nVerified 7 inventory rejection cases through both routes.\n",
+      "stderr": "test_pipefail_negative_control (__main__.SIMDRegressionTests.test_pipefail_negative_control) ... ok\ntest_positive_platform_controls (__main__.SIMDRegressionTests.test_positive_platform_controls) ... ok\ntest_reject_bad_inputs_direct_and_workflow (__main__.SIMDRegressionTests.test_reject_bad_inputs_direct_and_workflow) ... ok\ntest_reject_incomplete_compiled_inventory (__main__.SIMDRegressionTests.test_reject_incomplete_compiled_inventory) ... ok\ntest_threshold_boundary_and_units (__main__.SIMDRegressionTests.test_threshold_boundary_and_units) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 7.845s\n\nOK\n"
+    },
+    {
+      "label": "optimized-tests",
+      "argv": [
+        "python3",
+        "-O",
+        "tests/python/test_simd_regression.py"
+      ],
+      "cwd": "/private/tmp/t81-pr794-pr795-pr780-integration",
+      "recorded_utc": "2026-11-15T15:00:17.178875+00:00",
+      "exit_code": 0,
+      "stdout": "Verified 46 rejection cases directly and through the actual workflow threshold pipeline.\nVerified 7 inventory rejection cases through both routes.\n",
+      "stderr": "test_pipefail_negative_control (__main__.SIMDRegressionTests.test_pipefail_negative_control) ... ok\ntest_positive_platform_controls (__main__.SIMDRegressionTests.test_positive_platform_controls) ... ok\ntest_reject_bad_inputs_direct_and_workflow (__main__.SIMDRegressionTests.test_reject_bad_inputs_direct_and_workflow) ... ok\ntest_reject_incomplete_compiled_inventory (__main__.SIMDRegressionTests.test_reject_incomplete_compiled_inventory) ... ok\ntest_threshold_boundary_and_units (__main__.SIMDRegressionTests.test_threshold_boundary_and_units) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 16.522s\n\nOK\n"
+    },
+    {
+      "label": "tabnanny",
+      "argv": [
+        "python3",
+        "-m",
+        "tabnanny",
+        "scripts/ci/check_simd_regression.py",
+        "tests/python/test_simd_regression.py"
+      ],
+      "cwd": "/private/tmp/t81-pr794-pr795-pr780-integration",
+      "recorded_utc": "2026-11-15T15:00:17.224774+00:00",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "workflow-actions",
+      "argv": [
+        "python3",
+        "scripts/ci/audit_workflow_actions.py",
+        "--max-tagged",
+        "0",
+        "--max-unknown",
+        "0"
+      ],
+      "cwd": "/private/tmp/t81-pr794-pr795-pr780-integration",
+      "recorded_utc": "2026-11-15T15:00:17.306694+00:00",
+      "exit_code": 0,
+      "stdout": "workflow action audit: total=112 pinned_sha=112 tagged=0 unknown=0\n",
+      "stderr": ""
+    },
+    {
+      "label": "workflow-permissions",
+      "argv": [
+        "python3",
+        "scripts/ci/audit_workflow_permissions.py",
+        "--max-missing",
+        "0"
+      ],
+      "cwd": "/private/tmp/t81-pr794-pr795-pr780-integration",
+      "recorded_utc": "2026-11-15T15:00:17.378440+00:00",
+      "exit_code": 0,
+      "stdout": "workflow permissions audit: total=22 explicit=22 missing=0 write_scoped=8\n",
+      "stderr": ""
+    },
+    {
+      "label": "diff-check",
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "/private/tmp/t81-pr794-pr795-pr780-integration",
+      "recorded_utc": "2026-11-15T15:00:17.430358+00:00",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "native-compiled-registry",
+      "argv": [
+        "/private/tmp/t81-combined-release/benchmarks/benchmark_runner",
+        "--benchmark_list_tests=true",
+        "--benchmark_filter=^BM_Kernel_TAnd_(SWAR|AVX2|NEON)/"
+      ],
+      "cwd": "/private/tmp/t81-pr794-pr795-pr780-integration",
+      "recorded_utc": "2026-11-15T15:00:17.505018+00:00",
+      "exit_code": 0,
+      "stdout": "BM_Kernel_TAnd_SWAR/16\nBM_Kernel_TAnd_SWAR/64\nBM_Kernel_TAnd_SWAR/256\nBM_Kernel_TAnd_SWAR/1024\nBM_Kernel_TAnd_SWAR/4096\nBM_Kernel_TAnd_SWAR/16384\nBM_Kernel_TAnd_SWAR/65536\nBM_Kernel_TAnd_NEON/16\nBM_Kernel_TAnd_NEON/64\nBM_Kernel_TAnd_NEON/256\nBM_Kernel_TAnd_NEON/1024\nBM_Kernel_TAnd_NEON/4096\nBM_Kernel_TAnd_NEON/16384\nBM_Kernel_TAnd_NEON/65536\n\nGenerating benchmark report...\nBenchmark console table suppressed (set T81_BENCHMARK_VERBOSE_CONSOLE=1 to enable).\nSkipping benchmark report generation (set T81_BENCHMARK_WRITE_REPORTS=1 to enable)\n",
+      "stderr": ""
+    },
+    {
+      "label": "old-artifact-replay",
+      "argv": [
+        "python3",
+        "scripts/ci/check_simd_regression.py",
+        "/private/tmp/t81-pr796-correction-validation/old-simd-bench.json",
+        "--inventory",
+        "/private/tmp/t81-pr796-correction-validation/old-linux-expected-inventory.txt"
+      ],
+      "cwd": "/private/tmp/t81-pr794-pr795-pr780-integration",
+      "recorded_utc": "2026-11-15T15:00:17.575608+00:00",
+      "exit_code": 0,
+      "stdout": "TAnd AVX2/16384: 103.71 ns vs SWAR 111.46 ns; ratio=0.9305\nTAnd AVX2/65536: 392.49 ns vs SWAR 480.93 ns; ratio=0.8161\nRegression check passed: 14 results, 2 comparator pairs checked.\n",
+      "stderr": ""
+    }
+  ],
+  "source_hashes": {
+    "scripts/ci/check_simd_regression.py": "9d40c0bc237271f8d3c156ffcb1c58ce1c53679b4bfbe344ac37849e0e900036",
+    "tests/python/test_simd_regression.py": "c3d316638ddf7210a5c6d6458fc138d989f59a7e6885663cf58ea3057f1fca50",
+    ".github/workflows/ci.yml": "72a8d99ac6150a75a46cdc88b636459bde986ea9436df3bca40785b338e585e3"
+  },
+  "replay_scope": "Old b48e1a4da main-CI SIMD artifact only; supplied inventory represents its existing Linux AVX2 compile profile, not an independently regenerated old binary inventory."
+}

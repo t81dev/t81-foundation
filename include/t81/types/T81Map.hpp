@@ -389,7 +389,11 @@ public:
     // Sort to ensure deterministic order
     std::sort(items.begin(), items.end(),
               [](const std::pair<K, V>& a, const std::pair<K, V>& b) {
-                return a.first < b.first;
+                if constexpr (std::is_same_v<K, T81Symbol>) {
+                  return a.first.serialize_canonical() < b.first.serialize_canonical();
+                } else {
+                  return a.first < b.first;
+                }
               });
     return items;
   }

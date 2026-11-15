@@ -1,0 +1,36 @@
+tests/cpp/canonfs_policy_boundary_test.cpp:74:8: error: code should be clang-formatted [-Wclang-format-violations]
+  Deny, Throw, MissingPolicy, InvalidPolicy, DefaultVerdict, ZeroMetadataBudget,
+       ^
+tests/cpp/canonfs_policy_boundary_test.cpp:74:15: error: code should be clang-formatted [-Wclang-format-violations]
+  Deny, Throw, MissingPolicy, InvalidPolicy, DefaultVerdict, ZeroMetadataBudget,
+              ^
+tests/cpp/canonfs_policy_boundary_test.cpp:74:30: error: code should be clang-formatted [-Wclang-format-violations]
+  Deny, Throw, MissingPolicy, InvalidPolicy, DefaultVerdict, ZeroMetadataBudget,
+                             ^
+tests/cpp/canonfs_policy_boundary_test.cpp:74:45: error: code should be clang-formatted [-Wclang-format-violations]
+  Deny, Throw, MissingPolicy, InvalidPolicy, DefaultVerdict, ZeroMetadataBudget,
+                                            ^
+tests/cpp/canonfs_policy_boundary_test.cpp:74:61: error: code should be clang-formatted [-Wclang-format-violations]
+  Deny, Throw, MissingPolicy, InvalidPolicy, DefaultVerdict, ZeroMetadataBudget,
+                                                            ^
+tests/cpp/canonfs_policy_boundary_test.cpp:75:24: error: code should be clang-formatted [-Wclang-format-violations]
+  MissingRequiredEvent, Allow, Bootstrap
+                       ^
+tests/cpp/canonfs_policy_boundary_test.cpp:75:31: error: code should be clang-formatted [-Wclang-format-violations]
+  MissingRequiredEvent, Allow, Bootstrap
+                              ^
+tests/cpp/canonfs_policy_boundary_test.cpp:192:27: error: code should be clang-formatted [-Wclang-format-violations]
+    for (const auto mode : {HookMode::Deny, HookMode::Throw, HookMode::MissingPolicy,
+                          ^
+tests/cpp/canonfs_policy_boundary_test.cpp:192:86: error: code should be clang-formatted [-Wclang-format-violations]
+    for (const auto mode : {HookMode::Deny, HookMode::Throw, HookMode::MissingPolicy,
+                                                                                     ^
+tests/cpp/canonfs_policy_boundary_test.cpp:193:53: error: code should be clang-formatted [-Wclang-format-violations]
+                            HookMode::InvalidPolicy, HookMode::DefaultVerdict,
+                                                    ^
+tests/cpp/canonfs_policy_boundary_test.cpp:193:79: error: code should be clang-formatted [-Wclang-format-violations]
+                            HookMode::InvalidPolicy, HookMode::DefaultVerdict,
+                                                                              ^
+tests/cpp/canonfs_policy_boundary_test.cpp:194:90: error: code should be clang-formatted [-Wclang-format-violations]
+                            HookMode::ZeroMetadataBudget, HookMode::MissingRequiredEvent,
+                                                                                         ^

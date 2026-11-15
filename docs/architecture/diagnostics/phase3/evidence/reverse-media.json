@@ -1,0 +1,86 @@
+{
+  "image_sha256": "823aec6ea05e0ed402f1499e5939b27acc3a5d49842425a25e72270ebb4a2cce",
+  "gpt_signature": "EFI PART",
+  "partitions": [
+    {
+      "start": 40,
+      "end": 131031,
+      "type_guid_raw": "28732ac11ff8d211ba4b00a0c93ec93b"
+    }
+  ],
+  "header_crc_valid": true,
+  "entries_crc_valid": true,
+  "root": [
+    {
+      "name": "SLICE6GU.EST",
+      "cluster": 0,
+      "size": 0,
+      "directory": false
+    },
+    {
+      "name": "FSEVEN~1",
+      "cluster": 3,
+      "size": 0,
+      "directory": true
+    },
+    {
+      "name": "~2",
+      "cluster": 13,
+      "size": 4096,
+      "directory": false
+    },
+    {
+      "name": "TERNOS",
+      "cluster": 21,
+      "size": 0,
+      "directory": true
+    },
+    {
+      "name": "_TERNO~4",
+      "cluster": 30,
+      "size": 4096,
+      "directory": false
+    },
+    {
+      "name": "EFI",
+      "cluster": 55,
+      "size": 0,
+      "directory": true
+    },
+    {
+      "name": "_EF~6",
+      "cluster": 64,
+      "size": 4096,
+      "directory": false
+    }
+  ],
+  "embedded_efi_sha256": "83d30ea29faa522f514bcbb1ec2c3e0056e8e4474320bce8e2876231b7b8f1da",
+  "embedded_matches_staging": true,
+  "pe": {
+    "signature": "50450000",
+    "machine": "0xaa64",
+    "optional_magic": "0x20b",
+    "subsystem": 10,
+    "image_base": "0x140000000",
+    "relocation_rva": 0,
+    "relocation_bytes": 0
+  },
+  "embedded_efi_bytes": 5120,
+  "contains_ready_marker": false,
+  "contains_debug_wfi": true,
+  "profile": "profile=qemu-armv8:AArch64/EDK2/slice6-boot-probe\nguest_arch=qemu_slice6\nvalidation_lane=qemu-armv8-slice6-probe\ngit_commit=unknown\ngenerated_utc=2026-11-10T18:55:47Z\nartifact_status=efi-boot-candidate\nboot_gap=none\n",
+  "file_tree_sha256": {
+    "SLICE6GU.EST": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "FSEVEN~1/FSEVEN~2": "d3da203a7a0c226aefc15ce6ec5dab694a2d00a8b5016d24009fac7c6a235be2",
+    "FSEVEN~1/000000~2": "a4281d4a3a9f24fc4567c9b5d3426fb7603edeee5bacf519a39ae6bcfa5923ff",
+    "FSEVEN~1/000000~3": "fcd9f75dc035204e5d9caaafc531e7cc4e35b1d2f7c5c36cdc7638d193c21614",
+    "~2": "ecfd5439d791cd1772b36176dde8a0a06d4d907cddd7ea429d9b24624b4c8983",
+    "TERNOS/PROFILE.TXT": "9c4271e254570fd54a3721d224806836cfc50ee58fc139db8b00fc6375329543",
+    "TERNOS/_PROFI~3.TXT": "ecfd5439d791cd1772b36176dde8a0a06d4d907cddd7ea429d9b24624b4c8983",
+    "_TERNO~4": "ecfd5439d791cd1772b36176dde8a0a06d4d907cddd7ea429d9b24624b4c8983",
+    "EFI/BOOT/BOOTAA64.EFI": "83d30ea29faa522f514bcbb1ec2c3e0056e8e4474320bce8e2876231b7b8f1da",
+    "EFI/BOOT/_BOOTA~3.EFI": "ecfd5439d791cd1772b36176dde8a0a06d4d907cddd7ea429d9b24624b4c8983",
+    "EFI/_BOO~3": "ecfd5439d791cd1772b36176dde8a0a06d4d907cddd7ea429d9b24624b4c8983",
+    "_EF~6": "ecfd5439d791cd1772b36176dde8a0a06d4d907cddd7ea429d9b24624b4c8983"
+  }
+}
