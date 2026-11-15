@@ -1,0 +1,12 @@
+{
+  "revision": "proposal revision 2",
+  "original_packet_commit": "6db79cb8cc8f6fa0156fe4ead064ac33f00e7f3d",
+  "original_packet_files_unchanged": 34,
+  "original_hashes_verified": 33,
+  "json_parse": "pass",
+  "new_markdown_relative_links": "pass",
+  "runtime_and_golden_changes": false,
+  "new_execution": "header opcode-name and sizeof inspection only; no CLI/VM or platform reproduction",
+  "caps": "proposed defaults; not benchmark-derived or approved",
+  "approvals": "pending; no freeze exception granted"
+}

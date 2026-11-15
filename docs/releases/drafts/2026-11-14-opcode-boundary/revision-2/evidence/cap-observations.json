@@ -1,0 +1,17 @@
+{
+  "sample_scope": "41 tracked .tisc candidates at pinned main; producer identity not inferred",
+  "files": 41,
+  "serialized_bytes_total": 47789,
+  "serialized_bytes_max": 4123,
+  "largest_paths": [
+    "examples/experiments/cross_layer.tisc"
+  ],
+  "instruction_count_max_assuming_current_layout": 181,
+  "not_measured": [
+    "peak memory",
+    "CPU time",
+    "legitimate external programs",
+    "full generated reproducibility fixture artifacts",
+    "Windows ABI object sizes"
+  ]
+}

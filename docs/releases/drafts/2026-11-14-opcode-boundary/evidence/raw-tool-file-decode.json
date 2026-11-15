@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "/private/tmp/t81-raw-base81-current",
+    "decode",
+    "docs/releases/drafts/2026-11-14-opcode-boundary/evidence/v194.raw13"
+  ],
+  "exit": 0,
+  "stdout": "@code\n\u2248gfeeeekeeeeeeeee<eeeeee\n\n",
+  "stderr": ""
+}
