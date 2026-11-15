@@ -1,0 +1,60 @@
+governance hygiene check FAILED:
+- missing required README: core/README.md
+- missing required README: runtime/README.md
+- missing required README: runtime/jit/README.md
+- missing required README: internal/README.md
+- missing required README: internal/axion/README.md
+- missing required README: internal/tooling/README.md
+- missing required README: tooling/README.md
+- missing required README: examples/consumer_cmake/README.md
+- missing required README: examples/system-integration/README.md
+- root structure check failed
+- root structure: fatal: not a git repository (or any of the parent directories): .git
+- README naming check failed
+- README naming: fatal: not a git repository (or any of the parent directories): .git
+- translation staleness check failed
+- translation staleness: Traceback (most recent call last):
+- translation staleness:   File "/private/tmp/t81-798-evidence/base/scripts/governance/check_translation_staleness.py", line 119, in <module>
+- translation staleness:     sys.exit(main())
+- translation staleness:              ~~~~^^
+- translation staleness:   File "/private/tmp/t81-798-evidence/base/scripts/governance/check_translation_staleness.py", line 83, in main
+- translation staleness:     en_ct = last_commit_unix(en_path, repo_root)
+- translation staleness:   File "/private/tmp/t81-798-evidence/base/scripts/governance/check_translation_staleness.py", line 40, in last_commit_unix
+- translation staleness:     out = run_git(["log", "-1", "--format=%ct", "--", path], repo_root).strip()
+- translation staleness:           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- translation staleness:   File "/private/tmp/t81-798-evidence/base/scripts/governance/check_translation_staleness.py", line 35, in run_git
+- translation staleness:     raise RuntimeError(f"git {' '.join(args)} failed: {result.stderr.strip()}")
+- translation staleness: RuntimeError: git log -1 --format=%ct -- README.md failed: fatal: not a git repository (or any of the parent directories): .git
+- docs structure check failed
+- docs structure: docs structure check FAILED
+- docs structure: - missing directory: book/book-en
+- docs structure: - missing directory: book/book-cn
+- docs structure: - missing directory: book/book-es
+- docs structure: - missing directory: book/book-pt
+- docs structure: - missing directory: book/book-ru
+- license policy check failed
+- license policy: fatal: not a git repository (or any of the parent directories): .git
+- artifact hygiene check failed
+- artifact hygiene: fatal: not a git repository (or any of the parent directories): .git
+- public api semver lock check failed
+- public api semver lock: public API semver lock check FAILED
+- public api semver lock: - public API surface digest mismatch for include/t81/**/*.hpp (update lock with --write-lock after approved API change)
+- spec-code alignment baseline check failed
+- spec-code alignment baseline: spec-code alignment baseline check FAILED
+- spec-code alignment baseline: - missing mapped implementation/evidence file: core/vm/vm.cpp (from spec/t81vm-spec.md)
+- spec-code alignment baseline: - missing mapped implementation/evidence file: core/isa/encoding.cpp (from spec/tisc-spec.md)
+- rfc lifecycle hygiene check failed
+- rfc lifecycle hygiene: rfc lifecycle hygiene check FAILED
+- rfc lifecycle hygiene: - RFC-0036-t81lang-ffi-grammar.md: unable to parse status/version metadata
+- rfc lifecycle hygiene: - RFC-0037-tnn-stdlib.md: unable to parse status/version metadata
+- rfc lifecycle hygiene: - RFC-0038-lattice-crypto.md: unable to parse status/version metadata
+- rfc lifecycle hygiene: - RFC-0055-hardware-target-profile-template.md: status mismatch index=accepted file=draft
+- rfc lifecycle hygiene: - RFC-0056-google-axion-hardware-profile.md: status mismatch index=accepted file=draft
+- rfc lifecycle hygiene: - RFC-00C4-per-device-wake-filtering.md: unable to parse status/version metadata
+- rfc lifecycle hygiene: - RFC-00C5-concurrent-device-wait.md: unable to parse status/version metadata
+- rfc lifecycle hygiene: - RFC-00C6-per-thread-ttbr0.md: unable to parse status/version metadata
+- rfc lifecycle hygiene: - RFC-00C7-el0-fault-containment.md: unable to parse status/version metadata
+- rfc lifecycle hygiene: - RFC-00C8-concurrent-fault-isolation.md: unable to parse status/version metadata
+- rfc lifecycle hygiene: - RFC-00C9-el0-fault-evidence-query.md: unable to parse status/version metadata
+- rfc lifecycle hygiene: - RFC-00CA-el0-fault-summary-query.md: unable to parse status/version metadata
+- rfc lifecycle hygiene: - RFC-00CB-el0-fault-detail-query.md: unable to parse status/version metadata

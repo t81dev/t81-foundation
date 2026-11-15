@@ -1,0 +1,6 @@
+docs structure check FAILED
+- missing directory: book/book-en
+- missing directory: book/book-cn
+- missing directory: book/book-es
+- missing directory: book/book-pt
+- missing directory: book/book-ru

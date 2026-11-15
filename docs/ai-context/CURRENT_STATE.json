@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0.0",
-  "generated_at": "2026-11-05",
+  "generated_at": "2026-11-15",
   "purpose": "Non-normative operational index; never grants authorization",
   "selected_view": "2026-11-02-reconciled",
   "operational_views": {
@@ -475,6 +475,477 @@
           "next": "Preserve negative M1 findings and distinguish S/A/T; no M2 candidate or execution is authorized by this index."
         }
       ]
+    },
+    "2026-11-15-reconciled": {
+      "view_date": "2026-11-15",
+      "freshness": "Pinned operational reconciliation; partial inventory. Refresh PR/CI state before action. Earlier views and their scientific evidence are preserved unchanged.",
+      "coverage": {
+        "inventory_scope": "selected_prs_779_780_782_785_787_792_793_794_795_796_797_798_799_only",
+        "coverage_state": "partial_not_a_global_backlog_count",
+        "open_pr_count": 1
+      },
+      "repository_observation": {
+        "envelope": {
+          "subject": "Fetched origin/main",
+          "observed_at": "2026-11-15T23:08:19Z",
+          "source_revision": {
+            "commit_sha": "40695b0ba5cea3e43563b6ed2443c987d2738089"
+          },
+          "collector": "Codex_GitHub_GET_and_local_git_source_inspection",
+          "retained_receipt": "docs/ai-context/receipts/2026-11-15-reconciliation-observations.json"
+        },
+        "name": "t81dev/t81-foundation",
+        "base_branch": "main",
+        "observed_head": "40695b0ba5cea3e43563b6ed2443c987d2738089"
+      },
+      "scientific_observations": [
+        {
+          "envelope": {
+            "subject": "Investigation 10A physical solid-state ternary storage",
+            "observed_at": "2026-11-02T00:00:00Z",
+            "source_revision": {
+              "commit_sha": "1a6d5a36473004961248f0a85b2e06361ea2a38f"
+            },
+            "collector": "scientific_assessment_auditor",
+            "retained_receipt": "docs/research/INVESTIGATION_10A_PHYSICAL_STORAGE_EVIDENCE_ASSESSMENT.md"
+          },
+          "id": "H01",
+          "status": "physical_evaluation_blocked",
+          "verification": "blocked",
+          "claims_boundary": "Inconclusive / literature attributions unverified; physical ternary silicon is not experimentally falsified and hardware superiority is not demonstrated."
+        },
+        {
+          "envelope": {
+            "subject": "H04-R02 adaptive balanced ternary vs adaptive binary",
+            "observed_at": "2026-11-02T00:00:00Z",
+            "source_revision": {
+              "commit_sha": "1a6d5a36473004961248f0a85b2e06361ea2a38f"
+            },
+            "collector": "scientific_assessment_auditor",
+            "retained_receipt": "experiments/h04_r02_adaptive_representation/CORRECTED_RESULTS.md"
+          },
+          "id": "H04-R02",
+          "status": "conditional_model_counterexample_not_hardware_proof",
+          "verification": "source_reported",
+          "claims_boundary": "Conditional model outcome under 10-bit Tier-0 control (AT=1210 < AB=1250 at r=1.60); native capacity is unequal and does not demonstrate universal advantage or hardware superiority."
+        },
+        {
+          "envelope": {
+            "subject": "T81-AIOPT-001 M1 fixed-catalog pattern filtering",
+            "observed_at": "2026-11-02T00:00:00Z",
+            "source_revision": {
+              "commit_sha": "b2b9d3c73df96d6b4227ee0061c56bc2ee04a8fe"
+            },
+            "collector": "Jules_AI_assisted_source_assessment_not_independent_experimental_replication",
+            "retained_receipt": "docs/research/aiopt/T81-AIOPT-001-SCIENTIFIC-REVIEW.md"
+          },
+          "id": "AIOPT-001-M1",
+          "status": "redesign_required",
+          "verification": "falsified",
+          "claims_boundary": "Preserved negative mathematical critique of C40 equality filtering: scalar lookup/index controls invalidate an optimization claim. The pinned review does not establish independent experimental replication or authenticated independent-person review; no ternary speedup is accepted."
+        },
+        {
+          "envelope": {
+            "subject": "T81-AIOPT-001 M2 adversarial design and workload critique",
+            "observed_at": "2026-11-02T00:00:00Z",
+            "source_revision": {
+              "commit_sha": "1a6d5a36473004961248f0a85b2e06361ea2a38f"
+            },
+            "collector": "adversarial_design_reviewer",
+            "retained_receipt": "docs/research/aiopt/T81-AIOPT-001-M2-ADVERSARIAL-DESIGN-ASSESSMENT.md"
+          },
+          "id": "AIOPT-001-M2",
+          "status": "design_only_execution_blocked",
+          "verification": "unverified",
+          "claims_boundary": "In T81-AIOPT-001-M2-ADVERSARIAL-DESIGN-ASSESSMENT.md, adversarial evaluation critiques M2 pattern filtering, evaluates three bounded design options (Candidate A: Wildcard Filtering, Candidate B: Adaptive Representation Selection, Candidate C: Ternary MatVec with Zero-Skipping), and advises Candidate C as an unaccepted successor design candidate; execution freeze remains active across all M2 candidates."
+        }
+      ],
+      "pr_observations": [
+        {
+          "envelope": {
+            "subject": "PR #779 repository state; no scientific gate inferred",
+            "observed_at": "2026-11-15T23:08:19Z",
+            "source_revision": {
+              "commit_sha": "4d5f3586c04a69c520e613166291c0974877628d"
+            },
+            "collector": "Codex_GitHub_GET_and_local_git_source_inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-15-reconciliation-observations.json"
+          },
+          "pr_number": 779,
+          "title": "rfc(00e1),scg08: resolve independent review scientific contract findings",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/779",
+          "state": "closed",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "d3a6cf55517a3098d7bae91b07c72694bc3472da",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "4d5f3586c04a69c520e613166291c0974877628d",
+          "merge_sha": {
+            "value": null,
+            "reason": "No merge; any GitHub synthetic merge SHA is not integration evidence"
+          },
+          "scientific_acceptance": "no_new_scientific_acceptance_from_repository_state",
+          "integration_readiness": "closed_without_merge_preserve_superseding_evidence",
+          "authorization_status": "no_merge_or_release_authority_granted_by_index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #780 repository state; no scientific gate inferred",
+            "observed_at": "2026-11-15T23:08:19Z",
+            "source_revision": {
+              "commit_sha": "c08c211bd3475d8b09e35648f84c6b5c0a7e31a2"
+            },
+            "collector": "Codex_GitHub_GET_and_local_git_source_inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-15-reconciliation-observations.json"
+          },
+          "pr_number": 780,
+          "title": "bench(core): establish BASE-PERF-00 correctness-verified Cell throughput baseline",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/780",
+          "state": "closed",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "c08c211bd3475d8b09e35648f84c6b5c0a7e31a2",
+          "merge_sha": {
+            "value": null,
+            "reason": "No merge; any GitHub synthetic merge SHA is not integration evidence"
+          },
+          "scientific_acceptance": "no_new_scientific_acceptance_from_repository_state",
+          "integration_readiness": "closed_without_merge_preserve_superseding_evidence",
+          "authorization_status": "no_merge_or_release_authority_granted_by_index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #782 repository state; no scientific gate inferred",
+            "observed_at": "2026-11-15T23:08:19Z",
+            "source_revision": {
+              "commit_sha": "9024ce916d38e9495fcf7ed76fb569490b00d7d2"
+            },
+            "collector": "Codex_GitHub_GET_and_local_git_source_inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-15-reconciliation-observations.json"
+          },
+          "pr_number": 782,
+          "title": "fix(windows): harden CLI/FFI paths and select a supported int128 backend",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/782",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "fbfe4f5a2d4439f5ff479014301560764de39c99",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "9024ce916d38e9495fcf7ed76fb569490b00d7d2",
+          "merge_sha": {
+            "commit_sha": "fce139671d2e462b1c7f957139e1664b3b244e1f"
+          },
+          "scientific_acceptance": "no_new_scientific_acceptance_from_repository_state",
+          "integration_readiness": "merged_into_pinned_main",
+          "authorization_status": "maintainer_merged_no_new_authorization_from_index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #785 repository state; no scientific gate inferred",
+            "observed_at": "2026-11-15T23:08:19Z",
+            "source_revision": {
+              "commit_sha": "300cdea8896d56c025f7099c0cdf0c41d7bd6237"
+            },
+            "collector": "Codex_GitHub_GET_and_local_git_source_inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-15-reconciliation-observations.json"
+          },
+          "pr_number": 785,
+          "title": "test(scg08): portable rejection checks stacked on #779",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/785",
+          "state": "closed",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "4d5f3586c04a69c520e613166291c0974877628d",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "300cdea8896d56c025f7099c0cdf0c41d7bd6237",
+          "merge_sha": {
+            "value": null,
+            "reason": "No merge; any GitHub synthetic merge SHA is not integration evidence"
+          },
+          "scientific_acceptance": "no_new_scientific_acceptance_from_repository_state",
+          "integration_readiness": "closed_without_merge_preserve_superseding_evidence",
+          "authorization_status": "no_merge_or_release_authority_granted_by_index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #787 repository state; no scientific gate inferred",
+            "observed_at": "2026-11-15T23:08:19Z",
+            "source_revision": {
+              "commit_sha": "d71b526c35592a7e5f96ed32a2bbf5807613f962"
+            },
+            "collector": "Codex_GitHub_GET_and_local_git_source_inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-15-reconciliation-observations.json"
+          },
+          "pr_number": 787,
+          "title": "scg08: integrate accepted #779 contract and #785 portable tests with retained evidence",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/787",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "636024e9cdcea858a1c808e1550ac9d794be10bf",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "d71b526c35592a7e5f96ed32a2bbf5807613f962",
+          "merge_sha": {
+            "commit_sha": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2"
+          },
+          "scientific_acceptance": "no_new_scientific_acceptance_from_repository_state",
+          "integration_readiness": "merged_into_pinned_main",
+          "authorization_status": "maintainer_merged_no_new_authorization_from_index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #792 repository state; no scientific gate inferred",
+            "observed_at": "2026-11-15T23:08:19Z",
+            "source_revision": {
+              "commit_sha": "e2e3630cf9975458f99b048398c8d9c046467cd5"
+            },
+            "collector": "Codex_GitHub_GET_and_local_git_source_inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-15-reconciliation-observations.json"
+          },
+          "pr_number": 792,
+          "title": "fix(canonfs): reconcile block metadata authorization on current main",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/792",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "e2e3630cf9975458f99b048398c8d9c046467cd5",
+          "merge_sha": {
+            "commit_sha": "a3ae3b16b5afebff4a7ba3c0d2cffe8a69c11b1d"
+          },
+          "scientific_acceptance": "no_new_scientific_acceptance_from_repository_state",
+          "integration_readiness": "merged_into_pinned_main",
+          "authorization_status": "maintainer_merged_no_new_authorization_from_index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #793 repository state; no scientific gate inferred",
+            "observed_at": "2026-11-15T23:08:19Z",
+            "source_revision": {
+              "commit_sha": "15b6b2b63fe056d68f959d658a351eba603ce6ea"
+            },
+            "collector": "Codex_GitHub_GET_and_local_git_source_inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-15-reconciliation-observations.json"
+          },
+          "pr_number": 793,
+          "title": "fix(cli): reconcile explicit execution policies on current main",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/793",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "a3ae3b16b5afebff4a7ba3c0d2cffe8a69c11b1d",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "15b6b2b63fe056d68f959d658a351eba603ce6ea",
+          "merge_sha": {
+            "commit_sha": "c2ab68e582c9f773ce94a9e13bcb805016f07dd4"
+          },
+          "scientific_acceptance": "no_new_scientific_acceptance_from_repository_state",
+          "integration_readiness": "merged_into_pinned_main",
+          "authorization_status": "maintainer_merged_no_new_authorization_from_index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #794 repository state; no scientific gate inferred",
+            "observed_at": "2026-11-15T23:08:19Z",
+            "source_revision": {
+              "commit_sha": "5f5751ae9b9f634f2af2cb020afef6f9e2cd610d"
+            },
+            "collector": "Codex_GitHub_GET_and_local_git_source_inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-15-reconciliation-observations.json"
+          },
+          "pr_number": 794,
+          "title": "fix(skills): constrain policy validation wrapper (depends on #793)",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/794",
+          "state": "closed",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "c2ab68e582c9f773ce94a9e13bcb805016f07dd4",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "5f5751ae9b9f634f2af2cb020afef6f9e2cd610d",
+          "merge_sha": {
+            "value": null,
+            "reason": "No merge; any GitHub synthetic merge SHA is not integration evidence"
+          },
+          "scientific_acceptance": "no_new_scientific_acceptance_from_repository_state",
+          "integration_readiness": "closed_without_merge_preserve_superseding_evidence",
+          "authorization_status": "no_merge_or_release_authority_granted_by_index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #795 repository state; no scientific gate inferred",
+            "observed_at": "2026-11-15T23:08:19Z",
+            "source_revision": {
+              "commit_sha": "43747b60675444ab58f693713577d6cd42e3f234"
+            },
+            "collector": "Codex_GitHub_GET_and_local_git_source_inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-15-reconciliation-observations.json"
+          },
+          "pr_number": 795,
+          "title": "fix(scg08): reconcile surviving #767 validator checks on main",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/795",
+          "state": "closed",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "c2ab68e582c9f773ce94a9e13bcb805016f07dd4",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "43747b60675444ab58f693713577d6cd42e3f234",
+          "merge_sha": {
+            "value": null,
+            "reason": "No merge; any GitHub synthetic merge SHA is not integration evidence"
+          },
+          "scientific_acceptance": "no_new_scientific_acceptance_from_repository_state",
+          "integration_readiness": "closed_without_merge_preserve_superseding_evidence",
+          "authorization_status": "no_merge_or_release_authority_granted_by_index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #796 repository state; no scientific gate inferred",
+            "observed_at": "2026-11-15T23:08:19Z",
+            "source_revision": {
+              "commit_sha": "f0415b0097e2f6e822ea61531e4a053857c71c71"
+            },
+            "collector": "Codex_GitHub_GET_and_local_git_source_inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-15-reconciliation-observations.json"
+          },
+          "pr_number": 796,
+          "title": "Integrate reviewed #794, #795 and #780 with preserved evidence",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/796",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "c2ab68e582c9f773ce94a9e13bcb805016f07dd4",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "f0415b0097e2f6e822ea61531e4a053857c71c71",
+          "merge_sha": {
+            "commit_sha": "24d40f4d9fabf735f988f2852751c2cadd9beffb"
+          },
+          "scientific_acceptance": "no_new_scientific_acceptance_from_repository_state",
+          "integration_readiness": "merged_into_pinned_main",
+          "authorization_status": "maintainer_merged_no_new_authorization_from_index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #797 repository state; no scientific gate inferred",
+            "observed_at": "2026-11-15T23:08:19Z",
+            "source_revision": {
+              "commit_sha": "e987af8f39d310ec4837f237cdd6fd126e154447"
+            },
+            "collector": "Codex_GitHub_GET_and_local_git_source_inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-15-reconciliation-observations.json"
+          },
+          "pr_number": 797,
+          "title": "docs(ai-context,audit): update 2026-11-15 state after #796 merge and preserve architecture assessment",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/797",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "24d40f4d9fabf735f988f2852751c2cadd9beffb",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "e987af8f39d310ec4837f237cdd6fd126e154447",
+          "merge_sha": {
+            "commit_sha": "a78b1b686b97c0e8c41fa0357ca987f7a8006d10"
+          },
+          "scientific_acceptance": "no_new_scientific_acceptance_from_repository_state",
+          "integration_readiness": "merged_into_pinned_main",
+          "authorization_status": "maintainer_merged_no_new_authorization_from_index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #798 repository state; no scientific gate inferred",
+            "observed_at": "2026-11-15T23:08:19Z",
+            "source_revision": {
+              "commit_sha": "618ff9058a71a38e47692780f41ceed0b59ca50a"
+            },
+            "collector": "Codex_GitHub_GET_and_local_git_source_inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-15-reconciliation-observations.json"
+          },
+          "pr_number": 798,
+          "title": "fix(vm): guard integer arithmetic UB and map Tier 6 rank",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/798",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "40695b0ba5cea3e43563b6ed2443c987d2738089",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "618ff9058a71a38e47692780f41ceed0b59ca50a",
+          "merge_sha": {
+            "value": null,
+            "reason": "No merge; any GitHub synthetic merge SHA is not integration evidence"
+          },
+          "scientific_acceptance": "no_new_scientific_acceptance_from_repository_state",
+          "integration_readiness": "blocked_pending_exact_head_review_and_CI",
+          "authorization_status": "no_merge_or_release_authority_granted_by_index"
+        },
+        {
+          "envelope": {
+            "subject": "PR #799 repository state; no scientific gate inferred",
+            "observed_at": "2026-11-15T23:08:19Z",
+            "source_revision": {
+              "commit_sha": "25be5ebd732664ad18b75ec24cf7b1e15dbfdd3a"
+            },
+            "collector": "Codex_GitHub_GET_and_local_git_source_inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-15-reconciliation-observations.json"
+          },
+          "pr_number": 799,
+          "title": "fix(cmake): define asio target when building examples without tests",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/799",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "a78b1b686b97c0e8c41fa0357ca987f7a8006d10",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "25be5ebd732664ad18b75ec24cf7b1e15dbfdd3a",
+          "merge_sha": {
+            "commit_sha": "40695b0ba5cea3e43563b6ed2443c987d2738089"
+          },
+          "scientific_acceptance": "no_new_scientific_acceptance_from_repository_state",
+          "integration_readiness": "merged_into_pinned_main",
+          "authorization_status": "maintainer_merged_no_new_authorization_from_index"
+        }
+      ],
+      "ci_observations": [
+        {
+          "envelope": {
+            "subject": "PR #799 qualification, including informational ARMv9 cross-compile; not native execution",
+            "observed_at": "2026-11-15T23:08:19Z",
+            "source_revision": {
+              "commit_sha": "25be5ebd732664ad18b75ec24cf7b1e15dbfdd3a"
+            },
+            "collector": "Codex_GitHub_GET_and_local_git_source_inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-15-reconciliation-observations.json"
+          },
+          "suite_name": "PR799_43746367704_ARMv9_job_132945852419",
+          "status": "passing",
+          "known_baseline_failures": []
+        },
+        {
+          "envelope": {
+            "subject": "Pinned main complete CI qualification not established by this refresh",
+            "observed_at": "2026-11-15T23:08:19Z",
+            "source_revision": {
+              "commit_sha": "40695b0ba5cea3e43563b6ed2443c987d2738089"
+            },
+            "collector": "Codex_GitHub_GET_and_local_git_source_inspection",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-15-reconciliation-observations.json"
+          },
+          "suite_name": "pinned_main_40695b0_full_suite",
+          "status": "unexecuted",
+          "known_baseline_failures": []
+        }
+      ],
+      "workstreams": [
+        {
+          "id": "runtime_correctness",
+          "priority": "P0",
+          "state": "blocked",
+          "source": "https://github.com/t81dev/t81-foundation/pull/798",
+          "next": "Review updated PR #798 at 618ff9058a71a38e47692780f41ceed0b59ca50a and its fresh Linux/macOS/Windows CI; do not infer readiness from prior-head results."
+        },
+        {
+          "id": "TISC_conformance",
+          "priority": "P0",
+          "state": "investigation",
+          "source": "spec/tisc-spec.md",
+          "next": "Retain conflicting memory/branch descriptions and ambiguous TXor authority; differential tests precede any normative change."
+        },
+        {
+          "id": "SCG08",
+          "priority": "P1",
+          "state": "holds_preserved",
+          "source": "docs/ai-context/T81_RESEARCH_STATUS_2026-11-13.md",
+          "next": "RFC-00E1 remains DRAFT; Gate 1 WITHHELD; Gate 2 STRICT NO-GO. H04-R03 Phase C and AIOPT M2 measurement holds remain. No release, governance activation or experiment execution authorized."
+        }
+      ]
     }
   },
   "historical_snapshots": {
@@ -563,5 +1034,5 @@
     "performance_measurement": false,
     "production_activation": false
   },
-  "next_gate": "2026-11-13 non-normative overlay: read T81_RESEARCH_STATUS_2026-11-13.md first, with receipts/2026-11-13-pr-integration-observations.json. Supplied reviews ACCEPT #779 at 4d5f3586c04a69c520e613166291c0974877628d and #780 at a31b862e6bbdc7c136a74c9117aa085a13b4da2c; both draft/unmerged. #782 at 125a1897b7e7e068ef6d576d97c487295c7203a7 has Windows builds and required quality gate SUCCESS; CodeQL and final review remain pending at snapshot. #645/#747/#760/#766/#769 closed without merge by explicit maintainer decision; preserve dependencies and #767 unique checks. Reconcile #778/#779 before integration. RFC-00E1 DRAFT, SCG-08 Gate 1 WITHHELD, Gate 2 STRICT NO-GO. selected_view remains historical 2026-11-02 partial inventory; no merge or release authority granted."
+  "next_gate": "Read the operational_views.2026-11-15-reconciled (fresh operational overlay; selected_view is retained as a dated compatibility view for the existing historical contract tests) and T81_RESEARCH_STATUS_2026-11-15.md against pinned main 40695b0ba5cea3e43563b6ed2443c987d2738089. Historical views remain dated evidence. PR #798 readiness BLOCKED. Preserve H01\u2013H08, Hanoi/CWEB negatives, SCG-07 QUALIFIED WITH LIMITATIONS, RFC-00E1 DRAFT, SCG-08 Gate 1 WITHHELD / Gate 2 STRICT NO-GO, CPA/ISA/BASE qualifications and all research/release holds. No merge, release, protocol amendment, measurement or production activation authority granted."
 }

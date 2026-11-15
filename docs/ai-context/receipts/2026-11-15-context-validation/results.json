@@ -1,0 +1,66 @@
+[
+  {
+    "lane": "candidate",
+    "command": [
+      "python3",
+      "scripts/validate_current_state.py"
+    ],
+    "exit": 0
+  },
+  {
+    "lane": "candidate",
+    "command": [
+      "python3",
+      "scripts/governance/check_docs_structure.py"
+    ],
+    "exit": 1
+  },
+  {
+    "lane": "candidate",
+    "command": [
+      "python3",
+      "scripts/governance/check_active_docs_link_hygiene.py"
+    ],
+    "exit": 0
+  },
+  {
+    "lane": "candidate",
+    "command": [
+      "python3",
+      "scripts/governance/check_docs_governance_hygiene.py"
+    ],
+    "exit": 1
+  },
+  {
+    "lane": "base",
+    "command": [
+      "python3",
+      "scripts/validate_current_state.py"
+    ],
+    "exit": 0
+  },
+  {
+    "lane": "base",
+    "command": [
+      "python3",
+      "scripts/governance/check_docs_structure.py"
+    ],
+    "exit": 1
+  },
+  {
+    "lane": "base",
+    "command": [
+      "python3",
+      "scripts/governance/check_active_docs_link_hygiene.py"
+    ],
+    "exit": 0
+  },
+  {
+    "lane": "base",
+    "command": [
+      "python3",
+      "scripts/governance/check_docs_governance_hygiene.py"
+    ],
+    "exit": 1
+  }
+]

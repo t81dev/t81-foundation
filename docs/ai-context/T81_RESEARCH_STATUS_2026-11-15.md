@@ -1,6 +1,7 @@
 # T81 Foundation — Research & Integration Status (2026-11-15)
 
-**Observed `main` head:** `24d40f4d9fabf735f988f2852751c2cadd9beffb` (PR `#796` merged `2026-11-15`).
+**Freshly pinned `origin/main`:** `40695b0ba5cea3e43563b6ed2443c987d2738089` (2026-11-15).
+**Earlier November 15 observation, retained below:** `24d40f4d9fabf735f988f2852751c2cadd9beffb` (PR `#796`). The reconciliation addendum supersedes current-state implications of that earlier snapshot.
 **Non-normative operational snapshot:** Records merged integration state, closed superseded PRs, and the pinned architecture assessment. No new scientific gate, release, or experiment authorization is granted by this status file.
 
 ---
@@ -38,3 +39,25 @@ The following superseded PRs were closed without merge after their replacements 
 * **Proposed follow-on lanes (not yet executed/authorized):**
   1. **Axion-overhead profiling (`[proposed]`):** Use the 3-boundary `vm/vm.cpp` call-path table as the evidence base for a future Research Commons experiment proposal; do **not** introduce policy caching or AOT authorization until capability revocation, dynamic policy changes, and pre-side-effect ordering are addressed.
   2. **ARMv9 cross-compile portability:** Track `cross-compile / linux-armv9 / gcc` (`complex_demo` / `asio.hpp` include-path failure) separately so `main` stays operationally boring.
+
+
+## 4. Fresh-main reconciliation (November 15)
+
+This refresh is documentation-only. [PR observations](receipts/2026-11-15-reconciliation-observations.json) and [complete PR #799 CI jobs](receipts/2026-11-15-pr799-all-jobs.json) are retained. `CURRENT_STATE.json` now includes the fresh `2026-11-15-reconciled` operational overlay, selected for action by `next_gate`. The `selected_view` field remains the dated `2026-11-02-reconciled` view because the existing contract test pins that historical selection; it is not current PR state. Earlier views remain unchanged. The fresh inventory covers only the listed PRs, not the entire backlog.
+
+| Integrated PR | Merge commit in pinned main | Qualification |
+|---|---|---|
+| #782 | `fce139671d2e462b1c7f957139e1664b3b244e1f` | Windows CI baseline repairs integrated; older pending-merge status is historical. |
+| #787 | `9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2` | #779/#785 integration lane; both source PRs are closed without merge. Their individual heads remain evidence. |
+| #797 | `a78b1b686b97c0e8c41fa0357ca987f7a8006d10` | Prior November 15 status and architecture assessment integrated. |
+| #799 | `40695b0ba5cea3e43563b6ed2443c987d2738089` | Asio target is defined for examples-only builds as well as test builds. |
+
+#792/#793/#796 remain integrated at the commits above. #780/#794/#795 remain closed without merge, with their work integrated through #796; do not label those source PRs independently merged. #798 remains open at `618ff9058a71a38e47692780f41ceed0b59ca50a`, with rank-regression and divide-comment follow-up only; final readiness remains **BLOCKED** pending exact-head review and CI. No merge is authorized here.
+
+**ARMv9 qualification correction:** The earlier informational `complex_demo` / `asio.hpp` failure is preserved historical evidence. PR #799's qualification run `43746367704`, job `132945852419`, now reports **SUCCESS** for `cross-compile / linux-armv9 / gcc (informational)`. This supersedes the earlier failure as the latest observed qualification of that correction. It is a cross-build with `aarch64-linux-gnu-g++`, not native ARMv9 execution, hardware validation or a blanket main-head guarantee. The associated seven hosted Linux/macOS/Windows matrix jobs and required quality gate report success in that PR run. This documentation refresh did not rerun those suites or establish a full current-main CI certificate.
+
+**Hosted runtime versus experimental OS:** Main hosts `vm/vm.cpp`, `kernel/axion/`, `fs/`, `lang/frontend/`, and `isa/math/t81_soft_math/`. Axion policy mediation is in-process and depends on the host OS. Main also has experimental TernaryOS boot/HAL code; `ternaryos/hal/cpa004_evaluator.cpp` is absent at the pinned SHA. CPA branch/QEMU results are historical, bounded evidence and do not establish full hosted/freestanding TISC parity, OS containment or production readiness. The architecture index now identifies actual source paths and uses named tests instead of unstable CTest numbers.
+
+**TISC conformance:** Load/Store addressing and JZ/JNZ predicate/target conflicts remain open; TXor prose lacks a decisive truth table. A separate differential-test workstream preserves the distinctions before any normative correction. Frozen opcode ADD/SUB/MUL/NEG remain arbitrary precision; internal wrapping helpers currently have no production callers. No ISA behavior or specification is changed by this status refresh.
+
+**Holds remain binding:** H01–H08 and historical Hanoi/CWEB negative findings are unchanged. SCG-07 remains QUALIFIED WITH LIMITATIONS; RFC-00E1 remains DRAFT; SCG-08 formal Gate 1 acceptance remains WITHHELD and Gate 2 STRICT NO-GO. H04-R03 Phase C, AIOPT M2 and other measurement/execution holds remain; CPA/ISA/BASE qualifications stay scoped to their records. Integration and CI success grant no release publication, version/tag, governance activation, hardware-superiority claim, new experiment or resource authorization. The prior architecture-overhead lane remains proposed only.

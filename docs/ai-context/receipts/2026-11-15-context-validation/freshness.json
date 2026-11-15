@@ -1,0 +1,88 @@
+{
+  "as_of_date": "2026-11-15",
+  "default_max_age_days": 14,
+  "default_warn_age_days": 10,
+  "documents": [
+    {
+      "age_days": 2,
+      "as_of_date": "2026-11-15",
+      "exists": true,
+      "last_updated": "2026-11-13",
+      "max_age_days": 7,
+      "missing_required_substrings": [],
+      "near_stale": false,
+      "path": "docs/status/AI_RFC_BACKLOG.md",
+      "status": "pass",
+      "warn_age_days": 5
+    },
+    {
+      "age_days": 2,
+      "as_of_date": "2026-11-15",
+      "exists": true,
+      "last_updated": "2026-11-13",
+      "max_age_days": 7,
+      "missing_required_substrings": [],
+      "near_stale": false,
+      "path": "docs/status/CI_WORKFLOW_CONFIRMATION.md",
+      "status": "pass",
+      "warn_age_days": 5
+    },
+    {
+      "age_days": 10,
+      "as_of_date": "2026-11-15",
+      "exists": true,
+      "last_updated": "2026-11-05",
+      "max_age_days": 14,
+      "missing_required_substrings": [],
+      "near_stale": true,
+      "path": "docs/status/AI_CLI_MILESTONE_EVIDENCE.md",
+      "status": "pass",
+      "warn_age_days": 10
+    },
+    {
+      "age_days": 2,
+      "as_of_date": "2026-11-15",
+      "exists": true,
+      "last_updated": "2026-11-13",
+      "max_age_days": 7,
+      "missing_required_substrings": [],
+      "near_stale": false,
+      "path": "docs/status/CI_GATE_STATUS.md",
+      "status": "pass",
+      "warn_age_days": 5
+    },
+    {
+      "age_days": 10,
+      "as_of_date": "2026-11-15",
+      "exists": true,
+      "last_updated": "2026-11-05",
+      "max_age_days": 14,
+      "missing_required_substrings": [],
+      "near_stale": true,
+      "path": "docs/status/EXTENSION_PROFILE.md",
+      "status": "pass",
+      "warn_age_days": 10
+    },
+    {
+      "age_days": 10,
+      "as_of_date": "2026-11-15",
+      "exists": true,
+      "last_updated": "2026-11-05",
+      "max_age_days": 14,
+      "missing_required_substrings": [],
+      "near_stale": true,
+      "path": "docs/status/HARDENING_BACKLOG.md",
+      "status": "pass",
+      "warn_age_days": 10
+    }
+  ],
+  "errors": [],
+  "expectations_file": "/private/tmp/t81-ai-context/scripts/ci/ai_status_doc_freshness_expectations.json",
+  "schema": "t81.ai.status-doc-freshness.v1",
+  "status": "pass",
+  "warnings": [
+    "docs/status/AI_CLI_MILESTONE_EVIDENCE.md: approaching staleness (age_days=10, warn_age_days=10, max_age_days=14)",
+    "docs/status/EXTENSION_PROFILE.md: approaching staleness (age_days=10, warn_age_days=10, max_age_days=14)",
+    "docs/status/HARDENING_BACKLOG.md: approaching staleness (age_days=10, warn_age_days=10, max_age_days=14)"
+  ]
+}

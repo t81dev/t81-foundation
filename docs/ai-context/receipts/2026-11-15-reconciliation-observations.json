@@ -1,0 +1,776 @@
+{
+  "observed_at": "2026-11-15 23:10:55 UTC",
+  "main_sha": "40695b0ba5cea3e43563b6ed2443c987d2738089",
+  "prs": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "id": 779,
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "url": "https://github.com/t81dev/t81-foundation/pull/779",
+            "number": 779,
+            "state": "closed",
+            "merged": false,
+            "mergeable": false,
+            "draft": true,
+            "body": "## Summary\n\nResolves the five substantive findings from the independent Codex review (`CORRECTIONS REQUIRED`) of **RFC-00E1** and the SCG-08 Gate 1 evaluation harness on baseline `d3a6cf55517a3098d7bae91b07c72694bc3472da`, without altering historical experimental evidence or retrospectively changing scientific acceptance criteria.\n\n- **Baseline SHA:** `d3a6cf55517a3098d7bae91b07c72694bc3472da`\n- **Head SHA:** `5bfc0e2b7f531c4cdeca53ed9e1172f551683da6`\n\n## Finding-to-File Correction Matrix\n\n| Finding | Priority | Files Modified | Corrective Action |\n| :--- | :--- | :--- | :--- |\n| **P1 — Oracle validation** | P1 | `experiments/scg08_arithmetic_work/exact_oracle_adapter.hpp`, `experiments/scg08_arithmetic_work/tier2_work_harness.hpp`, `experiments/scg08_arithmetic_work/test_exp_scg08_01.cpp`, `spec/rfcs/RFC-00E1-balanced-ternary-multi-precision-arithmetic-contract.md` | Enforced all 5 `OracleValidationReport` dimensions (`numerical_equality`, `overflow_classification`, `canonical_digits`, `sign_handling`, `absence_of_truncation`), exercised `oracle_rep.all_passed()` as an active fail-closed acceptance gate across all 5 bands, and added deterministic negative tests corrupting each of the 5 dimensions (proving `!rep.all_passed()` and subprocess exit code 1). |\n| **P1 — Operation-accounting consistency** | P1 | `experiments/scg08_arithmetic_work/tier2_work_harness.hpp`, `spec/rfcs/RFC-00E1-balanced-ternary-multi-precision-arithmetic-contract.md`, `experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md` | Defined explicit kernel instrumentation boundaries vs. representation conversion, normalization, and memory/copy operations; listed exclusions from $W_{\\text{ops}}$; documented multiplication weight $3$ as a stipulated modeling choice rather than an empirically universal hardware cost; removed claims that $W_{\\text{ops}}$ is an unbiased measure of total computational work. |\n| **P1 — Counter correctness** | P1 | `experiments/scg08_arithmetic_work/tier2_work_harness.hpp`, `experiments/scg08_arithmetic_work/test_exp_scg08_01.cpp`, `spec/rfcs/RFC-00E1-balanced-ternary-multi-precision-arithmetic-contract.md`, `experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md` | Reconciled `add_ternary()` (`c1 + c2` carry-out summation and extension-limb copy exclusion) and `add_binary()` (`a + b + carry` two-step addition, two carry conditional evaluations per input limb, and extension-limb copy exclusion). Verified against independently derived closed-form formulas across all 5 bands and dedicated single-limb/multi-limb exact-count tests. |\n| **P1 — Ternary conversion costs** | P1 | `experiments/scg08_arithmetic_work/tier2_work_harness.hpp`, `experiments/scg08_arithmetic_work/test_exp_scg08_01.cpp`, `spec/rfcs/RFC-00E1-balanced-ternary-multi-precision-arithmetic-contract.md`, `experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md` | Added separate non-aggregating diagnostic counters (`conv_limb_unpacks`, `conv_limb_repacks`, `conv_tryte_decodes`, `conv_tryte_encodes`) for `to_trits()`, `from_trits_window()`, and `from_trits()` outside $W_{\\text{ops}}$. |\n| **P2 — Binary multiplication** | P2 | `experiments/scg08_arithmetic_work/tier2_work_harness.hpp`, `spec/rfcs/RFC-00E1-balanced-ternary-multi-precision-arithmetic-contract.md`, `experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md` | Reconciled `mul64()` documentation and RFC §3.2 with source (`4` primitive $32 \\times 32 \\to 64$ multiplications and `4` helper 64-bit additions inside `mul64()`, plus `4` caller accumulator additions in `mul_binary()`). |\n\n## Scientific Constraints Verification\n\n1. Historical raw evidence (`experiments/scg08_arithmetic_work/results/gate1_evidence_record.json`), observations, cumulative trial count (`179 / 1000`), and source provenance are preserved untouched.\n2. Preregistered thresholds and historical $W_{\\text{ops}}$ records are untouched.\n3. Distinct H02 evaluation models (timing, elementary operations-per-bit, and weighted $W_{\\text{ops}}$) are preserved.\n4. Validated accumulator-width table across $B \\in \\{64, 128, 256, 512, 1024\\}$ is unchanged.\n5. The 38 named-table-lookup count per `T81Limb27::addc()` call is preserved with explicit disclosure of excluded internal mechanics.\n6. `RFC-00E1` remains `draft`.\n7. Formal Gate 1 acceptance remains `WITHHELD`.\n8. Gate 2 remains `STRICT NO-GO`.\n9. No benchmarks, large-scale sampling, hardware performance measurements, or production arithmetic (`include/t81/types/T81Limb.hpp`) changes were performed.\n",
+            "title": "rfc(00e1),scg08: resolve independent review scientific contract findings",
+            "base": "main",
+            "base_sha": "d3a6cf55517a3098d7bae91b07c72694bc3472da",
+            "head": "codex/rfc-00e1-scientific-contract-corrections",
+            "head_sha": "4d5f3586c04a69c520e613166291c0974877628d",
+            "head_repo_id": 1101585698,
+            "head_repo_full_name": "t81dev/t81-foundation",
+            "merge_commit_sha": null,
+            "user": {
+              "login": "t81dev",
+              "name": "t81dev",
+              "email": null,
+              "avatar_url": "https://avatars.githubusercontent.com/u/207451414?v=4",
+              "id": 207451414
+            },
+            "requested_reviewers": null,
+            "requested_team_reviewers": null,
+            "diff": null,
+            "comments": null,
+            "created_at": "2026-11-12T11:16:28Z",
+            "updated_at": "2026-11-14T12:02:07Z",
+            "closed_at": "2026-11-14T12:02:06Z",
+            "merged_at": null,
+            "commits": 2,
+            "changed_files": 5,
+            "additions": 951,
+            "deletions": 196,
+            "display_url": "https://github.com/t81dev/t81-foundation/pull/779",
+            "display_title": "rfc(00e1),scg08: resolve independent review scientific contract findings"
+          },
+          "isError": false
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "id": 780,
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "url": "https://github.com/t81dev/t81-foundation/pull/780",
+            "number": 780,
+            "state": "closed",
+            "merged": false,
+            "mergeable": false,
+            "draft": true,
+            "body": "# T81 BASE-PERF-00 — Correctness-Verified `Cell` Throughput Baseline\n\n## Scope and Governance Notice\n\nThis record documents an authorized, bounded **BASE-PERF-00** engineering throughput baseline for `t81::core::Cell` (5-trit balanced ternary cell, range `[-121, +121]`) using the existing TCB-Core `benchmark_runner` infrastructure.\n\n- **Not an SCG-08 Gate 2 experiment:** Does not execute SCG-08 measurement campaigns, modify SCG-08 historical evidence, or alter RFC-00E1 status (`DRAFT`, Gate 1 `WITHHELD`, Gate 2 `STRICT NO-GO`).\n- **Unmodified production arithmetic:** `include/t81/types/cell.hpp` is completely untouched (`0` lines modified) so that these measurements establish an unoptimized-against-history engineering reference point.\n- **Historical reports preserved:** `docs/reference/benchmarks.md` and `docs/reference/benchmarks_engineering.md` are unmodified.\n- **No comparative superiority claims:** Binary comparative performance superiority is **NOT EVALUATED**.\n\n---\n\n## Phase A — Execution Identity\n\n| Property | Value |\n|---|---|\n| **Baseline `main` Commit SHA** | `d3a6cf55517a3098d7bae91b07c72694bc3472da` |\n| **Host CPU** | Apple M2 (`machdep.cpu.brand_string: Apple M2`) |\n| **Architecture** | `arm64` (`arm64-apple-darwin25.5.0`), 8 logical/physical cores (`hw.ncpu: 8`), L1D 64 KiB, L1I 128 KiB, L2 Unified 4 MiB |\n| **System Memory** | 8 GiB (`hw.memsize: 8589934592`) |\n| **Operating System / Kernel** | macOS 26.5.2 (Build `25F84`), Darwin Kernel Version 25.5.0 (`RELEASE_ARM64_T8112`) |\n| **Virtualization Check** | Physical host (`sysctl kern.hv_vmm_present = 0`, non-virtualized local developer workstation: MacBook Air M2; not a dedicated datacenter reference server) |\n| **Compiler** | Apple clang version 21.0.0 (`clang-2100.1.1.101`, `/usr/bin/c++`) |\n| **Build Configuration** | CMake 4.3 `Release` (`-O3 -DNDEBUG -std=gnu++23 -arch arm64 -fPIE -Wall -Wextra -Wpedantic -DBENCHMARK_STATIC_DEFINE -DT81_DETERMINISTIC`) |\n| **SIMD Compile Target** | `AVX2=0, SSE4.2=0, NEON=1` |\n| **Benchmark Library** | Google Benchmark `v1.9.5` |\n| **Real Arithmetic Verification** | Confirmed in `include/t81/types/cell.hpp`: `operator+` executes 5-trit balanced-ternary ripple-carry addition; `operator-` executes trit-wise negation plus ripple-carry addition; `operator*` executes 5-trit shift-and-add; `operator/` executes `to_int()`, `int64_t` division, and `from_int()`; `from_int` / `to_int` execute base-3 balanced-ternary conversion. |\n\n---\n\n## Phase B — Numerical Correctness Oracle Results\n\nCorrectness was validated against a host `int64_t` oracle in two places:\n1. **Standalone CTest executable (`t81_determinism_primitives_test` in `tests/determinism/test_primitives.cpp`):** Exhaustively tests the full `Cell` state space (`[-121, +121]`, $3^5 = 243$ states, $243^2 = 59{,}049$ ordered pairs) plus the exact seeded benchmark input sequences.\n2. **Untimed prevalidation phase inside `arith_throughput.cpp` and `roundtrip_accuracy.cpp`:** Prevalidates all $10{,}000$ deterministic inputs and boundary/exception conditions before any timed loop executes. If prevalidation fails, the benchmark aborts via `state.SkipWithError(...)`.\n\n| Operation / Check | Tested Domain | Oracle Result | Details |\n|---|---|---|---|\n| **Conversion Round-Trip (`from_int` / `to_int`)** | Exhaustive `[-121, +121]` + out-of-range `{-10000, -243, -122, +122, +243, +10000}` | **PASS** (`243 / 243` exact; `6 / 6` out-of-range throw `std::overflow_error`) | Bijective round-trip, canonical trit uniqueness, strict ordering (`prev < c`), and involution (`-(-c) == c`). |\n| **Addition (`operator+`)** | Exhaustive `[-121, +121]^2` (`59,049` pairs) | **PASS** (`0` mismatches) | `44,287` in-range pairs match `int64_t` `a + b` exactly; all `14,762` pairs with `|a + b| > 121` deterministically throw `std::overflow_error`. |\n| **Subtraction (`operator-`)** | Exhaustive `[-121, +121]^2` (`59,049` pairs) | **PASS** (`0` mismatches) | `44,287` in-range pairs match `int64_t` `a - b` exactly; all `14,762` pairs with `|a - b| > 121` deterministically throw `std::overflow_error`. |\n| **Multiplication (`operator*`) — Benchmark Domain** | Exhaustive `[-10, +10]^2` (`441` pairs) | **PASS** (`441 / 441` exact, `0` exceptions) | All products in `[-10, +10]^2` lie in `[-100, +100]` and fit in the lower 3 trits (`1 + 3 + 9 = 13 >= 10`), so no intermediate shift or partial sum overflows. |\n| **Multiplication (`operator*`) — Full Domain Characterization** | Exhaustive `[-121, +121]^2` (`59,049` pairs) | **PASS** (`0` silent corruptions) | `2,553` pairs succeed and match `int64_t` `a * b` exactly; `56,144` pairs with `|a * b| > 121` throw `std::overflow_error`; `352` pairs with `|a * b| <= 121` throw `std::overflow_error` due to intermediate 5-trit shift (`*this << i`) or partial-sum overflow (documented limitation below). |\n| **Division (`operator/`)** | Exhaustive `[-121, +121]^2` (`59,049` pairs) | **PASS** (`0` mismatches) | All `58,806` pairs with `b != 0` match C++ truncated `int64_t` division `a / b`; all `243` pairs with `b == 0` deterministically throw `std::domain_error`. |\n| **Seeded Timed Workload Prevalidation** | `std::mt19937_64(0x781)`, `DATA_SIZE = 10,000` | **PASS** (`0` failures across `50,000` prevalidated operations) | Arithmetic pairs in `[-10, +10]` (`val_b == 0 -> 1`) and conversion inputs in `[-121, +121]` prevalidated before timing. |\n\n---\n\n## Phase C — Measurement-Blocking Defects Repaired\n\n1. **Separated per-operation measurement & exception accounting (`benchmarks/runner/arith_throughput.cpp`):**\n   - Previously, `BM_ArithThroughput_T81Cell` bundled `+`, `-`, `*`, and `/` in a single loop and caught `std::exception` with `continue` while unconditionally reporting `state.SetItemsProcessed(state.iterations() * DATA_SIZE * 4)`.\n   - Added dedicated 5-repetition benchmarks (`BM_CellAdd_T81Cell`, `BM_CellSub_T81Cell`, `BM_CellMul_T81Cell`, `BM_CellDiv_T81Cell`), prevalidated inputs before timing, tracked `completed_ops` and `failed_ops` explicitly, and called `state.SkipWithError(...)` if `failed_ops > 0`.\n   - Explicitly labeled `BM_CellDiv_T81Cell` with `semantics=to_int+int64_div+from_int` and `convs_per_op=3` because `Cell::operator/` converts operands via `to_int()`, divides in `int64_t`, and converts back via `from_int()`.\n2. **Compiler dead-code / `constexpr`-folding prevention & untimed oracle separation (`benchmarks/runner/roundtrip_accuracy.cpp`):**\n   - Previously, `BM_RoundtripAccuracy_T81Cell` evaluated `if (Cell::from_int(val).to_int() == val)` inside the timed loop without `DoNotOptimize` barriers on the input `int64_t`, intermediate `Cell`, or output `int64_t`.\n   - Added `BM_CellRoundtrip_T81Cell` (and updated `BM_RoundtripAccuracy_T81Cell`) with untimed oracle prevalidation and explicit `DoNotOptimize(val)`, `DoNotOptimize(cell)`, `DoNotOptimize(roundtrip)`, and `ClobberMemory()` barriers inside the timed loop.\n3. **Per-repetition retention and median aggregation (`benchmarks/runner/benchmark_runner.cpp`):**\n   - Previously, `CustomReporter::ReportRuns` overwrote `final_results[family]` on each `RT_Iteration` repetition, losing earlier repetitions and reporting only the final repetition.\n   - `BenchmarkResult` now retains all per-repetition throughput and latency values, computes the **median** across repetitions (`ComputeMedian`), and reports per-repetition raw values, median, min, max, range, standard deviation, and CV% when `T81_BENCHMARK_VERBOSE_CONSOLE=1` is set.\n4. **Removal of unsupported `apples-to-apples` claims (`benchmarks/runner/arith_throughput.cpp`, `benchmarks/runner/benchmark_runner.cpp`):**\n   - Removed `comparison=apples-to-apples` from `arith_throughput.cpp` (`comparison=not-evaluated`) and updated `FairnessFor` / `UserRow` in `benchmark_runner.cpp` so benchmarks labeled `comparison=not-evaluated` or `comparison=semantic-tax` are never classified as `\"apples-to-apples\"` or assigned comparative win/loss verdicts.\n\n---\n\n## Phase D — Bounded Measurement Results (HOST-LOCAL / PHYSICAL WORKSTATION)\n\n### Exact Build and Execution Commands\n\n```bash\n# 1. Configure Release build (using local Google Benchmark v1.9.5 source cache)\ncmake -S . -B build-release \\\n  -DCMAKE_BUILD_TYPE=Release \\\n  -DT81_BUILD_TUI=OFF \\\n  -DFETCHCONTENT_SOURCE_DIR_GOOGLEBENCHMARK=/Users/t81dev/Code/t81-foundation/build/_deps/googlebenchmark-src \\\n  -DFETCHCONTENT_SOURCE_DIR_ASIO=/Users/t81dev/Code/t81-foundation/build/_deps/asio-src\n\n# 2. Build correctness test and benchmark_runner\ncmake --build build-release --target t81_determinism_primitives_test benchmark_runner -j4\n\n# 3. Execute exhaustive host-integer oracle correctness test\n./build-release/t81_determinism_primitives_test\n\n# 4. Execute bounded BASE-PERF-00 benchmark (5 repetitions per operation after 0.05s warmup)\nT81_BENCHMARK_VERBOSE_CONSOLE=1 T81_BENCHMARK_WRITE_REPORTS=0 \\\n  ./build-release/benchmarks/benchmark_runner \\\n  --benchmark_filter='^BM_Cell(Add|Sub|Mul|Div|Roundtrip)_T81Cell' \\\n  --benchmark_min_warmup_time=0.05 \\\n  --benchmark_min_time=0.05s \\\n  --benchmark_out=docs/benchmarks/base_perf_00_cell_throughput_raw.json \\\n  --benchmark_out_format=json\n```\n\n### Summary of Measured `Cell` Throughput (5 Repetitions After 0.05s Warm-Up, `DATA_SIZE = 10,000` ops/iter)\n\n| Operation | Benchmark Name | Semantics | Domain | Iterations / Rep | Median Throughput | Mean Throughput | Min – Max (Range) | StdDev (CV%) | Median Real Time / Iter | Failed Ops |\n|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|\n| **1. Cell Addition** | `BM_CellAdd_T81Cell` | 5-trit unrolled ripple-carry `+` | `[-10, +10]^2` | `1,177` | **163.39 Mops/s** (`163,388,259 ops/s`) | `163.80 Mops/s` | `159.34 – 168.30 Mops/s` (`8.95 Mops/s`) | `3.24 Mops/s` (`1.97%`) | `61.55 µs` (`61,550 ns`) | `0` |\n| **2. Cell Subtraction** | `BM_CellSub_T81Cell` | 5-trit negate + ripple-carry `-` | `[-10, +10]^2` | `773` | **139.04 Mops/s** (`139,036,279 ops/s`) | `133.27 Mops/s` | `120.43 – 139.66 Mops/s` (`19.23 Mops/s`) | `8.67 Mops/s` (`6.51%`) | `72.05 µs` (`72,046 ns`) | `0` |\n| **3. Cell Multiplication** | `BM_CellMul_T81Cell` | 5-trit shift-and-add `*` | `[-10, +10]^2` | `157` | **22.34 Mops/s** (`22,344,301 ops/s`) | `22.37 Mops/s` | `22.31 – 22.50 Mops/s` (`0.18 Mops/s`) | `72.96 Kops/s` (`0.33%`) | `447.54 µs` (`447,543 ns`) | `0` |\n| **4. Cell Division** | `BM_CellDiv_T81Cell` | Conversion-backed `to_int + int64_div + from_int` | `[-10, +10] \\times ([-10, +10] \\setminus \\{0\\})` | `349` | **61.60 Mops/s** (`61,596,569 ops/s`) | `58.36 Mops/s` | `50.69 – 64.20 Mops/s` (`13.51 Mops/s`) | `6.78 Mops/s` (`11.61%`) | `162.34 µs` (`162,343 ns`) | `0` |\n| **5. Cell Conversion Round-Trip** | `BM_CellRoundtrip_T81Cell` | Materialized `Cell::from_int(v)` + `cell.to_int()` | `[-121, +121]` | `173` | **24.84 Mops/s** (`24,840,261 ops/s`) | `24.96 Mops/s` | `24.20 – 25.97 Mops/s` (`1.78 Mops/s`) | `641.30 Kops/s` (`2.57%`) | `402.58 µs` (`402,578 ns`) | `0` |\n\n### Raw Per-Repetition Measurements\n\n| Operation | Rep 0 (`ops/s` / `real_time_ns`) | Rep 1 (`ops/s` / `real_time_ns`) | Rep 2 (`ops/s` / `real_time_ns`) | Rep 3 (`ops/s` / `real_time_ns`) | Rep 4 (`ops/s` / `real_time_ns`) |\n|---|---|---|---|---|---|\n| **`BM_CellAdd_T81Cell`** | `164,869,029` / `61,039.86 ns` | `159,344,751` / `64,593.21 ns` | `168,296,728` / `59,422.22 ns` | `163,107,496` / `62,667.20 ns` | `163,388,259` / `61,550.23 ns` |\n| **`BM_CellSub_T81Cell`** | `120,429,370` / `83,056.98 ns` | `128,045,851` / `78,677.23 ns` | `139,036,279` / `72,045.65 ns` | `139,168,947` / `71,883.68 ns` | `139,656,730` / `71,604.57 ns` |\n| **`BM_CellMul_T81Cell`** | `22,495,415` / `444,534.24 ns` | `22,312,546` / `448,250.00 ns` | `22,332,542` / `447,778.93 ns` | `22,355,119` / `447,331.74 ns` | `22,344,301` / `447,542.99 ns` |\n| **`BM_CellDiv_T81Cell`** | `61,596,569` / `162,343.36 ns` | `63,960,414` / `156,346.23 ns` | `64,201,619` / `155,759.07 ns` | `51,366,587` / `194,861.03 ns` | `50,694,323` / `197,257.64 ns` |\n| **`BM_CellRoundtrip_T81Cell`** | `24,809,981` / `403,062.62 ns` | `24,197,835` / `416,819.36 ns` | `24,840,261` / `402,577.55 ns` | `24,986,279` / `400,279.38 ns` | `25,973,246` / `385,010.36 ns` |\n\n---\n\n## Limitations and Unresolved Technical Findings\n\n1. **Conversion-backed `Cell::operator/`:**\n   - Despite the source comment in `include/t81/types/cell.hpp` (`Division (restoring division, exact when divisible)`), `Cell::operator/` actually converts both `Cell` operands to `int64_t` via `to_int()`, performs host integer division `a / b`, and converts back via `Cell::from_int(a / b)`. Consequently, `BM_CellDiv_T81Cell` measures a hybrid conversion + host-division path (`3` conversions per division), not a native balanced-ternary restoring division algorithm.\n2. **Intermediate shift overflow in `Cell::operator*` outside `[-13, +13]`:**\n   - `Cell::operator*` computes `*this << i` into a 5-trit `Cell` before adding or subtracting into the running 5-trit accumulator. When the multiplicand uses trit 3 or 4 (`|a| > 13`) and the multiplier has non-zero trits at index `i >= 1` that cancel down into range (e.g., `50 * 2 = 100`, where `2 = 3 - 1`), `*this << 1` (`150 > 121`) throws `std::overflow_error(\"Shift overflow (non-zero trit lost)\")` even though the true product `100` is within `[-121, +121]`. Across all `59,049` pairs in `[-121, +121]^2`, `352` mathematically in-range pairs throw `std::overflow_error` for this reason (`0` pairs ever produce a wrong numerical answer). Within the benchmark operand domain `[-10, +10]^2` (`441` pairs), all operands fit in 3 trits (`[-13, +13]`), so `0` intermediate shift overflows occur. Widening the internal accumulator of `Cell::operator*` is intentionally deferred so production arithmetic remains untouched during BASE-PERF-00 baseline establishment.\n3. **Host-local workstation environment:**\n   - Although the host is physical (`kern.hv_vmm_present = 0`), it is a passively cooled Apple M2 workstation (`MacBook Air`) with background OS activity (`load_avg ~ 4.38–4.86`) and no `pthread` thread-affinity pinning on macOS/Darwin (`PTHREAD_AFFINITY` unsupported). Therefore, this establishes a **HOST-LOCAL THROUGHPUT BASELINE**, not a locked datacenter **REFERENCE-HARDWARE BASELINE**.\n\n---\n\n## Dispositions\n\n- **NUMERICAL CORRECTNESS:** `PASS`\n- **MEASUREMENT ACCOUNTING:** `PASS`\n- **HOST-LOCAL THROUGHPUT BASELINE:** `ESTABLISHED`\n- **REFERENCE-HARDWARE BASELINE:** `NOT ESTABLISHED`\n- **BINARY COMPARATIVE ADVANTAGE:** `NOT EVALUATED`\n",
+            "title": "bench(core): establish BASE-PERF-00 correctness-verified Cell throughput baseline",
+            "base": "main",
+            "base_sha": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+            "head": "codex/base-perf-00-cell-throughput-baseline",
+            "head_sha": "c08c211bd3475d8b09e35648f84c6b5c0a7e31a2",
+            "head_repo_id": 1101585698,
+            "head_repo_full_name": "t81dev/t81-foundation",
+            "merge_commit_sha": "e3523925d2b25ff8240331bfae631f6473f976ec",
+            "user": {
+              "login": "t81dev",
+              "name": "t81dev",
+              "email": null,
+              "avatar_url": "https://avatars.githubusercontent.com/u/207451414?v=4",
+              "id": 207451414
+            },
+            "requested_reviewers": null,
+            "requested_team_reviewers": null,
+            "diff": null,
+            "comments": null,
+            "created_at": "2026-11-12T12:22:31Z",
+            "updated_at": "2026-11-15T15:40:29Z",
+            "closed_at": "2026-11-15T15:40:29Z",
+            "merged_at": null,
+            "commits": 4,
+            "changed_files": 7,
+            "additions": 2245,
+            "deletions": 86,
+            "display_url": "https://github.com/t81dev/t81-foundation/pull/780",
+            "display_title": "bench(core): establish BASE-PERF-00 correctness-verified Cell throughput baseline"
+          },
+          "isError": false
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "id": 782,
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "url": "https://github.com/t81dev/t81-foundation/pull/782",
+            "number": 782,
+            "state": "closed",
+            "merged": true,
+            "mergeable": false,
+            "draft": false,
+            "body": "Contains bounded Windows FFI, subprocess, Unicode and int128 backend repairs. **The Windows baseline remains unrepaired: both final-head full Windows jobs fail the repro-hash golden check.** PR base: `88300f14c1da1066ad6db25d31be0e8e912b3ef0`. Current correction head: **`cbb324ad41cb1503e6ae92710849adb97562ee25`**.\n\nThe latest correction starts from Gemini's `a189ff1b9f6bace9224a23810b78c533a63e33a2` and fixes capture creation: exclusive private objects, checked failures, retained handles/descriptors, safe partial cleanup, and no pathname reopening. Release-active regressions cover existing-file/symlink preservation, permissions, collision rejection, Unicode observed through Windows wmain, empty arguments, spaces, quotes/backslashes, shell metacharacters, cwd/environment, nonzero exits and simultaneous 2 MiB stdout/stderr. Windows reparse creation prints an explicit supported/skip outcome. CMake links advapi32 and the test thread dependency.\n\nFinal-head execution: **MSVC and clang-cl full builds succeed; both suites pass 403/404 and fail only repro-hash drift** (expected `ea52b9ed…`, actual `e13940b5…`; root cause unestablished). Both capture regressions pass, including executed file-symlink reparse rejection, private permissions/cleanup, Unicode observed through wmain, quoting/metacharacters and concurrent large output. macOS ARM64 CI passes 426/426; Linux ASan/UBSan CI passes 427/427. Local targeted Release tests pass 3/3, with standalone -DNDEBUG, ASan/UBSan and a failing negative control. Final-head CI format/docs/warning checks pass; AI status freshness fails on three unchanged documents; CodeQL remains in progress. Complete Windows job/artifact links and exact hash discrepancy are retained in the final evidence comment.\n\n[Capture correction commands, logs and limits](https://github.com/t81dev/t81-foundation/tree/cbb324ad41cb1503e6ae92710849adb97562ee25/docs/records/audits/2026-11-13-pr782-secure-capture).\n\nHistorical negative evidence remains preserved: [5201421 complete Windows results](https://github.com/t81dev/t81-foundation/pull/782#issuecomment-6839556377) show both full builds completed but both jobs failed 401/403 on FFI/repro-hash; that is not a result for the current head. [Arithmetic correction record](https://github.com/t81dev/t81-foundation/tree/5201421142313036635791d8a8f32744fb8693ac/docs/records/audits/2026-11-12-pr782-int128-correction) preserves the clean-main macOS FFI/fixture failures and separate root-cause limits. Native Windows clang-cl signed __int128 linked unsuccessfully on missing __divti3; MSVC rejected the type; both selected portable 128-bit arithmetic. Those implementation/probe/test files remain unchanged by the capture correction.\n\nThe same Codex session authored the earlier arithmetic correction and latest capture repair; Gemini authored the intervening delta. These tests are regression evidence, not independent scientific validation. No universal arithmetic, production-readiness or comparative-performance claim follows. Generic capture has no child timeout or output cap; the regression target has a 60-second timeout. Windows sanitizers and unsupported reparse scenarios are not established by macOS execution. Earlier Release-disabled duplicate-registration asserts remain a separate pre-existing limit.\n\nNo #779/#780 changes, weakened checks, check bypasses, benchmark campaign, merge or SCG-08 advancement.",
+            "title": "fix(windows): harden CLI/FFI paths and select a supported int128 backend",
+            "base": "main",
+            "base_sha": "fbfe4f5a2d4439f5ff479014301560764de39c99",
+            "head": "fix/windows-ci-baseline-repairs",
+            "head_sha": "9024ce916d38e9495fcf7ed76fb569490b00d7d2",
+            "head_repo_id": 1101585698,
+            "head_repo_full_name": "t81dev/t81-foundation",
+            "merge_commit_sha": "fce139671d2e462b1c7f957139e1664b3b244e1f",
+            "user": {
+              "login": "t81dev",
+              "name": "t81dev",
+              "email": null,
+              "avatar_url": "https://avatars.githubusercontent.com/u/207451414?v=4",
+              "id": 207451414
+            },
+            "requested_reviewers": null,
+            "requested_team_reviewers": null,
+            "diff": null,
+            "comments": null,
+            "created_at": "2026-11-12T22:34:44Z",
+            "updated_at": "2026-11-14T02:57:14Z",
+            "closed_at": "2026-11-14T02:56:05Z",
+            "merged_at": "2026-11-14T02:56:05Z",
+            "commits": 13,
+            "changed_files": 34,
+            "additions": 2344,
+            "deletions": 213,
+            "display_url": "https://github.com/t81dev/t81-foundation/pull/782",
+            "display_title": "fix(windows): harden CLI/FFI paths and select a supported int128 backend"
+          },
+          "isError": false
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "id": 785,
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "url": "https://github.com/t81dev/t81-foundation/pull/785",
+            "number": 785,
+            "state": "closed",
+            "merged": false,
+            "mergeable": true,
+            "draft": true,
+            "body": "This draft depends on #779 and targets its branch `codex/rfc-00e1-scientific-contract-corrections`, pinned at `4d5f3586c04a69c520e613166291c0974877628d`. It is not intended to replace #779's arithmetic/accounting contract or merge directly into main. Review the delta against #779; neither #779 nor #778 is advanced by this PR.\n\nCandidate head: `300cdea8896d56c025f7099c0cdf0c41d7bd6237`.\nTested code commit: `ceb1560af3a386050c1a611270aaf03a72b405a1`; the following commit adds only retained evidence.\n\nReplace the POSIX fork/pipe/wait test machinery with #778's portable Python argument-vector subprocess mechanism, adapted to all 12 existing #779 rejection paths. Require exactly exit 1 AND the expected stderr diagnostic. Preserve Release-active fixture assertions, malformed stored-tryte paths, exact negative-product bounds, and all accepted accounting expectations. Unknown/malformed cases exit 2; a rejection returning unexpectedly stops immediately with exit 0 so later fixtures cannot mask the failure. Add driver tests for false passes, launch failures and timeouts.\n\nThe original eight-file #778 audit packet at `56ad0d57b90487d153b35ccfdeb134fcc858adf7` is retained byte-for-byte, together with its correction document and preservation hashes. Original execution/provenance assertions remain author-reported, not authenticated by copying or hashing. #778's competing event definitions are not imported. Oracle/Tier-1/Tier-2 headers, RFC, implementation report, historical raw evidence, and production arithmetic are unchanged from #779.\n\nLocal macOS ARM64 evidence: all 5 targeted project CTests pass in Release (-DNDEBUG), all 12 subprocess cases pass, driver self-tests pass, ASan/UBSan pass, and an executable path containing spaces passes. ASan leak detection is unsupported; failed attempts are retained and subsequent sanitizer runs use detect_leaks=0. Codex authored and ran this candidate with shared prior context; this is not independent review or authentication of original runs.\n\n[Durable audit and commands](https://github.com/t81dev/t81-foundation/blob/300cdea8896d56c025f7099c0cdf0c41d7bd6237/docs/records/audits/2026-11-13-pr779-portable-rejection-candidate/README.md)\n[Verification identities and limits](https://github.com/t81dev/t81-foundation/blob/300cdea8896d56c025f7099c0cdf0c41d7bd6237/docs/records/audits/2026-11-13-pr779-portable-rejection-candidate/verification.json)\n\nWindows/Linux candidate-specific execution was unverified at initial publication; the separate #786 correctness workflow has now passed all five tests on Linux GCC and Windows MSVC/clang-cl at this exact candidate SHA. See the executed scoped results below. Stock ci.yml is dispatchable but defaults T81_BUILD_EXPERIMENTS to OFF, and its Windows sparse checkout omits experiments/. Stock green results therefore cannot establish execution of these new rejection tests. Any remote CI results will be reported by their actual coverage; no check exemption or bypass is requested.\n\nRFC remains draft, Gate 1 acceptance WITHHELD, Gate 2 STRICT NO-GO. W_ops remains a stipulated selected-kernel model, not total work or established hardware performance. No merge or gate advancement is requested.\n\nPublication CI: [T81 Foundation CI run 43536741421](https://github.com/t81dev/t81-foundation/actions/runs/43536741421), manually dispatched at exact head `300cdea8896d56c025f7099c0cdf0c41d7bd6237`. At publication, lint/spec-docs and governance-metrics passed; Linux jobs are queued and the Windows matrix awaits prerequisite jobs. Results remain pending; no Windows/Linux pass is claimed. This stock workflow includes routine CI benchmark checks, not a newly designed performance campaign. It does not enable the SCG08 experiment, so even successful baseline builds cannot close candidate-specific portability verification. The committed audit describes pre-publication local verification; this paragraph records the later CI dispatch without modifying that evidence or candidate SHA.\n\nScoped CI follow-up: draft #786 targets this branch and leaves this head unchanged.\n\nExecuted targeted CI: [run 43538262449](https://github.com/t81dev/t81-foundation/actions/runs/43538262449) completed successfully. Each lane verified arithmetic/test source `300cdea8896d56c025f7099c0cdf0c41d7bd6237` separately from harness `b24cd1b1595f0e9c2c55a94a3cc0df89b57e83c1`.\n\n| Platform/compiler | Target build | Selected CTests |\n| --- | --- | --- |\n| Ubuntu 24.04 GCC 14.2.0 | PASS | 5/5 PASS |\n| Windows Server 2025 MSVC 19.51.36260 | PASS | 5/5 PASS |\n| Windows Server 2025 clang-cl 20.1.8 | PASS | 5/5 PASS |\n\nAll lanes used Release/NDEBUG and passed the twelve child rejection checks, 94 schema-negative cases, and Draft 7 parity (61 negative / 2 positive records). Only the requested target and five CTests ran; no Gate 2 or performance campaign.\n\n[Durable remote packets, exact commands, SHAs, results and limitations](https://github.com/t81dev/t81-foundation/blob/8733abcd2ffc7ecb35ff8b61d9306472fced806b/docs/records/audits/2026-11-13-pr785-scoped-ci/RESULTS.md) are retained on separate audit branch `audit/pr785-scg08-ci-results` at `8733abcd2ffc7ecb35ff8b61d9306472fced806b`. Downloaded packet manifests were verified against committed bytes. This closes the targeted platform-execution gap; it does not establish complete-repository integration readiness, independent scientific acceptance, or original-run authentication. Known global workflow policy failures and prior arithmetic/model/provenance limitations remain. No merge or gate advancement.",
+            "title": "test(scg08): portable rejection checks stacked on #779",
+            "base": "codex/rfc-00e1-scientific-contract-corrections",
+            "base_sha": "4d5f3586c04a69c520e613166291c0974877628d",
+            "head": "candidate/pr779-portable-rejections",
+            "head_sha": "300cdea8896d56c025f7099c0cdf0c41d7bd6237",
+            "head_repo_id": 1101585698,
+            "head_repo_full_name": "t81dev/t81-foundation",
+            "merge_commit_sha": "1f9ca57055176d9634038c57ea99354aabbfeff5",
+            "user": {
+              "login": "t81dev",
+              "name": "t81dev",
+              "email": null,
+              "avatar_url": "https://avatars.githubusercontent.com/u/207451414?v=4",
+              "id": 207451414
+            },
+            "requested_reviewers": null,
+            "requested_team_reviewers": null,
+            "diff": null,
+            "comments": null,
+            "created_at": "2026-11-14T00:49:32Z",
+            "updated_at": "2026-11-14T12:02:08Z",
+            "closed_at": "2026-11-14T12:02:08Z",
+            "merged_at": null,
+            "commits": 2,
+            "changed_files": 36,
+            "additions": 1691,
+            "deletions": 64,
+            "display_url": "https://github.com/t81dev/t81-foundation/pull/785",
+            "display_title": "test(scg08): portable rejection checks stacked on #779"
+          },
+          "isError": false
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "id": 787,
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "url": "https://github.com/t81dev/t81-foundation/pull/787",
+            "number": 787,
+            "state": "closed",
+            "merged": true,
+            "mergeable": false,
+            "draft": false,
+            "body": "Combine #779's accepted contract corrections and #785's accepted portable rejection tests against refreshed main, retaining #786's scoped CI evidence without installing its pinned workflow, runner, or requirements in active CI.\n\n- Candidate: `d71b526c35592a7e5f96ed32a2bbf5807613f962`\n- Preserved accepted #787 head: `554fdadf7282175bc4761d4e774b7b43824ea3e0`\n- Reused reviewed preparation: `f5404408038eda5c8bdf0d8a0d58adacb2fe24df`\n- Refreshed main/base: `636024e9cdcea858a1c808e1550ac9d794be10bf`\n- Accepted #779: `4d5f3586c04a69c520e613166291c0974877628d`\n- Accepted #785: `300cdea8896d56c025f7099c0cdf0c41d7bd6237`\n- Retained evidence packet: `8733abcd2ffc7ecb35ff8b61d9306472fced806b`\n- Original CI harness: `b24cd1b1595f0e9c2c55a94a3cc0df89b57e83c1`\n\nThe reviewed history is preserved. The synchronized head merges current main into the reviewed preparation; its parents are f5404408038eda5c8bdf0d8a0d58adacb2fe24df and 636024e9cdcea858a1c808e1550ac9d794be10bf. The preparation already contains repaired main through #782; the new merge adds only main's three #784 status-document updates. No conflicts or hand resolutions occurred. Complete-tree verification equals current main plus the accepted #787 delta: all eight experiment/contract files and all 151 audit/evidence paths retain identical blobs and modes. No pinned experiment CI was activated.\n\n## Eight experiment/contract files\n\n| File | Role |\n| --- | --- |\n| `experiments/scg08_arithmetic_work/CMakeLists.txt` | Registers portable rejection tests with the existing experiment tests |\n| `experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md` | Accepted contract and evidence qualifications |\n| `experiments/scg08_arithmetic_work/exact_oracle_adapter.hpp` | Accepted #779 validation helpers |\n| `experiments/scg08_arithmetic_work/tier2_work_harness.hpp` | Accepted #779 guards, exact bounds and accounting diagnostics |\n| `experiments/scg08_arithmetic_work/test_exp_scg08_01.cpp` | Accepted fixtures with portable named rejection dispatch |\n| `experiments/scg08_arithmetic_work/test_result_rejection.py` | Requires exit exactly 1 AND the correct stderr diagnostic for 12 cases |\n| `experiments/scg08_arithmetic_work/test_result_rejection_driver.py` | Rejects wrong statuses/diagnostics, timeouts and launch failures |\n| `spec/rfcs/RFC-00E1-balanced-ternary-multi-precision-arithmetic-contract.md` | Accepted bounded arithmetic/accounting contract, still draft |\n\nThese eight files total **144,643 bytes** at the candidate head. The oracle adapter, Tier-2 accounting/arithmetic harness, report, RFC and unchanged Tier-1 harness match #779 byte-for-byte. Portable CMake/C++/Python files match #785 byte-for-byte. Stored trytes are rejected before decoding; conversion repacks remain OutLimbs + 2; negative-product bounds remain exact. Production arithmetic, top-level CMake/cmake, active workflows and scripts/ci match refreshed main.\n\n## 151 audit/evidence files — separate from implementation scope\n\nSizes are sums of committed file contents at the candidate head, not Git history, compressed transfer size, or patch size.\n\n| Directory under `docs/records/audits/` | Files | Bytes | Role |\n| --- | ---: | ---: | --- |\n| `2026-11-11-rfc00e1-corrections/` | 9 | 45,756 | Original pinned #778 audit packet plus correction rationale; failed/interrupted configuration evidence preserved |\n| `2026-11-13-pr779-portable-rejection-candidate/` | 23 | 62,369 | #785 local Release/sanitizer/rejection evidence, preservation hashes and limitations; unsupported leak-detection failures retained |\n| `2026-11-13-pr779-pr785-main-integration/` | 23 | 618,108 | Integration lineage, accepted-file comparisons, full changed-file list, fresh local validation, inactive exact CI snapshots and pinned references |\n| `2026-11-13-pr785-scoped-ci/` | 96 | 2,770,240 | Exact packet from 8733abcd: actual Linux/MSVC/clang-cl logs, commands, identities, results, compiler/dependency data, manifests and limitations |\n\n**Audit/evidence total: 3,496,473 bytes (~3.334 MiB). All 159 changed files total 3,641,116 bytes (~3.472 MiB).**\n\nAll 96 scoped packet files and raw retained evidence remain byte-identical. Historical gate1_evidence_record.json remains Git blob `00731bd34cfad475acde588085827698627ec60d`. Whole-candidate whitespace warnings in raw CMake/CTest/JUnit evidence are retained losslessly in a compressed diagnostic log; experiment/contract whitespace checks pass. No raw evidence was reformatted to silence warnings.\n\n#786's `.github/workflows/scg08-correctness.yml`, `scripts/ci/run_scg08_correctness.py`, and `scripts/ci/scg08-requirements.txt` are absent from active locations. Exact copies live only under the integration audit's archived-ci/ directory, with original b24cd1... revision, Git blob IDs, SHA-256 and immutable source URLs. Their original source-SHA guard is unchanged, enabling reproduction of the recorded old source in isolation rather than mislabeling it as this candidate.\n\n## Verification and remaining limits\n\nVerification is separated by source and execution scope:\n\n- **Fresh standard CI at d71b526c35592a7e5f96ed32a2bbf5807613f962:** [Foundation CI](https://github.com/t81dev/t81-foundation/actions/runs/43562679955) and [CodeQL](https://github.com/t81dev/t81-foundation/actions/runs/43562679860) completed with both required contexts successful. Main's strict protection requires quality gate / required and Analyze (cpp). [Format Check](https://github.com/t81dev/t81-foundation/actions/runs/43562679839) passed. Standard CI leaves T81_BUILD_EXPERIMENTS OFF, so these runs do not execute the five SCG08 experiment tests.\n- **Fresh local correctness at d71b526c35592a7e5f96ed32a2bbf5807613f962:** macOS ARM64 / Apple clang 21 / Python 3.14.3, Release with NDEBUG, experiments explicitly ON, target t81_exp_scg08_01_test built and exactly five ^t81_exp_scg08_01 CTests passed. The run includes 12 subprocess rejection cases, driver self-tests, 94 schema negatives and Draft 7 parity (61 negative / 2 positive records). Raw outputs are retained locally outside the branch; no source or historical evidence was altered. This is author-run local verification, not fresh remote Windows/Linux experiment execution.\n- **Separately retained five-test remote experiment evidence:** [run 43538262449](https://github.com/t81dev/t81-foundation/actions/runs/43538262449) passed 5/5 each on Linux GCC 14.2, Windows MSVC 19.51 and clang-cl 20.1.8 at exact source **300cdea8896d56c025f7099c0cdf0c41d7bd6237**, using harness **b24cd1b1595f0e9c2c55a94a3cc0df89b57e83c1**. Its packet from **8733abcd2ffc7ecb35ff8b61d9306472fced806b** is preserved unchanged. These historical results are not relabeled as executions of the synchronized head.\n\nNo performance campaign or Gate 2 execution occurred. Both fresh required integration contexts have passed at the synchronized head; disposition: READY FOR MAINTAINER DECISION. The PR remains draft.\n\n[Integration record, exact commands, scope and identity checks](https://github.com/t81dev/t81-foundation/blob/554fdadf7282175bc4761d4e774b7b43824ea3e0/docs/records/audits/2026-11-13-pr779-pr785-main-integration/README.md)\n[Preserved scoped CI results](https://github.com/t81dev/t81-foundation/blob/554fdadf7282175bc4761d4e774b7b43824ea3e0/docs/records/audits/2026-11-13-pr785-scoped-ci/RESULTS.md)\n\nCodex authored this assembly and the earlier portable-test/CI contributions with shared prior review context. These are not independent scientific acceptance or original-run authentication. Content identity does not establish provenance truth. No full-domain arithmetic correctness, comparative hardware performance, production readiness or full-repository CI claim is made. Prior modeled-cost, correctness, sanitizer and provenance limitations remain; archived policy failures retain their original source scope.\n\nRFC remains draft; formal Gate 1 acceptance WITHHELD; Gate 2 STRICT NO-GO. No merge, closure, release publication or scientific-gate advancement is requested.\n\n\n## Synchronized-head completion\n\nAt `d71b526c35592a7e5f96ed32a2bbf5807613f962`, [quality gate / required](https://github.com/t81dev/t81-foundation/actions/runs/43562679955/job/132358370528) and [Analyze (cpp)](https://github.com/t81dev/t81-foundation/actions/runs/43562679860/job/132349623898) both passed. Main remains `636024e9cdcea858a1c808e1550ac9d794be10bf` and is an ancestor of this head. The standard platform matrix passed; fresh MSVC and clang-cl each passed 404/404. This standard CI uses experiments OFF and is separate from the five-test experiment evidence described above.\n\n[Informational ARMv9 cross-compilation](https://github.com/t81dev/t81-foundation/actions/runs/43562679955/job/132358302725) failed with fatal error: asio.hpp: No such file or directory. It is not a required context; GitHub reports the aggregate merge state as UNSTABLE despite both required contexts passing. No check was bypassed. The PR remains draft, and no merge into main or scientific-gate advancement occurred.",
+            "title": "scg08: integrate accepted #779 contract and #785 portable tests with retained evidence",
+            "base": "main",
+            "base_sha": "636024e9cdcea858a1c808e1550ac9d794be10bf",
+            "head": "candidate/pr779-pr785-main-integration",
+            "head_sha": "d71b526c35592a7e5f96ed32a2bbf5807613f962",
+            "head_repo_id": 1101585698,
+            "head_repo_full_name": "t81dev/t81-foundation",
+            "merge_commit_sha": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+            "user": {
+              "login": "t81dev",
+              "name": "t81dev",
+              "email": null,
+              "avatar_url": "https://avatars.githubusercontent.com/u/207451414?v=4",
+              "id": 207451414
+            },
+            "requested_reviewers": null,
+            "requested_team_reviewers": null,
+            "diff": null,
+            "comments": null,
+            "created_at": "2026-11-14T01:22:26Z",
+            "updated_at": "2026-11-14T11:38:59Z",
+            "closed_at": "2026-11-14T11:38:11Z",
+            "merged_at": "2026-11-14T11:38:11Z",
+            "commits": 8,
+            "changed_files": 159,
+            "additions": 32874,
+            "deletions": 206,
+            "display_url": "https://github.com/t81dev/t81-foundation/pull/787",
+            "display_title": "scg08: integrate accepted #779 contract and #785 portable tests with retained evidence"
+          },
+          "isError": false
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "id": 792,
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "url": "https://github.com/t81dev/t81-foundation/pull/792",
+            "number": 792,
+            "state": "closed",
+            "merged": true,
+            "mergeable": false,
+            "draft": false,
+            "body": "Block-backed capability publication, revocation and index repair on main bypass the configured Axion hook. This candidate applies the surviving #748 fix directly to refreshed main and retains targeted regression evidence. With a configured hook, each affected method checks the operation/reference before protected store/index/device effects; denial or callback exceptions return CapabilityError.\n\n### Pins and lineage\n- Head: `e2e3630cf9975458f99b048398c8d9c046467cd5`\n- Refreshed main/base: `9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2`\n- Tested code commit: `8e236dba8a1a61568ef4d916afab55f7b5ce45bf`; this head adds audit evidence only.\n- **Original #748 remains unchanged** at `7a3cdf850a143758eb1355ebb8747368e6ca72cb`, branch `fix/policy-block-metadata-reconciliation`. Do not close/retarget/merge it as part of this task.\n- Production driver is byte-identical to #748 / predecessor #686, blob `3a3b00eb9bc08fcf7ad0a2b866598a3fbf79b4fc`. The old closed #747 CI parent is not carried forward. Relevant dependencies/registrations already exist in main; the two-file patch applies without conflict.\n\n### Scope\nTwo code/test files: `fs/block_backed_driver.cpp` and `tests/cpp/canonfs_policy_boundary_test.cpp`, plus 39 audit/evidence files. Additional tests cover default-deny verdicts, zero metadata budget, missing required events and capacity-query ordering. Shared test helper, public API, serialization, arithmetic and workflows are unchanged.\n\n### Fresh local verification — macOS ARM64\n- **Negative control:** main production code plus #748's original added test, Release/-DNDEBUG, exits **1** at the missing hook callback-count assertion. It stops at the first publication denial; this is not a claim that every baseline failure ran separately.\n- Final candidate Release: `canonfs_policy_boundary_test`, `canonfs_persistent_driver_test`, `canonfs_axion_trace_test` **3/3 pass**.\n- Final candidate ASan+UBSan / RelWithDebInfo with -DNDEBUG: same **3/3 pass**.\n- Matrix: **21 denial cases and six positive controls** across Publish/Revoke/Repair. Checks operation/ref, populated bytes, no protected read/write/flush/capacity query on denial, surviving indexed objects and actual permitted effects.\n- Actual compiler commands prove -DNDEBUG and sanitizer instrumentation; explicit T81_TEST_CHECK remains active. clang-format **18.1.8** passes.\n- All 38 audit content hashes and JSON verified; fresh isolated T81 builds, local Asio/GTest discovery overrides. No full-suite/platform campaign claimed.\n\n[Assessment, commands, source/binary hashes and raw evidence](https://github.com/t81dev/t81-foundation/blob/e2e3630cf9975458f99b048398c8d9c046467cd5/docs/records/audits/2026-11-14-pr748-main-candidate/README.md). Original #748 measurements remain identified as author-reported. Raw evidence retains whitespace; runtime/test-scoped diff checking passes, while full-packet whitespace diagnostics are explicitly retained rather than represented as a clean check.\n\n### Explicit limits\n- **Constructor recovery:** default rebuild_on_open=true scans/rebuilds before hook installation. Existing trusted initialization is outside this repair; regression devices use false.\n- **No-hook bootstrap:** an empty callback intentionally selects unconfigured/ungoverned mode. It is not authorization from a configured policy; configured missing/invalid policy rejects.\n- **Repair scope:** rebuilds the whole index; supplied ref is operation context, not subtree/per-descendant authorization.\n- **I/O failures:** existing remove/flush return handling, rollback, crash atomicity and recovery semantics are unchanged and not injected by these tests.\n- Production policy hooks can append attempted-operation audit events before a denial. No claim of zero global side effects.\n- Read/write ref delivery and block-driver capability-permission enforcement remain unchanged/outside scope; caps_ remains in-memory. No concurrency/revocation transaction or malicious-device sandbox guarantee.\n\nCodex prepared this derivative candidate/tests in shared context and has related implementation contributions; these are new local executions, not independent security/scientific acceptance. Fresh platform CI outcomes are recorded separately below.\n\nRefreshed protection confirms strict up-to-date enforcement and required contexts `quality gate / required` and `Analyze (cpp)`; exact-head results are recorded below. **Keep draft; no merge, check bypass, performance campaign or scientific-gate advancement.**\n\n### Fresh CI results at exact head e2e3630cf9975458f99b048398c8d9c046467cd5\n\nBoth freshly verified required contexts passed:\n- [quality gate / required](https://github.com/t81dev/t81-foundation/actions/runs/43658724906/job/132653159400): **success**\n- [Analyze (cpp)](https://github.com/t81dev/t81-foundation/actions/runs/43658724868/job/132643018407): **success**\n\nAll seven platform build/test jobs passed:\n- [build / windows-x86_64 / msvc](https://github.com/t81dev/t81-foundation/actions/runs/43658724906/job/132643990430): **success**\n- [build / linux-x86_64 / clang](https://github.com/t81dev/t81-foundation/actions/runs/43658724906/job/132643990404): **success**\n- [build / linux-arm64 / clang](https://github.com/t81dev/t81-foundation/actions/runs/43658724906/job/132643990396): **success**\n- [build / linux-x86_64 / gcc](https://github.com/t81dev/t81-foundation/actions/runs/43658724906/job/132643990374): **success**\n- [build / macos-arm64 / clang](https://github.com/t81dev/t81-foundation/actions/runs/43658724906/job/132643990373): **success**\n- [build / windows-x86_64 / clang-cl](https://github.com/t81dev/t81-foundation/actions/runs/43658724906/job/132643990367): **success**\n- [build / macos-x86_64 / gcc](https://github.com/t81dev/t81-foundation/actions/runs/43658724906/job/132643990329): **success**\n\nThe CI sanitizer job also passed. Completed Windows MSVC and clang-cl logs each explicitly contain `21 negative cases and 6 positive controls passed`, the passing `canonfs_policy_boundary_test`, and `100% tests passed out of 404`. These are GitHub CI-reported executions, separate from the retained fresh local macOS Release/ASan/UBSan results.\n\nAt this refresh, additional non-required jobs were still running: [cross-compile / linux-armv9 / gcc (informational)](https://github.com/t81dev/t81-foundation/actions/runs/43658724906/job/132653120471), [gate / TUI binary size delta](https://github.com/t81dev/t81-foundation/actions/runs/43658724906/job/132653120359). No completed failure was reported; this is **not a claim that every additional check has completed**.\n\nMain remained `9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2`; original #748 remained `7a3cdf850a143758eb1355ebb8747368e6ca72cb`. The PR remains draft, with no merge or required-check bypass. All constructor/bootstrap/repair/I/O/concurrency and capability limitations above remain.\n",
+            "title": "fix(canonfs): reconcile block metadata authorization on current main",
+            "base": "main",
+            "base_sha": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+            "head": "candidate/pr748-main-policy-metadata",
+            "head_sha": "e2e3630cf9975458f99b048398c8d9c046467cd5",
+            "head_repo_id": 1101585698,
+            "head_repo_full_name": "t81dev/t81-foundation",
+            "merge_commit_sha": "a3ae3b16b5afebff4a7ba3c0d2cffe8a69c11b1d",
+            "user": {
+              "login": "t81dev",
+              "name": "t81dev",
+              "email": null,
+              "avatar_url": "https://avatars.githubusercontent.com/u/207451414?v=4",
+              "id": 207451414
+            },
+            "requested_reviewers": null,
+            "requested_team_reviewers": null,
+            "diff": null,
+            "comments": null,
+            "created_at": "2026-11-15T00:32:59Z",
+            "updated_at": "2026-11-15T01:36:06Z",
+            "closed_at": "2026-11-15T01:35:08Z",
+            "merged_at": "2026-11-15T01:35:08Z",
+            "commits": 2,
+            "changed_files": 41,
+            "additions": 4610,
+            "deletions": 11,
+            "display_url": "https://github.com/t81dev/t81-foundation/pull/792",
+            "display_title": "fix(canonfs): reconcile block metadata authorization on current main"
+          },
+          "isError": false
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "id": 793,
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "url": "https://github.com/t81dev/t81-foundation/pull/793",
+            "number": 793,
+            "state": "closed",
+            "merged": true,
+            "mergeable": false,
+            "draft": false,
+            "body": "Explicit policies can be discarded by VM option binding or allowed to fail open. This replacement reconciles #750 at `1522f14aa1994d03af72441f2554718c9cfc11cb` against refreshed main `a3ae3b16b5afebff4a7ba3c0d2cffe8a69c11b1d`. It binds the requested policy and rejects open/read/parse failures before execution using existing Axion semantics. Restoring the shared binding also requires validation on existing debugger/inspector paths. No-policy defaults and JSON diagnostics are preserved.\n\nOriginal #750 and its branch remain unchanged. This candidate imports its bounded policy correction rather than its obsolete #747 stack. The sole patch-context conflict was CMake registration; #782's repro working directory, Windows entry/argument conversion, process capture, cleanup, arithmetic and golden hash remain unchanged. No policy-model expansion or scientific-gate advancement.\n\nFive implementation/test files are separate from 47 audit/evidence files (2,417,527 bytes). Code commit: `4a93e0392b5deec5fed22dd95849c91871465344`; following evidence commit changes documentation only. [Pinned audit packet](https://github.com/t81dev/t81-foundation/blob/15b6b2b63fe056d68f959d658a351eba603ce6ea/docs/records/audits/2026-11-14-pr750-main-candidate/README.md) retains exact commands, source/binary hashes, all stdout/stderr/statuses, artifact comparisons, original patch, #782 comparisons, and failed intermediate attempts.\n\nFresh local macOS ARM64, AppleClang 21, C++23 Release/`-DNDEBUG`, strict deterministic float ON:\n\n- Final identical expanded harness: unfixed main **249 processes / 670 failed checks**; candidate **249 / zero**.\n- Byte-identical original #750 harness: unfixed main **73 / 138 failed checks**; candidate **73 / zero**.\n- Registered policy, repro-hash and process-capture CTests: **3/3 passed**.\n- Missing, malformed, empty, overflow, trailing-invalid, directory, zero-budget and valid policies; three option positions; VM run/trace, code source/bytecode and affected VM inspector/debug paths. Denied probes create no new traces, preserve pre-existing output and produce no program sentinel output. Intentional JSON error responses are checked as diagnostics.\n\nLimits: native Linux/Windows MSVC/clang-cl and current-head hosted CI pending; no full-suite or sanitizer claim. Mid-read I/O failures are checked in source but not deterministically injected. Artifact checks cover fixture/child-temp trees, not all host setup/constructor effects. Directory behavior is platform-dependent. REPL and other command families are outside this bounded scope. Raw CTest/patch whitespace is retained byte-for-byte; source whitespace checks pass, packet-wide checks flag raw evidence.\n\nPrepared and tested by Codex within the shared maintenance effort that contributed to the earlier work; this is not independent review. Draft for maintainer review; no merge or policy activation.",
+            "title": "fix(cli): reconcile explicit execution policies on current main",
+            "base": "main",
+            "base_sha": "a3ae3b16b5afebff4a7ba3c0d2cffe8a69c11b1d",
+            "head": "candidate/pr750-main-explicit-policy",
+            "head_sha": "15b6b2b63fe056d68f959d658a351eba603ce6ea",
+            "head_repo_id": 1101585698,
+            "head_repo_full_name": "t81dev/t81-foundation",
+            "merge_commit_sha": "c2ab68e582c9f773ce94a9e13bcb805016f07dd4",
+            "user": {
+              "login": "t81dev",
+              "name": "t81dev",
+              "email": null,
+              "avatar_url": "https://avatars.githubusercontent.com/u/207451414?v=4",
+              "id": 207451414
+            },
+            "requested_reviewers": null,
+            "requested_team_reviewers": null,
+            "diff": null,
+            "comments": null,
+            "created_at": "2026-11-15T02:00:14Z",
+            "updated_at": "2026-11-15T12:18:57Z",
+            "closed_at": "2026-11-15T12:18:16Z",
+            "merged_at": "2026-11-15T12:18:16Z",
+            "commits": 2,
+            "changed_files": 52,
+            "additions": 49902,
+            "deletions": 40,
+            "display_url": "https://github.com/t81dev/t81-foundation/pull/793",
+            "display_title": "fix(cli): reconcile explicit execution policies on current main"
+          },
+          "isError": false
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "id": 794,
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "url": "https://github.com/t81dev/t81-foundation/pull/794",
+            "number": 794,
+            "state": "closed",
+            "merged": false,
+            "mergeable": false,
+            "draft": true,
+            "body": "The policy-validation wrapper delegates to a general shell dispatcher that assembles a command string. This bounded replacement retains #751's fixed argv invocation `t81 policy validate <literal-path> --json`, rejects unsupported operations/options before backend execution, and limits the advertised entry point to syntax/metadata inspection.\n\n**Depends on #793** at `15b6b2b63fe056d68f959d658a351eba603ce6ea`. This PR targets `candidate/pr750-main-explicit-policy`, not main. Integrate #793 first, then refresh/retarget this PR and obtain applicable hosted checks. Original #751 at `b68853335264d0758124a359f705fb5fbb8dfdc3` and its branch remain unchanged; no legacy #747/#750 stack is imported.\n\nFour active files: wrapper, skill documentation, Python harness and UNIX CMake test registration. Wrapper/documentation/harness bytes exactly match pinned #751. CMake adds exactly its ten registration lines while preserving #793's policy-test timeout and #782's repro working directory. No CLI, VM, Axion evaluator, policy model, arithmetic, process capture, golden or existing historical evidence changes.\n\nFresh native macOS ARM64, Bash 3.2, AppleClang 21, C++23 Release/`-DNDEBUG`:\n\n- Same harness and same fresh real CLI: original wrapper **86 process receipts / 141 failed checks**; candidate **86 / zero**.\n- **Fake mode:** 40 wrapper calls: 16 exact-argv backend responses and 24 pre-backend rejections. These establish dispatch behavior, not policy validity.\n- **Real-configured mode:** 44 wrapper calls: 20 native validation responses and 24 pre-backend rejections. Native cases cover text/compiled policies, malformed/empty input, compiled-byte rejection, schema/input identity and literal spaces, quotes, metacharacters and option-shaped filenames.\n- One missing-backend probe and one successful policy-compilation setup complete the 86 receipts. No unreadable-file probe skipped.\n- Negative controls retain 12 persistent-artifact-change cases, including store creation and command-substitution canaries before backend rejection. Candidate has zero fixture-tree changes.\n- Registered wrapper, execution-policy (249 processes), repro-hash and process-capture tests: **4/4 passed**. Bash syntax and source whitespace checks pass.\n\nA zero-budget policy is valid metadata; wrapper validation does not install an execution policy or authorize execution. The separately rerun #793 execution matrix preserves that distinction.\n\n[Durable evidence](https://github.com/t81dev/t81-foundation/blob/c17557ffb4ad54a0e299e47e8bdb9dd5bebf8a59/docs/records/audits/2026-11-14-pr751-on-pr793/README.md) contains 29 audit files (469,764 bytes), exact source/binary hashes, commands, all process receipts, negative controls and source comparisons. Implementation commit: `24596a28d5aebe75ebb86edc1f4a97b377953538`; following commit adds evidence only.\n\nLimits: readable-file symlinks remain allowed; checks do not prevent TOCTOU or provide containment, allowlists, resource limits or sandboxing. Trusted PATH/host/shell/environment remain prerequisites. Other wrappers remain unchanged and outside this boundary. Artifact observations cover the fixture tree, not every host effect. Linux Bash and Windows/WSL are not locally qualified. Main-target CI/CodeQL/format filters do not automatically qualify this stacked base; no workflow bypass is added. Raw evidence whitespace is retained.\n\nPrepared and executed by Codex within the shared maintenance effort; not independent review. Draft only: no merge, policy expansion or scientific-gate advancement.",
+            "title": "fix(skills): constrain policy validation wrapper (depends on #793)",
+            "base": "main",
+            "base_sha": "c2ab68e582c9f773ce94a9e13bcb805016f07dd4",
+            "head": "candidate/pr751-on-pr793-wrapper",
+            "head_sha": "5f5751ae9b9f634f2af2cb020afef6f9e2cd610d",
+            "head_repo_id": 1101585698,
+            "head_repo_full_name": "t81dev/t81-foundation",
+            "merge_commit_sha": "90d83b3739cd8326478d84c21baeb73946e34da4",
+            "user": {
+              "login": "t81dev",
+              "name": "t81dev",
+              "email": null,
+              "avatar_url": "https://avatars.githubusercontent.com/u/207451414?v=4",
+              "id": 207451414
+            },
+            "requested_reviewers": null,
+            "requested_team_reviewers": null,
+            "diff": null,
+            "comments": null,
+            "created_at": "2026-11-15T02:24:15Z",
+            "updated_at": "2026-11-15T15:40:24Z",
+            "closed_at": "2026-11-15T15:40:24Z",
+            "merged_at": null,
+            "commits": 3,
+            "changed_files": 33,
+            "additions": 9515,
+            "deletions": 144,
+            "display_url": "https://github.com/t81dev/t81-foundation/pull/794",
+            "display_title": "fix(skills): constrain policy validation wrapper (depends on #793)"
+          },
+          "isError": false
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "id": 795,
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "url": "https://github.com/t81dev/t81-foundation/pull/795",
+            "number": 795,
+            "state": "closed",
+            "merged": false,
+            "mergeable": false,
+            "draft": true,
+            "body": "Current main still admits impossible dates, nonzero UTC offsets, nonfinite JSON values, and supplied-schema constraints that its domain checks do not interpret. This draft carries the surviving validator checks from #767 onto refreshed main while retaining newer provenance rules.\n\nHead: `43747b60675444ab58f693713577d6cd42e3f234`.\nRefreshed main/base: `c2ab68e582c9f773ce94a9e13bcb805016f07dd4`.\n\nThis is a replacement candidate for the surviving scope of #767. Original #767 remains open/draft and unchanged at `bd77c00122ff9cc63097d0ee2cd88895266878cc`; its branch, base, description, and historical evidence are preserved.\n\nChanges:\n- Validate calendar values and UTC offset; reject NaN/Infinity and float overflow in files, including extra properties.\n- Apply bounded recursive schema checks, patterns, enums, minima, string lengths, nullable types, and boolean additionalProperties; fail explicitly on unsupported/malformed constraints.\n- Preserve main's existing SHA, scalar/counter, weighted-total, and unexpected-exception handling. Exclude obsolete inherited report/schema/evidence changes from #766/#767.\n- Preserve required `evidence_generation_sha`: null remains UNVERIFIED; publication SHA remains optional but non-null when supplied. The canonical evidence, schema, and implementation report are unchanged from main.\n- Register file-based and optimized Python negative tests that remain active in Release.\n\nExecuted validation: macOS 26.5.2 ARM64, Python 3.14.3 only.\n- Release configure and targeted `t81_exp_scg08_01_test` build passed; arithmetic executable was not run.\n- Registered validator CTests: 5/5 passed.\n- Inherited suite: 94 negative cases, normal and `-O`.\n- File/CLI suite: 57 cases (49 negative, 8 positive), normal and `-O`.\n- 20 paired main/candidate probes distinguish missing checks from protections already present on main.\n- Deliberately removing strict JSON parsing causes the suite to fail normally and under `-O`; unexpected implementation exceptions propagate.\n- tabnanny and diff whitespace checks passed. Optional jsonschema parity was not run because that dependency was unavailable.\n\n[Assessment and retained receipts](https://github.com/t81dev/t81-foundation/tree/43747b60675444ab58f693713577d6cd42e3f234/docs/records/audits/2026-11-15-pr767-main-validator) include paired payloads/results, normal/`-O` raw outputs, source hashes, preservation checks, and test-harness checks. Their checksums were verified before publication. The assessment's local-only/no-push wording records its preparation state; this draft publishes that unchanged snapshot.\n\nLimits: macOS ARM64 execution only; Linux/Windows, other Python versions, and hosted CI results are not established here. This is bounded schema/domain validation, not universal Draft 7 or ECMAScript regex compliance, independent scientific acceptance, or authenticated generating-run provenance. No benchmark, arithmetic campaign, Gate 2, or authorization change.\n\n**Draft for review. No merge authorized.**",
+            "title": "fix(scg08): reconcile surviving #767 validator checks on main",
+            "base": "main",
+            "base_sha": "c2ab68e582c9f773ce94a9e13bcb805016f07dd4",
+            "head": "candidate/pr767-main-validator",
+            "head_sha": "43747b60675444ab58f693713577d6cd42e3f234",
+            "head_repo_id": 1101585698,
+            "head_repo_full_name": "t81dev/t81-foundation",
+            "merge_commit_sha": "4062a3da52e590569bd072d79ac3e80d44622e4b",
+            "user": {
+              "login": "t81dev",
+              "name": "t81dev",
+              "email": null,
+              "avatar_url": "https://avatars.githubusercontent.com/u/207451414?v=4",
+              "id": 207451414
+            },
+            "requested_reviewers": null,
+            "requested_team_reviewers": null,
+            "diff": null,
+            "comments": null,
+            "created_at": "2026-11-15T12:29:58Z",
+            "updated_at": "2026-11-15T15:40:26Z",
+            "closed_at": "2026-11-15T15:40:26Z",
+            "merged_at": null,
+            "commits": 1,
+            "changed_files": 8,
+            "additions": 1276,
+            "deletions": 5,
+            "display_url": "https://github.com/t81dev/t81-foundation/pull/795",
+            "display_title": "fix(scg08): reconcile surviving #767 validator checks on main"
+          },
+          "isError": false
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "id": 796,
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "url": "https://github.com/t81dev/t81-foundation/pull/796",
+            "number": 796,
+            "state": "closed",
+            "merged": true,
+            "mergeable": false,
+            "draft": false,
+            "body": "The SIMD threshold step could mask checker failures through `tee`, while the checker could pass missing sizes or comparator results. This correction makes the existing gate fail closed and adds tests that execute its actual workflow pipeline.\n\nCorrection head: `f0415b0097e2f6e822ea61531e4a053857c71c71`.\nSole parent / old combined head: `b48e1a4da29784860a528e5397f896c73bc48450`.\n\n- The threshold step explicitly uses Bash and `set -euo pipefail`; checker exit 1 is the step's exit 1.\n- Expected TAnd rows come from a separate `--benchmark_list_tests` invocation of the same compiled benchmark binary. Enabled SWAR/AVX2/NEON implementations must cover all seven registered sizes. A SWAR baseline and at least one compiled SIMD comparator are required. Nonexistent TOr/TNot benchmarks are not required.\n- Missing/unreadable files, malformed/empty JSON, duplicate or unexpected results, missing sizes/pairs, benchmark errors, invalid/non-finite/nonpositive timings, unsupported units and missing raw iteration data fail explicitly.\n- Units are normalized; each enabled comparator is checked against SWAR at 16384 and 65536 with the unchanged 1.15 limit.\n- Focused tests extract the threshold step verbatim from ci.yml and run it without ambient pipefail. Five unittest methods pass normally and under Python -O, including 46 bad-result cases and seven bad-inventory cases through both direct CLI and actual workflow routes, positive AVX2/NEON and boundary/unit controls. Removing only pipefail reproduces the false-success exit.\n- The existing CI job runs these tests normally and under -O and retains their output. No new standalone workflow or schema-engine expansion.\n\nAll 48 accepted component file contents, modes and Git blobs are preserved, as are the raw Cell measurements and historical SCG-08 artifacts. Source PR heads #794, #795 and #780 remain unchanged. No Cell timing campaign, merge or closure is performed.\n\n**Durable old-head readiness packet:** [immutable archive](https://raw.githubusercontent.com/t81dev/t81-foundation/f0415b0097e2f6e822ea61531e4a053857c71c71/docs/records/audits/2026-11-15-pr796-threshold-correction/pr796-b48e1a4da-readiness-packet.tar.gz), [publication record, internal hashes and correction receipts](https://github.com/t81dev/t81-foundation/tree/f0415b0097e2f6e822ea61531e4a053857c71c71/docs/records/audits/2026-11-15-pr796-threshold-correction).\nArchive SHA-256: `202b52eaa67809452d3912e7fb488092b68c5fafed1812ed293cd53bf1b53c34`.\n\nThe archive contains all 58 original packet files byte-for-byte and the original hash manifest. Its completed results belong **only to old head b48e1a4da29784860a528e5397f896c73bc48450**, main CI run 43717280854 attempt 2. They do not qualify this correction. The old passing SIMD step did not establish reliable threshold enforcement; that assurance claim is superseded here. The old ARMv9 informational failure and initial link-network failure remain retained.\n\nLocal correction tests, workflow audits, tabnanny, whitespace checks and archived SIMD-input replay pass. The native existing binary was enumerated without timed loops; replay of old results is not a new measurement.\n\n**Fresh required checks for this correction are pending.** Fresh results will be reported against the new head, separately from the frozen old-head packet. Keep all source PRs open pending human disposition; no merge is authorized.",
+            "title": "Integrate reviewed #794, #795 and #780 with preserved evidence",
+            "base": "main",
+            "base_sha": "c2ab68e582c9f773ce94a9e13bcb805016f07dd4",
+            "head": "candidate/pr794-pr795-pr780-main-integration",
+            "head_sha": "f0415b0097e2f6e822ea61531e4a053857c71c71",
+            "head_repo_id": 1101585698,
+            "head_repo_full_name": "t81dev/t81-foundation",
+            "merge_commit_sha": "24d40f4d9fabf735f988f2852751c2cadd9beffb",
+            "user": {
+              "login": "t81dev",
+              "name": "t81dev",
+              "email": null,
+              "avatar_url": "https://avatars.githubusercontent.com/u/207451414?v=4",
+              "id": 207451414
+            },
+            "requested_reviewers": null,
+            "requested_team_reviewers": null,
+            "diff": null,
+            "comments": null,
+            "created_at": "2026-11-15T13:06:42Z",
+            "updated_at": "2026-11-15T15:40:14Z",
+            "closed_at": "2026-11-15T15:40:12Z",
+            "merged_at": "2026-11-15T15:40:12Z",
+            "commits": 4,
+            "changed_files": 179,
+            "additions": 40316,
+            "deletions": 307,
+            "display_url": "https://github.com/t81dev/t81-foundation/pull/796",
+            "display_title": "Integrate reviewed #794, #795 and #780 with preserved evidence"
+          },
+          "isError": false
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "id": 797,
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "url": "https://github.com/t81dev/t81-foundation/pull/797",
+            "number": 797,
+            "state": "closed",
+            "merged": true,
+            "mergeable": false,
+            "draft": false,
+            "body": "Updates `docs/ai-context/` (`START_HERE.md`, `T81_RESEARCH_STATUS_2026-11-15.md`) after merging #796 (`24d40f4d9fabf735f988f2852751c2cadd9beffb`) and closing superseded PRs (#748, #750, #751, #780, #794, #795), and preserves the pinned evidence-linked architecture assessment at `docs/records/audits/2026-11-15-architecture-assessment/README.md`.",
+            "title": "docs(ai-context,audit): update 2026-11-15 state after #796 merge and preserve architecture assessment",
+            "base": "main",
+            "base_sha": "24d40f4d9fabf735f988f2852751c2cadd9beffb",
+            "head": "docs/ai-context-2026-11-15",
+            "head_sha": "e987af8f39d310ec4837f237cdd6fd126e154447",
+            "head_repo_id": 1101585698,
+            "head_repo_full_name": "t81dev/t81-foundation",
+            "merge_commit_sha": "a78b1b686b97c0e8c41fa0357ca987f7a8006d10",
+            "user": {
+              "login": "t81dev",
+              "name": "t81dev",
+              "email": null,
+              "avatar_url": "https://avatars.githubusercontent.com/u/207451414?v=4",
+              "id": 207451414
+            },
+            "requested_reviewers": null,
+            "requested_team_reviewers": null,
+            "diff": null,
+            "comments": null,
+            "created_at": "2026-11-15T15:41:40Z",
+            "updated_at": "2026-11-15T17:20:52Z",
+            "closed_at": "2026-11-15T17:20:52Z",
+            "merged_at": "2026-11-15T17:20:52Z",
+            "commits": 1,
+            "changed_files": 3,
+            "additions": 102,
+            "deletions": 0,
+            "display_url": "https://github.com/t81dev/t81-foundation/pull/797",
+            "display_title": "docs(ai-context,audit): update 2026-11-15 state after #796 merge and preserve architecture assessment"
+          },
+          "isError": false
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "id": 798,
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "url": "https://github.com/t81dev/t81-foundation/pull/798",
+            "number": 798,
+            "state": "open",
+            "merged": false,
+            "mergeable": true,
+            "draft": false,
+            "body": "Ports the still-missing VM arithmetic UB and Tier 6 mapping fixes from #536 onto current `main` (`24d40f4d9`):\n\n- `vm/value_ops.cpp`: avoid signed overflow UB in `add_int`, `sub_int`, `mul_int`, `neg_int`, and guard `INT64_MIN / -1` and `INT64_MIN % -1` against hardware `#DE` / `SIGFPE`.\n- `vm/tier_limits.cpp`: map rank 6 to `TierId::Tier6` in `tier_from_rank()`.\n- `tests/cpp/vm_value_ops_boundary_test.cpp`, `CMakeLists.txt`: add `t81_vm_value_ops_boundary_test`.\n\nLocal verification after final edit: `t81_vm_fault_test` and `t81_vm_value_ops_boundary_test` (2/2 passed).",
+            "title": "fix(vm): guard integer arithmetic UB and map Tier 6 rank",
+            "base": "main",
+            "base_sha": "40695b0ba5cea3e43563b6ed2443c987d2738089",
+            "head": "fix/vm-value-ops-and-tier6",
+            "head_sha": "618ff9058a71a38e47692780f41ceed0b59ca50a",
+            "head_repo_id": 1101585698,
+            "head_repo_full_name": "t81dev/t81-foundation",
+            "merge_commit_sha": "3e4a44cbfacee064940e5db03564611f83fc915a",
+            "user": {
+              "login": "t81dev",
+              "name": "t81dev",
+              "email": null,
+              "avatar_url": "https://avatars.githubusercontent.com/u/207451414?v=4",
+              "id": 207451414
+            },
+            "requested_reviewers": null,
+            "requested_team_reviewers": null,
+            "diff": null,
+            "comments": null,
+            "created_at": "2026-11-15T16:12:45Z",
+            "updated_at": "2026-11-15T23:04:15Z",
+            "closed_at": null,
+            "merged_at": null,
+            "commits": 4,
+            "changed_files": 4,
+            "additions": 170,
+            "deletions": 5,
+            "display_url": "https://github.com/t81dev/t81-foundation/pull/798",
+            "display_title": "fix(vm): guard integer arithmetic UB and map Tier 6 rank"
+          },
+          "isError": false
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "id": 799,
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "url": "https://github.com/t81dev/t81-foundation/pull/799",
+            "number": 799,
+            "state": "closed",
+            "merged": true,
+            "mergeable": false,
+            "draft": false,
+            "body": "## Summary\n- Move the `asio` `FetchContent` and `INTERFACE` target definition in `CMakeLists.txt` out of `if(T81_BUILD_TESTS)` into `if(T81_BUILD_TESTS OR T81_BUILD_EXAMPLES)` before `if(T81_BUILD_EXAMPLES)`.\n- Fixes the `cross-compile-armv9` informational failure where `-DT81_BUILD_TESTS=OFF` left `asio` undefined for `complex_demo` (`include/t81/types/all.hpp` failing to find `<asio.hpp>`).\n\n## Verification (macOS ARM64, AppleClang 21)\n- `cmake -DT81_BUILD_TESTS=OFF -DT81_BUILD_FUZZ_TESTS=OFF -DT81_BUILD_BENCHMARKS=OFF` + `cmake --build ... --target complex_demo`: passed (exit 0).\n- `cmake -DT81_BUILD_TESTS=ON -DT81_BUILD_EXAMPLES=OFF` + `cmake --build ... --target t81_network_test`: passed (exit 0).",
+            "title": "fix(cmake): define asio target when building examples without tests",
+            "base": "main",
+            "base_sha": "a78b1b686b97c0e8c41fa0357ca987f7a8006d10",
+            "head": "fix/cmake-asio-target-scope",
+            "head_sha": "25be5ebd732664ad18b75ec24cf7b1e15dbfdd3a",
+            "head_repo_id": 1101585698,
+            "head_repo_full_name": "t81dev/t81-foundation",
+            "merge_commit_sha": "40695b0ba5cea3e43563b6ed2443c987d2738089",
+            "user": {
+              "login": "t81dev",
+              "name": "t81dev",
+              "email": null,
+              "avatar_url": "https://avatars.githubusercontent.com/u/207451414?v=4",
+              "id": 207451414
+            },
+            "requested_reviewers": null,
+            "requested_team_reviewers": null,
+            "diff": null,
+            "comments": null,
+            "created_at": "2026-11-15T17:15:47Z",
+            "updated_at": "2026-11-15T22:43:26Z",
+            "closed_at": "2026-11-15T22:43:26Z",
+            "merged_at": "2026-11-15T22:43:26Z",
+            "commits": 2,
+            "changed_files": 1,
+            "additions": 16,
+            "deletions": 14,
+            "display_url": "https://github.com/t81dev/t81-foundation/pull/799",
+            "display_title": "fix(cmake): define asio target when building examples without tests"
+          },
+          "isError": false
+        }
+      }
+    }
+  ],
+  "ci_799": {
+    "status": "fulfilled",
+    "value": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "workflow_runs": [
+          {
+            "id": 43746367704,
+            "name": "T81 Foundation CI",
+            "status": "completed",
+            "conclusion": "success",
+            "run_number": 4497,
+            "jobs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/43746367704/jobs",
+            "logs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/43746367704/logs",
+            "workflow_id": 209271454
+          },
+          {
+            "id": 43746367749,
+            "name": "CodeQL",
+            "status": "completed",
+            "conclusion": "success",
+            "run_number": 3300,
+            "jobs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/43746367749/jobs",
+            "logs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/43746367749/logs",
+            "workflow_id": 210339906
+          },
+          {
+            "id": 43746367683,
+            "name": "AI Experiments CI",
+            "status": "completed",
+            "conclusion": "success",
+            "run_number": 418,
+            "jobs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/43746367683/jobs",
+            "logs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/43746367683/logs",
+            "workflow_id": 241971046
+          },
+          {
+            "id": 43746367648,
+            "name": "Format Check",
+            "status": "completed",
+            "conclusion": "success",
+            "run_number": 2978,
+            "jobs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/43746367648/jobs",
+            "logs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/43746367648/logs",
+            "workflow_id": 233473975
+          },
+          {
+            "id": 43746367678,
+            "name": "Cross-Platform Determinism Verification",
+            "status": "completed",
+            "conclusion": "success",
+            "run_number": 1461,
+            "jobs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/43746367678/jobs",
+            "logs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/43746367678/logs",
+            "workflow_id": 247014897
+          }
+        ]
+      },
+      "isError": false
+    }
+  },
+  "main_status": {
+    "status": "fulfilled",
+    "value": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "statuses": []
+      },
+      "isError": false
+    }
+  }
+}
