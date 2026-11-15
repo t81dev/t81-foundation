@@ -1,0 +1,144 @@
+{
+  "affects_frozen_program": false,
+  "capability_frozen_count": 174,
+  "header_named_count": 244,
+  "kAllOpcodes_interval_size": 247,
+  "program_subset": {
+    "Add": {
+      "header": 5,
+      "oracle": 5,
+      "registry": 5,
+      "within_0_173": true
+    },
+    "Cmp": {
+      "header": 15,
+      "oracle": 15,
+      "registry": 15,
+      "within_0_173": true
+    },
+    "Div": {
+      "header": 8,
+      "oracle": 8,
+      "registry": 8,
+      "within_0_173": true
+    },
+    "Halt": {
+      "header": 1,
+      "oracle": 1,
+      "registry": 1,
+      "within_0_173": true
+    },
+    "JumpIfNegative": {
+      "header": 60,
+      "oracle": 60,
+      "registry": 60,
+      "within_0_173": true
+    },
+    "JumpIfNotZero": {
+      "header": 25,
+      "oracle": 25,
+      "registry": 25,
+      "within_0_173": true
+    },
+    "JumpIfZero": {
+      "header": 11,
+      "oracle": 11,
+      "registry": 11,
+      "within_0_173": true
+    },
+    "Load": {
+      "header": 3,
+      "oracle": 3,
+      "registry": 3,
+      "within_0_173": true
+    },
+    "LoadImm": {
+      "header": 2,
+      "oracle": 2,
+      "registry": 2,
+      "within_0_173": true
+    },
+    "Mod": {
+      "header": 9,
+      "oracle": 9,
+      "registry": 9,
+      "within_0_173": true
+    },
+    "Mul": {
+      "header": 7,
+      "oracle": 7,
+      "registry": 7,
+      "within_0_173": true
+    },
+    "Store": {
+      "header": 4,
+      "oracle": 4,
+      "registry": 4,
+      "within_0_173": true
+    },
+    "TAnd": {
+      "header": 19,
+      "oracle": 19,
+      "registry": 19,
+      "within_0_173": true
+    },
+    "TNot": {
+      "header": 18,
+      "oracle": 18,
+      "registry": 18,
+      "within_0_173": true
+    },
+    "TOr": {
+      "header": 20,
+      "oracle": 20,
+      "registry": 20,
+      "within_0_173": true
+    },
+    "TXor": {
+      "header": 21,
+      "oracle": 21,
+      "registry": 21,
+      "within_0_173": true
+    },
+    "Trap": {
+      "header": 28,
+      "oracle": 28,
+      "registry": 28,
+      "within_0_173": true
+    }
+  },
+  "registry_count": 209,
+  "remaining_conflicts": {
+    "TAND_SWAR": {
+      "header": 207,
+      "registry": 214
+    },
+    "TNOT_SWAR": {
+      "header": 206,
+      "registry": 213
+    },
+    "TOR_SWAR": {
+      "header": 220,
+      "registry": 215
+    },
+    "TVecSub": {
+      "header": 205,
+      "registry": 212
+    }
+  },
+  "status": "historical discrepancy preserved; current program subset assignments all agree",
+  "undefined_bytes": [
+    221,
+    222,
+    223,
+    247,
+    248,
+    249,
+    250,
+    251,
+    252,
+    253,
+    254,
+    255
+  ]
+}

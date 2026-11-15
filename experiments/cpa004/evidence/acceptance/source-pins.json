@@ -1,0 +1,354 @@
+{
+  "files": {
+    "docs/research/RESEARCH_CHARTER.md": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 80,
+      "line_ranges": [],
+      "sha256": "a89e4c4338fc8b91412a862db24512d44f38d07f84f3e2c45b195c18fc49b4fa",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/docs/research/RESEARCH_CHARTER.md"
+    },
+    "docs/research/commons/experiment-proposal.schema.json": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 200,
+      "line_ranges": [
+        [
+          1,
+          200
+        ]
+      ],
+      "sha256": "7021b1d9a97a1a410d9b23b1acdbc5ff4a0a3f24b4f41a2b60bd6e7a63dfe529",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/docs/research/commons/experiment-proposal.schema.json"
+    },
+    "docs/research/continuity/HYPOTHESIS_REGISTER_v1.json": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 397,
+      "line_ranges": [],
+      "sha256": "af8ca65dcef136f294eb33010b5a6621875a52db4f3e60b94a4e28db5318a1c1",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/docs/research/continuity/HYPOTHESIS_REGISTER_v1.json"
+    },
+    "docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 164,
+      "line_ranges": [],
+      "sha256": "bb073bafcd00a81d6790558d05ab60b2e53eee9a8724e19563228983bc575ca7",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md"
+    },
+    "include/t81/experimental/cog/tier.hpp": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 20,
+      "line_ranges": [
+        [
+          5,
+          19
+        ]
+      ],
+      "sha256": "15013cdc2713cf22d7fdc2b8d272180840f13f6b920103ee041bd98f643728a6",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/include/t81/experimental/cog/tier.hpp"
+    },
+    "include/t81/isa/opcodes.hpp": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 783,
+      "line_ranges": [
+        [
+          9,
+          77
+        ],
+        [
+          185,
+          273
+        ],
+        [
+          767,
+          783
+        ]
+      ],
+      "sha256": "f9459c3b93c583f36addf19df1a5f5930a298eee5e3916abb8139f3eeb46e35a",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/include/t81/isa/opcodes.hpp"
+    },
+    "include/t81/isa/program.hpp": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 70,
+      "line_ranges": [
+        [
+          17,
+          69
+        ]
+      ],
+      "sha256": "ff8cf5ea48284515cce4440187a5be484ba95646895263defa0978ed1a8226e9",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/include/t81/isa/program.hpp"
+    },
+    "include/t81/vm/state.hpp": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 413,
+      "line_ranges": [
+        [
+          33,
+          70
+        ],
+        [
+          205,
+          242
+        ]
+      ],
+      "sha256": "1d14cb912618a918c52e6f4f025169f29a86b397b9fe6d698e0990ac738f3dcc",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/include/t81/vm/state.hpp"
+    },
+    "isa/encoding.cpp": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 51,
+      "line_ranges": [
+        [
+          6,
+          49
+        ]
+      ],
+      "sha256": "d9fd81f87e9b6b47c55c8ddf5e7bdeef95e0ce48a965b1973e23526c32f2a391",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/isa/encoding.cpp"
+    },
+    "kernel/axion/engine.cpp": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 34,
+      "line_ranges": [
+        [
+          3,
+          9
+        ],
+        [
+          29,
+          29
+        ]
+      ],
+      "sha256": "601f09cca4ed88e94268f73f5c1504b4dd1495fa47a648419fbedd323b8ba1f8",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/kernel/axion/engine.cpp"
+    },
+    "spec/t81vm-spec.md": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 554,
+      "line_ranges": [
+        [
+          90,
+          107
+        ]
+      ],
+      "sha256": "e5c7d854449478c960c309a8047d42e809b876b0ba4ee49f7ba777660a6b568e",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/spec/t81vm-spec.md"
+    },
+    "spec/tisc-spec.md": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 1927,
+      "line_ranges": [
+        [
+          176,
+          272
+        ],
+        [
+          296,
+          427
+        ],
+        [
+          1217,
+          1258
+        ],
+        [
+          1289,
+          1334
+        ],
+        [
+          1465,
+          1477
+        ]
+      ],
+      "sha256": "c0a1f84a0669a61f1092902470f899c0811ea071f7cf69707d928510e0e5b01c",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/spec/tisc-spec.md"
+    },
+    "spec/tisc/TISC_CAPABILITY_CONTRACT_v1.1.0.md": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 56,
+      "line_ranges": [
+        [
+          11,
+          31
+        ]
+      ],
+      "sha256": "ef2e13c796de38911939aec11099795e303d9d2d5895f84334812dbf54f7f17e",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/spec/tisc/TISC_CAPABILITY_CONTRACT_v1.1.0.md"
+    },
+    "spec/tisc/opcode-registry.md": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 367,
+      "line_ranges": [
+        [
+          1,
+          14
+        ]
+      ],
+      "sha256": "db6580e5fad41dbacdc024e070acbdc33bbf93f8f14a03c535f8e0e0079d53db",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/spec/tisc/opcode-registry.md"
+    },
+    "spec/tisc/opcode-semantics.md": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 461,
+      "line_ranges": [
+        [
+          7,
+          18
+        ],
+        [
+          30,
+          58
+        ]
+      ],
+      "sha256": "21bc9d6161ef26f98466423691f3a7517ad3b9f15020fde839007a526280cc59",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/spec/tisc/opcode-semantics.md"
+    },
+    "ternaryos/CMakeLists.txt": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 1139,
+      "line_ranges": [
+        [
+          671,
+          719
+        ]
+      ],
+      "sha256": "b9b740d869b1f949b1f299d9b536d623264d5e3fc9bc96a0611f93a5cb7beee6",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/ternaryos/CMakeLists.txt"
+    },
+    "ternaryos/hal/qemu_armv8_efi_stub.c": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 377,
+      "line_ranges": [
+        [
+          325,
+          374
+        ]
+      ],
+      "sha256": "c7bd8181eab234ed246605a8ce2a981c8dab3a4da928fb916d8d4cad7714a2ed",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/ternaryos/hal/qemu_armv8_efi_stub.c"
+    },
+    "tests/cpp/test_packed_trit_vector.cpp": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 529,
+      "line_ranges": [
+        [
+          30,
+          95
+        ]
+      ],
+      "sha256": "33aa93749ba805fc3e6e57011dbb25ae1b9605ff704ba9fed571eabfa4f5f4a2",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/tests/cpp/test_packed_trit_vector.cpp"
+    },
+    "vm/memory_segments.cpp": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 860,
+      "line_ranges": [
+        [
+          7,
+          17
+        ]
+      ],
+      "sha256": "335625ae2e2ee4ddaa9c94bf6a1b45a18eb2df6dcb5fe3863271018b5965085a",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/vm/memory_segments.cpp"
+    },
+    "vm/runtime_state_helpers.cpp": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 112,
+      "line_ranges": [
+        [
+          8,
+          110
+        ]
+      ],
+      "sha256": "6b079bf4a8315614d267bb6945b36fa3fa60305be8ecd677bcbaae1392a8dbe7",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/vm/runtime_state_helpers.cpp"
+    },
+    "vm/tier_limits.cpp": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 141,
+      "line_ranges": [
+        [
+          69,
+          90
+        ],
+        [
+          123,
+          141
+        ]
+      ],
+      "sha256": "eabafc92c0584206b52565b8f98bab421c9eb59991bf79dffd68d1839e642d41",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/vm/tier_limits.cpp"
+    },
+    "vm/vm.cpp": {
+      "identical_to_pinned_git_object": true,
+      "line_count": 7747,
+      "line_ranges": [
+        [
+          67,
+          70
+        ],
+        [
+          281,
+          336
+        ],
+        [
+          369,
+          386
+        ],
+        [
+          580,
+          640
+        ],
+        [
+          665,
+          681
+        ],
+        [
+          1093,
+          1097
+        ],
+        [
+          1151,
+          1214
+        ],
+        [
+          1628,
+          1657
+        ],
+        [
+          1757,
+          1827
+        ],
+        [
+          2486,
+          2622
+        ],
+        [
+          2644,
+          2654
+        ],
+        [
+          2743,
+          2779
+        ],
+        [
+          3005,
+          3044
+        ],
+        [
+          3137,
+          3139
+        ],
+        [
+          7030,
+          7236
+        ],
+        [
+          7728,
+          7740
+        ]
+      ],
+      "sha256": "2ed93572891bc9e32f7525270c7ff6a88edb3d5f22529e3f19195f71cb1ff998",
+      "url": "https://github.com/t81dev/t81-foundation/blob/803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4/vm/vm.cpp"
+    }
+  },
+  "revision": "803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4"
+}

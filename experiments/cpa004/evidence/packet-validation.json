@@ -1,0 +1,27 @@
+[
+  {
+    "command": [
+      "/tmp/t81-h04-enforcement-venv/bin/python",
+      "-B",
+      "experiments/cpa004/verify_evidence.py"
+    ],
+    "exit_code": 0,
+    "stdout": "PASS: frozen identities, 100 schema records, 3 guest and 3 hosted traces\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/tmp/t81-clang-format18/lib/python3.14/site-packages/clang_format/data/bin/clang-format",
+      "--dry-run",
+      "--Werror",
+      "ternaryos/hal/cpa004_evaluator.cpp",
+      "ternaryos/hal/cpa004_evaluator.hpp",
+      "ternaryos/hal/qemu_slice6_bare_kernel.c",
+      "experiments/cpa004/admission_test.cpp",
+      "experiments/cpa004/hosted_observer.cpp"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]

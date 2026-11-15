@@ -1,0 +1,6 @@
+{
+  "/tmp/cpa004-build/ternaryos/qemu_slice6/BOOTAA64.EFI": "4b03971e3207205e123e3c3a08ca1da65fd8965d3f339f3cacd092eebd765ab9",
+  "/tmp/cpa004-build/ternaryos/qemu_slice6/BOOTAA64_cpa004.obj": "7485d622c894a7e2ddbe0f4fee43f414a9d2e3ce7f3c5af1b2f5e8d8223d500f",
+  "/opt/homebrew/share/qemu/edk2-aarch64-code.fd": "47765fe344818cbc464b1c14ae658fb4b854f5c2ceffa982411731eb4865594d",
+  "/opt/homebrew/share/qemu/edk2-arm-vars.fd": "b3b855c5a80310168051164986855692d1bdb06e67619856177965cd87c6774f"
+}

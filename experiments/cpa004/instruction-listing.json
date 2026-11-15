@@ -1,0 +1,272 @@
+[
+  {
+    "a": 40,
+    "b": -1,
+    "c": 0,
+    "literal_kind": 0,
+    "name": "LoadImm",
+    "opcode": 2,
+    "pc": 0,
+    "record_hex": "0228000000ffffffff00000000"
+  },
+  {
+    "a": 41,
+    "b": 0,
+    "c": 0,
+    "literal_kind": 0,
+    "name": "LoadImm",
+    "opcode": 2,
+    "pc": 1,
+    "record_hex": "02290000000000000000000000"
+  },
+  {
+    "a": 42,
+    "b": 1,
+    "c": 0,
+    "literal_kind": 0,
+    "name": "LoadImm",
+    "opcode": 2,
+    "pc": 2,
+    "record_hex": "022a0000000100000000000000"
+  },
+  {
+    "a": 43,
+    "b": 40,
+    "c": 0,
+    "literal_kind": 0,
+    "name": "TNot",
+    "opcode": 18,
+    "pc": 3,
+    "record_hex": "122b0000002800000000000000"
+  },
+  {
+    "a": 44,
+    "b": 40,
+    "c": 42,
+    "literal_kind": 0,
+    "name": "TAnd",
+    "opcode": 19,
+    "pc": 4,
+    "record_hex": "132c000000280000002a000000"
+  },
+  {
+    "a": 45,
+    "b": 41,
+    "c": 42,
+    "literal_kind": 0,
+    "name": "TOr",
+    "opcode": 20,
+    "pc": 5,
+    "record_hex": "142d000000290000002a000000"
+  },
+  {
+    "a": 46,
+    "b": 42,
+    "c": 40,
+    "literal_kind": 0,
+    "name": "TXor",
+    "opcode": 21,
+    "pc": 6,
+    "record_hex": "152e0000002a00000028000000"
+  },
+  {
+    "a": 47,
+    "b": 81,
+    "c": 0,
+    "literal_kind": 0,
+    "name": "LoadImm",
+    "opcode": 2,
+    "pc": 7,
+    "record_hex": "022f0000005100000000000000"
+  },
+  {
+    "a": 48,
+    "b": 2,
+    "c": 0,
+    "literal_kind": 0,
+    "name": "LoadImm",
+    "opcode": 2,
+    "pc": 8,
+    "record_hex": "02300000000200000000000000"
+  },
+  {
+    "a": 49,
+    "b": 47,
+    "c": 48,
+    "literal_kind": 0,
+    "name": "Mul",
+    "opcode": 7,
+    "pc": 9,
+    "record_hex": "07310000002f00000030000000"
+  },
+  {
+    "a": 50,
+    "b": 49,
+    "c": 44,
+    "literal_kind": 0,
+    "name": "Add",
+    "opcode": 5,
+    "pc": 10,
+    "record_hex": "0532000000310000002c000000"
+  },
+  {
+    "a": 81,
+    "b": 50,
+    "c": 0,
+    "literal_kind": 0,
+    "name": "Store",
+    "opcode": 4,
+    "pc": 11,
+    "record_hex": "04510000003200000000000000"
+  },
+  {
+    "a": 51,
+    "b": 81,
+    "c": 0,
+    "literal_kind": 0,
+    "name": "Load",
+    "opcode": 3,
+    "pc": 12,
+    "record_hex": "03330000005100000000000000"
+  },
+  {
+    "a": 52,
+    "b": -7,
+    "c": 0,
+    "literal_kind": 0,
+    "name": "LoadImm",
+    "opcode": 2,
+    "pc": 13,
+    "record_hex": "0234000000f9ffffff00000000"
+  },
+  {
+    "a": 53,
+    "b": 52,
+    "c": 48,
+    "literal_kind": 0,
+    "name": "Div",
+    "opcode": 8,
+    "pc": 14,
+    "record_hex": "08350000003400000030000000"
+  },
+  {
+    "a": 54,
+    "b": 52,
+    "c": 48,
+    "literal_kind": 0,
+    "name": "Mod",
+    "opcode": 9,
+    "pc": 15,
+    "record_hex": "09360000003400000030000000"
+  },
+  {
+    "a": 51,
+    "b": 50,
+    "c": 0,
+    "literal_kind": 0,
+    "name": "Cmp",
+    "opcode": 15,
+    "pc": 16,
+    "record_hex": "0f330000003200000000000000"
+  },
+  {
+    "a": 19,
+    "b": 41,
+    "c": 0,
+    "literal_kind": 0,
+    "name": "JumpIfZero",
+    "opcode": 11,
+    "pc": 17,
+    "record_hex": "0b130000002900000000000000"
+  },
+  {
+    "a": 0,
+    "b": 0,
+    "c": 0,
+    "literal_kind": 0,
+    "name": "Trap",
+    "opcode": 28,
+    "pc": 18,
+    "record_hex": "1c000000000000000000000000"
+  },
+  {
+    "a": 21,
+    "b": 42,
+    "c": 0,
+    "literal_kind": 0,
+    "name": "JumpIfNotZero",
+    "opcode": 25,
+    "pc": 19,
+    "record_hex": "19150000002a00000000000000"
+  },
+  {
+    "a": 0,
+    "b": 0,
+    "c": 0,
+    "literal_kind": 0,
+    "name": "Trap",
+    "opcode": 28,
+    "pc": 20,
+    "record_hex": "1c000000000000000000000000"
+  },
+  {
+    "a": 44,
+    "b": 42,
+    "c": 0,
+    "literal_kind": 0,
+    "name": "Cmp",
+    "opcode": 15,
+    "pc": 21,
+    "record_hex": "0f2c0000002a00000000000000"
+  },
+  {
+    "a": 24,
+    "b": 0,
+    "c": 0,
+    "literal_kind": 0,
+    "name": "JumpIfNegative",
+    "opcode": 60,
+    "pc": 22,
+    "record_hex": "3c180000000000000000000000"
+  },
+  {
+    "a": 0,
+    "b": 0,
+    "c": 0,
+    "literal_kind": 0,
+    "name": "Trap",
+    "opcode": 28,
+    "pc": 23,
+    "record_hex": "1c000000000000000000000000"
+  },
+  {
+    "a": 82,
+    "b": 46,
+    "c": 0,
+    "literal_kind": 0,
+    "name": "Store",
+    "opcode": 4,
+    "pc": 24,
+    "record_hex": "04520000002e00000000000000"
+  },
+  {
+    "a": 83,
+    "b": 53,
+    "c": 0,
+    "literal_kind": 0,
+    "name": "Store",
+    "opcode": 4,
+    "pc": 25,
+    "record_hex": "04530000003500000000000000"
+  },
+  {
+    "a": 0,
+    "b": 0,
+    "c": 0,
+    "literal_kind": 0,
+    "name": "Halt",
+    "opcode": 1,
+    "pc": 26,
+    "record_hex": "01000000000000000000000000"
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python3",
+    "-B",
+    "/tmp/T81-CPA-003/verify_packet.py"
+  ],
+  "exit_code": 0,
+  "stdout": "{\"packet_files\": 57, \"pre_host_frozen_files\": 8, \"all_hashes_match\": true, \"limitation\": \"content identity only\"}\n",
+  "stderr": ""
+}

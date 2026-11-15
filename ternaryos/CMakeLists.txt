@@ -1,5 +1,8 @@
 message(STATUS "[t81] T81_ENABLE_TERNARYOS=ON — building TernaryOS HAL, shell, and user environment")
 
+option(T81_BUILD_CPA004_EXPERIMENT
+  "Run the bounded CPA-004 raw13 experiment after ExitBootServices (no shell)" OFF)
+
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
@@ -414,6 +417,43 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
     add_custom_target(t81_ternaryos_qemu_slice6_efi_obj
       DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ})
 
+    set(T81_CPA004_OBJECTS)
+    set(T81_CPA004_DEFINITIONS)
+    if(T81_BUILD_CPA004_EXPERIMENT)
+      set(T81_CPA004_PROGRAM ${PROJECT_SOURCE_DIR}/experiments/cpa004/program.raw13)
+      set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${T81_CPA004_PROGRAM})
+      file(SHA256 ${T81_CPA004_PROGRAM} T81_CPA004_SHA256)
+      if(NOT T81_CPA004_SHA256 STREQUAL "b0649777cfa1c9e0fa1febb8bdfb1191c5cd3deea0d313791a4a32d5f207c80b")
+        message(FATAL_ERROR "CPA-004 requires the accepted 351-byte frozen artifact")
+      endif()
+      file(READ ${T81_CPA004_PROGRAM} T81_CPA004_HEX HEX)
+      string(REGEX REPLACE "(..)" "0x\\1," T81_CPA004_BYTES "${T81_CPA004_HEX}")
+      file(GENERATE OUTPUT ${CMAKE_BINARY_DIR}/ternaryos/generated/cpa004_program.hpp
+        CONTENT "#pragma once\nstatic constexpr unsigned char kCpa004Program[] = {${T81_CPA004_BYTES}};\n")
+      set(T81_CPA004_DEFINITIONS -DT81_CPA004_EXPERIMENT=1)
+      set(T81_CPA004_OBJECTS ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/BOOTAA64_cpa004.obj)
+      add_custom_command(
+        OUTPUT ${T81_CPA004_OBJECTS}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+        COMMAND ${T81_LLVM_CLANG} --target=aarch64-pc-windows-msvc
+                -O2 -std=c++17 -ffreestanding -nostdlib -fno-stack-protector
+                -fno-exceptions -fno-rtti -fno-use-cxa-atexit -fstack-usage
+                -I${CMAKE_BINARY_DIR}/ternaryos/generated
+                -c ${CMAKE_CURRENT_SOURCE_DIR}/hal/cpa004_evaluator.cpp
+                -o ${T81_CPA004_OBJECTS}
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/hal/cpa004_evaluator.cpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/hal/cpa004_evaluator.hpp
+                ${CMAKE_BINARY_DIR}/ternaryos/generated/cpa004_program.hpp
+                ${T81_CPA004_PROGRAM})
+      # Always-active admission/limit checks need no hosted VM or core library.
+      add_executable(t81_cpa004_admission_test
+        ${PROJECT_SOURCE_DIR}/experiments/cpa004/admission_test.cpp
+        hal/cpa004_evaluator.cpp)
+      target_include_directories(t81_cpa004_admission_test PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/hal ${CMAKE_BINARY_DIR}/ternaryos/generated)
+      add_test(NAME t81_cpa004_admission_test COMMAND t81_cpa004_admission_test)
+    endif()
+
     # Bare-metal kernel entry (post-ExitBootServices PL011/GIC/timer probe).
     add_custom_command(
       OUTPUT  ${T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ}
@@ -424,6 +464,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
               -ffreestanding
               -fno-stack-protector
               -nostdlib
+              ${T81_CPA004_DEFINITIONS}
               -c
               ${CMAKE_CURRENT_SOURCE_DIR}/hal/qemu_slice6_bare_kernel.c
               -I${CMAKE_CURRENT_SOURCE_DIR}
@@ -694,6 +735,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
                 /out:${T81_TERNARYOS_QEMU_SLICE6_EFI}
                 ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ}
                 ${T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ}
+                ${T81_CPA004_OBJECTS}
                 ${T81_TERNARYOS_QEMU_SLICE6_CPP_OBJ}
                 ${T81_TERNARYOS_AARCH64_VECTORS_OBJ}
                 ${T81_TERNARYOS_QEMU_SLICE6_IRQ_OBJ}
@@ -705,6 +747,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
                 ${T81_TERNARYOS_QEMU_SLICE6_PROC_STUB_OBJ}
                 ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ}
         DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ}
+                ${T81_CPA004_OBJECTS}
                 ${T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ}
                 ${T81_TERNARYOS_QEMU_SLICE6_CPP_OBJ}
                 ${T81_TERNARYOS_AARCH64_VECTORS_OBJ}

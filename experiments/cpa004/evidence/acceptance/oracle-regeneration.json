@@ -1,0 +1,60 @@
+{
+  "all_equal": true,
+  "checks": [
+    {
+      "actual": "b0649777cfa1c9e0fa1febb8bdfb1191c5cd3deea0d313791a4a32d5f207c80b",
+      "expected": "b0649777cfa1c9e0fa1febb8bdfb1191c5cd3deea0d313791a4a32d5f207c80b",
+      "matches": true,
+      "path": "program.raw13"
+    },
+    {
+      "actual": "0053d1c83e21dd1f0e77eaaa90fdf36d89f69821d5b583bcee61347c723d43fb",
+      "expected": "0053d1c83e21dd1f0e77eaaa90fdf36d89f69821d5b583bcee61347c723d43fb",
+      "matches": true,
+      "path": "program.hex"
+    },
+    {
+      "actual": "85921c24e038aab638c54a89e1845d91c77bc21a63c7e0809cb08702b8c3c54a",
+      "expected": "85921c24e038aab638c54a89e1845d91c77bc21a63c7e0809cb08702b8c3c54a",
+      "matches": true,
+      "path": "program.sha256"
+    },
+    {
+      "actual": "40e1a356cccaeeff6ea02f7b1dfed4ccf9ef7297b2ca1c275dd7d6231ab047d2",
+      "expected": "40e1a356cccaeeff6ea02f7b1dfed4ccf9ef7297b2ca1c275dd7d6231ab047d2",
+      "matches": true,
+      "path": "instruction-listing.json"
+    },
+    {
+      "actual": "2124d9a2977734c5a2fae9433947b521f809b01af8a3714857ca80cc4c50f3a1",
+      "expected": "2124d9a2977734c5a2fae9433947b521f809b01af8a3714857ca80cc4c50f3a1",
+      "matches": true,
+      "path": "oracle.py"
+    },
+    {
+      "actual": "699f8f2626047e5426ead38a9e70e22153e187be56a58d79b3abcf450440c952",
+      "expected": "699f8f2626047e5426ead38a9e70e22153e187be56a58d79b3abcf450440c952",
+      "matches": true,
+      "path": "oracle-trace.json"
+    },
+    {
+      "actual": "03708ee4f5b5d63313b5dd3265e1c32db2deb20b6f794f93bba5dc27ed4e5324",
+      "expected": "03708ee4f5b5d63313b5dd3265e1c32db2deb20b6f794f93bba5dc27ed4e5324",
+      "matches": true,
+      "path": "oracle-normalized.json"
+    },
+    {
+      "actual": "b572119455252a241f87cb2ea56629622255f0369f677379c44297a030047b6b",
+      "expected": "b572119455252a241f87cb2ea56629622255f0369f677379c44297a030047b6b",
+      "matches": true,
+      "path": "oracle-summary.json"
+    }
+  ],
+  "command": [
+    "python3",
+    "-B",
+    "/tmp/T81-CPA-003/reproduce_oracle.py"
+  ],
+  "exit_code": 0,
+  "output_directory": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-cpa-003-oracle-replay-n0ukdtf8"
+}
