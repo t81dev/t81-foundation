@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <iostream>
 #include <limits>
+#include "t81/experimental/cog/tier.hpp"
+#include "vm/internal/tier_limits.hpp"
 #include "vm/internal/value_ops.hpp"
 
 using t81::vm::internal::add_int;
@@ -12,7 +14,33 @@ using t81::vm::internal::mul_int;
 using t81::vm::internal::neg_int;
 using t81::vm::internal::sub_int;
 
+namespace {
+void check_tier_rank_mapping() {
+  using t81::cog::TierId;
+  using namespace t81::vm::internal;
+  constexpr TierId tiers[] = {TierId::Tier0, TierId::Tier1, TierId::Tier2, TierId::Tier3,
+                             TierId::Tier4, TierId::Tier5, TierId::Tier6};
+  for (int rank = 0; rank <= 6; ++rank) {
+    T81_TEST_CHECK(tier_from_rank(rank) == tiers[rank]);
+    T81_TEST_CHECK(tier_rank(tier_from_rank(rank)) == rank);
+  }
+  // Invalid internal ranks clamp to the nearest endpoint; they do not grant promotion.
+  T81_TEST_CHECK(tier_from_rank(-1) == TierId::Tier0);
+  T81_TEST_CHECK(tier_from_rank(std::numeric_limits<int>::min()) == TierId::Tier0);
+  T81_TEST_CHECK(tier_from_rank(7) == TierId::Tier6);
+  T81_TEST_CHECK(tier_from_rank(std::numeric_limits<int>::max()) == TierId::Tier6);
+  const auto top = tier_from_rank(6);
+  T81_TEST_CHECK(recursion_limit_for_tier(top) == 2187);
+  T81_TEST_CHECK(max_shape_complexity_for_tier(top) == 81 * 81 * 11);
+  T81_TEST_CHECK(max_tensor_rank_for_tier(top) == 11);
+  T81_TEST_CHECK(max_symbolic_complexity_for_tier(top) == 19683);
+  T81_TEST_CHECK(max_branch_entropy_for_tier(top) == 486.0);
+}
+}  // namespace
+
 int main() {
+  check_tier_rank_mapping();
+  // These wrapping helpers are separate from the VM's arbitrary-precision opcode path.
   constexpr std::int64_t kMin = std::numeric_limits<std::int64_t>::min();
   constexpr std::int64_t kMax = std::numeric_limits<std::int64_t>::max();
 
@@ -53,7 +81,8 @@ int main() {
   T81_TEST_CHECK(!div_int(10, 2, nullptr));
 
   // INT64_MIN / -1 overflows signed 64-bit int (+2^63 exceeds INT64_MAX).
-  // In hardware (x86/ARM), this triggers #DE/SIGFPE. div_int must return false.
+  // Evaluating it in C++ is undefined behavior and may cause a host exception
+  // (for example, x86 IDIV #DE). div_int must return false on every architecture.
   T81_TEST_CHECK(!div_int(kMin, -1, &out));
 
   // Safe boundary divisions
@@ -84,7 +113,7 @@ int main() {
   T81_TEST_CHECK(!mod_int(10, 3, nullptr));
 
   // INT64_MIN % -1: Mathematically, (-2^63) = (-1)*(2^63) + 0, so remainder is 0.
-  // Hardware idiv triggers #DE on x86 for this case. mod_int intercepts and returns 0.
+  // The C++ expression is undefined; x86 IDIV may raise #DE. Intercept it before evaluation.
   T81_TEST_CHECK(mod_int(kMin, -1, &out));
   T81_TEST_CHECK(out == 0);
 

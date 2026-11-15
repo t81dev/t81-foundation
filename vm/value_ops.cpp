@@ -26,7 +26,7 @@ std::int64_t neg_int(std::int64_t value) {
 
 bool div_int(std::int64_t lhs, std::int64_t rhs, std::int64_t* out) {
   if (rhs == 0 || out == nullptr) return false;
-  // In two's complement, INT64_MIN / -1 overflows (+2^63) and triggers #DE / SIGFPE.
+  // INT64_MIN / -1 is C++ undefined behavior and may cause a host exception (x86 IDIV #DE).
   if (lhs == std::numeric_limits<std::int64_t>::min() && rhs == -1) return false;
   *out = lhs / rhs;
   return true;
@@ -34,7 +34,7 @@ bool div_int(std::int64_t lhs, std::int64_t rhs, std::int64_t* out) {
 
 bool mod_int(std::int64_t lhs, std::int64_t rhs, std::int64_t* out) {
   if (rhs == 0 || out == nullptr) return false;
-  // In two's complement, INT64_MIN % -1 triggers #DE on x86 idiv even though mathematically r = 0.
+  // INT64_MIN % -1 is C++ undefined behavior even though the mathematical remainder is zero.
   if (lhs == std::numeric_limits<std::int64_t>::min() && rhs == -1) {
     *out = 0;
     return true;
