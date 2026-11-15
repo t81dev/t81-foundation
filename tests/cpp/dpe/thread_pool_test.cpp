@@ -10,15 +10,16 @@
 //   [DPE-06-03]  A 1-worker pool serialises tasks correctly.
 //   [DPE-06-04]  DpeThreadPool destructor cleanly joins all workers.
 
+#include "t81/dpe/thread_pool.hpp"
+#include "t81/dpe/epoch_commit.hpp"
 #include "t81/dpe/task_graph.hpp"
 #include "t81/dpe/task_runner.hpp"
-#include "t81/dpe/epoch_commit.hpp"
-#include "t81/dpe/thread_pool.hpp"
-#include "t81/isa/program.hpp"
 #include "t81/isa/opcodes.hpp"
+#include "t81/isa/program.hpp"
 
 #include <atomic>
 #include <cstdio>
+#include <cstring>
 
 using namespace t81::dpe;
 
@@ -37,7 +38,7 @@ static void check(bool cond, const char* label) {
 
 static std::int64_t first_word(const DeltaRecord& rec) {
   std::int64_t w = 0;
-  __builtin_memcpy(&w, rec.value.data(), sizeof(w));
+  std::memcpy(&w, rec.value.data(), sizeof(w));
   return w;
 }
 
@@ -57,15 +58,18 @@ static void test_pool_more_tasks_than_workers() {
   std::vector<t81::tisc::Program> programs(4);
   for (int i = 0; i < 4; ++i) {
     programs[i].insns = {
-      {t81::tisc::Opcode::LoadImm, 1, static_cast<std::int32_t>(kVals[i])},
-      {t81::tisc::Opcode::Store,   static_cast<std::int32_t>(kPages[i]), 1},
-      {t81::tisc::Opcode::Halt},
+        {t81::tisc::Opcode::LoadImm, 1, static_cast<std::int32_t>(kVals[i])},
+        {t81::tisc::Opcode::Store, static_cast<std::int32_t>(kPages[i]), 1},
+        {t81::tisc::Opcode::Halt},
     };
   }
 
-  EpochGraph epoch; epoch.epoch_id = 300;
+  EpochGraph epoch;
+  epoch.epoch_id = 300;
   for (int i = 0; i < 4; ++i) {
-    TaskDescriptor t; t.epoch_id = 300; t.task_seq = static_cast<uint64_t>(i);
+    TaskDescriptor t;
+    t.epoch_id = 300;
+    t.task_seq = static_cast<uint64_t>(i);
     t.output_regions.push_back(OutputRegion{kPages[i], 1, true});
     epoch.tasks.push_back(t);
   }
@@ -90,8 +94,7 @@ static void test_pool_more_tasks_than_workers() {
     check(results[i].halted, "06-01c: task halted");
     check(!results[i].delta_records.empty(), "06-01d: DeltaRecord emitted");
     if (!results[i].delta_records.empty()) {
-      check(first_word(results[i].delta_records[0]) == kVals[i],
-            "06-01e: correct value committed");
+      check(first_word(results[i].delta_records[0]) == kVals[i], "06-01e: correct value committed");
     }
   }
 }
@@ -108,24 +111,27 @@ static void test_pool_epoch_hash_matches_unbounded() {
   auto make_program = [](std::int64_t val, uint64_t page) {
     t81::tisc::Program p;
     p.insns = {
-      {t81::tisc::Opcode::LoadImm, 1, static_cast<std::int32_t>(val)},
-      {t81::tisc::Opcode::Store,   static_cast<std::int32_t>(page), 1},
-      {t81::tisc::Opcode::Halt},
+        {t81::tisc::Opcode::LoadImm, 1, static_cast<std::int32_t>(val)},
+        {t81::tisc::Opcode::Store, static_cast<std::int32_t>(page), 1},
+        {t81::tisc::Opcode::Halt},
     };
     return p;
   };
 
-  EpochGraph epoch; epoch.epoch_id = 310;
+  EpochGraph epoch;
+  epoch.epoch_id = 310;
   for (int i = 0; i < 3; ++i) {
-    TaskDescriptor t; t.epoch_id = 310; t.task_seq = static_cast<uint64_t>(i);
+    TaskDescriptor t;
+    t.epoch_id = 310;
+    t.task_seq = static_cast<uint64_t>(i);
     t.output_regions.push_back(OutputRegion{(i == 0 ? kPageA : i == 1 ? kPageB : kPageC), 1, true});
     epoch.tasks.push_back(t);
   }
 
   const std::vector<t81::tisc::Program> programs = {
-    make_program(7,  kPageA),
-    make_program(13, kPageB),
-    make_program(21, kPageC),
+      make_program(7, kPageA),
+      make_program(13, kPageB),
+      make_program(21, kPageC),
   };
 
   DpeTaskRunner runner;
@@ -154,7 +160,7 @@ static void test_pool_epoch_hash_matches_unbounded() {
     std::vector<TaskDeltaSet> sets;
     for (int i = 0; i < 3; ++i) {
       TaskDeltaSet ds;
-      ds.id      = compute_task_id(epoch.tasks[i]);
+      ds.id = compute_task_id(epoch.tasks[i]);
       ds.faulted = !res[i].halted;
       ds.records = res[i].delta_records;
       sets.push_back(std::move(ds));
@@ -162,11 +168,10 @@ static void test_pool_epoch_hash_matches_unbounded() {
     return sets;
   };
 
-  const auto commit_pool   = commit_epoch(epoch, make_sets(pool_results));
+  const auto commit_pool = commit_epoch(epoch, make_sets(pool_results));
   const auto commit_direct = commit_epoch(epoch, make_sets(direct_results));
 
-  check(commit_pool.ok() && commit_direct.ok(),
-        "06-02a: both commits succeeded");
+  check(commit_pool.ok() && commit_direct.ok(), "06-02a: both commits succeeded");
   if (commit_pool.ok() && commit_direct.ok()) {
     check(commit_pool.epoch_hash.bytes == commit_direct.epoch_hash.bytes,
           "[DPE-06-02] EpochHash identical: pool dispatch == unbounded dispatch");
@@ -182,17 +187,20 @@ static void test_single_worker_pool() {
   static constexpr std::int64_t kVals[3] = {5, 10, 15};
 
   DpeTaskRunner runner;
-  EpochGraph epoch; epoch.epoch_id = 320;
+  EpochGraph epoch;
+  epoch.epoch_id = 320;
   std::vector<t81::tisc::Program> programs(3);
 
   for (int i = 0; i < 3; ++i) {
-    TaskDescriptor t; t.epoch_id = 320; t.task_seq = static_cast<uint64_t>(i);
+    TaskDescriptor t;
+    t.epoch_id = 320;
+    t.task_seq = static_cast<uint64_t>(i);
     t.output_regions.push_back(OutputRegion{kPages[i], 1, true});
     epoch.tasks.push_back(t);
     programs[i].insns = {
-      {t81::tisc::Opcode::LoadImm, 1, static_cast<std::int32_t>(kVals[i])},
-      {t81::tisc::Opcode::Store,   static_cast<std::int32_t>(kPages[i]), 1},
-      {t81::tisc::Opcode::Halt},
+        {t81::tisc::Opcode::LoadImm, 1, static_cast<std::int32_t>(kVals[i])},
+        {t81::tisc::Opcode::Store, static_cast<std::int32_t>(kPages[i]), 1},
+        {t81::tisc::Opcode::Halt},
     };
   }
 

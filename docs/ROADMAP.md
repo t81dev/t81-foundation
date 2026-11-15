@@ -2,7 +2,7 @@
 
 **Engineering Maintenance, Experimental Validation, and Research Priorities**
 
-**Updated:** October 28, 2026
+**Updated:** November 2026
 
 This roadmap connects the engineering maintenance program to T81's active scientific research.
 
@@ -16,11 +16,13 @@ The purpose of this roadmap is to help contributors identify work that advances 
 
 ## Authoritative references
 
-- [T81 Foundation overview](../README.md)
+- [T81 Foundation Overview](../README.md)
 - [Master Continuity Charter](research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md)
 - [RFC-00D2 — Target Architecture and Sequencing](../spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md)
-- [Investigation 08 — Comparator PR #602](https://github.com/t81dev/t81-foundation/pull/602)
-- [Investigation 10A — Corrective Documentation PR #625](https://github.com/t81dev/t81-foundation/pull/625)
+- [Determinism Surface Registry](governance/DETERMINISM_SURFACE_REGISTRY.md)
+- [SCG-08 Phase 0 Research Charter](research/continuity/SCG08_PHASE0_RESEARCH_CHARTER.md)
+- [SCG-08 Phase 1 Gate 1 Implementation Report](../experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md)
+- [AI Research Continuity Handoff](ai-context/ACTIVE_RESEARCH_HANDOFF.md)
 
 The continuity charter and canonical H01–H08 register remain authoritative for research lineage and hypothesis identity.
 
@@ -34,11 +36,13 @@ However, several proposed ternary-specific advantages remain unsupported or unre
 
 Current evidence includes:
 
-- **Packed ternary computation:** Tested CPU implementations have not demonstrated general throughput superiority over optimized INT8 baselines.
+- **Packed ternary computation:** Tested CPU implementations have not demonstrated general throughput superiority over optimized INT8 baselines (e.g., historical AVX2 INT8 17.15 GFLOP/s vs packed 2-bit ternary 12.91 GFLOP/s).
 - **TISC compactness:** The tested complete TISC artifact was substantially larger than its conforming WebAssembly comparator.
-- **Hardware Investigation 07:** The reported area ratio did not meet the preregistered advantage threshold.
-- **Investigation 08:** A corrected conventional comparator demonstrates bounded computational parity across declared valid scenarios, but independent review identified a remaining model-admission discrepancy.
-- **Investigation 10A:** Physical evaluation is blocked because matched device-characterization data are unavailable. This does not establish a universal physical disadvantage or close H01.
+- **Hardware Investigation 07:** The reported area ratio did not meet the preregistered advantage threshold; ternary dot-product hardware feasibility is currently classified as NOT SUPPORTED.
+- **Investigation 08:** Conventional comparator demonstrates bounded computational parity across declared valid scenarios, with assurance supported and ternary-specific computational advantages not supported.
+- **Cross-Profile Execution (CPA-004/005):** Demonstrated bit-exact execution across hosted T81VM and bare-metal AArch64 QEMU profiles on a frozen 351-byte canonical program, establishing execution correctness without asserting performance advantage.
+- **SCG-08 Carry Propagation & Arithmetic Work:** Phase 1 Gate 1 harness is implemented and verified against an arbitrary-precision exact oracle, but Gate 2 empirical benchmarking remains **strictly withheld**.
+- **Physical Evaluation (Investigation 10A):** Physical evaluation is blocked because matched device-characterization data are unavailable. This does not establish a universal physical disadvantage or close H01.
 
 These results are bounded to their tested workloads, implementations, and assumptions.
 
@@ -60,51 +64,36 @@ A passing regression suite does not automatically establish scientific validity.
 
 A successful prototype does not automatically establish a performance advantage.
 
-## Phase 1: Establish trustworthy experimental comparators
+## Phase 1: Establish trustworthy experimental comparators & Gate 1 qualifications
 
 **Priority: Immediate**
 
 **Primary goal:** Ensure that T81 and conventional baselines perform equivalent, independently verifiable work before architectural comparisons are interpreted.
 
-### Investigation 08 — Current acceptance gate
+### Active Research Tracks
 
-PR #602 introduces an equivalent conventional comparator for a bounded model-dependent, two-layer attention workload.
-
-Independent review at commit `7c61afa3ba0e97c3c800ca5cde567cf374d7a5cc` reported:
-
-- PASS across 15 declared valid scenarios for intermediate tensors, scores, token selection, and classification.
-- PASS for declared policy denials, tokenizer mutations, and selected malformed-model cases.
-- PASS for binary CAS identity, tampering, evidence consistency, and fresh-process recovery.
-- Reproduction of the measurement protocol using six pairs and 12 unique stores.
-- FAIL for complete model-admission parity.
-
-The identified discrepancy is that the comparator does not require five tensors mandated by production. A correctly re-encoded model missing one such tensor can be accepted and persisted by the comparator while production rejects it.
-
-### Required next work
-
-1. Correct the five missing mandatory-tensor admission checks in the existing PR.
-2. Add differential negative tests for each omitted tensor.
-3. Verify that rejected models do not produce comparator task artifacts.
-4. Preserve all passing computational, authorization, CAS, and replay tests.
-5. Obtain independent confirmation of the focused correction.
-6. Record the final acceptance disposition before using the comparator as an experimental reference.
+1. **SCG-08 Gate 1 Review:**
+   - The Phase 1 Gate 1 arithmetic harness in `experiments/scg08_arithmetic_work/` implements multi-precision balanced-ternary and binary addition and multiplication across 5 operand bit-widths (64 to 1024 bits).
+   - Independent verification against `ExactBigIntOracle` across 5 dimensions (numerical equality, overflow classification, canonical ternary digits, correct sign handling, absence of truncation).
+   - Operation accounting strictly distinguishes non-aggregating diagnostic counters and normalization primitive passes from the frozen weighted metric $W_{\text{ops}}$.
+   - **Gate 2 Authorization:** Execution of full-scale statistical benchmark campaigns remains strictly withheld until explicit maintainer review and gate elevation.
+2. **Investigation 08 Parity:**
+   - Maintain admission check parity and intermediate tensor verification for bounded attention workloads.
+   - Negative tests confirm invalid models are rejected before task artifact persistence.
+3. **H04-R03 Matched Codec Protocol:**
+   - Preserve Phase C freeze and bounded registered-object retention boundaries.
+   - Maintain mathematical parity distinctions without claiming latency or throughput advantage.
 
 ### Success criteria
 
-- Production and comparator agree on all declared admission cases.
-- Valid-model intermediate computation parity remains intact.
-- Invalid models are rejected before task artifact persistence.
+- All experimental harnesses pass independent oracle verification and schema checks.
+- Invalid models and out-of-budget runs fail closed.
+- Negative tests and boundary conditions are explicitly verified.
 - The declared regression gate passes.
-- An independent reviewer accepts the bounded comparator.
-- The comparator's scope and limitations are documented.
-
-**Exit condition:** The comparator is accepted for its explicitly defined workload.
-
-This does not establish full Llama inference equivalence, continuous task-policy enforcement within the VM, or ternary architectural superiority.
 
 ## Phase 2: Measure subsystem advantages under controlled conditions
 
-**Priority: After Phase 1 acceptance**
+**Priority: Authorized experiments only**
 
 **Primary goal:** Determine whether any observed difference is attributable to ternary representation or computation rather than implementation language, unequal functionality, or experimental design.
 
@@ -112,7 +101,7 @@ This does not establish full Llama inference equivalence, continuous task-policy
 
 Evaluate separately:
 
-1. Arithmetic and tensor execution.
+1. Multi-precision arithmetic and carry-propagation dynamics.
 2. Representation and storage density.
 3. Memory traffic and data movement.
 4. Model loading and artifact processing.
@@ -123,7 +112,7 @@ Where applicable, distinguish ternary-specific effects from general runtime engi
 
 ### Measurement requirements
 
-Each experiment should define:
+Each experiment must define:
 
 - A falsifiable hypothesis.
 - A comparable conventional baseline.
@@ -135,9 +124,7 @@ Each experiment should define:
 - Acceptance and stopping criteria.
 - Raw observations and reproduction commands.
 
-A preliminary measurement-protocol check is not equivalent to a statistically supported performance conclusion.
-
-For Investigation 08, the previously proposed 30 paired observations per condition remain a planning target unless the experiment's approved protocol specifies otherwise.
+A preliminary measurement-protocol check is not equivalent to a statistically supported performance conclusion. Gate 2 campaigns must strictly respect pre-registered trial budgets.
 
 ### Success criteria
 
@@ -146,8 +133,6 @@ For Investigation 08, the previously proposed 30 paired observations per conditi
 - Performance, storage, and assurance effects are reported separately.
 - Negative findings are retained.
 - Unsupported ablations are not presented as completed experiments.
-
-**Exit condition:** The research record supports a defensible conclusion for at least one specified workload and metric.
 
 A negative conclusion is a valid outcome.
 
@@ -161,9 +146,7 @@ The mathematical information density of three-state representation does not by i
 
 ### Current limitation
 
-Investigation 10A established that matched device-characterization data were insufficient to complete the physical evaluation.
-
-The correct disposition is:
+Investigation 10A established that matched device-characterization data were insufficient to complete physical evaluation:
 
 **PHYSICAL EVALUATION BLOCKED — MATCHED CHARACTERIZATION DATA UNAVAILABLE.**
 
@@ -175,7 +158,7 @@ This is an evidence limitation, not a universal physical no-go finding.
 - Obtain independently traceable characterization sources.
 - Require matched comparisons for capacity, energy, latency, area, retention, and error behavior where relevant.
 - Include sensing, encoding, decoding, peripheral circuitry, and error correction.
-- Reconcile historical ternary-memory simulation findings, including unresolved comparator-handoff failures.
+- Reconcile historical ternary-memory simulation findings.
 - Distinguish simulated, modeled, measured, and experimentally demonstrated results.
 - Avoid claiming device-level feasibility from idealized radix efficiency.
 
@@ -183,8 +166,6 @@ This is an evidence limitation, not a universal physical no-go finding.
 
 - A clearly specified physical hypothesis has sufficient matched evidence for evaluation; or
 - The blocking data requirements are documented precisely enough for future experimental work.
-
-**Exit condition:** A defensible bounded physical disposition or a documented unresolved evidence gap.
 
 No hardware implementation schedule should be inferred from this phase.
 
@@ -211,7 +192,7 @@ No hardware implementation schedule should be inferred from this phase.
 - Known limitations are visible.
 - Research claims link to their evidence.
 
-This phase should favor stabilization over new subsystem breadth.
+This phase favors stabilization over new subsystem breadth.
 
 ## Phase 5: Harden the CanonFS interchange lane
 
@@ -234,7 +215,6 @@ This phase should favor stabilization over new subsystem breadth.
 
 - Strengthen negative and edge-case tests.
 - Clarify stable versus draft RFC-00D1 behavior.
-- Improve policy-profile semantics when supported by concrete use cases.
 - Maintain interoperability fixtures.
 - Avoid widening the stable contract without evidence and review.
 
@@ -301,7 +281,7 @@ Avoid introducing a new architectural layer solely because the existing architec
 - Do not treat a passing CI suite as sufficient scientific validation.
 - Do not revive invalidated performance comparisons.
 - Do not turn blocked physical research into an unsupported no-go conclusion.
-- Do not repeatedly reopen resolved governance issues without new evidence.
+- Do not treat merged experimental harnesses as authorization for full benchmarking campaigns.
 - Do not make the OS or bare-metal vision the only public explanation of T81.
 
 ## Contributor decision rule
@@ -331,9 +311,9 @@ If these cannot be stated clearly, narrow the task before implementation.
 
 | Order | Work | Completion condition |
 |---|---|---|
-| 1 | Correct Investigation 08 model-admission parity in PR #602 | All five negative cases and regression gate pass |
-| 2 | Obtain focused independent acceptance | Explicit bounded ACCEPT disposition |
-| 3 | Establish controlled paired performance measurements | Raw evidence and defensible statistical analysis |
+| 1 | Independent review of SCG-08 Phase 1 Gate 1 harness | All schema validations and smoke tests pass |
+| 2 | Reconcile open portability and policy boundary PRs (#747, #748, #750) | Clear separation of policy checks from command execution |
+| 3 | Evaluate Gate 2 authorization criteria for SCG-08 | Formal decision recorded before large-scale runs |
 | 4 | Investigate subsystem-specific ternary effects | At least one falsifiable bounded result |
 | 5 | Revisit physical feasibility where matched evidence becomes available | Supported physical disposition or documented block |
 | Ongoing | Runtime, CanonFS, CI and contributor maintenance | Existing contracts remain reliable |

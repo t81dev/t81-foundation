@@ -1,0 +1,15 @@
+{
+  "component_files_verified": 48,
+  "component_source_unchanged": true,
+  "tested_assembly_commit": "1201ccd421d2fec5630dbe05c6eb06e39a9134b0",
+  "current_commit": "da3e58f2e9f4f679bea6a1b5ce8be82c6fe4c451",
+  "cell_release_compile_commands": [
+    {
+      "directory": "/private/tmp/t81-combined-release",
+      "command": "/usr/bin/c++ -DT81_DETERMINISTIC -DT81_HAS_NATIVE_INT128=1 -I/private/tmp/t81-pr794-pr795-pr780-integration/include -O3 -DNDEBUG -std=gnu++23 -fPIE -Wall -Wextra -Wpedantic -O3 -DNDEBUG -o CMakeFiles/t81_determinism_primitives_test.dir/tests/determinism/test_primitives.cpp.o -c /private/tmp/t81-pr794-pr795-pr780-integration/tests/determinism/test_primitives.cpp",
+      "file": "/private/tmp/t81-pr794-pr795-pr780-integration/tests/determinism/test_primitives.cpp",
+      "output": "/private/tmp/t81-combined-release/CMakeFiles/t81_determinism_primitives_test.dir/tests/determinism/test_primitives.cpp.o"
+    }
+  ],
+  "note": "Initial runner stopped at inherited workflow audit after all requested correctness tests passed; final CI-only fixes did not change compiled/component source. Raw generated build/test files copied after that interruption."
+}

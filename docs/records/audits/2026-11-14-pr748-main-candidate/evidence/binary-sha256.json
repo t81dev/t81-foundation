@@ -1,0 +1,72 @@
+[
+  {
+    "configuration": "Release",
+    "path": "/private/tmp/t81-pr748-main-release/canonfs_policy_boundary_test",
+    "bytes": 271744,
+    "sha256": "f92c36e6605073b24dc257eee6d2aa6868fb35b8690d2a1bc696906501bcad6f",
+    "tested_code_commit": "8e236dba8a1a61568ef4d916afab55f7b5ce45bf"
+  },
+  {
+    "configuration": "Release",
+    "path": "/private/tmp/t81-pr748-main-release/canonfs_persistent_driver_test",
+    "bytes": 153856,
+    "sha256": "3aaa098c887d4a019a0f74bff5951f03c84ebd02db87686a245b1bcbd1da0523",
+    "tested_code_commit": "8e236dba8a1a61568ef4d916afab55f7b5ce45bf"
+  },
+  {
+    "configuration": "Release",
+    "path": "/private/tmp/t81-pr748-main-release/canonfs_axion_trace_test",
+    "bytes": 153800,
+    "sha256": "f34b7f7c7959a8104ec7c89496537545c8d7df4d314a45c0c375b992fcc347d5",
+    "tested_code_commit": "8e236dba8a1a61568ef4d916afab55f7b5ce45bf"
+  },
+  {
+    "configuration": "Release",
+    "path": "/private/tmp/t81-pr748-main-release/libt81_core.a",
+    "bytes": 1974624,
+    "sha256": "42baf37d524d50bb786666ea52d0a8e4a2cc752c8e9d31f79899d2dd9260af5b",
+    "tested_code_commit": "8e236dba8a1a61568ef4d916afab55f7b5ce45bf"
+  },
+  {
+    "configuration": "Release",
+    "path": "/private/tmp/t81-pr748-main-release/libt81_axion.a",
+    "bytes": 324664,
+    "sha256": "d4346f97adc66bfdefad6236a33a32a318a3253825598918637bf98bd61633e7",
+    "tested_code_commit": "8e236dba8a1a61568ef4d916afab55f7b5ce45bf"
+  },
+  {
+    "configuration": "ASan+UBSan",
+    "path": "/private/tmp/t81-pr748-main-sanitizers/canonfs_policy_boundary_test",
+    "bytes": 1173536,
+    "sha256": "5c50fa98a41551809fa1fd691f26919151c3c40ef07c4b90c9542f1ab05bd1e7",
+    "tested_code_commit": "8e236dba8a1a61568ef4d916afab55f7b5ce45bf"
+  },
+  {
+    "configuration": "ASan+UBSan",
+    "path": "/private/tmp/t81-pr748-main-sanitizers/canonfs_persistent_driver_test",
+    "bytes": 646768,
+    "sha256": "c0e02260ce62e279f8a1aff2cc866f3e8fe2b2cbbc0ea2a548ada570571df877",
+    "tested_code_commit": "8e236dba8a1a61568ef4d916afab55f7b5ce45bf"
+  },
+  {
+    "configuration": "ASan+UBSan",
+    "path": "/private/tmp/t81-pr748-main-sanitizers/canonfs_axion_trace_test",
+    "bytes": 646472,
+    "sha256": "5c30e686c86c57eb7220ff8a9d70001bf8eb73f8b858be33d969b552c8963f43",
+    "tested_code_commit": "8e236dba8a1a61568ef4d916afab55f7b5ce45bf"
+  },
+  {
+    "configuration": "ASan+UBSan",
+    "path": "/private/tmp/t81-pr748-main-sanitizers/libt81_core.a",
+    "bytes": 20341696,
+    "sha256": "da86f4b34574edae16f5012b8ace5efbc35e0d54da1de6c4a83d30cca96893f1",
+    "tested_code_commit": "8e236dba8a1a61568ef4d916afab55f7b5ce45bf"
+  },
+  {
+    "configuration": "ASan+UBSan",
+    "path": "/private/tmp/t81-pr748-main-sanitizers/libt81_axion.a",
+    "bytes": 6864248,
+    "sha256": "32a411a6951551edfc7a025966163d58a9abc6b6e774ec4e8c3e1c8a8580643a",
+    "tested_code_commit": "8e236dba8a1a61568ef4d916afab55f7b5ce45bf"
+  }
+]

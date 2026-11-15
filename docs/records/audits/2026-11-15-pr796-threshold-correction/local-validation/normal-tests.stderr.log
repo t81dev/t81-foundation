@@ -1,0 +1,10 @@
+test_pipefail_negative_control (__main__.SIMDRegressionTests.test_pipefail_negative_control) ... ok
+test_positive_platform_controls (__main__.SIMDRegressionTests.test_positive_platform_controls) ... ok
+test_reject_bad_inputs_direct_and_workflow (__main__.SIMDRegressionTests.test_reject_bad_inputs_direct_and_workflow) ... ok
+test_reject_incomplete_compiled_inventory (__main__.SIMDRegressionTests.test_reject_incomplete_compiled_inventory) ... ok
+test_threshold_boundary_and_units (__main__.SIMDRegressionTests.test_threshold_boundary_and_units) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 7.845s
+
+OK

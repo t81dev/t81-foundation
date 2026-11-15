@@ -1,0 +1,56 @@
+[
+  {
+    "name": "sanitizer-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      ".",
+      "-B",
+      "/private/tmp/t81-pr748-main-sanitizers",
+      "-G",
+      "Ninja",
+      "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
+      "-DT81_BUILD_TESTS=ON",
+      "-DT81_BUILD_TUI=OFF",
+      "-DT81_BUILD_BENCHMARKS=OFF",
+      "-DT81_BUILD_EXAMPLES=OFF",
+      "-DT81_BUILD_FUZZ_TESTS=OFF",
+      "-DT81_ENABLE_TERNARYOS=OFF",
+      "-DT81_STRICT_DETERMINISTIC_FLOAT=ON",
+      "-DT81_USE_CXX23=ON",
+      "-DT81_ENABLE_ASAN=ON",
+      "-DT81_ENABLE_UBSAN=ON",
+      "-DFETCHCONTENT_SOURCE_DIR_ASIO=/Users/t81dev/Code/t81-foundation/build/_deps/asio-src",
+      "-DGTest_DIR=/private/tmp/t81-ci-googletest-install-2026-11-09/lib/cmake/GTest"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "sanitizer-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "/private/tmp/t81-pr748-main-sanitizers",
+      "--target",
+      "canonfs_policy_boundary_test",
+      "canonfs_persistent_driver_test",
+      "canonfs_axion_trace_test",
+      "-j",
+      "4"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "sanitizer-ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "/private/tmp/t81-pr748-main-sanitizers",
+      "--output-on-failure",
+      "-V",
+      "-R",
+      "^(canonfs_policy_boundary_test|canonfs_persistent_driver_test|canonfs_axion_trace_test)$"
+    ],
+    "exit": 0
+  }
+]

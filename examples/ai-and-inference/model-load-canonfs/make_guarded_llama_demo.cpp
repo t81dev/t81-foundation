@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
     t81::weights::NativeTensor tensor;
     tensor.shape.assign(shape.begin(), shape.end());
     std::size_t element_count = 1;
-    for (std::uint32_t dim : tensor.shape) {
+    for (const auto dim : tensor.shape) {
       element_count *= static_cast<std::size_t>(dim);
     }
     tensor.trits = static_cast<std::uint64_t>(element_count);

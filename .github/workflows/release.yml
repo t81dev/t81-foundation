@@ -38,7 +38,7 @@ jobs:
           - platform: linux-arm64
             os: ubuntu-24.04-arm
           - platform: macos-arm64
-            os: macos-14
+            os: macos-15
           - platform: macos-x86_64
             os: macos-15-intel
           - platform: windows-x86_64

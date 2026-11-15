@@ -47,10 +47,16 @@ def parse_args() -> argparse.Namespace:
         default="build",
         help="Path to the CMake build directory (default: build).",
     )
-    parser.add_argument(
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument(
         "--run-tests",
         action="store_true",
         help="Also run the stable baseline CTest slice after presence checks pass.",
+    )
+    mode.add_argument(
+        "--docs-only",
+        action="store_true",
+        help="Check required documents only; does not establish runner presence or baseline compliance.",
     )
     return parser.parse_args()
 
@@ -66,6 +72,13 @@ def main() -> int:
         for doc in missing_docs:
             print(f"  - {doc}", file=sys.stderr)
         return 1
+
+    if args.docs_only:
+        print("Stable baseline documentation check passed (documentation only).")
+        print("CTest runner presence and baseline execution were not checked.")
+        for doc in REQUIRED_DOCS:
+            print(f"  - {doc}")
+        return 0
 
     if not build_dir.exists():
         print(f"Stable baseline compliance failed: build directory not found: {build_dir}", file=sys.stderr)

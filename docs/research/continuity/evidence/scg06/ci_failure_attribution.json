@@ -1,0 +1,122 @@
+{
+  "investigation_scope": "Reconciliation of reported CI failures across PR #729 head and merge commit 2c3501e",
+  "historical_commits": {
+    "pr_729_head": {
+      "commit_sha": "a35bd4d707b6d1ef4f8d7a65a9e492f4cd1d1962",
+      "check_runs_total": 40,
+      "failed_checks": [
+        {
+          "check_run_id": 128719937822,
+          "name": "format / clang-format",
+          "conclusion": "failure",
+          "workflow_run_id": 42476826907,
+          "failed_step": "Run clang-format",
+          "classification": "REPAIR_INDUCED_CODE_HYGIENE_FAILURE",
+          "root_cause": "Clang-format violations in include/t81/types/T81Int.hpp and tests/cpp/test_t81int.cpp introduced during initial C05/C11 implementation. Repaired in subsequent commit b6ed9322."
+        },
+        {
+          "check_run_id": 128719938100,
+          "name": "lint / spec & docs",
+          "conclusion": "failure",
+          "workflow_run_id": 42476826877,
+          "failed_step": "Check Markdown links (lychee)",
+          "classification": "EXTERNAL_INFRASTRUCTURE_FAILURE",
+          "root_cause": "Transient HTTP 503 Service Unavailable when lychee crawled historical GitHub Actions run links (e.g. actions/runs/39644888844)."
+        },
+        {
+          "check_run_id": 128720228889,
+          "name": "quality gate / required",
+          "conclusion": "failure",
+          "workflow_run_id": 42476826877,
+          "failed_step": "Gate evaluation",
+          "classification": "DEPENDENT_GATE_FAILURE",
+          "root_cause": "Required gate failed due to dependency on failing job 'lint / spec & docs'."
+        },
+        {
+          "check_run_id": 128719937819,
+          "name": "determinism / linux-x86_64",
+          "conclusion": "failure",
+          "workflow_run_id": 42476826920,
+          "failed_step": "Step 5: Configure",
+          "classification": "EXTERNAL_INFRASTRUCTURE_FAILURE",
+          "root_cause": "CMake configure step failed during third-party FTXUI download with HTTP 504 Gateway Timeout. Zero determinism tests were executed."
+        },
+        {
+          "check_run_id": 128719937512,
+          "name": "Analyze (cpp)",
+          "conclusion": "failure",
+          "workflow_run_id": 42476826904,
+          "failed_step": "Autobuild",
+          "classification": "EXTERNAL_INFRASTRUCTURE_FAILURE",
+          "root_cause": "FTXUI download HTTP 504 Gateway Timeout during CodeQL Autobuild."
+        }
+      ],
+      "neutral_checks": [
+        {
+          "check_run_id": 128720571913,
+          "name": "CodeQL",
+          "conclusion": "neutral",
+          "workflow_run_id": 42476826904,
+          "failed_step": "CodeQL workflow conclusion check",
+          "classification": "EXTERNAL_INFRASTRUCTURE_NEUTRAL",
+          "root_cause": "CodeQL workflow summary check reported neutral following Analyze (cpp) failure."
+        }
+      ]
+    },
+    "merge_commit": {
+      "commit_sha": "2c3501e2807bb893076c5037231c3126b7f2bc72",
+      "check_runs_total": 38,
+      "failed_jobs_across_workflows": [
+        {
+          "job_id": 128720301538,
+          "name": "format / clang-format",
+          "workflow_name": "Format Check",
+          "workflow_run_id": 42476947531,
+          "failed_step": "Step 4: Run clang-format",
+          "classification": "REPAIR_INDUCED_CODE_HYGIENE_FAILURE",
+          "root_cause": "Formatting-only failure on PR #729 changes. Resolved in follow-up commit b6ed9322."
+        },
+        {
+          "job_id": 128720301959,
+          "name": "lint / spec & docs",
+          "workflow_name": "T81 Foundation CI",
+          "workflow_run_id": 42476947508,
+          "failed_step": "Step 6: Check Markdown links (lychee)",
+          "classification": "EXTERNAL_INFRASTRUCTURE_FAILURE",
+          "root_cause": "Lychee HTTP 503 link checker failure resolving transient GitHub run URLs."
+        },
+        {
+          "job_id": 128720364984,
+          "name": "quality gate / required",
+          "workflow_name": "T81 Foundation CI",
+          "workflow_run_id": 42476947508,
+          "failed_step": "Gate evaluation",
+          "classification": "DEPENDENT_GATE_FAILURE",
+          "root_cause": "Failed because required job 'lint / spec & docs' failed."
+        },
+        {
+          "job_id": 128720301336,
+          "name": "Analyze (cpp)",
+          "workflow_name": "CodeQL",
+          "workflow_run_id": 42476947461,
+          "failed_step": "Step 4: Autobuild",
+          "classification": "EXTERNAL_INFRASTRUCTURE_FAILURE",
+          "root_cause": "FTXUI repository download HTTP 504 timeout during CMake configure."
+        },
+        {
+          "job_id": 128720301586,
+          "name": "determinism / linux-x86_64",
+          "workflow_name": "Cross-Platform Determinism Verification",
+          "workflow_run_id": 42476947469,
+          "failed_step": "Step 5: Configure",
+          "classification": "EXTERNAL_INFRASTRUCTURE_FAILURE",
+          "root_cause": "CMake configuration step failed during third-party FTXUI download with HTTP 504 Gateway Timeout. Zero determinism test binaries were compiled or executed."
+        }
+      ]
+    }
+  },
+  "nine_checks_reconciliation_verdict": {
+    "status": "UNRESOLVED_HISTORICAL_BASIS",
+    "details": "Direct GitHub API check-run and job inspection identifies exactly 5 failures on PR #729 head (with 1 additional neutral check) and exactly 5 failed jobs across workflow runs on merge commit 2c3501e. The external reviewer's count of 'nine failing checks' cannot be reconstructed from individual failed jobs alone. Possible origins include: (a) combining distinct non-passing checks across both commits, (b) counting skipped/cancelled matrix sub-jobs triggered by dependent failures, or (c) inspecting an intermediate push state prior to head a35bd4d. Because no authoritative 9-check failure ledger exists in the GitHub API record, the 'nine failing checks' claim is formally classified as having an UNRESOLVED historical basis."
+  }
+}

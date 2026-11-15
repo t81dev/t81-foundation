@@ -1,0 +1,568 @@
+{
+  "schema_version": "1.0.0",
+  "baseline_commit": "9a3e307ad21135749d35a4f1a6a0d5820d0cc698",
+  "total_components": 35,
+  "classification_summary": {
+    "VERIFIED": 9,
+    "STATICALLY_SUPPORTED": 22,
+    "UNVERIFIED": 3,
+    "NOT_MAPPED": 1
+  },
+  "components": [
+    {
+      "component_id": "mod.cli.weights_tool",
+      "name": "Weights & Model Interchange CLI",
+      "layer_id": "layer.1_lang",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/cpp/safetensors_import_test.cpp",
+        "tests/cpp/cli_canonize_tensor_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "safetensors_import_test",
+        "cli_canonize_tensor_test"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Statically supported by Safetensors and weight translation tests."
+    },
+    {
+      "component_id": "mod.frontend.ir_generator",
+      "name": "T81Lang IR Generator",
+      "layer_id": "layer.1_lang",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/cpp/frontend_ir_generator_test.cpp",
+        "tests/cpp/frontend_ir_generator_relation_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "frontend_ir_generator_test",
+        "frontend_ir_generator_relation_test"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Statically supported by IR bytecode emitter test suites."
+    },
+    {
+      "component_id": "mod.frontend.lexer",
+      "name": "T81Lang Lexer",
+      "layer_id": "layer.1_lang",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/cpp/frontend_lexer_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "frontend_lexer_test"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Statically supported by frontend_lexer_test."
+    },
+    {
+      "component_id": "mod.frontend.parser",
+      "name": "T81Lang Parser",
+      "layer_id": "layer.1_lang",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/cpp/frontend_parser_test.cpp",
+        "tests/cpp/frontend_parser_generics_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "frontend_parser_test",
+        "frontend_parser_generics_test"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Statically supported by AST parser test suites."
+    },
+    {
+      "component_id": "mod.frontend.semantic_analyzer",
+      "name": "T81Lang Semantic Analyzer",
+      "layer_id": "layer.1_lang",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/cpp/frontend_parser_appendix_coverage_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "frontend_parser_appendix_coverage_test"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Statically supported by semantic and type checker tests."
+    },
+    {
+      "component_id": "mod.ternaryos.mmu",
+      "name": "TernaryOS Page Allocator & MMU",
+      "layer_id": "layer.5_os",
+      "relationship_classification": "VERIFIED",
+      "test_files": [
+        "ternaryos/tests/mmu_test.cpp",
+        "ternaryos/tests/ternary_page_alloc_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "t81_ternaryos_mmu_test",
+        "t81_ternaryos_page_alloc_test"
+      ],
+      "receipt_files": [
+        "docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md"
+      ],
+      "evidence_notes": "Formally verified under CPA-004 TTBR0 page-table translation and physical memory map."
+    },
+    {
+      "component_id": "mod.ternaryos.scheduler",
+      "name": "TernaryOS Cooperative Scheduler",
+      "layer_id": "layer.5_os",
+      "relationship_classification": "VERIFIED",
+      "test_files": [
+        "ternaryos/tests/scheduler_test.cpp",
+        "ternaryos/tests/context_switch_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "t81_ternaryos_scheduler_test",
+        "t81_ternaryos_context_switch_test"
+      ],
+      "receipt_files": [
+        "docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md"
+      ],
+      "evidence_notes": "Formally verified under CPA-004 bare-metal cooperative timer schedule tick."
+    },
+    {
+      "component_id": "mod.vm.interpreter_core",
+      "name": "T81VM Interpreter Dispatch Loop",
+      "layer_id": "layer.2_exec",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/cpp/vm_decoder_test.cpp",
+        "tests/cpp/vm_state_transition_conformance_matrix_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "vm_decoder_test",
+        "vm_state_transition_conformance_matrix_test"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Statically supported by interpreter execution loop test suites."
+    },
+    {
+      "component_id": "mod.vm.system_registers",
+      "name": "T81VM System Registers & Entropy Tracking",
+      "layer_id": "layer.2_exec",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/cpp/vm_system_registers_deterministic_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "vm_system_registers_deterministic_test"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Statically supported by system registers R78..R80 test suite."
+    },
+    {
+      "component_id": "sub.layer.1_lang.cli",
+      "name": "T81 Unified CLI Driver",
+      "layer_id": "layer.1_lang",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/cpp/cli_check_test.cpp",
+        "tests/cpp/cli_integration_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "cli_check_test",
+        "cli_integration_test"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Statically supported by CLI core test suites."
+    },
+    {
+      "component_id": "sub.layer.1_lang.frontend",
+      "name": "T81Lang Compiler Frontend",
+      "layer_id": "layer.1_lang",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/cpp/frontend_lexer_test.cpp",
+        "tests/cpp/frontend_parser_test.cpp",
+        "tests/cpp/frontend_ir_generator_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "frontend_lexer_test",
+        "frontend_parser_test",
+        "frontend_ir_generator_test"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Statically supported by dedicated lexer, parser, and IR generator unit test suites."
+    },
+    {
+      "component_id": "sub.layer.1_lang.toolchain_bridges",
+      "name": "External Compiler Bridges (LLVM / MLIR)",
+      "layer_id": "layer.1_lang",
+      "relationship_classification": "UNVERIFIED",
+      "test_files": [
+        "tests/cpp/c_frontend_mlir_smoke_test.cpp",
+        "tests/cpp/python_frontend_mlir_smoke_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "c_frontend_mlir_smoke_test",
+        "python_frontend_mlir_smoke_test"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Unverified bridge prototypes with smoke-only MLIR tests."
+    },
+    {
+      "component_id": "sub.layer.2_exec.freestanding_runtime",
+      "name": "Bare-Metal AArch64 Freestanding Evaluator",
+      "layer_id": "layer.2_exec",
+      "relationship_classification": "VERIFIED",
+      "test_files": [
+        "ternaryos/tests/hal_boot_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "t81_ternaryos_hal_boot_test"
+      ],
+      "receipt_files": [
+        "docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md"
+      ],
+      "evidence_notes": "Formally verified under CPA-004 bounded cross-profile campaign (351-byte program, 17 opcodes, 25 boundaries)."
+    },
+    {
+      "component_id": "sub.layer.2_exec.jit_engine",
+      "name": "Trace JIT Compiler & Acceleration Cache",
+      "layer_id": "layer.2_exec",
+      "relationship_classification": "UNVERIFIED",
+      "test_files": [
+        "tests/cpp/vm_jit_per_instruction_policy_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "vm_jit_per_instruction_policy_test"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Unverified experimental JIT compiler prototype with basic policy tests."
+    },
+    {
+      "component_id": "sub.layer.2_exec.t81vm",
+      "name": "T81 Deterministic Virtual Machine",
+      "layer_id": "layer.2_exec",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/cpp/vm_decoder_test.cpp",
+        "tests/cpp/vm_determinism_property_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "vm_decoder_test",
+        "vm_determinism_property_test"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Statically supported by deterministic VM step and state tests."
+    },
+    {
+      "component_id": "sub.layer.2_exec.tisc_isa",
+      "name": "TISC Instruction Set Computer",
+      "layer_id": "layer.2_exec",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/cpp/tisc_opcode_matrix_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "tisc_opcode_matrix_test"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Statically supported by TISC opcode registry conformance tests."
+    },
+    {
+      "component_id": "sub.layer.3_num.balanced_ternary_limbs",
+      "name": "Balanced Ternary Limbs (T81Limb27 / T81Limb54)",
+      "layer_id": "layer.3_num",
+      "relationship_classification": "VERIFIED",
+      "test_files": [
+        "tests/cpp/test_t81_limb27_mul.cpp",
+        "tests/cpp/test_t81_limb54_reference_mul.cpp",
+        "tests/cpp/test_t81_limb54_karatsuba.cpp",
+        "tests/cpp/test_scg07_phase6_qualification.cpp"
+      ],
+      "cmake_test_targets": [
+        "t81_limb27_mul_test",
+        "t81_limb54_reference_mul_test",
+        "t81_limb54_karatsuba_test",
+        "t81_phase6_qualification_test"
+      ],
+      "receipt_files": [
+        "docs/research/continuity/SCG07_PHASE3_EVIDENCE_RECEIPT.md",
+        "docs/research/continuity/SCG07_PHASE4_EVIDENCE_RECEIPT.md",
+        "docs/research/continuity/SCG07_PHASE5_EVIDENCE_RECEIPT.md",
+        "docs/research/continuity/SCG07_PHASE6_CONSOLIDATED_QUALIFICATION.md"
+      ],
+      "evidence_notes": "Formally verified under SCG-07 Phases 3, 4, 5 and consolidated in Phase 6 with independent ExactBigIntOracle."
+    },
+    {
+      "component_id": "sub.layer.3_num.fixed_width_integers",
+      "name": "Fixed-Width Balanced Ternary Integer (T81Int<N>)",
+      "layer_id": "layer.3_num",
+      "relationship_classification": "VERIFIED",
+      "test_files": [
+        "tests/cpp/test_t81int.cpp",
+        "tests/cpp/test_scg07_phase6_qualification.cpp"
+      ],
+      "cmake_test_targets": [
+        "t81int_test",
+        "t81_phase6_qualification_test"
+      ],
+      "receipt_files": [
+        "docs/research/continuity/SCG03_EVIDENCE_RECEIPT.md",
+        "docs/research/continuity/SCG07_PHASE6_CONSOLIDATED_QUALIFICATION.md"
+      ],
+      "evidence_notes": "Formally verified under SCG-03 and qualified in SCG-07 Phase 6 for 2N-trit convolution and overflow trapping."
+    },
+    {
+      "component_id": "sub.layer.3_num.multi_precision_bigint",
+      "name": "Multi-Precision Balanced Ternary BigInt",
+      "layer_id": "layer.3_num",
+      "relationship_classification": "VERIFIED",
+      "test_files": [
+        "tests/cpp/test_t81bigint_sub.cpp",
+        "tests/cpp/test_scg07_phase6_qualification.cpp"
+      ],
+      "cmake_test_targets": [
+        "t81_bigint_sub_test",
+        "t81_phase6_qualification_test"
+      ],
+      "receipt_files": [
+        "docs/research/continuity/SCG07_PHASE2_EVIDENCE_RECEIPT.md",
+        "docs/research/continuity/SCG07_PHASE6_CONSOLIDATED_QUALIFICATION.md"
+      ],
+      "evidence_notes": "Formally verified under SCG-07 Phase 2 and qualified in Phase 6 for non-negative limb magnitude invariants."
+    },
+    {
+      "component_id": "sub.layer.3_num.rational_fractions",
+      "name": "Exact Rational Fractions (T81Fraction)",
+      "layer_id": "layer.3_num",
+      "relationship_classification": "VERIFIED",
+      "test_files": [
+        "tests/cpp/test_t81fraction.cpp",
+        "tests/cpp/test_scg07_phase6_qualification.cpp"
+      ],
+      "cmake_test_targets": [
+        "t81_t81fraction_test",
+        "t81_phase6_qualification_test"
+      ],
+      "receipt_files": [
+        "docs/research/continuity/SCG07_PHASE1_EVIDENCE_RECEIPT.md",
+        "docs/research/continuity/SCG07_PHASE6_CONSOLIDATED_QUALIFICATION.md"
+      ],
+      "evidence_notes": "Formally verified under SCG-07 Phase 1 and qualified in Phase 6 for exception unwinding and multi-width float conversion."
+    },
+    {
+      "component_id": "sub.layer.3_num.soft_math",
+      "name": "Deterministic Soft Math Tables",
+      "layer_id": "layer.3_num",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/cpp/test_t81float_soft_math.cpp"
+      ],
+      "cmake_test_targets": [
+        "test_t81float_soft_math"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Statically supported by soft math deterministic transcendental test suite."
+    },
+    {
+      "component_id": "sub.layer.3_num.ternary_tensors",
+      "name": "Ternary Native Tensors & Linear Algebra",
+      "layer_id": "layer.3_num",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/cpp/tensor_matmul_test.cpp",
+        "tests/cpp/tensor_elementwise_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "tensor_matmul_test",
+        "tensor_elementwise_test"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Statically supported by tensor linear algebra and elementwise test suites."
+    },
+    {
+      "component_id": "sub.layer.4_services.axion_kernel",
+      "name": "Axion Governance Kernel",
+      "layer_id": "layer.4_services",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/cpp/axion_policy_conformance_matrix_test.cpp",
+        "tests/cpp/axion_policy_invariants_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "axion_policy_conformance_matrix_test",
+        "axion_policy_invariants_test"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Statically supported by Axion policy engine conformance suites."
+    },
+    {
+      "component_id": "sub.layer.4_services.canonfs",
+      "name": "CanonFS Content-Addressed Storage Subsystem",
+      "layer_id": "layer.4_services",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/cpp/canonfs_persistent_driver_test.cpp",
+        "tests/cpp/canonfs_storage_format_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "canonfs_persistent_driver_test",
+        "canonfs_storage_format_test"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Statically supported by CanonFS persistent driver and hash format tests."
+    },
+    {
+      "component_id": "sub.layer.4_services.codecs",
+      "name": "Base-81 & Base-243 Stream Codecs",
+      "layer_id": "layer.4_services",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/cpp/codec_base81_test.cpp",
+        "tests/cpp/codec_base243_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "codec_base81_test",
+        "codec_base243_test"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Statically supported by Base-81 and Base-243 codec round-trip suites."
+    },
+    {
+      "component_id": "sub.layer.4_services.crypto",
+      "name": "Deterministic Hash & Cryptographic Engine",
+      "layer_id": "layer.4_services",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/cpp/lattice_crypto_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "lattice_crypto_test"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Statically supported by deterministic lattice cryptography tests."
+    },
+    {
+      "component_id": "sub.layer.5_os.daios_proposal",
+      "name": "DAIOS Architecture Contract (RFC-00D2)",
+      "layer_id": "layer.5_os",
+      "relationship_classification": "NOT_MAPPED",
+      "test_files": [],
+      "cmake_test_targets": [],
+      "receipt_files": [],
+      "evidence_notes": "Unmapped design-only RFC (RFC-00D2) with no executable code or test implementation."
+    },
+    {
+      "component_id": "sub.layer.5_os.ternaryos_kernel",
+      "name": "TernaryOS Research Microkernel & HAL",
+      "layer_id": "layer.5_os",
+      "relationship_classification": "VERIFIED",
+      "test_files": [
+        "ternaryos/tests/hal_boot_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "t81_ternaryos_hal_boot_test"
+      ],
+      "receipt_files": [
+        "docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md"
+      ],
+      "evidence_notes": "Formally verified under CPA-004 freestanding evaluation post-ExitBootServices."
+    },
+    {
+      "component_id": "sub.layer.6_hw.qemu_drivers",
+      "name": "QEMU Virt Hardware Emulation Platform",
+      "layer_id": "layer.6_hw",
+      "relationship_classification": "VERIFIED",
+      "test_files": [
+        "ternaryos/tests/hal_boot_test.cpp"
+      ],
+      "cmake_test_targets": [
+        "t81_ternaryos_hal_boot_test"
+      ],
+      "receipt_files": [
+        "docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md"
+      ],
+      "evidence_notes": "Formally verified under CPA-004 PL011 UART and GICv3 interrupt controller drivers on QEMU."
+    },
+    {
+      "component_id": "sub.layer.6_hw.rtl_feasibility",
+      "name": "Ternary RTL Hardware Feasibility Models",
+      "layer_id": "layer.6_hw",
+      "relationship_classification": "UNVERIFIED",
+      "test_files": [],
+      "cmake_test_targets": [],
+      "receipt_files": [],
+      "evidence_notes": "Unverified research Verilog prototype with simulation testbench tb_dot_product.v."
+    },
+    {
+      "component_id": "sub.layer.6_hw.simd_primitives",
+      "name": "Host SIMD Acceleration Primitives (AVX2)",
+      "layer_id": "layer.6_hw",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/cpp/simd_api_test.cpp",
+        "tests/cpp/test_t81_simd_add_helpers.cpp"
+      ],
+      "cmake_test_targets": [
+        "simd_api_test",
+        "test_t81_simd_add_helpers"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Statically supported by host SIMD AVX2/NEON unit tests."
+    },
+    {
+      "component_id": "sub.layer.7_assurance.ci_governance",
+      "name": "CI Verification Pipeline & Root Governance",
+      "layer_id": "layer.7_assurance",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/ci/test_architecture_visualization.py",
+        "tests/ci/test_current_state_contract.py"
+      ],
+      "cmake_test_targets": [
+        "pytest-ci"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Statically supported by CI validation and architecture gate suites."
+    },
+    {
+      "component_id": "sub.layer.7_assurance.cpp_test_suite",
+      "name": "Deterministic C++ Regression Test Suite",
+      "layer_id": "layer.7_assurance",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/ci/test_current_state_contract.py"
+      ],
+      "cmake_test_targets": [
+        "pytest-ci"
+      ],
+      "receipt_files": [],
+      "evidence_notes": "Statically supported by repository test framework runner."
+    },
+    {
+      "component_id": "sub.layer.7_assurance.hypothesis_register",
+      "name": "Empirical Research Hypothesis Register (H01\u2013H08)",
+      "layer_id": "layer.7_assurance",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/ci/test_current_state_contract.py"
+      ],
+      "cmake_test_targets": [
+        "pytest-ci"
+      ],
+      "receipt_files": [
+        "docs/research/continuity/HYPOTHESIS_REGISTER_v1.json"
+      ],
+      "evidence_notes": "Statically supported by CI contract governance test suite."
+    },
+    {
+      "component_id": "sub.layer.7_assurance.scg_continuity",
+      "name": "Scientific Continuity Governance Evidence Receipts",
+      "layer_id": "layer.7_assurance",
+      "relationship_classification": "STATICALLY_SUPPORTED",
+      "test_files": [
+        "tests/ci/test_current_state_contract.py"
+      ],
+      "cmake_test_targets": [
+        "pytest-ci"
+      ],
+      "receipt_files": [
+        "docs/research/continuity/SCG07_PHASE6_CONSOLIDATED_QUALIFICATION.md"
+      ],
+      "evidence_notes": "Statically supported by CI governance validation suite."
+    }
+  ]
+}

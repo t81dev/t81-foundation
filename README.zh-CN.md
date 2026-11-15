@@ -1,247 +1,317 @@
-<!-- translation_status: outdated; full source translation pending -->
+# T81 基金会
 
-> **历史译文，待更新（2026-10-27）。** [英文 README](README.md) 在 `391b9652`（#598）中将 T81 定位为实验性计算与系统研究平台。以下章节保留旧版内容，其中关于性能、安全性、集成程度和成熟度的表述不代表当前保证。相对于二进制系统的普遍优势尚未得到证明。参见[文档对齐审计](docs/research/ROOT_DOCUMENTATION_ALIGNMENT_AUDIT.md)。
+[English](README.md) · [简体中文](README.zh-CN.md) · [Español](README.es.md) · [Português (Brasil)](README.pt-BR.md) · [Русский](README.ru.md)
 
-<p align="center">
-  <img src="docs/assets/banner.png" alt="T81 — 三元计算架构" width="100%">
-</p>
+### 研究替代表示法、自适应执行与可验证计算。
 
-[English](./README.md) | [简体中文](./README.zh-CN.md) | [Español](./README.es.md) | [Русский](./README.ru.md) | [Português](./README.pt-BR.md)
+**平衡三进制 · 表示感知型 AI/ML · 确定性执行 · 实验性架构**
 
-<!-- T81-SPEED-START -->
-<!-- T81-SPEED-END -->
-
-# T81 — 三元计算架构
-
-![ISA](https://img.shields.io/badge/ISA-v1.9.0_Frozen-blue)
-![License](https://img.shields.io/badge/license-Apache_2.0-blue)
-
-利用基于 e 的计算的理论效率，**T81** 是一种基于 **平衡三元算术** ({-1, 0, +1}) 构建的确定性计算架构，拥有涵盖指令集、虚拟机、语言编译器和 AI 推理环境的全链条治理模型。
-
-该架构提供：
-
-- **验证表面上的比特级精确可重复性** — 受治理的确定性表面在受支持的平台上产生完全相同的跟踪哈希
-- **受治理的 AI 推理** — Axion 策略引擎在任何副作用发生之前拦截并审计每一项特权操作
-- **内容寻址来源** — CanonFS 以不可变方式记录所有工件、模型权重和运行时状态
-- **针对受治理的纪元语义的确定性并行执行** — DPE 任务图模型 (RFC-DPE-0002) 使得在当前确定性表面下的并发 TISC 工作负载具备纪元提交的输出能力
+[研究章程](docs/research/RESEARCH_CHARTER.md) · [研究路线图](docs/ROADMAP.md) · [架构文档](docs/explanation/ARCHITECTURE.md) · [AI 研究上下文](docs/ai-context/) · [确定性表面注册表](docs/governance/DETERMINISM_SURFACE_REGISTRY.md)
 
 ---
 
-## 目录
-- [项目状态](#项目状态)
-- [架构与生态系统概览](#架构与生态系统概览)
-- [关键组件](#关键组件)
-- [快速入门](#快速入门)
-- [确定性验证](#确定性验证)
-- [文档](#文档)
-- [治理](#治理)
-- [三元优势](#三元优势)
-- [许可证](#许可证)
+## 什么是 T81？
+
+**T81 基金会是一个已实现的实验性计算架构与开源科学研究项目，旨在探讨替代计算表示法（特别是平衡三进制）是否能比传统二进制系统提供可测量的优势。**
+
+T81 是一个**已实现且能正常运行的架构**：它将三进制指令集计算机（TISC）定义为其计算指令契约，并通过托管虚拟机（T81VM）和裸机独立微内核环境（AArch64 QEMU 上的 Axion OS / TernaryOS）展示了有边界的跨环境执行。
+
+该项目从多个领域研究计算：数学表示、算法、软件执行、存储、硬件架构以及可验证的系统行为。其以研究为先的架构起源于离散数学、CWEB/Hanoi 以及对替代数字系统的探索，之后逐步扩展到语言、虚拟机、指令集、策略治理和研究保障子系统。
+
+第二个明确的实验方向是**表示感知型自适应执行**：为特定工作负载（尤其是 AI/ML）选择数据表示法、算法和执行路径，同时衡量选择、转换、计算和准确性的全部成本。这是一种架构假设，**并非**既定的 T81 性能优势。
+
+其核心问题是：
+
+> 在什么条件下，三进制计算能够优于、简化或以其他方式改进同等的二进制方法？
+
+答案并非不证自明。
+
+部分实验展示了有价值的数学和表示特性。另一些实验则表明，传统二进制实现仍然更快或更高效。若干根本性问题仍未解决。
+
+T81 的存在是为了系统地探索这些边界。
+
+**这是一个实验性研究平台，并非声称已经制造出了优越的三进制计算机。**
 
 ---
 
-## 项目状态
+## 为什么选择三进制？
 
-**阶段：积极开发** — v1.9.0-Stable；369/369 测试通过；已在 Linux x86\_64 + macOS ARM64 上验证跨平台确定性。
+现代计算绝大多数采用二进制状态：0 和 1。
 
-确定性表面分类遵循确定性表面注册表和 RFC-0048 引入的治理模型：
+三进制计算使用三种状态。在平衡三进制中，它们表示为：
 
-- **DCP / 经过验证的确定性表面**：语义、边界和重放证明受治理并由 CI 强制执行
-- **受治理的非 DCP**：受策略约束且在架构上很重要，但尚无资格提出完整的确定性声明
-- **实验性**：活跃的设计或验证表面；不提出确定性保证声明
+\[
+T = \{-1,0,+1\}
+\]
 
-| 组件 | 成熟度 | 备注 |
-| :--- | :--- | :--- |
-| **TISC ISA** | ❄️ Frozen | v1.9.0；操作码语义在 v1.x 下不可变；`AgentInvoke` (RFC-0015)，6 个三元原生推理 (RFC-0034)，3 个 FFI (RFC-00B8)，2 个格密码 (RFC-0038)，1 个 KEM 环 (RFC-0039) |
-| **Data Types** | ❄️ Frozen | BigInt，Float，Complex，Map，Set — 位稳定编码；审计干净 |
-| **T81VM** | ✅ Stable | 解释器的 DCP / 已验证的确定性表面以及当前支持平台的跟踪奇偶校验；具有 `AgentInvoke`、三元原生推理、FFI、格密码和 NTRU-KEM 操作码的完整 TISC v1.9.0 分派；369/369 测试 |
-| **T81Lang** | ✅ Stable | 整体受治理的非 DCP：具有主动编译器确定性控制的 v1.9.0 Stable 规范，但编译器发射仍部分经过验证，而不是完全升级为经过验证的确定性表面 |
-| **Axion Governance Kernel** | ✅ Stable | 整体受治理的非 DCP：规范的推理字符串和审计钩子处于活动状态，但完整的内核/治理表面比当前验证的确定性注册表更广泛 |
-| **Ternary-Native Inference** | ✅ Stable | 受治理的非 DCP：RFC-0034 + RFC-0037 操作码/运行时/stdlib 表面已实现并提供证据，但并非所有与推理相邻的执行路径都已升级为经过验证的确定性表面 |
-| **Lattice Cryptography** | ✅ Stable | 受治理的非 DCP：RFC-0038+0039 表面已实现并受策略约束；确定性升级仍然是特定于表面的，而不是隐含在整个加密垂直领域 |
-| **Governed FFI** | ✅ Stable | 受治理的非 DCP：RFC-00B8 + RFC-0036 VM/语言桥已端到端实现，但在进行更强有力的确定性声明之前，沙箱和更广泛的模式升级仍然开放 |
-| **TUI Frontends** | ✅ Beta | 受治理的非 DCP：操作员和代理 TUI 是生产可用的界面，但 UI/运行时集成身并不是经过验证的确定性表面 |
-| **DPE (Parallel Execution)** | ✅ Stable | 受治理的确定性执行模型与接受的 RFC-DPE-0001–0009；确定性纪元语义就绪，而更广泛的表面升级仍然受注册表和配套 RFC 链的治理 |
-| **Cognitive Tiers** | ✅ Beta | 实验性 / 非 DCP：Tier4 认知仍然受治理约束，但不是经过验证的确定性表面 |
-| **TernaryOS User Environment** | ✅ Beta | 受治理的非 DCP / beta：已实现并受策略约束，但目前未作为经过验证的确定性表面呈现 |
-| **Axion OS** | ✅ Alpha | 受治理的非 DCP / alpha：主动治理架构，但尚未作为整体进行完全推广验证的确定性表面 |
+这为带符号算术、数值表示、状态编码、决策系统和计算架构创造了独特的可能性。
+
+例如：
+
+| 特性 | 数学关系 |
+|---|---|
+| 一个 trit（三进制位） | 3 种可能状态 |
+| 四个 trits | \(3^4 = 81\) 种状态 |
+| 六个 trits | \(3^6 = 729\) 种状态 |
+| 每个 trit 的信息量 | \(\log_2 3 \approx 1.585\) bits |
+| 81 进制数位 | 四个组合的 trits |
+
+这些关系是客观的数学事实。
+
+它们**不能**证明三进制处理器速度更快、三进制存储器物理密度更高，或者三进制算法能耗更低。
+
+这些是独立的工程问题，需要与优化后的二进制替代方案进行严格、对等的对照比较。
+
+T81 致力于研究这其中的本质区别。
 
 ---
 
-## 架构与生态系统概览
+## 我们得出了哪些结论？
+
+研究的价值在于同时发现机遇与局限性。
+
+**核心结果——与优化二进制的不利对比：** 在以下历史 AVX2 矩阵向量乘法实验中，原生 INT8 达到了 **17.15 GFLOP/s**，而紧凑 2-bit 三进制实现仅为 **12.91 GFLOP/s**（原生 INT8 实现的吞吐量大约**高出 32.8%**）。这是特定工作负载下的结果，并非普适的进制排序；T81 明确公开该结果，因为不利的实验结果同样是科学证据，而非需要掩盖的缺陷。
+
+T81 的实验历程确立了几个重要结论：
+
+### 1. AVX2 负面结果：表示密度不等于执行速度
+
+紧凑三进制数据可以减少存储空间需求。
+
+然而，软件仍然必须在传统二进制硬件上解码、操作和执行这些表示。
+
+在历史 AVX2 矩阵向量乘法实验中：
+
+| 实现方式 | 测得吞吐量 |
+|---|---:|
+| 原生 INT8 AVX2 | 17.15 GFLOP/s |
+| 紧凑 2-bit 三进制 AVX2 | 12.91 GFLOP/s |
+
+紧凑的三进制表示在该工作负载下并未超越传统的 INT8 实现。
+
+这是一个有边界的实验结果，并非三进制计算在所有场景下均较慢的普适证明。
+
+[探索紧凑三进制研究](docs/research/PACKED_TERNARY_MATVEC_PERFORMANCE_REPORT.md)
+
+### 2. 自适应表示具备条件性优势
+
+对自适应表示分层的研究发现了特定配置，在这些配置下三进制表示的建模成本低于对等的二进制方案。
+
+这些优势取决于工作负载假设、元数据开销、转换成本和表示边界。
+
+修正后的 H04-R02 研究保留了这些条件性发现，同时明确指出物理层面的性能仍未解决。
+
+[阅读修正后的 H04-R02 发现](experiments/h04_r02_adaptive_representation/RESULTS.md)
+
+### 3. 正确性不等于优化
+
+实验研究 T81-AIOPT-001 考察了四 trit 模式匹配的多种表示。
+
+其 M1 实现在本地通过了全面的正确性测试，但该实验工作负载实际上可简化为普通的序数比较。
+
+这一结果说明，即使通过了详尽的正确性测试，也可能不足以证明其具有计算优势。
+
+关键问题不仅在于替代表示是否可行，更在于所选工作负载是否足以区分竞品算法之间的本质差异。
+
+[探索 T81-AIOPT-001](docs/research/aiopt/)
+
+### 4. 展示了有边界的跨环境执行（CPA-004/CPA-005）
+
+**证据等级：有边界的确定性与可移植性，而非相对性能或全系统成熟度。** 确定性保证受到[确定性表面注册表](docs/governance/DETERMINISM_SURFACE_REGISTRY.md)的严格限制。
+
+跨环境架构（CPA）近期的研究证明，T81 的计算核心在不同执行环境中表现出完全一致的执行行为：
+
+- **规范程序构件：** 一个固化的 351 字节规范程序（包含 27 条规范的 13 字节记录，SHA-256 `b0649777cfa1c9e0fa1febb8bdfb1191c5cd3deea0d313791a4a32d5f207c80b`）执行了 17 条准入的 TISC 指令子集。
+- **跨环境等价性：** 在三个独立的托管 T81VM 进程和三次全新的 AArch64 QEMU 裸机引导（在 UEFI `ExitBootServices` 之后）中，执行状态在**全部 25 个观测边界**（初始状态 + 24 步指令）均与独立数学参考 Oracle 完全一致。
+- **全面的边界匹配：** 在全部 81 个寄存器数值与标签、1,563 个逻辑内存字与标签、标志位及系统寄存器（R75–R80）中均得到一致验证，确定性停机于 PC=27, SP=283。
+- **边界区分：** 证明跨环境执行的正确性仅表明计算架构按规范运作；这**不是**三进制在性能、能耗或硬件上优于二进制基准的证据。
+
+### 5. SCG-08 活跃研究项目：进位传播与算术工作量
+
+**SCG-08** 项目在固化的加权成本度量下研究平衡三进制进位传播与多精度算术工作量：
+
+- **阶段 0 研究章程：** 已接受并合并（`SCG08_PHASE0_RESEARCH_CHARTER.md`）。
+- **阶段 1 关口 1 算术测试框架：** 已在独立测试套件 `experiments/scg08_arithmetic_work/` 中实现并验证。它通过与基于 $10^9$ 进制解耦的高精度整数 Oracle 对比，确立了 5 个标准化操作数位宽（64, 128, 256, 512, 1024 位）的数学正确性、确定性重放、精确的原语操作计数以及严格的测试预算约束（$\le 1,000$ 次试验；冒烟测试执行了 179 次）。
+- **关口 2 基准测试状态：** **严格保留（未授权）。** 在通过权威审查和关口提升之前，严禁执行大规模实证研究和统计假设评估。合并测试框架代码并不构成实验授权。
+
+### 6. 物理三进制计算仍是未决问题
+
+在二进制 CPU 上通过软件模拟的三进制计算不等于原生三进制硬件上的计算。
+
+评估物理器件需要关于面积、能耗、延迟、可靠性、传感、编码以及外围电路的对等证据。
+
+由于缺乏充分的配对器件表征数据，物理评估目前仍处于受阻状态（研究 10A）。T81 既不将缺乏证据视为不可能的证明，也不将理论上的进制效率直接当作物理优势的证明。
+
+---
+
+## T81 研究架构
+
+本存储库包含为研究计算表示法与受控执行而开发的若干子系统。
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│  Interfaces                                                 │
-│  t81 studio (Human TUI)   t81 agent (AI-Native TUI)  CLI    │
-├─────────────────────────────────────────────────────────────┤
-│  T81Lang Compiler                                           │
-│  Lexer → Parser → Typed AST → Semantic Analyzer → IRGen     │
-│  agent/behavior (RFC-0015)  ·  foreign {} (RFC-0036)        │
-├─────────────────────────────────────────────────────────────┤
-│  Axion Governance Kernel                                    │
-│  PolicyEngine · CanonFS · Audit Trail · Ethics Gate         │
-├──────────────────────────────┬──────────────────────────────┤
-│  T81 Virtual Machine         │  DPE Task Graph Runtime      │
-│  TISC interpreter            │  EpochGraph · DeltaBuffer    │
-│  (deterministic)             │  (RFC-DPE-0002)              │
-├──────────────────────────────┴──────────────────────────────┤
-│  TISC ISA v1.9.0  ❄️ Frozen  +  Data Types  ❄️ Frozen       │
-│  Deterministic substrate — CanonHash81 bit-exact traces     │
-├─────────────────────────────────────────────────────────────┤
-│  Governed FFI (RFC-00B8)  ·  Ternary-Native Inference       │
-│  FFIDispatcher · FFILibraryRegistry                         │
-│  TWMATMUL · TQUANT · TATTN · TWEMBED · TERNACCUM · TACT     │
-└─────────────────────────────────────────────────────────────┘
-  Experimental: TernaryOS · Cognitive Tiers
+                     T81 FOUNDATION
+                已实现架构与科学研究
+                             |
+          +------------------+------------------+
+          |                  |                  |
+       表示层                 执行层               保障层
+          |                  |                  |
+    平衡三进制           TISC ISA (指令契约)   Axion 策略引擎
+    Base-81 / Base-243   +-- T81VM (托管模式)  CanonFS 存储
+    紧凑数据格式          +-- Axion (裸机模式)  证据与溯源
+    自适应分层           T81Lang 编译器前端    完整性审计
+          |                  |                  |
+          +------------------+------------------+
+                             |
+                        受控对比实验
+                             |
+                      传统二进制基准线
+                             |
+                        验证与比较
+                             |
+                        研究结论
 ```
 
-### 关键组件
+### 计算契约与执行环境配置文件
 
-**TISC ISA v1.9.0** — 三元指令集架构。在 v1.x 下冻结；整个堆栈的不可变执行合约。
+在 T81 架构中：
+- **TISC（三进制指令集计算机）：** 作为核心计算指令契约，规范操作码语义、64 位状态向量和确定性状态转移规则。
+- **托管 T81VM：** 面向常规主机操作系统（Linux、macOS、Windows）的用户空间开发、工具链、测试和确定性重放的执行配置文件。
+- **独立 Axion OS / TernaryOS：** 直接运行在裸机硬件或虚拟机管理程序（如 AArch64 QEMU）上的裸机执行配置文件，无需用户态操作系统即可执行 TISC。
+- **CanonFS：** 提供内容寻址的对象身份、不可变构件存储、加密溯源和 RFC-00D1 交换契约。
+- **DAIOS（确定性 AI 操作系统）：** 作为面向高层自主智能体和 AI 运行时治理的独立、前瞻性概念与目标架构提案（RFC-00D2），与底层的 TISC 执行引擎保持明确区分。
 
-**T81VM** — 确定性 TISC 解释器。保证跨平台输出位相同；Axion 的分派前隔离将治理钩子保留在热执行路径之外。
+### 子系统成熟度分类
 
-**Axion Governance Kernel** — 策略引擎，在产生任何副作用之前拦截 `AXREAD`、`AXSET`、`AXVERIFY`、AI 操作码和 FFI 调用。如果策略解析失败，则默认拒绝 (Fail-closed)。
+项目对其各子系统明确区分了不同的成熟度等级。具备可用实现并不意味着具有相同的成熟度或已验证的优势：
 
-**CanonFS** — 内容寻址文件系统。将所有代码对象、模型权重和运行时工件存储为不可变的、哈希标识的 blob。为确定性审计提供来源证明。
-
-**T81Lang** — 目标为 TISC 字节码的高级语言。原生类型：`BigInt`、`Fraction`、`Float`、`Complex`、`Tensor`、`Map`、`Set`。编译器流水线：词法分析器 → 解析器 → 类型化 AST → 语义分析 → IR 生成。
-
-**Ternary-Native Inference (RFC-0034)** — 六个 TISC 操作码，用于使用平衡三元权重 {−1, 0, +1} 的无乘法 AI 推理：`TWMATMUL`（矩阵乘法）、`TQUANT`（量化为 trit）、`TATTN`（三元注意力）、`TWEMBED`（权重嵌入）、`TERNACCUM`（标量点积）、`TACT`（带 Axion 封顶门限的激活）。T81WTN 权重格式。通过 RFC-0036 完成了 T81Lang `foreign {}` 前端。
-
-**Governed FFI (RFC-00B8 + RFC-0036)** — 全栈受治理的外部函数接口。VM 层（RFC-00B8 阶段 1）：`FFIDispatcher` 在任何外部调用前执行策略检查、资源配额和审计跟踪；`FFILibraryRegistry` 按名称和版本哈希跟踪已注册的库；三个 VM 操作码（`FFICall`、`FFIRegister`、`FFIPolicySet`）。语言层（RFC-0036）：`foreign deterministic { fn sin(x: T81Float) -> T81Float; }` 声明签名；在调用站点处 `foreign.sin(angle)` 降级为 `FFI_CALL`，函数名包含在 `text_literal` 中。
-
-**TUI Frontends** — 两个互补的终端界面，构建在 FTXUI v5.0.0 之上：
-- `t81 studio` — 导航侧边栏、CanonFS 浏览器、Axion 仪表板、确定性跟踪可视化器、命令面板（`Ctrl+P`）
-- `t81 agent` — 持久化 JSONL 会话，斜杠命令（`/compile`、`/run`、`/hash`、`/allow`、`/infer`、`/trits` 等），trit 概率条
-
-**DPE (Deterministic Parallel Execution)** — 在冻结的 TISC ISA 之上的任务图模型。任务声明不可变输入和缓冲的输出区域；VM 在纪元结束时原子地提交所有写入。无需新的操作码。
+| 组件 | 成熟度 | 角色 |
+|---|---|---|
+| **TISC** | Frozen | 规范执行语义的计算指令契约 (v1.9.0) |
+| **T81VM** | Stable | 虚拟机执行和确定性的托管执行配置文件（受[确定性表面注册表](docs/governance/DETERMINISM_SURFACE_REGISTRY.md)约束） |
+| **Axion Kernel** | Stable | 裸机执行配置文件（AArch64 裸机微内核/HAL）及副作用发生前的策略授权 |
+| **T81Lang** | Stable | 面向 TISC 的语言前端与编译基础设施 |
+| **T81 Core** | Stable | 数值类型、容器与表示原语 |
+| **CanonFS** | Stable | 内容寻址构件与完整性机制 |
+| **DAIOS** | Concept | 确定性 AI 操作系统的目标架构提案 (RFC-00D2) |
+| **Research experiments** | Experimental | 假设检验、正确性验证与对比测量 |
 
 ---
 
 ## 快速入门
 
-### 从源码构建
+### 环境准备
+
+构建 T81 需要以下环境：
+- **CMake** 3.24 或更高版本
+- **兼容 C++20 的编译器**（GCC 12+、Clang 15+ 或 MSVC 2022）
+- **Python** 3.10+（用于运行治理、验证和测试脚本）
+- *可选：* Ninja 构建系统、QEMU AArch64（用于裸机目标调试）
+
+### 构建项目
+
+配置并构建核心项目：
 
 ```bash
-# Clone the repository
-git clone https://github.com/t81dev/t81-foundation.git
-cd t81-foundation
+# 配置源码外构建目录
+cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
 
-# Configure and build (Release mode)
-cmake --preset default -DCMAKE_BUILD_TYPE=Release
-cmake --build build
+# 编译核心目标
+cmake --build build --target t81 -j$(nproc)
 
-# Run the test suite (369 tests)
+# 运行标准测试套件
 ctest --test-dir build --output-on-failure
 ```
 
-### CLI 与接口
+### 运行实验测试（可选）
+
+研究实验与测试框架（如 SCG-08）由可选的 CMake 开关控制：
 
 ```bash
-# Compile a T81Lang program
-./build/t81 code build examples/hello.t81 -o hello.tisc
+# 启用实验测试框架进行配置
+cmake -B build -S . -DT81_BUILD_EXPERIMENTS=ON -DCMAKE_BUILD_TYPE=Release
 
-# Execute with Axion governance
-./build/t81 vm run hello.tisc
+# 构建并执行 SCG-08 关口 1 算术验证
+cmake --build build --target t81_exp_scg08_01_test
+ctest --test-dir build -R scg08 --output-on-failure
 
-# Launch the human operator TUI
-./build/t81 studio
-
-# Launch the AI-native TUI
-./build/t81 agent
+# 验证证据记录模式
+python3 scripts/ci/validate_scg08_gate1_evidence.py
 ```
 
 ---
 
-## 确定性验证
+## 研究方法论
 
-对经过验证的确定性表面检查以确保比特级精确的跨平台重现性。
+T81 遵循证据优先的准则。
 
-```bash
-./scripts/ci/run_determinism_slice.sh
-```
+每项对比实验都必须回答五个问题：
 
-当前核心表面的已验证平台：**Linux x86_64**、**macOS ARM64**。在已验证的确定性表面上的任何差异都属于严重缺陷。
+1. **假设是什么？** 明确一个具备可证伪性的命题。
+2. **基准是什么？** 与功能对等且充分优化的传统方案进行对比。
+3. **测量什么指标？** 分别测量正确性、存储量、延迟、吞吐量、能耗和内存流量。
+4. **局限性是什么？** 识别相关假设、运行硬件、工作负载范围及未解决的依赖关系。
+5. **什么结论是合理的？** 严格区分得到支持、未受支持、不确定、受阻和未测试的结论。
 
----
+项目严格遵守证据等级划分：
 
-## 文档
+**已实现 → 已测试 → 已测量 → 经对比确立**
 
-| 主题 | 位置 |
-| :--- | :--- |
-| 入门 (C++) | `docs/user-guide/getting-started/cpp-quickstart.md` |
-| 入门 (AI) | `docs/user-guide/getting-started/ai-quickstart.md` |
-| TUI 指南 | `docs/user-guide/how-to/tui-guide.md` |
-| ISA 规范 | `spec/tisc-spec.md` |
-| Axion 策略手册 | `docs/user-guide/tutorials/axion-policy-manual.md` |
-| T81Lang Stdlib 参考 | `docs/user-guide/reference/T81LANG_STDLIB_REFERENCE.md` |
-| 架构概览 | `docs/architecture/OVERVIEW.md` |
-| 治理章程 | `docs/governance/README.md` |
-| 项目控制中心 | `docs/status/PROJECT_CONTROL_CENTER.md` |
+这些是不同的证据等级，绝不能混淆替代。实验结果不得做出超出证据支持范围的主张。
 
 ---
 
-## 治理
+## 文档导航
 
-T81 Foundation 在 **持续治理 (C2)** 模式下运作。所有贡献必须保持：
-
-- **确定性执行平价** — 跟踪哈希在支持的平台上必须匹配
-- **架构一致性** — 触及确定性表面的更改需要正式审查
-- **再现性保证** — DCP 表面中不存在浮点或平台特定的非确定性
-
-确定性表面在 `docs/governance/DETERMINISM_SURFACE_REGISTRY.md` 中定义。对冻结表面（TISC ISA、Data Types）的更改需要大版本升级。
-
-> **边界注意：** DCP、受治理的非 DCP、实验性和超出范围的分类在 RFC-0048 中宪法式地定义。公开文档不得将受治理的非 DCP 或实验性表面显示为经过验证的确定性组件。
-
----
-
-## 三元优势
-
-尽管现代二进制硬件已针对通用计算进行了高度优化，但 **T81 Foundation** 利用了 **平衡三元** ({−1, 0, +1}) 独特的数学与结构属性，实现了传统二进制系统难以或无法企及的优势 —— 尤其在确定性执行、受控 AI 推理以及低复杂度神经网络负载方面。
-
-### 1. O(1) 计算对称性 — 无进位取反
-
-在二进制的二进制补码中，取反需要逐位 NOT 运算再加 1，这可能会触发长进位链。在平衡三元制中，取反只需翻转每个非零 trit 的符号 (+1 ↔ −1, 0 保持 0) — **零进位传播**，恒定时间。
-
-- **实测性能**：PackedCell 取反在近期的 x86_64 硬件上达到 **~49.9 G-ops/s**，优于经过优化的 64 位整数取反 **~10.9×**（基准测试已在 Linux x86_64 和 macOS ARM64 上验证）。
-- 这种对称性自然地扩展到许多算术模式，减少了符号繁重的操作的延迟和功耗。
-
-### 2. 卓越的基数经济性与理论密度
-
-对于位置数字系统而言，信息论的最优基数接近 *e ≈ 2.718*。三元制（基数 3）在数学上比二进制（基数 2）更接近，提供 **~1.585 bit 的信息量每 trit** (log₂(3))。
-
-- 在实践中，这可以提高每位数字的熵和更紧凑的对称范围表示 — 对于神经网络权重、嵌入、坐标系和大规模稀疏张量特别有价值。
-
-### 3. 固有的比特级精确确定性与独立于平台的舍入
-
-IEEE 754 浮点数存在破坏可重复性的平台特定舍入模式、结合律差异和次正常处理问题。平衡三元算术本质上是对称于零的：
-
-- 舍入采用简单的截断 — 无依赖方向的偏差。
-- 每条执行路径在受支持的平台上产生 **完全相同的跟踪哈希**（目前经过验证的 Linux x86_64 + macOS ARM64 达到 100% 校验通过）。
-- 这为科学计算、AI 推理审计和受控代理运行提供了坚如磐石的再现性。
-
-### 4. 无乘法的神经推理
-
-平衡三元权重 {−1, 0, +1} 允许进行 **无乘法的点积** — 将 MUL 替换为有条件的 ADD/SUB（或者在跳过零时进行纯粹的累加）。结合自定义 TISC 操作码（`TWMATMUL`、`TQUANT`、`TATTN`、`TWEMBED`、`TERNACCUM`、`TACT`）：
-
-- 可以为 AI 推理提供极低的功耗和更高的吞吐量。
-- 契合了 2024-2026 年在极低比特模型（BitNet b1.58, xTern, 三元 Transformer）方面的发展趋势，在精度损失极小的前提下，相比 FP16/FP32 基准能够实现 15-60× 的能量缩减及 4-90× 的吞吐量增长。
-- T81WTN 权重格式 + 三元原生运算使得这项优势在该技术栈中达到了生产就绪级别。
-
-### 5. 架构级治理与安全钩子
-
-由于整个 TISC ISA 是原生三元的，**Axion 治理内核** 能够在任何副作用发生前，在 **trit 级别的细粒度** 下拦截并审计状态转换。这允许：
-
-- 对特权操作（AI 调用、FFI 调用、代理行为）实施默认拒绝（Fail-closed）策略执行。
-- 细粒度的道德门限、通过 CanonFS 进行来源跟踪，以及确定性的审计跟踪。
-- 一个从根本上比黑盒二进制执行更具可检查性的安全模型。
-
-这些优势在那些最看重 **再现性**、**低复杂度推理**、**受控执行** 和 **数学对称性** 的领域中产生了叠加效应 — 这正是 T81 架构旨在解决的核心应用场景。
+| 目录 / 文件 | 说明 |
+|---|---|
+| [`docs/research/`](docs/research/) | 主要科学调查与实验结论 |
+| [`experiments/`](experiments/) | 有边界的实验实现、测试套件与证据记录 |
+| [`spec/`](spec/) | 指令集规范与 RFC 目录 |
+| [`docs/governance/`](docs/governance/) | 治理平面注册表、权威模型及[确定性表面注册表](docs/governance/DETERMINISM_SURFACE_REGISTRY.md) |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md) | 贡献者路线图与活跃研究时序规划 |
+| [`docs/ai-context/`](docs/ai-context/) | 面向 AI 研究协作者的权威连续性文档与状态审查 |
+| [`include/t81/`](include/t81/) | 核心公共 C++ 头文件与接口契约 |
+| [`vm/`](vm/) | 托管虚拟机实现 (T81VM) |
+| [`kernel/axion/`](kernel/axion/) | Axion 策略引擎与治理内核 |
+| [`fs/`](fs/) | CanonFS 内容寻址存储与交换驱动 |
+| [`PROJECT_STRUCTURE.md`](PROJECT_STRUCTURE.md) | 存储库完整目录结构映射 |
+| [`SUPPORT_TAXONOMY.md`](SUPPORT_TAXONOMY.md) | 支持层级、平台边界与环境配置文件分类 |
 
 ---
 
-## 许可证
+## T81 不做以下主张
 
-Apache 许可证 2.0。
+T81 明确**不**主张：
+
+- 三进制计算全面优于二进制计算。
+- 原生三进制芯片具有已证明的优越性或商业可行性。
+- 集成后的 T81 架构相对于优化后的传统运行时具有普适的性能优势。
+- 存在经过验证的、超越强基线策略或算法路由的自适应 AI 优化器。
+- 历史 PDF 手稿中的案例研究数字构成独立复现的测量数据。
+- 三进制模型权重天然能够加速 AI 推理。
+- 确定性执行或策略执行必须依赖三进制虚拟机。
+- AI 生成的实验仅仅因为本地测试通过便已被独立验证。
+- 合并测试代码或通过关口 1 资格认证即代表自动授权开展阶段 2 基准测试。
+
+坚守这些界限是维护本项科学研究严谨性的基石。
+
+---
+
+## 问题依然未决
+
+基于深厚的工程积淀，二进制计算在当今物理和软件基础设施中占据主导地位。
+
+这种主导地位并不削弱探索替代表示法、新型计算模型或未来硬件基底的科学价值。
+
+T81 的使命在于查明这些替代方案在何种场景下有用——以及在何种场景下无用。
+
+**我们不是先预设结论再去拼凑证据。**
+
+**我们正在构建发现客观结论所需的实验基石。**
+
+---
+
+**T81 基金会** — 实验性计算架构与系统研究
+
+[许可协议：Apache 2.0](LICENSE) · [GitHub](https://github.com/t81dev/t81-foundation)

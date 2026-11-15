@@ -1,0 +1,9 @@
+{
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "compiler": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin\n",
+  "cmake": "cmake version 4.3.0\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).\n",
+  "builds": "fresh isolated trees; no reused T81 archive",
+  "dependencies": "local Asio source override and installed GTest for configure; no dependency fetch claimed authenticated",
+  "platform_execution": "macOS ARM64 only",
+  "baremetal_or_crash_concurrency_validation": false
+}

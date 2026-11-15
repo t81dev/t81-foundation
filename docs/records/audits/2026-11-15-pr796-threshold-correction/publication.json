@@ -1,0 +1,11 @@
+{
+  "completed_results_source_head": "b48e1a4da29784860a528e5397f896c73bc48450",
+  "main_ci_run": 43717280854,
+  "attempt": 2,
+  "archive": "pr796-b48e1a4da-readiness-packet.tar.gz",
+  "archive_sha256": "202b52eaa67809452d3912e7fb488092b68c5fafed1812ed293cd53bf1b53c34",
+  "archive_bytes": 1417004,
+  "internal_file_count": 58,
+  "internal_manifest": "old-packet-SHA256SUMS.json",
+  "qualification_scope": "Historical execution results for the old head only. Its threshold step could mask checker failures and its checker could admit incomplete results; this packet is not fresh correction qualification."
+}
