@@ -1,0 +1,8 @@
+test_python_rejects_all_measurement_requests_before_work (test_foundation.BoundaryTests.test_python_rejects_all_measurement_requests_before_work) ... ok
+test_stale_native_identity_rejected_before_worker_launch (test_foundation.BoundaryTests.test_stale_native_identity_rejected_before_worker_launch) ... ok
+test_entire_manifest_is_pinned (test_foundation.BoundaryTests.test_entire_manifest_is_pinned) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.021s
+
+OK

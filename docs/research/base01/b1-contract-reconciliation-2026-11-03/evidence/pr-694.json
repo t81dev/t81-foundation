@@ -1,0 +1,12 @@
+{
+  "url": "https://github.com/t81dev/t81-foundation/pull/694",
+  "number": 694,
+  "title": "integrate BASE-01 research and engineering PRs #687-#693",
+  "state": "closed",
+  "merged": true,
+  "merged_at": "2026-11-03T20:01:47Z",
+  "merge_commit_sha": "52921bd08ff9a9d765d4f129791b5a98304b6b6e",
+  "head_sha": "851cfef0ef16a56f59d3e933460af1d949cacdf9",
+  "base_sha": "cda9135d36144d4de2771af174e52ac7b30a83c9",
+  "scope": "Selected GitHub API metadata observed during audit; not a signature or protocol acceptance."
+}

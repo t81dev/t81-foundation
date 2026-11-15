@@ -1,0 +1,24 @@
+{
+  "kind": "static derivation, not workload execution",
+  "read_payload_bytes": {
+    "4096": 409600,
+    "65536": 6553600,
+    "1048576": 104857600
+  },
+  "ceiling_bytes": 16777216,
+  "largest_excess_bytes": 88080384,
+  "largest_ratio": 6.25,
+  "insertions_per_100": 0.01,
+  "insertions_per_200_single_driver": 0.005,
+  "candidate_B": {
+    "chunks": 10,
+    "reads_per_chunk": 10,
+    "max_payload_bytes": 10485760
+  },
+  "environment": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]"
+  },
+  "source_index_entries": 26,
+  "both_merge_commits_are_main_ancestors": true
+}

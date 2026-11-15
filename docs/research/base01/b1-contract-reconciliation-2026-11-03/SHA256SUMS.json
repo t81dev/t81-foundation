@@ -1,0 +1,71 @@
+{
+  "entries": {
+    "AMENDMENT.md": {
+      "bytes": 6230,
+      "sha256": "00309ecf18162ebbd1d18740c871a092f2cd6d3953eca7bada8d56a145ee1a79"
+    },
+    "EVIDENCE.md": {
+      "bytes": 6820,
+      "sha256": "b2b05d18ab18152b285bdc73bf30bec00e4a6e567beeb34870b96606c20041e2"
+    },
+    "READINESS.md": {
+      "bytes": 11963,
+      "sha256": "99c89c02b684a543f782e6da1d65a4e00a77896a68afb197003205ba8f754119"
+    },
+    "REPORT.md": {
+      "bytes": 16632,
+      "sha256": "bd8c62985a0bfe4efdc3401ec9a0c33a5b187a9818c174b033255b483cdf5cc9"
+    },
+    "evidence/artifact-validation.log": {
+      "bytes": 203,
+      "sha256": "f02649d4f37d8cb6e9bf945f1eb64a7d6eea43fdf2226e70b31fd63af0c53ed4"
+    },
+    "evidence/commons-discovery-failure.log": {
+      "bytes": 254,
+      "sha256": "1fa18c3cd5cf78a6bb02ad31ce34b56820368259715d3c443ee9ac69ff139916"
+    },
+    "evidence/commons-discovery.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evidence/commons-h07.json": {
+      "bytes": 9490,
+      "sha256": "08bd306610d86f042ea1c0a72d464859688e52a0ae071507ba595065d0263de4"
+    },
+    "evidence/commons-retry-failure.log": {
+      "bytes": 254,
+      "sha256": "1fa18c3cd5cf78a6bb02ad31ce34b56820368259715d3c443ee9ac69ff139916"
+    },
+    "evidence/gate-fixtures.log": {
+      "bytes": 505,
+      "sha256": "fd1484f2c8bcab937e559766f45afb8b39d579736aa0004c7e314499ed5b80d2"
+    },
+    "evidence/pr-694.json": {
+      "bytes": 519,
+      "sha256": "f62bb2c6f25af4b7cc443cbbe6cfab15534b079fd0a69972802e53bb115431c0"
+    },
+    "evidence/pr-695.json": {
+      "bytes": 512,
+      "sha256": "d5b37b71423ab036e9396370832e3c147a0e0aff52142d0457632ae9b2de401b"
+    },
+    "evidence/schema-environment-failure.log": {
+      "bytes": 123,
+      "sha256": "0e1eeef096defc22537200c910d9337315fa80a7aa175b4bf76f3c14fcc8f15e"
+    },
+    "evidence/source-index.json": {
+      "bytes": 9713,
+      "sha256": "2f9f43a1a0a78f004a624646ae0cb15e5332177b310fb489dde859e5a3b2b4ec"
+    },
+    "evidence/static-checks.json": {
+      "bytes": 669,
+      "sha256": "0befa76b80306c6f8c859b27aafb37f48a714fbb197d3b229e2d0229c27d858b"
+    },
+    "review.json": {
+      "bytes": 2941,
+      "sha256": "fb210d72cff28ef6d4f4eec186981de58518535467945a0321105ca18f0b76a9"
+    }
+  },
+  "excludes": [
+    "SHA256SUMS.json"
+  ]
+}
