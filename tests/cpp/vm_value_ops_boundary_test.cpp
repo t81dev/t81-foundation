@@ -19,7 +19,7 @@ void check_tier_rank_mapping() {
   using t81::cog::TierId;
   using namespace t81::vm::internal;
   constexpr TierId tiers[] = {TierId::Tier0, TierId::Tier1, TierId::Tier2, TierId::Tier3,
-                             TierId::Tier4, TierId::Tier5, TierId::Tier6};
+                              TierId::Tier4, TierId::Tier5, TierId::Tier6};
   for (int rank = 0; rank <= 6; ++rank) {
     T81_TEST_CHECK(tier_from_rank(rank) == tiers[rank]);
     T81_TEST_CHECK(tier_rank(tier_from_rank(rank)) == rank);
