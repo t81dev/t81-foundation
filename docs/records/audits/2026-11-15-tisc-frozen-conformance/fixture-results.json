@@ -1,0 +1,42 @@
+[
+  {
+    "command": [
+      "/private/tmp/t81-tisc-build/t81",
+      "code",
+      "build",
+      "spec/conformance/tisc/ternary-logic-canonical.t81",
+      "-o",
+      "/private/tmp/t81-ternary-logic-canonical.tisc"
+    ],
+    "exit": 0
+  },
+  {
+    "command": [
+      "/private/tmp/t81-tisc-build/t81",
+      "vm",
+      "run",
+      "/private/tmp/t81-ternary-logic-canonical.tisc"
+    ],
+    "exit": 0
+  },
+  {
+    "command": [
+      "/private/tmp/t81-tisc-build/t81",
+      "code",
+      "build",
+      "spec/conformance/tisc/bounds-fault-contract.t81",
+      "-o",
+      "/private/tmp/t81-bounds-fault-contract.tisc"
+    ],
+    "exit": 0
+  },
+  {
+    "command": [
+      "/private/tmp/t81-tisc-build/t81",
+      "vm",
+      "run",
+      "/private/tmp/t81-bounds-fault-contract.tisc"
+    ],
+    "exit": 0
+  }
+]

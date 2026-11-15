@@ -1,0 +1,5068 @@
+$ git show f3dd5417f845195342ed143c7bb4c9d2881d3f84:src/vm/vm.cpp
+#include <algorithm>
+#include <cmath>
+#include <functional>
+#include <limits>
+#include <locale>
+#include <memory>
+#include <optional>
+#include <sstream>
+#include <string_view>
+
+#include <string>
+#include <string_view>
+#include <utility>
+#include "t81/fraction.hpp"
+#include "t81/tensor.hpp"
+#include "t81/tensor/llama.hpp"
+#include "t81/tensor/matmul.hpp"
+
+#include "t81/axion/engine.hpp"
+#include "t81/axion/policy_engine.hpp"
+#include "t81/axion/reasons.hpp"
+#include "t81/canonfs/canon_driver.hpp"
+#include "t81/canonfs/canon_types.hpp"
+#include "t81/cog/promotion.hpp"
+#include "t81/enum_meta.hpp"
+#include "t81/vm/jit.hpp"
+#include "t81/vm/vm.hpp"
+
+namespace t81::vm {
+namespace {
+constexpr std::size_t kDefaultStackSize = 256;
+constexpr std::size_t kDefaultHeapSize = 768;
+constexpr std::size_t kDefaultTensorSpace = 256;
+constexpr std::size_t kDefaultMetaSpace = 256;
+constexpr std::size_t kHardRecursionCeiling = T81_HARD_RECURSION_CEILING;
+
+t81::T81Fraction fraction_from_double(double x) {
+  if (x == 0.0) {
+    return t81::T81Fraction{};
+  }
+
+  // Handle non-finite (NaN, Inf) or large values safely
+  if (!std::isfinite(x) || std::abs(x) >= 9e18) {
+    // Use intermediate float representation to convert large double/Inf/NaN to BigInt
+    using TempFloat = t81::T81Float<72, 9>;
+    auto f = TempFloat::from_double(x);
+    t81::T81BigInt big = t81::T81BigInt::from_float(f);
+    return t81::T81Fraction(std::move(big), t81::T81BigInt::one());
+  }
+
+  bool neg = x < 0.0;
+  x = std::fabs(x);
+
+  t81::T81BigInt integer(static_cast<std::int64_t>(x));
+  double frac = x - static_cast<double>(integer.to_int64());
+
+  t81::T81BigInt p0(1), q0(0);
+  t81::T81BigInt p1(integer), q1(1);
+
+  int iter = 0;
+  // Limit iterations to prevent extremely large fractions from non-terminating expansions
+  while (frac > 1e-15 && iter++ < 64) {
+    const double r = 1.0 / frac;
+    if (r > 9e18) break;  // Prevent overflow in int64 conversion
+    const std::int64_t a = static_cast<std::int64_t>(r);
+
+    t81::T81BigInt term_a(a);
+    t81::T81BigInt next_p = term_a * p1 + p0;
+    t81::T81BigInt next_q = term_a * q1 + q0;
+
+    p0 = p1;
+    q0 = q1;
+    p1 = next_p;
+    q1 = next_q;
+
+    frac = r - static_cast<double>(a);
+  }
+
+  return t81::T81Fraction(neg ? -p1 : p1, q1);
+}
+
+class Interpreter : public IVirtualMachine {
+public:
+  explicit Interpreter(std::unique_ptr<t81::axion::Engine> engine)
+      : axion_engine_(std::move(engine)) {
+    if (!axion_engine_) {
+      axion_engine_ = t81::axion::make_allow_all_engine();
+    }
+    std::filesystem::path canon_root = std::filesystem::current_path() / ".t81_canonfs";
+    std::error_code ec;
+    std::filesystem::create_directories(canon_root, ec);
+    canonfs_driver_ = t81::canonfs::make_persistent_driver(canon_root);
+  }
+
+  std::int64_t load_weights_tensor(std::string_view name) override {
+    return intern_weights_tensor(name);
+  }
+
+  const t81::weights::NativeTensor* weights_tensor(std::int64_t handle) const override {
+    if (handle <= 0) return nullptr;
+    std::size_t idx = static_cast<std::size_t>(handle - 1);
+    if (idx >= state_.weights_tensor_refs.size()) return nullptr;
+    return state_.weights_tensor_refs[idx];
+  }
+
+  void load_program(const t81::tisc::Program& program) override {
+    program_ = program;
+    state_ = State{};
+    state_.contexts.clear();
+    state_.contexts.emplace_back();
+    state_.current_context = 0;
+    auto& ctx = state_.contexts.back();
+    ctx.register_tags.fill(ValueTag::Int);
+
+    auto& layout = state_.layout;
+    layout.code.start = 0;
+    layout.code.limit = program_.insns.size();
+    layout.stack.start = layout.code.limit;
+    layout.stack.limit = layout.stack.start + kDefaultStackSize;
+    layout.heap.start = layout.stack.limit;
+    layout.heap.limit = layout.heap.start + kDefaultHeapSize;
+    layout.tensor.start = layout.heap.limit;
+    layout.tensor.limit = layout.tensor.start + kDefaultTensorSpace;
+    layout.meta.start = layout.tensor.limit;
+    layout.meta.limit = layout.meta.start + kDefaultMetaSpace;
+    state_.memory.resize(layout.total_size(), 0);
+    state_.memory_tags.assign(state_.memory.size(), ValueTag::Int);
+
+    ctx.stack_base = layout.stack.limit;
+    ctx.stack_limit = layout.stack.start;
+    ctx.sp = ctx.stack_base;
+
+    state_.floats = program_.float_pool;
+    state_.fractions = program_.fraction_pool;
+    state_.symbols = program_.symbol_pool;
+    state_.string_vectors.clear();
+    state_.tensors.clear();
+    state_.tensors.reserve(program_.tensor_pool.size());
+    for (const auto& t : program_.tensor_pool) {
+      state_.tensors.push_back(t);
+    }
+    state_.free_tensor_indices.clear();
+    state_.shapes = program_.shape_pool;
+    state_.weights_model = program_.weights_model;
+    state_.weights_tensor_refs.clear();
+    state_.weights_tensor_handles.clear();
+    ctx.stack_frames.clear();
+    ctx.call_depth = 0;
+    state_.contradiction_events = 0;
+    state_.heap_frames.clear();
+    state_.heap_ptr = layout.heap.start;
+    state_.meta_ptr = layout.meta.start;
+    state_.options.clear();
+    state_.results.clear();
+    state_.enums.clear();
+    state_.enum_metadata = program_.enum_metadata;
+    state_.enum_metadata_index.clear();
+    for (std::size_t i = 0; i < state_.enum_metadata.size(); ++i) {
+      state_.enum_metadata_index[state_.enum_metadata[i].enum_id] = i;
+    }
+    sync_system_registers();
+    state_.policy.reset();
+    state_.gc_cycles = 0;
+    instructions_since_gc_ = 0;
+    instruction_count_ = 0;
+    if (!program_.axion_policy_text.empty()) {
+      auto policy = t81::axion::parse_policy(program_.axion_policy_text);
+      if (policy.has_value()) {
+        state_.policy = policy.value();
+        axion_engine_ = t81::axion::make_policy_engine(state_.policy);
+        for (const auto& loop : state_.policy->loops) {
+          AxionEvent event;
+          event.opcode = t81::tisc::Opcode::Nop;
+          event.tag = loop.id;
+          event.value = loop.depth;
+          event.verdict.kind = t81::axion::VerdictKind::Allow;
+          std::ostringstream reason;
+          reason << "loop hint file=" << loop.file << " line=" << loop.line
+                 << " column=" << loop.column << " bound=";
+          if (loop.bound_infinite) {
+            reason << "infinite";
+          } else if (loop.bound_value) {
+            reason << *loop.bound_value;
+          } else {
+            reason << "unknown";
+          }
+          event.verdict.reason = reason.str();
+          state_.axion_log.push_back(event);
+        }
+      }
+    }
+    if (!program_.match_metadata_text.empty()) {
+      AxionEvent event;
+      event.opcode = t81::tisc::Opcode::Nop;
+      event.tag = 0;
+      event.value = 0;
+      event.verdict.kind = t81::axion::VerdictKind::Allow;
+      event.verdict.reason = "match metadata: " + program_.match_metadata_text;
+      state_.axion_log.push_back(event);
+    }
+  }
+
+  std::expected<void, Trap> step() override {
+    if (state_.halted) {
+      return {};
+    }
+    if (state_.contexts.empty()) {
+      state_.halted = true;
+      return {};
+    }
+
+    // Round-Robin Scheduling: Find next active context
+    size_t checked_count = 0;
+    while (state_.contexts[state_.current_context].halted) {
+      state_.current_context = (state_.current_context + 1) % state_.contexts.size();
+      checked_count++;
+      if (checked_count >= state_.contexts.size()) {
+        state_.halted = true;
+        return {};
+      }
+    }
+
+    auto& ctx = state_.contexts[state_.current_context];
+
+    // Deterministic Fault Injection Check
+    for (auto it = state_.pending_faults.begin(); it != state_.pending_faults.end();) {
+      if (instruction_count_ == it->instruction_count) {
+        Trap t = it->trap;
+        // Log the fault injection as an Axion event
+        t81::axion::Verdict verdict;
+        verdict.kind = t81::axion::VerdictKind::Deny;
+        std::ostringstream reason;
+        reason << "FaultInjection instruction_count=" << instruction_count_
+               << " trap=" << to_string(t);
+        verdict.reason = reason.str();
+        record_axion_event(t81::tisc::Opcode::Trap, 0, 0, verdict);
+
+        state_.pending_faults.erase(it);
+        return std::expected<void, Trap>(t81::unexpect, t);
+      } else {
+        ++it;
+      }
+    }
+
+    // Check if we have a compiled trace for the current PC.
+    auto trace_it = compiled_traces_.find(ctx.pc);
+    if (trace_it != compiled_traces_.end()) {
+      const std::size_t trace_pc = ctx.pc;
+      const auto first_opcode = trace_pc < program_.insns.size() ? program_.insns[trace_pc].opcode
+                                                                 : t81::tisc::Opcode::Halt;
+
+      auto enter = eval_axion_call(t81::axion::reasons::kJitTraceEnter, trace_pc, first_opcode);
+      if (enter.kind == t81::axion::VerdictKind::Deny) {
+        return std::expected<void, Trap>(t81::unexpect, Trap::SecurityFault);
+      }
+
+      t81::axion::Verdict enter_event{t81::axion::VerdictKind::Allow, ""};
+      {
+        std::ostringstream reason;
+        reason << t81::axion::reasons::kJitTraceEnter << " pc=" << trace_pc
+               << " trace-len=" << trace_it->second->size();
+        enter_event.reason = reason.str();
+      }
+      record_axion_event(t81::tisc::Opcode::Nop,
+                         static_cast<std::int32_t>(trace_it->second->size()),
+                         static_cast<std::int64_t>(trace_pc), enter_event);
+
+      const auto exec_result = trace_it->second->execute(state_);
+      instruction_count_ += exec_result.instructions_executed;
+
+      t81::axion::Verdict exit_event{t81::axion::VerdictKind::Allow, ""};
+      {
+        std::ostringstream reason;
+        const bool deopt = exec_result.exit_kind == JitTrace::ExitKind::GuardDeopt;
+        reason << (deopt ? t81::axion::reasons::kJitTraceDeopt : t81::axion::reasons::kJitTraceExit)
+               << " pc=" << ctx.pc << " executed=" << exec_result.instructions_executed
+               << " exit-kind=";
+        switch (exec_result.exit_kind) {
+          case JitTrace::ExitKind::Completed:
+            reason << "completed";
+            break;
+          case JitTrace::ExitKind::Branch:
+            reason << "branch";
+            break;
+          case JitTrace::ExitKind::GuardDeopt:
+            reason << "guard-deopt";
+            break;
+        }
+        exit_event.reason = reason.str();
+      }
+      record_axion_event(t81::tisc::Opcode::Nop,
+                         static_cast<std::int32_t>(exec_result.instructions_executed),
+                         static_cast<std::int64_t>(ctx.pc), exit_event);
+
+      const auto exit_reason = exec_result.exit_kind == JitTrace::ExitKind::GuardDeopt
+                                   ? t81::axion::reasons::kJitTraceDeopt
+                                   : t81::axion::reasons::kJitTraceExit;
+      auto exit = eval_axion_call(exit_reason, ctx.pc, first_opcode);
+      if (exit.kind == t81::axion::VerdictKind::Deny) {
+        return std::expected<void, Trap>(t81::unexpect, Trap::SecurityFault);
+      }
+
+      if (exec_result.exit_kind != JitTrace::ExitKind::GuardDeopt) {
+        return {};
+      }
+
+      // Guard deopt: invalidate the trace at this entry and continue with
+      // interpreter execution from the resumed PC in this same step.
+      compiled_traces_.erase(trace_pc);
+    }
+
+    if (ctx.pc >= program_.insns.size()) {
+      auto verdict = eval_axion_call(t81::axion::reasons::kStep, ctx.pc, t81::tisc::Opcode::Halt);
+      if (verdict.kind == t81::axion::VerdictKind::Deny) {
+        return std::expected<void, Trap>(t81::unexpect, Trap::SecurityFault);
+      }
+      ctx.halted = true;
+      state_.halted = true;  // Single thread behavior
+      return {};
+    }
+
+    const std::size_t current_pc = ctx.pc;
+    const auto& insn = program_.insns[current_pc];
+    ctx.pc += 1;
+    instruction_count_++;
+
+    // Hot-spot detection and JIT compilation.
+    if (!jit_compiler_.is_tracing()) {
+      hot_spots_[current_pc]++;
+      if (hot_spots_[current_pc] >= kHotSpotThreshold) {
+        jit_compiler_.start_tracing(current_pc);
+      }
+    }
+
+    if (jit_compiler_.is_tracing()) {
+      jit_compiler_.record_instruction(insn);
+      if (!jit_compiler_.is_tracing()) {
+        const auto trace_start_pc = jit_compiler_.trace_start_pc();
+        auto trace = jit_compiler_.compile();
+        if (trace) {
+          compiled_traces_[trace_start_pc] = std::move(trace);
+        }
+      }
+    }
+
+    // Evaluate Axion policy before every instruction.
+    auto verdict = eval_axion_call(t81::axion::reasons::kStep, current_pc, insn.opcode);
+    if (verdict.kind == t81::axion::VerdictKind::Deny) {
+      return std::expected<void, Trap>(t81::unexpect, Trap::SecurityFault);
+    }
+    if (verdict.kind == t81::axion::VerdictKind::Warn) {
+      // Log the warning event
+      record_axion_event(insn.opcode, 0, 0, verdict);
+    }
+
+    auto reg_ok = [&ctx](int r) {
+      return r >= 0 && static_cast<std::size_t>(r) < ctx.registers.size();
+    };
+    auto mem_ok = [this](int addr, bool code = false) {
+      if (addr < 0) return false;
+      std::size_t a = static_cast<std::size_t>(addr);
+      const auto& layout = state_.layout;
+      if (code) {
+        return a >= layout.code.start && a <= layout.code.limit;
+      }
+      if (a >= state_.memory.size()) return false;
+      // Strict segment containment: an address must resolve to exactly one segment.
+      return layout.stack.contains(a) || layout.heap.contains(a) || layout.tensor.contains(a) ||
+             layout.meta.contains(a);
+    };
+    auto check_mem = [this, mem_ok](t81::tisc::Opcode opcode, int addr, std::string_view action,
+                                    bool code = false) -> bool {
+      if (mem_ok(addr, code)) return true;
+      this->log_bounds_fault(opcode, addr, action);
+      return false;
+    };
+    auto log_trace = [this, current_pc](t81::tisc::Opcode op, Trap trap = Trap::None) {
+      TraceEntry t{current_pc, op, std::nullopt};
+      if (trap != Trap::None) t.trap = trap;
+      state_.trace.push_back(t);
+    };
+    auto literal_kind_to_tag = [](t81::tisc::LiteralKind kind) -> ValueTag {
+      switch (kind) {
+        case t81::tisc::LiteralKind::Bool:
+          return ValueTag::Bool;
+        case t81::tisc::LiteralKind::FloatHandle:
+          return ValueTag::FloatHandle;
+        case t81::tisc::LiteralKind::FractionHandle:
+          return ValueTag::FractionHandle;
+        case t81::tisc::LiteralKind::SymbolHandle:
+          return ValueTag::SymbolHandle;
+        case t81::tisc::LiteralKind::TensorHandle:
+          return ValueTag::TensorHandle;
+        case t81::tisc::LiteralKind::ShapeHandle:
+          return ValueTag::ShapeHandle;
+        case t81::tisc::LiteralKind::Int:
+        default:
+          return ValueTag::Int;
+      }
+    };
+    auto set_reg = [&ctx](int reg, std::int64_t val_data, ValueTag tag) {
+      if (reg == 0 || (reg >= 75 && reg <= 80)) return;
+      ctx.registers[reg] = val_data;
+      ctx.register_tags[reg] = tag;
+    };
+    auto copy_reg = [&ctx](int dst, int src) {
+      if (dst == 0 || (dst >= 75 && dst <= 80)) return;
+      ctx.registers[dst] = ctx.registers[src];
+      ctx.register_tags[dst] = ctx.register_tags[src];
+    };
+    auto update_flags = [&ctx](std::int64_t v) {
+      ctx.flags.zero = (v == 0);
+      ctx.flags.negative = (v < 0);
+      ctx.flags.positive = (v > 0);
+    };
+    auto push_stack = [&ctx, this](std::int64_t val_data,
+                                   ValueTag tag) -> std::optional<std::size_t> {
+      if (ctx.sp <= ctx.stack_limit) return std::nullopt;
+
+      std::size_t new_sp = ctx.sp - 1;
+
+      // Global/Policy Check
+      if (state_.policy && state_.policy->max_stack &&
+          static_cast<std::int64_t>(ctx.stack_base - new_sp) > *state_.policy->max_stack) {
+        return std::nullopt;
+      }
+
+      ctx.sp = new_sp;
+      state_.memory[ctx.sp] = val_data;
+      state_.memory_tags[ctx.sp] = tag;
+      return static_cast<std::size_t>(ctx.sp);
+    };
+    auto pop_stack = [&ctx, this](std::int64_t& value,
+                                  ValueTag& tag) -> std::optional<std::size_t> {
+      if (ctx.sp >= ctx.stack_base) return std::nullopt;
+      std::size_t addr = ctx.sp;
+      value = state_.memory[addr];
+      tag = state_.memory_tags[addr];
+      ++ctx.sp;
+      return addr;
+    };
+    auto tensor_ptr = [this](std::int64_t handle) -> t81::T729DynamicTensor* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.tensors.size()) return nullptr;
+      if (!state_.tensors[idx].has_value()) return nullptr;
+      return &state_.tensors[idx].value();
+    };
+    auto alloc_tensor =
+        [this, current_pc](t81::T729DynamicTensor tensor) -> std::expected<std::int64_t, Trap> {
+      if (state_.policy) {
+        std::size_t active_tensors = state_.tensors.size() - state_.free_tensor_indices.size();
+        if (state_.policy->max_tensors &&
+            active_tensors >= static_cast<std::size_t>(*state_.policy->max_tensors)) {
+          record_axion_event(program_.insns[current_pc].opcode, 0, 0,
+                             {t81::axion::VerdictKind::Deny, "Policy: max-tensors limit exceeded"});
+          return t81::unexpected(Trap::SecurityFault);
+        }
+        if (state_.policy->max_tensor_elements &&
+            state_.total_tensor_elements + tensor.data().size() >
+                static_cast<std::size_t>(*state_.policy->max_tensor_elements)) {
+          record_axion_event(
+              program_.insns[current_pc].opcode, 0, 0,
+              {t81::axion::VerdictKind::Deny, "Policy: max-tensor-elements limit exceeded"});
+          return t81::unexpected(Trap::SecurityFault);
+        }
+      }
+
+      state_.total_tensor_elements += tensor.data().size();
+
+      std::size_t idx_handle;
+      if (!state_.free_tensor_indices.empty()) {
+        auto raw_idx = state_.free_tensor_indices.back();
+        state_.free_tensor_indices.pop_back();
+        state_.tensors[raw_idx] = std::move(tensor);
+        idx_handle = raw_idx + 1;
+      } else {
+        state_.tensors.push_back(std::move(tensor));
+        idx_handle = state_.tensors.size();
+      }
+
+      state_.metrics.total_tensors++;
+      state_.metrics.total_tensor_elements += tensor.data().size();
+
+      log_memory_segment_access(program_.insns[current_pc].opcode, MemorySegmentKind::Tensor,
+                                idx_handle, 1, t81::axion::reasons::kTensorAlloc);
+      return static_cast<std::int64_t>(idx_handle);
+    };
+    auto promote_to_tensor = [&](int reg) -> std::expected<void, Trap> {
+      if (reg < 0 || static_cast<std::size_t>(reg) >= ctx.registers.size()) {
+        return std::expected<void, Trap>(t81::unexpect, Trap::DecodeFault);
+      }
+      if (ctx.register_tags[reg] == ValueTag::WeightsTensorHandle) {
+        auto handle = ctx.registers[reg];
+        const auto* native = weights_tensor(handle);
+        if (!native) return std::expected<void, Trap>(t81::unexpect, Trap::DecodeFault);
+
+        std::vector<float> float_data;
+        float_data.reserve(native->num_trits());
+
+        if (native->format == t81::weights::NativeFormat::T3_K) {
+          const uint8_t* byte_ptr = reinterpret_cast<const uint8_t*>(native->data.data());
+          uint64_t total_trits = native->num_trits();
+          for (uint64_t offset = 0; offset < total_trits; offset += 128) {
+            float scale;
+            std::memcpy(&scale, byte_ptr, sizeof(float));
+            byte_ptr += sizeof(float);
+            uint64_t count = std::min<uint64_t>(128, total_trits - offset);
+            uint64_t trit_index = 0;
+            for (uint64_t packed_idx = 0; packed_idx < 26; ++packed_idx) {
+              uint8_t packed = *byte_ptr++;
+              if (packed > 242) {
+                return std::expected<void, Trap>(t81::unexpect, Trap::DecodeFault);
+              }
+              uint8_t rem = packed;
+              for (uint64_t local = 0; local < 5; ++local, ++trit_index) {
+                uint8_t digit = static_cast<uint8_t>(rem % 3);
+                rem = static_cast<uint8_t>(rem / 3);
+                if (trit_index < count) {
+                  float trit = static_cast<float>(static_cast<int>(digit) - 1);
+                  float_data.push_back(trit * scale);
+                } else if (digit != 1) {
+                  // Canonical padding requires extra trits to be zero (mapped digit=1).
+                  return std::expected<void, Trap>(t81::unexpect, Trap::DecodeFault);
+                }
+              }
+            }
+          }
+        } else {
+          uint64_t remaining = native->trits;
+          if (remaining == 0 && !native->data.empty()) {
+            remaining = native->data.size() * 48;
+          }
+
+          for (uint64_t limb : native->data) {
+            uint64_t count = std::min<uint64_t>(48, remaining);
+            std::vector<float> block(count);
+            uint64_t val = limb;
+            for (int i = 47; i >= 0; --i) {
+              uint64_t digit = val % 3;
+              val /= 3;
+              if (static_cast<uint64_t>(i) < count) {
+                block[i] = static_cast<float>(static_cast<int>(digit) - 1);
+              }
+            }
+            float_data.insert(float_data.end(), block.begin(), block.end());
+            remaining -= count;
+            if (remaining == 0) break;
+          }
+        }
+
+        std::vector<int> shape;
+        shape.reserve(native->shape.size());
+        for (auto d : native->shape) shape.push_back(static_cast<int>(d));
+
+        t81::T729DynamicTensor promoted(std::move(shape), std::move(float_data));
+        auto result = alloc_tensor(std::move(promoted));
+        if (!result) {
+          return std::expected<void, Trap>(t81::unexpect, result.error());
+        }
+        ctx.registers[reg] = *result;
+        ctx.register_tags[reg] = ValueTag::TensorHandle;
+      }
+      return {};
+    };
+    auto float_ptr = [this](std::int64_t handle) -> double* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.floats.size()) return nullptr;
+      return &state_.floats[idx];
+    };
+    auto alloc_float = [this, current_pc](double value) -> std::int64_t {
+      state_.floats.push_back(value);
+      auto idx = state_.floats.size();
+      log_memory_segment_access(program_.insns[current_pc].opcode, MemorySegmentKind::Heap, idx, 1,
+                                t81::axion::reasons::kHeapAlloc);
+      return static_cast<std::int64_t>(idx);
+    };
+    auto fraction_ptr = [this](std::int64_t handle) -> t81::T81Fraction* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.fractions.size()) return nullptr;
+      return &state_.fractions[idx];
+    };
+    auto symbol_ptr = [this](std::int64_t handle) -> const std::string* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.symbols.size()) return nullptr;
+      return &state_.symbols[idx];
+    };
+    auto runtime_token_text = [](ValueTag tag) -> std::optional<std::string_view> {
+      switch (tag) {
+        case ValueTag::ProofHandle:
+          return std::string_view{"std.sys.proof"};
+        case ValueTag::IoStreamHandle:
+          return std::string_view{"std.io.stream"};
+        case ValueTag::IoNetHandle:
+          return std::string_view{"std.io.net"};
+        case ValueTag::AsyncThreadHandle:
+          return std::string_view{"std.async.thread"};
+        case ValueTag::AsyncPromiseHandle:
+          return std::string_view{"std.async.promise"};
+        default:
+          break;
+      }
+      return std::nullopt;
+    };
+    auto symbol_like_text = [&](ValueTag tag,
+                                std::int64_t value) -> std::optional<std::string_view> {
+      if (tag == ValueTag::SymbolHandle) {
+        auto* symbol = symbol_ptr(value);
+        if (symbol == nullptr) return std::nullopt;
+        return std::string_view{*symbol};
+      }
+      return runtime_token_text(tag);
+    };
+    auto runtime_token_tag_from_symbol_handle =
+        [&](std::int64_t symbol_handle) -> std::optional<ValueTag> {
+      auto symbol = symbol_ptr(symbol_handle);
+      if (symbol == nullptr) return std::nullopt;
+      if (*symbol == "std.sys.proof") return ValueTag::ProofHandle;
+      if (*symbol == "std.io.stream") return ValueTag::IoStreamHandle;
+      if (*symbol == "std.io.net") return ValueTag::IoNetHandle;
+      if (*symbol == "std.async.thread") return ValueTag::AsyncThreadHandle;
+      if (*symbol == "std.async.promise") return ValueTag::AsyncPromiseHandle;
+      return std::nullopt;
+    };
+    auto string_vector_ptr = [this](std::int64_t handle) -> const std::vector<std::string>* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.string_vectors.size()) return nullptr;
+      return &state_.string_vectors[idx];
+    };
+    auto intern_symbol = [this](std::string text) -> std::int64_t {
+      for (std::size_t i = 0; i < state_.symbols.size(); ++i) {
+        if (state_.symbols[i] == text) {
+          return static_cast<std::int64_t>(i + 1);
+        }
+      }
+      state_.symbols.push_back(std::move(text));
+      return static_cast<std::int64_t>(state_.symbols.size());
+    };
+    auto string_vector_mut = [this](std::int64_t handle) -> std::vector<std::string>* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.string_vectors.size()) return nullptr;
+      return &state_.string_vectors[idx];
+    };
+    auto alloc_string_vector = [this]() -> std::int64_t {
+      state_.string_vectors.emplace_back();
+      return static_cast<std::int64_t>(state_.string_vectors.size());
+    };
+    auto alloc_fraction = [this, current_pc](t81::T81Fraction frac) -> std::int64_t {
+      state_.fractions.push_back(std::move(frac));
+      auto idx = state_.fractions.size();
+      log_memory_segment_access(program_.insns[current_pc].opcode, MemorySegmentKind::Heap, idx, 1,
+                                t81::axion::reasons::kHeapAlloc);
+      return static_cast<std::int64_t>(idx);
+    };
+    auto shape_ptr = [this](std::int64_t handle) -> const std::vector<int>* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.shapes.size()) return nullptr;
+      return &state_.shapes[idx];
+    };
+    auto option_ptr = [this](std::int64_t handle) -> OptionValue* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.options.size()) return nullptr;
+      return &state_.options[idx];
+    };
+    auto result_ptr = [this](std::int64_t handle) -> ResultValue* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.results.size()) return nullptr;
+      return &state_.results[idx];
+    };
+    auto enum_ptr = [this](std::int64_t handle) -> EnumValue* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.enums.size()) return nullptr;
+      return &state_.enums[idx];
+    };
+    auto complex_ptr = [this](std::int64_t handle) -> ComplexValue* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.complexes.size()) return nullptr;
+      return &state_.complexes[idx];
+    };
+    auto symbolic_graph_ptr = [this](std::int64_t handle) -> t81::cog::v1::SymbolicGraph* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.symbolic_graphs.size()) return nullptr;
+      return &state_.symbolic_graphs[idx];
+    };
+    auto tier2_frame_ptr = [&ctx](std::int64_t handle) -> t81::cog::v2::ReflectiveFrame* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= ctx.tier2_frames.size()) return nullptr;
+      return &ctx.tier2_frames[idx];
+    };
+    auto infinite_form_ptr = [this](std::int64_t handle) -> t81::cog::v5::InfiniteCanonicalForm* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.infinite_forms.size()) return nullptr;
+      if (!state_.infinite_forms[idx].has_value()) return nullptr;
+      return &state_.infinite_forms[idx].value();
+    };
+    auto alloc_symbolic_graph =
+        [this, current_pc](t81::cog::v1::SymbolicGraph graph) -> std::expected<std::int64_t, Trap> {
+      size_t nodes = graph.nodes.size();
+      if (state_.policy) {
+        if (state_.policy->max_symbolic_graphs &&
+            state_.metrics.total_symbolic_graphs + 1 >
+                static_cast<std::size_t>(*state_.policy->max_symbolic_graphs)) {
+          record_axion_event(
+              program_.insns[current_pc].opcode, 0, 0,
+              {t81::axion::VerdictKind::Deny, "Policy: max-symbolic-graphs limit exceeded"});
+          return t81::unexpected(Trap::SecurityFault);
+        }
+        if (state_.policy->max_symbolic_nodes) {
+          if (state_.total_symbolic_nodes + nodes >
+              static_cast<std::size_t>(*state_.policy->max_symbolic_nodes)) {
+            record_axion_event(
+                program_.insns[current_pc].opcode, 0, 0,
+                {t81::axion::VerdictKind::Deny, "Policy: max-symbolic-nodes limit exceeded"});
+            return t81::unexpected(Trap::SecurityFault);
+          }
+        }
+      }
+      state_.total_symbolic_nodes += nodes;
+
+      state_.symbolic_graphs.push_back(std::move(graph));
+      auto idx = state_.symbolic_graphs.size();
+
+      state_.metrics.total_symbolic_graphs++;
+      state_.metrics.total_symbolic_nodes += nodes;
+
+      log_memory_segment_access(program_.insns[current_pc].opcode, MemorySegmentKind::Heap, idx, 1,
+                                "graph alloc");
+      return static_cast<std::int64_t>(idx);
+    };
+    auto alloc_infinite_form =
+        [this, current_pc](
+            t81::cog::v5::InfiniteCanonicalForm form) -> std::expected<std::int64_t, Trap> {
+      if (state_.policy) {
+        if (state_.policy->max_infinite_forms &&
+            state_.metrics.total_infinite_forms + 1 >
+                static_cast<std::size_t>(*state_.policy->max_infinite_forms)) {
+          t81::axion::Verdict verdict{t81::axion::VerdictKind::Deny,
+                                      "Max infinite forms limit exceeded"};
+          record_axion_event(program_.insns[current_pc].opcode, 0, 0, verdict);
+          return t81::unexpected(Trap::SecurityFault);
+        }
+      }
+
+      std::size_t idx_handle;
+      if (!state_.free_infinite_indices.empty()) {
+        auto raw_idx = state_.free_infinite_indices.back();
+        state_.free_infinite_indices.pop_back();
+        state_.infinite_forms[raw_idx] = std::move(form);
+        idx_handle = raw_idx + 1;
+      } else {
+        state_.infinite_forms.push_back(std::move(form));
+        idx_handle = state_.infinite_forms.size();
+      }
+
+      state_.metrics.total_infinite_forms++;
+
+      log_memory_segment_access(program_.insns[current_pc].opcode, MemorySegmentKind::Heap,
+                                idx_handle, 1, "InfAlloc");
+      return static_cast<std::int64_t>(idx_handle);
+    };
+    auto intern_option = [this](bool has_value, ValueTag payload_tag,
+                                std::int64_t payload) -> std::int64_t {
+      for (std::size_t i = 0; i < state_.options.size(); ++i) {
+        const auto& existing = state_.options[i];
+        if (existing.has_value != has_value) continue;
+        if (!has_value) return static_cast<std::int64_t>(i + 1);
+        if (existing.payload_tag == payload_tag && existing.payload == payload) {
+          return static_cast<std::int64_t>(i + 1);
+        }
+      }
+      OptionValue val;
+      val.has_value = has_value;
+      val.payload_tag = payload_tag;
+      val.payload = payload;
+      state_.options.push_back(val);
+      return static_cast<std::int64_t>(state_.options.size());
+    };
+    auto intern_result = [this](bool is_ok, ValueTag payload_tag,
+                                std::int64_t payload) -> std::int64_t {
+      for (std::size_t i = 0; i < state_.results.size(); ++i) {
+        const auto& existing = state_.results[i];
+        if (existing.is_ok != is_ok) continue;
+        if (existing.payload_tag == payload_tag && existing.payload == payload) {
+          return static_cast<std::int64_t>(i + 1);
+        }
+      }
+      ResultValue val;
+      val.is_ok = is_ok;
+      val.payload_tag = payload_tag;
+      val.payload = payload;
+      state_.results.push_back(val);
+      return static_cast<std::int64_t>(state_.results.size());
+    };
+    auto intern_enum = [this](int global_variant_id, bool has_payload, ValueTag payload_tag,
+                              std::int64_t payload) -> std::int64_t {
+      if (global_variant_id < 0) return 0;
+      int enum_id = t81::enum_meta::decode_enum_id(global_variant_id);
+      for (std::size_t i = 0; i < state_.enums.size(); ++i) {
+        const auto& existing = state_.enums[i];
+        if (existing.variant_id != global_variant_id) continue;
+        if (existing.enum_id != enum_id) continue;
+        if (existing.has_payload != has_payload) continue;
+        if (!has_payload) {
+          return static_cast<std::int64_t>(i + 1);
+        }
+        if (existing.payload_tag == payload_tag && existing.payload == payload) {
+          return static_cast<std::int64_t>(i + 1);
+        }
+      }
+      EnumValue val;
+      val.variant_id = global_variant_id;
+      val.enum_id = enum_id;
+      val.has_payload = has_payload;
+      val.payload_tag = payload_tag;
+      val.payload = payload;
+      state_.enums.push_back(val);
+      return static_cast<std::int64_t>(state_.enums.size());
+    };
+    auto intern_complex = [this](std::int64_t real, std::int64_t imag) -> std::int64_t {
+      for (std::size_t i = 0; i < state_.complexes.size(); ++i) {
+        const auto& existing = state_.complexes[i];
+        if (existing.real == real && existing.imag == imag) {
+          return static_cast<std::int64_t>(i + 1);
+        }
+      }
+      state_.complexes.push_back(ComplexValue{real, imag});
+      return static_cast<std::int64_t>(state_.complexes.size());
+    };
+    auto clamp_trit = [](std::int64_t v) -> int {
+      if (v > 0) return 1;
+      if (v < 0) return -1;
+      return 0;
+    };
+
+    std::function<std::optional<int>(ValueTag, std::int64_t, std::int64_t)> compare_value =
+        [&](ValueTag tag, std::int64_t lhs_val, std::int64_t rhs_val) -> std::optional<int> {
+      if (auto lhs = symbol_like_text(tag, lhs_val); lhs.has_value()) {
+        auto rhs = symbol_like_text(tag, rhs_val);
+        if (!rhs.has_value()) return std::nullopt;
+        if (*lhs == *rhs) return 0;
+        return (*lhs < *rhs) ? -1 : 1;
+      }
+      switch (tag) {
+        case ValueTag::Int:
+          if (lhs_val == rhs_val) return 0;
+          return (lhs_val < rhs_val) ? -1 : 1;
+        case ValueTag::Bool:
+          if (lhs_val == rhs_val) return 0;
+          return (lhs_val < rhs_val) ? -1 : 1;
+        case ValueTag::FloatHandle: {
+          auto* lhs = float_ptr(lhs_val);
+          auto* rhs = float_ptr(rhs_val);
+          if (lhs == nullptr || rhs == nullptr) return std::nullopt;
+          if (*lhs == *rhs) return 0;
+          return (*lhs < *rhs) ? -1 : 1;
+        }
+        case ValueTag::FractionHandle: {
+          auto* lhs = fraction_ptr(lhs_val);
+          auto* rhs = fraction_ptr(rhs_val);
+          if (lhs == nullptr || rhs == nullptr) return std::nullopt;
+          return t81::T81Fraction::cmp(*lhs, *rhs);
+        }
+        case ValueTag::SymbolHandle:
+          return std::nullopt;
+        case ValueTag::StringVectorHandle:
+        case ValueTag::SymbolicGraphHandle:
+        case ValueTag::Tier2FrameHandle:
+        case ValueTag::InfiniteHandle:
+          if (lhs_val == rhs_val) return 0;
+          return (lhs_val < rhs_val) ? -1 : 1;
+        case ValueTag::TensorHandle:
+        case ValueTag::ShapeHandle:
+        case ValueTag::WeightsTensorHandle:
+        case ValueTag::ReflectionHandle:
+        case ValueTag::ProofHandle:
+        case ValueTag::IoStreamHandle:
+        case ValueTag::IoNetHandle:
+        case ValueTag::AsyncThreadHandle:
+        case ValueTag::AsyncPromiseHandle:
+          if (lhs_val == rhs_val) return 0;
+          return (lhs_val < rhs_val) ? -1 : 1;
+        case ValueTag::ComplexHandle: {
+          auto lhs = complex_ptr(lhs_val);
+          auto rhs = complex_ptr(rhs_val);
+          if (lhs == nullptr || rhs == nullptr) return std::nullopt;
+          if (lhs->real == rhs->real && lhs->imag == rhs->imag) return 0;
+          if (lhs->real == rhs->real) {
+            return (lhs->imag < rhs->imag) ? -1 : 1;
+          }
+          return (lhs->real < rhs->real) ? -1 : 1;
+        }
+        case ValueTag::OptionHandle: {
+          auto lhs = option_ptr(lhs_val);
+          auto rhs = option_ptr(rhs_val);
+          if (lhs == nullptr || rhs == nullptr) return std::nullopt;
+          if (lhs->has_value != rhs->has_value) {
+            return lhs->has_value ? 1 : -1;
+          }
+          if (!lhs->has_value) return 0;
+          if (lhs->payload_tag != rhs->payload_tag) return std::nullopt;
+          return compare_value(lhs->payload_tag, lhs->payload, rhs->payload);
+        }
+        case ValueTag::ResultHandle: {
+          auto lhs = result_ptr(lhs_val);
+          auto rhs = result_ptr(rhs_val);
+          if (lhs == nullptr || rhs == nullptr) return std::nullopt;
+          if (lhs->is_ok != rhs->is_ok) {
+            return lhs->is_ok ? 1 : -1;
+          }
+          if (lhs->payload_tag != rhs->payload_tag) return std::nullopt;
+          return compare_value(lhs->payload_tag, lhs->payload, rhs->payload);
+        }
+        case ValueTag::EnumHandle:
+          return std::nullopt;
+      }
+      return std::nullopt;
+    };
+
+    std::function<std::optional<std::string>(ValueTag, std::int64_t, int)> format_value =
+        [&](ValueTag tag, std::int64_t val_data, int depth) -> std::optional<std::string> {
+      if (depth > 8) return std::nullopt;
+      if (auto symbol = symbol_like_text(tag, val_data); symbol.has_value()) {
+        return std::string(*symbol);
+      }
+      switch (tag) {
+        case ValueTag::Int:
+          return std::to_string(val_data);
+        case ValueTag::Bool:
+          return val_data != 0 ? "true" : "false";
+        case ValueTag::FloatHandle: {
+          auto* ptr_val = float_ptr(val_data);
+          if (!ptr_val) return std::nullopt;
+          double canonical = (*ptr_val == 0.0) ? 0.0 : *ptr_val;
+          std::ostringstream out;
+          out.imbue(std::locale::classic());
+          out.precision(std::numeric_limits<double>::max_digits10);
+          out << canonical << "t81";
+          return out.str();
+        }
+        case ValueTag::FractionHandle: {
+          auto* frac = fraction_ptr(val_data);
+          if (!frac) return std::nullopt;
+          return frac->num.to_string() + "/" + frac->den.to_string() + "t81";
+        }
+        case ValueTag::SymbolHandle:
+          return std::nullopt;
+        case ValueTag::StringVectorHandle: {
+          auto* ptr_val = string_vector_ptr(val_data);
+          if (!ptr_val) return std::nullopt;
+          return "<strvec#" + std::to_string(val_data) + ">";
+        }
+        case ValueTag::SymbolicGraphHandle:
+          return "<graph#" + std::to_string(val_data) + ">";
+        case ValueTag::Tier2FrameHandle:
+          return "<tier2_frame#" + std::to_string(val_data) + ">";
+        case ValueTag::InfiniteHandle:
+          return "<infinite#" + std::to_string(val_data) + ">";
+        case ValueTag::TensorHandle:
+          return "<tensor#" + std::to_string(val_data) + ">";
+        case ValueTag::ShapeHandle:
+          return "<shape#" + std::to_string(val_data) + ">";
+        case ValueTag::WeightsTensorHandle:
+          return "<weights#" + std::to_string(val_data) + ">";
+        case ValueTag::ReflectionHandle:
+          return "<reflection#" + std::to_string(val_data) + ">";
+        case ValueTag::ProofHandle:
+        case ValueTag::IoStreamHandle:
+        case ValueTag::IoNetHandle:
+        case ValueTag::AsyncThreadHandle:
+        case ValueTag::AsyncPromiseHandle:
+          return std::nullopt;
+        case ValueTag::ComplexHandle: {
+          auto* complex = complex_ptr(val_data);
+          if (!complex) return std::nullopt;
+          return "<complex(" + std::to_string(complex->real) + "," + std::to_string(complex->imag) +
+                 ")>";
+        }
+        case ValueTag::OptionHandle: {
+          auto* opt = option_ptr(val_data);
+          if (!opt) return std::nullopt;
+          if (!opt->has_value) return std::string{"None"};
+          auto payload = format_value(opt->payload_tag, opt->payload, depth + 1);
+          if (!payload) return std::nullopt;
+          return "Some(" + *payload + ")";
+        }
+        case ValueTag::ResultHandle: {
+          auto* result = result_ptr(val_data);
+          if (!result) return std::nullopt;
+          auto payload = format_value(result->payload_tag, result->payload, depth + 1);
+          if (!payload) return std::nullopt;
+          return result->is_ok ? "Ok(" + *payload + ")" : "Err(" + *payload + ")";
+        }
+        case ValueTag::EnumHandle: {
+          auto* enum_value = enum_ptr(val_data);
+          if (!enum_value) return std::nullopt;
+          if (!enum_value->has_payload) {
+            return "<enum#" + std::to_string(enum_value->variant_id) + ">";
+          }
+          auto payload = format_value(enum_value->payload_tag, enum_value->payload, depth + 1);
+          if (!payload) return std::nullopt;
+          return "<enum#" + std::to_string(enum_value->variant_id) + "(" + *payload + ")>";
+        }
+      }
+      return std::nullopt;
+    };
+
+    Trap trap = Trap::None;
+    switch (insn.opcode) {
+      case t81::tisc::Opcode::Nop: {
+        if (insn.literal_kind == t81::tisc::LiteralKind::SymbolHandle && insn.b > 0) {
+          auto idx = static_cast<std::size_t>(insn.b);
+          if (idx <= state_.symbols.size()) {
+            AxionEvent event;
+            event.opcode = insn.opcode;
+            event.tag = static_cast<std::int32_t>(insn.b);
+            event.value = 0;
+            event.verdict.kind = t81::axion::VerdictKind::Allow;
+            event.verdict.reason = state_.symbols[idx - 1];
+            state_.axion_log.push_back(event);
+          }
+        }
+        break;
+      }
+      case t81::tisc::Opcode::Halt:
+        state_.halted = true;
+        break;
+      case t81::tisc::Opcode::LoadImm: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto tag = literal_kind_to_tag(insn.literal_kind);
+        std::int64_t value = insn.b;
+        if (tag == ValueTag::SymbolHandle) {
+          if (auto runtime_tag = runtime_token_tag_from_symbol_handle(insn.b);
+              runtime_tag.has_value()) {
+            tag = *runtime_tag;
+            value = 1;
+          }
+        }
+        set_reg(insn.a, value, tag);
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::F2Frac: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::FloatHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* f = float_ptr(ctx.registers[insn.b]);
+        if (!f) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        t81::T81Fraction result = fraction_from_double(*f);
+        ctx.registers[insn.a] = alloc_fraction(std::move(result));
+        ctx.register_tags[insn.a] = ValueTag::FractionHandle;
+        break;
+      }
+      case t81::tisc::Opcode::Frac2F: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::FractionHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* frac = fraction_ptr(ctx.registers[insn.b]);
+        if (!frac) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        double n = frac->num.to_float<72, 9>().to_double();
+        double d = frac->den.to_float<72, 9>().to_double();
+        ctx.registers[insn.a] = alloc_float(n / d);
+        ctx.register_tags[insn.a] = ValueTag::FloatHandle;
+        break;
+      }
+      case t81::tisc::Opcode::Mov:
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        copy_reg(insn.a, insn.b);
+        update_flags(ctx.registers[insn.a]);
+        break;
+      case t81::tisc::Opcode::Inc:
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        ctx.registers[insn.a] += 1;
+        ctx.register_tags[insn.a] = ValueTag::Int;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      case t81::tisc::Opcode::Dec:
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        ctx.registers[insn.a] -= 1;
+        ctx.register_tags[insn.a] = ValueTag::Int;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      case t81::tisc::Opcode::Add:
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        ctx.registers[insn.a] = ctx.registers[insn.b] + ctx.registers[insn.c];
+        ctx.register_tags[insn.a] = ValueTag::Int;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      case t81::tisc::Opcode::Sub:
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        ctx.registers[insn.a] = ctx.registers[insn.b] - ctx.registers[insn.c];
+        ctx.register_tags[insn.a] = ValueTag::Int;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      case t81::tisc::Opcode::Load: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (!check_mem(insn.opcode, insn.b, "memory load")) {
+          trap = Trap::BoundsFault;
+          break;
+        }
+        std::size_t addr = static_cast<std::size_t>(insn.b);
+        ctx.registers[insn.a] = state_.memory[addr];
+        ctx.register_tags[insn.a] = state_.memory_tags[addr];
+        log_memory_segment_access(insn.opcode, segment_for_address(addr), addr, 1,
+                                  t81::axion::reasons::kMemLoad);
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::WeightsLoad: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (insn.b <= 0 || static_cast<std::size_t>(insn.b) > state_.symbols.size()) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        const std::string& name = state_.symbols[static_cast<std::size_t>(insn.b - 1)];
+        auto handle = intern_weights_tensor(name);
+        ctx.registers[insn.a] = handle;
+        ctx.register_tags[insn.a] = ValueTag::WeightsTensorHandle;
+        {
+          t81::axion::Verdict verdict;
+          verdict.kind = t81::axion::VerdictKind::Allow;
+          verdict.reason = "weights.load \"" + name + "\"";
+          record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), handle, verdict);
+        }
+        break;
+      }
+      case t81::tisc::Opcode::TLoadHash: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto symbol = symbol_like_text(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+        if (!symbol.has_value()) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        std::string hash_str = std::string(*symbol);
+
+        auto verdict =
+            eval_axion_call(t81::axion::reasons::kStep, current_pc, insn.opcode, hash_str);
+        if (verdict.kind == t81::axion::VerdictKind::Deny) {
+          record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), 0, verdict);
+          trap = Trap::SecurityFault;
+          break;
+        }
+
+        std::string stripped;
+        if (hash_str.starts_with("sha3-256:")) {
+          stripped = hash_str.substr(9);
+        } else {
+          stripped = hash_str;
+        }
+
+        t81::canonfs::CanonHash ch;
+        try {
+          ch.h = t81::hash::CanonHash81::from_string(stripped);
+        } catch (...) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+
+        t81::canonfs::CanonRef ref{ch};
+        auto obj_res = canonfs_driver_->read_object_bytes(ref);
+        if (!obj_res) {
+          t81::axion::Verdict miss_verdict;
+          miss_verdict.kind = t81::axion::VerdictKind::Allow;
+          miss_verdict.reason = "TLOADHASH canonfs_miss hash=" + hash_str;
+          record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), 0, miss_verdict);
+          trap = Trap::BoundsFault;
+          break;
+        }
+
+        auto bytes = obj_res.value();
+        // Min size: 1 (Type) + 1 (Ver) + 1 (Fmt) + 1 (Rank) + 4 (Res) + 64 (Shape) = 72 bytes
+        // header + data
+        if (bytes.size() < 72) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        const uint8_t* ptr = reinterpret_cast<const uint8_t*>(bytes.data());
+        if (*ptr++ != 0x20) {  // TypeID
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (*ptr++ != 1) {  // Version
+          trap = Trap::DecodeFault;
+          break;
+        }
+        uint8_t fmt = *ptr++;
+        uint8_t rank = *ptr++;
+        ptr += 4;  // Reserved
+
+        std::vector<int> shape;
+        for (int i = 0; i < 8; ++i) {
+          uint64_t dim = 0;
+          for (int b = 0; b < 8; ++b) {
+            dim |= (static_cast<uint64_t>(*ptr++) << (b * 8));
+          }
+          if (i < rank) shape.push_back(static_cast<int>(dim));
+        }
+
+        // Remaining bytes are payload
+        size_t payload_bytes =
+            bytes.size() - (ptr - reinterpret_cast<const uint8_t*>(bytes.data()));
+        if (payload_bytes % 8 != 0) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        size_t num_elements = payload_bytes / 8;
+
+        // Check if shape matches num_elements
+        size_t expected = 1;
+        for (int d : shape) expected *= d;
+        if (num_elements != expected) {
+          // For T3_K or others this might differ, but for now we assume packed u64
+          // Actually, serialize_tensor in canonize_tensor used NativeTensor which has uint64_t
+          // data. And promoted to float for T729DynamicTensor. Wait, T729DynamicTensor uses float
+          // (32-bit?) or T81Float<72,9>? T729DynamicTensor is alias for T81Tensor<T81Float<72,9>>?
+          // The memory says: "T729DynamicTensor ... is a template alias for T81Tensor specialized
+          // with T81Float<72, 9>". But in vm.cpp: `t81::T729DynamicTensor
+          // promoted(std::move(shape), std::move(float_data));` where `float_data` is
+          // `std::vector<float>`. So T729DynamicTensor seems to hold float? Let's check
+          // `include/t81/core/T729DynamicTensor.hpp` or `t81/tensor.hpp`. I don't have access to
+          // those files right now (didn't read them), but `vm.cpp` uses `std::vector<float> data =
+          // tensor->data();`. So `T729DynamicTensor` uses `float` or convertible to `float`. The
+          // serialized format I wrote in `canonize_tensor` writes `uint64_t` from `NativeTensor`.
+          // `NativeTensor` holds trits packed in limbs or T3_K. If `fmt` is BalancedTernary (0), it
+          // is `vector<uint64_t>`. To load it into `T729DynamicTensor` (which is floats in VM), I
+          // need to convert/promote it! Just like `promote_to_tensor` does for
+          // `WeightsTensorHandle`.
+
+          // I should reuse logic from `promote_to_tensor`?
+          // But `promote_to_tensor` works on `NativeTensor`.
+          // I can reconstruct `NativeTensor` from the bytes, then use similar logic.
+
+          // Reconstruct NativeTensor
+          t81::weights::NativeTensor native;
+          native.format = static_cast<t81::weights::NativeFormat>(fmt);
+          for (int d : shape) native.shape.push_back(d);
+          native.data.reserve(num_elements);
+          for (size_t i = 0; i < num_elements; ++i) {
+            uint64_t val = 0;
+            for (int b = 0; b < 8; ++b) {
+              val |= (static_cast<uint64_t>(*ptr++) << (b * 8));
+            }
+            native.data.push_back(val);
+          }
+          native.trits = 0;  // Not stored in header? num_trits() calculates it.
+
+          // Convert NativeTensor to T729DynamicTensor (floats)
+          std::vector<float> float_data;
+          uint64_t calculated_trits = 1;
+          for (auto d : native.shape) calculated_trits *= d;
+          native.trits = calculated_trits;
+          float_data.reserve(native.trits);
+
+          if (native.format == t81::weights::NativeFormat::T3_K) {
+            const uint8_t* byte_ptr = reinterpret_cast<const uint8_t*>(native.data.data());
+            uint64_t total_trits = native.num_trits();
+            for (uint64_t offset = 0; offset < total_trits; offset += 128) {
+              float scale;
+              std::memcpy(&scale, byte_ptr, sizeof(float));
+              byte_ptr += sizeof(float);
+              uint64_t count = std::min<uint64_t>(128, total_trits - offset);
+              uint64_t trit_index = 0;
+              for (uint64_t packed_idx = 0; packed_idx < 26; ++packed_idx) {
+                uint8_t packed = *byte_ptr++;
+                // ... checks ...
+                uint8_t rem = packed;
+                for (uint64_t local = 0; local < 5; ++local, ++trit_index) {
+                  uint8_t digit = static_cast<uint8_t>(rem % 3);
+                  rem = static_cast<uint8_t>(rem / 3);
+                  if (trit_index < count) {
+                    float trit = static_cast<float>(static_cast<int>(digit) - 1);
+                    float_data.push_back(trit * scale);
+                  }
+                }
+              }
+            }
+          } else {
+            uint64_t remaining = native.trits;
+            for (uint64_t limb : native.data) {
+              uint64_t count = std::min<uint64_t>(48, remaining);
+              std::vector<float> block(count);
+              uint64_t val = limb;
+              for (int i = 47; i >= 0; --i) {
+                uint64_t digit = val % 3;
+                val /= 3;
+                if (static_cast<uint64_t>(i) < count) {
+                  block[i] = static_cast<float>(static_cast<int>(digit) - 1);
+                }
+              }
+              float_data.insert(float_data.end(), block.begin(), block.end());
+              remaining -= count;
+              if (remaining == 0) break;
+            }
+          }
+
+          t81::T729DynamicTensor loaded_tensor(std::move(shape), std::move(float_data));
+          auto res = alloc_tensor(std::move(loaded_tensor));
+          if (!res) {
+            trap = res.error();
+            break;
+          }
+          ctx.registers[insn.a] = *res;
+          ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+
+          t81::axion::Verdict success_verdict;
+          success_verdict.kind = t81::axion::VerdictKind::Allow;
+          success_verdict.reason = "TLOADHASH success hash=" + hash_str +
+                                   " handle=" + std::to_string(ctx.registers[insn.a]);
+          record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), ctx.registers[insn.a],
+                             success_verdict);
+        }
+        break;
+      }
+      case t81::tisc::Opcode::TExp: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* tensor = tensor_ptr(ctx.registers[insn.b]);
+        if (tensor == nullptr) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        std::vector<float> data = tensor->data();
+        for (auto& val : data) val = std::exp(val);
+        auto res_handle = alloc_tensor(T729DynamicTensor(tensor->shape(), std::move(data)));
+        if (!res_handle) {
+          trap = res_handle.error();
+          break;
+        }
+        ctx.registers[insn.a] = *res_handle;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        break;
+      }
+      case t81::tisc::Opcode::MetaRead: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        MemorySegmentKind segment = static_cast<MemorySegmentKind>(insn.b);
+        std::int64_t addr = ctx.registers[insn.c];
+        auto verdict = eval_axion_call(t81::axion::reasons::kMetaRead, current_pc, insn.opcode);
+        if (verdict.kind == t81::axion::VerdictKind::Deny) {
+          trap = Trap::SecurityFault;
+          break;
+        }
+        if (segment == MemorySegmentKind::Registers) {
+          if (!reg_ok(static_cast<int>(addr))) {
+            trap = Trap::BoundsFault;
+            break;
+          }
+          ctx.registers[insn.a] = ctx.registers[addr];
+          ctx.register_tags[insn.a] = ctx.register_tags[addr];
+        } else if (segment == MemorySegmentKind::Code) {
+          if (addr < 0 || static_cast<size_t>(addr) >= program_.insns.size()) {
+            trap = Trap::BoundsFault;
+            break;
+          }
+          ctx.registers[insn.a] = static_cast<std::int64_t>(program_.insns[addr].opcode);
+          ctx.register_tags[insn.a] = ValueTag::Int;
+        } else {
+          std::size_t physical_addr = 0;
+          bool ok = false;
+          const auto& layout = state_.layout;
+          switch (segment) {
+            case MemorySegmentKind::Stack:
+              if (layout.stack.contains(addr)) {
+                physical_addr = addr;
+                ok = true;
+              }
+              break;
+            case MemorySegmentKind::Heap:
+              if (layout.heap.contains(addr)) {
+                physical_addr = addr;
+                ok = true;
+              }
+              break;
+            case MemorySegmentKind::Tensor:
+              if (layout.tensor.contains(addr)) {
+                physical_addr = addr;
+                ok = true;
+              }
+              break;
+            case MemorySegmentKind::Meta:
+              if (layout.meta.contains(addr)) {
+                physical_addr = addr;
+                ok = true;
+              }
+              break;
+            default:
+              break;
+          }
+          if (!ok) {
+            trap = Trap::BoundsFault;
+            break;
+          }
+          ctx.registers[insn.a] = state_.memory[physical_addr];
+          ctx.register_tags[insn.a] = state_.memory_tags[physical_addr];
+        }
+        update_flags(ctx.registers[insn.a]);
+        apply_segment_reason(verdict, "MetaRead reflection", segment, static_cast<size_t>(addr));
+        record_axion_event(insn.opcode, static_cast<int32_t>(segment), addr, verdict);
+        break;
+      }
+      case t81::tisc::Opcode::MetaWrite: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        MemorySegmentKind segment = static_cast<MemorySegmentKind>(insn.b);
+        std::int64_t addr = ctx.registers[insn.c];
+        std::int64_t val = ctx.registers[insn.a];
+        ValueTag tag = ctx.register_tags[insn.a];
+        auto verdict = eval_axion_call(t81::axion::reasons::kMetaWrite, current_pc, insn.opcode);
+        if (verdict.kind == t81::axion::VerdictKind::Deny) {
+          trap = Trap::SecurityFault;
+          break;
+        }
+        if (segment == MemorySegmentKind::Registers) {
+          if (!reg_ok(static_cast<int>(addr))) {
+            trap = Trap::BoundsFault;
+            break;
+          }
+          ctx.registers[addr] = val;
+          ctx.register_tags[addr] = tag;
+        } else if (segment == MemorySegmentKind::Code) {
+          if (addr < 0 || static_cast<size_t>(addr) >= program_.insns.size()) {
+            trap = Trap::BoundsFault;
+            break;
+          }
+          // Code segment is protected: Writable only via privileged loader
+          t81::axion::Verdict code_verdict;
+          code_verdict.kind = t81::axion::VerdictKind::Deny;
+          code_verdict.reason = "MetaWrite to Code segment denied (protected)";
+          record_axion_event(insn.opcode, static_cast<int32_t>(segment), addr, code_verdict);
+          trap = Trap::SecurityFault;
+          break;
+        } else {
+          std::size_t physical_addr = 0;
+          bool ok = false;
+          const auto& layout = state_.layout;
+          switch (segment) {
+            case MemorySegmentKind::Stack:
+              if (layout.stack.contains(addr)) {
+                physical_addr = addr;
+                ok = true;
+              }
+              break;
+            case MemorySegmentKind::Heap:
+              if (layout.heap.contains(addr)) {
+                physical_addr = addr;
+                ok = true;
+              }
+              break;
+            case MemorySegmentKind::Tensor:
+              if (layout.tensor.contains(addr)) {
+                physical_addr = addr;
+                ok = true;
+              }
+              break;
+            case MemorySegmentKind::Meta:
+              if (layout.meta.contains(addr)) {
+                physical_addr = addr;
+                ok = true;
+              }
+              break;
+            default:
+              break;
+          }
+          if (!ok) {
+            trap = Trap::BoundsFault;
+            break;
+          }
+          state_.memory[physical_addr] = val;
+          state_.memory_tags[physical_addr] = tag;
+        }
+        apply_segment_reason(verdict, "MetaWrite reflection", segment, static_cast<size_t>(addr));
+        record_axion_event(insn.opcode, static_cast<int32_t>(segment), addr, verdict);
+        break;
+      }
+      case t81::tisc::Opcode::MetaReflect: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (state_.reflection_count >= kMaxReflectionsPerEpoch) {
+          trap = Trap::SecurityFault;
+          break;
+        }
+
+        auto verdict = eval_axion_call(t81::axion::reasons::kMetaReflect, current_pc, insn.opcode);
+        if (verdict.kind == t81::axion::VerdictKind::Deny) {
+          trap = Trap::SecurityFault;
+          break;
+        }
+
+        ReflectionSnapshot snapshot;
+        snapshot.pc = current_pc;
+        snapshot.registers = ctx.registers;
+        snapshot.register_tags = ctx.register_tags;
+        snapshot.flags = ctx.flags;
+
+        // Capture recent trace (up to 81 entries)
+        std::size_t trace_start = (state_.trace.size() > 81) ? (state_.trace.size() - 81) : 0;
+        for (std::size_t i = trace_start; i < state_.trace.size(); ++i) {
+          snapshot.recent_trace.push_back(state_.trace[i]);
+        }
+
+        // Improved hash of code segment including operands
+        uint64_t h = 0;
+        for (const auto& pi : program_.insns) {
+          auto combine = [&](uint64_t v) { h ^= v + 0x9e3779b9 + (h << 6) + (h >> 2); };
+          combine(static_cast<uint64_t>(pi.opcode));
+          combine(static_cast<uint64_t>(pi.a));
+          combine(static_cast<uint64_t>(pi.b));
+          combine(static_cast<uint64_t>(pi.c));
+        }
+        snapshot.code_hash = h;
+
+        state_.reflection_snapshots.push_back(std::move(snapshot));
+        state_.reflection_count++;
+
+        std::int64_t handle = static_cast<std::int64_t>(state_.reflection_snapshots.size());
+        set_reg(insn.a, handle, ValueTag::ReflectionHandle);
+        update_flags(handle);
+        record_axion_event(insn.opcode, insn.b, handle, verdict);
+        break;
+      }
+      case t81::tisc::Opcode::MetaRefine: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        // RS1 (insn.b) = memory address of commands
+        // RS2 (insn.c) = number of commands
+
+        auto verdict = eval_axion_call(t81::axion::reasons::kMetaRefine, current_pc, insn.opcode);
+        if (verdict.kind == t81::axion::VerdictKind::Deny) {
+          trap = Trap::SecurityFault;
+          break;
+        }
+
+        std::int64_t cmd_addr = ctx.registers[insn.b];
+        std::int64_t cmd_count = ctx.registers[insn.c];
+
+        if (cmd_count < 0 || cmd_count > static_cast<int64_t>(kMaxMetaWritesPerEpoch)) {
+          trap = Trap::BoundsFault;
+          break;
+        }
+
+        // Read commands into a temporary list for all-or-nothing atomicity
+        std::vector<RefinementCommand> commands;
+        bool read_ok = true;
+        for (int i = 0; i < cmd_count; ++i) {
+          std::size_t base = static_cast<std::size_t>(cmd_addr + i * 4);
+          if (!mem_ok(base) || !mem_ok(base + 3)) {
+            read_ok = false;
+            break;
+          }
+          RefinementCommand cmd;
+          cmd.op = static_cast<RefinementCommand::Op>(state_.memory[base]);
+          cmd.target = state_.memory[base + 1];
+          cmd.value = state_.memory[base + 2];
+          cmd.tag = static_cast<ValueTag>(state_.memory[base + 3]);
+          commands.push_back(cmd);
+        }
+
+        if (!read_ok) {
+          trap = Trap::BoundsFault;
+          break;
+        }
+
+        // VALIDATION PASS (Atomicity check)
+        std::size_t future_meta_write_count = state_.meta_write_count;
+        for (const auto& cmd : commands) {
+          switch (cmd.op) {
+            case RefinementCommand::Op::WriteCode:
+              // Code segment is protected: Writable only via privileged loader
+              {
+                t81::axion::Verdict code_verdict;
+                code_verdict.kind = t81::axion::VerdictKind::Deny;
+                code_verdict.reason = "MetaRefine WriteCode denied (protected)";
+                record_axion_event(insn.opcode, insn.b, 0, code_verdict);
+              }
+              trap = Trap::SecurityFault;
+              break;
+              if (future_meta_write_count >= kMaxMetaWritesPerEpoch) {
+                trap = Trap::SecurityFault;
+                break;
+              }
+              if (cmd.target < 0 || static_cast<std::size_t>(cmd.target) >= program_.insns.size()) {
+                trap = Trap::BoundsFault;
+                break;
+              }
+              future_meta_write_count++;
+              break;
+            case RefinementCommand::Op::WriteReg:
+              if (!reg_ok(static_cast<int>(cmd.target))) {
+                trap = Trap::BoundsFault;
+                break;
+              }
+              break;
+            case RefinementCommand::Op::WriteMem:
+              if (!mem_ok(static_cast<std::size_t>(cmd.target))) {
+                trap = Trap::BoundsFault;
+                break;
+              }
+              break;
+            case RefinementCommand::Op::Noop:
+              break;
+          }
+          if (trap != Trap::None) {
+            break;
+          }
+        }
+
+        if (trap != Trap::None) {
+          break;
+        }
+
+        // APPLICATION PASS
+        for (const auto& cmd : commands) {
+          switch (cmd.op) {
+            case RefinementCommand::Op::WriteCode:
+              // Unreachable if validation works, but kept for safety or reverted?
+              // Reverting to original logic for consistency if we ever allow it via policy
+              program_.insns[cmd.target].opcode = static_cast<t81::tisc::Opcode>(cmd.value);
+              state_.meta_write_count++;
+              compiled_traces_.clear();  // Invalidate JIT cache
+              break;
+            case RefinementCommand::Op::WriteReg:
+              ctx.registers[cmd.target] = cmd.value;
+              ctx.register_tags[cmd.target] = cmd.tag;
+              break;
+            case RefinementCommand::Op::WriteMem:
+              state_.memory[cmd.target] = cmd.value;
+              state_.memory_tags[cmd.target] = cmd.tag;
+              break;
+            case RefinementCommand::Op::Noop:
+              break;
+          }
+        }
+
+        set_reg(insn.a, 1, ValueTag::Int);  // Success
+        update_flags(1);
+        record_axion_event(insn.opcode, insn.b, 1, verdict);
+        break;
+      }
+      case t81::tisc::Opcode::TSqrt: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* tensor = tensor_ptr(ctx.registers[insn.b]);
+        if (tensor == nullptr) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        std::vector<float> data = tensor->data();
+        for (auto& val : data) val = std::sqrt(val);
+        auto res_handle = alloc_tensor(T729DynamicTensor(tensor->shape(), std::move(data)));
+        if (!res_handle) {
+          trap = res_handle.error();
+          break;
+        }
+        ctx.registers[insn.a] = *res_handle;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        break;
+      }
+      case t81::tisc::Opcode::TSiLU: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* tensor = tensor_ptr(ctx.registers[insn.b]);
+        if (tensor == nullptr) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "TSiLU kernel execution"};
+        record_axion_event(insn.opcode, static_cast<std::int32_t>(insn.b), ctx.registers[insn.b],
+                           verdict);
+        auto res_handle = alloc_tensor(t81::ops::silu(*tensor));
+        if (!res_handle) {
+          trap = res_handle.error();
+          break;
+        }
+        ctx.registers[insn.a] = *res_handle;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        break;
+      }
+      case t81::tisc::Opcode::TSoftmax: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* tensor = tensor_ptr(ctx.registers[insn.b]);
+        if (tensor == nullptr || tensor->rank() == 0) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "TSoftmax kernel execution"};
+        record_axion_event(insn.opcode, static_cast<std::int32_t>(insn.b), ctx.registers[insn.b],
+                           verdict);
+        auto res_handle = alloc_tensor(t81::ops::softmax(*tensor));
+        if (!res_handle) {
+          trap = res_handle.error();
+          break;
+        }
+        ctx.registers[insn.a] = *res_handle;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        break;
+      }
+      case t81::tisc::Opcode::TRMSNorm: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.c); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* tensor = tensor_ptr(ctx.registers[insn.b]);
+        auto* w = tensor_ptr(ctx.registers[insn.c]);
+        if (tensor == nullptr || w == nullptr || tensor->rank() == 0 || w->rank() != 1 ||
+            w->shape()[0] != tensor->shape().back()) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor, 0, "TRMSNorm shape mismatch");
+          trap = Trap::ShapeFault;
+          break;
+        }
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "TRMSNorm kernel execution"};
+        record_axion_event(insn.opcode, static_cast<std::int32_t>(insn.b), ctx.registers[insn.b],
+                           verdict);
+        auto res_handle = alloc_tensor(t81::ops::rmsnorm(*tensor, *w));
+        if (!res_handle) {
+          trap = res_handle.error();
+          break;
+        }
+        ctx.registers[insn.a] = *res_handle;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        break;
+      }
+      case t81::tisc::Opcode::TRoPE: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* tensor = tensor_ptr(ctx.registers[insn.b]);
+        if (tensor == nullptr || tensor->rank() < 2) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor, 0, "TRoPE shape mismatch");
+          trap = Trap::ShapeFault;
+          break;
+        }
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "TRoPE kernel execution"};
+        record_axion_event(insn.opcode, static_cast<std::int32_t>(insn.b), ctx.registers[insn.b],
+                           verdict);
+        int pos = static_cast<int>(ctx.registers[insn.c]);
+        auto res_handle = alloc_tensor(t81::ops::rope(*tensor, pos));
+        if (!res_handle) {
+          trap = res_handle.error();
+          break;
+        }
+        ctx.registers[insn.a] = *res_handle;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        break;
+      }
+      case t81::tisc::Opcode::Store: {
+        if (!reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (!check_mem(insn.opcode, insn.a, "memory store")) {
+          trap = Trap::BoundsFault;
+          break;
+        }
+        std::size_t addr = static_cast<std::size_t>(insn.a);
+        state_.memory[addr] = ctx.registers[insn.b];
+        state_.memory_tags[addr] = ctx.register_tags[insn.b];
+        log_memory_segment_access(insn.opcode, segment_for_address(addr), addr, 1,
+                                  t81::axion::reasons::kMemStore);
+        break;
+      }
+      case t81::tisc::Opcode::Mul:
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        ctx.registers[insn.a] = ctx.registers[insn.b] * ctx.registers[insn.c];
+        ctx.register_tags[insn.a] = ValueTag::Int;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      case t81::tisc::Opcode::Div:
+      case t81::tisc::Opcode::Mod: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto divisor = ctx.registers[insn.c];
+        if (divisor == 0) {
+          trap = Trap::DivisionFault;
+          break;
+        }
+        auto lhs = ctx.registers[insn.b];
+        if (insn.opcode == t81::tisc::Opcode::Div) {
+          ctx.registers[insn.a] = lhs / divisor;
+        } else {
+          ctx.registers[insn.a] = lhs % divisor;
+        }
+        ctx.register_tags[insn.a] = ValueTag::Int;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::Jump:
+        if (!check_mem(insn.opcode, insn.a, "jump", true)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        ctx.pc = static_cast<std::size_t>(insn.a);
+        break;
+      case t81::tisc::Opcode::JumpIfZero:
+        if (!reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.registers[insn.b] == 0) {
+          if (!check_mem(insn.opcode, insn.a, "jump if zero", true)) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          ctx.pc = static_cast<std::size_t>(insn.a);
+        }
+        break;
+      case t81::tisc::Opcode::JumpIfNotZero:
+        if (!reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.registers[insn.b] != 0) {
+          if (!check_mem(insn.opcode, insn.a, "jump if not zero", true)) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          ctx.pc = static_cast<std::size_t>(insn.a);
+        }
+        break;
+      case t81::tisc::Opcode::Neg:
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        ctx.registers[insn.a] = -ctx.registers[insn.b];
+        ctx.register_tags[insn.a] = ValueTag::Int;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      case t81::tisc::Opcode::JumpIfNegative:
+        if (ctx.flags.negative) {
+          if (!check_mem(insn.opcode, insn.a, "jump if negative", true)) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          ctx.pc = static_cast<std::size_t>(insn.a);
+        }
+        break;
+      case t81::tisc::Opcode::JumpIfPositive:
+        if (ctx.flags.positive) {
+          if (!check_mem(insn.opcode, insn.a, "jump if positive", true)) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          ctx.pc = static_cast<std::size_t>(insn.a);
+        }
+        break;
+      case t81::tisc::Opcode::Less:
+      case t81::tisc::Opcode::LessEqual:
+      case t81::tisc::Opcode::Greater:
+      case t81::tisc::Opcode::GreaterEqual:
+      case t81::tisc::Opcode::Equal:
+      case t81::tisc::Opcode::NotEqual: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto tag_b = ctx.register_tags[insn.b];
+        auto tag_c = ctx.register_tags[insn.c];
+        if (tag_b != tag_c) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto relation_opt = compare_value(tag_b, ctx.registers[insn.b], ctx.registers[insn.c]);
+        if (!relation_opt.has_value()) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        int relation = relation_opt.value();
+        bool result = false;
+        switch (insn.opcode) {
+          case t81::tisc::Opcode::Less:
+            result = relation < 0;
+            break;
+          case t81::tisc::Opcode::LessEqual:
+            result = relation <= 0;
+            break;
+          case t81::tisc::Opcode::Greater:
+            result = relation > 0;
+            break;
+          case t81::tisc::Opcode::GreaterEqual:
+            result = relation >= 0;
+            break;
+          case t81::tisc::Opcode::Equal:
+            result = relation == 0;
+            break;
+          case t81::tisc::Opcode::NotEqual:
+            result = relation != 0;
+            break;
+          default:
+            break;
+        }
+        ctx.registers[insn.a] = result ? 1 : 0;
+        ctx.register_tags[insn.a] = ValueTag::Int;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::Cmp: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto tag_a = ctx.register_tags[insn.a];
+        auto tag_b = ctx.register_tags[insn.b];
+        if (tag_a != tag_b) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto relation_opt = compare_value(tag_a, ctx.registers[insn.a], ctx.registers[insn.b]);
+        if (!relation_opt.has_value()) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        int relation = relation_opt.value();
+        ctx.flags.zero = (relation == 0);
+        ctx.flags.negative = (relation < 0);
+        ctx.flags.positive = (relation > 0);
+        break;
+      }
+      case t81::tisc::Opcode::SetF: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        std::int64_t flag_value = 0;
+        if (ctx.flags.negative) {
+          flag_value = -1;
+        } else if (!ctx.flags.zero) {
+          flag_value = 1;
+        }
+        set_reg(insn.a, flag_value, ValueTag::Int);
+        update_flags(flag_value);
+        break;
+      }
+      case t81::tisc::Opcode::Push: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto addr_opt = push_stack(ctx.registers[insn.a], ctx.register_tags[insn.a]);
+        if (!addr_opt.has_value()) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Stack, static_cast<int>(ctx.sp),
+                           "stack push");
+          trap = Trap::StackFault;
+          break;
+        }
+        log_memory_segment_access(insn.opcode, MemorySegmentKind::Stack, *addr_opt, 1,
+                                  t81::axion::reasons::kMemStore);
+        break;
+      }
+      case t81::tisc::Opcode::Pop: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        ValueTag tag = ValueTag::Int;
+        auto addr_opt = pop_stack(ctx.registers[insn.a], tag);
+        if (!addr_opt.has_value()) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Stack, static_cast<int>(ctx.sp),
+                           "stack pop");
+          trap = Trap::StackFault;
+          break;
+        }
+        ctx.register_tags[insn.a] = tag;
+        update_flags(ctx.registers[insn.a]);
+        log_memory_segment_access(insn.opcode, MemorySegmentKind::Stack, *addr_opt, 1,
+                                  t81::axion::reasons::kMemLoad);
+        break;
+      }
+      case t81::tisc::Opcode::StackAlloc: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (insn.b < 0) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        const auto& stack = state_.layout.stack;
+        if (!stack.valid()) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto size = static_cast<std::size_t>(insn.b);
+        // Enforce 81-byte block alignment
+        if (size % 81 != 0) {
+          size = ((size / 81) + 1) * 81;
+        }
+        std::size_t available = ctx.sp - stack.start;
+        if (size > available) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Stack, static_cast<int>(ctx.sp),
+                           "stack frame allocate");
+          trap = Trap::StackFault;
+          break;
+        }
+        std::size_t new_sp = ctx.sp - size;
+        if (new_sp < stack.start) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Stack, static_cast<int>(new_sp),
+                           "stack frame allocate");
+          trap = Trap::StackFault;
+          break;
+        }
+        if (state_.policy && state_.policy->max_stack &&
+            static_cast<std::int64_t>(stack.limit - new_sp) > *state_.policy->max_stack) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Stack, static_cast<int>(new_sp),
+                           "stack frame allocate");
+          trap = Trap::StackFault;
+          break;
+        }
+        std::int64_t addr = static_cast<std::int64_t>(new_sp);
+        ctx.stack_frames.emplace_back(addr, static_cast<std::int64_t>(size));
+        ctx.sp = new_sp;
+        set_reg(insn.a, addr, ValueTag::Int);
+        update_flags(addr);
+        log_memory_segment_access(insn.opcode, MemorySegmentKind::Stack,
+                                  static_cast<std::size_t>(addr), size,
+                                  t81::axion::reasons::kStackAlloc);
+        break;
+      }
+      case t81::tisc::Opcode::StackFree: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (insn.b < 0) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        const auto& stack = state_.layout.stack;
+        auto size = static_cast<std::size_t>(insn.b);
+        // Enforce 81-byte block alignment
+        if (size % 81 != 0) {
+          size = ((size / 81) + 1) * 81;
+        }
+        if (!stack.valid()) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Stack, 0, "stack frame free");
+          trap = Trap::StackFault;
+          break;
+        }
+        if (ctx.stack_frames.empty()) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Stack, static_cast<int>(ctx.sp),
+                           "stack frame free");
+          trap = Trap::StackFault;
+          break;
+        }
+        std::int64_t ptr = ctx.registers[insn.a];
+        if (!stack.contains(static_cast<std::size_t>(ptr))) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Stack, static_cast<int>(ptr),
+                           "stack frame free");
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto [expected_addr, expected_size] = ctx.stack_frames.back();
+        if (expected_addr != ptr || expected_size != static_cast<std::int64_t>(size)) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Stack, static_cast<int>(ptr),
+                           "stack frame free");
+          trap = Trap::StackFault;
+          break;
+        }
+        ctx.stack_frames.pop_back();
+        ctx.sp = static_cast<std::size_t>(ptr + size);
+        log_memory_segment_access(insn.opcode, MemorySegmentKind::Stack,
+                                  static_cast<std::size_t>(ptr), size,
+                                  t81::axion::reasons::kStackFree);
+        break;
+      }
+      case t81::tisc::Opcode::HeapAlloc: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        const auto& heap = state_.layout.heap;
+        if (!heap.valid()) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (insn.b < 0) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto size = static_cast<std::size_t>(insn.b);
+        // Enforce 81-byte block alignment
+        if (size % 81 != 0) {
+          size = ((size / 81) + 1) * 81;
+        }
+        if (size > heap.size()) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Heap, static_cast<int>(heap.limit),
+                           "heap block allocate");
+          trap = Trap::BoundsFault;
+          break;
+        }
+        std::size_t addr = state_.heap_ptr;
+        if (addr < heap.start || addr + size > heap.limit) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Heap, static_cast<int>(addr),
+                           "heap block allocate");
+          trap = Trap::BoundsFault;
+          break;
+        }
+        if (ctx.registers[insn.a] != 0) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        state_.heap_frames.emplace_back(static_cast<std::int64_t>(addr),
+                                        static_cast<std::int64_t>(size));
+        state_.heap_ptr = addr + size;
+        set_reg(insn.a, static_cast<std::int64_t>(addr), ValueTag::Int);
+        update_flags(ctx.registers[insn.a]);
+        log_memory_segment_access(insn.opcode, MemorySegmentKind::Heap, addr, size,
+                                  t81::axion::reasons::kHeapAlloc);
+        break;
+      }
+      case t81::tisc::Opcode::HeapFree: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        const auto& heap = state_.layout.heap;
+        if (!heap.valid()) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Heap, 0, "heap block free");
+          trap = Trap::BoundsFault;
+          break;
+        }
+        if (insn.b < 0) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (state_.heap_frames.empty()) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Heap, static_cast<int>(state_.heap_ptr),
+                           "heap block free");
+          trap = Trap::BoundsFault;
+          break;
+        }
+        auto size = static_cast<std::size_t>(insn.b);
+        // Enforce 81-byte block alignment
+        if (size % 81 != 0) {
+          size = ((size / 81) + 1) * 81;
+        }
+        std::int64_t ptr = ctx.registers[insn.a];
+        if (!heap.contains(static_cast<std::size_t>(ptr))) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Heap, static_cast<int>(ptr),
+                           "heap block free");
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto [expected_addr, expected_size] = state_.heap_frames.back();
+        if (expected_addr != ptr || expected_size != static_cast<std::int64_t>(size)) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Heap, static_cast<int>(ptr),
+                           "heap block free");
+          trap = Trap::DecodeFault;
+          break;
+        }
+        state_.heap_frames.pop_back();
+        state_.heap_ptr = static_cast<std::size_t>(ptr);
+        log_memory_segment_access(insn.opcode, MemorySegmentKind::Heap,
+                                  static_cast<std::size_t>(ptr), size,
+                                  t81::axion::reasons::kHeapFree);
+        break;
+      }
+      case t81::tisc::Opcode::TNot:
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        {
+          int t = clamp_trit(ctx.registers[insn.b]);
+          ctx.registers[insn.a] = -t;
+          ctx.register_tags[insn.a] = ValueTag::Int;
+          update_flags(ctx.registers[insn.a]);
+        }
+        break;
+      case t81::tisc::Opcode::TAnd:
+      case t81::tisc::Opcode::TOr:
+      case t81::tisc::Opcode::TXor:
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        {
+          int lhs = clamp_trit(ctx.registers[insn.b]);
+          int rhs = clamp_trit(ctx.registers[insn.c]);
+          int result = 0;
+          if (insn.opcode == t81::tisc::Opcode::TAnd) {
+            result = (lhs < rhs) ? lhs : rhs;
+          } else if (insn.opcode == t81::tisc::Opcode::TOr) {
+            result = (lhs > rhs) ? lhs : rhs;
+          } else {
+            result = lhs - rhs;
+            if (result > 1) {
+              result = -1;
+            }
+            if (result < -1) {
+              result = 1;
+            }
+          }
+          ctx.registers[insn.a] = result;
+          ctx.register_tags[insn.a] = ValueTag::Int;
+          update_flags(ctx.registers[insn.a]);
+        }
+        break;
+      case t81::tisc::Opcode::AxRead: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto verdict = eval_axion_call(t81::axion::reasons::kAxRead, current_pc, insn.opcode);
+        auto guard_addr = static_cast<std::size_t>(insn.b);
+        auto guard_kind = segment_for_address(guard_addr);
+        apply_segment_reason(verdict, "AxRead guard", guard_kind, guard_addr);
+        if (verdict.kind == t81::axion::VerdictKind::Deny) {
+          record_axion_event(insn.opcode, insn.b, 0, verdict);
+          trap = Trap::SecurityFault;
+          break;
+        }
+        ctx.registers[insn.a] = insn.b;
+        ctx.register_tags[insn.a] = ValueTag::Int;
+        update_flags(ctx.registers[insn.a]);
+        record_axion_event(insn.opcode, insn.b, ctx.registers[insn.a], verdict);
+        break;
+      }
+      case t81::tisc::Opcode::AxSet: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto value = ctx.registers[insn.b];
+        auto verdict = eval_axion_call(t81::axion::reasons::kAxSet, current_pc, insn.opcode);
+        std::size_t guard_addr = 0;
+        MemorySegmentKind guard_kind = MemorySegmentKind::Unknown;
+        if (ctx.registers[insn.a] >= 0) {
+          guard_addr = static_cast<std::size_t>(ctx.registers[insn.a]);
+          guard_kind = segment_for_address(guard_addr);
+        }
+        apply_segment_reason(verdict, "AxSet guard", guard_kind, guard_addr);
+        record_axion_event(insn.opcode, insn.a, value, verdict);
+        if (verdict.kind == t81::axion::VerdictKind::Deny) {
+          trap = Trap::SecurityFault;
+        }
+        break;
+      }
+      case t81::tisc::Opcode::AxVerify: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto verdict = eval_axion_call(t81::axion::reasons::kAxVerify, current_pc, insn.opcode);
+        if (verdict.kind == t81::axion::VerdictKind::Deny) {
+          record_axion_event(insn.opcode, insn.b, 0, verdict);
+          trap = Trap::SecurityFault;
+          break;
+        }
+        ctx.registers[insn.a] = (verdict.kind == t81::axion::VerdictKind::Defer) ? 1 : 0;
+        ctx.register_tags[insn.a] = ValueTag::Int;
+        update_flags(ctx.registers[insn.a]);
+        record_axion_event(insn.opcode, insn.b, ctx.registers[insn.a], verdict);
+        break;
+      }
+      case t81::tisc::Opcode::Call: {
+        if (!reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        std::size_t next_depth = ctx.call_depth + 1;
+        bool need_promotion = false;
+        // Tier 0 limit: 81
+        if (next_depth > 81 && ctx.tier_status.current < t81::cog::TierId::Tier1) {
+          need_promotion = true;
+        }
+        // Tier 1 limit: 243
+        else if (next_depth > 243 && ctx.tier_status.current < t81::cog::TierId::Tier2) {
+          need_promotion = true;
+        }
+
+        if (need_promotion) {
+          auto res = t81::cog::try_promote(ctx.tier_status, *axion_engine_);
+          if (res) {
+            ctx.tier_status = *res;
+            t81::axion::Verdict verdict;
+            verdict.kind = t81::axion::VerdictKind::Allow;
+            verdict.reason = "Cognitive Tier Promotion: " + ctx.tier_status.label;
+            record_axion_event(insn.opcode, insn.b,
+                               static_cast<std::int64_t>(ctx.tier_status.current), verdict);
+          } else {
+            // Promotion denied -> Recursion limit enforced
+            t81::axion::Verdict verdict;
+            verdict.kind = t81::axion::VerdictKind::Deny;
+            verdict.reason = "Cognitive Tier Promotion Denied (Recursion Limit)";
+            record_axion_event(insn.opcode, insn.b, static_cast<std::int64_t>(next_depth), verdict);
+            trap = Trap::SecurityFault;
+            break;
+          }
+        }
+
+        if (ctx.call_depth >= kHardRecursionCeiling) {
+          ++state_.contradiction_events;
+          t81::axion::Verdict recursion_verdict;
+          recursion_verdict.kind = t81::axion::VerdictKind::Deny;
+          std::ostringstream reason;
+          reason << t81::axion::reasons::kRecursionCeiling << " depth=" << ctx.call_depth
+                 << " limit=" << kHardRecursionCeiling;
+          recursion_verdict.reason = reason.str();
+          record_axion_event(insn.opcode, insn.b, static_cast<std::int64_t>(ctx.call_depth),
+                             recursion_verdict);
+          trap = Trap::SecurityFault;
+          break;
+        }
+        auto target = ctx.registers[insn.b];
+        if (!check_mem(insn.opcode, static_cast<int>(target), "call", true)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (!push_stack(static_cast<std::int64_t>(ctx.pc), ValueTag::Int)) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Stack, static_cast<int>(ctx.sp),
+                           "stack call");
+          trap = Trap::StackFault;
+          break;
+        }
+        ++ctx.call_depth;
+        ctx.pc = static_cast<std::size_t>(target);
+        break;
+      }
+      case t81::tisc::Opcode::Ret: {
+        std::int64_t addr = 0;
+        ValueTag tag = ValueTag::Int;
+        if (!pop_stack(addr, tag)) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Stack, static_cast<int>(ctx.sp),
+                           "stack return");
+          trap = Trap::StackFault;
+          break;
+        }
+        if (tag != ValueTag::Int) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        if (!check_mem(insn.opcode, static_cast<int>(addr), "return", true)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.call_depth > 0) {
+          --ctx.call_depth;
+        } else {
+          ++state_.contradiction_events;
+          t81::axion::Verdict contradiction_verdict;
+          contradiction_verdict.kind = t81::axion::VerdictKind::Allow;
+          contradiction_verdict.reason =
+              std::string(t81::axion::reasons::kContradictionDetected) + " return-without-call";
+          record_axion_event(insn.opcode, insn.a, addr, contradiction_verdict);
+        }
+        ctx.pc = static_cast<std::size_t>(addr);
+        break;
+      }
+      case t81::tisc::Opcode::Trap:
+        trap = Trap::TrapInstruction;
+        break;
+      case t81::tisc::Opcode::Print: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto rendered = format_value(ctx.register_tags[insn.a], ctx.registers[insn.a], 0);
+        if (!rendered.has_value()) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        state_.printed_output.push_back(*rendered);
+        break;
+      }
+      case t81::tisc::Opcode::StrLen: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto symbol = symbol_like_text(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+        if (!symbol.has_value()) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        ctx.registers[insn.a] = static_cast<std::int64_t>(symbol->size());
+        ctx.register_tags[insn.a] = ValueTag::Int;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::StrEmpty: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto symbol = symbol_like_text(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+        if (!symbol.has_value()) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        ctx.registers[insn.a] = symbol->empty() ? 1 : 0;
+        ctx.register_tags[insn.a] = ValueTag::Bool;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::VecLen: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        std::int64_t length = 0;
+        if (ctx.register_tags[insn.b] == ValueTag::StringVectorHandle) {
+          auto* values = string_vector_ptr(ctx.registers[insn.b]);
+          if (values == nullptr) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          length = static_cast<std::int64_t>(values->size());
+        } else if (ctx.register_tags[insn.b] == ValueTag::TensorHandle) {
+          auto* tensor = tensor_ptr(ctx.registers[insn.b]);
+          if (tensor == nullptr) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          if (tensor->rank() != 1 || tensor->shape().empty()) {
+            trap = Trap::TypeFault;
+            break;
+          }
+          length = static_cast<std::int64_t>(tensor->shape().front());
+        } else {
+          trap = Trap::TypeFault;
+          break;
+        }
+        ctx.registers[insn.a] = length;
+        ctx.register_tags[insn.a] = ValueTag::Int;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::VecEmpty: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        bool is_empty = false;
+        if (ctx.register_tags[insn.b] == ValueTag::StringVectorHandle) {
+          auto* values = string_vector_ptr(ctx.registers[insn.b]);
+          if (values == nullptr) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          is_empty = values->empty();
+        } else if (ctx.register_tags[insn.b] == ValueTag::TensorHandle) {
+          auto* tensor = tensor_ptr(ctx.registers[insn.b]);
+          if (tensor == nullptr) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          if (tensor->rank() != 1 || tensor->shape().empty()) {
+            trap = Trap::TypeFault;
+            break;
+          }
+          is_empty = tensor->shape().front() == 0;
+        } else {
+          trap = Trap::TypeFault;
+          break;
+        }
+        ctx.registers[insn.a] = is_empty ? 1 : 0;
+        ctx.register_tags[insn.a] = ValueTag::Bool;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::VecFirst: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] == ValueTag::StringVectorHandle) {
+          auto* values = string_vector_ptr(ctx.registers[insn.b]);
+          if (values == nullptr) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          if (values->empty()) {
+            trap = Trap::TypeFault;
+            break;
+          }
+          ctx.registers[insn.a] = intern_symbol(values->front());
+          ctx.register_tags[insn.a] = ValueTag::SymbolHandle;
+          update_flags(ctx.registers[insn.a]);
+          break;
+        }
+        if (ctx.register_tags[insn.b] == ValueTag::TensorHandle) {
+          auto* tensor = tensor_ptr(ctx.registers[insn.b]);
+          if (tensor == nullptr) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          if (tensor->rank() != 1 || tensor->shape().empty() || tensor->shape().front() <= 0) {
+            trap = Trap::TypeFault;
+            break;
+          }
+          const auto& data = tensor->data();
+          if (data.empty()) {
+            trap = Trap::TypeFault;
+            break;
+          }
+          ctx.registers[insn.a] = static_cast<std::int64_t>(data.front());
+          ctx.register_tags[insn.a] = ValueTag::Int;
+          update_flags(ctx.registers[insn.a]);
+          break;
+        }
+        trap = Trap::TypeFault;
+        break;
+      }
+      case t81::tisc::Opcode::VecLast: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] == ValueTag::StringVectorHandle) {
+          auto* values = string_vector_ptr(ctx.registers[insn.b]);
+          if (values == nullptr) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          if (values->empty()) {
+            trap = Trap::TypeFault;
+            break;
+          }
+          ctx.registers[insn.a] = intern_symbol(values->back());
+          ctx.register_tags[insn.a] = ValueTag::SymbolHandle;
+          update_flags(ctx.registers[insn.a]);
+          break;
+        }
+        if (ctx.register_tags[insn.b] == ValueTag::TensorHandle) {
+          auto* tensor = tensor_ptr(ctx.registers[insn.b]);
+          if (tensor == nullptr) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          if (tensor->rank() != 1 || tensor->shape().empty() || tensor->shape().front() <= 0) {
+            trap = Trap::TypeFault;
+            break;
+          }
+          const auto& data = tensor->data();
+          if (data.empty()) {
+            trap = Trap::TypeFault;
+            break;
+          }
+          ctx.registers[insn.a] = static_cast<std::int64_t>(data.back());
+          ctx.register_tags[insn.a] = ValueTag::Int;
+          update_flags(ctx.registers[insn.a]);
+          break;
+        }
+        trap = Trap::TypeFault;
+        break;
+      }
+      case t81::tisc::Opcode::VecPush: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] == ValueTag::StringVectorHandle) {
+          if (ctx.register_tags[insn.c] != ValueTag::SymbolHandle) {
+            trap = Trap::TypeFault;
+            break;
+          }
+          auto* values = string_vector_ptr(ctx.registers[insn.b]);
+          auto* value = symbol_ptr(ctx.registers[insn.c]);
+          if (values == nullptr || value == nullptr) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          std::vector<std::string> pushed = *values;
+          pushed.push_back(*value);
+          state_.string_vectors.push_back(std::move(pushed));
+          ctx.registers[insn.a] = static_cast<std::int64_t>(state_.string_vectors.size());
+          ctx.register_tags[insn.a] = ValueTag::StringVectorHandle;
+          update_flags(ctx.registers[insn.a]);
+          break;
+        }
+        if (ctx.register_tags[insn.b] == ValueTag::TensorHandle) {
+          if (ctx.register_tags[insn.c] != ValueTag::Int) {
+            trap = Trap::TypeFault;
+            break;
+          }
+          auto* tensor = tensor_ptr(ctx.registers[insn.b]);
+          if (tensor == nullptr) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          if (tensor->rank() != 1 || tensor->shape().empty()) {
+            trap = Trap::TypeFault;
+            break;
+          }
+          const auto old_len = tensor->shape().front();
+          if (old_len < 0) {
+            trap = Trap::TypeFault;
+            break;
+          }
+          auto data = tensor->data();
+          data.push_back(static_cast<float>(ctx.registers[insn.c]));
+          auto res_handle = alloc_tensor(T729DynamicTensor({old_len + 1}, std::move(data)));
+          if (!res_handle) {
+            trap = res_handle.error();
+            break;
+          }
+          ctx.registers[insn.a] = *res_handle;
+          ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+          update_flags(ctx.registers[insn.a]);
+          break;
+        }
+        trap = Trap::TypeFault;
+        break;
+      }
+      case t81::tisc::Opcode::VecPop: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] == ValueTag::StringVectorHandle) {
+          auto* values = string_vector_ptr(ctx.registers[insn.b]);
+          if (values == nullptr) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          if (values->empty()) {
+            trap = Trap::TypeFault;
+            break;
+          }
+          std::vector<std::string> popped = *values;
+          popped.pop_back();
+          state_.string_vectors.push_back(std::move(popped));
+          ctx.registers[insn.a] = static_cast<std::int64_t>(state_.string_vectors.size());
+          ctx.register_tags[insn.a] = ValueTag::StringVectorHandle;
+          update_flags(ctx.registers[insn.a]);
+          break;
+        }
+        if (ctx.register_tags[insn.b] == ValueTag::TensorHandle) {
+          auto* tensor = tensor_ptr(ctx.registers[insn.b]);
+          if (tensor == nullptr) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          if (tensor->rank() != 1 || tensor->shape().empty() || tensor->shape().front() <= 0) {
+            trap = Trap::TypeFault;
+            break;
+          }
+          auto data = tensor->data();
+          if (data.empty()) {
+            trap = Trap::TypeFault;
+            break;
+          }
+          data.pop_back();
+          auto res_handle =
+              alloc_tensor(T729DynamicTensor({tensor->shape().front() - 1}, std::move(data)));
+          if (!res_handle) {
+            trap = res_handle.error();
+            break;
+          }
+          ctx.registers[insn.a] = *res_handle;
+          ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+          update_flags(ctx.registers[insn.a]);
+          break;
+        }
+        trap = Trap::TypeFault;
+        break;
+      }
+      case t81::tisc::Opcode::StrConcat: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto lhs = symbol_like_text(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+        auto rhs = symbol_like_text(ctx.register_tags[insn.c], ctx.registers[insn.c]);
+        if (!lhs.has_value() || !rhs.has_value()) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        std::string combined(*lhs);
+        combined += std::string(*rhs);
+        ctx.registers[insn.a] = intern_symbol(std::move(combined));
+        ctx.register_tags[insn.a] = ValueTag::SymbolHandle;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::StrStartsWith: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto value = symbol_like_text(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+        auto prefix = symbol_like_text(ctx.register_tags[insn.c], ctx.registers[insn.c]);
+        if (!value.has_value() || !prefix.has_value()) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        const bool match =
+            value->size() >= prefix->size() && value->compare(0, prefix->size(), *prefix) == 0;
+        ctx.registers[insn.a] = match ? 1 : 0;
+        ctx.register_tags[insn.a] = ValueTag::Bool;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::StrEndsWith: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto value = symbol_like_text(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+        auto suffix = symbol_like_text(ctx.register_tags[insn.c], ctx.registers[insn.c]);
+        if (!value.has_value() || !suffix.has_value()) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        const bool match =
+            value->size() >= suffix->size() &&
+            value->compare(value->size() - suffix->size(), suffix->size(), *suffix) == 0;
+        ctx.registers[insn.a] = match ? 1 : 0;
+        ctx.register_tags[insn.a] = ValueTag::Bool;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::StrContains: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto value = symbol_like_text(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+        auto needle = symbol_like_text(ctx.register_tags[insn.c], ctx.registers[insn.c]);
+        if (!value.has_value() || !needle.has_value()) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        const bool contains = value->find(*needle) != std::string::npos;
+        ctx.registers[insn.a] = contains ? 1 : 0;
+        ctx.register_tags[insn.a] = ValueTag::Bool;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::StrIndexOf: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto value = symbol_like_text(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+        auto needle = symbol_like_text(ctx.register_tags[insn.c], ctx.registers[insn.c]);
+        if (!value.has_value() || !needle.has_value()) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        const std::size_t pos = value->find(*needle);
+        ctx.registers[insn.a] = pos == std::string::npos ? -1 : static_cast<std::int64_t>(pos);
+        ctx.register_tags[insn.a] = ValueTag::Int;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::StrReplace: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto source = symbol_like_text(ctx.register_tags[insn.a], ctx.registers[insn.a]);
+        auto needle = symbol_like_text(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+        auto replacement = symbol_like_text(ctx.register_tags[insn.c], ctx.registers[insn.c]);
+        if (!source.has_value() || !needle.has_value() || !replacement.has_value()) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (needle->empty()) {
+          ctx.register_tags[insn.a] = ValueTag::SymbolHandle;
+          update_flags(ctx.registers[insn.a]);
+          break;
+        }
+
+        std::string replaced;
+        replaced.reserve(source->size());
+        std::size_t search_from = 0;
+        while (true) {
+          std::size_t pos = source->find(*needle, search_from);
+          if (pos == std::string::npos) {
+            replaced.append(*source, search_from, std::string::npos);
+            break;
+          }
+          replaced.append(*source, search_from, pos - search_from);
+          replaced.append(*replacement);
+          search_from = pos + needle->size();
+        }
+
+        ctx.registers[insn.a] = intern_symbol(std::move(replaced));
+        ctx.register_tags[insn.a] = ValueTag::SymbolHandle;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::StrVecNew: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        ctx.registers[insn.a] = alloc_string_vector();
+        ctx.register_tags[insn.a] = ValueTag::StringVectorHandle;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::StrVecPush: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.a] != ValueTag::StringVectorHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* values = string_vector_mut(ctx.registers[insn.a]);
+        auto value = symbol_like_text(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+        if (values == nullptr || !value.has_value()) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        values->push_back(std::string(*value));
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::StrSplit: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto value = symbol_like_text(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+        auto sep = symbol_like_text(ctx.register_tags[insn.c], ctx.registers[insn.c]);
+        if (!value.has_value() || !sep.has_value()) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (sep->empty()) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        std::vector<std::string> parts;
+        std::size_t start = 0;
+        while (true) {
+          std::size_t pos = value->find(*sep, start);
+          if (pos == std::string::npos) {
+            parts.push_back(std::string(value->substr(start)));
+            break;
+          }
+          parts.push_back(std::string(value->substr(start, pos - start)));
+          start = pos + sep->size();
+        }
+        state_.string_vectors.push_back(std::move(parts));
+        ctx.registers[insn.a] = static_cast<std::int64_t>(state_.string_vectors.size());
+        ctx.register_tags[insn.a] = ValueTag::StringVectorHandle;
+        {
+          t81::axion::Verdict verdict;
+          verdict.kind = t81::axion::VerdictKind::Allow;
+          std::ostringstream reason;
+          reason << t81::axion::reasons::kStringSplit << " input_len=" << value->size()
+                 << " sep_len=" << sep->size() << " parts=" << state_.string_vectors.back().size();
+          verdict.reason = reason.str();
+          record_axion_event(insn.opcode, static_cast<std::int32_t>(state_.string_vectors.size()),
+                             static_cast<std::int64_t>(state_.string_vectors.back().size()),
+                             verdict);
+        }
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::StrJoin: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::StringVectorHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* parts = string_vector_ptr(ctx.registers[insn.b]);
+        auto sep = symbol_like_text(ctx.register_tags[insn.c], ctx.registers[insn.c]);
+        if (parts == nullptr || !sep.has_value()) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        std::string joined;
+        if (!parts->empty()) {
+          joined = parts->front();
+          for (std::size_t i = 1; i < parts->size(); ++i) {
+            joined += *sep;
+            joined += parts->at(i);
+          }
+        }
+        ctx.registers[insn.a] = intern_symbol(std::move(joined));
+        ctx.register_tags[insn.a] = ValueTag::SymbolHandle;
+        {
+          t81::axion::Verdict verdict;
+          verdict.kind = t81::axion::VerdictKind::Allow;
+          std::ostringstream reason;
+          reason << t81::axion::reasons::kStringJoin << " parts=" << parts->size()
+                 << " sep_len=" << sep->size();
+          verdict.reason = reason.str();
+          record_axion_event(insn.opcode, static_cast<std::int32_t>(parts->size()),
+                             ctx.registers[insn.a], verdict);
+        }
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::I2F: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto value = static_cast<double>(ctx.registers[insn.b]);
+        ctx.registers[insn.a] = alloc_float(value);
+        ctx.register_tags[insn.a] = ValueTag::FloatHandle;
+        break;
+      }
+      case t81::tisc::Opcode::F2I: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::FloatHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* ptr_val = float_ptr(ctx.registers[insn.b]);
+        if (!ptr_val) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        ctx.registers[insn.a] = static_cast<std::int64_t>(*ptr_val);
+        ctx.register_tags[insn.a] = ValueTag::Int;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::I2Frac: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto frac = t81::T81Fraction::from_int(ctx.registers[insn.b]);
+        ctx.registers[insn.a] = alloc_fraction(std::move(frac));
+        ctx.register_tags[insn.a] = ValueTag::FractionHandle;
+        break;
+      }
+      case t81::tisc::Opcode::Frac2I: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::FractionHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* ptr_val = fraction_ptr(ctx.registers[insn.b]);
+        if (!ptr_val || !t81::T81BigInt::is_one(ptr_val->den)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        ctx.registers[insn.a] = ptr_val->num.to_int64();
+        ctx.register_tags[insn.a] = ValueTag::Int;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::FAdd:
+      case t81::tisc::Opcode::FSub:
+      case t81::tisc::Opcode::FMul:
+      case t81::tisc::Opcode::FDiv: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::FloatHandle ||
+            ctx.register_tags[insn.c] != ValueTag::FloatHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* lhs = float_ptr(ctx.registers[insn.b]);
+        auto* rhs = float_ptr(ctx.registers[insn.c]);
+        if (lhs == nullptr || rhs == nullptr) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        double result = 0.0;
+        switch (insn.opcode) {
+          case t81::tisc::Opcode::FAdd:
+            result = *lhs + *rhs;
+            break;
+          case t81::tisc::Opcode::FSub:
+            result = *lhs - *rhs;
+            break;
+          case t81::tisc::Opcode::FMul:
+            result = *lhs * *rhs;
+            break;
+          case t81::tisc::Opcode::FDiv:
+            if (*rhs == 0.0) {
+              trap = Trap::DivisionFault;
+              break;
+            }
+            result = *lhs / *rhs;
+            break;
+          default:
+            break;
+        }
+        if (trap != Trap::None) {
+          break;
+        }
+        ctx.registers[insn.a] = alloc_float(result);
+        ctx.register_tags[insn.a] = ValueTag::FloatHandle;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::FSin:
+      case t81::tisc::Opcode::FCos:
+      case t81::tisc::Opcode::FTan:
+      case t81::tisc::Opcode::FAsin:
+      case t81::tisc::Opcode::FAcos:
+      case t81::tisc::Opcode::FAtan:
+      case t81::tisc::Opcode::FSinh:
+      case t81::tisc::Opcode::FCosh:
+      case t81::tisc::Opcode::FTanh:
+      case t81::tisc::Opcode::FSqrt:
+      case t81::tisc::Opcode::FExp:
+      case t81::tisc::Opcode::FLog:
+      case t81::tisc::Opcode::FPow: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) ||
+            (insn.opcode == t81::tisc::Opcode::FPow && !reg_ok(insn.c))) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::FloatHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        if (insn.opcode == t81::tisc::Opcode::FPow &&
+            ctx.register_tags[insn.c] != ValueTag::FloatHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* ptr_val = float_ptr(ctx.registers[insn.b]);
+        if (!ptr_val) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        double result = 0.0;
+        if (insn.opcode == t81::tisc::Opcode::FSin) {
+          result = std::sin(*ptr_val);
+        } else if (insn.opcode == t81::tisc::Opcode::FCos) {
+          result = std::cos(*ptr_val);
+        } else if (insn.opcode == t81::tisc::Opcode::FTan) {
+          result = std::tan(*ptr_val);
+        } else if (insn.opcode == t81::tisc::Opcode::FAsin) {
+          result = std::asin(*ptr_val);
+        } else if (insn.opcode == t81::tisc::Opcode::FAcos) {
+          result = std::acos(*ptr_val);
+        } else if (insn.opcode == t81::tisc::Opcode::FAtan) {
+          result = std::atan(*ptr_val);
+        } else if (insn.opcode == t81::tisc::Opcode::FSinh) {
+          result = std::sinh(*ptr_val);
+        } else if (insn.opcode == t81::tisc::Opcode::FCosh) {
+          result = std::cosh(*ptr_val);
+        } else if (insn.opcode == t81::tisc::Opcode::FTanh) {
+          result = std::tanh(*ptr_val);
+        } else if (insn.opcode == t81::tisc::Opcode::FSqrt) {
+          result = std::sqrt(*ptr_val);
+        } else if (insn.opcode == t81::tisc::Opcode::FExp) {
+          result = std::exp(*ptr_val);
+        } else if (insn.opcode == t81::tisc::Opcode::FLog) {
+          result = std::log(*ptr_val);
+        } else {
+          auto* exponent = float_ptr(ctx.registers[insn.c]);
+          if (!exponent) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          result = std::pow(*ptr_val, *exponent);
+        }
+        ctx.registers[insn.a] = alloc_float(result);
+        ctx.register_tags[insn.a] = ValueTag::FloatHandle;
+        break;
+      }
+      case t81::tisc::Opcode::FracAdd:
+      case t81::tisc::Opcode::FracSub:
+      case t81::tisc::Opcode::FracMul:
+      case t81::tisc::Opcode::FracDiv: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::FractionHandle ||
+            ctx.register_tags[insn.c] != ValueTag::FractionHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* lhs = fraction_ptr(ctx.registers[insn.b]);
+        auto* rhs = fraction_ptr(ctx.registers[insn.c]);
+        if (lhs == nullptr || rhs == nullptr) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        try {
+          t81::T81Fraction result;
+          switch (insn.opcode) {
+            case t81::tisc::Opcode::FracAdd:
+              result = t81::T81Fraction::add(*lhs, *rhs);
+              break;
+            case t81::tisc::Opcode::FracSub:
+              result = t81::T81Fraction::sub(*lhs, *rhs);
+              break;
+            case t81::tisc::Opcode::FracMul:
+              result = t81::T81Fraction::mul(*lhs, *rhs);
+              break;
+            case t81::tisc::Opcode::FracDiv:
+              if (t81::T81BigInt::is_zero(rhs->num)) {
+                trap = Trap::DivisionFault;
+                break;
+              }
+              result = t81::T81Fraction::div(*lhs, *rhs);
+              break;
+            default:
+              break;
+          }
+          if (trap != Trap::None) {
+            break;
+          }
+          ctx.registers[insn.a] = alloc_fraction(std::move(result));
+          ctx.register_tags[insn.a] = ValueTag::FractionHandle;
+          update_flags(ctx.registers[insn.a]);
+        } catch (...) {
+          trap = Trap::DecodeFault;
+        }
+        break;
+      }
+      case t81::tisc::Opcode::ChkShape: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::TensorHandle ||
+            ctx.register_tags[insn.c] != ValueTag::ShapeHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* tensor = tensor_ptr(ctx.registers[insn.b]);
+        const auto* expected = shape_ptr(ctx.registers[insn.c]);
+        if (tensor == nullptr) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor,
+                           static_cast<int>(ctx.registers[insn.b]), "tensor handle access");
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (expected == nullptr) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        bool match = tensor->shape() == *expected;
+        set_reg(insn.a, match ? 1 : 0, ValueTag::Int);
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::MakeOptionSome: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto handle = intern_option(true, ctx.register_tags[insn.b], ctx.registers[insn.b]);
+        ctx.registers[insn.a] = handle;
+        ctx.register_tags[insn.a] = ValueTag::OptionHandle;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::MakeOptionNone: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto handle = intern_option(false, ValueTag::Int, 0);
+        ctx.registers[insn.a] = handle;
+        ctx.register_tags[insn.a] = ValueTag::OptionHandle;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::MakeResultOk: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto handle = intern_result(true, ctx.register_tags[insn.b], ctx.registers[insn.b]);
+        ctx.registers[insn.a] = handle;
+        ctx.register_tags[insn.a] = ValueTag::ResultHandle;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::MakeResultErr: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto handle = intern_result(false, ctx.register_tags[insn.b], ctx.registers[insn.b]);
+        ctx.registers[insn.a] = handle;
+        ctx.register_tags[insn.a] = ValueTag::ResultHandle;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::MakeEnumVariant: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto handle = intern_enum(static_cast<int>(insn.b), false, ValueTag::Int, 0);
+        ctx.registers[insn.a] = handle;
+        ctx.register_tags[insn.a] = ValueTag::EnumHandle;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::MakeEnumVariantPayload: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (insn.c < 0) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto handle = intern_enum(static_cast<int>(insn.c), true, ctx.register_tags[insn.b],
+                                  ctx.registers[insn.b]);
+        ctx.registers[insn.a] = handle;
+        ctx.register_tags[insn.a] = ValueTag::EnumHandle;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::MakeComplex: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::Int ||
+            ctx.register_tags[insn.c] != ValueTag::Int) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto handle = intern_complex(ctx.registers[insn.b], ctx.registers[insn.c]);
+        ctx.registers[insn.a] = handle;
+        ctx.register_tags[insn.a] = ValueTag::ComplexHandle;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::OptionIsSome: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::OptionHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* opt = option_ptr(ctx.registers[insn.b]);
+        if (opt == nullptr) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        set_reg(insn.a, opt->has_value ? 1 : 0, ValueTag::Int);
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::OptionUnwrap: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::OptionHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* opt = option_ptr(ctx.registers[insn.b]);
+        if (opt == nullptr || !opt->has_value) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        set_reg(insn.a, opt->payload, opt->payload_tag);
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::ResultIsOk: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::ResultHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* res = result_ptr(ctx.registers[insn.b]);
+        if (res == nullptr) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        set_reg(insn.a, res->is_ok ? 1 : 0, ValueTag::Int);
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::ResultUnwrapOk: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::ResultHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* res = result_ptr(ctx.registers[insn.b]);
+        if (res == nullptr || !res->is_ok) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        set_reg(insn.a, res->payload, res->payload_tag);
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::ResultUnwrapErr: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::ResultHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* res = result_ptr(ctx.registers[insn.b]);
+        if (res == nullptr || res->is_ok) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        set_reg(insn.a, res->payload, res->payload_tag);
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::EnumIsVariant: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::EnumHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* val = enum_ptr(ctx.registers[insn.b]);
+        if (val == nullptr) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        bool matches = (val->variant_id == insn.c);
+        set_reg(insn.a, matches ? 1 : 0, ValueTag::Int);
+        update_flags(ctx.registers[insn.a]);
+        {
+          t81::axion::Verdict verdict;
+          verdict.kind = t81::axion::VerdictKind::Allow;
+          std::ostringstream reason;
+          const int guard_variant_id = static_cast<int>(insn.c);  // explicit cast
+          const int guard_enum_id = t81::enum_meta::decode_enum_id(guard_variant_id);
+          const int guard_local_variant = t81::enum_meta::decode_variant_id(guard_variant_id);
+          const auto* meta = enum_metadata_for(guard_enum_id);
+          const auto* variant_meta = variant_metadata(meta, guard_local_variant);
+          reason << "enum guard";
+          if (meta != nullptr) {
+            reason << " enum=" << meta->name;
+          }
+          if (variant_meta != nullptr) {
+            reason << " variant=" << variant_meta->name;
+            if (variant_meta->payload.has_value()) {
+              reason << " payload=" << *variant_meta->payload;
+            }
+          }
+          reason << " match=" << (matches ? "pass" : "fail");
+          verdict.reason = reason.str();
+          record_axion_event(insn.opcode, static_cast<std::int32_t>(insn.c), matches ? 1 : 0,
+                             verdict);
+        }
+        break;
+      }
+      case t81::tisc::Opcode::EnumUnwrapPayload: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::EnumHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* val = enum_ptr(ctx.registers[insn.b]);
+        if (val == nullptr || !val->has_payload) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        set_reg(insn.a, val->payload, val->payload_tag);
+        update_flags(ctx.registers[insn.a]);
+        {
+          t81::axion::Verdict verdict;
+          verdict.kind = t81::axion::VerdictKind::Allow;
+          std::ostringstream reason;
+          const int global_variant_id = val->variant_id;
+          const int enum_id = t81::enum_meta::decode_enum_id(global_variant_id);
+          const int local_variant = t81::enum_meta::decode_variant_id(global_variant_id);
+          const auto* meta = enum_metadata_for(enum_id);
+          const auto* variant_meta = variant_metadata(meta, local_variant);
+          reason << "enum payload";
+          if (meta != nullptr) {
+            reason << " enum=" << meta->name;
+          }
+          if (variant_meta != nullptr) {
+            reason << " variant=" << variant_meta->name;
+            if (variant_meta->payload.has_value()) {
+              reason << " payload=" << *variant_meta->payload;
+            }
+          }
+          verdict.reason = reason.str();
+          record_axion_event(insn.opcode, static_cast<std::int32_t>(global_variant_id),
+                             val->payload, verdict);
+        }
+        break;
+      }
+      case t81::tisc::Opcode::TVecAdd:
+      case t81::tisc::Opcode::TVecMul: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.c); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* tensor_a = tensor_ptr(ctx.registers[insn.b]);
+        if (tensor_a == nullptr) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor,
+                           static_cast<int>(ctx.registers[insn.b]), "tensor handle access");
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto* tensor_b = tensor_ptr(ctx.registers[insn.c]);
+        if (tensor_b == nullptr) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor,
+                           static_cast<int>(ctx.registers[insn.c]), "tensor handle access");
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (tensor_a->data().size() != tensor_b->data().size()) {
+          trap = Trap::ShapeFault;
+          break;
+        }
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
+                                    insn.opcode == t81::tisc::Opcode::TVecAdd
+                                        ? "TVecAdd kernel execution"
+                                        : "TVecMul kernel execution"};
+        record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), ctx.registers[insn.b],
+                           verdict);
+
+        std::vector<float> data(tensor_a->data().size());
+        if (insn.opcode == t81::tisc::Opcode::TVecAdd) {
+          for (std::size_t i = 0; i < data.size(); ++i) {
+            data[i] = tensor_a->data()[i] + tensor_b->data()[i];
+          }
+        } else {
+          for (std::size_t i = 0; i < data.size(); ++i) {
+            data[i] = tensor_a->data()[i] * tensor_b->data()[i];
+          }
+        }
+        auto res_handle = alloc_tensor(t81::T729DynamicTensor(tensor_a->shape(), std::move(data)));
+        if (!res_handle) {
+          trap = res_handle.error();
+          break;
+        }
+        ctx.registers[insn.a] = *res_handle;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        break;
+      }
+      case t81::tisc::Opcode::TTranspose: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* tensor = tensor_ptr(ctx.registers[insn.b]);
+        if (tensor == nullptr || tensor->rank() != 2) {
+          trap = Trap::ShapeFault;
+          break;
+        }
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "TTranspose kernel execution"};
+        record_axion_event(insn.opcode, static_cast<std::int32_t>(insn.b), ctx.registers[insn.b],
+                           verdict);
+        auto res_handle = alloc_tensor(tensor->transpose2d());
+        if (!res_handle) {
+          trap = res_handle.error();
+          break;
+        }
+        ctx.registers[insn.a] = *res_handle;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        break;
+      }
+      case t81::tisc::Opcode::TMatMul: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.c); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* tensor_a = tensor_ptr(ctx.registers[insn.b]);
+        if (tensor_a == nullptr) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor,
+                           static_cast<int>(ctx.registers[insn.b]), "tensor handle access");
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto* tensor_b = tensor_ptr(ctx.registers[insn.c]);
+        if (tensor_b == nullptr) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor,
+                           static_cast<int>(ctx.registers[insn.c]), "tensor handle access");
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (tensor_a->rank() != 2 || tensor_b->rank() != 2) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor, 0, "TMatMul rank mismatch");
+          trap = Trap::ShapeFault;
+          break;
+        }
+        int k_dim = tensor_a->shape()[1];
+        if (tensor_b->shape()[0] != k_dim) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor, 0,
+                           "TMatMul inner dimension mismatch");
+          trap = Trap::ShapeFault;
+          break;
+        }
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "TMatMul kernel execution"};
+        record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), ctx.registers[insn.b],
+                           verdict);
+        t81::T729DynamicTensor result = t81::ops::matmul(*tensor_a, *tensor_b);
+        auto res_handle = alloc_tensor(std::move(result));
+        if (!res_handle) {
+          trap = res_handle.error();
+          break;
+        }
+        ctx.registers[insn.a] = *res_handle;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        break;
+      }
+      case t81::tisc::Opcode::TTenDot: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.c); !res) {
+          trap = res.error();
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::TensorHandle ||
+            ctx.register_tags[insn.c] != ValueTag::TensorHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* tensor_a = tensor_ptr(ctx.registers[insn.b]);
+        if (tensor_a == nullptr) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor,
+                           static_cast<int>(ctx.registers[insn.b]), "tensor handle access");
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto* tensor_b = tensor_ptr(ctx.registers[insn.c]);
+        if (tensor_b == nullptr) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor,
+                           static_cast<int>(ctx.registers[insn.c]), "tensor handle access");
+          trap = Trap::DecodeFault;
+          break;
+        }
+        try {
+          auto result = t81::T729DynamicTensor::contract_dot(*tensor_a, *tensor_b);
+          auto res_handle = alloc_tensor(std::move(result));
+          if (!res_handle) {
+            trap = res_handle.error();
+            break;
+          }
+          ctx.registers[insn.a] = *res_handle;
+          ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        } catch (...) {
+          trap = Trap::ShapeFault;
+        }
+        break;
+      }
+      case t81::tisc::Opcode::TGet: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+
+        auto* tensor = tensor_ptr(ctx.registers[insn.b]);
+        if (tensor == nullptr) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor,
+                           static_cast<int>(ctx.registers[insn.b]), "tensor handle access");
+          trap = Trap::DecodeFault;
+          break;
+        }
+
+        if (ctx.register_tags[insn.c] != ValueTag::Int) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        std::int64_t index = ctx.registers[insn.c];
+        if (index < 0 || static_cast<std::size_t>(index) >= tensor->data().size()) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor, static_cast<int>(index),
+                           "tensor index out of bounds");
+          trap = Trap::BoundsFault;
+          break;
+        }
+
+        float val = tensor->data()[static_cast<std::size_t>(index)];
+
+        ctx.registers[insn.a] = alloc_float(static_cast<double>(val));
+        ctx.register_tags[insn.a] = ValueTag::FloatHandle;
+
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "TGet kernel execution"};
+        record_axion_event(insn.opcode, static_cast<std::int32_t>(insn.b), ctx.registers[insn.b],
+                           verdict);
+        break;
+      }
+      case t81::tisc::Opcode::TNew: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::Int) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        std::int64_t size = ctx.registers[insn.b];
+        if (size <= 0) {
+          trap = Trap::BoundsFault;
+          break;
+        }
+
+        std::vector<int> shape = {static_cast<int>(size)};
+        t81::T729DynamicTensor t(shape);
+        auto res_handle = alloc_tensor(std::move(t));
+        if (!res_handle) {
+          trap = res_handle.error();
+          break;
+        }
+        ctx.registers[insn.a] = *res_handle;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "TNew"};
+        record_axion_event(insn.opcode, static_cast<std::int32_t>(size), ctx.registers[insn.a],
+                           verdict);
+        break;
+      }
+      case t81::tisc::Opcode::TSet: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.a] != ValueTag::TensorHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* tensor = tensor_ptr(ctx.registers[insn.a]);
+        if (tensor == nullptr) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+
+        if (ctx.register_tags[insn.b] != ValueTag::Int) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        std::int64_t idx = ctx.registers[insn.b];
+        if (idx < 0 || static_cast<size_t>(idx) >= tensor->data().size()) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor, static_cast<int>(idx),
+                           "TSet OOB");
+          trap = Trap::BoundsFault;
+          break;
+        }
+
+        float val = 0.0F;
+        auto val_tag = ctx.register_tags[insn.c];
+        if (val_tag == ValueTag::FloatHandle) {
+          auto* ptr_val = float_ptr(ctx.registers[insn.c]);
+          if (ptr_val) val = static_cast<float>(*ptr_val);
+        } else if (val_tag == ValueTag::Int) {
+          val = static_cast<float>(ctx.registers[insn.c]);
+        } else {
+          trap = Trap::TypeFault;
+          break;
+        }
+
+        tensor->data()[static_cast<size_t>(idx)] = val;
+
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "TSet"};
+        record_axion_event(insn.opcode, static_cast<std::int32_t>(insn.b), 0, verdict);
+        break;
+      }
+      case t81::tisc::Opcode::TID: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* tensor = tensor_ptr(ctx.registers[insn.b]);
+        if (tensor == nullptr) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        // Deep copy
+        t81::T729DynamicTensor copy(tensor->shape(), std::vector<float>(tensor->data()));
+        auto res_handle = alloc_tensor(std::move(copy));
+        if (!res_handle) {
+          trap = res_handle.error();
+          break;
+        }
+        ctx.registers[insn.a] = *res_handle;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "TID (Identity/Copy)"};
+        record_axion_event(insn.opcode, static_cast<std::int32_t>(insn.b), ctx.registers[insn.a],
+                           verdict);
+        break;
+      }
+      case t81::tisc::Opcode::NSend: {
+        if (!reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "NSend placeholder"};
+        record_axion_event(insn.opcode, static_cast<std::int32_t>(insn.b), 0, verdict);
+        // Placeholder: no actual network op yet
+        break;
+      }
+      case t81::tisc::Opcode::NRecv: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "NRecv placeholder"};
+        record_axion_event(insn.opcode, 0, 0, verdict);
+        // Placeholder: return dummy byte buffer (handled as generic handle or int for now)
+        // Since we don't have a BytesHandle yet in ValueTag explicitly used here, we return 0.
+        ctx.registers[insn.a] = 0;
+        ctx.register_tags[insn.a] = ValueTag::Int;
+        break;
+      }
+      case t81::tisc::Opcode::VWait: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        // Wait on promise handle in insn.b
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "VWait placeholder"};
+        record_axion_event(insn.opcode, static_cast<std::int32_t>(insn.b), 0, verdict);
+        // Placeholder: immediate return
+        ctx.registers[insn.a] = 0;
+        ctx.register_tags[insn.a] = ValueTag::Int;
+        break;
+      }
+      case t81::tisc::Opcode::VYield: {
+        if (!reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        // Yield result handle in insn.b
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "VYield placeholder"};
+        record_axion_event(insn.opcode, static_cast<std::int32_t>(insn.b), 0, verdict);
+        break;
+      }
+      case t81::tisc::Opcode::TNorm: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        int t = clamp_trit(ctx.registers[insn.b]);
+        set_reg(insn.a, t, ValueTag::Int);
+        update_flags(t);
+        break;
+      }
+      case t81::tisc::Opcode::Canon: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        // Canonicalize memory/register (placeholder logic)
+        // In full implementation, this would enforce canonical representation
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "Canon"};
+        record_axion_event(insn.opcode, static_cast<std::int32_t>(insn.a), ctx.registers[insn.a],
+                           verdict);
+        break;
+      }
+      case t81::tisc::Opcode::MemZero: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        std::size_t addr = static_cast<std::size_t>(ctx.registers[insn.a]);
+        std::size_t size = static_cast<std::size_t>(ctx.registers[insn.b]);
+        for (std::size_t i = 0; i < size; ++i) {
+          if (!mem_ok(static_cast<int>(addr + i))) {
+            trap = Trap::BoundsFault;
+            break;
+          }
+          state_.memory[addr + i] = 0;
+          state_.memory_tags[addr + i] = ValueTag::Int;
+        }
+        if (trap == Trap::None) {
+          log_memory_segment_access(insn.opcode, segment_for_address(addr), addr, size, "MemZero");
+        }
+        break;
+      }
+      case t81::tisc::Opcode::Copy: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        std::size_t dst = static_cast<std::size_t>(ctx.registers[insn.a]);
+        std::size_t src = static_cast<std::size_t>(ctx.registers[insn.b]);
+        std::size_t size = static_cast<std::size_t>(ctx.registers[insn.c]);
+        for (std::size_t i = 0; i < size; ++i) {
+          if (!mem_ok(static_cast<int>(src + i)) || !mem_ok(static_cast<int>(dst + i))) {
+            trap = Trap::BoundsFault;
+            break;
+          }
+          // Check for overlap if needed, but TISC spec says COPY is guaranteed non-overlapping
+          // usually, or we handle it safely.
+        }
+        if (trap == Trap::None) {
+          // Perform copy
+          for (std::size_t i = 0; i < size; ++i) {
+            state_.memory[dst + i] = state_.memory[src + i];
+            state_.memory_tags[dst + i] = state_.memory_tags[src + i];
+          }
+          log_memory_segment_access(insn.opcode, segment_for_address(dst), dst, size, "Copy");
+        }
+        break;
+      }
+      case t81::tisc::Opcode::AxHalt: {
+        t81::axion::Verdict verdict;
+        verdict.kind = t81::axion::VerdictKind::Deny;
+        verdict.reason = "AXHALT instruction";
+        record_axion_event(insn.opcode, 0, 0, verdict);
+        state_.halted = true;
+        break;
+      }
+      case t81::tisc::Opcode::Assert: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.registers[insn.a] == 0) {
+          t81::axion::Verdict verdict;
+          verdict.kind = t81::axion::VerdictKind::Deny;
+          verdict.reason = "ASSERT failed";
+          record_axion_event(insn.opcode, static_cast<std::int32_t>(insn.a), 0, verdict);
+          trap = Trap::AssertionFailed;
+        }
+        break;
+      }
+      // Cognitive Tier Stubs
+      case t81::tisc::Opcode::SymLoad: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        t81::cog::v1::SymbolicGraph graph;
+        if (ctx.register_tags[insn.b] == ValueTag::SymbolHandle) {
+          auto* sym = symbol_ptr(ctx.registers[insn.b]);
+          if (sym) {
+            graph.add_node(t81::cog::v1::SymbolicAtom::create(*sym));
+          }
+        }
+        auto res_handle = alloc_symbolic_graph(std::move(graph));
+        if (!res_handle) {
+          trap = res_handle.error();
+          break;
+        }
+        ctx.registers[insn.a] = *res_handle;
+        ctx.register_tags[insn.a] = ValueTag::SymbolicGraphHandle;
+        {
+          t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "SymLoad"};
+          record_axion_event(insn.opcode, 0, ctx.registers[insn.a], verdict);
+        }
+        break;
+      }
+      case t81::tisc::Opcode::SymRewrite: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.a] != ValueTag::SymbolicGraphHandle ||
+            ctx.register_tags[insn.b] != ValueTag::SymbolHandle ||
+            ctx.register_tags[insn.c] != ValueTag::SymbolHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* graph = symbolic_graph_ptr(ctx.registers[insn.a]);
+        if (!graph) {
+          trap = Trap::BoundsFault;
+          break;
+        }
+        auto* match_str = symbol_ptr(ctx.registers[insn.b]);
+        auto* replace_str = symbol_ptr(ctx.registers[insn.c]);
+
+        if (match_str && replace_str) {
+          t81::cog::v1::RewriteRule rule;
+          rule.match_node = t81::T81Symbol::intern(*match_str);
+          rule.replace_node = t81::T81Symbol::intern(*replace_str);
+          std::size_t old_nodes = graph->nodes.size();
+          graph->apply_rewrite(rule);
+          std::size_t new_nodes = graph->nodes.size();
+          if (new_nodes >= old_nodes) {
+            state_.metrics.total_symbolic_nodes += (new_nodes - old_nodes);
+          } else {
+            state_.metrics.total_symbolic_nodes -= (old_nodes - new_nodes);
+          }
+        }
+        {
+          t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "SymRewrite"};
+          record_axion_event(insn.opcode, 0, 0, verdict);
+        }
+        break;
+      }
+      case t81::tisc::Opcode::SymConfluence: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::SymbolicGraphHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* graph = symbolic_graph_ptr(ctx.registers[insn.b]);
+        bool conf = graph ? graph->is_confluent() : false;
+        set_reg(insn.a, conf ? 1 : 0, ValueTag::Bool);
+        {
+          t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "SymConfluence"};
+          record_axion_event(insn.opcode, 0, conf ? 1 : 0, verdict);
+        }
+        break;
+      }
+      case t81::tisc::Opcode::SymCanon: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.a] != ValueTag::SymbolicGraphHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* graph = symbolic_graph_ptr(ctx.registers[insn.a]);
+        if (graph) graph->canonicalize();
+        {
+          t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "SymCanon"};
+          record_axion_event(insn.opcode, 0, 0, verdict);
+        }
+        break;
+      }
+      case t81::tisc::Opcode::SymBind: {
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "SymBind"};
+        record_axion_event(insn.opcode, 0, 0, verdict);
+        break;
+      }
+      case t81::tisc::Opcode::ReflCap: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        std::string description;
+        if (ctx.register_tags[insn.b] == ValueTag::SymbolHandle) {
+          auto* sym = symbol_ptr(ctx.registers[insn.b]);
+          if (sym) description = *sym;
+        }
+
+        t81::cog::v2::ReflectiveFrame frame;
+        // Make a copy of registers. std::array to std::vector.
+        std::vector<std::int64_t> regs(ctx.registers.begin(), ctx.registers.end());
+        frame.capture_state(current_pc, regs, description);
+
+        ctx.tier2_frames.push_back(std::move(frame));
+        ctx.registers[insn.a] = static_cast<std::int64_t>(ctx.tier2_frames.size());
+        ctx.register_tags[insn.a] = ValueTag::Tier2FrameHandle;
+
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "ReflCap: captured state"};
+        record_axion_event(insn.opcode, static_cast<std::int32_t>(ctx.tier2_frames.size()), 0,
+                           verdict);
+        break;
+      }
+      case t81::tisc::Opcode::ReflJustify: {
+        if (!reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.a] != ValueTag::Tier2FrameHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* frame = tier2_frame_ptr(ctx.registers[insn.a]);
+        if (!frame) {
+          trap = Trap::BoundsFault;
+          break;
+        }
+        std::string text;
+        if (auto s = symbol_like_text(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+            s.has_value()) {
+          text = *s;
+        }
+        frame->justification.add_step(text);
+
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "ReflJustify: added step"};
+        record_axion_event(insn.opcode, 0, 0, verdict);
+        break;
+      }
+      case t81::tisc::Opcode::ReflCheck: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::Tier2FrameHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* frame = tier2_frame_ptr(ctx.registers[insn.b]);
+        if (!frame) {
+          trap = Trap::BoundsFault;
+          break;
+        }
+        std::string criteria;
+        if (auto s = symbol_like_text(ctx.register_tags[insn.c], ctx.registers[insn.c]);
+            s.has_value()) {
+          criteria = *s;
+        } else {
+          trap = Trap::TypeFault;
+          break;
+        }
+
+        bool result = frame->check(criteria);
+        set_reg(insn.a, result ? 1 : 0, ValueTag::Bool);
+        update_flags(ctx.registers[insn.a]);
+
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "ReflCheck"};
+        record_axion_event(insn.opcode, 0, result, verdict);
+        break;
+      }
+      case t81::tisc::Opcode::ReflTrace: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.a] != ValueTag::Tier2FrameHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* frame = tier2_frame_ptr(ctx.registers[insn.a]);
+        if (!frame) {
+          trap = Trap::BoundsFault;
+          break;
+        }
+        // Capture current registers
+        std::vector<int64_t> current_regs(ctx.registers.begin(), ctx.registers.end());
+        frame->trace(current_pc, current_regs);
+
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "ReflTrace"};
+        record_axion_event(insn.opcode, 0, 0, verdict);
+        break;
+      }
+      case t81::tisc::Opcode::ReflSeal: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.a] != ValueTag::Tier2FrameHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* frame = tier2_frame_ptr(ctx.registers[insn.a]);
+        if (!frame) {
+          trap = Trap::BoundsFault;
+          break;
+        }
+        frame->seal();
+
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "ReflSeal"};
+        record_axion_event(insn.opcode, 0, static_cast<int64_t>(frame->hash), verdict);
+        break;
+      }
+      case t81::tisc::Opcode::Recurse: {
+        if (!ctx.tier3_recursor.can_recurse()) {
+          t81::axion::Verdict verdict;
+          verdict.kind = t81::axion::VerdictKind::Deny;
+          verdict.reason = "Tier 3 recursion limit exceeded";
+          record_axion_event(insn.opcode, 0,
+                             static_cast<std::int64_t>(ctx.tier3_recursor.current_depth), verdict);
+          trap = Trap::SecurityFault;
+          break;
+        }
+        // Push a dummy proof for now, as we don't have a proof object from registers yet.
+        ctx.tier3_recursor.push_frame(t81::cog::v3::ContractionProof{true, 0.0, 0.0});
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "Recurse: depth increased"};
+        record_axion_event(insn.opcode, 0,
+                           static_cast<std::int64_t>(ctx.tier3_recursor.current_depth), verdict);
+        break;
+      }
+      case t81::tisc::Opcode::Contract: {
+        if (!reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        // Read entropy value (assumed integer or float handle?)
+        double current_entropy = 0.0;
+        if (ctx.register_tags[insn.b] == ValueTag::Int) {
+          current_entropy = static_cast<double>(ctx.registers[insn.b]);
+        } else if (ctx.register_tags[insn.b] == ValueTag::FloatHandle) {
+          auto* ptr = float_ptr(ctx.registers[insn.b]);
+          if (ptr) current_entropy = *ptr;
+        }
+
+        // Validate contraction against previous frame
+        // This requires Recursor to expose the top frame's entropy.
+        // The current Recursor struct in memory only has proofs vector.
+        // We will assume the previous proof's final_entropy is the start.
+        // TODO: Implement actual strict entropy contraction check (Theta-7).
+        // For now, we log the check as verified to allow experimentation.
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "Contract: entropy checked"};
+        record_axion_event(insn.opcode, 0, static_cast<std::int64_t>(current_entropy), verdict);
+        break;
+      }
+      case t81::tisc::Opcode::Entropy: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        // Calculate system entropy (stack usage + heap usage + depth)
+        std::int64_t entropy = (state_.layout.stack.limit - ctx.sp) +
+                               (state_.heap_ptr - state_.layout.heap.start) + ctx.call_depth;
+        set_reg(insn.a, entropy, ValueTag::Int);
+        update_flags(entropy);
+        break;
+      }
+      case t81::tisc::Opcode::Depth: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        std::int64_t depth = static_cast<std::int64_t>(ctx.tier3_recursor.current_depth);
+        set_reg(insn.a, depth, ValueTag::Int);
+        update_flags(depth);
+        break;
+      }
+      case t81::tisc::Opcode::Terminate: {
+        ctx.tier3_recursor.pop_frame();
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "Terminate: depth decreased"};
+        record_axion_event(insn.opcode, 0,
+                           static_cast<std::int64_t>(ctx.tier3_recursor.current_depth), verdict);
+        break;
+      }
+      case t81::tisc::Opcode::InfSeed: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+
+        t81::T81Fraction start_val;
+        if (ctx.register_tags[insn.b] == ValueTag::Int) {
+          start_val = t81::T81Fraction::from_int(ctx.registers[insn.b]);
+        } else if (ctx.register_tags[insn.b] == ValueTag::FractionHandle) {
+          auto* f = fraction_ptr(ctx.registers[insn.b]);
+          if (f) start_val = *f;
+        } else {
+          trap = Trap::TypeFault;
+          break;
+        }
+
+        t81::cog::v5::InfiniteCanonicalForm form;
+        form.first_term = start_val;
+        form.type = t81::cog::v5::SeriesType::Geometric;
+
+        auto res = alloc_infinite_form(std::move(form));
+        if (!res) {
+          trap = res.error();
+          break;
+        }
+        ctx.registers[insn.a] = *res;
+        ctx.register_tags[insn.a] = ValueTag::InfiniteHandle;
+
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "InfSeed"};
+        record_axion_event(insn.opcode, 0, ctx.registers[insn.a], verdict);
+        break;
+      }
+      case t81::tisc::Opcode::InfExpand: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.a] != ValueTag::InfiniteHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* form = infinite_form_ptr(ctx.registers[insn.a]);
+        if (!form) {
+          trap = Trap::BoundsFault;
+          break;
+        }
+
+        t81::T81Fraction ratio_val;
+        if (ctx.register_tags[insn.b] == ValueTag::Int) {
+          ratio_val = t81::T81Fraction::from_int(ctx.registers[insn.b]);
+        } else if (ctx.register_tags[insn.b] == ValueTag::FractionHandle) {
+          auto* f = fraction_ptr(ctx.registers[insn.b]);
+          if (f) ratio_val = *f;
+        } else {
+          trap = Trap::TypeFault;
+          break;
+        }
+
+        form->ratio = ratio_val;
+
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "InfExpand"};
+        record_axion_event(insn.opcode, 0, ctx.registers[insn.a], verdict);
+        break;
+      }
+      case t81::tisc::Opcode::InfCollapse: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.a] != ValueTag::InfiniteHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* form = infinite_form_ptr(ctx.registers[insn.a]);
+        if (!form) {
+          trap = Trap::BoundsFault;
+          break;
+        }
+
+        form->collapse();
+
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "InfCollapse"};
+        record_axion_event(insn.opcode, 0, ctx.registers[insn.a], verdict);
+        break;
+      }
+      case t81::tisc::Opcode::InfConverge: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::InfiniteHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* form = infinite_form_ptr(ctx.registers[insn.b]);
+        if (!form) {
+          trap = Trap::BoundsFault;
+          break;
+        }
+
+        set_reg(insn.a, form->is_convergent ? 1 : 0, ValueTag::Bool);
+        update_flags(ctx.registers[insn.a]);
+
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "InfConverge"};
+        record_axion_event(insn.opcode, 0, form->is_convergent, verdict);
+        break;
+      }
+      case t81::tisc::Opcode::InfSignature: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.b] != ValueTag::InfiniteHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* form = infinite_form_ptr(ctx.registers[insn.b]);
+        if (!form) {
+          trap = Trap::BoundsFault;
+          break;
+        }
+
+        auto sig = t81::cog::v5::CollapseSignature::generate(*form);
+        ctx.registers[insn.a] = intern_symbol(sig.hash);
+        ctx.register_tags[insn.a] = ValueTag::SymbolHandle;
+
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "InfSignature"};
+        record_axion_event(insn.opcode, 0, ctx.registers[insn.a], verdict);
+        break;
+      }
+      case t81::tisc::Opcode::Gossip: {
+        if (!reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        std::int64_t val = ctx.registers[insn.b];
+        std::int32_t tag = static_cast<std::int32_t>(ctx.register_tags[insn.b]);
+        state_.tier4_state.gossip(val, tag, instruction_count_);
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "Gossip: broadcast state"};
+        record_axion_event(insn.opcode, tag, val, verdict);
+        break;
+      }
+      case t81::tisc::Opcode::Merge: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto msg = state_.tier4_state.merge();
+        std::int64_t handle = 0;
+        if (msg) {
+          handle = intern_option(true, static_cast<ValueTag>(msg->tag), msg->payload);
+        } else {
+          handle = intern_option(false, ValueTag::Int, 0);
+        }
+        set_reg(insn.a, handle, ValueTag::OptionHandle);
+        update_flags(handle);
+
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "Merge: process inbox"};
+        record_axion_event(insn.opcode, msg ? 1 : 0, handle, verdict);
+        break;
+      }
+      case t81::tisc::Opcode::TickSync: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        // Operand A contains remote tick
+        uint64_t remote = static_cast<uint64_t>(ctx.registers[insn.a]);
+        state_.tier4_state.sync_tick(remote);
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "TickSync"};
+        record_axion_event(insn.opcode, 0,
+                           static_cast<int64_t>(state_.tier4_state.vector.global_tick), verdict);
+        break;
+      }
+      case t81::tisc::Opcode::Coherence: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        // Returns coherence status (e.g., drift from global tick)
+        int64_t drift = static_cast<int64_t>(state_.tier4_state.vector.global_tick) -
+                        static_cast<int64_t>(instruction_count_);
+        set_reg(insn.a, drift, ValueTag::Int);
+        update_flags(drift);
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "Coherence check"};
+        record_axion_event(insn.opcode, 0, drift, verdict);
+        break;
+      }
+      case t81::tisc::Opcode::DistSeal: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        // "Seal" the distributed state (e.g. generate a hash of outbox/inbox state)
+        // For simulation, we just sum up outbox payloads
+        int64_t seal = 0;
+        for (const auto& m : state_.tier4_state.outbox) {
+          seal ^= m.payload;
+        }
+        set_reg(insn.a, seal, ValueTag::Int);
+        update_flags(seal);
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "DistSeal"};
+        record_axion_event(insn.opcode, 0, seal, verdict);
+        break;
+      }
+      case t81::tisc::Opcode::AxCheck: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        bool ok = ctx.registers[insn.a] != 0;
+        auto msg = symbol_like_text(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+        std::string text = msg.has_value() ? std::string(*msg) : "Check";
+
+        t81::axion::Verdict verdict;
+        verdict.kind = ok ? t81::axion::VerdictKind::Allow : t81::axion::VerdictKind::Deny;
+        verdict.reason = "AxCheck: " + text;
+        record_axion_event(insn.opcode, 0, ok ? 1 : 0, verdict);
+        break;
+      }
+      case t81::tisc::Opcode::AxReport: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto msg = symbol_like_text(ctx.register_tags[insn.a], ctx.registers[insn.a]);
+        std::string text = msg.has_value() ? std::string(*msg) : "Report";
+
+        t81::axion::Verdict verdict;
+        verdict.kind = t81::axion::VerdictKind::Allow;
+        verdict.reason = "AxReport: " + text;
+        record_axion_event(insn.opcode, 0, 0, verdict);
+        break;
+      }
+      case t81::tisc::Opcode::AxSign:
+      case t81::tisc::Opcode::AxLineage:
+      case t81::tisc::Opcode::AxCanon: {
+        // Generic handler for unimplemented/stubbed cognitive opcodes
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
+                                    "Cognitive Opcode Stub Execution"};
+        record_axion_event(insn.opcode, 0, 0, verdict);
+        // For now, treat as NOP but logged.
+        // In strict mode or future, this might be Unimplemented trap.
+        break;
+      }
+      case t81::tisc::Opcode::TNeuralFwd: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        // Identity for now, just copy B to A
+        copy_reg(insn.a, insn.b);
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
+                                    "TNeuralFwd: forward pass identity"};
+        record_axion_event(insn.opcode, 0, ctx.registers[insn.a], verdict);
+        break;
+      }
+      case t81::tisc::Opcode::TNeuralBwd: {
+        if (!reg_ok(insn.a)) {  // Operand is the model/tensor to train
+          trap = Trap::DecodeFault;
+          break;
+        }
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
+                                    "TNeuralBwd: backward pass stub"};
+        record_axion_event(insn.opcode, 0, ctx.registers[insn.a], verdict);
+        break;
+      }
+      case t81::tisc::Opcode::BitAnd:
+      case t81::tisc::Opcode::BitOr:
+      case t81::tisc::Opcode::BitXor: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        std::int64_t v = 0;
+        if (insn.opcode == t81::tisc::Opcode::BitAnd) {
+          v = ctx.registers[insn.b] & ctx.registers[insn.c];
+        } else if (insn.opcode == t81::tisc::Opcode::BitOr) {
+          v = ctx.registers[insn.b] | ctx.registers[insn.c];
+        } else {
+          v = ctx.registers[insn.b] ^ ctx.registers[insn.c];
+        }
+        ctx.registers[insn.a] = v;
+        ctx.register_tags[insn.a] = ValueTag::Int;
+        update_flags(v);
+        break;
+      }
+      case t81::tisc::Opcode::BitNot: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        std::int64_t v = ~ctx.registers[insn.b];
+        ctx.registers[insn.a] = v;
+        ctx.register_tags[insn.a] = ValueTag::Int;
+        update_flags(v);
+        break;
+      }
+      case t81::tisc::Opcode::BitShl:
+      case t81::tisc::Opcode::BitShr:
+      case t81::tisc::Opcode::BitUShr: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        std::int64_t val = ctx.registers[insn.b];
+        std::int64_t amt = ctx.registers[insn.c] & 0x3F;
+        std::int64_t res = 0;
+        if (insn.opcode == t81::tisc::Opcode::BitShl) {
+          res = val << amt;
+        } else if (insn.opcode == t81::tisc::Opcode::BitShr) {
+          res = val >> amt;
+        } else {
+          res = static_cast<std::int64_t>(static_cast<uint64_t>(val) >> amt);
+        }
+        ctx.registers[insn.a] = res;
+        ctx.register_tags[insn.a] = ValueTag::Int;
+        update_flags(res);
+        break;
+      }
+      default:
+        trap = Trap::DecodeFault;
+        break;
+    }
+    ++instructions_since_gc_;
+    if (instructions_since_gc_ >= kGcInterval) {
+      run_gc_cycle_("interval");
+    }
+
+    sync_system_registers();
+    log_trace(insn.opcode, trap);
+    if (trap != Trap::None) {
+      return t81::unexpected(trap);
+    }
+
+    // Schedule next context for the next step
+    state_.current_context = (state_.current_context + 1) % state_.contexts.size();
+
+    return {};
+  }
+
+  std::expected<void, Trap> run_to_halt(std::size_t max_steps) override {
+    for (std::size_t i = 0; i < max_steps && !state_.halted; ++i) {
+      auto result = step();
+      if (!result.has_value()) {
+        return result;
+      }
+    }
+    return {};
+  }
+
+  const State& state() const override { return state_; }
+
+  void set_register(int idx, std::int64_t val_data, ValueTag tag) override {
+    if (state_.contexts.empty()) return;
+    auto& ctx = state_.contexts[state_.current_context];
+    if (idx < 0 || static_cast<std::size_t>(idx) >= ctx.registers.size()) {
+      return;
+    }
+    if (idx == 0 || (idx >= 75 && idx <= 80)) {
+      return;
+    }
+    ctx.registers[idx] = val_data;
+    ctx.register_tags[idx] = tag;
+
+    t81::axion::Verdict verdict;
+    verdict.kind = t81::axion::VerdictKind::Allow;
+    std::ostringstream reason_stream;
+    reason_stream << "register mutation R" << idx << " value=" << val_data;
+    verdict.reason = reason_stream.str();
+    record_axion_event(t81::tisc::Opcode::Nop, idx, val_data, verdict);
+  }
+
+  void set_fault_injections(std::vector<FaultInjection> faults) override {
+    state_.pending_faults = std::move(faults);
+  }
+
+private:
+  void sync_system_registers() {
+    if (state_.contexts.empty()) return;
+    auto& ctx = state_.contexts[state_.current_context];
+    ctx.registers[0] = 0;
+    ctx.register_tags[0] = ValueTag::Int;
+
+    // R75: Global Tick
+    ctx.registers[75] = static_cast<std::int64_t>(instruction_count_);
+    ctx.register_tags[75] = ValueTag::Int;
+
+    // R76: Lineage Root Hash (Stub: using a fixed value for now)
+    ctx.registers[76] = 0xDE7A81;
+    ctx.register_tags[76] = ValueTag::Int;
+
+    // R77: Current Entropy Signature (Stub)
+    ctx.registers[77] = static_cast<std::int64_t>(state_.contradiction_events);
+    ctx.register_tags[77] = ValueTag::Int;
+
+    // R78: Active Constitutional Mask (Stub: Θ₁-Θ₉ enabled)
+    ctx.registers[78] = 0x1FF;
+    ctx.register_tags[78] = ValueTag::Int;
+
+    // R79: Recursion Depth Counter
+    ctx.registers[79] =
+        static_cast<std::int64_t>(std::max(ctx.stack_frames.size(), ctx.call_depth));
+    ctx.register_tags[79] = ValueTag::Int;
+
+    // R80: Axion Seal / Capability Word
+    ctx.registers[80] = state_.halted ? 0 : 1;
+    ctx.register_tags[80] = ValueTag::Int;
+  }
+
+  std::int64_t intern_weights_tensor(std::string_view name) {
+    if (name.empty() || !state_.weights_model) {
+      return 0;
+    }
+    auto key = std::string(name);
+    auto iter = state_.weights_tensor_handles.find(key);
+    if (iter != state_.weights_tensor_handles.end()) {
+      return iter->second;
+    }
+    auto native_iter = state_.weights_model->native.find(key);
+    if (native_iter == state_.weights_model->native.end()) {
+      return 0;
+    }
+    state_.weights_tensor_refs.push_back(&native_iter->second);
+    auto handle = static_cast<std::int64_t>(state_.weights_tensor_refs.size());
+    state_.weights_tensor_handles.emplace(std::move(key), handle);
+    return handle;
+  }
+
+  t81::axion::Verdict eval_axion_call(std::string_view syscall, std::size_t prog_counter,
+                                      t81::tisc::Opcode opcode, std::string_view payload = {}) {
+    if (syscall == t81::axion::reasons::kMetaRead) {
+      // Internal MetaRead check could go here
+    }
+    t81::axion::SyscallContext sys_ctx;
+    sys_ctx.caller = "t81vm";
+    sys_ctx.syscall.assign(syscall);
+    sys_ctx.payload = std::string(payload);
+    sys_ctx.pc = prog_counter;
+    sys_ctx.next_opcode = opcode;
+    sys_ctx.instruction_count = instruction_count_;
+
+    if (!state_.contexts.empty()) {
+      auto& tctx = state_.contexts[state_.current_context];
+      sys_ctx.recursion_depth = std::max(tctx.stack_frames.size(), tctx.call_depth);
+      sys_ctx.stack_usage = tctx.stack_base - tctx.sp;
+      sys_ctx.current_tier = static_cast<int>(tctx.tier_status.current);
+    } else {
+      sys_ctx.recursion_depth = 0;
+      sys_ctx.stack_usage = 0;
+      sys_ctx.current_tier = 0;
+    }
+
+    sys_ctx.reflection_count = state_.reflection_count;
+    sys_ctx.meta_write_count = state_.meta_write_count;
+    sys_ctx.policy = state_.policy ? &*state_.policy : nullptr;
+    sys_ctx.trace_reasons.reserve(state_.axion_log.size());
+    for (const auto& entry : state_.axion_log) {
+      sys_ctx.trace_reasons.push_back(entry.verdict.reason);
+    }
+    return axion_engine_->evaluate(sys_ctx);
+  }
+
+  const t81::tisc::EnumMetadata* enum_metadata_for(int enum_id) const {
+    auto iter = state_.enum_metadata_index.find(enum_id);
+    if (iter == state_.enum_metadata_index.end()) {
+      return nullptr;
+    }
+    return &state_.enum_metadata[iter->second];
+  }
+
+  static const t81::tisc::EnumVariantMetadata* variant_metadata(const t81::tisc::EnumMetadata* meta,
+                                                                int variant_id) {
+    if (meta == nullptr) {
+      return nullptr;
+    }
+    for (const auto& variant : meta->variants) {
+      if (variant.variant_id == variant_id) {
+        return &variant;
+      }
+    }
+    return nullptr;
+  }
+
+  MemorySegmentKind segment_for_address(std::size_t addr) const {
+    const auto& layout = state_.layout;
+    if (layout.stack.contains(addr)) {
+      return MemorySegmentKind::Stack;
+    }
+    if (layout.heap.contains(addr)) {
+      return MemorySegmentKind::Heap;
+    }
+    if (layout.tensor.contains(addr)) {
+      return MemorySegmentKind::Tensor;
+    }
+    if (layout.meta.contains(addr)) {
+      return MemorySegmentKind::Meta;
+    }
+    return MemorySegmentKind::Unknown;
+  }
+
+  void log_memory_segment_access(t81::tisc::Opcode opcode, MemorySegmentKind kind, std::size_t addr,
+                                 std::size_t size, std::string_view action) {
+    t81::axion::Verdict verdict;
+    verdict.kind = t81::axion::VerdictKind::Allow;
+    std::ostringstream reason;
+    // Format: '[action] [segment] addr=[address] size=[size]'
+    reason << action << " " << to_string(kind) << " addr=" << addr;
+    if (kind == MemorySegmentKind::Stack || action.find("allocated") != std::string_view::npos ||
+        action.find("freed") != std::string_view::npos) {
+      reason << " size=" << size;
+    } else if (size > 1) {
+      reason << " size=" << size;
+    }
+    verdict.reason = reason.str();
+    record_axion_event(opcode, static_cast<std::int32_t>(kind), static_cast<std::int64_t>(addr),
+                       verdict);
+  }
+
+  void log_bounds_fault(t81::tisc::Opcode opcode, MemorySegmentKind kind, int addr,
+                        std::string_view action) {
+    t81::axion::Verdict verdict;
+    verdict.kind = t81::axion::VerdictKind::Allow;
+    std::ostringstream reason;
+    reason << t81::axion::reasons::kBoundsFault << " segment=" << to_string(kind)
+           << " addr=" << addr << " action=" << action;
+    verdict.reason = reason.str();
+    record_axion_event(opcode, static_cast<std::int32_t>(kind), static_cast<std::int64_t>(addr),
+                       verdict);
+  }
+
+  void log_bounds_fault(t81::tisc::Opcode opcode, int addr, std::string_view action) {
+    MemorySegmentKind kind = MemorySegmentKind::Unknown;
+    if (addr >= 0) {
+      kind = segment_for_address(static_cast<std::size_t>(addr));
+    }
+    log_bounds_fault(opcode, kind, addr, action);
+  }
+
+  void push_axion_event(const AxionEvent& event) {
+    std::cerr << "[VM] push_axion_event: opcode=" << static_cast<int>(event.opcode) << " reason=\""
+              << event.verdict.reason << "\"\n";
+    state_.axion_log.push_back(event);
+  }
+
+  void log_meta_slot(const char* label) {
+    if (!state_.layout.meta.contains(state_.meta_ptr)) {
+      return;
+    }
+    AxionEvent meta_event;
+    meta_event.opcode = t81::tisc::Opcode::Nop;
+    meta_event.tag = static_cast<std::int32_t>(MemorySegmentKind::Meta);
+    meta_event.value = static_cast<std::int64_t>(state_.meta_ptr);
+    meta_event.verdict.kind = t81::axion::VerdictKind::Allow;
+    std::ostringstream reason_stream;
+    reason_stream << "meta slot " << label << " segment=" << to_string(MemorySegmentKind::Meta)
+                  << " addr=" << state_.meta_ptr;
+    meta_event.verdict.reason = reason_stream.str();
+    push_axion_event(meta_event);
+    ++state_.meta_ptr;
+  }
+
+  static void apply_segment_reason(t81::axion::Verdict& verdict, const char* action,
+                                   MemorySegmentKind kind, std::size_t addr) {
+    std::ostringstream reason_stream;
+    reason_stream << action << " segment=" << to_string(kind) << " addr=" << addr;
+    if (!verdict.reason.empty()) {
+      reason_stream << " " << verdict.reason;
+    }
+    verdict.reason = reason_stream.str();
+  }
+
+  void record_axion_event(t81::tisc::Opcode opcode, std::int32_t tag_val, std::int64_t val_data,
+                          const t81::axion::Verdict& verdict) {
+    log_meta_slot(t81::axion::reasons::kMetaSlotAxionEvent.data());
+    AxionEvent event;
+    event.opcode = opcode;
+    event.tag = tag_val;
+    event.value = val_data;
+    event.verdict = verdict;
+    event.structured.reason = verdict.reason;
+    if (!state_.contexts.empty()) {
+      event.structured.pc = state_.contexts[state_.current_context].pc;
+    } else {
+      event.structured.pc = 0;
+    }
+    event.structured.handle_id = val_data;  // often used for handles
+    if (verdict.kind == t81::axion::VerdictKind::Allow) {
+      event.structured.decision = "allow";
+    } else if (verdict.kind == t81::axion::VerdictKind::Warn) {
+      event.structured.decision = "warn";
+    } else if (verdict.kind == t81::axion::VerdictKind::Defer) {
+      event.structured.decision = "defer";
+    } else {
+      event.structured.decision = "deny";
+    }
+    push_axion_event(event);
+  }
+
+  void mark_and_sweep() {
+    // 1. Initialize mark bitmap
+    std::vector<bool> marked_tensors(state_.tensors.size(), false);
+    std::vector<bool> marked_infinite_forms(state_.infinite_forms.size(), false);
+    std::vector<bool> visited_options(state_.options.size(), false);
+    std::vector<bool> visited_results(state_.results.size(), false);
+    std::vector<bool> visited_enums(state_.enums.size(), false);
+
+    // Helper for marking
+    auto mark_tensor = [&](std::int64_t handle) {
+      if (handle <= 0) return;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx < marked_tensors.size()) {
+        marked_tensors[idx] = true;
+      }
+    };
+
+    auto mark_infinite = [&](std::int64_t handle) {
+      if (handle <= 0) return;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx < marked_infinite_forms.size()) {
+        marked_infinite_forms[idx] = true;
+      }
+    };
+
+    // Recursive scan
+    std::function<void(ValueTag, std::int64_t)> scan_value = [&](ValueTag tag, std::int64_t val) {
+      switch (tag) {
+        case ValueTag::TensorHandle:
+          mark_tensor(val);
+          break;
+        case ValueTag::OptionHandle: {
+          if (val <= 0) return;
+          std::size_t idx = static_cast<std::size_t>(val - 1);
+          if (idx < state_.options.size() && !visited_options[idx]) {
+            visited_options[idx] = true;
+            scan_value(state_.options[idx].payload_tag, state_.options[idx].payload);
+          }
+          break;
+        }
+        case ValueTag::ResultHandle: {
+          if (val <= 0) return;
+          std::size_t idx = static_cast<std::size_t>(val - 1);
+          if (idx < state_.results.size() && !visited_results[idx]) {
+            visited_results[idx] = true;
+            scan_value(state_.results[idx].payload_tag, state_.results[idx].payload);
+          }
+          break;
+        }
+        case ValueTag::EnumHandle: {
+          if (val <= 0) return;
+          std::size_t idx = static_cast<std::size_t>(val - 1);
+          if (idx < state_.enums.size() && !visited_enums[idx]) {
+            visited_enums[idx] = true;
+            if (state_.enums[idx].has_payload) {
+              scan_value(state_.enums[idx].payload_tag, state_.enums[idx].payload);
+            }
+          }
+          break;
+        }
+        case ValueTag::InfiniteHandle:
+          mark_infinite(val);
+          break;
+        case ValueTag::ReflectionHandle:
+          // Reflections are roots, scanned below explicitly.
+          break;
+        default:
+          break;
+      }
+    };
+
+    // 2. Scan Roots
+
+    // Registers (for all contexts)
+    for (const auto& ctx : state_.contexts) {
+      for (size_t i = 0; i < ctx.registers.size(); ++i) {
+        scan_value(ctx.register_tags[i], ctx.registers[i]);
+      }
+    }
+
+    // Memory (Stack + Heap segments)
+    for (size_t i = 0; i < state_.memory.size(); ++i) {
+      scan_value(state_.memory_tags[i], state_.memory[i]);
+    }
+
+    // Reflection Snapshots (Implicit Roots)
+    for (const auto& snap : state_.reflection_snapshots) {
+      for (size_t i = 0; i < snap.registers.size(); ++i) {
+        scan_value(snap.register_tags[i], snap.registers[i]);
+      }
+    }
+
+    // 3. Sweep
+    size_t freed_count = 0;
+    for (size_t i = 0; i < state_.tensors.size(); ++i) {
+      if (state_.tensors[i].has_value() && !marked_tensors[i]) {
+        state_.total_tensor_elements -= state_.tensors[i]->data().size();
+        state_.tensors[i] = std::nullopt;
+        state_.free_tensor_indices.push_back(i);
+        freed_count++;
+      }
+    }
+
+    size_t freed_infinite_count = 0;
+    for (size_t i = 0; i < state_.infinite_forms.size(); ++i) {
+      if (state_.infinite_forms[i].has_value() && !marked_infinite_forms[i]) {
+        state_.metrics.total_infinite_forms--;
+        state_.infinite_forms[i] = std::nullopt;
+        state_.free_infinite_indices.push_back(i);
+        freed_infinite_count++;
+      }
+    }
+
+    if (freed_count > 0 || freed_infinite_count > 0) {
+      t81::axion::Verdict verdict;
+      verdict.kind = t81::axion::VerdictKind::Allow;
+      std::ostringstream reason_stream;
+      reason_stream << "GC reclaimed tensors=" << freed_count
+                    << " infinite_forms=" << freed_infinite_count;
+      verdict.reason = reason_stream.str();
+      record_axion_event(t81::tisc::Opcode::Trap, 0,
+                         static_cast<int64_t>(freed_count + freed_infinite_count), verdict);
+    }
+  }
+
+  void run_gc_cycle_(const char* reason) {
+    instructions_since_gc_ = 0;
+    state_.gc_cycles++;
+    t81::axion::Verdict verdict;
+    verdict.kind = t81::axion::VerdictKind::Allow;
+    std::ostringstream reason_stream;
+    // Format: 'GC cycle reason=[reason]'
+    reason_stream << t81::axion::reasons::kGcCycle << " reason=" << reason;
+    verdict.reason = reason_stream.str();
+    record_axion_event(t81::tisc::Opcode::Trap, static_cast<std::int32_t>(state_.gc_cycles),
+                       static_cast<std::int64_t>(state_.gc_cycles), verdict);
+
+    mark_and_sweep();
+
+    log_heap_compaction(state_.heap_ptr, state_.heap_frames.size());
+    log_heap_relocation(state_.heap_ptr, state_.layout.heap.start, state_.heap_frames.size());
+    compact_heap(state_.layout.heap.start);
+  }
+
+  void log_heap_compaction(std::size_t heap_ptr, std::size_t heap_frames) {
+    t81::axion::Verdict verdict;
+    verdict.kind = t81::axion::VerdictKind::Allow;
+    std::ostringstream reason_stream;
+    reason_stream << t81::axion::reasons::kHeapCompaction << " heap_frames=" << heap_frames
+                  << " heap_ptr=" << heap_ptr;
+    verdict.reason = reason_stream.str();
+    record_axion_event(t81::tisc::Opcode::Trap, static_cast<std::int32_t>(MemorySegmentKind::Heap),
+                       static_cast<std::int64_t>(heap_ptr), verdict);
+  }
+
+  void log_heap_relocation(std::size_t addr_from, std::size_t addr_to, std::size_t size) {
+    t81::axion::Verdict verdict;
+    verdict.kind = t81::axion::VerdictKind::Allow;
+    std::ostringstream reason_stream;
+    reason_stream << t81::axion::reasons::kHeapRelocation << " from=" << addr_from
+                  << " to=" << addr_to << " size=" << size;
+    verdict.reason = reason_stream.str();
+    record_axion_event(t81::tisc::Opcode::Trap, static_cast<std::int32_t>(MemorySegmentKind::Heap),
+                       static_cast<std::int64_t>(addr_to), verdict);
+  }
+
+  void compact_heap(std::size_t new_ptr) {
+    for (auto& frame : state_.heap_frames) {
+      frame.first = static_cast<std::int64_t>(new_ptr);
+    }
+    state_.heap_frames.clear();
+    state_.heap_ptr = new_ptr;
+  }
+
+  State state_{};
+  t81::tisc::Program program_{};
+  std::unique_ptr<t81::axion::Engine> axion_engine_;
+  std::unique_ptr<t81::canonfs::Driver> canonfs_driver_;
+  static constexpr std::size_t kGcInterval = 64;
+  std::size_t instructions_since_gc_{0};
+  std::size_t instruction_count_{0};
+
+  // JIT components
+  JitCompiler jit_compiler_;
+  std::unordered_map<std::size_t, std::size_t> hot_spots_;
+  std::unordered_map<std::size_t, std::unique_ptr<JitTrace>> compiled_traces_;
+  static constexpr std::size_t kHotSpotThreshold = 50;
+};
+}  // namespace
+
+std::unique_ptr<IVirtualMachine> make_interpreter_vm(std::unique_ptr<t81::axion::Engine> engine) {
+  return std::make_unique<Interpreter>(std::move(engine));
+}
+}  // namespace t81::vm

@@ -1,0 +1,9 @@
+[PASS] 01_bigint_add: 13 entries — bit-identical
+[PASS] 02_fraction_sub: 21 entries — bit-identical
+[PASS] 03_float_literal: 11 entries — bit-identical
+[PASS] 05_bool_and_string: 13 entries — bit-identical
+[PASS] 08_bounded_loop_print: 51 entries — bit-identical
+
+Results: 5 passed, 0 failed out of 5 fixtures
+Trace aggregate hash: 8be31748f609d27af1193cb7530125716302eed54f14ab0c1339cb576a6274eb
+Written to: /private/tmp/t81-tisc-traces/hash.txt

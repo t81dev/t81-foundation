@@ -1,0 +1,5 @@
+[  0%] Built target t81_tracing
+[100%] Built target t81_core
+[100%] Building CXX object CMakeFiles/t81_isa_encoding_test.dir/tests/cpp/tisc_encoding_test.cpp.o
+[100%] Linking CXX executable t81_isa_encoding_test
+[100%] Built target t81_isa_encoding_test

@@ -1,0 +1,17 @@
+exit=1
+Load actual=111 normative=222
+Store actual_destination=5 normative_destination=6
+JumpIfZero same_predicate=0 actual_pc=2 normative_pc=6
+JumpIfZero same_predicate=1 actual_pc=5 normative_pc=6
+JumpIfNotZero same_predicate=0 actual_pc=2 normative_pc=6
+JumpIfNotZero same_predicate=1 actual_pc=5 normative_pc=6
+TXor lhs=-1 rhs=-1 actual=0 sum_candidate=1
+TXor lhs=-1 rhs=0 actual=-1 sum_candidate=-1
+TXor lhs=-1 rhs=1 actual=1 sum_candidate=0
+TXor lhs=0 rhs=-1 actual=1 sum_candidate=-1
+TXor lhs=0 rhs=0 actual=0 sum_candidate=0
+TXor lhs=0 rhs=1 actual=-1 sum_candidate=1
+TXor lhs=1 rhs=-1 actual=-1 sum_candidate=0
+TXor lhs=1 rhs=0 actual=1 sum_candidate=1
+TXor lhs=1 rhs=1 actual=0 sum_candidate=-1
+Characterization passed; 6 prose divergences remain unresolved.

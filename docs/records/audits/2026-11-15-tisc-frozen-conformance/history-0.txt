@@ -1,0 +1,43 @@
+$ git log --format=%H %s -- spec/tisc-spec.md
+ccddd7268acfe673b207bd26701d1f4126b81a27 feat(spec): accept RFC-0042 through RFC-0055 determinism governance chain
+827c45532abec0046c957b4b37fb58ba2355b0c6 Complete RFC runtime and FFI promotion work
+cc752934f464c9b29054d5fbb9cd9261a0fe6e75 Implement native inference and GGUF bridge RFC work
+b0308ed3e8ee9140ed5a13d93d4440b9e66fd1c7 refactor: disambiguate Axion terminology and decouple build targets
+55e3484a7d9eadb80ed6912d6ab539583815282a chore: synchronize metadata, resolve namespace ambiguity, and decouple build graph
+270ecdd2ef81d9fca50d569084323a61e8c89f44 docs(spec): promote RFC-0036/0037/0038 to normative spec — T81Lang v1.3
+49394102ecbd2a286f7fea87e73659d6df7a6b4b feat(rfc): RFC-0034 T81-Native AI Inference — proposed
+9ee32f7a415987a019e577d62c6f056896d2e160 docs(spec): accept RFC-0011/RFC-0015/RFC-00A2; document AgentInvoke in tisc-spec
+6052a5126ad01548b6b06ccaa570ec38729de944 Clarify phase-1 WLOAD semantics
+f13577b0a39330a84dd7e7dc84bee00bd661eddd docs:(RFC Update)
+ba689551cdc12db99f21ad6db1879f951f900379 docs: fix broken markdown links and create missing files
+4a1f5b7b4b9e10ef791f7d92825256e9cc359b71 Address architectural audit: Implement deterministic hashing and math, and native container IR.
+30613059346c15d43133ce8ff3fb05ae8c5d682d feat(conformance): SE-M6 — RFC-0027 §6 spec annotation pass + cognitive-tiers program
+d286a7f82be286edb8b9aa5ba5e002134e2008be docs(spec): alignment pass + supplemental/ reorganization
+86041102ec1dfd89c39ac2b4adb5f6d4e43b2610 Add native ternary transition guardrails to canonical TISC spec
+1c3f2b354fb6bdf892ce27038512dd02ad4044b3 Align core specs with implemented register and trace execution model
+64a9d6bc526947ae000d0f7bcfedc622e099c094 Align determinism posture, harden Axion fail-closed path, and sync audit remediation
+65e4f4d4ad21564f2e07e0cba309da01417d683b Implement RFC-0025: Policy-Gated Tensor Loading via CanonFS
+ff54ee5aa0e541b43d4db4c4f3a2e93498c402b0 docs: refresh repo documentation for post-v1.0 stable state
+d6b30112cec20acaf1353843fc5a227ff5af58b9 Rewrite and synchronize documentation to match implementation reality
+523933369b489464781e1aace0f4694907bbc5a2 Implement T81Lang standard library infrastructure and math module
+7764577e7d3487e47a85034129ac7c42acc6221c feat: comprehensive architecture compliance review and updates
+4a012ee5b89cdb67a7f993e6320a8a9106c1f09d Harden runtime, implement multi-limb BigInt, and complete specifications
+b73bdfdae7be9067c3675cf1c8f0bae160e5546d Align HanoiVM memory model and Axion policies
+c53e31b531705388eaa6be36d3ece849fa55cf98 docs: Reconcile all project documentation with current status
+e1894ed89bbafd09bac1bb45793ec2df1f1a3302 mdformatting
+b4040a31291af711e8931f80f4e4317597e266a6 mdformat update
+88bbbd312100d4fbdd6bb8d97291a79177ab89cf Formatting
+d1b5eaff6f2e6be934218e2fc0b49127f171e5d4 Formatting
+dbb9b193aacac87b455a88f67e2722942e5fbab9 chore: format markdown with mdformat
+1c15defb2b0c651562555f1a97b2a8da44935d97 update
+c4025da13d85324a1fb46f5fbaf110cf49ed3a16 update
+1cbb4ca1352f02c23b5bf02b607bcee952abf746 update
+1be3ee61f724a1e83e20d87eff4d27bfadb25661 update
+b1b077a79cd71d136e8c0d46fc57b75a1507cd8f update
+a76de64147623f9f6fe4afc5aacd1b47c47533a1 update
+110ddea59b96b685182a95965da6c5228f2570c0 update
+69d2bbf6581c83428ec112475057e97056635b33 APply mdformat to core docs
+6ca979eb8046ac3ef239f7cf0fccc2c2f5626b1b Update tisc-spec.md
+b59d693881991ae9958712859d305b2522f23e23 Update tisc-spec.md
+02ed39b89ed5cae6a9f246417b1b306ec4272886 Update tisc-spec.md
+bf6dd85834a010044f59766a6aca8c40ac2ba0b9 Create tisc-spec.md
