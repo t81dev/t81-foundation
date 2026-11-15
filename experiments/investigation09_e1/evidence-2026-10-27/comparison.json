@@ -1,0 +1,3886 @@
+{
+  "disposition": {
+    "baseline": "artifacts/combined-branch-O2-binaryen-Oz.wasm",
+    "parity": "PASS",
+    "ratio": 7.898089171974522,
+    "smallest_wasm_bytes": 157,
+    "status": "NOT SUPPORTED",
+    "threshold": 0.95,
+    "timing": "not measured",
+    "tisc_bytes": 1240
+  },
+  "inventory": [
+    {
+      "bytes": 1240,
+      "encoded_stream_bytes": 832,
+      "insns": [
+        [
+          2,
+          1,
+          0,
+          0
+        ],
+        [
+          2,
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          3,
+          0,
+          0
+        ],
+        [
+          2,
+          4,
+          0,
+          0
+        ],
+        [
+          16,
+          1,
+          0,
+          0
+        ],
+        [
+          16,
+          2,
+          0,
+          0
+        ],
+        [
+          16,
+          3,
+          0,
+          0
+        ],
+        [
+          16,
+          4,
+          0,
+          0
+        ],
+        [
+          2,
+          5,
+          12,
+          0
+        ],
+        [
+          26,
+          0,
+          5,
+          0
+        ],
+        [
+          17,
+          6,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          17,
+          7,
+          0,
+          0
+        ],
+        [
+          17,
+          8,
+          0,
+          0
+        ],
+        [
+          17,
+          9,
+          0,
+          0
+        ],
+        [
+          17,
+          10,
+          0,
+          0
+        ],
+        [
+          17,
+          11,
+          0,
+          0
+        ],
+        [
+          2,
+          12,
+          0,
+          0
+        ],
+        [
+          66,
+          13,
+          11,
+          12
+        ],
+        [
+          11,
+          26,
+          13,
+          0
+        ],
+        [
+          59,
+          14,
+          10,
+          0
+        ],
+        [
+          2,
+          15,
+          1,
+          0
+        ],
+        [
+          5,
+          16,
+          14,
+          15
+        ],
+        [
+          16,
+          16,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          17,
+          1,
+          0
+        ],
+        [
+          66,
+          18,
+          11,
+          17
+        ],
+        [
+          11,
+          35,
+          18,
+          0
+        ],
+        [
+          19,
+          19,
+          10,
+          9
+        ],
+        [
+          2,
+          20,
+          1,
+          0
+        ],
+        [
+          5,
+          21,
+          19,
+          20
+        ],
+        [
+          16,
+          21,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          22,
+          2,
+          0
+        ],
+        [
+          66,
+          23,
+          11,
+          22
+        ],
+        [
+          11,
+          44,
+          23,
+          0
+        ],
+        [
+          20,
+          24,
+          10,
+          9
+        ],
+        [
+          2,
+          25,
+          1,
+          0
+        ],
+        [
+          5,
+          26,
+          24,
+          25
+        ],
+        [
+          16,
+          26,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ],
+        [
+          19,
+          27,
+          10,
+          9
+        ],
+        [
+          59,
+          28,
+          8,
+          0
+        ],
+        [
+          20,
+          29,
+          27,
+          28
+        ],
+        [
+          2,
+          30,
+          1,
+          0
+        ],
+        [
+          5,
+          31,
+          27,
+          30
+        ],
+        [
+          2,
+          32,
+          9,
+          0
+        ],
+        [
+          7,
+          33,
+          31,
+          32
+        ],
+        [
+          2,
+          34,
+          1,
+          0
+        ],
+        [
+          5,
+          35,
+          28,
+          34
+        ],
+        [
+          2,
+          36,
+          3,
+          0
+        ],
+        [
+          7,
+          37,
+          35,
+          36
+        ],
+        [
+          5,
+          38,
+          33,
+          37
+        ],
+        [
+          5,
+          39,
+          38,
+          29
+        ],
+        [
+          2,
+          40,
+          1,
+          0
+        ],
+        [
+          5,
+          41,
+          39,
+          40
+        ],
+        [
+          16,
+          41,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ]
+      ],
+      "instructions": 64,
+      "kind": "tisc",
+      "module": "combined",
+      "path": "artifacts/combined.tisc",
+      "sha256": "4c616a956cdfdb648af00b71f30492eb5a106ea42bfdee8e81135c5925c3b857"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 177,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "combined",
+      "path": "artifacts/combined-branch-O2.wasm",
+      "sha256": "264059ca1b3dc2be41b23bf30e9177b9d9fd3e85fb1e2beceecffaf3853b4e5e",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 157,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "combined",
+      "path": "artifacts/combined-branch-O2-binaryen-Oz.wasm",
+      "sha256": "2c8246368683a6ebc075c2196c2c65bdb35ac9c15997f4322d1a115360c10da4",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 177,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "combined",
+      "path": "artifacts/combined-branch-O3.wasm",
+      "sha256": "264059ca1b3dc2be41b23bf30e9177b9d9fd3e85fb1e2beceecffaf3853b4e5e",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 157,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "combined",
+      "path": "artifacts/combined-branch-O3-binaryen-Oz.wasm",
+      "sha256": "2c8246368683a6ebc075c2196c2c65bdb35ac9c15997f4322d1a115360c10da4",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 177,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "combined",
+      "path": "artifacts/combined-branch-Oz.wasm",
+      "sha256": "264059ca1b3dc2be41b23bf30e9177b9d9fd3e85fb1e2beceecffaf3853b4e5e",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 157,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "combined",
+      "path": "artifacts/combined-branch-Oz-binaryen-Oz.wasm",
+      "sha256": "2c8246368683a6ebc075c2196c2c65bdb35ac9c15997f4322d1a115360c10da4",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 177,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "combined",
+      "path": "artifacts/combined-select-O2.wasm",
+      "sha256": "264059ca1b3dc2be41b23bf30e9177b9d9fd3e85fb1e2beceecffaf3853b4e5e",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 157,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "combined",
+      "path": "artifacts/combined-select-O2-binaryen-Oz.wasm",
+      "sha256": "2c8246368683a6ebc075c2196c2c65bdb35ac9c15997f4322d1a115360c10da4",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 177,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "combined",
+      "path": "artifacts/combined-select-O3.wasm",
+      "sha256": "264059ca1b3dc2be41b23bf30e9177b9d9fd3e85fb1e2beceecffaf3853b4e5e",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 157,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "combined",
+      "path": "artifacts/combined-select-O3-binaryen-Oz.wasm",
+      "sha256": "2c8246368683a6ebc075c2196c2c65bdb35ac9c15997f4322d1a115360c10da4",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 177,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "combined",
+      "path": "artifacts/combined-select-Oz.wasm",
+      "sha256": "264059ca1b3dc2be41b23bf30e9177b9d9fd3e85fb1e2beceecffaf3853b4e5e",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 157,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "combined",
+      "path": "artifacts/combined-select-Oz-binaryen-Oz.wasm",
+      "sha256": "2c8246368683a6ebc075c2196c2c65bdb35ac9c15997f4322d1a115360c10da4",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 445,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "combined",
+      "path": "artifacts/combined-table-O2.wasm",
+      "sha256": "5214e4adda0671dbe43f835c947ded7a3eb918d65434f59b233a13dd59e76251",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 364,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "combined",
+      "path": "artifacts/combined-table-O2-binaryen-Oz.wasm",
+      "sha256": "494236c92d557a98350e35287e8f8979a46798033da2d01fe49bece5adf8f70c",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 445,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "combined",
+      "path": "artifacts/combined-table-O3.wasm",
+      "sha256": "5214e4adda0671dbe43f835c947ded7a3eb918d65434f59b233a13dd59e76251",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 364,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "combined",
+      "path": "artifacts/combined-table-O3-binaryen-Oz.wasm",
+      "sha256": "494236c92d557a98350e35287e8f8979a46798033da2d01fe49bece5adf8f70c",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 445,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "combined",
+      "path": "artifacts/combined-table-Oz.wasm",
+      "sha256": "5214e4adda0671dbe43f835c947ded7a3eb918d65434f59b233a13dd59e76251",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 364,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "combined",
+      "path": "artifacts/combined-table-Oz-binaryen-Oz.wasm",
+      "sha256": "494236c92d557a98350e35287e8f8979a46798033da2d01fe49bece5adf8f70c",
+      "style": "table"
+    },
+    {
+      "bytes": 538,
+      "encoded_stream_bytes": 325,
+      "insns": [
+        [
+          2,
+          1,
+          0,
+          0
+        ],
+        [
+          2,
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          3,
+          0,
+          0
+        ],
+        [
+          2,
+          4,
+          0,
+          0
+        ],
+        [
+          16,
+          1,
+          0,
+          0
+        ],
+        [
+          16,
+          2,
+          0,
+          0
+        ],
+        [
+          16,
+          3,
+          0,
+          0
+        ],
+        [
+          16,
+          4,
+          0,
+          0
+        ],
+        [
+          2,
+          5,
+          12,
+          0
+        ],
+        [
+          26,
+          0,
+          5,
+          0
+        ],
+        [
+          17,
+          6,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          17,
+          7,
+          0,
+          0
+        ],
+        [
+          17,
+          8,
+          0,
+          0
+        ],
+        [
+          17,
+          9,
+          0,
+          0
+        ],
+        [
+          17,
+          10,
+          0,
+          0
+        ],
+        [
+          17,
+          11,
+          0,
+          0
+        ],
+        [
+          59,
+          12,
+          10,
+          0
+        ],
+        [
+          2,
+          13,
+          1,
+          0
+        ],
+        [
+          5,
+          14,
+          12,
+          13
+        ],
+        [
+          16,
+          14,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ]
+      ],
+      "instructions": 25,
+      "kind": "tisc",
+      "module": "neg",
+      "path": "artifacts/neg.tisc",
+      "sha256": "ea59890c56c0626e209317293a4cfcd93ae1710e898b3ebda711ee649b3430b7"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 67,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "neg",
+      "path": "artifacts/neg-branch-O2.wasm",
+      "sha256": "4abd108d2588ef9a6c5c894b3d5beba1fe5ad10ced56b4c15b5eb6a0dcb474b5",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 57,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "neg",
+      "path": "artifacts/neg-branch-O2-binaryen-Oz.wasm",
+      "sha256": "395f63bddac760941586fb0066b4f9ed56e683e2403380b610b3512f0e52310d",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 67,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "neg",
+      "path": "artifacts/neg-branch-O3.wasm",
+      "sha256": "4abd108d2588ef9a6c5c894b3d5beba1fe5ad10ced56b4c15b5eb6a0dcb474b5",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 57,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "neg",
+      "path": "artifacts/neg-branch-O3-binaryen-Oz.wasm",
+      "sha256": "395f63bddac760941586fb0066b4f9ed56e683e2403380b610b3512f0e52310d",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 67,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "neg",
+      "path": "artifacts/neg-branch-Oz.wasm",
+      "sha256": "4abd108d2588ef9a6c5c894b3d5beba1fe5ad10ced56b4c15b5eb6a0dcb474b5",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 57,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "neg",
+      "path": "artifacts/neg-branch-Oz-binaryen-Oz.wasm",
+      "sha256": "395f63bddac760941586fb0066b4f9ed56e683e2403380b610b3512f0e52310d",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 67,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "neg",
+      "path": "artifacts/neg-select-O2.wasm",
+      "sha256": "4abd108d2588ef9a6c5c894b3d5beba1fe5ad10ced56b4c15b5eb6a0dcb474b5",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 57,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "neg",
+      "path": "artifacts/neg-select-O2-binaryen-Oz.wasm",
+      "sha256": "395f63bddac760941586fb0066b4f9ed56e683e2403380b610b3512f0e52310d",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 67,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "neg",
+      "path": "artifacts/neg-select-O3.wasm",
+      "sha256": "4abd108d2588ef9a6c5c894b3d5beba1fe5ad10ced56b4c15b5eb6a0dcb474b5",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 57,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "neg",
+      "path": "artifacts/neg-select-O3-binaryen-Oz.wasm",
+      "sha256": "395f63bddac760941586fb0066b4f9ed56e683e2403380b610b3512f0e52310d",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 67,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "neg",
+      "path": "artifacts/neg-select-Oz.wasm",
+      "sha256": "4abd108d2588ef9a6c5c894b3d5beba1fe5ad10ced56b4c15b5eb6a0dcb474b5",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 57,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "neg",
+      "path": "artifacts/neg-select-Oz-binaryen-Oz.wasm",
+      "sha256": "395f63bddac760941586fb0066b4f9ed56e683e2403380b610b3512f0e52310d",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 115,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "neg",
+      "path": "artifacts/neg-table-O2.wasm",
+      "sha256": "ae5364e427f5a81328710e70dc6b5e28646e6af490289cd0c9081dd682b69155",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 95,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "neg",
+      "path": "artifacts/neg-table-O2-binaryen-Oz.wasm",
+      "sha256": "c80f2af5ed76a1e4ae78e14a407fa2fbce6e22c95ce460af0aef5ece07a6d210",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 115,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "neg",
+      "path": "artifacts/neg-table-O3.wasm",
+      "sha256": "ae5364e427f5a81328710e70dc6b5e28646e6af490289cd0c9081dd682b69155",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 95,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "neg",
+      "path": "artifacts/neg-table-O3-binaryen-Oz.wasm",
+      "sha256": "c80f2af5ed76a1e4ae78e14a407fa2fbce6e22c95ce460af0aef5ece07a6d210",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 115,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "neg",
+      "path": "artifacts/neg-table-Oz.wasm",
+      "sha256": "ae5364e427f5a81328710e70dc6b5e28646e6af490289cd0c9081dd682b69155",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 95,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "neg",
+      "path": "artifacts/neg-table-Oz-binaryen-Oz.wasm",
+      "sha256": "c80f2af5ed76a1e4ae78e14a407fa2fbce6e22c95ce460af0aef5ece07a6d210",
+      "style": "table"
+    },
+    {
+      "bytes": 538,
+      "encoded_stream_bytes": 325,
+      "insns": [
+        [
+          2,
+          1,
+          0,
+          0
+        ],
+        [
+          2,
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          3,
+          0,
+          0
+        ],
+        [
+          2,
+          4,
+          0,
+          0
+        ],
+        [
+          16,
+          1,
+          0,
+          0
+        ],
+        [
+          16,
+          2,
+          0,
+          0
+        ],
+        [
+          16,
+          3,
+          0,
+          0
+        ],
+        [
+          16,
+          4,
+          0,
+          0
+        ],
+        [
+          2,
+          5,
+          12,
+          0
+        ],
+        [
+          26,
+          0,
+          5,
+          0
+        ],
+        [
+          17,
+          6,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          17,
+          7,
+          0,
+          0
+        ],
+        [
+          17,
+          8,
+          0,
+          0
+        ],
+        [
+          17,
+          9,
+          0,
+          0
+        ],
+        [
+          17,
+          10,
+          0,
+          0
+        ],
+        [
+          17,
+          11,
+          0,
+          0
+        ],
+        [
+          19,
+          12,
+          10,
+          9
+        ],
+        [
+          2,
+          13,
+          1,
+          0
+        ],
+        [
+          5,
+          14,
+          12,
+          13
+        ],
+        [
+          16,
+          14,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ]
+      ],
+      "instructions": 25,
+      "kind": "tisc",
+      "module": "meet",
+      "path": "artifacts/meet.tisc",
+      "sha256": "1a189953e20f999013421eadadc76c696cb80d77adee29fd999591679a5a1755"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 75,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "meet",
+      "path": "artifacts/meet-branch-O2.wasm",
+      "sha256": "2974c969b56fcd2b9ff0f45d299c794080e5d6773d96e021c5f61bde1e5286db",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 65,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "meet",
+      "path": "artifacts/meet-branch-O2-binaryen-Oz.wasm",
+      "sha256": "e3e81fa85d668f87b0b80268e5247211b988ed95e9a95c6319e93396f31c3db5",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 75,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "meet",
+      "path": "artifacts/meet-branch-O3.wasm",
+      "sha256": "2974c969b56fcd2b9ff0f45d299c794080e5d6773d96e021c5f61bde1e5286db",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 65,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "meet",
+      "path": "artifacts/meet-branch-O3-binaryen-Oz.wasm",
+      "sha256": "e3e81fa85d668f87b0b80268e5247211b988ed95e9a95c6319e93396f31c3db5",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 75,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "meet",
+      "path": "artifacts/meet-branch-Oz.wasm",
+      "sha256": "2974c969b56fcd2b9ff0f45d299c794080e5d6773d96e021c5f61bde1e5286db",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 65,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "meet",
+      "path": "artifacts/meet-branch-Oz-binaryen-Oz.wasm",
+      "sha256": "e3e81fa85d668f87b0b80268e5247211b988ed95e9a95c6319e93396f31c3db5",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 75,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "meet",
+      "path": "artifacts/meet-select-O2.wasm",
+      "sha256": "2974c969b56fcd2b9ff0f45d299c794080e5d6773d96e021c5f61bde1e5286db",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 65,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "meet",
+      "path": "artifacts/meet-select-O2-binaryen-Oz.wasm",
+      "sha256": "e3e81fa85d668f87b0b80268e5247211b988ed95e9a95c6319e93396f31c3db5",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 75,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "meet",
+      "path": "artifacts/meet-select-O3.wasm",
+      "sha256": "2974c969b56fcd2b9ff0f45d299c794080e5d6773d96e021c5f61bde1e5286db",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 65,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "meet",
+      "path": "artifacts/meet-select-O3-binaryen-Oz.wasm",
+      "sha256": "e3e81fa85d668f87b0b80268e5247211b988ed95e9a95c6319e93396f31c3db5",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 75,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "meet",
+      "path": "artifacts/meet-select-Oz.wasm",
+      "sha256": "2974c969b56fcd2b9ff0f45d299c794080e5d6773d96e021c5f61bde1e5286db",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 65,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "meet",
+      "path": "artifacts/meet-select-Oz-binaryen-Oz.wasm",
+      "sha256": "e3e81fa85d668f87b0b80268e5247211b988ed95e9a95c6319e93396f31c3db5",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 169,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "meet",
+      "path": "artifacts/meet-table-O2.wasm",
+      "sha256": "089b943a9c11372377336984d8d486a328f2cfb599f253e661606be812fdbf1a",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 141,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "meet",
+      "path": "artifacts/meet-table-O2-binaryen-Oz.wasm",
+      "sha256": "7342ae048379acf3ca227919fd836777892a85220e570a5b67cad90fc85dc5ad",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 169,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "meet",
+      "path": "artifacts/meet-table-O3.wasm",
+      "sha256": "089b943a9c11372377336984d8d486a328f2cfb599f253e661606be812fdbf1a",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 141,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "meet",
+      "path": "artifacts/meet-table-O3-binaryen-Oz.wasm",
+      "sha256": "7342ae048379acf3ca227919fd836777892a85220e570a5b67cad90fc85dc5ad",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 169,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "meet",
+      "path": "artifacts/meet-table-Oz.wasm",
+      "sha256": "089b943a9c11372377336984d8d486a328f2cfb599f253e661606be812fdbf1a",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 141,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "meet",
+      "path": "artifacts/meet-table-Oz-binaryen-Oz.wasm",
+      "sha256": "7342ae048379acf3ca227919fd836777892a85220e570a5b67cad90fc85dc5ad",
+      "style": "table"
+    },
+    {
+      "bytes": 538,
+      "encoded_stream_bytes": 325,
+      "insns": [
+        [
+          2,
+          1,
+          0,
+          0
+        ],
+        [
+          2,
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          3,
+          0,
+          0
+        ],
+        [
+          2,
+          4,
+          0,
+          0
+        ],
+        [
+          16,
+          1,
+          0,
+          0
+        ],
+        [
+          16,
+          2,
+          0,
+          0
+        ],
+        [
+          16,
+          3,
+          0,
+          0
+        ],
+        [
+          16,
+          4,
+          0,
+          0
+        ],
+        [
+          2,
+          5,
+          12,
+          0
+        ],
+        [
+          26,
+          0,
+          5,
+          0
+        ],
+        [
+          17,
+          6,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          17,
+          7,
+          0,
+          0
+        ],
+        [
+          17,
+          8,
+          0,
+          0
+        ],
+        [
+          17,
+          9,
+          0,
+          0
+        ],
+        [
+          17,
+          10,
+          0,
+          0
+        ],
+        [
+          17,
+          11,
+          0,
+          0
+        ],
+        [
+          20,
+          12,
+          10,
+          9
+        ],
+        [
+          2,
+          13,
+          1,
+          0
+        ],
+        [
+          5,
+          14,
+          12,
+          13
+        ],
+        [
+          16,
+          14,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ]
+      ],
+      "instructions": 25,
+      "kind": "tisc",
+      "module": "join",
+      "path": "artifacts/join.tisc",
+      "sha256": "9b50396cfa1efaf7717b235a0cf1e64cfb6111006e27901acab35c189600dcb9"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 75,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "join",
+      "path": "artifacts/join-branch-O2.wasm",
+      "sha256": "b93332c6c0e8056d8e73b3cfa4fb265304d6b082172c952f3ed927dbca2afc65",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 65,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "join",
+      "path": "artifacts/join-branch-O2-binaryen-Oz.wasm",
+      "sha256": "de7386e83f144e7ab725934bc60beeba1c945f86f86853686aa77423911beb19",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 75,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "join",
+      "path": "artifacts/join-branch-O3.wasm",
+      "sha256": "b93332c6c0e8056d8e73b3cfa4fb265304d6b082172c952f3ed927dbca2afc65",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 65,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "join",
+      "path": "artifacts/join-branch-O3-binaryen-Oz.wasm",
+      "sha256": "de7386e83f144e7ab725934bc60beeba1c945f86f86853686aa77423911beb19",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 75,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "join",
+      "path": "artifacts/join-branch-Oz.wasm",
+      "sha256": "b93332c6c0e8056d8e73b3cfa4fb265304d6b082172c952f3ed927dbca2afc65",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 65,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "join",
+      "path": "artifacts/join-branch-Oz-binaryen-Oz.wasm",
+      "sha256": "de7386e83f144e7ab725934bc60beeba1c945f86f86853686aa77423911beb19",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 75,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "join",
+      "path": "artifacts/join-select-O2.wasm",
+      "sha256": "b93332c6c0e8056d8e73b3cfa4fb265304d6b082172c952f3ed927dbca2afc65",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 65,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "join",
+      "path": "artifacts/join-select-O2-binaryen-Oz.wasm",
+      "sha256": "de7386e83f144e7ab725934bc60beeba1c945f86f86853686aa77423911beb19",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 75,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "join",
+      "path": "artifacts/join-select-O3.wasm",
+      "sha256": "b93332c6c0e8056d8e73b3cfa4fb265304d6b082172c952f3ed927dbca2afc65",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 65,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "join",
+      "path": "artifacts/join-select-O3-binaryen-Oz.wasm",
+      "sha256": "de7386e83f144e7ab725934bc60beeba1c945f86f86853686aa77423911beb19",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 75,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "join",
+      "path": "artifacts/join-select-Oz.wasm",
+      "sha256": "b93332c6c0e8056d8e73b3cfa4fb265304d6b082172c952f3ed927dbca2afc65",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 65,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "join",
+      "path": "artifacts/join-select-Oz-binaryen-Oz.wasm",
+      "sha256": "de7386e83f144e7ab725934bc60beeba1c945f86f86853686aa77423911beb19",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 169,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "join",
+      "path": "artifacts/join-table-O2.wasm",
+      "sha256": "12a156a94f75bc7e7e94b66c0842c7574bb27afbb55c6b14738791caf82425ad",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 134,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "join",
+      "path": "artifacts/join-table-O2-binaryen-Oz.wasm",
+      "sha256": "663868c786db8438f0a95d022b4b6771bca9ed7ffe3ef9dbebb4d1af8d7ee5e0",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 169,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "join",
+      "path": "artifacts/join-table-O3.wasm",
+      "sha256": "12a156a94f75bc7e7e94b66c0842c7574bb27afbb55c6b14738791caf82425ad",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 134,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "join",
+      "path": "artifacts/join-table-O3-binaryen-Oz.wasm",
+      "sha256": "663868c786db8438f0a95d022b4b6771bca9ed7ffe3ef9dbebb4d1af8d7ee5e0",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 169,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "join",
+      "path": "artifacts/join-table-Oz.wasm",
+      "sha256": "12a156a94f75bc7e7e94b66c0842c7574bb27afbb55c6b14738791caf82425ad",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 134,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "join",
+      "path": "artifacts/join-table-Oz-binaryen-Oz.wasm",
+      "sha256": "663868c786db8438f0a95d022b4b6771bca9ed7ffe3ef9dbebb4d1af8d7ee5e0",
+      "style": "table"
+    },
+    {
+      "bytes": 754,
+      "encoded_stream_bytes": 481,
+      "insns": [
+        [
+          2,
+          1,
+          0,
+          0
+        ],
+        [
+          2,
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          3,
+          0,
+          0
+        ],
+        [
+          2,
+          4,
+          0,
+          0
+        ],
+        [
+          16,
+          1,
+          0,
+          0
+        ],
+        [
+          16,
+          2,
+          0,
+          0
+        ],
+        [
+          16,
+          3,
+          0,
+          0
+        ],
+        [
+          16,
+          4,
+          0,
+          0
+        ],
+        [
+          2,
+          5,
+          12,
+          0
+        ],
+        [
+          26,
+          0,
+          5,
+          0
+        ],
+        [
+          17,
+          6,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          17,
+          7,
+          0,
+          0
+        ],
+        [
+          17,
+          8,
+          0,
+          0
+        ],
+        [
+          17,
+          9,
+          0,
+          0
+        ],
+        [
+          17,
+          10,
+          0,
+          0
+        ],
+        [
+          17,
+          11,
+          0,
+          0
+        ],
+        [
+          19,
+          12,
+          10,
+          9
+        ],
+        [
+          59,
+          13,
+          8,
+          0
+        ],
+        [
+          20,
+          14,
+          12,
+          13
+        ],
+        [
+          2,
+          15,
+          1,
+          0
+        ],
+        [
+          5,
+          16,
+          12,
+          15
+        ],
+        [
+          2,
+          17,
+          9,
+          0
+        ],
+        [
+          7,
+          18,
+          16,
+          17
+        ],
+        [
+          2,
+          19,
+          1,
+          0
+        ],
+        [
+          5,
+          20,
+          13,
+          19
+        ],
+        [
+          2,
+          21,
+          3,
+          0
+        ],
+        [
+          7,
+          22,
+          20,
+          21
+        ],
+        [
+          5,
+          23,
+          18,
+          22
+        ],
+        [
+          5,
+          24,
+          23,
+          14
+        ],
+        [
+          2,
+          25,
+          1,
+          0
+        ],
+        [
+          5,
+          26,
+          24,
+          25
+        ],
+        [
+          16,
+          26,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ]
+      ],
+      "instructions": 37,
+      "kind": "tisc",
+      "module": "decision",
+      "path": "artifacts/decision.tisc",
+      "sha256": "eeb0a2511c8d85f7aaec2ec61efd84b3fd15ba9c4608d6e87b12c094dcceca1e"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 102,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "decision",
+      "path": "artifacts/decision-branch-O2.wasm",
+      "sha256": "a50b99ec83b9b50b9988130d5125e96cd1a326a56276848ffa076d6c7396442b",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 92,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "decision",
+      "path": "artifacts/decision-branch-O2-binaryen-Oz.wasm",
+      "sha256": "93ab3872c8af0e99d2885e9af39adae79c18b093c41a0668f2bdb10874686726",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 102,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "decision",
+      "path": "artifacts/decision-branch-O3.wasm",
+      "sha256": "a50b99ec83b9b50b9988130d5125e96cd1a326a56276848ffa076d6c7396442b",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 92,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "decision",
+      "path": "artifacts/decision-branch-O3-binaryen-Oz.wasm",
+      "sha256": "93ab3872c8af0e99d2885e9af39adae79c18b093c41a0668f2bdb10874686726",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 102,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "decision",
+      "path": "artifacts/decision-branch-Oz.wasm",
+      "sha256": "a50b99ec83b9b50b9988130d5125e96cd1a326a56276848ffa076d6c7396442b",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 92,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "decision",
+      "path": "artifacts/decision-branch-Oz-binaryen-Oz.wasm",
+      "sha256": "93ab3872c8af0e99d2885e9af39adae79c18b093c41a0668f2bdb10874686726",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 102,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "decision",
+      "path": "artifacts/decision-select-O2.wasm",
+      "sha256": "a50b99ec83b9b50b9988130d5125e96cd1a326a56276848ffa076d6c7396442b",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 92,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "decision",
+      "path": "artifacts/decision-select-O2-binaryen-Oz.wasm",
+      "sha256": "93ab3872c8af0e99d2885e9af39adae79c18b093c41a0668f2bdb10874686726",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 102,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "decision",
+      "path": "artifacts/decision-select-O3.wasm",
+      "sha256": "a50b99ec83b9b50b9988130d5125e96cd1a326a56276848ffa076d6c7396442b",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 92,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "decision",
+      "path": "artifacts/decision-select-O3-binaryen-Oz.wasm",
+      "sha256": "93ab3872c8af0e99d2885e9af39adae79c18b093c41a0668f2bdb10874686726",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 102,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "decision",
+      "path": "artifacts/decision-select-Oz.wasm",
+      "sha256": "a50b99ec83b9b50b9988130d5125e96cd1a326a56276848ffa076d6c7396442b",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 92,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "decision",
+      "path": "artifacts/decision-select-Oz-binaryen-Oz.wasm",
+      "sha256": "93ab3872c8af0e99d2885e9af39adae79c18b093c41a0668f2bdb10874686726",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 333,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "decision",
+      "path": "artifacts/decision-table-O2.wasm",
+      "sha256": "31d04840b4c285bdf13324393a72dc453600af92f9ea90788f7552f9e0fb22f6",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 268,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "decision",
+      "path": "artifacts/decision-table-O2-binaryen-Oz.wasm",
+      "sha256": "a6809d7761e965e22f95a1d0e139e4bd61121c7dac3822a125c40cc4b275e261",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 333,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "decision",
+      "path": "artifacts/decision-table-O3.wasm",
+      "sha256": "31d04840b4c285bdf13324393a72dc453600af92f9ea90788f7552f9e0fb22f6",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 268,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "decision",
+      "path": "artifacts/decision-table-O3-binaryen-Oz.wasm",
+      "sha256": "a6809d7761e965e22f95a1d0e139e4bd61121c7dac3822a125c40cc4b275e261",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 333,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "decision",
+      "path": "artifacts/decision-table-Oz.wasm",
+      "sha256": "31d04840b4c285bdf13324393a72dc453600af92f9ea90788f7552f9e0fb22f6",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 268,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "decision",
+      "path": "artifacts/decision-table-Oz-binaryen-Oz.wasm",
+      "sha256": "a6809d7761e965e22f95a1d0e139e4bd61121c7dac3822a125c40cc4b275e261",
+      "style": "table"
+    },
+    {
+      "bytes": 1060,
+      "encoded_stream_bytes": 702,
+      "insns": [
+        [
+          2,
+          1,
+          0,
+          0
+        ],
+        [
+          2,
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          3,
+          0,
+          0
+        ],
+        [
+          2,
+          4,
+          0,
+          0
+        ],
+        [
+          16,
+          1,
+          0,
+          0
+        ],
+        [
+          16,
+          2,
+          0,
+          0
+        ],
+        [
+          16,
+          3,
+          0,
+          0
+        ],
+        [
+          16,
+          4,
+          0,
+          0
+        ],
+        [
+          2,
+          5,
+          12,
+          0
+        ],
+        [
+          26,
+          0,
+          5,
+          0
+        ],
+        [
+          17,
+          6,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          17,
+          7,
+          0,
+          0
+        ],
+        [
+          17,
+          8,
+          0,
+          0
+        ],
+        [
+          17,
+          9,
+          0,
+          0
+        ],
+        [
+          17,
+          10,
+          0,
+          0
+        ],
+        [
+          17,
+          11,
+          0,
+          0
+        ],
+        [
+          2,
+          12,
+          0,
+          0
+        ],
+        [
+          66,
+          13,
+          11,
+          12
+        ],
+        [
+          11,
+          36,
+          13,
+          0
+        ],
+        [
+          2,
+          14,
+          0,
+          0
+        ],
+        [
+          11,
+          27,
+          10,
+          0
+        ],
+        [
+          2,
+          15,
+          1,
+          0
+        ],
+        [
+          8,
+          16,
+          15,
+          8
+        ],
+        [
+          66,
+          17,
+          16,
+          9
+        ],
+        [
+          11,
+          27,
+          17,
+          0
+        ],
+        [
+          2,
+          14,
+          1,
+          0
+        ],
+        [
+          11,
+          32,
+          14,
+          0
+        ],
+        [
+          2,
+          18,
+          1,
+          0
+        ],
+        [
+          16,
+          18,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          19,
+          0,
+          0
+        ],
+        [
+          16,
+          19,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          20,
+          1,
+          0
+        ],
+        [
+          25,
+          43,
+          10,
+          0
+        ],
+        [
+          2,
+          21,
+          1,
+          0
+        ],
+        [
+          8,
+          22,
+          21,
+          8
+        ],
+        [
+          66,
+          23,
+          22,
+          9
+        ],
+        [
+          25,
+          43,
+          23,
+          0
+        ],
+        [
+          2,
+          20,
+          0,
+          0
+        ],
+        [
+          11,
+          48,
+          20,
+          0
+        ],
+        [
+          2,
+          24,
+          1,
+          0
+        ],
+        [
+          16,
+          24,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          25,
+          0,
+          0
+        ],
+        [
+          16,
+          25,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ]
+      ],
+      "instructions": 54,
+      "kind": "tisc",
+      "module": "boolean",
+      "path": "artifacts/boolean.tisc",
+      "sha256": "94347601ca10a34f9e1d9cbce260a350b42bc1af615a1dc91d7b389bd5546afe"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 153,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "boolean",
+      "path": "artifacts/boolean-branch-O2.wasm",
+      "sha256": "c4835d1f8ac9e1bf71088e57be39d43d15fe745d8dfb7484ee86afa10013146d",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 115,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "boolean",
+      "path": "artifacts/boolean-branch-O2-binaryen-Oz.wasm",
+      "sha256": "3eb432aaa544637fd3d7d915a46d49a697b35495f59d1b3a5d1f5c5c185281ef",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 153,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "boolean",
+      "path": "artifacts/boolean-branch-O3.wasm",
+      "sha256": "c4835d1f8ac9e1bf71088e57be39d43d15fe745d8dfb7484ee86afa10013146d",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 115,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "boolean",
+      "path": "artifacts/boolean-branch-O3-binaryen-Oz.wasm",
+      "sha256": "3eb432aaa544637fd3d7d915a46d49a697b35495f59d1b3a5d1f5c5c185281ef",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 168,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "boolean",
+      "path": "artifacts/boolean-branch-Oz.wasm",
+      "sha256": "bbfc60983502e4c504ff4e2d4399df4df4fb36d71bb99c86fe29cb039164f6c6",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 128,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "boolean",
+      "path": "artifacts/boolean-branch-Oz-binaryen-Oz.wasm",
+      "sha256": "44736bdbf57b83aa9cbc24064150eaa4b582d59b9f6ded02def0982eb0db234b",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 153,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "boolean",
+      "path": "artifacts/boolean-select-O2.wasm",
+      "sha256": "c4835d1f8ac9e1bf71088e57be39d43d15fe745d8dfb7484ee86afa10013146d",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 115,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "boolean",
+      "path": "artifacts/boolean-select-O2-binaryen-Oz.wasm",
+      "sha256": "3eb432aaa544637fd3d7d915a46d49a697b35495f59d1b3a5d1f5c5c185281ef",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 153,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "boolean",
+      "path": "artifacts/boolean-select-O3.wasm",
+      "sha256": "c4835d1f8ac9e1bf71088e57be39d43d15fe745d8dfb7484ee86afa10013146d",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 115,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "boolean",
+      "path": "artifacts/boolean-select-O3-binaryen-Oz.wasm",
+      "sha256": "3eb432aaa544637fd3d7d915a46d49a697b35495f59d1b3a5d1f5c5c185281ef",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 168,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "boolean",
+      "path": "artifacts/boolean-select-Oz.wasm",
+      "sha256": "bbfc60983502e4c504ff4e2d4399df4df4fb36d71bb99c86fe29cb039164f6c6",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 128,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "boolean",
+      "path": "artifacts/boolean-select-Oz-binaryen-Oz.wasm",
+      "sha256": "44736bdbf57b83aa9cbc24064150eaa4b582d59b9f6ded02def0982eb0db234b",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 153,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "boolean",
+      "path": "artifacts/boolean-table-O2.wasm",
+      "sha256": "c4835d1f8ac9e1bf71088e57be39d43d15fe745d8dfb7484ee86afa10013146d",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 115,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "boolean",
+      "path": "artifacts/boolean-table-O2-binaryen-Oz.wasm",
+      "sha256": "3eb432aaa544637fd3d7d915a46d49a697b35495f59d1b3a5d1f5c5c185281ef",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 153,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "boolean",
+      "path": "artifacts/boolean-table-O3.wasm",
+      "sha256": "c4835d1f8ac9e1bf71088e57be39d43d15fe745d8dfb7484ee86afa10013146d",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 115,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "boolean",
+      "path": "artifacts/boolean-table-O3-binaryen-Oz.wasm",
+      "sha256": "3eb432aaa544637fd3d7d915a46d49a697b35495f59d1b3a5d1f5c5c185281ef",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 168,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "boolean",
+      "path": "artifacts/boolean-table-Oz.wasm",
+      "sha256": "bbfc60983502e4c504ff4e2d4399df4df4fb36d71bb99c86fe29cb039164f6c6",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 128,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "boolean",
+      "path": "artifacts/boolean-table-Oz-binaryen-Oz.wasm",
+      "sha256": "44736bdbf57b83aa9cbc24064150eaa4b582d59b9f6ded02def0982eb0db234b",
+      "style": "table"
+    },
+    {
+      "bytes": 736,
+      "encoded_stream_bytes": 468,
+      "insns": [
+        [
+          2,
+          1,
+          0,
+          0
+        ],
+        [
+          2,
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          3,
+          0,
+          0
+        ],
+        [
+          2,
+          4,
+          0,
+          0
+        ],
+        [
+          16,
+          1,
+          0,
+          0
+        ],
+        [
+          16,
+          2,
+          0,
+          0
+        ],
+        [
+          16,
+          3,
+          0,
+          0
+        ],
+        [
+          16,
+          4,
+          0,
+          0
+        ],
+        [
+          2,
+          5,
+          12,
+          0
+        ],
+        [
+          26,
+          0,
+          5,
+          0
+        ],
+        [
+          17,
+          6,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          17,
+          7,
+          0,
+          0
+        ],
+        [
+          17,
+          8,
+          0,
+          0
+        ],
+        [
+          17,
+          9,
+          0,
+          0
+        ],
+        [
+          17,
+          10,
+          0,
+          0
+        ],
+        [
+          17,
+          11,
+          0,
+          0
+        ],
+        [
+          2,
+          12,
+          0,
+          0
+        ],
+        [
+          66,
+          13,
+          11,
+          12
+        ],
+        [
+          11,
+          24,
+          13,
+          0
+        ],
+        [
+          5,
+          14,
+          10,
+          9
+        ],
+        [
+          16,
+          14,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ],
+        [
+          62,
+          15,
+          10,
+          9
+        ],
+        [
+          11,
+          30,
+          15,
+          0
+        ],
+        [
+          2,
+          16,
+          1,
+          0
+        ],
+        [
+          16,
+          16,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          17,
+          0,
+          0
+        ],
+        [
+          16,
+          17,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ]
+      ],
+      "instructions": 36,
+      "kind": "tisc",
+      "module": "integer",
+      "path": "artifacts/integer.tisc",
+      "sha256": "aa151bea99bd77e4c501de7b93da001ed7df12841ff837594dac3ff79f4e7201"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 77,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "integer",
+      "path": "artifacts/integer-branch-O2.wasm",
+      "sha256": "cfe25ded421e174eb4b0df9d4b468f2a95de5b852cea79ec996d7b02d0f7cd92",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 67,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "integer",
+      "path": "artifacts/integer-branch-O2-binaryen-Oz.wasm",
+      "sha256": "4fc8779f6718beeab178e492f1905125b2757be5eee715de8e4359fcb4ca5e90",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 77,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "integer",
+      "path": "artifacts/integer-branch-O3.wasm",
+      "sha256": "cfe25ded421e174eb4b0df9d4b468f2a95de5b852cea79ec996d7b02d0f7cd92",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 67,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "integer",
+      "path": "artifacts/integer-branch-O3-binaryen-Oz.wasm",
+      "sha256": "4fc8779f6718beeab178e492f1905125b2757be5eee715de8e4359fcb4ca5e90",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 77,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "integer",
+      "path": "artifacts/integer-branch-Oz.wasm",
+      "sha256": "cfe25ded421e174eb4b0df9d4b468f2a95de5b852cea79ec996d7b02d0f7cd92",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 67,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "integer",
+      "path": "artifacts/integer-branch-Oz-binaryen-Oz.wasm",
+      "sha256": "4fc8779f6718beeab178e492f1905125b2757be5eee715de8e4359fcb4ca5e90",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 77,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "integer",
+      "path": "artifacts/integer-select-O2.wasm",
+      "sha256": "cfe25ded421e174eb4b0df9d4b468f2a95de5b852cea79ec996d7b02d0f7cd92",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 67,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "integer",
+      "path": "artifacts/integer-select-O2-binaryen-Oz.wasm",
+      "sha256": "4fc8779f6718beeab178e492f1905125b2757be5eee715de8e4359fcb4ca5e90",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 77,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "integer",
+      "path": "artifacts/integer-select-O3.wasm",
+      "sha256": "cfe25ded421e174eb4b0df9d4b468f2a95de5b852cea79ec996d7b02d0f7cd92",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 67,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "integer",
+      "path": "artifacts/integer-select-O3-binaryen-Oz.wasm",
+      "sha256": "4fc8779f6718beeab178e492f1905125b2757be5eee715de8e4359fcb4ca5e90",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 77,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "integer",
+      "path": "artifacts/integer-select-Oz.wasm",
+      "sha256": "cfe25ded421e174eb4b0df9d4b468f2a95de5b852cea79ec996d7b02d0f7cd92",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 67,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "integer",
+      "path": "artifacts/integer-select-Oz-binaryen-Oz.wasm",
+      "sha256": "4fc8779f6718beeab178e492f1905125b2757be5eee715de8e4359fcb4ca5e90",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 77,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "integer",
+      "path": "artifacts/integer-table-O2.wasm",
+      "sha256": "cfe25ded421e174eb4b0df9d4b468f2a95de5b852cea79ec996d7b02d0f7cd92",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 67,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "integer",
+      "path": "artifacts/integer-table-O2-binaryen-Oz.wasm",
+      "sha256": "4fc8779f6718beeab178e492f1905125b2757be5eee715de8e4359fcb4ca5e90",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 77,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "integer",
+      "path": "artifacts/integer-table-O3.wasm",
+      "sha256": "cfe25ded421e174eb4b0df9d4b468f2a95de5b852cea79ec996d7b02d0f7cd92",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 67,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "integer",
+      "path": "artifacts/integer-table-O3-binaryen-Oz.wasm",
+      "sha256": "4fc8779f6718beeab178e492f1905125b2757be5eee715de8e4359fcb4ca5e90",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 77,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "integer",
+      "path": "artifacts/integer-table-Oz.wasm",
+      "sha256": "cfe25ded421e174eb4b0df9d4b468f2a95de5b852cea79ec996d7b02d0f7cd92",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 67,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "integer",
+      "path": "artifacts/integer-table-Oz-binaryen-Oz.wasm",
+      "sha256": "4fc8779f6718beeab178e492f1905125b2757be5eee715de8e4359fcb4ca5e90",
+      "style": "table"
+    },
+    {
+      "bytes": 484,
+      "encoded_stream_bytes": 286,
+      "insns": [
+        [
+          2,
+          1,
+          0,
+          0
+        ],
+        [
+          2,
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          3,
+          0,
+          0
+        ],
+        [
+          2,
+          4,
+          0,
+          0
+        ],
+        [
+          16,
+          1,
+          0,
+          0
+        ],
+        [
+          16,
+          2,
+          0,
+          0
+        ],
+        [
+          16,
+          3,
+          0,
+          0
+        ],
+        [
+          16,
+          4,
+          0,
+          0
+        ],
+        [
+          2,
+          5,
+          12,
+          0
+        ],
+        [
+          26,
+          0,
+          5,
+          0
+        ],
+        [
+          17,
+          6,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          17,
+          7,
+          0,
+          0
+        ],
+        [
+          17,
+          8,
+          0,
+          0
+        ],
+        [
+          17,
+          9,
+          0,
+          0
+        ],
+        [
+          17,
+          10,
+          0,
+          0
+        ],
+        [
+          17,
+          11,
+          0,
+          0
+        ],
+        [
+          16,
+          10,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ],
+        [
+          16,
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0,
+          0
+        ]
+      ],
+      "instructions": 22,
+      "kind": "tisc",
+      "module": "identity",
+      "path": "artifacts/identity.tisc",
+      "sha256": "b5d353735b2638250f300a70e56568b4051997c0c6b4f017c23156ea57c8f8e1"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 64,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "identity",
+      "path": "artifacts/identity-branch-O2.wasm",
+      "sha256": "70f75e2a4c240e03e3c82a62ffccbc4c53b30044b4d345e3a371b6e683cd55ed",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 54,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "identity",
+      "path": "artifacts/identity-branch-O2-binaryen-Oz.wasm",
+      "sha256": "1133f4eaf9cbefa49d60b3af665d7dd111626bec1a9f02ce32ef71476ac416ed",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 64,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "identity",
+      "path": "artifacts/identity-branch-O3.wasm",
+      "sha256": "70f75e2a4c240e03e3c82a62ffccbc4c53b30044b4d345e3a371b6e683cd55ed",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 54,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "identity",
+      "path": "artifacts/identity-branch-O3-binaryen-Oz.wasm",
+      "sha256": "1133f4eaf9cbefa49d60b3af665d7dd111626bec1a9f02ce32ef71476ac416ed",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 64,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "identity",
+      "path": "artifacts/identity-branch-Oz.wasm",
+      "sha256": "70f75e2a4c240e03e3c82a62ffccbc4c53b30044b4d345e3a371b6e683cd55ed",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 54,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "identity",
+      "path": "artifacts/identity-branch-Oz-binaryen-Oz.wasm",
+      "sha256": "1133f4eaf9cbefa49d60b3af665d7dd111626bec1a9f02ce32ef71476ac416ed",
+      "style": "branch"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 64,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "identity",
+      "path": "artifacts/identity-select-O2.wasm",
+      "sha256": "70f75e2a4c240e03e3c82a62ffccbc4c53b30044b4d345e3a371b6e683cd55ed",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 54,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "identity",
+      "path": "artifacts/identity-select-O2-binaryen-Oz.wasm",
+      "sha256": "1133f4eaf9cbefa49d60b3af665d7dd111626bec1a9f02ce32ef71476ac416ed",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 64,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "identity",
+      "path": "artifacts/identity-select-O3.wasm",
+      "sha256": "70f75e2a4c240e03e3c82a62ffccbc4c53b30044b4d345e3a371b6e683cd55ed",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 54,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "identity",
+      "path": "artifacts/identity-select-O3-binaryen-Oz.wasm",
+      "sha256": "1133f4eaf9cbefa49d60b3af665d7dd111626bec1a9f02ce32ef71476ac416ed",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 64,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "identity",
+      "path": "artifacts/identity-select-Oz.wasm",
+      "sha256": "70f75e2a4c240e03e3c82a62ffccbc4c53b30044b4d345e3a371b6e683cd55ed",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 54,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "identity",
+      "path": "artifacts/identity-select-Oz-binaryen-Oz.wasm",
+      "sha256": "1133f4eaf9cbefa49d60b3af665d7dd111626bec1a9f02ce32ef71476ac416ed",
+      "style": "select"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 64,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "identity",
+      "path": "artifacts/identity-table-O2.wasm",
+      "sha256": "70f75e2a4c240e03e3c82a62ffccbc4c53b30044b4d345e3a371b6e683cd55ed",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 54,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O2",
+      "module": "identity",
+      "path": "artifacts/identity-table-O2-binaryen-Oz.wasm",
+      "sha256": "1133f4eaf9cbefa49d60b3af665d7dd111626bec1a9f02ce32ef71476ac416ed",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 64,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "identity",
+      "path": "artifacts/identity-table-O3.wasm",
+      "sha256": "70f75e2a4c240e03e3c82a62ffccbc4c53b30044b4d345e3a371b6e683cd55ed",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 54,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "O3",
+      "module": "identity",
+      "path": "artifacts/identity-table-O3-binaryen-Oz.wasm",
+      "sha256": "1133f4eaf9cbefa49d60b3af665d7dd111626bec1a9f02ce32ef71476ac416ed",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": false,
+      "bytes": 64,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "identity",
+      "path": "artifacts/identity-table-Oz.wasm",
+      "sha256": "70f75e2a4c240e03e3c82a62ffccbc4c53b30044b4d345e3a371b6e683cd55ed",
+      "style": "table"
+    },
+    {
+      "binaryen_Oz": true,
+      "bytes": 54,
+      "exports": [
+        "memory",
+        "run"
+      ],
+      "kind": "wasm",
+      "level": "Oz",
+      "module": "identity",
+      "path": "artifacts/identity-table-Oz-binaryen-Oz.wasm",
+      "sha256": "1133f4eaf9cbefa49d60b3af665d7dd111626bec1a9f02ce32ef71476ac416ed",
+      "style": "table"
+    },
+    {
+      "bytes": 502,
+      "encoded_stream_bytes": 299,
+      "instructions": 23,
+      "kind": "authored-tisc",
+      "module": "meet",
+      "path": "artifacts/authored-meet-native.tisc",
+      "sha256": "b9c49acdc25f9987857ce05c5a071505f8e3e08cbb2269ab4b7d1c7af67d8774",
+      "variant": "native"
+    },
+    {
+      "bytes": 574,
+      "encoded_stream_bytes": 351,
+      "instructions": 27,
+      "kind": "authored-tisc",
+      "module": "meet",
+      "path": "artifacts/authored-meet-expanded.tisc",
+      "sha256": "285dae204c2453ad53176412a38301430f625d4833e19d3391636cf6232f8e11",
+      "variant": "expanded"
+    },
+    {
+      "bytes": 502,
+      "encoded_stream_bytes": 299,
+      "instructions": 23,
+      "kind": "authored-tisc",
+      "module": "join",
+      "path": "artifacts/authored-join-native.tisc",
+      "sha256": "cf0e7ad571a551c86a49b5bf7026d44f55dae05c7ef05cca693df6e76a620322",
+      "variant": "native"
+    },
+    {
+      "bytes": 574,
+      "encoded_stream_bytes": 351,
+      "instructions": 27,
+      "kind": "authored-tisc",
+      "module": "join",
+      "path": "artifacts/authored-join-expanded.tisc",
+      "sha256": "970e6d8da9762686a65fe2ad3ef6cc79325fea32bb34e876eb3ce54a34f90f87",
+      "variant": "expanded"
+    }
+  ]
+}

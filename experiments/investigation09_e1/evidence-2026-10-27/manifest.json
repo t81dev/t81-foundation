@@ -1,0 +1,14 @@
+{
+  "binaryen": "wasm-opt version 132 (version_132)\n",
+  "checkout": "410049655db27626d07cb2c0d0a67ba8e90470eb",
+  "clang": "Homebrew clang version 22.1.1\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /opt/homebrew/Cellar/llvm/22.1.1/bin\nConfiguration file: /opt/homebrew/Cellar/llvm/22.1.1/etc/clang/arm64-apple-darwin25.cfg\n",
+  "entry_contract_sha256": "4ed3eb8b11d79be11360309cf1b7dd6d2da7472086627b715dc0c9aa839bb812",
+  "linker": "Homebrew LLD 22.1.1\n",
+  "machine": "arm64",
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "protocol_commit": "f1054438b805b541c4acfd294e6dba5a71711c05",
+  "protocol_sha256": "00e4ca3e26e30d5f6924f95094b566d54d1783963a82965b3a3a1e350356953b",
+  "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]",
+  "source_baseline": "c930b8c2ee7478782bf3c6d231bdd59984595ef2",
+  "wasmtime": "50.0.1"
+}
