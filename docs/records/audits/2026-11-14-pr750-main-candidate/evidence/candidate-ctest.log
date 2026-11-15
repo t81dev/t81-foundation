@@ -1,0 +1,43 @@
+UpdateCTestConfiguration  from :/private/tmp/t81-pr750-main-release/DartConfiguration.tcl
+Test project /private/tmp/t81-pr750-main-release
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 291
+    Start 291: t81_process_capture_test
+
+291: Test command: /private/tmp/t81-pr750-main-release/t81_process_capture_test
+291: Working Directory: /private/tmp/t81-pr750-main-release
+291: Test timeout computed to be: 60
+291: symlink/reparse rejection: executed
+291: exclusive creation, private permissions, retained-object read and partial cleanup: passed
+291: argument fidelity, shell literals, cwd/env, zero/nonzero exits and concurrent 2 MiB streams: passed
+1/3 Test #291: t81_process_capture_test .........   Passed    0.49 sec
+test 307
+    Start 307: t81_cli_execution_policy_test
+
+307: Test command: /opt/homebrew/Frameworks/Python.framework/Versions/3.14/bin/python3.14 "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/tests/python/test_cli_execution_policy.py" "--t81-bin" "/private/tmp/t81-pr750-main-release/t81"
+307: Working Directory: /private/tmp/t81-pr750-main-release
+307: Test timeout computed to be: 180
+307: PASS: 249 CLI processes; 0 failed checks
+2/3 Test #307: t81_cli_execution_policy_test ....   Passed    2.63 sec
+test 308
+    Start 308: t81_cli_repro_hash_test
+
+308: Test command: /private/tmp/t81-pr750-main-release/cli_repro_hash_test "/private/tmp/t81-pr750-main-release/t81"
+308: Working Directory: /Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy
+308: Test timeout computed to be: 10000000
+308: cli repro hash test passed!
+3/3 Test #308: t81_cli_repro_hash_test ..........   Passed    1.00 sec
+
+The following tests passed:
+	t81_process_capture_test
+	t81_cli_execution_policy_test
+	t81_cli_repro_hash_test
+
+100% tests passed, 0 tests failed out of 3
+
+Total Test time (real) =   4.14 sec

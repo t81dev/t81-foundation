@@ -29,6 +29,7 @@
 #include <stdexcept>
 #include <string>
 #include "tools/cli/core/process_capture.hpp"
+#include "tools/cli/core/execution_policy.hpp"
 #include <thread>
 #include <tuple>
 #include <type_traits>
@@ -6992,7 +6993,7 @@ int run_vm_command(const Args& args) {
     return 1;
   }
 
-  std::optional<fs::path> policy_path;
+  std::optional<fs::path> policy_path = args.policy;
   std::optional<fs::path> trace_path = args.output;
   std::optional<std::string> display_program;
   bool as_json = false;
@@ -7080,20 +7081,26 @@ int run_vm_command(const Args& args) {
     }
     return t81::cli::run_tisc(input, policy_path, true, trace_path);
   }
+  std::optional<std::string> policy_text;
+  if (policy_path) {
+    std::string content;
+    std::string diagnostic;
+    if (!t81::cli::detail::read_execution_policy(*policy_path, content, diagnostic)) {
+      error(diagnostic);
+      return 1;
+    }
+    policy_text = std::move(content);
+  }
   if (action == "until" || action == "step" || action == "regs" || action == "stack" ||
       action == "mem") {
     auto program = t81::tisc::load_program(input.string());
-    if (policy_path) {
-      std::ifstream ifs(*policy_path);
-      if (!ifs) {
-        error("Could not open policy file: " + policy_path->string());
-        return 1;
-      }
-      std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-      program.axion_policy_text = content;
-    }
+    if (policy_text) program.axion_policy_text = *policy_text;
     auto vm = t81::vm::make_interpreter_vm();
     vm->load_program(program);
+    if (policy_path && !vm->state().policy.has_value()) {
+      error("Could not apply requested policy: " + policy_path->string());
+      return 1;
+    }
     std::optional<t81::vm::Trap> trap;
     std::size_t executed_steps = 0;
     bool reached_target_pc = false;
@@ -7269,17 +7276,13 @@ int run_vm_command(const Args& args) {
   }
   if (action == "state") {
     auto program = t81::tisc::load_program(input.string());
-    if (policy_path) {
-      std::ifstream ifs(*policy_path);
-      if (!ifs) {
-        error("Could not open policy file: " + policy_path->string());
-        return 1;
-      }
-      std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-      program.axion_policy_text = content;
-    }
+    if (policy_text) program.axion_policy_text = *policy_text;
     auto vm = t81::vm::make_interpreter_vm();
     vm->load_program(program);
+    if (policy_path && !vm->state().policy.has_value()) {
+      error("Could not apply requested policy: " + policy_path->string());
+      return 1;
+    }
     auto result = vm->run_to_halt();
     const auto& state = vm->state();
     const auto& ctx = state.contexts.empty() ? t81::vm::ThreadContext{} : state.contexts.front();
@@ -7321,17 +7324,13 @@ int run_vm_command(const Args& args) {
   }
   if (action == "profile" || action == "explain-trap") {
     auto program = t81::tisc::load_program(input.string());
-    if (policy_path) {
-      std::ifstream ifs(*policy_path);
-      if (!ifs) {
-        error("Could not open policy file: " + policy_path->string());
-        return 1;
-      }
-      std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-      program.axion_policy_text = content;
-    }
+    if (policy_text) program.axion_policy_text = *policy_text;
     auto vm = t81::vm::make_interpreter_vm();
     vm->load_program(program);
+    if (policy_path && !vm->state().policy.has_value()) {
+      error("Could not apply requested policy: " + policy_path->string());
+      return 1;
+    }
     auto result = vm->run_to_halt();
     const auto& state = vm->state();
     const auto& ctx = state.contexts.empty() ? t81::vm::ThreadContext{} : state.contexts.front();
