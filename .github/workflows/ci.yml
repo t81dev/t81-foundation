@@ -1320,10 +1320,15 @@ jobs:
       - name: Build benchmark runner
         run: cmake --build build --parallel --target benchmark_runner
 
-      - name: Run benchmark runner
+      - name: Run SIMD regression benchmark slice
+        env:
+          T81_BENCHMARK_WRITE_REPORTS: "0"
         run: |
+          set -euo pipefail
           mkdir -p .github/logs
-          ./build/benchmarks/benchmark_runner --benchmark_format=json --benchmark_out=bench.json 2>&1 | tee .github/logs/benchmark.log
+          ./build/benchmarks/benchmark_runner \
+            --benchmark_filter='^BM_Kernel_T(And|Or|Not)_(SWAR|AVX2|NEON)/' \
+            --benchmark_format=json --benchmark_out=bench.json 2>&1 | tee .github/logs/benchmark.log
 
       - name: Enforce SIMD benchmark non-regression thresholds
         run: |
