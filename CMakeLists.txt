@@ -102,6 +102,22 @@ if(T81_ENABLE_TERNARYOS)
   add_subdirectory(ternaryos)
 endif()
 
+if(T81_BUILD_TESTS OR T81_BUILD_EXAMPLES)
+  include(FetchContent)
+  FetchContent_Declare(
+    asio
+    GIT_REPOSITORY https://github.com/chriskohlhoff/asio.git
+    GIT_TAG asio-1-30-2
+  )
+  FetchContent_MakeAvailable(asio)
+  # Asio does not provide a CMake target; expose a local interface target.
+  if(NOT TARGET asio)
+    add_library(asio INTERFACE)
+    target_include_directories(asio INTERFACE ${asio_SOURCE_DIR}/asio/include)
+    target_compile_definitions(asio INTERFACE ASIO_STANDALONE)
+  endif()
+endif()
+
 if(T81_BUILD_EXAMPLES)
 add_executable(t81_demo examples/compiler-and-ffi/demo.cpp)
 target_link_libraries(t81_demo PRIVATE t81_core)
@@ -208,20 +224,6 @@ if(T81_BUILD_TESTS)
         ${PROJECT_SOURCE_DIR}/tests/python/test_accountable_computation.py
         --runner $<TARGET_FILE:t81_accountable_experiment> --production-only)
   endif()
-  include(FetchContent)
-  FetchContent_Declare(
-    asio
-    GIT_REPOSITORY https://github.com/chriskohlhoff/asio.git
-    GIT_TAG asio-1-30-2
-  )
-  FetchContent_MakeAvailable(asio)
-  # Asio does not provide a CMake target; expose a local interface target.
-  if(NOT TARGET asio)
-    add_library(asio INTERFACE)
-    target_include_directories(asio INTERFACE ${asio_SOURCE_DIR}/asio/include)
-    target_compile_definitions(asio INTERFACE ASIO_STANDALONE)
-  endif()
-
   add_executable(t81_bigint_test tests/cpp/bigint_roundtrip.cpp)
   target_link_libraries(t81_bigint_test PRIVATE t81_core)
 
