@@ -14,8 +14,8 @@
 
 // Undefined in the current header, including the holes inside kAllOpcodes.
 // Keep this explicit so a missing opcode_name case cannot silently reduce coverage.
-static constexpr std::array<std::uint8_t, 12> kUndefinedEncodings = {
-    221, 222, 223, 247, 248, 249, 250, 251, 252, 253, 254, 255};
+static constexpr std::array<std::uint8_t, 12> kUndefinedEncodings = {221, 222, 223, 247, 248, 249,
+                                                                     250, 251, 252, 253, 254, 255};
 
 static constexpr unsigned kOpcodeByteCount = std::numeric_limits<std::uint8_t>::max() + 1u;
 
@@ -99,8 +99,7 @@ static void test_full_opcode_roundtrip_encoding() {
 static void test_undefined_opcode_rejection() {
   using namespace t81::tisc;
   Program program;
-  program.insns = {{Opcode::Nop, 0, 0, 0}, {Opcode::Nop, 0, 0, 0},
-                   {Opcode::Halt, 0, 0, 0}};
+  program.insns = {{Opcode::Nop, 0, 0, 0}, {Opcode::Nop, 0, 0, 0}, {Opcode::Halt, 0, 0, 0}};
   const auto valid_bytes = encode(program);
   T81_TEST_CHECK(valid_bytes.size() == 3 * 13);
 
@@ -128,8 +127,8 @@ int main() {
   test_frozen_isa_mappings();
   test_full_opcode_roundtrip_encoding();
   test_undefined_opcode_rejection();
-  std::cout << "tisc opcode matrix tests passed: "
-            << kOpcodeByteCount - kUndefinedEncodings.size() << " defined opcodes, "
-            << kUndefinedEncodings.size() << " undefined encodings rejected.\n";
+  std::cout << "tisc opcode matrix tests passed: " << kOpcodeByteCount - kUndefinedEncodings.size()
+            << " defined opcodes, " << kUndefinedEncodings.size()
+            << " undefined encodings rejected.\n";
   return 0;
 }
