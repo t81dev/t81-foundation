@@ -57,12 +57,23 @@ jobs:
             done
           } 2>&1 | tee .github/logs/scg08-validator.log
 
+      - name: Test SIMD checker and actual threshold pipeline
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            python3 tests/python/test_simd_regression.py
+            python3 -O tests/python/test_simd_regression.py
+          } 2>&1 | tee .github/logs/simd-checker-tests.log
+
       - name: Retain SCG-08 validator execution log
         if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: scg08-validator-suites
-          path: .github/logs/scg08-validator.log
+          path: |
+            .github/logs/scg08-validator.log
+            .github/logs/simd-checker-tests.log
           if-no-files-found: error
 
       - name: Check Markdown links (lychee)
@@ -1326,13 +1337,21 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p .github/logs
+          filter='^BM_Kernel_TAnd_(SWAR|AVX2|NEON)/'
+          # List compiled registrations independently of the measured results.
           ./build/benchmarks/benchmark_runner \
-            --benchmark_filter='^BM_Kernel_T(And|Or|Not)_(SWAR|AVX2|NEON)/' \
+            --benchmark_list_tests=true --benchmark_filter="$filter" \
+            | grep '^BM_Kernel_TAnd_' > build/benchmarks/simd-regression-inventory.txt
+          ./build/benchmarks/benchmark_runner \
+            --benchmark_filter="$filter" \
             --benchmark_format=json --benchmark_out=bench.json 2>&1 | tee .github/logs/benchmark.log
 
       - name: Enforce SIMD benchmark non-regression thresholds
+        shell: bash
         run: |
-          python3 scripts/ci/check_simd_regression.py bench.json 2>&1 | tee -a .github/logs/benchmark.log
+          set -euo pipefail
+          python3 scripts/ci/check_simd_regression.py bench.json \
+            --inventory build/benchmarks/simd-regression-inventory.txt 2>&1 | tee -a .github/logs/benchmark.log
 
       - name: Upload benchmark artifacts
         if: always()
@@ -1341,6 +1360,7 @@ jobs:
           name: ci-benchmarks-linux-x86_64
           path: |
             bench.json
+            build/benchmarks/simd-regression-inventory.txt
             docs/reference/benchmarks.md
             .github/logs/benchmark.log
           if-no-files-found: warn
