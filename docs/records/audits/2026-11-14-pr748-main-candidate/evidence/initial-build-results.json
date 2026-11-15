@@ -1,0 +1,51 @@
+[
+  {
+    "name": "release-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      ".",
+      "-B",
+      "/private/tmp/t81-pr748-main-release",
+      "-G",
+      "Ninja",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DT81_BUILD_TESTS=ON",
+      "-DT81_BUILD_TUI=OFF",
+      "-DT81_BUILD_BENCHMARKS=OFF",
+      "-DT81_BUILD_EXAMPLES=OFF",
+      "-DT81_BUILD_FUZZ_TESTS=OFF",
+      "-DT81_ENABLE_TERNARYOS=OFF",
+      "-DT81_STRICT_DETERMINISTIC_FLOAT=ON",
+      "-DT81_USE_CXX23=ON",
+      "-DFETCHCONTENT_SOURCE_DIR_ASIO=/Users/t81dev/Code/t81-foundation/build/_deps/asio-src",
+      "-DGTest_DIR=/private/tmp/t81-ci-googletest-install-2026-11-09/lib/cmake/GTest"
+    ],
+    "exit": 0,
+    "expected_exit": 0
+  },
+  {
+    "name": "baseline-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "/private/tmp/t81-pr748-main-release",
+      "--target",
+      "canonfs_policy_boundary_test",
+      "canonfs_persistent_driver_test",
+      "canonfs_axion_trace_test",
+      "-j",
+      "4"
+    ],
+    "exit": 0,
+    "expected_exit": 0
+  },
+  {
+    "name": "unfixed-main-with-pr-test",
+    "argv": [
+      "/private/tmp/t81-pr748-main-release/canonfs_policy_boundary_test"
+    ],
+    "exit": 1,
+    "expected_exit": 1
+  }
+]
