@@ -257,11 +257,75 @@ def verify(root):
     assert aligned_tree == reviewed_tree
     for record in ('authorization', 'qualification'):
         assert {'area_f_plan_id', 'corpus_sha256', 'protocol_sha256', 'amendment_sha256'} <= set(evidence_v2['$defs'][record]['required'])
+    # LQ01-R1 source contracts only. Never load either launch entry point.
+    baseline = '2f2bc47ffc9441a060f3a1cfdf4ec893c6699d0e'
+    baseline_identity = json.loads(subprocess.check_output([
+        'git', 'show', baseline + ':experiments/rfc_00d7_f01/identities.json'
+    ], cwd=repo))
+    unchanged = 0
+    for name, expected in baseline_identity['files'].items():
+        if name not in ('supervise.py', 'static_check.py') and not name.endswith('.md'):
+            assert sha(root / name) == expected, ('protected baseline artifact', name)
+            unchanged += 1
+    assert (root / 'evidence.schema.json').stat().st_size <= 65536
+    source_record = json.loads((root / 'lq01-r1-source.json').read_text())
+    assert source_record['baseline'] == baseline
+    assert source_record['protocol_sha256'] == identity['protocol_sha256']
+    assert source_record['execution_authorized'] is False and source_record['linux_qualified'] is False
+    for name, expected in source_record['source_files'].items():
+        assert sha(root / name) == expected, name
+    supervisor = parsed['supervise.py']
+    bootstrap = parsed['runner_bootstrap.py']
+    allowed_imports = {'argparse', 'ctypes', 'hashlib', 'importlib.util', 'json', 'os',
+                       'resource', 'selectors', 'signal', 'subprocess', 'sys',
+                       'sysconfig', 'time', 'pathlib', 'jsonschema'}
+    for tree in (supervisor, bootstrap):
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                assert {alias.name for alias in node.names} <= allowed_imports
+            if isinstance(node, ast.ImportFrom):
+                assert node.module in allowed_imports
+            if isinstance(node, ast.Call):
+                assert all(keyword.arg != 'preexec_fn' for keyword in node.keywords)
+    functions = {node.name: node for node in supervisor.body if isinstance(node, ast.FunctionDef)}
+    source = {name: ast.unparse(node) for name, node in functions.items()}
+    assert "'supervisor'" in source['g0'] and "'runner'" in source['g0']
+    assert 'topology(groups)' in source['g0']
+    assert 'topology(groups, pending)' in source['check_gate']
+    assert 'zip(groups, (256, 64, 128))' in source['topology']
+    assert "runner.procs() == (set() if pending is None else {pending['pid']})" in source['topology']
+    assert 'not aggregate.procs()' in source['topology']
+    assert "aggregate.children() == {'supervisor', 'runner'}" in source['topology']
+    assert 'resource.prlimit' in source['topology']
+    assert '48000000' in source['checkpoint'] and '58000000000' in source['checkpoint']
+    assert "'cpu_origin_usec'] == 0" in source['g0']
+    assert 'hard >= 45' in source['g0']
+    assert 'prctl(38, 1' in source['g0'] and 'prctl(36, 1' in source['g0']
+    assert "runner.write('cgroup.kill', b'1')" in source['cleanup']
+    assert 'runner.populated() == 0' in source['cleanup'] and 'not children' in source['cleanup']
+    assert 'os.waitpid(-1, os.WNOHANG)' in source['cleanup']
+    assert 'process.returncode = os.waitstatus_to_exitcode(wait_status)' in source['cleanup']
+    assert "aggregate.write('cgroup.kill'" not in ast.unparse(supervisor)
+    main_source = source['main']
+    assert main_source.index('process = subprocess.Popen') < main_source.index('resource.RLIMIT_CPU, (2, 3)')
+    assert main_source.index('resource.RLIMIT_CPU, (2, 3)') < main_source.index('pending = wait_ready')
+    assert main_source.index('pending = wait_ready') < main_source.index('= check_gate(')
+    assert main_source.index('= check_gate(') < main_source.index('os.write(go_write, packet)')
+    assert "'INCONCLUSIVE_LIMIT'" in main_source and "'unverified_until_external_inventory'" in main_source
+    boot_functions = {node.name: node for node in bootstrap.body if isinstance(node, ast.FunctionDef)}
+    boot_source = ast.unparse(boot_functions['main'])
+    assert boot_source.index('resource.RLIMIT_CPU, (44, 45)') < boot_source.index('os.write(args.ready_fd, raw)')
+    assert boot_source.index('os.read(args.go_fd') < boot_source.index('os.execve(')
+    assert "go['go'] is not True" in boot_source
+    assert boot_source.index('authorization changed after GO') < boot_source.index('os.execve(')
+    assert 'prctl(1, signal.SIGKILL' in boot_source
+    assert 'execve' not in ast.unparse(supervisor)
     return {'preparation_only': True, 'source_pins': len(pins['sources']),
             'artifact_hashes': len((proposal / 'SHA256SUMS').read_text().splitlines()), 'compiled_modules': len(parsed),
             'schemas_checked': 3, 'fa01_planned_states': 254, 'cross_module_calls_checked': calls_checked, 'locked_distributions': len(lock['packages']),
             'declared_interpretations_checked': len(keys),
             'closed_form_cap_bounds_checked': len(bounds),
+            'lq01_r1_ast_checked': True, 'protected_baseline_artifacts': unchanged,
             'terminal_guard_ast_checked': True, 'actual_protocol_ancestor_checked': True,
             'model_imports': 0, 'experimental_states_enumerated': 0,
             'candidate_oracle_invocations': 0, 'execution_qualified': False}

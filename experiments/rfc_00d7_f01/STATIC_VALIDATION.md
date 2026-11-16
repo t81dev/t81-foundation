@@ -180,3 +180,51 @@ Linux enforcement remain unverified; process death cannot be repaired by this
 helper. The macOS lock still blocks Linux. Independent review and separately
 authorized qualification/execution are required before any final qualification
 pinning or run. See READINESS_CORRECTIONS.md for exact ancestry and semantics.
+
+## LQ01-R1 supervisor correction — preparation only
+
+Baseline2f2bc47ffc9441a060f3a1cfdf4ec893c6699d0e; source design accepted by the
+human for this limited implementation. No qualification or experiment entry
+point was imported/invoked. No model, oracle, control, fixture, proof-checker
+or generator ran. No dependency installation or Linux host probe occurred.
+The same existing macOS ARM64 CPython3.14.3 preparation environment was used.
+
+Commands:
+
+```sh
+/private/tmp/t81-pr795-parity-venv/bin/python -B experiments/rfc_00d7_f01/static_check.py
+git diff --check
+```
+
+Observed checker output (exit0; final source identities checked):
+
+```json
+{"actual_protocol_ancestor_checked":true,"artifact_hashes":5,"candidate_oracle_invocations":0,"closed_form_cap_bounds_checked":6,"compiled_modules":11,"cross_module_calls_checked":54,"declared_interpretations_checked":8,"execution_qualified":false,"experimental_states_enumerated":0,"fa01_planned_states":254,"locked_distributions":5,"lq01_r1_ast_checked":true,"model_imports":0,"preparation_only":true,"protected_baseline_artifacts":17,"schemas_checked":3,"source_pins":14,"terminal_guard_ast_checked":true}
+```
+
+Compilation is AST/compile in memory, without executing resulting code objects.
+Source checks inspect G0/G1 populations, budget constants, inherited CPU ordering,
+GO-before-exec ordering, stdlib-only stub imports, parent death, R-only kill,
+subreaping and retained direct-child wait status. They compare17 protected
+non-document baseline artifacts byte-for-byte; all11 Python sources are parsed.
+Both source-identity manifests, protocol history and active artifact hashes are
+verified. Existing schema definitions are checked; no synthetic fixture is
+validated. These source-shape checks do not prove runtime enforcement.
+
+An initial static attempt failed because the older checker treats all literal
+lookups on a variable named `values` as interpretation lookups. The manager
+property dictionary was renamed `observed`, preserving that guard. Subsequent
+checks passed. Source inspection also found the unchanged evidence-v2 schema
+is39,106 bytes: the new gate explicitly allows65,536 bytes for that schema,
+rather than the old32,768 default. Neither the schema bytes nor experimental
+semantics changed. No dynamic check was used to find or repair these issues.
+
+Whitespace checks passed. No formatter or dependency was installed. Final commit
+identity and changed-file inventory are in the separate draft PR; identities.json
+covers the new source, preparation record and implementation description.
+
+Linux x86_64/ARM64 remain unqualified. macOS/Windows execution is unsupported.
+The Linux re-lock blocker remains true. Real controller delegation, outer
+manager deadlines, resource delivery/overshoot, GO/EOF handling, session-changing
+orphans and evidence exhaustion remain unexecuted qualification obligations.
+Missing records are incomplete evidence, never fabricated persistence.
