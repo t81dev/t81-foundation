@@ -1,0 +1,60 @@
+{
+  "attribution": {
+    "kind": "agent",
+    "model": null,
+    "name": "Codex assistant in the current session",
+    "role": "Provisioning plan author and same prior harness/profile author; no independent validation or host observation"
+  },
+  "evidence": [
+    {
+      "relationship": "context",
+      "scope": "Canonical H07 defines the auditability question and its limits. RFC-00D7-F01 A-F are bounded contract questions, not a replacement hypothesis or comparative assurance finding. Candidate-specific inputs are separately pinned in source-pins.json.",
+      "source_ref": "register"
+    },
+    {
+      "relationship": "context",
+      "scope": "Preserve H01-H08, Hanoi/CWEB history, negative findings, independent-oracle requirements and source-bounded claims.",
+      "source_ref": "charter"
+    },
+    {
+      "relationship": "context",
+      "scope": "Unratified draft text and proposal validation do not authorize normative promotion, implementation, execution or changes to frozen semantics.",
+      "source_ref": "authority-model"
+    }
+  ],
+  "expected_artifacts": [
+    "Host/provider/installer/tool approval prerequisites, currently unfilled",
+    "Separate exact content, symlink, stdlib, package and native-candidate manifests",
+    "Bounded provisioning counters/receipt and quarantine/disposal evidence",
+    "Independent review, later active re-lock decision, separate qualification and one-run decisions"
+  ],
+  "falsification_criterion": "Missing host/provider/tool/approval identities block admission. Unexpected content, mutation, unsupported boundary, resource overrun or incomplete cleanup/evidence fails the single operation and blocks reuse; no fallback or claim of qualification.",
+  "human_authorization": {
+    "human": null,
+    "record": "Current user permits planning/documentation only. Acquisition/build/provisioning/interpreter execution/probes/active-lock changes/A-F and merge remain excluded.",
+    "status": "not_requested"
+  },
+  "hypothesis_id": "H07",
+  "id": "RFC-00D7-F01-HOST-PROVISIONING",
+  "matched_control": "Future static provider/member and independently reviewed output manifest comparisons, actual manager accounting receipts and explicitly scoped metadata-only compatibility observations. No performance or comparative assurance claim.",
+  "measurement_plan": "No current measurements. Future operation receipts retain raw per-phase whole-operation counters, inventories, scoped observations, stops and cleanup/persistence gaps under one allowance.",
+  "method": "Current task reads source and official candidate documentation and writes plans/templates only. Future offline materialization, exhaustive hashing and separately permitted metadata-only diagnostics require exact reviewed source, host and human approvals.",
+  "repository_revision": "0a369b8c7ce00979c970389e02e0da8d89d6ab0a",
+  "research_question": "What exact host, artifact, installation identities, bounds and separate human decisions would make one offline F01 provisioning operation reviewable without treating it as Linux qualification or A-F authorization?",
+  "resource_requirements": [
+    "One proposed offline attempt60s wall/50s CPU/256MiB aggregate/one CPU/zero swap/25MiB evidence; no execution permission",
+    "Proposed installation storage separately128MiB inputs/512MiB payload/256MiB staging/25MiB evidence under1GiB volume; explicit human approval required",
+    "All custom preflight/install/hash/diagnostic/cleanup charged; candidate P0-P4 totals44s wall43s CPU plus FINAL10s/5s, planned quiescence54s/48s; startup/stop/guard latencies consume reservations; no retries",
+    "Builder/infrastructure/input transfer need distinct approved scopes/budgets, never unmetered operation setup",
+    "Manager runtime55s from active-enter, activation<=1s included in P0; required runtime-expiry-to-quiescence<=2s yields latest58s; these are unimplemented/unverified conditions, not demonstrated enforcement"
+  ],
+  "schema": "t81.research-commons.experiment-proposal.v1",
+  "security_requirements": [
+    "Planning/documentation only; no interpreter install/build/execution, host API/probe, native load or A-F",
+    "No active lock, schemas, experimental semantics or ceiling changes; linux_relock_required remains true",
+    "No privilege escalation, global cgroup repair, live workload overwrite or automatic host/build fallback",
+    "Unfilled templates do not authorize provisioning, lock activation, qualification or one-run execution; no merge"
+  ],
+  "status": "proposed",
+  "uncertainty": "Only host classes and documentation are inspected; no account/AMI/instance or Linux host is observed. Provider binary/build, installer/tool identities, actual resource fit and every provisioning/qualification receipt remain missing. Corrected candidate timing fits arithmetically only; phase control, independent cumulative CPU/blocked-finalizer guard, startup/stop latency and persistence implementation/evidence are missing, so enforcement and provisioning readiness remain blocked."
+}
