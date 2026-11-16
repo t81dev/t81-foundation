@@ -1,0 +1,59 @@
+{
+  "attribution": {
+    "kind": "agent",
+    "model": null,
+    "name": "Codex assistant in the current session",
+    "role": "Governance/architecture memorandum author and same prior artifact author; not independent scientific/human validation"
+  },
+  "evidence": [
+    {
+      "relationship": "context",
+      "scope": "Canonical H07 defines the auditability question and its limits. RFC-00D7-F01 A-F are bounded contract questions, not a replacement hypothesis or comparative assurance finding. Candidate-specific inputs are separately pinned in source-pins.json.",
+      "source_ref": "register"
+    },
+    {
+      "relationship": "context",
+      "scope": "Preserve H01-H08, Hanoi/CWEB history, negative findings, independent-oracle requirements and source-bounded claims.",
+      "source_ref": "charter"
+    },
+    {
+      "relationship": "context",
+      "scope": "Unratified draft text and proposal validation do not authorize normative promotion, implementation, execution or changes to frozen semantics.",
+      "source_ref": "authority-model"
+    }
+  ],
+  "expected_artifacts": [
+    "One decision memorandum with eight required sections",
+    "Exact proposed non-normative contract language and obligation traceability",
+    "Migration/receipt compatibility analysis, residual risks and explicit human decisions",
+    "Pinned references and documentation validation; no adoption or execution record"
+  ],
+  "falsification_criterion": "The proposal is unacceptable if it silently adopts new assurance meaning, claims prevention from detection, reinterprets legacy receipts, hides known overruns/missing evidence, changes numeric allocations or grants execution. If unconditional physical caps remain required, bounded observation cannot satisfy them and STOP remains.",
+  "human_authorization": {
+    "human": null,
+    "record": "Current human authorizes drafting a separately governed documentation-only decision memorandum, not adopting or implementing the model. Model/contract/risk/migration/host/execution decisions remain pending.",
+    "status": "not_requested"
+  },
+  "hypothesis_id": "H07",
+  "id": "RFC-00D7-F01-CONTRACT-DECISION",
+  "matched_control": "Compare exact original operative research/admission obligations with each proposed clause and the retain-STOP/observed-scope/stronger-host alternatives. No performance or comparative assurance result.",
+  "measurement_plan": "No current measurements. Proposed future outcome model requires scoped raw observations and uncertainty-aware PASS/FAILED/INCOMPLETE/NOT VERIFIED distinctions; this memorandum neither supplies nor authorizes those observations.",
+  "method": "Documentation-only decision analysis with proposed NON-NORMATIVE language, original-to-proposed traceability and human decision points. No adoption, normative edit, implementation or host activity.",
+  "repository_revision": "8ced4f076c3ea18594175a8e0a72885f54bb3c42",
+  "research_question": "What separately governed assurance-model change would be required to replace unsupported universal host failure-path claims with scoped bounded-observed-latency qualification while preserving numeric limits and explicit failure evidence?",
+  "resource_requirements": [
+    "Documentation-only packet<=128KiB, no execution/probe campaign",
+    "Preserve numerical memory/swap/placement/wall/CPU/evidence/state limits and separate1GiB provisioning storage; no reset/retry/extra observer or fresh per-case allowance",
+    "No spending of a future provisioning, qualification or A-F budget is authorized; unconditional physical overrun risk requires an explicit human decision or STOP"
+  ],
+  "schema": "t81.research-commons.experiment-proposal.v1",
+  "security_requirements": [
+    "No normative specification, operative protocol, active schema/gate/lock or source changes",
+    "No implementation, acquisition, provisioning, interpreter/native/guard/probe/proof/fixture/A-F execution or merge",
+    "Preserve linux_relock_required=true and all research/governance/release holds",
+    "NON-NORMATIVE proposed clauses and model ID have no authority; old qualification booleans cannot silently acquire new meaning",
+    "Preserve negative/inconclusive/unsupported historical evidence; no independent scientific validation or universal guarantee claimed"
+  ],
+  "status": "proposed",
+  "uncertainty": "No assurance model has been approved or qualified. Changing guarantee to observation is a material assurance revision even with unchanged numeric ceilings; affected fault cases may still fail or remain unverified. Existing source/input acceptance is not host qualification."
+}
