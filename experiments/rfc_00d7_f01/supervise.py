@@ -32,6 +32,13 @@ def check_gate(authorization_path, qualification_path):
     schemas = bounded_json(ROOT / 'evidence.schema.json')
     for name, value in [('authorization', authorization), ('qualification', qualification)]:
         Draft202012Validator(schemas['$defs'][name]).validate(value)
+    plan = bounded_json(ROOT / 'fa01-plan.json')
+    for record in (authorization, qualification):
+        for key in ('corpus_sha256', 'amendment_sha256', 'protocol_sha256'):
+            if record[key] != plan[key]:
+                raise ValueError('BLOCKED: stale FA01 identity: ' + key)
+        if record['area_f_plan_id'] != plan['id']:
+            raise ValueError('BLOCKED: unknown F plan')
     if sys.platform != 'linux':
         raise ValueError('BLOCKED: only qualified Linux supported')
     if authorization['scope'] != 'one-bounded-run' or not authorization['human_record']:

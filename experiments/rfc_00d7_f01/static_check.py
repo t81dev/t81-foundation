@@ -33,7 +33,7 @@ def verify(root):
         assert sha(proposal / name) == expected, name
     identity = json.loads((root / 'identities.json').read_text())
     assert sha(proposal / 'PROTOCOL.md') == identity['protocol_sha256']
-    assert identity['protocol_commit'] == 'c8ae2200bc37064282ffc4aaa683ed21d94d567c'
+    assert identity['protocol_commit'] == 'c5e0ca79c073a72bb41f03b76ddd68acbd7eab73'
     for name, expected in identity['files'].items():
         assert sha(root / name) == expected, name
     actual_names = {p.name for p in root.iterdir() if p.is_file()}
@@ -183,9 +183,44 @@ def verify(root):
         assert installed.version == package['version']
         for entry in package['files']:
             assert sha(Path(installed.locate_file(entry['path']))) == entry['sha256'], entry['path']
+    # FA01 literal metadata/AST checks only; never validate fixtures against D3.
+    plan = json.loads((root / 'fa01-plan.json').read_text())
+    packet = json.loads((root / 'fa01-corpus.json').read_text())
+    assert sha(root / 'fa01-corpus.json') == plan['corpus_sha256']
+    assert sha(root / 'pinned-d7.rfc.md') == plan['rfc_sha256']
+    assert sha(proposal / 'PROTOCOL.md') == plan['protocol_sha256']
+    assert plan['protocol_sha256'] == 'd48aeedc924cf505cab8a7fed316fc84d8f2c259dd502fd1d0a7fe8432f05de3'
+    assert sha(repo / 'docs/research/proposals/RFC-00D7-F01-FA01/AMENDMENT.md') == plan['amendment_sha256']
+    assert [item['id'] for item in packet['fixtures']] == plan['fixture_ids']
+    assert len(packet['fixtures']) == 8 and len(plan['proof_facts']) == 24
+    assert plan['state_bounds'] == {'controls': 32, 'proof': 78, 'boundary': 144, 'total': 254}
+    assert 2 * 4 * 4 + (1 + 2 + 1 + 24 * 3 + 2) + 6 * 4 * 6 == 254 <= 256
+    fa_tree = parsed['fa01.py']
+    loader = next(n for n in fa_tree.body if isinstance(n, ast.FunctionDef) and n.name == 'load_plan')
+    model_fields = {n.value for n in ast.walk(loader) if isinstance(n, ast.Constant) and n.value in ('expected_schema_valid', 'expected_root_model_equality')}
+    for call in ast.walk(fa_tree):
+        if isinstance(call, ast.Call) and isinstance(call.func, ast.Attribute) and call.func.attr == 'proof_fact':
+            assert isinstance(call.func.value, ast.Name)
+            expected_state = 'node_candidate' if call.func.value.id == 'candidate' else 'node_reference'
+            assert isinstance(call.args[-1], ast.Name) and call.args[-1].id == expected_state
+    assert not model_fields  # Expectation labels never become model inputs.
+    assert not any(isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) and isinstance(n.func.value, ast.Name) and n.func.value.id == 'domains' for n in ast.walk(fa_tree))
+    evidence_v2 = json.loads((root / 'evidence.schema.json').read_text())
+    Draft202012Validator.check_schema(json.loads((root / 'evidence-v1.schema.json').read_text()))
+    assert evidence_v2['$id'].endswith(':v2')
+    prior_evidence = subprocess.check_output(['git', 'show', '43b49541ddea76ba504031765229e455ef80c4ea:experiments/rfc_00d7_f01/evidence.schema.json'], cwd=repo)
+    assert prior_evidence == (root / 'evidence-v1.schema.json').read_bytes()
+    f_schema = evidence_v2['$defs']['summary']['properties']['areas']['properties']['F']
+    assert f_schema['additionalProperties'] is False
+    assert set(f_schema['properties']) == set(f_schema['required'])
+    f_driver = next(n for n in fa_tree.body if isinstance(n, ast.FunctionDef) and n.name == 'run')
+    returned = [n for n in ast.walk(f_driver) if isinstance(n, ast.Return) and isinstance(n.value, ast.Dict)][-1]
+    assert {n.value for n in returned.value.keys} == set(f_schema['required'])
+    for record in ('authorization', 'qualification'):
+        assert {'area_f_plan_id', 'corpus_sha256', 'protocol_sha256', 'amendment_sha256'} <= set(evidence_v2['$defs'][record]['required'])
     return {'preparation_only': True, 'source_pins': len(pins['sources']),
-            'artifact_hashes': 4, 'compiled_modules': len(parsed),
-            'schemas_checked': 2, 'cross_module_calls_checked': calls_checked, 'locked_distributions': len(lock['packages']),
+            'artifact_hashes': len((proposal / 'SHA256SUMS').read_text().splitlines()), 'compiled_modules': len(parsed),
+            'schemas_checked': 3, 'fa01_planned_states': 254, 'cross_module_calls_checked': calls_checked, 'locked_distributions': len(lock['packages']),
             'declared_interpretations_checked': len(keys),
             'closed_form_cap_bounds_checked': len(bounds),
             'model_imports': 0, 'experimental_states_enumerated': 0,

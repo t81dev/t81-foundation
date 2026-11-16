@@ -1,0 +1,62 @@
+{
+  "schema": "t81.research-commons.experiment-proposal.v1",
+  "id": "RFC-00D7-F01-FA01",
+  "status": "proposed",
+  "hypothesis_id": "H07",
+  "attribution": {
+    "name": "Codex assistant in the current session",
+    "kind": "agent",
+    "model": null,
+    "role": "Amendment author, prior RFC and same-agent harness author/reviewer; no independent acceptance or experiment execution claimed"
+  },
+  "repository_revision": "43b49541ddea76ba504031765229e455ef80c4ea",
+  "evidence": [
+    {
+      "source_ref": "register",
+      "relationship": "context",
+      "scope": "Canonical H07 defines the auditability question and its limits. RFC-00D7-F01 A-F are bounded contract questions, not a replacement hypothesis or comparative assurance finding. Candidate-specific inputs are separately pinned in source-pins.json."
+    },
+    {
+      "source_ref": "charter",
+      "relationship": "context",
+      "scope": "Preserve H01-H08, Hanoi/CWEB history, negative findings, independent-oracle requirements and source-bounded claims."
+    },
+    {
+      "source_ref": "authority-model",
+      "relationship": "context",
+      "scope": "Unratified draft text and proposal validation do not authorize normative promotion, implementation, execution or changes to frozen semantics."
+    }
+  ],
+  "uncertainty": "Standalone unapplied proposal only. The structural argument is conditional on exact object/version assumptions; symbolic fixture labels are not verified digests. No proof checker, schema oracle on fixtures, controls or A-F experiment has executed. The 254-state bound requires independent review against future visit sites. F288-v1 remains deferred and unexecuted; A-E coverage limitations, Linux qualification and release holds remain.",
+  "human_authorization": {
+    "status": "not_requested",
+    "human": null,
+    "record": "The current human program decision authorizes preparation of an Area F amendment for independent review only. Applying to PR #805, implementing in the harness, qualification and experiment execution are explicitly excluded. This status refers to those later actions, not the authorized drafting task."
+  },
+  "research_question": "Under the explicitly stated same-root JSON-object and pinned schema/version assumptions, can the unchanged RFC-00D3 schema and RFC-00D7 Stage 2 admit any manifest, and can the proposed proof plus literal boundary corpus be checked within the unchanged 256-state Area F cap?",
+  "falsification_criterion": "Under independently accepted same-object/schema-version assumptions, prove that schema validity excludes the required own root model member while Stage 2 requires it. Missing or contested assumptions yield UNDERDETERMINED; checker/control disagreement invalidates the run. The smaller corpus cannot certify execution or completion of F288-v1.",
+  "matched_control": "Retain reviewed F00 valid-metadata and F01 extra-property inputs; use actual schema-positive output and an explicit accept-all mutant versus an independent unchanged Draft 2020-12 schema validator. Proof checker and necessary-root-member predicate must be independently implemented, without candidate helpers or fixture expectations. No performance or comparative assurance claim.",
+  "method": "Proposed protocol revision 3 and exact Area F replacement are included as standalone text. Literal eight-fixture corpus: two mandatory controls and six boundary cases. Each phase receives four fixed rotations using seeds 0,1,42,804; one 24-fact structural proof occurs between phases. No run-time Cartesian generation or deduplication. All details, assumptions and post-approval file changes are in AMENDMENT.md and F_SECTION.proposed.md.",
+  "measurement_plan": "Planned accounting only: 8 mandatory visits at 4 states=32; proof 6 outer states plus 24 descriptors and 48 candidate/reference transitions=78; 24 boundary visits at 6 states=144; total254 within256. Future evidence v2 must separately retain proof assumptions/nodes, controls, fixture rotations, actual state charges, coverage and disjoint result counters. No measured timing/memory or generated result is claimed.",
+  "expected_artifacts": [
+    "Independent amendment/proof-assumption review with exact protocol and corpus hashes",
+    "After separate approval: newly pinned protocol and harness with versioned evidence schema, code/source/dependency identities",
+    "After separate execution authorization only: 24-node proof trace, 8 control visits, 24 boundary visits and bounded raw evidence",
+    "Explicit F288-v1 historical obligation record: deferred/unexecuted; no legacy case counted completed by the amended run",
+    "Separate actual summary counters, state breakdown, incomplete outcomes and artifact hashes"
+  ],
+  "resource_requirements": [
+    "Proposed F plan:254 charged states; unchanged F ceiling256; no retries or automatic extra minimization allowance",
+    "Unchanged suite:49408 states;60 seconds wall;50 seconds CPU;one CPU;256 MiB aggregate memory;one active128 MiB runner",
+    "Unchanged F area10-second wall and4 MiB artifacts; unchanged suite25 MiB artifacts",
+    "F evidence reservation563456 bytes including raw-witness allowance; proof trace limited32 KiB inside512 KiB aggregate raw F witnesses",
+    "No Linux qualification, dependency installation or runtime-resource result in this proposal"
+  ],
+  "security_requirements": [
+    "No application to PR #805, harness implementation or A-F execution under the current task",
+    "No source-contract/schema mutation, wrappers or alternate versions silently adopted",
+    "No production/frozen ISA/governance/release changes, networking, native workers, real journals or Linux probes",
+    "Candidate and reference proof/state logic remain independent; disclose shared primitives and same-author prior context",
+    "Separate human decisions for protocol adoption, preparation, qualification and one bounded run; schema validity or hashes cannot authenticate authorization"
+  ]
+}

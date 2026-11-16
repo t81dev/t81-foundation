@@ -131,7 +131,7 @@ and interpretation gaps; it is review material, not an execution-readiness claim
 Any defect found in future independent review must be corrected and re-pinned
 before authorization, preserving this preparation record.
 
-## Independent-review corrections
+## Historical independent-review corrections (before FA01)
 
 The correction record is `CAP_ACCOUNTING.md`, with closed-form metadata in
 `CAP_ACCOUNTING.json`. B uses direct valid topological orders and candidate-only
@@ -150,3 +150,31 @@ any enumeration or control construction. `PROPOSED_PROTOCOL_AMENDMENT.md` is
 separate, unapplied review material. No source/protocol pin or suite ceiling
 has changed. A/C/D/E also cannot promise full coverage within their caps; see
 the explicit bounds and incomplete-coverage qualifications in the audit.
+
+## Active FA01 preparation revision
+
+The user reports Gemini ACCEPT AMENDMENT DESIGN and explicitly authorizes
+source preparation/publication only. Adopted protocol bytes have SHA-256
+d48aeedc924cf505cab8a7fed316fc84d8f2c259dd502fd1d0a7fe8432f05de3, published
+in the separate protocol branch. Historical proposal statuses are retained with
+a later preparation-only ADOPTION.md record; execution is never authorized.
+
+`fa01.py` is the active F phase driver; `fa01-corpus.json` is the exact reviewed
+eight-fixture data; `fa01-plan.json` pins24 proof facts and all required hashes.
+Candidate/reference proof and root-member paths are independently written in
+`candidate.py` and `oracle.py`, without sharing derived state or expectations.
+Both remain same-author source and require independent review.
+
+Controls run first under four rotations, followed by one proof and all24
+boundary visits even after a structural witness. Exact charge checks require
+32+78+144=254. Unknown/missing authorization/interpretation metadata fails closed.
+`evidence.schema.json` is v2; `evidence-v1.schema.json` preserves historical
+bytes. Summary v2 retains assumptions/review reference, source/corpus/protocol
+identities, raw proof path/hash, node count, phase visits, actual charge breakdown
+and the deferred/unexecuted F288-v1 obligation. No synthetic expectation label
+is a model input. Fixture strings do not establish valid cryptographic digests.
+
+The schema and supervisor require a newly reviewed harness SHA, matching FA01
+plan/corpus/amendment/protocol hashes and new qualification records. The macOS
+dependency lock still explicitly blocks Linux. Neither run entry, control,
+proof, fixture validator nor resource probe has executed during preparation.

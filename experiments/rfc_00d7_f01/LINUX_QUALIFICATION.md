@@ -67,3 +67,12 @@
 macOS and Windows are unsupported execution environments for this harness.
 Linux x86_64 and ARM64 are both unqualified. No platform or containment result
 is inferred from the preparation machine being macOS ARM64.
+
+## FA01 qualification prerequisites
+
+Any future receipt must name F-structural-corpus-v1 and the adopted protocol,
+corpus, amendment and newly reviewed harness identities. A prior receipt cannot
+authorize a changed plan. Explicitly review the five proof assumptions and
+provide an attributable review reference; disputed assumptions yield a conditional
+underdetermined proof, not an admission claim. The preparation macOS lock remains
+unchanged and blocks execution. No probes have run or become authorized here.

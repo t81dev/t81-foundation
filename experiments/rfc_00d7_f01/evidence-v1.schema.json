@@ -1,0 +1,634 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:t81:research:rfc-00d7-f01:evidence:v1",
+  "$defs": {
+    "counters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "admissible_falsifiers",
+        "negative_controls",
+        "underdetermined_cases"
+      ],
+      "properties": {
+        "admissible_falsifiers": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "negative_controls": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "underdetermined_cases": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "human_record",
+        "harness_sha",
+        "protocol_sha256",
+        "artifact_directory",
+        "interpretations"
+      ],
+      "properties": {
+        "scope": {
+          "const": "one-bounded-run"
+        },
+        "human_record": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "harness_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "protocol_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "artifact_directory": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "interpretations": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "O1-race",
+            "event-kind-payload",
+            "nested-LIP-coordinate",
+            "outside-arena",
+            "slot-lifecycle",
+            "acknowledgement",
+            "digest-text",
+            "partial-write-continuation"
+          ],
+          "properties": {
+            "O1-race": {
+              "enum": [
+                null,
+                "commit-before-publish only",
+                "invoke precedence requiring a new ordering rule"
+              ]
+            },
+            "event-kind-payload": {
+              "enum": [
+                null,
+                "operation tag with no subject payload",
+                "subject encoded through an unspecified registry"
+              ]
+            },
+            "nested-LIP-coordinate": {
+              "enum": [
+                null,
+                "normative nested dispatch coordinate",
+                "normalized request-local coordinate"
+              ]
+            },
+            "outside-arena": {
+              "enum": [
+                null,
+                "permitted",
+                "all outputs/trace/IPC included in arena reservation"
+              ]
+            },
+            "slot-lifecycle": {
+              "enum": [
+                null,
+                "retain until archival",
+                "release after acknowledgement under a defined reuse rule"
+              ]
+            },
+            "acknowledgement": {
+              "enum": [
+                null,
+                "post-first-sync flag update only",
+                "explicitly specified second durable update"
+              ]
+            },
+            "digest-text": {
+              "enum": [
+                null,
+                "hex test-only representation",
+                "future normative CanonHash81 textual codec"
+              ]
+            },
+            "partial-write-continuation": {
+              "enum": [
+                null,
+                "crash at partial prefix",
+                "short write continues under an explicit acknowledgement rule"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "qualification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "approved_by",
+        "harness_sha",
+        "dependency_lock_sha256",
+        "aggregate_cgroup",
+        "boot_id",
+        "kernel_release",
+        "qualification_evidence_sha256",
+        "limits_demonstrated",
+        "dependency_relock_reviewed"
+      ],
+      "properties": {
+        "approved_by": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "harness_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "dependency_lock_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "aggregate_cgroup": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "boot_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "kernel_release": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "qualification_evidence_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "limits_demonstrated": {
+          "const": true
+        },
+        "dependency_relock_reviewed": {
+          "const": true
+        }
+      }
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "area",
+        "category",
+        "input_sha256",
+        "admissible",
+        "violation",
+        "counter_class"
+      ],
+      "properties": {
+        "area": {
+          "enum": [
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F"
+          ]
+        },
+        "category": {
+          "enum": [
+            "experiment",
+            "positive",
+            "negative",
+            "ambiguous"
+          ]
+        },
+        "input_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "admissible": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "violation": {
+          "type": "boolean"
+        },
+        "counter_class": {
+          "enum": [
+            "admissible_falsifiers",
+            "negative_controls",
+            "underdetermined_cases",
+            "none"
+          ]
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "protocol",
+        "areas",
+        "counters",
+        "experiment_execution"
+      ],
+      "properties": {
+        "protocol": {
+          "const": "RFC-00D7-F01"
+        },
+        "areas": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "A": {
+              "type": "object",
+              "required": [
+                "verdict",
+                "stop",
+                "counters",
+                "states_reserved",
+                "domain_complete"
+              ],
+              "properties": {
+                "verdict": {
+                  "enum": [
+                    "FALSIFIED",
+                    "NO_COUNTEREXAMPLE_IN_DOMAIN",
+                    "UNDERDETERMINED",
+                    "INCONCLUSIVE_LIMIT",
+                    "BLOCKED",
+                    "INVALID_RUN"
+                  ]
+                },
+                "stop": {
+                  "type": "string"
+                },
+                "counters": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "required": [
+                    "admissible_falsifiers",
+                    "negative_controls",
+                    "underdetermined_cases"
+                  ],
+                  "properties": {
+                    "admissible_falsifiers": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "negative_controls": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "underdetermined_cases": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "states_reserved": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "domain_complete": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "B": {
+              "type": "object",
+              "required": [
+                "verdict",
+                "stop",
+                "counters",
+                "states_reserved",
+                "domain_complete"
+              ],
+              "properties": {
+                "verdict": {
+                  "enum": [
+                    "FALSIFIED",
+                    "NO_COUNTEREXAMPLE_IN_DOMAIN",
+                    "UNDERDETERMINED",
+                    "INCONCLUSIVE_LIMIT",
+                    "BLOCKED",
+                    "INVALID_RUN"
+                  ]
+                },
+                "stop": {
+                  "type": "string"
+                },
+                "counters": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "required": [
+                    "admissible_falsifiers",
+                    "negative_controls",
+                    "underdetermined_cases"
+                  ],
+                  "properties": {
+                    "admissible_falsifiers": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "negative_controls": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "underdetermined_cases": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "states_reserved": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "domain_complete": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "C": {
+              "type": "object",
+              "required": [
+                "verdict",
+                "stop",
+                "counters",
+                "states_reserved",
+                "domain_complete"
+              ],
+              "properties": {
+                "verdict": {
+                  "enum": [
+                    "FALSIFIED",
+                    "NO_COUNTEREXAMPLE_IN_DOMAIN",
+                    "UNDERDETERMINED",
+                    "INCONCLUSIVE_LIMIT",
+                    "BLOCKED",
+                    "INVALID_RUN"
+                  ]
+                },
+                "stop": {
+                  "type": "string"
+                },
+                "counters": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "required": [
+                    "admissible_falsifiers",
+                    "negative_controls",
+                    "underdetermined_cases"
+                  ],
+                  "properties": {
+                    "admissible_falsifiers": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "negative_controls": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "underdetermined_cases": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "states_reserved": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "domain_complete": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "D": {
+              "type": "object",
+              "required": [
+                "verdict",
+                "stop",
+                "counters",
+                "states_reserved",
+                "domain_complete"
+              ],
+              "properties": {
+                "verdict": {
+                  "enum": [
+                    "FALSIFIED",
+                    "NO_COUNTEREXAMPLE_IN_DOMAIN",
+                    "UNDERDETERMINED",
+                    "INCONCLUSIVE_LIMIT",
+                    "BLOCKED",
+                    "INVALID_RUN"
+                  ]
+                },
+                "stop": {
+                  "type": "string"
+                },
+                "counters": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "required": [
+                    "admissible_falsifiers",
+                    "negative_controls",
+                    "underdetermined_cases"
+                  ],
+                  "properties": {
+                    "admissible_falsifiers": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "negative_controls": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "underdetermined_cases": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "states_reserved": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "domain_complete": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "E": {
+              "type": "object",
+              "required": [
+                "verdict",
+                "stop",
+                "counters",
+                "states_reserved",
+                "domain_complete"
+              ],
+              "properties": {
+                "verdict": {
+                  "enum": [
+                    "FALSIFIED",
+                    "NO_COUNTEREXAMPLE_IN_DOMAIN",
+                    "UNDERDETERMINED",
+                    "INCONCLUSIVE_LIMIT",
+                    "BLOCKED",
+                    "INVALID_RUN"
+                  ]
+                },
+                "stop": {
+                  "type": "string"
+                },
+                "counters": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "required": [
+                    "admissible_falsifiers",
+                    "negative_controls",
+                    "underdetermined_cases"
+                  ],
+                  "properties": {
+                    "admissible_falsifiers": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "negative_controls": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "underdetermined_cases": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "states_reserved": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "domain_complete": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "F": {
+              "type": "object",
+              "required": [
+                "verdict",
+                "stop",
+                "counters",
+                "states_reserved",
+                "domain_complete"
+              ],
+              "properties": {
+                "verdict": {
+                  "enum": [
+                    "FALSIFIED",
+                    "NO_COUNTEREXAMPLE_IN_DOMAIN",
+                    "UNDERDETERMINED",
+                    "INCONCLUSIVE_LIMIT",
+                    "BLOCKED",
+                    "INVALID_RUN"
+                  ]
+                },
+                "stop": {
+                  "type": "string"
+                },
+                "counters": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "required": [
+                    "admissible_falsifiers",
+                    "negative_controls",
+                    "underdetermined_cases"
+                  ],
+                  "properties": {
+                    "admissible_falsifiers": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "negative_controls": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "underdetermined_cases": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "states_reserved": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "domain_complete": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        "counters": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "admissible_falsifiers",
+            "negative_controls",
+            "underdetermined_cases"
+          ],
+          "properties": {
+            "admissible_falsifiers": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "negative_controls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "underdetermined_cases": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "experiment_execution": {
+          "const": "attempted"
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/authorization"
+    },
+    {
+      "$ref": "#/$defs/qualification"
+    },
+    {
+      "$ref": "#/$defs/case"
+    },
+    {
+      "$ref": "#/$defs/summary"
+    }
+  ]
+}

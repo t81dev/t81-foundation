@@ -1,6 +1,6 @@
 {
-  "protocol_id": "RFC-00D7-F01",
-  "status": "proposed",
+  "protocol_id": "RFC-00D7-F01-FA01",
+  "status": "proposed-unapplied",
   "execution_authorized": false,
   "candidate_revision": "ec22a7588282d37ad027cff61c807bcf159ac2e0",
   "previous_reviewed_revision": "4fdba573cc3be94ceb69cbcb3b04b62083b4d252",
@@ -77,6 +77,48 @@
       "sha256": "c6e2642365399b85a98e53727d1ec5a8240c3cb51ea86416565543a0658de911",
       "url": "https://github.com/t81dev/t81-foundation/blob/40695b0ba5cea3e43563b6ed2443c987d2738089/docs/research/commons/manifest.v1.json",
       "scope": "Historical discovery snapshot, not live integration state"
+    },
+    {
+      "revision": "c8ae2200bc37064282ffc4aaa683ed21d94d567c",
+      "path": "docs/research/proposals/RFC-00D7-F01/PROTOCOL.md",
+      "git_blob": "8daeb74c613ca81fded13aad053678cf913c5f2a",
+      "sha256": "0c7e7da921d3af3c6c314ec4a8bf23478f9e05695b28b808721a45475106975c",
+      "url": "https://github.com/t81dev/t81-foundation/blob/c8ae2200bc37064282ffc4aaa683ed21d94d567c/docs/research/proposals/RFC-00D7-F01/PROTOCOL.md",
+      "scope": "Unchanged current protocol; revision-3 candidate not applied"
+    },
+    {
+      "revision": "43b49541ddea76ba504031765229e455ef80c4ea",
+      "path": "experiments/rfc_00d7_f01/domains.py",
+      "git_blob": "f015e3b9082a537473154dfd3c8fdc8b70b00844",
+      "sha256": "da0790472c947cb00e2278697a27aa7ffe52ab49ad6a66b176b23468ecd8769f",
+      "url": "https://github.com/t81dev/t81-foundation/blob/43b49541ddea76ba504031765229e455ef80c4ea/experiments/rfc_00d7_f01/domains.py",
+      "scope": "Historical F288-v1 obligation and mandatory-control recipe; no execution"
+    },
+    {
+      "revision": "43b49541ddea76ba504031765229e455ef80c4ea",
+      "path": "experiments/rfc_00d7_f01/evaluate.py",
+      "git_blob": "ea5e4ec7049a7957b9ca0e601e3b96b30398afa2",
+      "sha256": "e1450d01a055886ea1755ca19d4fb47abfb5b95c1d2d039a3e8b3831c26294e2",
+      "url": "https://github.com/t81dev/t81-foundation/blob/43b49541ddea76ba504031765229e455ef80c4ea/experiments/rfc_00d7_f01/evaluate.py",
+      "scope": "Reviewed state-charge sites and separate candidate/reference calls"
+    },
+    {
+      "revision": "43b49541ddea76ba504031765229e455ef80c4ea",
+      "path": "experiments/rfc_00d7_f01/accounting.py",
+      "git_blob": "a5eb838c5890ccf8fb4f5e96789c91939d7629eb",
+      "sha256": "bf26fdacbde8f0583e41f849eab1ef1bbaed513b37f97164cb133fce1a9ee7da",
+      "url": "https://github.com/t81dev/t81-foundation/blob/43b49541ddea76ba504031765229e455ef80c4ea/experiments/rfc_00d7_f01/accounting.py",
+      "scope": "Unchanged state, time and artifact ceilings"
+    },
+    {
+      "revision": "43b49541ddea76ba504031765229e455ef80c4ea",
+      "path": "experiments/rfc_00d7_f01/CAP_ACCOUNTING.json",
+      "git_blob": "a7c7d4edb28c2cec826e3f6f4f9317472fc7e01e",
+      "sha256": "bad55b85e7b66afb3a3c942185d37f0f695fb797e8e97133ca3c40af61a56f40",
+      "url": "https://github.com/t81dev/t81-foundation/blob/43b49541ddea76ba504031765229e455ef80c4ea/experiments/rfc_00d7_f01/CAP_ACCOUNTING.json",
+      "scope": "Historical closed-form accounting metadata, not experiment results"
     }
-  ]
+  ],
+  "reviewed_harness_revision": "43b49541ddea76ba504031765229e455ef80c4ea",
+  "current_protocol_revision": "c8ae2200bc37064282ffc4aaa683ed21d94d567c"
 }

@@ -72,5 +72,16 @@
       "artifact_bytes_upper": 630784
     }
   },
-  "f_execution_status": "BLOCKED_PROTOCOL_DOMAIN_CAP_INCOMPATIBILITY"
+  "f_execution_status": "SOURCE_PREPARED_EXECUTION_UNAUTHORIZED",
+  "active_area_f_plan": {
+    "id": "F-structural-corpus-v1",
+    "full_states": 254,
+    "cap": 256,
+    "controls_states": 32,
+    "proof_states": 78,
+    "boundary_states": 144,
+    "artifact_bytes_upper": 563456,
+    "executed": false
+  },
+  "legacy_F288_scope": "areas.F retains historical 288-input full-path accounting; not the active domain"
 }
