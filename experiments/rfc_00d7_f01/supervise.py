@@ -1,210 +1,589 @@
-"""Prepared Linux-only run gate and supervisor. Not invoked in preparation."""
+"""Linux source candidate only. Host qualification and execution remain gated."""
 
 import argparse
+import ctypes
+import fcntl
 import hashlib
+import importlib.util
 import json
 import os
 import resource
 import selectors
 import signal
+import stat
 import subprocess
 import sys
 import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
+MOUNT = Path('/sys/fs/cgroup')
+MIB = 1024**2
 
 
-def digest(path):
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+def require(condition, reason):
+    if not condition:
+        raise ValueError('BLOCKED: ' + reason)
+
+
+def digest(path, guard=None):
+    result = hashlib.sha256()
+    with path.open('rb') as stream:
+        while chunk := stream.read(65536):
+            if guard is not None:
+                guard()
+            result.update(chunk)
+    return result.hexdigest()
 
 
 def bounded_json(path, max_bytes=32768):
-    if path.stat().st_size > max_bytes:
-        raise ValueError('oversized gate input')
-    return json.loads(path.read_text())
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            require(key not in result, 'duplicate metadata key')
+            result[key] = value
+        return result
+    with path.open('rb') as stream:
+        raw = stream.read(max_bytes + 1)
+    require(len(raw) <= max_bytes, 'oversized gate input')
+    return json.loads(raw, object_pairs_hook=unique)
 
 
-def check_gate(authorization_path, qualification_path):
-    from jsonschema import Draft202012Validator
-    authorization = bounded_json(authorization_path, 8192)
+def identity(pid):
+    fields = Path('/proc/' + str(pid) + '/stat').read_text().rsplit(')', 1)[1].split()
+    return {'pid': pid, 'start': int(fields[19]), 'ppid': int(fields[1]),
+            'pgid': int(fields[2]), 'sid': int(fields[3])}
+
+
+def membership(pid):
+    rows = Path('/proc/' + str(pid) + '/cgroup').read_text().splitlines()
+    require(len(rows) == 1 and rows[0].startswith('0::/'), 'unknown cgroup mapping')
+    return MOUNT / rows[0][3:].lstrip('/')
+
+
+class Group:
+    """Directory-FD anchoring; never repair topology or controller configuration."""
+
+    def __init__(self, path):
+        require(path.resolve() == path, 'noncanonical cgroup path')
+        self.path = path
+        self.fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+        self.inode = os.fstat(self.fd).st_ino
+        self.device = os.fstat(self.fd).st_dev
+        if os.fstat(self.fd).st_uid != os.geteuid():
+            os.close(self.fd)
+            raise ValueError('BLOCKED: cgroup delegation owner')
+
+    def unchanged(self):
+        value = self.path.stat()
+        require((value.st_dev, value.st_ino) == (self.device, self.inode), 'cgroup replaced')
+
+    def read(self, name):
+        fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW, dir_fd=self.fd)
+        try:
+            raw = os.read(fd, 8193)
+            require(len(raw) <= 8192, 'cgroup inventory overflow')
+            return raw.decode('ascii').strip()
+        finally:
+            os.close(fd)
+
+    def write(self, name, raw):
+        fd = os.open(name, os.O_WRONLY | os.O_NOFOLLOW, dir_fd=self.fd)
+        try:
+            require(os.write(fd, raw) == len(raw), 'short cgroup write')
+        finally:
+            os.close(fd)
+
+    def procs(self):
+        values = self.read('cgroup.procs').split()
+        require(len(values) <= 8, 'unexpected process population')
+        return {int(value) for value in values}
+
+    def children(self):
+        children = set()
+        with os.scandir(self.fd) as entries:
+            for entry in entries:
+                require(not entry.is_symlink(), 'cgroup symlink')
+                if entry.is_dir(follow_symlinks=False):
+                    children.add(entry.name)
+                    require(len(children) <= 2, 'unexpected nested cgroups')
+        return children
+
+    def cpu(self):
+        fields = self.read('cpu.stat').split()
+        return int(dict(zip(fields[::2], fields[1::2]))['usage_usec'])
+
+    def populated(self):
+        fields = self.read('cgroup.events').split()
+        return int(dict(zip(fields[::2], fields[1::2]))['populated'])
+
+    def close(self):
+        os.close(self.fd)
+
+
+def topology(groups, pending=None):
+    aggregate, supervisor, runner = groups
+    for group in groups:
+        group.unchanged()
+        require(group.read('cgroup.type') == 'domain', 'non-domain cgroup')
+    require(aggregate.children() == {'supervisor', 'runner'}, 'unknown aggregate children')
+    require(not supervisor.children() and not runner.children(), 'non-leaf execution groups')
+    require(not aggregate.procs() and supervisor.procs() == {os.getpid()}, 'internal/unowned PID')
+    require(runner.procs() == (set() if pending is None else {pending['pid']}), 'G0/G1 runner population')
+    require(membership(os.getpid()) == supervisor.path, 'supervisor membership')
+    parent = aggregate.path
+    ancestors = []
+    for _ in range(32):
+        enabled = set((parent / 'cgroup.subtree_control').read_text().split())
+        require({'cpu', 'memory', 'cpuset'} <= enabled, 'controllers not enabled top-down')
+        if parent != MOUNT:
+            observation = {'path': str(parent)}
+            for name in ('memory.max', 'memory.swap.max', 'cpu.max', 'cpuset.cpus.effective'):
+                value = (parent / name).read_text().strip()
+                require(0 < len(value) <= 1024, 'ancestor limit inventory')
+                observation[name] = value
+            ancestors.append(observation)
+        if parent == MOUNT:
+            break
+        parent = parent.parent
+    else:
+        raise ValueError('BLOCKED: ancestor depth')
+    cpus = os.sched_getaffinity(0)
+    require(len(cpus) == 1, 'single CPU affinity required')
+    cpu = str(next(iter(cpus)))
+    for group, limit in zip(groups, (256, 64, 128)):
+        require(group.read('memory.max') == str(limit * MIB), 'memory ceiling')
+        require(group.read('memory.swap.max') == '0' and group.read('memory.swap.current') == '0', 'swap')
+        require(group.read('cpuset.cpus.effective') == cpu, 'singleton effective cpuset')
+        require(bool(group.read('cpuset.mems.effective')), 'empty memory node set')
+    quota, period = aggregate.read('cpu.max').split()
+    require(quota != 'max' and 0 < int(quota) <= int(period), 'one CPU quota')
+    if (aggregate.path / 'cpu.max.burst').exists():
+        require(aggregate.read('cpu.max.burst') == '0', 'CPU burst')
+    with os.scandir('/proc/self/task') as entries:
+        tids = []
+        for entry in entries:
+            tids.append(int(entry.name))
+            require(len(tids) <= 8, 'thread inventory cap')
+    for tid in tids:
+        require(os.sched_getaffinity(tid) == cpus, 'thread affinity mismatch')
+        require(os.sched_getscheduler(tid) in (os.SCHED_OTHER, os.SCHED_BATCH, os.SCHED_IDLE), 'scheduler')
+    require(os.access('cgroup.kill', os.W_OK, dir_fd=runner.fd), 'cgroup.kill unavailable')
+    if pending is not None:
+        require(identity(pending['pid']) == pending, 'pending process identity changed')
+        require(membership(pending['pid']) == runner.path, 'pending process escaped')
+        require(resource.prlimit(pending['pid'], resource.RLIMIT_CPU) == (44, 45), 'runner CPU kernel readback')
+        require(os.sched_getaffinity(pending['pid']) == cpus, 'runner affinity')
+        require(os.sched_getscheduler(pending['pid']) in (os.SCHED_OTHER, os.SCHED_BATCH, os.SCHED_IDLE), 'runner scheduler')
+    return ancestors
+
+
+def checkpoint(launch, aggregate):
+    require(time.monotonic_ns() - launch['started_monotonic_ns'] < 58_000_000_000, 'suite wall guard')
+    require(aggregate.cpu() < 48_000_000, 'whole-invocation CPU guard')
+
+
+def g0(qualification_path, launch_path):
+    require(sys.platform == 'linux' and sys.flags.isolated and sys.flags.no_site and __debug__, 'Linux -I -S without -O required')
+    require(os.geteuid() != 0, 'unprivileged delegated operator required')
+    capability_fields = dict(row.split(':', 1) for row in Path('/proc/self/status').read_text().splitlines() if ':' in row)
+    require(all(int(capability_fields[name].strip(), 16) == 0 for name in ('CapEff', 'CapPrm', 'CapAmb')), 'capability-bearing launcher')
+    for name in ('cgroup', 'mnt'):
+        require(os.readlink('/proc/self/ns/' + name) == os.readlink('/proc/1/ns/' + name), 'unsupported namespace mapping')
+    require(os.readlink('/proc/self/ns/time') == os.readlink('/proc/1/ns/time'), 'time namespace')
+    mounts = Path('/proc/self/mountinfo').read_text().splitlines()
+    require(any(row.split()[3:5] == ['/', str(MOUNT)] and row.split(' - ')[1].split()[0] == 'cgroup2'
+                for row in mounts), 'unsupported cgroup mount namespace')
+    launch = bounded_json(launch_path, 8192)
+    require(set(launch) == {'aggregate_path', 'aggregate_inode', 'cpu_origin_usec',
+                           'started_monotonic_ns', 'boot_id', 'invocation_id', 'manager_unit',
+                           'manager_scope'}, 'launch record fields')
+    require(launch['manager_scope'] in ('system', 'user'), 'manager scope')
+    require(launch['invocation_id'] == os.environ.get('INVOCATION_ID')
+            and len(launch['invocation_id']) == 32, 'invocation identity')
+    require(launch['boot_id'] == Path('/proc/sys/kernel/random/boot_id').read_text().strip(), 'launch boot')
+    require(launch['cpu_origin_usec'] == 0, 'fresh aggregate zero origin required')
+    require(0 <= time.monotonic_ns() - launch['started_monotonic_ns'] < 58_000_000_000, 'launch time')
     qualification = bounded_json(qualification_path, 8192)
-    schemas = bounded_json(ROOT / 'evidence.schema.json')
-    for name, value in [('authorization', authorization), ('qualification', qualification)]:
-        Draft202012Validator(schemas['$defs'][name]).validate(value)
-    plan = bounded_json(ROOT / 'fa01-plan.json')
-    for record in (authorization, qualification):
+    path = Path(qualification['aggregate_cgroup'])
+    require(str(path) == launch['aggregate_path'] and MOUNT in path.parents, 'aggregate launch mapping')
+    groups = []
+    try:
+        for item in (path, path / 'supervisor', path / 'runner'):
+            groups.append(Group(item))
+        require(groups[0].inode == launch['aggregate_inode'], 'aggregate launch inode')
+        topology(groups)
+        checkpoint(launch, groups[0])
+        hard = resource.getrlimit(resource.RLIMIT_CPU)[1]
+        require(hard == resource.RLIM_INFINITY or hard >= 45, 'inherited hard CPU below 45')
+        usage = resource.getrusage(resource.RUSAGE_SELF)
+        require(usage.ru_utime + usage.ru_stime < 1, 'startup CPU guard')
+        libc = ctypes.CDLL(None, use_errno=True)
+        require(libc.prctl(38, 1, 0, 0, 0) == 0 and libc.prctl(39, 0, 0, 0, 0) == 1, 'no-new-privileges')
+        require(libc.prctl(36, 1, 0, 0, 0) == 0, 'subreaper unavailable')
+        value = ctypes.c_int()
+        require(libc.prctl(37, ctypes.byref(value), 0, 0, 0) == 0 and value.value == 1, 'subreaper readback')
+        return launch, groups
+    except BaseException:
+        for group in groups:
+            group.close()
+        raise
+
+
+def command(argv, launch, aggregate):
+    """Bound metadata helpers in S; they are charged to D, never escape it."""
+    process = subprocess.Popen(argv, cwd=ROOT, env={'PATH': os.defpath, 'XDG_RUNTIME_DIR': '/run/user/' + str(os.geteuid())},
+                               stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    result = bytearray()
+    deadline = time.monotonic() + 2
+    selector = selectors.DefaultSelector()
+    selector.register(process.stdout, selectors.EVENT_READ)
+    try:
+        while selector.get_map():
+            checkpoint(launch, aggregate)
+            require(time.monotonic() < deadline, 'metadata helper deadline')
+            for key, _ in selector.select(0.01):
+                raw = os.read(key.fileobj.fileno(), 4096)
+                if not raw:
+                    selector.unregister(key.fileobj)
+                result.extend(raw)
+                require(len(result) <= 65536, 'metadata helper output cap')
+        require(process.wait(timeout=0.2) == 0, 'metadata helper failed')
+        return result.decode('utf-8')
+    finally:
+        if process.poll() is None:
+            process.kill()
+        process.wait(timeout=0.2)
+        process.stdout.close()
+        selector.close()
+
+
+def manager_gate(launch, aggregate):
+    unit = launch['manager_unit']
+    require(unit.endswith('.service') and '/' not in unit and len(unit) <= 128, 'manager unit')
+    properties = ('MainPID InvocationID ControlGroup Type ActiveState Restart KillMode SendSIGKILL '
+                  'RemainAfterExit NotifyAccess RuntimeMaxUSec RuntimeRandomizedExtraUSec '
+                  'TimeoutStartUSec TimeoutStopUSec ExecStartPre ExecStartPost ExecStop ExecStopPost ExecReload').split()
+    argv = ['/usr/bin/systemctl'] + (['--user'] if launch['manager_scope'] == 'user' else [])
+    raw = command(argv + ['show', unit, '--property=' + ','.join(properties)], launch, aggregate)
+    observed = dict(row.split('=', 1) for row in raw.splitlines())
+    expected = {'MainPID': str(os.getpid()), 'InvocationID': launch['invocation_id'],
+                'ControlGroup': '/' + str(aggregate.path.relative_to(MOUNT)),
+                'Type': 'exec', 'ActiveState': 'active', 'Restart': 'no',
+                'KillMode': 'control-group', 'SendSIGKILL': 'yes',
+                'RemainAfterExit': 'no', 'NotifyAccess': 'none'}
+    require(all(observed.get(key) == value for key, value in expected.items()), 'manager lifecycle profile')
+    require(all(observed.get(key) == '' for key in ('ExecStartPre', 'ExecStartPost', 'ExecStop', 'ExecStopPost', 'ExecReload')),
+            'manager hooks outside minimal profile')
+    def seconds(value):
+        if value == '0':
+            return 0.0
+        for suffix, scale in (('ms', .001), ('us', .000001), ('s', 1)):
+            if value.endswith(suffix):
+                return float(value[:-len(suffix)]) * scale
+        raise ValueError('BLOCKED: unsupported manager duration')
+    require(0 < seconds(observed['RuntimeMaxUSec']) <= 55, 'outer runtime deadline')
+    require(seconds(observed['RuntimeRandomizedExtraUSec']) == 0, 'randomized deadline')
+    require(all(0 < seconds(observed[key]) <= 1 for key in ('TimeoutStartUSec', 'TimeoutStopUSec')), 'outer activation/stop bound')
+    return observed
+
+
+def local_module(name):
+    specification = importlib.util.spec_from_file_location(name, ROOT / (name + '.py'))
+    module = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(module)
+    return module
+
+
+def capture_authorization(path, fd):
+    source = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    try:
+        before = os.fstat(source)
+        require(stat.S_ISREG(before.st_mode) and 0 < before.st_size <= 8192, 'authorization source byte bound/type')
+        raw = os.pread(source, 8193, 0)
+        after = os.fstat(source)
+        fields = ('st_dev', 'st_ino', 'st_size', 'st_mtime_ns', 'st_ctime_ns')
+        require(len(raw) == before.st_size and all(getattr(before, name) == getattr(after, name) for name in fields),
+                'authorization changed during capture')
+        current = path.lstat()
+        require(not stat.S_ISLNK(current.st_mode) and all(getattr(after, name) == getattr(current, name) for name in fields),
+                'authorization substituted during capture')
+    finally:
+        os.close(source)
+    require(os.write(fd, raw) == len(raw), 'authorization snapshot short write')
+    seals = fcntl.F_SEAL_WRITE | fcntl.F_SEAL_GROW | fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_SEAL
+    fcntl.fcntl(fd, fcntl.F_ADD_SEALS, seals)
+    require(os.pread(fd, 8193, 0) == raw, 'authorization snapshot capture mismatch')
+
+
+def check_gate(authorization_fd, qualification_path, launch, groups, pending):
+    topology(groups, pending)
+    require(resource.getrlimit(resource.RLIMIT_CPU) == (2, 3), 'supervisor CPU readback')
+    manager = manager_gate(launch, groups[0])
+    require(not bounded_json(ROOT / 'dependency-lock.json', MIB)['linux_relock_required'], 'reviewed Linux re-lock required')
+    launch_contract = local_module('runner_bootstrap')  # Reviewed stdlib-only helpers, no main().
+    profile = launch_contract.interpreter_boundary(ROOT)
+    sys.path.append(profile['library'])  # No site.main(), .pth or ambient paths.
+    from jsonschema import Draft202012Validator
+    authorization_raw, binding = launch_contract.authorization_snapshot(authorization_fd)
+    authorization = launch_contract.parse_authorization(authorization_raw)
+    qualification = bounded_json(qualification_path, 8192)
+    schemas = bounded_json(ROOT / 'evidence.schema.json', 65536)
+    for name, record in (('authorization', authorization), ('qualification', qualification)):
+        Draft202012Validator(schemas['$defs'][name]).validate(record)
+        plan = bounded_json(ROOT / 'fa01-plan.json')
         for key in ('corpus_sha256', 'amendment_sha256', 'protocol_sha256'):
-            if record[key] != plan[key]:
-                raise ValueError('BLOCKED: stale FA01 identity: ' + key)
-        if record['area_f_plan_id'] != plan['id']:
-            raise ValueError('BLOCKED: unknown F plan')
-    if sys.platform != 'linux':
-        raise ValueError('BLOCKED: only qualified Linux supported')
-    if authorization['scope'] != 'one-bounded-run' or not authorization['human_record']:
-        raise ValueError('BLOCKED: separate human execution record required')
-    from interpretation_policy import validate
-    validate(authorization['interpretations'], bounded_json(ROOT / 'interpretations.json')['choices'])
-    # A record is checked for scope/identity, NOT authenticated as a human act.
-    # The operator must independently establish authorization authenticity.
-    head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
-    dirty = subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT)
-    if dirty or head != authorization['harness_sha']:
-        raise ValueError('BLOCKED: dirty or unreviewed harness revision')
+            require(record[key] == plan[key], 'stale FA01 ' + key)
+        require(record['area_f_plan_id'] == plan['id'], 'F plan')
+    require(authorization['scope'] == 'one-bounded-run' and authorization['human_record'], 'human execution record')
+    local_module('interpretation_policy').validate(authorization['interpretations'], bounded_json(ROOT / 'interpretations.json')['choices'])
+    head = command(['git', 'rev-parse', 'HEAD'], launch, groups[0]).strip()
+    require(not command(['git', 'status', '--porcelain'], launch, groups[0]), 'dirty source')
+    require(head == authorization['harness_sha'] == qualification['harness_sha'], 'source identity')
     protocol = ROOT.parents[1] / 'docs/research/proposals/RFC-00D7-F01/PROTOCOL.md'
-    if digest(protocol) != authorization['protocol_sha256']:
-        raise ValueError('BLOCKED: protocol changed')
-    if qualification['harness_sha'] != head or not qualification['approved_by']:
-        raise ValueError('BLOCKED: unreviewed qualification')
-    if qualification['dependency_lock_sha256'] != digest(ROOT / 'dependency-lock.json'):
-        raise ValueError('BLOCKED: dependency lock changed')
-    from static_check import verify
-    verify(ROOT)  # No imports or invocations of candidate/oracle/domains.
-    if bounded_json(ROOT / 'dependency-lock.json', 1024 * 1024)['linux_relock_required']:
-        raise ValueError('BLOCKED: reviewed Linux dependency re-lock required')
-    cgroup = Path(qualification['aggregate_cgroup']).resolve()
-    actual_group = Path('/sys/fs/cgroup') / Path('/proc/self/cgroup').read_text().strip().split('0::', 1)[1].lstrip('/')
-    if actual_group.resolve() != cgroup:
-        raise ValueError('BLOCKED: supervisor not in declared aggregate cgroup')
-    child_group = cgroup / 'runner'
-    for group, memory in ((cgroup, 256 * 1024**2), (child_group, 128 * 1024**2)):
-        if int((group / 'memory.max').read_text()) != memory:
-            raise ValueError('BLOCKED: memory controller mismatch')
-        if (group / 'memory.swap.max').read_text().strip() != '0':
-            raise ValueError('BLOCKED: swap not disabled')
-    quota, period = (cgroup / 'cpu.max').read_text().split()
-    if quota == 'max' or int(quota) > int(period):
-        raise ValueError('BLOCKED: aggregate CPU quota > one CPU')
-    procs = set((cgroup / 'cgroup.procs').read_text().split())
-    if procs != {str(os.getpid())} or (child_group / 'cgroup.procs').read_text().strip():
-        raise ValueError('BLOCKED: aggregate group contains unrelated work')
-    if len(os.sched_getaffinity(0)) != 1:
-        raise ValueError('BLOCKED: supervisor/child require inherited single CPU affinity')
-    # Receipt must pin independently reviewed current-machine qualification.
-    if qualification['boot_id'] != Path('/proc/sys/kernel/random/boot_id').read_text().strip():
-        raise ValueError('BLOCKED: stale qualification boot')
-    if qualification['kernel_release'] != os.uname().release:
-        raise ValueError('BLOCKED: kernel changed')
-    return authorization, qualification, cgroup, child_group
+    require(digest(protocol) == authorization['protocol_sha256'], 'protocol identity')
+    require(qualification['approved_by'] and qualification['boot_id'] == launch['boot_id'], 'qualification boot/approval')
+    require(qualification['kernel_release'] == os.uname().release, 'kernel changed')
+    require(qualification['dependency_lock_sha256'] == digest(ROOT / 'dependency-lock.json'), 'dependency identity')
+    command([sys.executable, '-I', '-S', '-B', str(ROOT / 'static_check.py')], launch, groups[0])
+    checkpoint(launch, groups[0])
+    manager['ancestor_limits'] = topology(groups, pending)
+    manager['import_profile'] = profile
+    return authorization, qualification, manager, binding, authorization_raw
 
 
-def cpu_usec(cgroup):
-    fields = (cgroup / 'cpu.stat').read_text().split()
-    return int(dict(zip(fields[::2], fields[1::2]))['usage_usec'])
+def wait_ready(process, fd, launch, groups):
+    selector = selectors.DefaultSelector()
+    selector.register(fd, selectors.EVENT_READ)
+    deadline = time.monotonic() + 5
+    raw = bytearray()
+    try:
+        while b'\n' not in raw:
+            checkpoint(launch, groups[0])
+            require(process.poll() is None and time.monotonic() < deadline, 'bootstrap exit/timeout')
+            for _, _ in selector.select(0.01):
+                chunk = os.read(fd, 1025 - len(raw))
+                require(bool(chunk), 'bootstrap EOF')
+                raw.extend(chunk)
+                require(len(raw) <= 1024, 'READY cap')
+        ready = json.loads(raw)
+        pending = identity(process.pid)
+        require(pending['ppid'] == os.getpid() and pending['pgid'] == pending['sid'] == process.pid, 'runner process identity')
+        require(ready == dict(pending, cpu=[44, 45], runner_inode=groups[2].inode), 'READY readback')
+        return pending
+    finally:
+        selector.close()
+
+
+def cleanup(process, pending, groups, deadline):
+    runner = groups[2]
+    runner.unchanged()
+    identity_failure = False
+    if pending is not None and process.poll() is None:
+        try:
+            safe = identity(process.pid) == pending and membership(process.pid) == runner.path
+            if safe:
+                os.killpg(process.pid, signal.SIGKILL)
+            else:
+                identity_failure = True
+        except ProcessLookupError:
+            pass
+        except FileNotFoundError:
+            pass  # Exit between poll and /proc read; R kill/reaping still required.
+        except Exception:
+            identity_failure = True
+    # Also catches descendants which changed process groups/sessions. Never kill D
+    # from S. Before READY a stub can still be in S; terminate that owned child too.
+    if process.poll() is None:
+        process.kill()
+    runner.write('cgroup.kill', b'1')
+    while time.monotonic() < deadline:
+        for _ in range(16):
+            try:
+                pid, wait_status = os.waitpid(-1, os.WNOHANG)
+            except ChildProcessError:
+                break
+            if pid == 0:
+                break
+            if pid == process.pid:
+                # Do not let Popen mistake an already reaped nonzero child for0.
+                process.returncode = os.waitstatus_to_exitcode(wait_status)
+        direct_done = process.poll() is not None
+        children = Path('/proc/self/task/' + str(os.getpid()) + '/children').read_text().split()
+        require(len(children) <= 16, 'orphan inventory overflow')
+        if direct_done and not children and runner.populated() == 0 and not runner.procs():
+            return {'complete': not identity_failure, 'runner_populated': 0,
+                    'adopted_children': 0, 'identity_failure': identity_failure}
+        time.sleep(0.005)
+    return {'complete': False, 'reason': 'cleanup_deadline', 'identity_failure': identity_failure}
+
+
+def persist(output, record, authorization_raw, qualification, launch, aggregate):
+    def final_guard():
+        require(time.monotonic_ns() - launch['started_monotonic_ns'] < 59_000_000_000, 'finalization wall guard')
+        require(aggregate.cpu() < 49_000_000, 'finalization CPU guard')
+    final_guard()
+    # Reserve supporting bytes before writing; no schema/result payload changes.
+    total, count = 0, 0
+    with os.scandir(output) as entries:
+        for entry in entries:
+            final_guard()
+            require(entry.is_file(follow_symlinks=False), 'unsafe existing artifact')
+            total += entry.stat(follow_symlinks=False).st_size
+            count += 1
+            require(count <= 251 and total + 131072 <= 25 * MIB, 'supporting reservation unavailable')
+    # Exclusive bounded writes retain successful earlier artifacts on failure.
+    for name, value in (('supervisor.json', record), ('authorization-record.json', authorization_raw),
+                        ('qualification-record.json', qualification), ('launch-record.json', launch)):
+        final_guard()
+        raw = value if isinstance(value, bytes) else (json.dumps(value, sort_keys=True) + '\n').encode()
+        require(len(raw) <= 16384, 'supporting evidence cap')
+        with (output / name).open('xb') as stream:
+            stream.write(raw)
+    paths = []
+    with os.scandir(output) as entries:
+        for entry in entries:
+            final_guard()
+            require(entry.is_file(follow_symlinks=False) and entry.name.isascii()
+                    and all(char.isalnum() or char in '._-' for char in entry.name), 'unsafe artifact')
+            paths.append(Path(entry.path))
+            require(len(paths) <= 256, 'artifact count cap')
+    total = sum(path.stat().st_size for path in paths)
+    require(total + 65536 <= 25 * MIB, 'artifact reservation unavailable')
+    manifest = ''.join(digest(path, final_guard) + '  ' + path.name + '\n' for path in sorted(paths)).encode()
+    require(len(manifest) <= 65536, 'manifest cap')
+    final_guard()
+    with (output / 'SHA256SUMS').open('xb') as stream:
+        stream.write(manifest)
+    final_guard()
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--authorization', type=Path, required=True)
-    parser.add_argument('--qualification', type=Path, required=True)
-    parser.add_argument('--output', type=Path, required=True)
+    for name in ('authorization', 'qualification', 'launch-record', 'output'):
+        parser.add_argument('--' + name, type=Path, required=True)
     args = parser.parse_args()
-    started = time.monotonic_ns()
-    authorization, qualification, group, child_group = check_gate(args.authorization, args.qualification)
+    groups, launch, process, pending = [], None, None, None
+    authorization, qualification, manager, authorization_raw = None, None, None, None
+    go_read = go_write = ready_read = ready_write = authorization_fd = None
+    selector = None
+    cleanup_record = {'complete': False, 'reason': 'not_started'}
+    status, reason, current_area = 'BLOCKED', 'startup_not_completed', None
+    stderr, status_buffer = bytearray(), bytearray()
     output = args.output.resolve()
-    if str(output) != authorization['artifact_directory']:
-        raise SystemExit('BLOCKED: artifact directory outside authorization')
-    output.mkdir(mode=0o700, parents=False, exist_ok=False)
-    # Entire invocation, including gate/setup/finalization, is supervised.
-    # Qualification must bound kernel delivery/cleanup overshoot within margins.
-    resource.setrlimit(resource.RLIMIT_CPU, (2, 3))
-    resource.setrlimit(resource.RLIMIT_FSIZE, (25 * 1024**2, 25 * 1024**2))
-    resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
-    baseline_cpu = cpu_usec(group)
-
-    def child_limits():
-        (child_group / 'cgroup.procs').write_text(str(os.getpid()))
-        resource.setrlimit(resource.RLIMIT_CPU, (44, 45))
-        resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
-
-    env = {'PATH': os.defpath, 'PYTHONHASHSEED': '0', 'PYTHONDONTWRITEBYTECODE': '1',
-           'F01_QUALIFIED_CHILD': '1'}
-    process = subprocess.Popen([sys.executable, '-B', str(ROOT / 'run.py'),
-                                '--authorization', str(args.authorization.resolve()),
-                                '--output', str(output)], env=env, cwd=ROOT,
-                               stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE, preexec_fn=child_limits,
-                               start_new_session=True)
-    selector = selectors.DefaultSelector()
-    selector.register(process.stdout, selectors.EVENT_READ, 'status')
-    selector.register(process.stderr, selectors.EVENT_READ, 'stderr')
-    current_area = None
-    area_start = time.monotonic_ns()
-    stderr = bytearray()
-    status_buffer = bytearray()
-    reason = 'normal_exit'
     try:
+        launch, groups = g0(args.qualification, args.launch_record)
+        def alarm_handler(signum, frame):
+            raise TimeoutError('whole-invocation wall guard')
+        signal.signal(signal.SIGALRM, alarm_handler)
+        signal.setitimer(signal.ITIMER_REAL, max(.001, 58 - (time.monotonic_ns() - launch['started_monotonic_ns']) / 10**9))
+        resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+        resource.setrlimit(resource.RLIMIT_FSIZE, (25 * MIB, 25 * MIB))
+        authorization_fd = os.memfd_create('f01-authorization', os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING)
+        go_read, go_write = os.pipe()
+        ready_read, ready_write = os.pipe()
+        parent = identity(os.getpid())
+        argv = [sys.executable, '-I', '-S', '-B', str(ROOT / 'runner_bootstrap.py'),
+                '--go-fd', str(go_read), '--ready-fd', str(ready_write), '--runner-fd', str(groups[2].fd),
+                '--parent-pid', str(os.getpid()), '--parent-start', str(parent['start']),
+                '--authorization-fd', str(authorization_fd), '--output', str(output)]
+        process = subprocess.Popen(argv, cwd=ROOT, env={'PATH': os.defpath},
+                                   stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                   pass_fds=(go_read, ready_write, groups[2].fd, authorization_fd), start_new_session=True)
+        os.close(go_read)
+        go_read = None
+        os.close(ready_write)
+        ready_write = None
+        resource.setrlimit(resource.RLIMIT_CPU, (2, 3))
+        pending = wait_ready(process, ready_read, launch, groups)
+        capture_authorization(args.authorization, authorization_fd)
+        authorization, qualification, manager, binding, authorization_raw = check_gate(authorization_fd, args.qualification, launch, groups, pending)
+        require(str(output) == authorization['artifact_directory'], 'artifact directory authorization')
+        output.mkdir(mode=0o700, parents=False, exist_ok=False)
+        checkpoint(launch, groups[0])
+        topology(groups, pending)
+        packet = (json.dumps(dict(binding, go=True), separators=(',', ':')) + '\n').encode()
+        require(len(packet) <= 256 and os.write(go_write, packet) == len(packet), 'GO write')
+        os.close(go_write)
+        go_write = None
+        status, reason = 'INCONCLUSIVE_LIMIT', 'runner_not_completed'
+        selector = selectors.DefaultSelector()
+        selector.register(process.stdout, selectors.EVENT_READ, 'status')
+        selector.register(process.stderr, selectors.EVENT_READ, 'stderr')
+        area_start = time.monotonic_ns()
         while process.poll() is None:
-            now = time.monotonic_ns()
-            if now - started >= 58_000_000_000:
-                reason = 'suite_deadline_guard'
-                break
-            if cpu_usec(group) - baseline_cpu >= 48_000_000:
-                reason = 'aggregate_cpu_guard'
-                break
-            if current_area and now - area_start >= (5 if current_area in 'AB' else 10) * 10**9:
-                reason = 'area_wall_deadline'
-                break
-            for key, _ in selector.select(timeout=0.01):
-                chunk = os.read(key.fileobj.fileno(), 1024)
-                if not chunk:
+            checkpoint(launch, groups[0])
+            if current_area:
+                require(time.monotonic_ns() - area_start < (5 if current_area in 'AB' else 10) * 10**9, 'area wall guard')
+            for key, _ in selector.select(0.01):
+                raw = os.read(key.fileobj.fileno(), 1024)
+                if not raw:
                     selector.unregister(key.fileobj)
                     continue
                 if key.data == 'stderr':
-                    stderr.extend(chunk[:max(0, 8192 - len(stderr))])
-                    if len(stderr) >= 8192:
-                        reason = 'stderr_cap'
-                        break
+                    require(len(stderr) + len(raw) <= 8192, 'stderr cap')
+                    stderr.extend(raw)
                 else:
-                    status_buffer.extend(chunk)
-                    if len(status_buffer) > 32:
-                        raise ValueError('status channel overflow')
+                    status_buffer.extend(raw)
+                    require(len(status_buffer) <= 32, 'status overflow')
                     while b'\n' in status_buffer:
                         row, _, tail = status_buffer.partition(b'\n')
                         status_buffer[:] = tail
                         area = row.decode('ascii')
-                        expected = 'A' if current_area is None else chr(ord(current_area) + 1)
-                        if area != expected or area not in 'ABCDEF':
-                            raise ValueError('nonsequential area')
+                        require(area in 'ABCDEF' and area == ('A' if current_area is None else chr(ord(current_area) + 1)), 'nonsequential area')
                         current_area, area_start = area, time.monotonic_ns()
-            if reason != 'normal_exit':
-                break
+        reason = 'runner_exit'
+    except Exception as error:
+        reason = type(error).__name__ + ': ' + str(error)[:256]
+        if process is not None:
+            status = 'INCONCLUSIVE_LIMIT'
     finally:
-        if process.poll() is None:
-            os.killpg(process.pid, signal.SIGKILL)  # Budget cleanup only, no fault experiment.
-        process.wait(timeout=1)
-        selector.close()
-    summary_path = output / 'summary.json'
-    incomplete = not summary_path.exists()
-    record = {'stop': reason, 'returncode': process.returncode,
-              'incomplete': incomplete, 'last_area': current_area,
-              'elapsed_ns': time.monotonic_ns() - started,
-              'aggregate_cpu_usec': cpu_usec(group) - baseline_cpu,
-              'aggregate_memory_peak': int((group / 'memory.peak').read_text()),
-              'stderr': stderr.decode('utf-8', errors='replace'),
-              'limits_qualified': qualification['approved_by'],
-              'authorization_authenticity': 'operator responsibility'}
-    raw = (json.dumps(record, sort_keys=True) + '\n').encode()
-    if len(raw) > 16384:
-        raise ValueError('supervisor record cap')
-    (output / 'supervisor.json').write_bytes(raw)
-    report = ('# Bounded synthetic run\n\nSee summary.json and supervisor.json. '
-              'Missing summary or forced termination means INCONCLUSIVE_LIMIT. '
-              'No production or security qualification follows.\n')
-    (output / 'REPORT.md').write_text(report)
-    # Copy only bounded authorization/qualification metadata, never credentials.
-    (output / 'authorization-record.json').write_text(json.dumps(authorization))
-    (output / 'qualification-record.json').write_text(json.dumps(qualification))
-    hashes = []
-    total = 0
-    for path in sorted(output.iterdir()):
-        total += path.stat().st_size
-        hashes.append(digest(path) + '  ' + path.name + '\n')
-    manifest = ''.join(hashes).encode()
-    if total + len(manifest) > 25 * 1024**2:
-        raise ValueError('artifact accounting violation; invalidate run')
-    (output / 'SHA256SUMS').write_bytes(manifest)
+        for fd in (go_read, go_write, ready_read, ready_write, authorization_fd):
+            if fd is not None:
+                os.close(fd)
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        if selector is not None:
+            selector.close()
+        if process is not None:
+            try:
+                end = min(time.monotonic() + 1, launch['started_monotonic_ns'] / 10**9 + 59)
+                cleanup_record = cleanup(process, pending, groups, end)
+            except Exception as error:
+                cleanup_record = {'complete': False, 'reason': type(error).__name__ + ': ' + str(error)[:256]}
+            if not cleanup_record['complete']:
+                status = 'INCONCLUSIVE_LIMIT'
+    # No record is fabricated when setup, capacity, CPU or manager termination
+    # prevents persistence. External qualification evidence must retain that gap.
+    if authorization is not None and output.is_dir():
+        try:
+            elapsed = time.monotonic_ns() - launch['started_monotonic_ns']
+            cpu = groups[0].cpu()
+            peak = int(groups[0].read('memory.peak'))
+            require(elapsed < 60_000_000_000 and cpu < 50_000_000 and peak <= 256 * MIB, 'observed ceiling violation')
+            if reason == 'runner_exit' and process.returncode == 0 and cleanup_record['complete']:
+                from jsonschema import Draft202012Validator
+                summary = bounded_json(output / 'summary.json')
+                Draft202012Validator(bounded_json(ROOT / 'evidence.schema.json', 65536)['$defs']['summary']).validate(summary)
+                if current_area == 'F' and set(summary['areas']) == set('ABCDEF') and all(
+                        area['verdict'] not in ('INCONCLUSIVE_LIMIT', 'BLOCKED', 'INVALID_RUN')
+                        for area in summary['areas'].values()):
+                    status = 'COMPLETED_UNVERIFIED'
+            record = {'status': status, 'stop': reason, 'returncode': process.returncode,
+                      'incomplete': status != 'COMPLETED_UNVERIFIED', 'last_area': current_area,
+                      'evidence_finalization': 'unverified_until_external_inventory',
+                      'elapsed_ns': elapsed, 'aggregate_cpu_usec': cpu, 'aggregate_memory_peak': peak,
+                      'cleanup': cleanup_record, 'stderr': stderr.decode('utf-8', errors='replace'),
+                      'manager': manager, 'authorization_snapshot': binding, 'authorization_authenticity': 'operator responsibility'}
+            persist(output, record, authorization_raw, qualification, launch, groups[0])
+        except Exception as error:
+            status = 'INCONCLUSIVE_LIMIT'
+            print('INCOMPLETE_EVIDENCE: ' + type(error).__name__ + ': ' + str(error)[:256], file=sys.stderr)
+    else:
+        print(status + ': ' + reason, file=sys.stderr)
+    for group in groups:
+        group.close()
+    return 0 if status == 'COMPLETED_UNVERIFIED' else 2
 
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit(main())

@@ -1,0 +1,23 @@
+{
+  "schema": "t81.lq01-r1.source-preparation.v1",
+  "baseline": "2f2bc47ffc9441a060f3a1cfdf4ec893c6699d0e",
+  "protocol_commit": "c5e0ca79c073a72bb41f03b76ddd68acbd7eab73",
+  "protocol_sha256": "d48aeedc924cf505cab8a7fed316fc84d8f2c259dd502fd1d0a7fe8432f05de3",
+  "candidate_revision": "ec22a7588282d37ad027cff61c807bcf159ac2e0",
+  "execution_authorized": false,
+  "linux_qualified": false,
+  "source_files": {
+    "supervise.py": "c99d4926d97340db897ca765c7cd0b946f9b9f7c8c8f9bdb892ec7c3ad29bb17",
+    "runner_bootstrap.py": "55e4857acfa97829f0ee8d3b6bc8b5772bae3b9414353ad3129a782f14f6ded7",
+    "static_check.py": "40da7a4a8198ec02d92ef4a4c27dbdc80e43c319c71dfd44b15b6fa3ff6f512a",
+    "run.py": "2cf393cb085422bf660e69de09a799a36004797a40365515194c5b02b46e00d9"
+  },
+  "reviewed_design": {
+    "PROPOSAL.md": "3209d6b2ebb322eec0bddc0e411074e8b7bcea0d4f6d92a80d77276da44dc72a",
+    "SOURCE_CHANGE_PLAN.md": "181f1dd89cf55aca952c9bae107b276373bc4f8c18c466363427ae9e00ed1a1a"
+  },
+  "authorization_import_correction_baseline": "b0ab7f31eee897634aa0a19d84c7ac504dc6331c",
+  "protected_file_exceptions": {
+    "run.py": "Launch/import isolation and sealed authorization consumption only; run_area and main execution tail unchanged by AST."
+  }
+}

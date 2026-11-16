@@ -5,9 +5,11 @@
   "candidate_revision": "ec22a7588282d37ad027cff61c807bcf159ac2e0",
   "execution_authorized": false,
   "files": {
+    "AUTHORIZATION_IMPORT_CORRECTIONS.md": "7993b180ca002654d0a1f9bfd2bada7e3b210299a8e2336e038fcbac8cde2887",
     "CAP_ACCOUNTING.json": "283de7ba1d581a7206cc5e8b47b9b27f001af099120d147ec2f74e839beb4f0c",
     "CAP_ACCOUNTING.md": "9394073f1e209314b7e69777b5b32d6078af3bfd27eb6d8ad4a5eb6c9f6ce86b",
-    "LINUX_QUALIFICATION.md": "2b8e5b9cd65aae671442714766014566564b63fc034161e6cf6c4d2035a7bed7",
+    "LINUX_QUALIFICATION.md": "d965b83b3a694e10eaa8a64c43a139c9b4ad6c8af6e98ddc50a486411340dd3f",
+    "LQ01_R1_IMPLEMENTATION.md": "7efdaf1a2c0463fbc2c502584760d7cf4d7ce1abcd8063ba0f24947de1226ca2",
     "PROPOSED_PROTOCOL_AMENDMENT.md": "d32f3ab1bc7a3c4a402e427295ae0ab5a8e8e964eed922e5dedaaba8b4689245",
     "READINESS_CORRECTIONS.md": "4241dfbe883362336a43c3773c87d37a1501b09ce4fff00098c43ea3adcb601b",
     "README.md": "ccbcc3f5a4aa8295c6628f520d4817e598dfdfafd09a75be8fa49c8f7d62ced0",
@@ -23,13 +25,15 @@
     "fa01.py": "6357df7af559d72c1f8614a46b21a234fa54e46b19fa5189ccc2a1083101b42f",
     "interpretation_policy.py": "d8c4db447c3ac1bfc3c4c8f7fe7d5fc491cf21fb75f3467ec2dadea571b115ca",
     "interpretations.json": "50886763bc06f8fac9fa19d19e86dc4291cc82efd0b5ac99d63f38c13aa37ceb",
+    "lq01-r1-source.json": "caf25b3c80a6c80e0bebb5850ad0c33f311def3b1be0636158cfd61aad84fdcd",
     "oracle.py": "99f10c3719219ec860db32ca3ef40a8768d4cfe668ee059d32c8d6de72d5a163",
     "pinned-d3.schema.json": "a7c2cf69c9fc3b2030075cca2ea902fc5c28c53ebd28dc80b65ac4f5c3b8cbe8",
     "pinned-d7.rfc.md": "a2f8d9fee22f6d27c57cab1d1a8a6b70ff3d0da1f0f81a72aded7a0955520aaf",
     "requirements.lock": "435c5dbba7016941f319f1df4b40b510d82af11835a4aa6a22d534365d8ddba2",
-    "run.py": "7a0a5df50d1e35cead69635e99e6ccfaf376e42afe0612761dede423baa30c4a",
-    "static_check.py": "29212530c1894c56adbad382b277982151e046224ea3478030283afc742e6c83",
-    "supervise.py": "f07731224c265c7783bf5b17dae424e77796605b9a1120e517b973dc4aeba9e6"
+    "run.py": "2cf393cb085422bf660e69de09a799a36004797a40365515194c5b02b46e00d9",
+    "runner_bootstrap.py": "55e4857acfa97829f0ee8d3b6bc8b5772bae3b9414353ad3129a782f14f6ded7",
+    "static_check.py": "40da7a4a8198ec02d92ef4a4c27dbdc80e43c319c71dfd44b15b6fa3ff6f512a",
+    "supervise.py": "c99d4926d97340db897ca765c7cd0b946f9b9f7c8c8f9bdb892ec7c3ad29bb17"
   },
   "fa01_plan_id": "F-structural-corpus-v1"
 }

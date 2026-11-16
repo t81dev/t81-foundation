@@ -180,3 +180,99 @@ Linux enforcement remain unverified; process death cannot be repaired by this
 helper. The macOS lock still blocks Linux. Independent review and separately
 authorized qualification/execution are required before any final qualification
 pinning or run. See READINESS_CORRECTIONS.md for exact ancestry and semantics.
+
+## LQ01-R1 supervisor correction — preparation only
+
+Baseline2f2bc47ffc9441a060f3a1cfdf4ec893c6699d0e; source design accepted by the
+human for this limited implementation. No qualification or experiment entry
+point was imported/invoked. No model, oracle, control, fixture, proof-checker
+or generator ran. No dependency installation or Linux host probe occurred.
+The same existing macOS ARM64 CPython3.14.3 preparation environment was used.
+
+Commands:
+
+```sh
+/private/tmp/t81-pr795-parity-venv/bin/python -B experiments/rfc_00d7_f01/static_check.py
+git diff --check
+```
+
+Observed checker output (exit0; final source identities checked):
+
+```json
+{"actual_protocol_ancestor_checked":true,"artifact_hashes":5,"candidate_oracle_invocations":0,"closed_form_cap_bounds_checked":6,"compiled_modules":11,"cross_module_calls_checked":54,"declared_interpretations_checked":8,"execution_qualified":false,"experimental_states_enumerated":0,"fa01_planned_states":254,"locked_distributions":5,"lq01_r1_ast_checked":true,"model_imports":0,"preparation_only":true,"protected_baseline_artifacts":17,"schemas_checked":3,"source_pins":14,"terminal_guard_ast_checked":true}
+```
+
+Compilation is AST/compile in memory, without executing resulting code objects.
+Source checks inspect G0/G1 populations, budget constants, inherited CPU ordering,
+GO-before-exec ordering, stdlib-only stub imports, parent death, R-only kill,
+subreaping and retained direct-child wait status. They compare17 protected
+non-document baseline artifacts byte-for-byte; all11 Python sources are parsed.
+Both source-identity manifests, protocol history and active artifact hashes are
+verified. Existing schema definitions are checked; no synthetic fixture is
+validated. These source-shape checks do not prove runtime enforcement.
+
+An initial static attempt failed because the older checker treats all literal
+lookups on a variable named `values` as interpretation lookups. The manager
+property dictionary was renamed `observed`, preserving that guard. Subsequent
+checks passed. Source inspection also found the unchanged evidence-v2 schema
+is39,106 bytes: the new gate explicitly allows65,536 bytes for that schema,
+rather than the old32,768 default. Neither the schema bytes nor experimental
+semantics changed. No dynamic check was used to find or repair these issues.
+
+Whitespace checks passed. No formatter or dependency was installed. Final commit
+identity and changed-file inventory are in the separate draft PR; identities.json
+covers the new source, preparation record and implementation description.
+
+Linux x86_64/ARM64 remain unqualified. macOS/Windows execution is unsupported.
+The Linux re-lock blocker remains true. Real controller delegation, outer
+manager deadlines, resource delivery/overshoot, GO/EOF handling, session-changing
+orphans and evidence exhaustion remain unexecuted qualification obligations.
+Missing records are incomplete evidence, never fabricated persistence.
+
+## PR #809 authorization/import corrections — static only
+
+Reviewed baseline b0ab7f31eee897634aa0a19d84c7ac504dc6331c. The change explicitly
+excepts run.py from the original protected-file list for launch/import setup and
+sealed authorization consumption only. No qualification or experiment entry
+was imported or executed. The Linux no-site metadata-helper setup branch was
+not entered in this macOS preparation invocation; bootstrap helpers were not
+loaded or called. No descriptor/seal, interpreter-profile, probe, model, proof,
+control or fixture was exercised. No dependency was installed.
+
+Commands (existing macOS ARM64 CPython3.14.3 preparation environment):
+
+```sh
+/private/tmp/t81-pr795-parity-venv/bin/python -B experiments/rfc_00d7_f01/static_check.py
+git diff --check
+```
+
+Checker output after correction (exit0):
+
+```json
+{"actual_protocol_ancestor_checked":true,"artifact_hashes":5,"authorization_snapshot_ast_checked":true,"candidate_oracle_invocations":0,"closed_form_cap_bounds_checked":6,"compiled_modules":11,"cross_module_calls_checked":54,"declared_interpretations_checked":8,"execution_qualified":false,"experimental_states_enumerated":0,"fa01_planned_states":254,"import_boundary_ast_checked":true,"locked_distributions":5,"lq01_r1_ast_checked":true,"model_imports":0,"preparation_only":true,"protected_baseline_artifacts":16,"protected_file_exceptions":["run.py: launch/import/authorization plumbing only"],"runner_experiment_ast_unchanged":true,"schemas_checked":3,"source_pins":14,"terminal_guard_ast_checked":true}
+```
+
+All11 modules were compiled only as AST/code objects in memory.16 protected
+non-document baseline artifacts remain byte-identical; run.py is now accounted
+for separately. The exact run_area AST and main execution tail from schema
+loading onward match the baseline. New AST checks inspect sealing/readback,
+G1 snapshot parsing, GO binding without a pathname reread, final FD verification
+before model imports, interpreter/config/search-path checks, no-site child flags,
+and the declared protected-file exception. Existing schema/interpretation and
+FA01 checks remain in place. Sources and preparation identities were rehashed.
+Whitespace checking passed. These are source-shape checks, not runtime evidence
+that the proposed Linux profile or sealed-FD plumbing works.
+
+The preparation venv's pyvenv.cfg was read as local configuration text; its
+include-system-site-packages=false setting was not presented as Linux evidence.
+CPython3.14 path/flag documentation was consulted, not substituted for the pinned
+interpreter identity. A source lookup using an obsolete Homebrew3.14.3 path
+failed; no host-profile function was invoked as a fallback.
+
+Unchanged protocol SHA-256:
+d48aeedc924cf505cab8a7fed316fc84d8f2c259dd502fd1d0a7fe8432f05de3.
+Candidate/oracle algorithms, experimental domains, both evidence schemas,
+F254/256, source pins, topology, ceilings and all holds remain intact. Linux
+x86_64/ARM64 remain unqualified and the dependency re-lock blocker remains true.
+See AUTHORIZATION_IMPORT_CORRECTIONS.md for byte-level reasoning, the explicit
+run.py exception, supporting-evidence behavior and remaining host assumptions.

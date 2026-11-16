@@ -3,10 +3,22 @@
 import ast
 import hashlib
 import importlib.metadata
+import importlib.util
 import json
 import platform
 import subprocess
+import sys
 from pathlib import Path
+
+# A future gated Linux metadata helper also runs without site initialization.
+# Preparation validation on macOS does not enter this branch or load bootstrap.
+if sys.platform == 'linux' and sys.flags.no_site:
+    _root = Path(__file__).resolve().parent
+    _spec = importlib.util.spec_from_file_location('f01_static_launch_contract', _root / 'runner_bootstrap.py')
+    _contract = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(_contract)  # Helpers only; guarded bootstrap main not invoked.
+    _profile = _contract.interpreter_boundary(_root)
+    sys.path.append(_profile['library'])
 
 from jsonschema import Draft202012Validator
 
@@ -257,11 +269,141 @@ def verify(root):
     assert aligned_tree == reviewed_tree
     for record in ('authorization', 'qualification'):
         assert {'area_f_plan_id', 'corpus_sha256', 'protocol_sha256', 'amendment_sha256'} <= set(evidence_v2['$defs'][record]['required'])
+    # LQ01-R1 source contracts only. Never load either launch entry point.
+    baseline = '2f2bc47ffc9441a060f3a1cfdf4ec893c6699d0e'
+    baseline_identity = json.loads(subprocess.check_output([
+        'git', 'show', baseline + ':experiments/rfc_00d7_f01/identities.json'
+    ], cwd=repo))
+    unchanged = 0
+    for name, expected in baseline_identity['files'].items():
+        if name not in ('supervise.py', 'static_check.py', 'run.py') and not name.endswith('.md'):
+            assert sha(root / name) == expected, ('protected baseline artifact', name)
+            unchanged += 1
+    assert (root / 'evidence.schema.json').stat().st_size <= 65536
+    source_record = json.loads((root / 'lq01-r1-source.json').read_text())
+    assert source_record['baseline'] == baseline
+    assert source_record['authorization_import_correction_baseline'] == 'b0ab7f31eee897634aa0a19d84c7ac504dc6331c'
+    assert set(source_record['source_files']) == {'supervise.py', 'runner_bootstrap.py', 'static_check.py', 'run.py'}
+    assert set(source_record['protected_file_exceptions']) == {'run.py'}
+    assert source_record['protocol_sha256'] == identity['protocol_sha256']
+    assert source_record['execution_authorized'] is False and source_record['linux_qualified'] is False
+    for name, expected in source_record['source_files'].items():
+        assert sha(root / name) == expected, name
+    supervisor = parsed['supervise.py']
+    bootstrap = parsed['runner_bootstrap.py']
+    allowed_imports = {'argparse', 'ctypes', 'hashlib', 'importlib.util', 'json', 'os',
+                       'resource', 'selectors', 'signal', 'subprocess', 'sys',
+                       'sysconfig', 'time', 'pathlib', 'jsonschema', 'fcntl', 'stat'}
+    for tree in (supervisor, bootstrap):
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                assert {alias.name for alias in node.names} <= allowed_imports
+            if isinstance(node, ast.ImportFrom):
+                assert node.module in allowed_imports
+            if isinstance(node, ast.Call):
+                assert all(keyword.arg != 'preexec_fn' for keyword in node.keywords)
+    functions = {node.name: node for node in supervisor.body if isinstance(node, ast.FunctionDef)}
+    source = {name: ast.unparse(node) for name, node in functions.items()}
+    assert "'supervisor'" in source['g0'] and "'runner'" in source['g0']
+    assert 'topology(groups)' in source['g0']
+    assert 'topology(groups, pending)' in source['check_gate']
+    assert 'zip(groups, (256, 64, 128))' in source['topology']
+    assert "runner.procs() == (set() if pending is None else {pending['pid']})" in source['topology']
+    assert 'not aggregate.procs()' in source['topology']
+    assert "aggregate.children() == {'supervisor', 'runner'}" in source['topology']
+    assert 'resource.prlimit' in source['topology']
+    assert '48000000' in source['checkpoint'] and '58000000000' in source['checkpoint']
+    assert "'cpu_origin_usec'] == 0" in source['g0']
+    assert 'hard >= 45' in source['g0']
+    assert 'prctl(38, 1' in source['g0'] and 'prctl(36, 1' in source['g0']
+    assert "runner.write('cgroup.kill', b'1')" in source['cleanup']
+    assert 'runner.populated() == 0' in source['cleanup'] and 'not children' in source['cleanup']
+    assert 'os.waitpid(-1, os.WNOHANG)' in source['cleanup']
+    assert 'process.returncode = os.waitstatus_to_exitcode(wait_status)' in source['cleanup']
+    assert "aggregate.write('cgroup.kill'" not in ast.unparse(supervisor)
+    main_source = source['main']
+    assert main_source.index('process = subprocess.Popen') < main_source.index('resource.RLIMIT_CPU, (2, 3)')
+    assert main_source.index('resource.RLIMIT_CPU, (2, 3)') < main_source.index('pending = wait_ready')
+    assert main_source.index('pending = wait_ready') < main_source.index('= check_gate(')
+    assert main_source.index('= check_gate(') < main_source.index('os.write(go_write, packet)')
+    assert "'INCONCLUSIVE_LIMIT'" in main_source and "'unverified_until_external_inventory'" in main_source
+    boot_functions = {node.name: node for node in bootstrap.body if isinstance(node, ast.FunctionDef)}
+    boot_source = ast.unparse(boot_functions['main'])
+    assert boot_source.index('resource.RLIMIT_CPU, (44, 45)') < boot_source.index('os.write(args.ready_fd, raw)')
+    assert boot_source.index('os.read(args.go_fd') < boot_source.index('os.execve(')
+    assert "go['go'] is not True" in boot_source
+    assert boot_source.index('authorization_snapshot(args.authorization_fd, binding)') < boot_source.index('os.execve(')
+    assert 'prctl(1, signal.SIGKILL' in boot_source
+    assert 'execve' not in ast.unparse(supervisor)
+    assert "command([sys.executable, '-I', '-S', '-B', str(ROOT / 'static_check.py')]" in source['check_gate']
+    # Authorization/import corrections: byte and AST checks, no FD operations,
+    # configuration inspection on a host, entry imports or model invocation.
+    assert 'digest(args.authorization)' not in main_source
+    assert main_source.index('capture_authorization(') < main_source.index('= check_gate(')
+    assert "json.dumps(dict(binding, go=True)" in main_source
+    assert "os.memfd_create('f01-authorization', os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING)" in main_source
+    assert 'authorization_fd' in source['check_gate']
+    assert 'authorization_snapshot(authorization_fd)' in source['check_gate']
+    assert 'parse_authorization(authorization_raw)' in source['check_gate']
+    assert 'bounded_json(authorization_path' not in source['check_gate']
+    assert "fcntl.fcntl(fd, fcntl.F_ADD_SEALS, seals)" in source['capture_authorization']
+    assert 'os.pread(fd, 8193, 0) == raw' in source['capture_authorization']
+    boot_helpers = {name: ast.unparse(node) for name, node in boot_functions.items()}
+    snapshot = boot_helpers['authorization_snapshot']
+    for seal in ('F_SEAL_WRITE', 'F_SEAL_GROW', 'F_SEAL_SHRINK', 'F_SEAL_SEAL'):
+        assert seal in snapshot and seal in source['capture_authorization']
+    assert 'fcntl.F_GET_SEALS' in snapshot and 'os.pread(fd, 8193, 0)' in snapshot
+    assert 'binding != expected' in snapshot
+    assert 'type(expected[key]) is not int' in snapshot
+    assert "'authorization_device'" in snapshot and "'authorization_inode'" in snapshot
+    assert "'authorization_size'" in snapshot and "'authorization_sha256'" in snapshot
+    boundary = boot_helpers['interpreter_boundary']
+    assert "entries.get('include-system-site-packages', '').lower() != 'false'" in boundary
+    for required in ('sys.executable', 'sys._base_executable', 'sys.prefix', 'sys.base_prefix',
+                     'sys.exec_prefix', 'sys.base_exec_prefix', 'sys.flags.no_site',
+                     'sys.flags.safe_path', "sysconfig.get_path('purelib')",
+                     "sysconfig.get_path('platlib')", "sysconfig.get_path('stdlib')",
+                     "sysconfig.get_config_var('DESTSHARED')", 'sys.path',
+                     "executable.parent / 'pyvenv.cfg'", "executable.parent.parent / 'pyvenv.cfg'",
+                     "'sitecustomize.py'", "'usercustomize.py'", "'*.pth'"):
+        assert required in boundary, required
+    assert "'-P', '-S', '-B'" in boot_source
+    assert 'auth.open' not in boot_source and "'--authorization'" not in boot_source
+    assert "'PYTHONHASHSEED': '0'" in boot_source
+    runner = parsed['run.py']
+    assert not any(isinstance(n, (ast.Import, ast.ImportFrom)) and
+                   ((isinstance(n, ast.Import) and any(a.name in ('domains', 'evaluate', 'fa01') for a in n.names))
+                    or (isinstance(n, ast.ImportFrom) and n.module in ('accounting', 'interpretation_policy')))
+                   for n in runner.body)
+    runner_functions = {n.name: n for n in runner.body if isinstance(n, ast.FunctionDef)}
+    runner_source = ast.unparse(runner_functions['main'])
+    assert 'args.authorization.read_text' not in runner_source
+    assert "'--authorization'," not in runner_source
+    assert 'authorization_snapshot(args.authorization_fd, binding)' in runner_source
+    assert runner_source.index('authorization_snapshot(') < runner_source.index('parse_authorization(raw)')
+    assert runner_source.index('parse_authorization(raw)') < runner_source.index('import domains')
+    assert runner_source.index('interpreter_boundary(') < runner_source.index('import domains')
+    assert 'os.close(args.authorization_fd)' in runner_source
+    old_runner = ast.parse(subprocess.check_output([
+        'git', 'show', baseline + ':experiments/rfc_00d7_f01/run.py'
+    ], cwd=repo, text=True))
+    old_functions = {n.name: n for n in old_runner.body if isinstance(n, ast.FunctionDef)}
+    assert ast.dump(old_functions['run_area']) == ast.dump(runner_functions['run_area'])
+    def execution_tail(function):
+        start = next(i for i, n in enumerate(function.body) if isinstance(n, ast.Assign)
+                     and any(isinstance(t, ast.Name) and t.id == 'schema' for t in n.targets))
+        return [ast.dump(n) for n in function.body[start:]]
+    assert execution_tail(old_functions['main']) == execution_tail(runner_functions['main'])
+
     return {'preparation_only': True, 'source_pins': len(pins['sources']),
             'artifact_hashes': len((proposal / 'SHA256SUMS').read_text().splitlines()), 'compiled_modules': len(parsed),
             'schemas_checked': 3, 'fa01_planned_states': 254, 'cross_module_calls_checked': calls_checked, 'locked_distributions': len(lock['packages']),
             'declared_interpretations_checked': len(keys),
             'closed_form_cap_bounds_checked': len(bounds),
+            'lq01_r1_ast_checked': True, 'protected_baseline_artifacts': unchanged,
+            'protected_file_exceptions': ['run.py: launch/import/authorization plumbing only'],
+            'authorization_snapshot_ast_checked': True, 'import_boundary_ast_checked': True,
+            'runner_experiment_ast_unchanged': True,
             'terminal_guard_ast_checked': True, 'actual_protocol_ancestor_checked': True,
             'model_imports': 0, 'experimental_states_enumerated': 0,
             'candidate_oracle_invocations': 0, 'execution_qualified': False}
