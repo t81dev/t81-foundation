@@ -29,3 +29,13 @@ Only this new proposal directory was written for the current task. Existing untr
 ## Harness-preparation clarification revision
 
 The subsequent human instruction authorizes bounded harness preparation separately and prohibits A–F execution. Protocol revision 2 clarifies byte 10 bit 0 of the hashed emergency payload, sequential runners under shared ceilings, and distinct summary counters. Domains and ceilings are unchanged. This draft PR still contains only documentation; harness code belongs on a separate experimental branch. Original preparation evidence above is historical and remains preserved. Hashes were refreshed for the clarified packet.
+
+## FA01 revision 3 preparation adoption
+
+The user reports Gemini ACCEPT AMENDMENT DESIGN and authorizes publication of
+reviewed protocol bytes and matching synthetic harness source, without execution.
+PROTOCOL.md is copied byte-for-byte from the reviewed FA01 candidate. Its
+SHA-256 is d48aeedc924cf505cab8a7fed316fc84d8f2c259dd502fd1d0a7fe8432f05de3.
+The original proposal packet is retained separately with its historical status;
+ADOPTION.md records this subsequent preparation-only instruction. No experiment
+or qualification is performed, and PR #805 is not modified.

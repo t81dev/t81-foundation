@@ -1,0 +1,124 @@
+--- a/docs/research/proposals/RFC-00D7-F01/PROTOCOL.md
++++ b/docs/research/proposals/RFC-00D7-F01/PROTOCOL.md
+@@ -2,11 +2,11 @@
+ 
+ Status: **PROPOSED / NON-NORMATIVE / NOT IMPLEMENTED / NOT EXECUTED**.
+ 
+-This document authorizes nothing. The current human instruction permits preparing a synthetic harness on a separate experimental branch, while explicitly excluding A–F experimental execution. This documentation PR contains only the protocol packet. No production code, specification, research gate, PR #804, Commons index or historical finding is changed.
++This document authorizes nothing. The current human instruction permits drafting an Area F amendment only. This revision-3 candidate is not applied to PR #805 or implemented in the harness. Implementation, experimental execution and normative promotion are excluded. An attributable external approval record would be needed to adopt these exact bytes; this file authorizes nothing. No production code, specification, research gate, PR #804, Commons index or historical finding is changed.
+ 
+ ## 1. Identity, question and provenance
+ 
+-- Protocol identifier: `RFC-00D7-F01`, revision 2; six scoped experiment labels A–F.
++- Protocol identifier: `RFC-00D7-F01`, revision 3 (FA01 candidate, unapplied); six scoped experiment labels A–F.
+ - Candidate under test: PR #804 at **`ec22a7588282d37ad027cff61c807bcf159ac2e0`**.
+ - Comparison document: **`4fdba573cc3be94ceb69cbcb3b04b62083b4d252`**.
+ - Original repository base: **`40695b0ba5cea3e43563b6ed2443c987d2738089`**.
+@@ -15,7 +15,7 @@
+ - Research question: does the pinned draft specify satisfiable, replayable and internally consistent contracts for the six modeled areas, over the declared finite domains?
+ - Source anchors and byte identities are in `source-pins.json`; machine-readable Commons proposal metadata is in `proposal.json`. The RFC, actual RFC-00D3 schema, hash implementation and governance records must be read at their pinned revisions, not from moving branches.
+ 
+-The expected witnesses below are **predictions from prior source review**, not results of this protocol. Prior session countermodels must not be copied into a new results ledger as fresh execution. No code, synthetic inputs, enumeration results or experiment artifacts are supplied by this drafting task.
++The expected witnesses below are **predictions from prior source review**, not results of this protocol. Prior session countermodels must not be copied into a new results ledger as fresh execution. This amendment supplies literal proposed fixture data only. No harness implementation, experimental state enumeration, model/oracle execution or result artifact is supplied.
+ 
+ ## 2. Common method and independent-oracle requirements
+ 
+@@ -46,6 +46,8 @@
+ The observer reports control outcomes independently. There is no suite-wide “service conforms” boolean. No statistical significance or error-rate estimate is inferred from deterministic enumeration. List coverage and excluded domains explicitly.
+ 
+ ### Ordering, seeds and limits
++
++**F-only revision-3 exception:** Area F replaces its Cartesian case enumeration with the one structural proof and eight literal fixtures in §8. Its two mandatory controls and six boundary fixtures are separate phase lists; both lists receive all four specified rotations. The proof runs once. The general ordering rules below continue unchanged for A–E. F288-v1 remains a deferred, unexecuted historical obligation. No cap is changed.
+ 
+ Core cases use exhaustive enumeration once in ascending tuple order; **no random generator is used**. Reordering checks apply only to the named witness/control corpus, at most 16 cases per area, whose literal membership must be pinned and reviewed before execution; they do not repeat the entire enumerated domain. They use fixed seeds `0`, `1`, `42`, `804` as a precisely defined rotation: for a canonical list of length n, visit positions `(i + seed mod n) mod n`, for `i=0..n-1`. This changes visit order, not membership or scheduler timing. Any cap hit under a rotation yields `INCONCLUSIVE_LIMIT`, not a pass. Request `seed` fields are data, not permission to sample away adversarial cases. A visited state is every materialized candidate/oracle comparison state, including intermediate observable transitions, control cases and repeated visits; counts must not be reduced by calling a state a setup step. These caps may prevent exhaustive completion and never license a bounded-negative verdict on an incomplete search.
+ 
+@@ -150,23 +152,60 @@
+ 
+ **Limits / stop / provenance.** Apply E's row. Payloads and fake journal images remain in RAM; **no real journal, `fsync`, SIGKILL or filesystem fault injection** occurs. Artifact writes contain evidence only. Retain the first failure and at most 128 minimization attempts within the cap. Pin §4.4–4.5, TM-09/13 and AT-MS-19/22/23 plus the actual hash implementation. A positive control uses an explicitly defined immutable-record/commit protocol and matching acknowledgement; it does not ratify that repair.
+ 
+-## 8. Experiment F — Admission satisfiability under the actual RFC-00D3 schema
+-
+-**Hypothesis / exact claim.** There exists a manifest that both conforms to the unchanged pinned RFC-00D3 schema and satisfies §4.1 Stage 2's required `manifest.model_canon_hash81` binding and state-schema condition. A schema-valid metadata manifest is not automatically a service admission manifest.
+-
+-**Reference oracle.** Use the pinned actual Draft 2020-12 schema with `jsonschema==4.26.0` and an independently written structural key-set proof: for a root object with `additionalProperties:false`, every present property must be declared. Compare that allowed set with Stage 2's required root binding field. This set proof does not share a proposed admission validator. The unextended schema is the authority for the schema arm; it must not be patched inside the runner.
+-
+-**Minimal model / domain.** A schema-valid minimal metadata object with one tensor named `w`, shape `[1]`, declared format `safetensors`, reader `safetensors`, and bounded count/string fields. For the baseline metadata recipe, use the schema's literal constants, `source_path="synthetic/w.bin"`, `imported_format_summary="synthetic"`, `tensor_count=1`, `parameters=1`, root/tensor `trits=0`, `file_size_bytes` equal to the selected synthetic byte-string length, and only `provenance.host_format_reader="safetensors"`; omit optional provenance properties. Wrong-type controls replace one required value at a time with `null`; missing-field controls omit one required property at a time. This recipe is a protocol definition, not a generated fixture or a claimed validation result. The declared format is metadata only: no real SafeTensors parser or real model is involved. Synthetic opaque weight byte strings have lengths `{1,2,16}` and bytes drawn from `{0x00,0x01,0xff}` using only the all-zero, all-one and alternating named patterns—not all byte-string combinations. They are labeled synthetic, never valid trained weights.
+-
+-For each relevant case, compare the metadata object without binding fields, with `model_canon_hash81` only, with `state_schema_hash81` only, and with both, using matching and mismatching model digests. Include absent/wrong-type required base properties and one-byte manifest/weight mutations as negative controls. Request seed data is `{0,42}`; enumeration and common rotations are deterministic. No more than F's total case cap may be generated.
+-
+-**Predicted falsifier.** The current schema's allowed root properties contain neither proposed binding property and reject extra properties. Without `model_canon_hash81`, the Stage 2 equality cannot be satisfied; with it, the schema rejects the manifest. Establish this structural contradiction together with a successful baseline metadata-schema control. Do not report “all models rejected” as evidence that secure admission works.
+-
+-**Expected output / criteria.** Emit exact schema revision/hash, allowed/required property sets, validator error instance/schema paths and the Stage 2 predicate result. A proof that the combined required/allowed property constraints are inconsistent yields `FALSIFIED` for satisfiability. A schema-valid metadata-only object must pass the schema control. A separately labeled versioned-wrapper control may express a working binding, but its success cannot count as compliance with unchanged RFC-00D3. Existing `load_model_via_tloadhash` is not called and is not treated as a byte verifier.
+-
+-**Limits / stop / provenance.** Apply F's row. Stop after a checked structural witness and mandatory positive/negative controls, or exhaust the finite cases for a bounded result. Pin §4.1, TM-01 and AT-MS-01, the full actual schema, and its `additionalProperties`/`properties` clauses. Hash identities establish the exact input bytes, not model authenticity or caller authority.
++## 8. Experiment F — Conditional structural admission contradiction and literal boundary corpus
++
++**Amendment identity and status.** Proposed `RFC-00D7-F01-FA01`, protocol revision 3. This Area F replacement is unapplied and non-normative. No implementation or execution is authorized. Areas A–E, their domains, stopping rules and caps remain unchanged. F's cap remains 256 states. The contract remains PR #804 at `ec22a7588282d37ad027cff61c807bcf159ac2e0` and the schema remains the exact RFC-00D3 bytes at that revision. `fixtures.proposed.json` in the FA01 packet defines the entire proposed literal corpus; its hash must be included in future protocol/harness identities. A copy named `F_SECTION.proposed.md` is a review convenience, not a separate authority over the adopted full protocol bytes.
++
++**Hypothesis and necessary conditions.** Let S be the pinned, unchanged Draft 2020-12 RFC-00D3 schema; P its eleven allowed root property names; k the exact JSON member name `model_canon_hash81`; M the single immutable parsed manifest object; and R a well-formed non-null ModelRef. The challenged satisfiability claim is `exists M,R: S(M) and Stage2(M,R)`. Stage 2 necessarily requires an own root member k of M equal to R's model digest. The pinned schema has `additionalProperties:false`, no root `patternProperties`, and k is absent from P. Hence `S(M) => k not in keys(M)` and `Stage2(M,R) => k in keys(M)`, so their intersection is empty under the assumptions below. This is a conditional draft-contract contradiction, not observed admission behavior or a cryptographic result.
++
++**Identity and version assumptions.** The schema validator and Stage 2 inspect the same immutable root JSON data value and own-member set parsed from the same manifest bytes. Identity here means logical object/value identity across these checks, not a requirement to reuse a host-memory pointer. There is no envelope-to-child projection, alias lookup, prototype inheritance, merge, schema mutation, property injection, version upgrade, default insertion or pre/post-validation transformation. Duplicate object names are rejected; escapes are decoded before exact member-name comparison; keys are neither case-folded nor coerced. Missing, null or ill-typed model members fail closed against a well-formed non-null reference. S is the exact source-pinned schema, with its Draft 2020-12 dialect and `schema == "t81.model-manifest.v1"` constant; an alternative version is not implicitly selected. Manifest-byte identity is not proof that two different projected objects are identical. The proof quantifies over a well-formed symbolic R independently of the fixture labels; it does not infer well-formedness from a test string. The proof needs no assumption about the location or encoding of `state_schema_hash81`: the model member alone suffices. Stage 1/3 success and any extra Stage 2 requirements cannot remove a necessary-condition contradiction. If the draft author intends a wrapper or another schema version, record `UNDERDETERMINED` for that alternative; do not rewrite the source contract.
++
++**Independent oracle and proof obligations.** An independently authored key-set checker must derive P from the pinned raw schema; it may not reuse the candidate's schema evaluator, proof constructors or fixture expectations. A source reviewer must independently read the actual Stage 2 clause and adjudicate the identity assumptions without treating this proposal as normative authority. During an authorized run the proof is one input, with 24 observable fact descriptors, one candidate and one reference observation per descriptor, and two final aggregate result rows. Fact descriptors are:
++
++1. Exact schema-source identity matches its approved pin.
++2. Exact RFC-00D7 Stage 2 source identity matches its approved pin.
++3. The stated same-root, immutable, ordinary JSON-object identity assumptions hold in the model.
++4. The pinned schema's dialect and root object constraint are the stated ones.
++5. The pinned root version constant is `t81.model-manifest.v1`.
++6. Root `additionalProperties` is false.
++7. Root `patternProperties` is absent.
++8. The captured root `properties` set has exactly the eleven names checked next.
++9. `schema != k`.
++10. `source_path != k`.
++11. `source_format != k`.
++12. `normalized_artifact_type != k`.
++13. `imported_format_summary != k`.
++14. `tensor_count != k`.
++15. `parameters != k`.
++16. `trits != k`.
++17. `file_size_bytes != k`.
++18. `provenance != k`.
++19. `tensors != k`.
++20. The challenged Stage 2 reading requires an own root k member on that same M.
++21. R's model digest is well formed and non-null; absent/null lookup cannot satisfy equality.
++22. Facts 6–19 imply `S(M) => k not in keys(M)`.
++23. Facts 3,20,21 and Stage 2's schema condition imply both root-member presence and S(M).
++24. The two necessary conditions are contradictory, within the recorded assumptions only.
++
++These are symbolic facts, not 24 sampled manifests. A compound fact is a single declared observable predicate, not permission to hide new observable transitions. All actually materialized proof descriptors, candidate/reference transitions, comparisons and results must be charged. Extra implementation states consume the remaining allowance or stop inconclusively; the estimate cannot override the counter. A checker disagreement or false proof premise is `INVALID_RUN`; a disputed contract interpretation is `UNDERDETERMINED`. Neither may be reported as a successful falsification.
++
++**Literal corpus and selection.** The eight complete JSON fixtures F00–F07 are frozen as literal data in `fixtures.proposed.json`; no run-time Cartesian generator, random fixture selection, mutation generator, deduplication or omitted visit is permitted. F00/F01 retain the reviewed mandatory metadata-positive and extra-property/accept-all-negative control inputs. F02 adds only matching root k, F03 adds matching k plus an opaque state label, F04 mismatches k, F05 makes k null, F06 changes the version label, and F07 wraps an otherwise valid child in a different root. The expected schema/equality labels are predictions for review, not oracle inputs. `test`, `different` and `test-state` are symbolic strings, not verified CanonHash81 encodings or genuine weight hashes. Full Stage 1/2/3 admission, model authenticity, state-schema validity, weight mutation coverage and native execution are outside this amended domain. In particular, a matching symbolic string does not establish valid cryptographic binding.
++
++**Phases and deterministic seeds.** First visit the ordered mandatory corpus `[F00,F01]` under all four rotations with seeds `0,1,42,804`, using the common `(i + seed mod n) mod n` definition with n=2. The positive checks an actual schema-valid baseline; the negative exposes an explicit accept-all mutant against the unchanged schema. Use one candidate-or-mutant output and one independent schema-reference output per control, preserving the four-state control accounting. Failed controls invalidate F. Then check the one structural proof. Finally visit `[F02,F03,F04,F05,F06,F07]` under the same four rotations with n=6. All repeated visits are charged, including rotations that produce the same order. The proof executes once, not once per seed. F does not terminate merely on the first structural witness: its boundary phase remains a separate required coverage obligation. Limits, invalid controls or disputed premises still stop with the applicable incomplete/invalid/underdetermined status. No A–F generator or checker is invoked by preparing or parsing this proposal.
++
++**Actual accounting contract.** A mandatory control visit reserves input 1 + control/comparison working slot 1 + candidate/reference outputs 2 = 4 states. Eight visits cost 32. A boundary visit uses the retained six-state F shape: input 1 + output slots 2 + F working slot 1 + two aggregate result rows 2. Twenty-four boundary visits cost 144. The single proof case uses input 1 + output slots 2 + F working slot 1 + 24*(descriptor 1 + candidate transition 1 + reference transition 1) + final aggregate rows 2 = 78. Total `32+144+78=254 <=256`. There are no per-fact result rows beyond the charged intermediate observations: those observations are retained in a bounded proof trace; two final aggregate rows report premises and satisfiability. If an implementation adds per-fact rows, calls additional model functions or generates inputs while loading the corpus, it must count them and cannot claim this 254-state bound. The two unused states are not transferable to another area and do not authorize retries or minimization.
++
++**Evidence and verdicts.** Record all eight mandatory-control visits, 24 boundary visits and the one proof attempt separately. Boundary rows compare schema verdicts and the necessary root-member/equality predicate, not full service admission. Proof rows report the premise/identity assessment and the conditional satisfiability conclusion. Counters for admissible falsifiers, negative controls and underdetermined cases stay separate. Negative-control detection is never a contract falsifier; boundary rows do not become repetitions of the universal structural conclusion. Report a conditional `FALSIFIED` only if the independent proof agrees, assumptions are accepted, controls behave correctly and required visits complete. A retained proof witness with missing visits is incomplete; limits cannot become a favorable aggregate verdict. Physical timing, cryptographic encoding and live service behavior remain unverified.
++
++The proof trace is at most 32 KiB, within F's aggregate 512 KiB raw-witness allowance. Each mandatory-control record is at most 4 KiB; each ledger row at most 128 bytes. The retained layout needs at most 50 boundary/proof rows, 32 KiB controls and 512 KiB aggregate raw witnesses, totaling 563,456 bytes before suite metadata, below F's 4 MiB allocation. Keep existing 64 KiB runner and 64 KiB supervisor metadata reservations and the 25 MiB suite cap. No additional evidence allocation is granted.
++
++**Legacy obligation.** `F288-v1` remains DEFERRED / UNEXECUTED at harness `43b49541ddea76ba504031765229e455ef80c4ea`, `experiments/rfc_00d7_f01/domains.py`. Its nine length/pattern choices times eight binding variants, two byte mutations and 22 missing/null variants yield 288 inputs; with mandatory controls its full plan costs 1,760 states. Preserve its source/blob/hash and history. The literal corpus does not satisfy that obligation, establish equivalence to it, or convert unexecuted cases into passing/negative evidence. Future execution needs a separate compatible reviewed budget/protocol and explicit authorization; no new allowance follows from deferral.
++
++**Limits, review and authority.** F remains sequential with A–E, maximum 256 states, 10 seconds area wall, one 128 MiB runner, and 4 MiB area artifacts. Suite ceilings remain exactly 49,408 states, 60 seconds wall, 50 seconds CPU, one CPU, 256 MiB aggregate memory and 25 MiB artifacts. No runtime feasibility or Linux qualification is established by this arithmetic. Before implementation, independently review both proof derivations, all fixture distinctions, identity/version assumptions and correspondence to actual visit sites; approve a new protocol hash and explicitly authorize preparation of a newly pinned harness. Before execution, re-review its exact code and evidence schema, qualify Linux separately and obtain one-run human authorization. Adoption of this amendment changes neither RFC #804 nor any normative specification, research gate or release hold.
+ 
+ ## 9. Evidence packet, stopping and reporting rules
++
++**Proposed F evidence extension:** a future evidence-schema v2 must identify plan `F-structural-corpus-v1`, the approved FA01/protocol/corpus hashes, identity-assumption acceptance, proof premises/conclusion, 24 proof-node observations, phase/fixture/rotation IDs, controls and boundary-visit counts, charged-state breakdown, incomplete coverage and `F288-v1` as deferred/unexecuted. The original disjoint counters remain mandatory. This extends the future harness evidence schema only; it does not modify RFC-00D3 or a governance schema now.
+ 
+ Every future run must produce a bounded evidence packet containing:
+ 
+@@ -185,11 +224,11 @@
+ 
+ ## 10. Proposed execution authorization boundary
+ 
+-**Current authorization:** the session human has authorized bounded non-production harness preparation on a separate experimental branch and static verification only. `human_authorization.status = not_requested` refers specifically to experiment execution; no A–F execution is granted by this file or its validation.
++**Current authorization:** this task authorizes preparing the FA01 amendment only; applying it to PR #805 or implementing it in the harness is excluded. `human_authorization.status = not_requested` refers specifically to experiment execution; no A–F execution is granted by this file or its validation.
+ 
+ The authorization stages remain separate:
+ 
+-1. **Harness preparation:** a small off-core synthetic model, independent oracles and controls in an isolated experimental branch/directory; no service implementation or production dependency. Pin the final code, protocol, source inputs and dependency lock; obtain oracle/admissibility review. This stage is authorized by the current session instruction; A–F enumeration or candidate/oracle execution remains excluded, including through tests or import side effects.
++1. **Harness preparation:** a small off-core synthetic model, independent oracles and controls in an isolated experimental branch/directory; no service implementation or production dependency. Pin the final code, protocol, source inputs and dependency lock; obtain oracle/admissibility review. A newly pinned FA01 harness requires a subsequent explicit preparation instruction after protocol review. Neither implementation nor A–F enumeration or candidate/oracle execution is authorized here, including through tests or import side effects.
+ 2. **One bounded run (not authorized):** precisely the approved A–F domains, interpretations, resource limits, seeds and artifact destination, with an accountable budget supervisor and no hidden repeated allowances. The execution authorization must identify the reviewed harness SHA and protocol SHA-256, not just this protocol ID.
+ 
+ Permitted run operations would be integer/byte-array modeling, schema validation and hashing in RAM, plus bounded writes to a newly designated scratch evidence directory. A trusted external supervisor is allowed only for enforcing this experiment's resource limits. No native backend workers, real model inference, networking, credentials, OS sandbox tests, kernel changes, real journal writes/flushes, process-kill tests, performance measurements, production integration or release actions are included.
