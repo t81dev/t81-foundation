@@ -39,7 +39,8 @@
         "corpus_sha256",
         "amendment_sha256",
         "f_assumptions",
-        "f_assumption_review"
+        "f_assumption_review",
+        "f_source_review"
       ],
       "properties": {
         "scope": {
@@ -198,6 +199,46 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 1024
+        },
+        "f_source_review": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "reviewer",
+            "record",
+            "source_sha256",
+            "section",
+            "meaning",
+            "recognition_limit_acknowledged",
+            "reviewer_kind"
+          ],
+          "properties": {
+            "reviewer": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "record": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            "source_sha256": {
+              "const": "a2f8d9fee22f6d27c57cab1d1a8a6b70ff3d0da1f0f81a72aded7a0955520aaf"
+            },
+            "section": {
+              "const": "4.1"
+            },
+            "meaning": {
+              "const": "same-root-own-member-necessary-condition"
+            },
+            "recognition_limit_acknowledged": {
+              "const": true
+            },
+            "reviewer_kind": {
+              "const": "human"
+            }
+          }
         }
       }
     },
@@ -217,7 +258,8 @@
         "area_f_plan_id",
         "corpus_sha256",
         "amendment_sha256",
-        "protocol_sha256"
+        "protocol_sha256",
+        "f_source_review"
       ],
       "properties": {
         "approved_by": {
@@ -272,6 +314,46 @@
         "protocol_sha256": {
           "type": "string",
           "pattern": "^[0-9a-f]{64}$"
+        },
+        "f_source_review": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "reviewer",
+            "record",
+            "source_sha256",
+            "section",
+            "meaning",
+            "recognition_limit_acknowledged",
+            "reviewer_kind"
+          ],
+          "properties": {
+            "reviewer": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "record": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            "source_sha256": {
+              "const": "a2f8d9fee22f6d27c57cab1d1a8a6b70ff3d0da1f0f81a72aded7a0955520aaf"
+            },
+            "section": {
+              "const": "4.1"
+            },
+            "meaning": {
+              "const": "same-root-own-member-necessary-condition"
+            },
+            "recognition_limit_acknowledged": {
+              "const": true
+            },
+            "reviewer_kind": {
+              "const": "human"
+            }
+          }
         }
       }
     },
@@ -646,7 +728,13 @@
                 "occurrences",
                 "legacy_obligation",
                 "proof_nodes_expected",
-                "proof_trace_sha256"
+                "proof_trace_sha256",
+                "proof_trace_status",
+                "proof_trace_error_class",
+                "proof_trace_error_reason",
+                "terminal_prior_verdict",
+                "terminal_prior_stop",
+                "source_passage_review"
               ],
               "properties": {
                 "verdict": {
@@ -787,7 +875,10 @@
                   "maximum": 24
                 },
                 "proof_trace": {
-                  "const": "F-proof-trace.json"
+                  "enum": [
+                    "F-proof-trace.json",
+                    null
+                  ]
                 },
                 "coverage": {
                   "type": "object",
@@ -941,11 +1032,235 @@
                   "const": 24
                 },
                 "proof_trace_sha256": {
-                  "type": "string",
-                  "pattern": "^[0-9a-f]{64}$"
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "proof_trace_status": {
+                  "enum": [
+                    "verified_complete",
+                    "verified_incomplete",
+                    "unverified",
+                    "missing",
+                    "unknown"
+                  ]
+                },
+                "proof_trace_error_class": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "proof_trace_error_reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 256
+                },
+                "terminal_prior_verdict": {
+                  "enum": [
+                    "BLOCKED",
+                    "NO_COUNTEREXAMPLE_IN_DOMAIN",
+                    "FALSIFIED",
+                    "UNDERDETERMINED",
+                    "INCONCLUSIVE_LIMIT",
+                    "INVALID_RUN"
+                  ]
+                },
+                "terminal_prior_stop": {
+                  "type": "string"
+                },
+                "source_passage_review": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "reviewer",
+                    "record",
+                    "source_sha256",
+                    "section",
+                    "meaning",
+                    "recognition_limit_acknowledged",
+                    "reviewer_kind"
+                  ],
+                  "properties": {
+                    "reviewer": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    },
+                    "record": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1024
+                    },
+                    "source_sha256": {
+                      "const": "a2f8d9fee22f6d27c57cab1d1a8a6b70ff3d0da1f0f81a72aded7a0955520aaf"
+                    },
+                    "section": {
+                      "const": "4.1"
+                    },
+                    "meaning": {
+                      "const": "same-root-own-member-necessary-condition"
+                    },
+                    "recognition_limit_acknowledged": {
+                      "const": true
+                    },
+                    "reviewer_kind": {
+                      "const": "human"
+                    }
+                  }
                 }
               },
-              "additionalProperties": false
+              "additionalProperties": false,
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "proof_trace_status": {
+                        "enum": [
+                          "verified_complete",
+                          "verified_incomplete"
+                        ]
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "proof_trace": {
+                        "const": "F-proof-trace.json"
+                      },
+                      "proof_trace_sha256": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      "proof_trace_error_class": {
+                        "type": "null"
+                      },
+                      "proof_trace_error_reason": {
+                        "type": "null"
+                      }
+                    }
+                  },
+                  "else": {
+                    "properties": {
+                      "proof_trace_sha256": {
+                        "type": "null"
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "proof_trace_status": {
+                        "enum": [
+                          "missing",
+                          "unknown"
+                        ]
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "proof_trace": {
+                        "type": "null"
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "verdict": {
+                        "const": "FALSIFIED"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "proof_trace_status": {
+                        "const": "verified_complete"
+                      },
+                      "domain_complete": {
+                        "const": true
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "proof_trace_status": {
+                        "not": {
+                          "const": "verified_complete"
+                        }
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "domain_complete": {
+                        "const": false
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "proof_trace_status": {
+                        "const": "unverified"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "proof_trace": {
+                        "const": "F-proof-trace.json"
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "terminal_prior_verdict": {
+                        "const": "INCONCLUSIVE_LIMIT"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "verdict": {
+                        "const": "INCONCLUSIVE_LIMIT"
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "terminal_prior_verdict": {
+                        "const": "INVALID_RUN"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "verdict": {
+                        "const": "INVALID_RUN"
+                      }
+                    }
+                  }
+                }
+              ]
             }
           }
         },

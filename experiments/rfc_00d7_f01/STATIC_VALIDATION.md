@@ -138,3 +138,45 @@ context markers; full git whitespace checking flags those historical bytes.
 The archive is preserved byte-identically; staged whitespace checks exclude
 only that diff, and all remaining source/document files pass. No production,
 RFC-00D3/#804, frozen ISA, governance, merge or execution change is authorized.
+
+## Targeted readiness corrections — 2026-11-16
+
+Reviewed source f18cafcb369989cd03e6d44c0bcd014b61cd4389 and protocol
+c5e0ca79c073a72bb41f03b76ddd68acbd7eab73. The new source-only branch starts
+at the actual protocol commit and replays the three existing harness commits.
+Aligned point85e64a7a5c479fb5d005a6138ed165583973634f has exactly the same
+Git tree as reviewed f18cafcb, before these targeted corrections. No merge,
+hypothetical main commit, force-push or rewrite of the reviewed PRs occurred.
+
+Static checker command (existing environment; exit0):
+
+```sh
+/private/tmp/t81-pr795-parity-venv/bin/python -B experiments/rfc_00d7_f01/static_check.py
+```
+
+```json
+{"actual_protocol_ancestor_checked":true,"artifact_hashes":5,"candidate_oracle_invocations":0,"closed_form_cap_bounds_checked":6,"compiled_modules":10,"cross_module_calls_checked":54,"declared_interpretations_checked":8,"execution_qualified":false,"experimental_states_enumerated":0,"fa01_planned_states":254,"locked_distributions":5,"model_imports":0,"preparation_only":true,"schemas_checked":3,"source_pins":14,"terminal_guard_ast_checked":true}
+```
+
+The F experiment try-body and classification handlers match the reviewed AST
+exactly; all existing model visit sites remain unchanged. AST inspection checks
+that terminal writing/readback has broad exception guards, no terminal read is
+unconditionally performed in the return, and prior limit/invalid classification
+is retained. This is not a runtime failure-injection test. No terminal helper,
+model, proof checker, fixture validator, control or generator was called.
+
+Evidence v2 retains required fields, adding explicit missing/unverified/incomplete
+trace states with nullable unavailable paths/hashes. Future authorization and
+qualification require an attributable human source-passage review record. Source
+recognition remains substring/regex over shared pinned text; both implementations
+are same-author source and do not establish independent scientific proof.
+
+The protocol/corpus,24 facts,32+78+144 charges,256-state F ceiling, historical
+F288 obligation, A–E behavior, dependencies and all suite limits are unchanged.
+All changed source identities are refreshed in identities.json. No records of
+successful trace persistence or source-passage approval are fabricated. Real
+terminal failure handling, summary persistence under exhausted capacity and
+Linux enforcement remain unverified; process death cannot be repaired by this
+helper. The macOS lock still blocks Linux. Independent review and separately
+authorized qualification/execution are required before any final qualification
+pinning or run. See READINESS_CORRECTIONS.md for exact ancestry and semantics.

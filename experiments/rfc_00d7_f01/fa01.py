@@ -34,6 +34,49 @@ def load_plan(root):
     return plan, inputs
 
 
+def terminal_trace(evidence, nodes, proof_status, assumptions, review_ref):
+    """Best-effort terminal I/O; never replace a classified result with an I/O exception.
+
+    Verified means closed-file byte identity, not durable storage or proof truth.
+    An existing partial/foreign file is preserved and reported unverified.
+    """
+    name = 'F-proof-trace.json'
+    path = evidence.root / name
+    result = {'status': 'unknown', 'path': None, 'sha256': None,
+              'error_class': None, 'error_reason': None}
+    try:
+        raw_trace = {'nodes': nodes, 'status': proof_status,
+                     'assumptions': assumptions, 'review_ref': review_ref}
+        expected = (json.dumps(raw_trace, sort_keys=True, separators=(',', ':'),
+                               ensure_ascii=True) + '\n').encode('ascii')
+        if len(expected) > 32768:
+            raise Limit('proof trace reservation')
+        evidence.write(name, raw_trace, 'F', witness=True)
+        # Bounded readback only after write/close succeeds. No retry or deletion.
+        with path.open('rb') as handle:
+            actual = handle.read(32769)
+        if actual != expected:
+            raise ValueError('proof trace byte verification failed')
+        result['sha256'] = hashlib.sha256(actual).hexdigest()
+        result['path'] = name
+        result['status'] = 'verified_complete' if len(nodes) == 24 else 'verified_incomplete'
+    except Exception as error:
+        result['sha256'] = None
+        result['error_class'] = type(error).__name__
+        try:
+            result['error_reason'] = str(error)[:256]
+        except Exception:
+            pass
+        try:
+            if path.exists():
+                result['status'], result['path'] = 'unverified', name
+            else:
+                result['status'] = 'missing'
+        except Exception:
+            pass
+    return result
+
+
 def run(schema, authorization, budget, evidence):
     root = Path(__file__).resolve().parent
     plan, fixtures = load_plan(root)
@@ -48,6 +91,8 @@ def run(schema, authorization, budget, evidence):
                 'proof_expected': 1, 'proof_observed': 0}
     charges = {'controls': 0, 'proof': 0, 'boundary': 0}
     trace = []
+    trace_result = {'status': 'unknown', 'path': None, 'sha256': None,
+                    'error_class': None, 'error_reason': None}
     occurrences = []
     verdict, stop, proof_status = 'BLOCKED', 'not_complete', 'incomplete'
     node_candidate, node_reference = {}, {}
@@ -56,6 +101,8 @@ def run(schema, authorization, budget, evidence):
     phase = 'controls'
     phase_start = budget.states['F']
     assumptions = authorization['f_assumptions']
+    source_review = authorization['f_source_review']
+    review_ref = authorization['f_assumption_review']
     accepted = all(value == 'accepted' for value in assumptions.values())
     try:
         # Exactly four charged states per mandatory visit. The mutant replaces
@@ -169,11 +216,18 @@ def run(schema, authorization, budget, evidence):
     finally:
         charges[phase] = budget.states['F'] - phase_start
         signal.setitimer(signal.ITIMER_REAL, 0)
-        raw_trace = {'nodes': trace, 'status': proof_status, 'assumptions': assumptions,
-                     'review_ref': authorization['f_assumption_review']}
-        if len(json.dumps(raw_trace, ensure_ascii=True).encode()) + 1 > 32768:
-            raise Limit('proof trace reservation')
-        evidence.write('F-proof-trace.json', raw_trace, 'F', witness=True)
+        terminal_prior_verdict, terminal_prior_stop = verdict, stop
+        try:
+            trace_result = terminal_trace(evidence, trace, proof_status, assumptions, review_ref)
+        except Exception as terminal_error:
+            # Last-resort guard covers helper setup/metadata failures as well.
+            # The preallocated unknown record makes no persistence claim.
+            trace_result['error_class'] = type(terminal_error).__name__
+        if trace_result['status'] != 'verified_complete':
+            # Keep the original invalid/limit classification and exact stop text.
+            # A favorable completion cannot survive absent/unverified evidence.
+            if verdict not in ('INCONCLUSIVE_LIMIT', 'INVALID_RUN'):
+                verdict, stop = 'INCONCLUSIVE_LIMIT', 'terminal proof trace incomplete or unavailable'
     return {'verdict': verdict, 'stop': stop, 'counters': counts,
             'states_reserved': budget.states['F'] - initial_states,
             'domain_complete': stop == 'amended_domain_complete',
@@ -183,8 +237,13 @@ def run(schema, authorization, budget, evidence):
             'harness_sha': authorization['harness_sha'],
             'oracle_revision': authorization['harness_sha'],
             'assumptions': assumptions, 'assumption_review': authorization['f_assumption_review'],
+            'source_passage_review': source_review,
             'proof_status': proof_status, 'proof_nodes_expected': 24, 'proof_nodes_observed': len(trace),
-            'proof_trace_sha256': hashlib.sha256((evidence.root / 'F-proof-trace.json').read_bytes()).hexdigest(),
-            'proof_trace': 'F-proof-trace.json', 'coverage': coverage,
+            'proof_trace_sha256': trace_result['sha256'], 'proof_trace': trace_result['path'],
+            'proof_trace_status': trace_result['status'],
+            'proof_trace_error_class': trace_result['error_class'],
+            'proof_trace_error_reason': trace_result['error_reason'],
+            'terminal_prior_verdict': terminal_prior_verdict, 'terminal_prior_stop': terminal_prior_stop,
+            'coverage': coverage,
             'occurrences': occurrences, 'state_breakdown': charges,
             'legacy_obligation': dict(plan['legacy_obligation'], executed_cases=0)}

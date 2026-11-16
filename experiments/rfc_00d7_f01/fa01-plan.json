@@ -59,5 +59,14 @@
     "git_blob": "f015e3b9082a537473154dfd3c8fdc8b70b00844",
     "sha256": "da0790472c947cb00e2278697a27aa7ffe52ab49ad6a66b176b23468ecd8769f",
     "expected_inputs": 288
+  },
+  "source_extraction_assumption": {
+    "source_revision": "ec22a7588282d37ad027cff61c807bcf159ac2e0",
+    "source_sha256": "a2f8d9fee22f6d27c57cab1d1a8a6b70ff3d0da1f0f81a72aded7a0955520aaf",
+    "section": "4.1",
+    "candidate_method": "substring within split section boundaries",
+    "reference_method": "regex within matched section boundaries",
+    "scope": "recognition of pinned wording only; not a normative semantic parser",
+    "required_human_review": "source passage and necessary-condition meaning, with attributable reviewer/record; same-author checks are not independent scientific proof"
   }
 }

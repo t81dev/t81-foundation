@@ -216,6 +216,45 @@ def verify(root):
     f_driver = next(n for n in fa_tree.body if isinstance(n, ast.FunctionDef) and n.name == 'run')
     returned = [n for n in ast.walk(f_driver) if isinstance(n, ast.Return) and isinstance(n.value, ast.Dict)][-1]
     assert {n.value for n in returned.value.keys} == set(f_schema['required'])
+    # Inspect the terminal failure path without executing it or any F function.
+    helper = next(n for n in fa_tree.body if isinstance(n, ast.FunctionDef) and n.name == 'terminal_trace')
+    protected = [n for n in ast.walk(helper) if isinstance(n, ast.Try)
+                 and any(isinstance(h.type, ast.Name) and h.type.id == 'Exception'
+                         for h in n.handlers)]
+    assert any(any(isinstance(c, ast.Call) and isinstance(c.func, ast.Attribute)
+                       and isinstance(c.func.value, ast.Name) and c.func.value.id == 'evidence'
+                       and c.func.attr == 'write'
+                       for statement in n.body for c in ast.walk(statement)) for n in protected)
+    assert not any(isinstance(c, ast.Raise) for n in protected for h in n.handlers
+                   for statement in h.body for c in ast.walk(statement))
+    old_fa = ast.parse(subprocess.check_output([
+        'git', 'show', 'f18cafcb369989cd03e6d44c0bcd014b61cd4389:experiments/rfc_00d7_f01/fa01.py'
+    ], cwd=repo, text=True))
+    old_run = next(n for n in old_fa.body if isinstance(n, ast.FunctionDef) and n.name == 'run')
+    old_try = next(n for n in old_run.body if isinstance(n, ast.Try))
+    new_try = next(n for n in f_driver.body if isinstance(n, ast.Try))
+    assert [ast.dump(n) for n in old_try.body] == [ast.dump(n) for n in new_try.body]
+    assert [ast.dump(n) for n in old_try.handlers] == [ast.dump(n) for n in new_try.handlers]
+    assert not any(isinstance(c, ast.Call) and isinstance(c.func, ast.Attribute)
+                   and c.func.attr in ('write', 'read_bytes')
+                   for statement in new_try.finalbody for c in ast.walk(statement))
+    assert "verdict not in ('INCONCLUSIVE_LIMIT', 'INVALID_RUN')" in ast.unparse(new_try)
+    assert not any(isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                   and n.func.attr == 'read_bytes' for n in ast.walk(returned))
+    assert set(f_schema['properties']['proof_trace_status']['enum']) == {
+        'verified_complete', 'verified_incomplete', 'unverified', 'missing', 'unknown'}
+    source_review = evidence_v2['$defs']['authorization']['properties']['f_source_review']
+    assert 'f_source_review' in evidence_v2['$defs']['authorization']['required']
+    assert source_review['additionalProperties'] is False
+    assert source_review['properties']['reviewer_kind']['const'] == 'human'
+    assert 'f_source_review' in evidence_v2['$defs']['qualification']['required']
+    assert set(source_review['required']) == set(source_review['properties'])
+    assert source_review['properties']['source_sha256']['const'] == plan['rfc_sha256']
+    # Actual source ancestry, not a prediction of how PR #806 might merge.
+    subprocess.check_call(['git', 'merge-base', '--is-ancestor', identity['protocol_commit'], 'HEAD'], cwd=repo)
+    aligned_tree = subprocess.check_output(['git', 'rev-parse', '85e64a7a5c479fb5d005a6138ed165583973634f^{tree}'], cwd=repo)
+    reviewed_tree = subprocess.check_output(['git', 'rev-parse', 'f18cafcb369989cd03e6d44c0bcd014b61cd4389^{tree}'], cwd=repo)
+    assert aligned_tree == reviewed_tree
     for record in ('authorization', 'qualification'):
         assert {'area_f_plan_id', 'corpus_sha256', 'protocol_sha256', 'amendment_sha256'} <= set(evidence_v2['$defs'][record]['required'])
     return {'preparation_only': True, 'source_pins': len(pins['sources']),
@@ -223,6 +262,7 @@ def verify(root):
             'schemas_checked': 3, 'fa01_planned_states': 254, 'cross_module_calls_checked': calls_checked, 'locked_distributions': len(lock['packages']),
             'declared_interpretations_checked': len(keys),
             'closed_form_cap_bounds_checked': len(bounds),
+            'terminal_guard_ast_checked': True, 'actual_protocol_ancestor_checked': True,
             'model_imports': 0, 'experimental_states_enumerated': 0,
             'candidate_oracle_invocations': 0, 'execution_qualified': False}
 
