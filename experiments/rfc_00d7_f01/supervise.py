@@ -2,6 +2,7 @@
 
 import argparse
 import ctypes
+import fcntl
 import hashlib
 import importlib.util
 import json
@@ -9,9 +10,9 @@ import os
 import resource
 import selectors
 import signal
+import stat
 import subprocess
 import sys
-import sysconfig
 import time
 from pathlib import Path
 
@@ -294,21 +295,38 @@ def local_module(name):
     return module
 
 
-def check_gate(authorization_path, qualification_path, launch, groups, pending):
+def capture_authorization(path, fd):
+    source = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    try:
+        before = os.fstat(source)
+        require(stat.S_ISREG(before.st_mode) and 0 < before.st_size <= 8192, 'authorization source byte bound/type')
+        raw = os.pread(source, 8193, 0)
+        after = os.fstat(source)
+        fields = ('st_dev', 'st_ino', 'st_size', 'st_mtime_ns', 'st_ctime_ns')
+        require(len(raw) == before.st_size and all(getattr(before, name) == getattr(after, name) for name in fields),
+                'authorization changed during capture')
+        current = path.lstat()
+        require(not stat.S_ISLNK(current.st_mode) and all(getattr(after, name) == getattr(current, name) for name in fields),
+                'authorization substituted during capture')
+    finally:
+        os.close(source)
+    require(os.write(fd, raw) == len(raw), 'authorization snapshot short write')
+    seals = fcntl.F_SEAL_WRITE | fcntl.F_SEAL_GROW | fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_SEAL
+    fcntl.fcntl(fd, fcntl.F_ADD_SEALS, seals)
+    require(os.pread(fd, 8193, 0) == raw, 'authorization snapshot capture mismatch')
+
+
+def check_gate(authorization_fd, qualification_path, launch, groups, pending):
     topology(groups, pending)
     require(resource.getrlimit(resource.RLIMIT_CPU) == (2, 3), 'supervisor CPU readback')
     manager = manager_gate(launch, groups[0])
     require(not bounded_json(ROOT / 'dependency-lock.json', MIB)['linux_relock_required'], 'reviewed Linux re-lock required')
-    library = Path(sysconfig.get_path('purelib'))
-    require(str(library) == sysconfig.get_path('platlib') and library.is_dir(), 'reviewed import profile')
-    for directory in set(sys.path) | {str(library)}:
-        path = Path(directory)
-        if path.is_dir():
-            require(not any(path.glob('*.pth')) and not (path / 'sitecustomize.py').exists()
-                    and not (path / 'usercustomize.py').exists(), 'site startup hooks')
-    sys.path.append(str(library))  # No site.main(), .pth evaluation or user-site imports.
+    launch_contract = local_module('runner_bootstrap')  # Reviewed stdlib-only helpers, no main().
+    profile = launch_contract.interpreter_boundary(ROOT)
+    sys.path.append(profile['library'])  # No site.main(), .pth or ambient paths.
     from jsonschema import Draft202012Validator
-    authorization = bounded_json(authorization_path, 8192)
+    authorization_raw, binding = launch_contract.authorization_snapshot(authorization_fd)
+    authorization = launch_contract.parse_authorization(authorization_raw)
     qualification = bounded_json(qualification_path, 8192)
     schemas = bounded_json(ROOT / 'evidence.schema.json', 65536)
     for name, record in (('authorization', authorization), ('qualification', qualification)):
@@ -327,10 +345,11 @@ def check_gate(authorization_path, qualification_path, launch, groups, pending):
     require(qualification['approved_by'] and qualification['boot_id'] == launch['boot_id'], 'qualification boot/approval')
     require(qualification['kernel_release'] == os.uname().release, 'kernel changed')
     require(qualification['dependency_lock_sha256'] == digest(ROOT / 'dependency-lock.json'), 'dependency identity')
-    command([sys.executable, '-B', str(ROOT / 'static_check.py')], launch, groups[0])
+    command([sys.executable, '-I', '-S', '-B', str(ROOT / 'static_check.py')], launch, groups[0])
     checkpoint(launch, groups[0])
     manager['ancestor_limits'] = topology(groups, pending)
-    return authorization, qualification, manager
+    manager['import_profile'] = profile
+    return authorization, qualification, manager, binding, authorization_raw
 
 
 def wait_ready(process, fd, launch, groups):
@@ -399,7 +418,7 @@ def cleanup(process, pending, groups, deadline):
     return {'complete': False, 'reason': 'cleanup_deadline', 'identity_failure': identity_failure}
 
 
-def persist(output, record, authorization, qualification, launch, aggregate):
+def persist(output, record, authorization_raw, qualification, launch, aggregate):
     def final_guard():
         require(time.monotonic_ns() - launch['started_monotonic_ns'] < 59_000_000_000, 'finalization wall guard')
         require(aggregate.cpu() < 49_000_000, 'finalization CPU guard')
@@ -414,10 +433,10 @@ def persist(output, record, authorization, qualification, launch, aggregate):
             count += 1
             require(count <= 251 and total + 131072 <= 25 * MIB, 'supporting reservation unavailable')
     # Exclusive bounded writes retain successful earlier artifacts on failure.
-    for name, value in (('supervisor.json', record), ('authorization-record.json', authorization),
+    for name, value in (('supervisor.json', record), ('authorization-record.json', authorization_raw),
                         ('qualification-record.json', qualification), ('launch-record.json', launch)):
         final_guard()
-        raw = (json.dumps(value, sort_keys=True) + '\n').encode()
+        raw = value if isinstance(value, bytes) else (json.dumps(value, sort_keys=True) + '\n').encode()
         require(len(raw) <= 16384, 'supporting evidence cap')
         with (output / name).open('xb') as stream:
             stream.write(raw)
@@ -445,8 +464,8 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     args = parser.parse_args()
     groups, launch, process, pending = [], None, None, None
-    authorization, qualification, manager = None, None, None
-    go_read = go_write = ready_read = ready_write = None
+    authorization, qualification, manager, authorization_raw = None, None, None, None
+    go_read = go_write = ready_read = ready_write = authorization_fd = None
     selector = None
     cleanup_record = {'complete': False, 'reason': 'not_started'}
     status, reason, current_area = 'BLOCKED', 'startup_not_completed', None
@@ -460,28 +479,30 @@ def main():
         signal.setitimer(signal.ITIMER_REAL, max(.001, 58 - (time.monotonic_ns() - launch['started_monotonic_ns']) / 10**9))
         resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
         resource.setrlimit(resource.RLIMIT_FSIZE, (25 * MIB, 25 * MIB))
+        authorization_fd = os.memfd_create('f01-authorization', os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING)
         go_read, go_write = os.pipe()
         ready_read, ready_write = os.pipe()
         parent = identity(os.getpid())
         argv = [sys.executable, '-I', '-S', '-B', str(ROOT / 'runner_bootstrap.py'),
                 '--go-fd', str(go_read), '--ready-fd', str(ready_write), '--runner-fd', str(groups[2].fd),
                 '--parent-pid', str(os.getpid()), '--parent-start', str(parent['start']),
-                '--authorization', str(args.authorization.resolve()), '--output', str(output)]
+                '--authorization-fd', str(authorization_fd), '--output', str(output)]
         process = subprocess.Popen(argv, cwd=ROOT, env={'PATH': os.defpath},
                                    stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                   pass_fds=(go_read, ready_write, groups[2].fd), start_new_session=True)
+                                   pass_fds=(go_read, ready_write, groups[2].fd, authorization_fd), start_new_session=True)
         os.close(go_read)
         go_read = None
         os.close(ready_write)
         ready_write = None
         resource.setrlimit(resource.RLIMIT_CPU, (2, 3))
         pending = wait_ready(process, ready_read, launch, groups)
-        authorization, qualification, manager = check_gate(args.authorization, args.qualification, launch, groups, pending)
+        capture_authorization(args.authorization, authorization_fd)
+        authorization, qualification, manager, binding, authorization_raw = check_gate(authorization_fd, args.qualification, launch, groups, pending)
         require(str(output) == authorization['artifact_directory'], 'artifact directory authorization')
         output.mkdir(mode=0o700, parents=False, exist_ok=False)
         checkpoint(launch, groups[0])
         topology(groups, pending)
-        packet = (json.dumps({'go': True, 'authorization_sha256': digest(args.authorization)}) + '\n').encode()
+        packet = (json.dumps(dict(binding, go=True), separators=(',', ':')) + '\n').encode()
         require(len(packet) <= 256 and os.write(go_write, packet) == len(packet), 'GO write')
         os.close(go_write)
         go_write = None
@@ -517,7 +538,7 @@ def main():
         if process is not None:
             status = 'INCONCLUSIVE_LIMIT'
     finally:
-        for fd in (go_read, go_write, ready_read, ready_write):
+        for fd in (go_read, go_write, ready_read, ready_write, authorization_fd):
             if fd is not None:
                 os.close(fd)
         signal.setitimer(signal.ITIMER_REAL, 0)
@@ -552,8 +573,8 @@ def main():
                       'evidence_finalization': 'unverified_until_external_inventory',
                       'elapsed_ns': elapsed, 'aggregate_cpu_usec': cpu, 'aggregate_memory_peak': peak,
                       'cleanup': cleanup_record, 'stderr': stderr.decode('utf-8', errors='replace'),
-                      'manager': manager, 'authorization_authenticity': 'operator responsibility'}
-            persist(output, record, authorization, qualification, launch, groups[0])
+                      'manager': manager, 'authorization_snapshot': binding, 'authorization_authenticity': 'operator responsibility'}
+            persist(output, record, authorization_raw, qualification, launch, groups[0])
         except Exception as error:
             status = 'INCONCLUSIVE_LIMIT'
             print('INCOMPLETE_EVIDENCE: ' + type(error).__name__ + ': ' + str(error)[:256], file=sys.stderr)

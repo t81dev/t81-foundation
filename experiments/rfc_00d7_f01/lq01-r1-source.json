@@ -7,12 +7,17 @@
   "execution_authorized": false,
   "linux_qualified": false,
   "source_files": {
-    "supervise.py": "4f2144b5049afd54c9dc58bc071f6ab701dc38c6698521c7838779a034ab139b",
-    "runner_bootstrap.py": "3713a6dd530e6df24d39caafea1e2d7d545fd5f4585b270cc106a701d4f50ce9",
-    "static_check.py": "62f1a70b31fe3f7662be10913a1e7a1b328edb0331a9f666eb4ade30b2f81c92"
+    "supervise.py": "c99d4926d97340db897ca765c7cd0b946f9b9f7c8c8f9bdb892ec7c3ad29bb17",
+    "runner_bootstrap.py": "55e4857acfa97829f0ee8d3b6bc8b5772bae3b9414353ad3129a782f14f6ded7",
+    "static_check.py": "40da7a4a8198ec02d92ef4a4c27dbdc80e43c319c71dfd44b15b6fa3ff6f512a",
+    "run.py": "2cf393cb085422bf660e69de09a799a36004797a40365515194c5b02b46e00d9"
   },
   "reviewed_design": {
     "PROPOSAL.md": "3209d6b2ebb322eec0bddc0e411074e8b7bcea0d4f6d92a80d77276da44dc72a",
     "SOURCE_CHANGE_PLAN.md": "181f1dd89cf55aca952c9bae107b276373bc4f8c18c466363427ae9e00ed1a1a"
+  },
+  "authorization_import_correction_baseline": "b0ab7f31eee897634aa0a19d84c7ac504dc6331c",
+  "protected_file_exceptions": {
+    "run.py": "Launch/import isolation and sealed authorization consumption only; run_area and main execution tail unchanged by AST."
   }
 }

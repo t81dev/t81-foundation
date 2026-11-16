@@ -2,16 +2,12 @@
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 import signal
+import sys
 from pathlib import Path
-
-import domains
-import evaluate
-from accounting import Budget, Evidence, Limit
-from interpretation_policy import validate
-import fa01
 
 
 def run_area(area, schema, interpretations, budget, evidence, authorization=None):
@@ -110,16 +106,41 @@ def run_area(area, schema, interpretations, budget, evidence, authorization=None
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--authorization', type=Path, required=True)
+    parser.add_argument('--authorization-fd', type=int, required=True)
+    parser.add_argument('--authorization-sha256', required=True)
+    for name in ('size', 'inode', 'device'):
+        parser.add_argument('--authorization-' + name, type=int, required=True)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     # Supervisor checks identity, schemas, cgroups and human-scope record before
     # launching this entry. A JSON field alone never establishes authenticity.
     if os.environ.get('F01_QUALIFIED_CHILD') != '1':
         raise SystemExit('BLOCKED: invoke only through reviewed Linux supervisor')
-    authorization = json.loads(args.authorization.read_text())
+    # Explicit protected-file exception: launch/import and authorization plumbing
+    # only. All experimental algorithms and main's evidence/area loop stay intact.
+    root = Path(__file__).resolve().parent
+    specification = importlib.util.spec_from_file_location('f01_launch_contract', root / 'runner_bootstrap.py')
+    launch_contract = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(launch_contract)  # Functions/stdlib only, no bootstrap main().
+    profile = launch_contract.interpreter_boundary(root, runner=True)
+    binding = {'authorization_sha256': args.authorization_sha256,
+               'authorization_size': args.authorization_size,
+               'authorization_inode': args.authorization_inode,
+               'authorization_device': args.authorization_device}
+    raw, _ = launch_contract.authorization_snapshot(args.authorization_fd, binding)
+    authorization = launch_contract.parse_authorization(raw)
+    os.close(args.authorization_fd)
     if authorization['scope'] != 'one-bounded-run' or not authorization['human_record']:
         raise SystemExit('BLOCKED: execution authorization absent')
+    # Explicit search paths replace all ambient/script/site discovery. -P -S
+    # keeps the minimal environment's hash seed0 without -I ignoring it.
+    sys.path[:] = [str(root)] + profile['initial_search_path'] + [profile['library']]
+    global domains, evaluate, Budget, Evidence, Limit, validate, fa01
+    import domains
+    import evaluate
+    from accounting import Budget, Evidence, Limit
+    from interpretation_policy import validate
+    import fa01
     schema = json.loads((Path(__file__).parent / 'pinned-d3.schema.json').read_text())
     interpretations = authorization['interpretations']
     budget = Budget()

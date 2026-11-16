@@ -1,5 +1,10 @@
 # LQ01-R1 supervisor implementation candidate
 
+Historical initial candidate description below refers to b0ab7f31. The targeted
+[authorization/import correction](AUTHORIZATION_IMPORT_CORRECTIONS.md) supersedes
+its pathname handoff, final import policy and run.py-unchanged statements; the
+run.py protected-file exception is now explicit. Other contracts remain intact.
+
 Preparation only. No Linux qualification, probe, A–F execution, proof checking,
 fixture execution, dependency installation, production integration or merge.
 Codex authored this implementation and the earlier harness; these static checks
