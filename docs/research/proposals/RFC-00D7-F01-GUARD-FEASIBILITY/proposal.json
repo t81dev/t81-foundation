@@ -1,0 +1,57 @@
+{
+  "attribution": {
+    "kind": "agent",
+    "model": null,
+    "name": "Codex assistant in the current session",
+    "role": "Same prior harness/profile/plan author; engineering source/document assessment only, not independent scientific/human validation"
+  },
+  "evidence": [
+    {
+      "relationship": "context",
+      "scope": "Canonical H07 defines the auditability question and its limits. RFC-00D7-F01 A-F are bounded contract questions, not a replacement hypothesis or comparative assurance finding. Candidate-specific inputs are separately pinned in source-pins.json.",
+      "source_ref": "register"
+    },
+    {
+      "relationship": "context",
+      "scope": "Preserve H01-H08, Hanoi/CWEB history, negative findings, independent-oracle requirements and source-bounded claims.",
+      "source_ref": "charter"
+    },
+    {
+      "relationship": "context",
+      "scope": "Unratified draft text and proposal validation do not authorize normative promotion, implementation, execution or changes to frozen semantics.",
+      "source_ref": "authority-model"
+    }
+  ],
+  "expected_artifacts": [
+    "Mechanism feasibility matrix and shared-leaf fault analysis",
+    "UNSUPPORTED scoped recommendation and explicit STOP conditions",
+    "Minimum future evidence categories, not executable/authorized probes",
+    "Pinned source/context identities and same-author disclosure"
+  ],
+  "falsification_criterion": "A permitted fault path with no justified cumulative cutoff/surviving authority or a required bound not implied by the mechanism makes the unchanged full design unsupported. Missing observations remain NOT VERIFIED; no claim of a reproduced fault.",
+  "human_authorization": {
+    "human": null,
+    "record": "Current user authorizes bounded documentation-only feasibility investigation; all implementation, host/probe/provisioning/lock changes and merge excluded.",
+    "status": "not_requested"
+  },
+  "hypothesis_id": "H07",
+  "id": "RFC-00D7-F01-GUARD-FEASIBILITY",
+  "matched_control": "Primary kernel/systemd/API source versus exact repository requirements, explicit fault-dependency/inequality analysis and future independent admission review. No comparative performance or assurance finding.",
+  "measurement_plan": "No present measurements. Distinguish mechanisms, paper failure paths, scoped potential observations and guarantees; require future raw timings/counters/identities and uncertainty under separate authority.",
+  "method": "Bounded documentation/source inspection, mechanism/failure matrix and future evidence requirements only. No implementation, kernel/config changes, host activity or tests.",
+  "repository_revision": "d0edeb486993860d733abc04b2ce740b35442874",
+  "research_question": "Can any admitted Linux guard/manager mechanism satisfy the unchanged #811 aggregate CPU/wall and shared-failure obligations without uncharged custom work or unproved real-time assumptions?",
+  "resource_requirements": [
+    "Documentation-only assessment packet<=128KiB; bounded reference set, no experiments/probes",
+    "Preserve existing49,408 observation/state applicability,60s/50s,256MiB,128MiB helper,64MiB controller,one CPU,zero swap,25MiB evidence and separate1GiB storage; no execution or fresh per-test allowances"
+  ],
+  "schema": "t81.research-commons.experiment-proposal.v1",
+  "security_requirements": [
+    "No implementation, acquisition, provisioning, interpreter/native execution or runtime probe",
+    "No changes to PR809/810/811, active locks, schemas, semantics or ceilings; linux_relock_required stays true",
+    "No new external custom guard/accounting exception, privilege or scheduler change",
+    "No merge, qualification or A-F authorization; no fabricated observations or independent scientific proof"
+  ],
+  "status": "proposed",
+  "uncertainty": "No target host, guard implementation or latency observation. Documentation/API presence cannot demonstrate deadlines. Narrow conditional subsets are not acceptance of the full unchanged contract."
+}
