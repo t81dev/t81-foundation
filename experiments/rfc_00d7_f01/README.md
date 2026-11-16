@@ -130,3 +130,23 @@ witnesses without minimization. It includes explicit accounting
 and interpretation gaps; it is review material, not an execution-readiness claim.
 Any defect found in future independent review must be corrected and re-pinned
 before authorization, preserving this preparation record.
+
+## Independent-review corrections
+
+The correction record is `CAP_ACCOUNTING.md`, with closed-form metadata in
+`CAP_ACCOUNTING.json`. B uses direct valid topological orders and candidate-only
+transition reuse; all 560 case observations, repeated controls, actual transitions
+and materialized result rows remain charged. Its full upper bound is 3,783 states.
+
+`interpretation_policy.py` recognizes the entire declared registry. Authorization
+metadata requires every exact key, rejects unknown keys/values, and blocks
+unsupported non-null selections. D reads `outside-arena` without an alias or
+favorable default; null or an unmodeled within-arena choice yields underdetermined.
+The pre-existing partial-write continuation ambiguity is now explicitly registered.
+
+F's 288-input generator and mandatory controls are preserved. Its 1,760-state
+full path cannot fit the unchanged 256-state cap, so F returns BLOCKED before
+any enumeration or control construction. `PROPOSED_PROTOCOL_AMENDMENT.md` is
+separate, unapplied review material. No source/protocol pin or suite ceiling
+has changed. A/C/D/E also cannot promise full coverage within their caps; see
+the explicit bounds and incomplete-coverage qualifications in the audit.

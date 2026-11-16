@@ -1,0 +1,76 @@
+{
+  "scope": "static closed-form accounting; no domain enumeration or model/control execution",
+  "full_path_assumption": "all comparisons without first-witness stopping; shared B candidate cache included",
+  "suite_state_cap": 49408,
+  "suite_wall_seconds": 60,
+  "suite_cpu_seconds": 50,
+  "aggregate_memory_bytes": 268435456,
+  "suite_artifact_bytes": 26214400,
+  "runner_metadata_reserve_bytes": 65536,
+  "supervisor_metadata_reserve_bytes": 65536,
+  "areas": {
+    "A": {
+      "cap": 4096,
+      "inputs": 114,
+      "rotated_controls": 8,
+      "control_states": 3088,
+      "full_states_upper": 21326,
+      "full_states_lower": 21326,
+      "ledger_rows_upper": 114,
+      "artifact_bytes_upper": 571648
+    },
+    "B": {
+      "cap": 4096,
+      "inputs": 560,
+      "rotated_controls": 8,
+      "control_states": 88,
+      "full_states_upper": 3783,
+      "full_states_lower": 0,
+      "ledger_rows_upper": 770,
+      "artifact_bytes_upper": 655616
+    },
+    "C": {
+      "cap": 8192,
+      "inputs": 1561,
+      "yielded_inputs": 347,
+      "rotated_controls": 8,
+      "control_states": 80,
+      "full_states_upper": 11150,
+      "full_states_lower": 11150,
+      "ledger_rows_upper": 353,
+      "artifact_bytes_upper": 602240
+    },
+    "D": {
+      "cap": 16384,
+      "inputs": 9421,
+      "yielded_inputs": 9357,
+      "rotated_controls": 16,
+      "control_states": 8168,
+      "full_states_upper": 147616,
+      "full_states_lower": 17589,
+      "ledger_rows_upper": 9357,
+      "artifact_bytes_upper": 1787520
+    },
+    "E": {
+      "cap": 16384,
+      "inputs": 6309,
+      "rotated_controls": 16,
+      "control_states": 72,
+      "full_states_upper": 60327,
+      "full_states_lower": 60327,
+      "ledger_rows_upper": 12609,
+      "artifact_bytes_upper": 2203776
+    },
+    "F": {
+      "cap": 256,
+      "inputs": 288,
+      "rotated_controls": 8,
+      "control_states": 32,
+      "full_states_upper": 1760,
+      "full_states_lower": 1760,
+      "ledger_rows_upper": 576,
+      "artifact_bytes_upper": 630784
+    }
+  },
+  "f_execution_status": "BLOCKED_PROTOCOL_DOMAIN_CAP_INCOMPATIBILITY"
+}

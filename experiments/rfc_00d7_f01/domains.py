@@ -5,6 +5,35 @@ import hashlib
 import itertools
 
 
+def publication_orders(visit):
+    """Direct shuffles of two chains; no rejected permutations are built.
+
+    Charge the empty prefix and every newly materialized partial order. There
+    are C(7,3)=35 leaves and C(9,4)-1=125 total prefix states.
+    """
+    revoke = ('invoke', 'commit', 'response')
+    fence = ('acquire', 'check', 'publish', 'release')
+
+    def extend(prefix, left, right):
+        if left == 3 and right == 4:
+            yield prefix
+            return
+        # Preserve the old event-rank order: invoke, commit, acquire, check,
+        # publish, release, response. Response ranks after every fence event.
+        if left < 3 and (left < 2 or right == 4):
+            visit()
+            yield from extend(prefix + (revoke[left],), left + 1, right)
+        if right < 4:
+            visit()
+            yield from extend(prefix + (fence[right],), left, right + 1)
+        if left == 2 and right < 4:
+            visit()
+            yield from extend(prefix + (revoke[left],), left + 1, right)
+
+    visit()
+    yield from extend((), 0, 0)
+
+
 def cases(area, visit):
     """Charge generated/pruned input states; comparison charges are separate."""
     if area == 'A':
@@ -21,14 +50,7 @@ def cases(area, visit):
                 yield {'kind': 'bound', 'k': k, 'commit': commit,
                        'latch': latch, 'halt': latch + delay, 'tie': tie}
     elif area == 'B':
-        events = ('invoke', 'commit', 'acquire', 'check', 'publish', 'release', 'response')
-        for order in itertools.permutations(events):
-            visit()  # Rejected orders remain visible to accounting.
-            position = {event: order.index(event) for event in events}
-            if not (position['invoke'] < position['commit'] < position['response']
-                    and position['acquire'] < position['check'] < position['publish']
-                    < position['release']):
-                continue
+        for order in publication_orders(visit):
             for attempt, scope, target, initial in itertools.product(
                     ('primary', 'fallback'), ('epoch', 'selective'),
                     ('target', 'peer'), (False, True)):
