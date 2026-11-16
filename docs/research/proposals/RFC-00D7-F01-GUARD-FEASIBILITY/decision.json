@@ -1,0 +1,24 @@
+{
+  "all_custom_work_must_be_charged_to_D": true,
+  "baseline": "d0edeb486993860d733abc04b2ce740b35442874",
+  "changes_to_existing_contracts": false,
+  "conditionally_testable_subset": "Controller-only death/interruptible stalls with admitted rights/liveness; cannot substitute for full contract",
+  "execution_authorized": false,
+  "host_observed": false,
+  "implementation_supplied": false,
+  "kind": "DOCUMENTATION_FEASIBILITY_ASSESSMENT_NOT_AUTHORITY",
+  "linux_relock_required": true,
+  "next_step": "Independent admission-proof/decision record for exact failure dependencies, no code or host action; STOP if the unchanged obligations cannot be discharged",
+  "probes_executed": false,
+  "qualification_granted": false,
+  "recommendation": "UNSUPPORTED",
+  "scope": "Complete unchanged shared-controller-leaf and1s inner/2s fallback quiescence contract on an unselected general-purpose Linux host",
+  "unresolved_proof_obligations": [
+    "Shared-leaf OOM/reclaim and G loss while C is still alive",
+    "Observation/dispatch/kill/reap completion within accepted1s wall and CPU",
+    "Authority and containment under admitted credential/delegation failures",
+    "CPU cutoff even when G is unavailable before late wall fallback",
+    "End-to-end bounds for admitted blocking kernel/device dependencies",
+    "No external custom monitoring or uncharged kernel/host extensions"
+  ]
+}
