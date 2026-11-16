@@ -120,3 +120,15 @@ stopping rules; their caps cannot support an unconditional exhaustive-negative
 claim. F's full-coverage incompatibility requires a protocol decision. Readiness
 is **independent source re-review**, not experiment authorization or execution
 qualification. Preserve this negative preparation evidence.
+
+## FA01 active preparation plan
+
+The table above retains the historical full Cartesian F288-v1 incompatibility.
+The active revision-3 plan is F-structural-corpus-v1, under reviewed protocol
+SHA-256 d48aeedc924cf505cab8a7fed316fc84d8f2c259dd502fd1d0a7fe8432f05de3.
+It replaces only the active F path: 8 mandatory visits*4=32, one proof
+(6 outer states +24 descriptor/candidate/reference triplets)=78, and
+24 boundary visits*6=144, totaling254<=256. Evidence reservation563456 bytes.
+The old288-input source and its1760-state audit remain deferred/unexecuted;
+no legacy case is executed by the new driver. No runtime state count or kernel
+resource result is claimed. All suite ceilings and A–E limitations remain.

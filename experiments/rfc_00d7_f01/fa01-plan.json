@@ -1,0 +1,63 @@
+{
+  "id": "F-structural-corpus-v1",
+  "protocol_commit": "c5e0ca79c073a72bb41f03b76ddd68acbd7eab73",
+  "protocol_sha256": "d48aeedc924cf505cab8a7fed316fc84d8f2c259dd502fd1d0a7fe8432f05de3",
+  "amendment_sha256": "58e8091a798ef0b23358723bbd73c98d49c73e9761018c0f4cde6490f4db9f02",
+  "corpus_sha256": "e356618677ad5282703b9c0a38e903140d287f24a8f62031572bad184abf0158",
+  "contract_revision": "ec22a7588282d37ad027cff61c807bcf159ac2e0",
+  "schema_sha256": "a7c2cf69c9fc3b2030075cca2ea902fc5c28c53ebd28dc80b65ac4f5c3b8cbe8",
+  "rfc_sha256": "a2f8d9fee22f6d27c57cab1d1a8a6b70ff3d0da1f0f81a72aded7a0955520aaf",
+  "proof_source_sha256": "f0470d12fcf2d06acf4b0d7156ccd1765700c6dcde41d2897e1606a4764bdf58",
+  "fixture_ids": [
+    "F00",
+    "F01",
+    "F02",
+    "F03",
+    "F04",
+    "F05",
+    "F06",
+    "F07"
+  ],
+  "proof_facts": [
+    "Exact schema-source identity matches its approved pin.",
+    "Exact RFC-00D7 Stage 2 source identity matches its approved pin.",
+    "The stated same-root, immutable, ordinary JSON-object identity assumptions hold in the model.",
+    "The pinned schema's dialect and root object constraint are the stated ones.",
+    "The pinned root version constant is `t81.model-manifest.v1`.",
+    "Root `additionalProperties` is false.",
+    "Root `patternProperties` is absent.",
+    "The captured root `properties` set has exactly the eleven names checked next.",
+    "`schema != k`.",
+    "`source_path != k`.",
+    "`source_format != k`.",
+    "`normalized_artifact_type != k`.",
+    "`imported_format_summary != k`.",
+    "`tensor_count != k`.",
+    "`parameters != k`.",
+    "`trits != k`.",
+    "`file_size_bytes != k`.",
+    "`provenance != k`.",
+    "`tensors != k`.",
+    "The challenged Stage 2 reading requires an own root k member on that same M.",
+    "R's model digest is well formed and non-null; absent/null lookup cannot satisfy equality.",
+    "Facts 6\u201319 imply `S(M) => k not in keys(M)`.",
+    "Facts 3,20,21 and Stage 2's schema condition imply both root-member presence and S(M).",
+    "The two necessary conditions are contradictory, within the recorded assumptions only."
+  ],
+  "state_bounds": {
+    "controls": 32,
+    "proof": 78,
+    "boundary": 144,
+    "total": 254
+  },
+  "execution_authorized": false,
+  "legacy_obligation": {
+    "id": "F288-v1",
+    "status": "deferred_unexecuted",
+    "source_revision": "43b49541ddea76ba504031765229e455ef80c4ea",
+    "source_path": "experiments/rfc_00d7_f01/domains.py",
+    "git_blob": "f015e3b9082a537473154dfd3c8fdc8b70b00844",
+    "sha256": "da0790472c947cb00e2278697a27aa7ffe52ab49ad6a66b176b23468ecd8769f",
+    "expected_inputs": 288
+  }
+}
