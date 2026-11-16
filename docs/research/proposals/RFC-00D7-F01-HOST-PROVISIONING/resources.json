@@ -1,0 +1,93 @@
+{
+  "actual_enforcement_evidence": null,
+  "all_custom_work_charged": true,
+  "architectures_per_attempt": 1,
+  "attempts": 1,
+  "bounds": {
+    "cleanup_wait_seconds": 1,
+    "hash_buffer_bytes": 131072,
+    "inventory_regular_files": 8192,
+    "log_bytes_each": 262144,
+    "native_closure_members": 512,
+    "output_files": 128,
+    "path_bytes": 1024,
+    "record_bytes": 4096,
+    "single_regular_file_bytes": 134217728,
+    "symlink_hops": 16,
+    "symlinks": 512
+  },
+  "build_allowed": false,
+  "dependency_resolution": false,
+  "evidence_reservations_mib": {
+    "content_manifests": 12,
+    "final_hash_inventory_reserved": 1,
+    "inputs_and_approvals": 2,
+    "native_and_host_observations": 4,
+    "phase_logs": 2,
+    "terminal_and_cleanup_reserved": 4
+  },
+  "network_access": false,
+  "parallel_helpers": 1,
+  "phases": [
+    {
+      "cpu_seconds": 3,
+      "id": "P0",
+      "purpose": "immutable input/preflight verification",
+      "wall_seconds": 5
+    },
+    {
+      "cpu_seconds": 10,
+      "id": "P1",
+      "purpose": "binary payload materialization",
+      "wall_seconds": 12
+    },
+    {
+      "cpu_seconds": 15,
+      "id": "P2",
+      "purpose": "venv and offline five-wheel install",
+      "wall_seconds": 15
+    },
+    {
+      "cpu_seconds": 15,
+      "id": "P3",
+      "purpose": "freeze and exhaustive inventories",
+      "wall_seconds": 15
+    },
+    {
+      "cpu_seconds": 2,
+      "id": "P4",
+      "purpose": "optional approved metadata-only diagnostics/receipt",
+      "wall_seconds": 3
+    },
+    {
+      "cpu_seconds": 5,
+      "id": "FINAL",
+      "purpose": "cleanup/evidence finalization reserved",
+      "wall_seconds": 10
+    }
+  ],
+  "proposed_storage_separate_from_experiment": {
+    "evidence_bytes": 26214400,
+    "installed_payload_bytes": 536870912,
+    "readonly_inputs_bytes": 134217728,
+    "requires_separate_provisioning_approval": true,
+    "staging_bytes": 268435456,
+    "volume_quota_bytes": 1073741824
+  },
+  "source_fallback": false,
+  "status": "PROPOSED_NOT_AUTHORIZED_NOT_ENFORCED",
+  "whole_operation": {
+    "controller_leaf_bytes": 67108864,
+    "cpu_affinity_count": 1,
+    "cpu_seconds": 50,
+    "evidence_bytes": 26214400,
+    "finalization_cpu_guard_seconds": 49,
+    "finalization_wall_guard_seconds": 59,
+    "helper_leaf_bytes": 134217728,
+    "inner_cpu_seconds": 48,
+    "inner_wall_seconds": 58,
+    "memory_bytes": 268435456,
+    "swap_bytes": 0,
+    "wall_seconds": 60
+  }
+}
