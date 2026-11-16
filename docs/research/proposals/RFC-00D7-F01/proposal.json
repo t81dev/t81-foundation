@@ -7,9 +7,9 @@
     "name": "Codex assistant in the current session",
     "kind": "agent",
     "model": null,
-    "role": "Protocol author and prior RFC reviewer; same-agent prior context disclosed; no independent human oracle review or experiment execution claimed"
+    "role": "Amendment author, prior RFC and same-agent harness author/reviewer; no independent acceptance or experiment execution claimed"
   },
-  "repository_revision": "ec22a7588282d37ad027cff61c807bcf159ac2e0",
+  "repository_revision": "43b49541ddea76ba504031765229e455ef80c4ea",
   "evidence": [
     {
       "source_ref": "register",
@@ -27,39 +27,36 @@
       "scope": "Unratified draft text and proposal validation do not authorize normative promotion, implementation, execution or changes to frozen semantics."
     }
   ],
-  "uncertainty": "Protocol preparation only: no A-F implementation, input enumeration, oracle execution or experiment results. Predicted witnesses come from prior source review and are not new results. Some candidate admissibility rules remain underdetermined. A bounded negative search cannot certify real VM behavior, native worker isolation, actual journal durability, hardware advantage, H07 comparative benefit or production readiness.",
+  "uncertainty": "Standalone unapplied proposal only. The structural argument is conditional on exact object/version assumptions; symbolic fixture labels are not verified digests. No proof checker, schema oracle on fixtures, controls or A-F experiment has executed. The 254-state bound requires independent review against future visit sites. F288-v1 remains deferred and unexecuted; A-E coverage limitations, Linux qualification and release holds remain.",
   "human_authorization": {
     "status": "not_requested",
     "human": null,
-    "record": "The current session human authorizes bounded synthetic harness preparation on a separate experimental branch and static verification only. A–F state enumeration, candidate/oracle execution and experimental results remain forbidden. Status not_requested refers to a future run; human execution authorization must separately identify protocol and reviewed harness hashes."
+    "record": "User reports Gemini ACCEPT AMENDMENT DESIGN and explicitly authorizes preparation/publication of the reviewed protocol and matching synthetic harness source only. No experiment execution, qualification or merge is authorized. Execution remains not_requested."
   },
-  "research_question": "For RFC-00D7 at ec22a7588282d37ad027cff61c807bcf159ac2e0, are A commitment-to-halt bounds, B publication/revocation ordering, C canonical replay logs, D live-memory and step accounting, E emergency record ordering, and F admission under the actual RFC-00D3 schema internally consistent over the finite domains in PROTOCOL.md?",
-  "falsification_criterion": "An independently checked history or object must satisfy the declared draft-admissibility predicate and contradict its scoped claim. Deliberately broken controls are not RFC falsifiers. Missing semantic choices yield UNDERDETERMINED; incomplete searches or limit failures cannot yield NO_COUNTEREXAMPLE_IN_DOMAIN. Preserve all counterexamples, ambiguities, invalid runs and negative outcomes.",
-  "matched_control": "Exact prefix-step oracle for A; conventional atomic serial coordinator for B; complete command-history control for C; allocation-identity and non-replenishable charge ledgers for D; independently packed byte/checksum and simulated stable-storage oracle for E; unchanged Draft 2020-12 RFC-00D3 validator plus key-set proof for F. Controls share inputs and required semantics; implementation routines must remain separate. No performance claim or optimized-production comparison is proposed.",
-  "method": "Six separately reported bounded in-memory models, with exact per-area hypotheses, domains, controls, predicted witnesses, stopping rules and source anchors in PROTOCOL.md sections 3-8. Pin source-pins.json, final harness/oracle code and an explicit interpretation table before authorization. Use ascending enumeration once and fixed 0,1,42,804 rotations of at most 16 predeclared witness/control cases per area. No actual service, worker, VM program, model inference, journal or filesystem fault is exercised.",
-  "measurement_plan": "Record exact admissibility/oracle outcomes, event order, allocation and step counts, byte/checksum relationships, schema error paths and explored-state coverage. Report FALSIFIED, NO_COUNTEREXAMPLE_IN_DOMAIN, UNDERDETERMINED, INCONCLUSIVE_LIMIT, BLOCKED or INVALID_RUN per subhypothesis. No p-values or speed measurements. Real time and memory are safety ceilings distinct from modeled resource counters; no extrapolation outside the declared finite domains.",
+  "research_question": "Under the explicitly stated same-root JSON-object and pinned schema/version assumptions, can the unchanged RFC-00D3 schema and RFC-00D7 Stage 2 admit any manifest, and can the proposed proof plus literal boundary corpus be checked within the unchanged 256-state Area F cap?",
+  "falsification_criterion": "Under independently accepted same-object/schema-version assumptions, prove that schema validity excludes the required own root model member while Stage 2 requires it. Missing or contested assumptions yield UNDERDETERMINED; checker/control disagreement invalidates the run. The smaller corpus cannot certify execution or completion of F288-v1.",
+  "matched_control": "Retain reviewed F00 valid-metadata and F01 extra-property inputs; use actual schema-positive output and an explicit accept-all mutant versus an independent unchanged Draft 2020-12 schema validator. Proof checker and necessary-root-member predicate must be independently implemented, without candidate helpers or fixture expectations. No performance or comparative assurance claim.",
+  "method": "Proposed protocol revision 3 and exact Area F replacement are included as standalone text. Literal eight-fixture corpus: two mandatory controls and six boundary cases. Each phase receives four fixed rotations using seeds 0,1,42,804; one 24-fact structural proof occurs between phases. No run-time Cartesian generation or deduplication. All details, assumptions and post-approval file changes are in AMENDMENT.md and F_SECTION.proposed.md.",
+  "measurement_plan": "Planned accounting only: 8 mandatory visits at 4 states=32; proof 6 outer states plus 24 descriptors and 48 candidate/reference transitions=78; 24 boundary visits at 6 states=144; total254 within256. Future evidence v2 must separately retain proof assumptions/nodes, controls, fixture rotations, actual state charges, coverage and disjoint result counters. No measured timing/memory or generated result is claimed.",
   "expected_artifacts": [
-    "Attributable authorization record naming the protocol digest, reviewed harness SHA, finite domains, limits and scratch artifact destination",
-    "Pinned inputs/dependencies/environment/commands and explicit admissibility interpretations",
-    "Bounded A-F case ledgers and independently readable raw minimal witnesses, including event prefixes and emergency bytes",
-    "Positive and deliberately defective control records, incomplete coverage, limit events and preserved failures",
-    "summary.json and REPORT.md with separate A-F verdicts and qualifications",
-    "SHA256SUMS establishing content identity without claiming truth, authenticity or authorization"
+    "Independent amendment/proof-assumption review with exact protocol and corpus hashes",
+    "After separate approval: newly pinned protocol and harness with versioned evidence schema, code/source/dependency identities",
+    "After separate execution authorization only: 24-node proof trace, 8 control visits, 24 boundary visits and bounded raw evidence",
+    "Explicit F288-v1 historical obligation record: deferred/unexecuted; no legacy case counted completed by the amended run",
+    "Separate actual summary counters, state breakdown, incomplete outcomes and artifact hashes"
   ],
   "resource_requirements": [
-    "Maximum visited states including controls/minimization: A 4096, B 4096, C 8192, D 16384, E 16384, F 256; total ceiling 49408",
-    "Per-area maximum wall time: A 5 s, B 5 s, C 10 s, D 10 s, E 10 s, F 10 s; suite 60 s wall and 50 s CPU; one CPU",
-    "128 MiB maximum per experiment runner; 256 MiB aggregate including the trusted external budget supervisor; sequential execution only",
-    "At most 4 MiB uncompressed artifacts per area and 25 MiB total including suite metadata; no repeated fresh allowances",
-    "A qualified Linux resource-control environment with existing delegated hard limits and independent deadlines; absence or failure of enforcement blocks the run",
-    "jsonschema 4.26.0 for the schema oracle, exact source/dependency lock and reviewed independent oracle/control implementation before execution"
+    "Proposed F plan:254 charged states; unchanged F ceiling256; no retries or automatic extra minimization allowance",
+    "Unchanged suite:49408 states;60 seconds wall;50 seconds CPU;one CPU;256 MiB aggregate memory;one active128 MiB runner",
+    "Unchanged F area10-second wall and4 MiB artifacts; unchanged suite25 MiB artifacts",
+    "F evidence reservation563456 bytes including raw-witness allowance; proof trace limited32 KiB inside512 KiB aggregate raw F witnesses",
+    "No Linux qualification, dependency installation or runtime-resource result in this proposal"
   ],
   "security_requirements": [
-    "No implementation or execution authorized by this proposal, schema validation, discovery operation or machine-readable status field",
-    "Future authorized run uses bounded integer/byte-array/schema models only, plus scratch evidence writes; simulated sync and crash never call real fsync, journal I/O or process-kill injection",
-    "No production or normative changes, PR #804 edits, native backend workers, real model inference, networking, credentials, OS sandbox tests, kernel changes, performance campaign, merge or release actions",
-    "A trusted budget supervisor may launch only the reviewed experiment runner; no privilege escalation or unqualified enforcement substitution is included",
-    "Oracle authorship, shared primitives and prior review context must be disclosed; an independent reviewer must inspect literal vectors, equations and admissibility before execution",
-    "All research/release holds, canonical hypotheses, governance boundaries and Protocol 001 authorization requirements remain unchanged"
+    "No application to PR #805, harness implementation or A-F execution under the current task",
+    "No source-contract/schema mutation, wrappers or alternate versions silently adopted",
+    "No production/frozen ISA/governance/release changes, networking, native workers, real journals or Linux probes",
+    "Candidate and reference proof/state logic remain independent; disclose shared primitives and same-author prior context",
+    "Separate human decisions for protocol adoption, preparation, qualification and one bounded run; schema validity or hashes cannot authenticate authorization"
   ]
 }
