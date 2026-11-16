@@ -1,0 +1,129 @@
+{
+  "id": "RFC-00D7-F01-FA01-corpus-v1",
+  "status": "proposed-unexecuted",
+  "execution_authorized": false,
+  "digest_semantics": "test-only symbolic strings; not verified CanonHash81 encodings or weight hashes",
+  "expectations": "predicted requirements for review, not observed validation results",
+  "fixtures": [
+    {
+      "id": "F00", "phase": "mandatory-positive-control",
+      "weight_hash": "test",
+      "manifest": {
+        "schema": "t81.model-manifest.v1", "source_path": "synthetic/w.bin",
+        "source_format": "safetensors", "normalized_artifact_type": "model-tensor-manifest",
+        "imported_format_summary": "synthetic", "tensor_count": 1, "parameters": 1,
+        "trits": 0, "file_size_bytes": 1,
+        "provenance": {"host_format_reader": "safetensors"},
+        "tensors": [{"name": "w", "shape": [1], "trits": 0}]
+      },
+      "expected_schema_valid": true, "expected_root_model_equality": false,
+      "purpose": "Retain the reviewed valid-metadata control; all-reject validators must fail this control."
+    },
+    {
+      "id": "F01", "phase": "mandatory-negative-control",
+      "weight_hash": "test",
+      "manifest": {
+        "schema": "t81.model-manifest.v1", "source_path": "synthetic/w.bin",
+        "source_format": "safetensors", "normalized_artifact_type": "model-tensor-manifest",
+        "imported_format_summary": "synthetic", "tensor_count": 1, "parameters": 1,
+        "trits": 0, "file_size_bytes": 1,
+        "provenance": {"host_format_reader": "safetensors"},
+        "tensors": [{"name": "w", "shape": [1], "trits": 0}],
+        "unexpected": true
+      },
+      "expected_schema_valid": false, "expected_root_model_equality": false,
+      "purpose": "Retain the reviewed extra-property control and deliberately defective accept-all validator."
+    },
+    {
+      "id": "F02", "phase": "boundary",
+      "weight_hash": "test",
+      "manifest": {
+        "schema": "t81.model-manifest.v1", "source_path": "synthetic/w.bin",
+        "source_format": "safetensors", "normalized_artifact_type": "model-tensor-manifest",
+        "imported_format_summary": "synthetic", "tensor_count": 1, "parameters": 1,
+        "trits": 0, "file_size_bytes": 1,
+        "provenance": {"host_format_reader": "safetensors"},
+        "tensors": [{"name": "w", "shape": [1], "trits": 0}],
+        "model_canon_hash81": "test"
+      },
+      "expected_schema_valid": false, "expected_root_model_equality": true,
+      "purpose": "A matching root model member alone is outside the unchanged allowed key set."
+    },
+    {
+      "id": "F03", "phase": "boundary",
+      "weight_hash": "test",
+      "manifest": {
+        "schema": "t81.model-manifest.v1", "source_path": "synthetic/w.bin",
+        "source_format": "safetensors", "normalized_artifact_type": "model-tensor-manifest",
+        "imported_format_summary": "synthetic", "tensor_count": 1, "parameters": 1,
+        "trits": 0, "file_size_bytes": 1,
+        "provenance": {"host_format_reader": "safetensors"},
+        "tensors": [{"name": "w", "shape": [1], "trits": 0}],
+        "model_canon_hash81": "test", "state_schema_hash81": "test-state"
+      },
+      "expected_schema_valid": false, "expected_root_model_equality": true,
+      "purpose": "Both proposed root fields remain schema extras; no claim that the state digest is valid."
+    },
+    {
+      "id": "F04", "phase": "boundary",
+      "weight_hash": "test",
+      "manifest": {
+        "schema": "t81.model-manifest.v1", "source_path": "synthetic/w.bin",
+        "source_format": "safetensors", "normalized_artifact_type": "model-tensor-manifest",
+        "imported_format_summary": "synthetic", "tensor_count": 1, "parameters": 1,
+        "trits": 0, "file_size_bytes": 1,
+        "provenance": {"host_format_reader": "safetensors"},
+        "tensors": [{"name": "w", "shape": [1], "trits": 0}],
+        "model_canon_hash81": "different", "state_schema_hash81": "test-state"
+      },
+      "expected_schema_valid": false, "expected_root_model_equality": false,
+      "purpose": "Mismatch must not be confused with rejection solely from a closed schema."
+    },
+    {
+      "id": "F05", "phase": "boundary",
+      "weight_hash": "test",
+      "manifest": {
+        "schema": "t81.model-manifest.v1", "source_path": "synthetic/w.bin",
+        "source_format": "safetensors", "normalized_artifact_type": "model-tensor-manifest",
+        "imported_format_summary": "synthetic", "tensor_count": 1, "parameters": 1,
+        "trits": 0, "file_size_bytes": 1,
+        "provenance": {"host_format_reader": "safetensors"},
+        "tensors": [{"name": "w", "shape": [1], "trits": 0}],
+        "model_canon_hash81": null
+      },
+      "expected_schema_valid": false, "expected_root_model_equality": false,
+      "purpose": "Null is distinct from absence and cannot equal a well-formed non-null reference."
+    },
+    {
+      "id": "F06", "phase": "boundary",
+      "weight_hash": "test",
+      "manifest": {
+        "schema": "t81.model-manifest.v2", "source_path": "synthetic/w.bin",
+        "source_format": "safetensors", "normalized_artifact_type": "model-tensor-manifest",
+        "imported_format_summary": "synthetic", "tensor_count": 1, "parameters": 1,
+        "trits": 0, "file_size_bytes": 1,
+        "provenance": {"host_format_reader": "safetensors"},
+        "tensors": [{"name": "w", "shape": [1], "trits": 0}]
+      },
+      "expected_schema_valid": false, "expected_root_model_equality": false,
+      "purpose": "A different version label cannot silently select a replacement schema."
+    },
+    {
+      "id": "F07", "phase": "boundary",
+      "weight_hash": "test",
+      "manifest": {
+        "manifest": {
+          "schema": "t81.model-manifest.v1", "source_path": "synthetic/w.bin",
+          "source_format": "safetensors", "normalized_artifact_type": "model-tensor-manifest",
+          "imported_format_summary": "synthetic", "tensor_count": 1, "parameters": 1,
+          "trits": 0, "file_size_bytes": 1,
+          "provenance": {"host_format_reader": "safetensors"},
+          "tensors": [{"name": "w", "shape": [1], "trits": 0}]
+        },
+        "model_canon_hash81": "test", "state_schema_hash81": "test-state"
+      },
+      "expected_schema_valid": false, "expected_root_model_equality": true,
+      "purpose": "Validate the wrapper root, not its child; projecting the child changes the identity assumption."
+    }
+  ]
+}

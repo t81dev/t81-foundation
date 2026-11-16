@@ -108,3 +108,33 @@ No A–F cases, controls, candidate/oracle functions, Linux qualification probes
 or resource-enforcement checks were executed. State fit does not establish
 wall-time fit. Source re-review is appropriate; execution remains unauthorized
 and unqualified, with F requiring a separate protocol decision.
+
+## FA01 preparation-only adoption
+
+The user reports Gemini accepted the amendment design and authorizes source
+preparation/publication, with no execution. Protocol branch commit
+c5e0ca79c073a72bb41f03b76ddd68acbd7eab73 adopts the exact reviewed SHA-256
+d48aeedc924cf505cab8a7fed316fc84d8f2c259dd502fd1d0a7fe8432f05de3.
+The matching source is prepared separately, based on harness43b49541.
+The corpus hash remains e356618677ad5282703b9c0a38e903140d287f24a8f62031572bad184abf0158.
+
+Static checker output after source preparation (exit0):
+
+```json
+{"artifact_hashes":5,"candidate_oracle_invocations":0,"closed_form_cap_bounds_checked":6,"compiled_modules":10,"cross_module_calls_checked":54,"declared_interpretations_checked":8,"execution_qualified":false,"experimental_states_enumerated":0,"fa01_planned_states":254,"locked_distributions":5,"model_imports":0,"preparation_only":true,"schemas_checked":3,"source_pins":14}
+```
+
+These are in-memory compilation, AST/signature, metadata-schema and identity
+checks only. No candidate, reference, proof, control, fixture-schema validation,
+legacy generator or Linux resource probe was invoked. Source independence was
+checked structurally, not independently scientifically validated. Both sides
+remain same-author preparations. Runtime accounting checks are written but
+not exercised. Complete expected F state charges are32/78/144; actual values
+are not known before execution. All A–E function behavior and cap limitations
+remain outside this amendment. Existing package identities are unchanged.
+
+The archived proposal's unified diff intentionally contains single-space blank
+context markers; full git whitespace checking flags those historical bytes.
+The archive is preserved byte-identically; staged whitespace checks exclude
+only that diff, and all remaining source/document files pass. No production,
+RFC-00D3/#804, frozen ISA, governance, merge or execution change is authorized.

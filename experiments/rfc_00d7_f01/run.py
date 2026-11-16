@@ -11,17 +11,16 @@ import domains
 import evaluate
 from accounting import Budget, Evidence, Limit
 from interpretation_policy import validate
+import fa01
 
 
-def run_area(area, schema, interpretations, budget, evidence):
+def run_area(area, schema, interpretations, budget, evidence, authorization=None):
     declarations = json.loads((Path(__file__).parent / 'interpretations.json').read_text())['choices']
     validate(interpretations, declarations)
     if area == 'F':
-        return {'verdict': 'BLOCKED', 'stop': '288 inputs exceed 256 states; protocol amendment required',
-                'counters': {'admissible_falsifiers': 0, 'negative_controls': 0,
-                             'underdetermined_cases': 0, 'positive_controls': 0,
-                             'comparisons': 0, 'generated_cases': 0},
-                'states_reserved': 0, 'domain_complete': False}
+        if authorization is None:
+            raise ValueError('BLOCKED: FA01 authorization metadata required')
+        return fa01.run(schema, authorization, budget, evidence)
     budget.enter(area)
     signal.setitimer(signal.ITIMER_REAL, {'A': 5, 'B': 5, 'C': 10, 'D': 10, 'E': 10, 'F': 10}[area])
     counts = {'admissible_falsifiers': 0, 'negative_controls': 0,
@@ -133,7 +132,8 @@ def main():
         'command': 'reviewed Linux supervisor -> one sequential runner',
         'dependency_lock_sha256': hashlib.sha256((Path(__file__).parent / 'dependency-lock.json').read_bytes()).hexdigest(),
     })
-    summary = {'counter_unit': 'atomic comparison case (input, subclaim, rotation)',
+    summary = {'evidence_schema': 't81.rfc-00d7-f01.evidence.v2',
+               'counter_unit': 'atomic comparison case (input, subclaim, rotation)',
                'protocol': 'RFC-00D7-F01', 'areas': {}, 'experiment_execution': 'attempted',
                'counters': {'admissible_falsifiers': 0, 'negative_controls': 0,
                             'underdetermined_cases': 0}}
@@ -146,7 +146,7 @@ def main():
         for area in 'ABCDEF':
             # Tiny authenticated-parent status pipe, not a worker-service IPC.
             os.write(1, (area + '\n').encode('ascii'))
-            summary['areas'][area] = run_area(area, schema, interpretations, budget, evidence)
+            summary['areas'][area] = run_area(area, schema, interpretations, budget, evidence, authorization)
             for name in summary['counters']:
                 summary['counters'][name] += summary['areas'][area]['counters'][name]
             if summary['areas'][area]['verdict'] == 'INVALID_RUN':

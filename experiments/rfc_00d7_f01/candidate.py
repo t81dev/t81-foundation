@@ -146,3 +146,55 @@ def admission(case, schema):
                   and bool(case['manifest']['state_schema_hash81']))
     return {'schema': metadata_ok, 'binding': binding_ok,
             'admitted': metadata_ok and binding_ok}
+
+
+def fixture_predicates(manifest, symbolic_digest, schema):
+    return {'schema_valid': schema_subset(manifest, schema),
+            'root_model_equality': ('model_canon_hash81' in manifest
+                                    and type(manifest['model_canon_hash81']) is str
+                                    and manifest['model_canon_hash81'] == symbolic_digest)}
+
+
+def proof_fact(index, context, prior):
+    """One observed symbolic fact, no reference helpers or fixture expectations."""
+    s = context['schema']
+    p = s['properties']
+    k = 'model_canon_hash81'
+    clause = context['rfc_text'].split('### 4.1 ', 1)[1].split('### 4.2 ', 1)[0]
+    names = ('schema', 'source_path', 'source_format', 'normalized_artifact_type',
+             'imported_format_summary', 'tensor_count', 'parameters', 'trits',
+             'file_size_bytes', 'provenance', 'tensors')
+    if index == 1:
+        return hashlib.sha256(context['schema_bytes']).hexdigest() == context['schema_sha256']
+    if index == 2:
+        return hashlib.sha256(context['rfc_bytes']).hexdigest() == context['rfc_sha256']
+    if index == 3:
+        return all(context['assumptions'][key] == 'accepted'
+                   for key in ('same_root', 'ordinary_immutable_json'))
+    if index == 4:
+        return (s['$schema'] == 'https://json-schema.org/draft/2020-12/schema'
+                and s['type'] == 'object')
+    if index == 5:
+        return s['properties']['schema']['const'] == 't81.model-manifest.v1'
+    if index == 6:
+        return s['additionalProperties'] is False
+    if index == 7:
+        return 'patternProperties' not in s
+    if index == 8:
+        return set(p) == set(names) and len(p) == 11
+    if 9 <= index <= 19:
+        return names[index - 9] in p and names[index - 9] != k
+    if index == 20:
+        return ('manifest.model_canon_hash81 == model_ref.model_canon_hash81' in clause
+                and context['assumptions']['root_member_reading'] == 'accepted')
+    if index == 21:
+        return context['assumptions']['nonnull_symbolic_reference'] == 'accepted'
+    if index == 22:
+        return prior[6] and prior[7] and prior[8] and all(prior[n] for n in range(9, 20))
+    if index == 23:
+        return (prior[3] and prior[20] and prior[21]
+                and context['assumptions']['pinned_schema_version'] == 'accepted'
+                and 'RFC-00D3-model-manifest-schema.json' in clause)
+    if index == 24:
+        return prior[22] and prior[23]
+    raise ValueError('unknown proof fact')
