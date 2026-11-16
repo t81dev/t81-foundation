@@ -1,0 +1,62 @@
+{
+  "status": "unadjudicated",
+  "execution_authorized": false,
+  "choices": {
+    "O1-race": {
+      "selected": null,
+      "alternatives": [
+        "commit-before-publish only",
+        "invoke precedence requiring a new ordering rule"
+      ]
+    },
+    "event-kind-payload": {
+      "selected": null,
+      "alternatives": [
+        "operation tag with no subject payload",
+        "subject encoded through an unspecified registry"
+      ]
+    },
+    "nested-LIP-coordinate": {
+      "selected": null,
+      "alternatives": [
+        "normative nested dispatch coordinate",
+        "normalized request-local coordinate"
+      ]
+    },
+    "outside-arena": {
+      "selected": null,
+      "alternatives": [
+        "permitted",
+        "all outputs/trace/IPC included in arena reservation"
+      ]
+    },
+    "slot-lifecycle": {
+      "selected": null,
+      "alternatives": [
+        "retain until archival",
+        "release after acknowledgement under a defined reuse rule"
+      ]
+    },
+    "acknowledgement": {
+      "selected": null,
+      "alternatives": [
+        "post-first-sync flag update only",
+        "explicitly specified second durable update"
+      ]
+    },
+    "digest-text": {
+      "selected": null,
+      "alternatives": [
+        "hex test-only representation",
+        "future normative CanonHash81 textual codec"
+      ]
+    },
+    "partial-write-continuation": {
+      "selected": null,
+      "alternatives": [
+        "crash at partial prefix",
+        "short write continues under an explicit acknowledgement rule"
+      ]
+    }
+  }
+}

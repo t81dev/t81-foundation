@@ -1,0 +1,8 @@
+# Exact versions; installed bytes are locked separately in dependency-lock.json.
+# Not a --require-hashes wheel lock. No installation is authorized by this file.
+# Linux wheel/source identities require separately reviewed re-locking.
+attrs==26.1.0
+jsonschema==4.26.0
+jsonschema-specifications==2025.9.1
+referencing==0.37.0
+rpds-py==2026.9.1

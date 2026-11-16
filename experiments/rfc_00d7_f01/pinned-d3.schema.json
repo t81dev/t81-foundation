@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://t81.foundation/schemas/rfc-00d3-model-manifest.schema.json",
+  "title": "RFC-00D3 Model Manifest",
+  "description": "Schema for t81.model-manifest.v1 persisted records emitted by the model import CLI surface.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "source_path",
+    "source_format",
+    "normalized_artifact_type",
+    "imported_format_summary",
+    "tensor_count",
+    "parameters",
+    "trits",
+    "file_size_bytes",
+    "provenance",
+    "tensors"
+  ],
+  "properties": {
+    "schema": {
+      "const": "t81.model-manifest.v1"
+    },
+    "source_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_format": {
+      "type": "string",
+      "enum": ["safetensors", "bitnet", "gguf"]
+    },
+    "normalized_artifact_type": {
+      "const": "model-tensor-manifest"
+    },
+    "imported_format_summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tensor_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "parameters": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "trits": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "file_size_bytes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "provenance": {
+      "$ref": "#/$defs/provenanceMap"
+    },
+    "tensors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/tensorEntry"
+      }
+    }
+  },
+  "$defs": {
+    "provenanceMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["host_format_reader"],
+      "properties": {
+        "host_format_reader": {
+          "type": "string",
+          "enum": ["safetensors", "bitnet", "gguf"]
+        },
+        "source_sha3_512": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gguf_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "embedded_source_sha3_512": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bridge_backend": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bridge_revision": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "tensorEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "shape", "trits"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "shape": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "trits": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

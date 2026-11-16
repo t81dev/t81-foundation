@@ -1,0 +1,1313 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:t81:research:rfc-00d7-f01:evidence:v2",
+  "$defs": {
+    "counters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "admissible_falsifiers",
+        "negative_controls",
+        "underdetermined_cases"
+      ],
+      "properties": {
+        "admissible_falsifiers": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "negative_controls": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "underdetermined_cases": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "human_record",
+        "harness_sha",
+        "protocol_sha256",
+        "artifact_directory",
+        "interpretations",
+        "area_f_plan_id",
+        "corpus_sha256",
+        "amendment_sha256",
+        "f_assumptions",
+        "f_assumption_review",
+        "f_source_review"
+      ],
+      "properties": {
+        "scope": {
+          "const": "one-bounded-run"
+        },
+        "human_record": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "harness_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "protocol_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "artifact_directory": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "interpretations": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "O1-race",
+            "event-kind-payload",
+            "nested-LIP-coordinate",
+            "outside-arena",
+            "slot-lifecycle",
+            "acknowledgement",
+            "digest-text",
+            "partial-write-continuation"
+          ],
+          "properties": {
+            "O1-race": {
+              "enum": [
+                null,
+                "commit-before-publish only",
+                "invoke precedence requiring a new ordering rule"
+              ]
+            },
+            "event-kind-payload": {
+              "enum": [
+                null,
+                "operation tag with no subject payload",
+                "subject encoded through an unspecified registry"
+              ]
+            },
+            "nested-LIP-coordinate": {
+              "enum": [
+                null,
+                "normative nested dispatch coordinate",
+                "normalized request-local coordinate"
+              ]
+            },
+            "outside-arena": {
+              "enum": [
+                null,
+                "permitted",
+                "all outputs/trace/IPC included in arena reservation"
+              ]
+            },
+            "slot-lifecycle": {
+              "enum": [
+                null,
+                "retain until archival",
+                "release after acknowledgement under a defined reuse rule"
+              ]
+            },
+            "acknowledgement": {
+              "enum": [
+                null,
+                "post-first-sync flag update only",
+                "explicitly specified second durable update"
+              ]
+            },
+            "digest-text": {
+              "enum": [
+                null,
+                "hex test-only representation",
+                "future normative CanonHash81 textual codec"
+              ]
+            },
+            "partial-write-continuation": {
+              "enum": [
+                null,
+                "crash at partial prefix",
+                "short write continues under an explicit acknowledgement rule"
+              ]
+            }
+          }
+        },
+        "area_f_plan_id": {
+          "const": "F-structural-corpus-v1"
+        },
+        "corpus_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "amendment_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "f_assumptions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "same_root",
+            "ordinary_immutable_json",
+            "pinned_schema_version",
+            "root_member_reading",
+            "nonnull_symbolic_reference"
+          ],
+          "properties": {
+            "same_root": {
+              "enum": [
+                "accepted",
+                "disputed",
+                "unknown"
+              ]
+            },
+            "ordinary_immutable_json": {
+              "enum": [
+                "accepted",
+                "disputed",
+                "unknown"
+              ]
+            },
+            "pinned_schema_version": {
+              "enum": [
+                "accepted",
+                "disputed",
+                "unknown"
+              ]
+            },
+            "root_member_reading": {
+              "enum": [
+                "accepted",
+                "disputed",
+                "unknown"
+              ]
+            },
+            "nonnull_symbolic_reference": {
+              "enum": [
+                "accepted",
+                "disputed",
+                "unknown"
+              ]
+            }
+          }
+        },
+        "f_assumption_review": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "f_source_review": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "reviewer",
+            "record",
+            "source_sha256",
+            "section",
+            "meaning",
+            "recognition_limit_acknowledged",
+            "reviewer_kind"
+          ],
+          "properties": {
+            "reviewer": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "record": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            "source_sha256": {
+              "const": "a2f8d9fee22f6d27c57cab1d1a8a6b70ff3d0da1f0f81a72aded7a0955520aaf"
+            },
+            "section": {
+              "const": "4.1"
+            },
+            "meaning": {
+              "const": "same-root-own-member-necessary-condition"
+            },
+            "recognition_limit_acknowledged": {
+              "const": true
+            },
+            "reviewer_kind": {
+              "const": "human"
+            }
+          }
+        }
+      }
+    },
+    "qualification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "approved_by",
+        "harness_sha",
+        "dependency_lock_sha256",
+        "aggregate_cgroup",
+        "boot_id",
+        "kernel_release",
+        "qualification_evidence_sha256",
+        "limits_demonstrated",
+        "dependency_relock_reviewed",
+        "area_f_plan_id",
+        "corpus_sha256",
+        "amendment_sha256",
+        "protocol_sha256",
+        "f_source_review"
+      ],
+      "properties": {
+        "approved_by": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "harness_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "dependency_lock_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "aggregate_cgroup": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "boot_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "kernel_release": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "qualification_evidence_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "limits_demonstrated": {
+          "const": true
+        },
+        "dependency_relock_reviewed": {
+          "const": true
+        },
+        "area_f_plan_id": {
+          "const": "F-structural-corpus-v1"
+        },
+        "corpus_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "amendment_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "protocol_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "f_source_review": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "reviewer",
+            "record",
+            "source_sha256",
+            "section",
+            "meaning",
+            "recognition_limit_acknowledged",
+            "reviewer_kind"
+          ],
+          "properties": {
+            "reviewer": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "record": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            "source_sha256": {
+              "const": "a2f8d9fee22f6d27c57cab1d1a8a6b70ff3d0da1f0f81a72aded7a0955520aaf"
+            },
+            "section": {
+              "const": "4.1"
+            },
+            "meaning": {
+              "const": "same-root-own-member-necessary-condition"
+            },
+            "recognition_limit_acknowledged": {
+              "const": true
+            },
+            "reviewer_kind": {
+              "const": "human"
+            }
+          }
+        }
+      }
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "area",
+        "category",
+        "input_sha256",
+        "admissible",
+        "violation",
+        "counter_class"
+      ],
+      "properties": {
+        "area": {
+          "enum": [
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F"
+          ]
+        },
+        "category": {
+          "enum": [
+            "experiment",
+            "positive",
+            "negative",
+            "ambiguous"
+          ]
+        },
+        "input_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "admissible": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "violation": {
+          "type": "boolean"
+        },
+        "counter_class": {
+          "enum": [
+            "admissible_falsifiers",
+            "negative_controls",
+            "underdetermined_cases",
+            "none"
+          ]
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "protocol",
+        "areas",
+        "counters",
+        "experiment_execution",
+        "evidence_schema"
+      ],
+      "properties": {
+        "protocol": {
+          "const": "RFC-00D7-F01"
+        },
+        "areas": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "A": {
+              "type": "object",
+              "required": [
+                "verdict",
+                "stop",
+                "counters",
+                "states_reserved",
+                "domain_complete"
+              ],
+              "properties": {
+                "verdict": {
+                  "enum": [
+                    "FALSIFIED",
+                    "NO_COUNTEREXAMPLE_IN_DOMAIN",
+                    "UNDERDETERMINED",
+                    "INCONCLUSIVE_LIMIT",
+                    "BLOCKED",
+                    "INVALID_RUN"
+                  ]
+                },
+                "stop": {
+                  "type": "string"
+                },
+                "counters": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "required": [
+                    "admissible_falsifiers",
+                    "negative_controls",
+                    "underdetermined_cases"
+                  ],
+                  "properties": {
+                    "admissible_falsifiers": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "negative_controls": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "underdetermined_cases": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "states_reserved": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "domain_complete": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "B": {
+              "type": "object",
+              "required": [
+                "verdict",
+                "stop",
+                "counters",
+                "states_reserved",
+                "domain_complete"
+              ],
+              "properties": {
+                "verdict": {
+                  "enum": [
+                    "FALSIFIED",
+                    "NO_COUNTEREXAMPLE_IN_DOMAIN",
+                    "UNDERDETERMINED",
+                    "INCONCLUSIVE_LIMIT",
+                    "BLOCKED",
+                    "INVALID_RUN"
+                  ]
+                },
+                "stop": {
+                  "type": "string"
+                },
+                "counters": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "required": [
+                    "admissible_falsifiers",
+                    "negative_controls",
+                    "underdetermined_cases"
+                  ],
+                  "properties": {
+                    "admissible_falsifiers": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "negative_controls": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "underdetermined_cases": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "states_reserved": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "domain_complete": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "C": {
+              "type": "object",
+              "required": [
+                "verdict",
+                "stop",
+                "counters",
+                "states_reserved",
+                "domain_complete"
+              ],
+              "properties": {
+                "verdict": {
+                  "enum": [
+                    "FALSIFIED",
+                    "NO_COUNTEREXAMPLE_IN_DOMAIN",
+                    "UNDERDETERMINED",
+                    "INCONCLUSIVE_LIMIT",
+                    "BLOCKED",
+                    "INVALID_RUN"
+                  ]
+                },
+                "stop": {
+                  "type": "string"
+                },
+                "counters": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "required": [
+                    "admissible_falsifiers",
+                    "negative_controls",
+                    "underdetermined_cases"
+                  ],
+                  "properties": {
+                    "admissible_falsifiers": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "negative_controls": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "underdetermined_cases": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "states_reserved": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "domain_complete": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "D": {
+              "type": "object",
+              "required": [
+                "verdict",
+                "stop",
+                "counters",
+                "states_reserved",
+                "domain_complete"
+              ],
+              "properties": {
+                "verdict": {
+                  "enum": [
+                    "FALSIFIED",
+                    "NO_COUNTEREXAMPLE_IN_DOMAIN",
+                    "UNDERDETERMINED",
+                    "INCONCLUSIVE_LIMIT",
+                    "BLOCKED",
+                    "INVALID_RUN"
+                  ]
+                },
+                "stop": {
+                  "type": "string"
+                },
+                "counters": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "required": [
+                    "admissible_falsifiers",
+                    "negative_controls",
+                    "underdetermined_cases"
+                  ],
+                  "properties": {
+                    "admissible_falsifiers": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "negative_controls": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "underdetermined_cases": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "states_reserved": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "domain_complete": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "E": {
+              "type": "object",
+              "required": [
+                "verdict",
+                "stop",
+                "counters",
+                "states_reserved",
+                "domain_complete"
+              ],
+              "properties": {
+                "verdict": {
+                  "enum": [
+                    "FALSIFIED",
+                    "NO_COUNTEREXAMPLE_IN_DOMAIN",
+                    "UNDERDETERMINED",
+                    "INCONCLUSIVE_LIMIT",
+                    "BLOCKED",
+                    "INVALID_RUN"
+                  ]
+                },
+                "stop": {
+                  "type": "string"
+                },
+                "counters": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "required": [
+                    "admissible_falsifiers",
+                    "negative_controls",
+                    "underdetermined_cases"
+                  ],
+                  "properties": {
+                    "admissible_falsifiers": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "negative_controls": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "underdetermined_cases": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "states_reserved": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "domain_complete": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "F": {
+              "type": "object",
+              "required": [
+                "verdict",
+                "stop",
+                "counters",
+                "states_reserved",
+                "domain_complete",
+                "area_f_plan_id",
+                "protocol_revision",
+                "protocol_sha256",
+                "amendment_id",
+                "amendment_sha256",
+                "corpus_sha256",
+                "harness_sha",
+                "oracle_revision",
+                "assumptions",
+                "assumption_review",
+                "proof_status",
+                "proof_nodes_observed",
+                "proof_trace",
+                "coverage",
+                "state_breakdown",
+                "occurrences",
+                "legacy_obligation",
+                "proof_nodes_expected",
+                "proof_trace_sha256",
+                "proof_trace_status",
+                "proof_trace_error_class",
+                "proof_trace_error_reason",
+                "terminal_prior_verdict",
+                "terminal_prior_stop",
+                "source_passage_review"
+              ],
+              "properties": {
+                "verdict": {
+                  "enum": [
+                    "FALSIFIED",
+                    "NO_COUNTEREXAMPLE_IN_DOMAIN",
+                    "UNDERDETERMINED",
+                    "INCONCLUSIVE_LIMIT",
+                    "BLOCKED",
+                    "INVALID_RUN"
+                  ]
+                },
+                "stop": {
+                  "type": "string"
+                },
+                "counters": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "required": [
+                    "admissible_falsifiers",
+                    "negative_controls",
+                    "underdetermined_cases"
+                  ],
+                  "properties": {
+                    "admissible_falsifiers": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "negative_controls": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "underdetermined_cases": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "states_reserved": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "domain_complete": {
+                  "type": "boolean"
+                },
+                "area_f_plan_id": {
+                  "const": "F-structural-corpus-v1"
+                },
+                "protocol_revision": {
+                  "const": 3
+                },
+                "protocol_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "amendment_id": {
+                  "const": "RFC-00D7-F01-FA01"
+                },
+                "amendment_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "corpus_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "harness_sha": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{40}$"
+                },
+                "oracle_revision": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{40}$"
+                },
+                "assumptions": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "same_root",
+                    "ordinary_immutable_json",
+                    "pinned_schema_version",
+                    "root_member_reading",
+                    "nonnull_symbolic_reference"
+                  ],
+                  "properties": {
+                    "same_root": {
+                      "enum": [
+                        "accepted",
+                        "disputed",
+                        "unknown"
+                      ]
+                    },
+                    "ordinary_immutable_json": {
+                      "enum": [
+                        "accepted",
+                        "disputed",
+                        "unknown"
+                      ]
+                    },
+                    "pinned_schema_version": {
+                      "enum": [
+                        "accepted",
+                        "disputed",
+                        "unknown"
+                      ]
+                    },
+                    "root_member_reading": {
+                      "enum": [
+                        "accepted",
+                        "disputed",
+                        "unknown"
+                      ]
+                    },
+                    "nonnull_symbolic_reference": {
+                      "enum": [
+                        "accepted",
+                        "disputed",
+                        "unknown"
+                      ]
+                    }
+                  }
+                },
+                "assumption_review": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "proof_status": {
+                  "enum": [
+                    "conditional_agreement",
+                    "invalid",
+                    "underdetermined",
+                    "incomplete"
+                  ]
+                },
+                "proof_nodes_observed": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 24
+                },
+                "proof_trace": {
+                  "enum": [
+                    "F-proof-trace.json",
+                    null
+                  ]
+                },
+                "coverage": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "mandatory_expected": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "mandatory_observed": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "boundary_expected": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "boundary_observed": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "proof_expected": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "proof_observed": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "mandatory_expected",
+                    "mandatory_observed",
+                    "boundary_expected",
+                    "boundary_observed",
+                    "proof_expected",
+                    "proof_observed"
+                  ]
+                },
+                "state_breakdown": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "controls": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "proof": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "boundary": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "controls",
+                    "proof",
+                    "boundary"
+                  ]
+                },
+                "occurrences": {
+                  "type": "array",
+                  "maxItems": 32,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "phase": {
+                        "enum": [
+                          "mandatory",
+                          "boundary"
+                        ]
+                      },
+                      "fixture_id": {
+                        "enum": [
+                          "F00",
+                          "F01",
+                          "F02",
+                          "F03",
+                          "F04",
+                          "F05",
+                          "F06",
+                          "F07"
+                        ]
+                      },
+                      "seed": {
+                        "enum": [
+                          0,
+                          1,
+                          42,
+                          804
+                        ]
+                      },
+                      "occurrence": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 24
+                      }
+                    },
+                    "required": [
+                      "phase",
+                      "fixture_id",
+                      "seed",
+                      "occurrence"
+                    ]
+                  }
+                },
+                "legacy_obligation": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "const": "F288-v1"
+                    },
+                    "status": {
+                      "const": "deferred_unexecuted"
+                    },
+                    "source_revision": {
+                      "const": "43b49541ddea76ba504031765229e455ef80c4ea"
+                    },
+                    "source_path": {
+                      "const": "experiments/rfc_00d7_f01/domains.py"
+                    },
+                    "git_blob": {
+                      "const": "f015e3b9082a537473154dfd3c8fdc8b70b00844"
+                    },
+                    "sha256": {
+                      "const": "da0790472c947cb00e2278697a27aa7ffe52ab49ad6a66b176b23468ecd8769f"
+                    },
+                    "expected_inputs": {
+                      "const": 288
+                    },
+                    "executed_cases": {
+                      "const": 0
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "status",
+                    "source_revision",
+                    "source_path",
+                    "git_blob",
+                    "sha256",
+                    "expected_inputs",
+                    "executed_cases"
+                  ]
+                },
+                "proof_nodes_expected": {
+                  "const": 24
+                },
+                "proof_trace_sha256": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "proof_trace_status": {
+                  "enum": [
+                    "verified_complete",
+                    "verified_incomplete",
+                    "unverified",
+                    "missing",
+                    "unknown"
+                  ]
+                },
+                "proof_trace_error_class": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "proof_trace_error_reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 256
+                },
+                "terminal_prior_verdict": {
+                  "enum": [
+                    "BLOCKED",
+                    "NO_COUNTEREXAMPLE_IN_DOMAIN",
+                    "FALSIFIED",
+                    "UNDERDETERMINED",
+                    "INCONCLUSIVE_LIMIT",
+                    "INVALID_RUN"
+                  ]
+                },
+                "terminal_prior_stop": {
+                  "type": "string"
+                },
+                "source_passage_review": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "reviewer",
+                    "record",
+                    "source_sha256",
+                    "section",
+                    "meaning",
+                    "recognition_limit_acknowledged",
+                    "reviewer_kind"
+                  ],
+                  "properties": {
+                    "reviewer": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    },
+                    "record": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1024
+                    },
+                    "source_sha256": {
+                      "const": "a2f8d9fee22f6d27c57cab1d1a8a6b70ff3d0da1f0f81a72aded7a0955520aaf"
+                    },
+                    "section": {
+                      "const": "4.1"
+                    },
+                    "meaning": {
+                      "const": "same-root-own-member-necessary-condition"
+                    },
+                    "recognition_limit_acknowledged": {
+                      "const": true
+                    },
+                    "reviewer_kind": {
+                      "const": "human"
+                    }
+                  }
+                }
+              },
+              "additionalProperties": false,
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "proof_trace_status": {
+                        "enum": [
+                          "verified_complete",
+                          "verified_incomplete"
+                        ]
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "proof_trace": {
+                        "const": "F-proof-trace.json"
+                      },
+                      "proof_trace_sha256": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      "proof_trace_error_class": {
+                        "type": "null"
+                      },
+                      "proof_trace_error_reason": {
+                        "type": "null"
+                      }
+                    }
+                  },
+                  "else": {
+                    "properties": {
+                      "proof_trace_sha256": {
+                        "type": "null"
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "proof_trace_status": {
+                        "enum": [
+                          "missing",
+                          "unknown"
+                        ]
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "proof_trace": {
+                        "type": "null"
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "verdict": {
+                        "const": "FALSIFIED"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "proof_trace_status": {
+                        "const": "verified_complete"
+                      },
+                      "domain_complete": {
+                        "const": true
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "proof_trace_status": {
+                        "not": {
+                          "const": "verified_complete"
+                        }
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "domain_complete": {
+                        "const": false
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "proof_trace_status": {
+                        "const": "unverified"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "proof_trace": {
+                        "const": "F-proof-trace.json"
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "terminal_prior_verdict": {
+                        "const": "INCONCLUSIVE_LIMIT"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "verdict": {
+                        "const": "INCONCLUSIVE_LIMIT"
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "terminal_prior_verdict": {
+                        "const": "INVALID_RUN"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "verdict": {
+                        "const": "INVALID_RUN"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "counters": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "admissible_falsifiers",
+            "negative_controls",
+            "underdetermined_cases"
+          ],
+          "properties": {
+            "admissible_falsifiers": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "negative_controls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "underdetermined_cases": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "experiment_execution": {
+          "const": "attempted"
+        },
+        "evidence_schema": {
+          "const": "t81.rfc-00d7-f01.evidence.v2"
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/authorization"
+    },
+    {
+      "$ref": "#/$defs/qualification"
+    },
+    {
+      "$ref": "#/$defs/case"
+    },
+    {
+      "$ref": "#/$defs/summary"
+    }
+  ]
+}
