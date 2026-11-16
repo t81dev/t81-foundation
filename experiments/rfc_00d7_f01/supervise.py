@@ -36,6 +36,8 @@ def check_gate(authorization_path, qualification_path):
         raise ValueError('BLOCKED: only qualified Linux supported')
     if authorization['scope'] != 'one-bounded-run' or not authorization['human_record']:
         raise ValueError('BLOCKED: separate human execution record required')
+    from interpretation_policy import validate
+    validate(authorization['interpretations'], bounded_json(ROOT / 'interpretations.json')['choices'])
     # A record is checked for scope/identity, NOT authenticated as a human act.
     # The operator must independently establish authorization authenticity.
     head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()

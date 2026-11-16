@@ -51,6 +51,8 @@ class Budget:
         if area is not None and self.bytes[area] + size > 4 * MIB:
             raise Limit('area artifact cap')
         total = sum(self.bytes.values()) + self.metadata_bytes
+        if area is None and self.metadata_bytes + size > 65536:
+            raise Limit('runner terminal metadata reserve')
         # Reserve 64 KiB for suite terminal metadata when writing area data.
         if total + size > 25 * MIB - 65536:
             raise Limit('suite artifact cap')
@@ -71,6 +73,8 @@ class Evidence:
     def write(self, name, value, area=None, witness=False):
         raw = (json.dumps(value, sort_keys=True, separators=(',', ':'),
                           ensure_ascii=True) + '\n').encode('ascii')
+        if '-control-' in name and len(raw) > 4096:
+            raise Limit('control evidence reservation')
         if witness and self.witness_bytes[area] + len(raw) > 512 * 1024:
             raise Limit('raw witness cap')
         self.budget.reserve(len(raw), area)

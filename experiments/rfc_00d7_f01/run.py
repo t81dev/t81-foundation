@@ -10,9 +10,18 @@ from pathlib import Path
 import domains
 import evaluate
 from accounting import Budget, Evidence, Limit
+from interpretation_policy import validate
 
 
 def run_area(area, schema, interpretations, budget, evidence):
+    declarations = json.loads((Path(__file__).parent / 'interpretations.json').read_text())['choices']
+    validate(interpretations, declarations)
+    if area == 'F':
+        return {'verdict': 'BLOCKED', 'stop': '288 inputs exceed 256 states; protocol amendment required',
+                'counters': {'admissible_falsifiers': 0, 'negative_controls': 0,
+                             'underdetermined_cases': 0, 'positive_controls': 0,
+                             'comparisons': 0, 'generated_cases': 0},
+                'states_reserved': 0, 'domain_complete': False}
     budget.enter(area)
     signal.setitimer(signal.ITIMER_REAL, {'A': 5, 'B': 5, 'C': 10, 'D': 10, 'E': 10, 'F': 10}[area])
     counts = {'admissible_falsifiers': 0, 'negative_controls': 0,
@@ -52,11 +61,10 @@ def run_area(area, schema, interpretations, budget, evidence):
                        'E': {'E1', 'E2'}, 'F': {'F-validator', 'F-satisfiability'}}[area]
             if targets and targets <= solved:
                 continue
-            rows = evaluate.compare(area, case, schema, interpretations, cache, budget.visit)
+            rows = evaluate.compare(area, case, schema, interpretations, cache, budget.visit, declarations)
             for row in rows:
                 if row['subclaim'] in solved:
                     continue
-                budget.visit()
                 counts['comparisons'] += 1
                 subclaim = row['subclaim']
                 is_control = (case['kind'] in ('schema_control', 'mutation_control', 'bitflip', 'two_phase_control'))

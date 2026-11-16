@@ -4,6 +4,7 @@ import json
 
 import candidate
 import oracle
+from interpretation_policy import outside_arena, validate
 
 
 def check_control(area, polarity, case, schema, visit):
@@ -52,18 +53,29 @@ def result(subclaim, admissible, violates, detail, unresolved=None):
             'violation': violates, 'detail': detail, 'unresolved': unresolved}
 
 
-def compare(area, case, schema, interpretations, cache, visit):
+def compare(area, case, schema, interpretations, cache, visit, declarations):
+    validate(interpretations, declarations)
+
+    def emit(*args, **kwargs):
+        visit()  # Every result state, including a subsequently suppressed row.
+        return result(*args, **kwargs)
+
     visit(2)  # Candidate and reference comparison states, before evaluation.
     if area == 'A':
-        return [result('A', candidate.revocation(case), not oracle.commitment_bound(case, visit),
+        return [emit('A', candidate.revocation(case), not oracle.commitment_bound(case, visit),
                        {'commit_distance': case['halt'] - case['commit'],
                         'latch_distance': case['halt'] - case['latch']})]
     if area == 'B':
-        visible = candidate.publication(case, visit=visit)
+        # Memoize only candidate transitions, never oracle verdicts or case visits.
+        key = (case['order'], case['initial_revoked'], case['applicable'])
+        if key not in cache:
+            visit()  # Materialized memo entry is charged in addition to outputs.
+            cache[key] = candidate.publication(case, visit=visit)
+        visible = cache[key]
         safe = oracle.serial_publication(case)
-        rows = [result('B1', True, visible != safe, {'visible': visible, 'oracle': safe})]
+        rows = [emit('B1', True, visible != safe, {'visible': visible, 'oracle': safe})]
         if visible and case['applicable'] and not case['initial_revoked']:
-            rows.append(result('B2', None, True, {'order': case['order']}, 'O1-race'))
+            rows.append(emit('B2', None, True, {'order': case['order']}, 'O1-race'))
         return rows
     if area == 'C' and case['kind'] == 'session':
         projected = candidate.session_projection(case['history'], visit=visit)
@@ -75,8 +87,8 @@ def compare(area, case, schema, interpretations, cache, visit):
                 from accounting import Limit
                 raise Limit('collision bucket cap')
             cache[projected] = (permission, case['history'])
-            return [result('C1', True, False, {'projection': projected})]
-        return [result('C1', None if prior[0] != permission else True, prior[0] != permission,
+            return [emit('C1', True, False, {'projection': projected})]
+        return [emit('C1', None if prior[0] != permission else True, prior[0] != permission,
                        {'projection': projected, 'prior': prior[1],
                         'future_permissions': [prior[0], permission]}, 'event-kind-payload')]
     if area == 'C':
@@ -91,32 +103,32 @@ def compare(area, case, schema, interpretations, cache, visit):
         candidate_equal = candidate.trace_projection(base) == candidate.trace_projection(other)
         reference_equal = oracle.canonical_trace(base) == oracle.canonical_trace(other)
         sensitivity = oracle.canonical_trace(base) != oracle.canonical_trace(changed)
-        return [result('C2', True, not (candidate_equal and reference_equal and sensitivity),
+        return [emit('C2', True, not (candidate_equal and reference_equal and sensitivity),
                        {'telemetry_equal': reference_equal, 'extension_sensitive': sensitivity}),
-                result('C2-nested', None if case['coordinate'] != 1 else True, candidate.trace_projection(base) != candidate.trace_projection(nested),
+                emit('C2-nested', None if case['coordinate'] != 1 else True, candidate.trace_projection(base) != candidate.trace_projection(nested),
                        {'coordinate': case['coordinate']}, 'nested-LIP-coordinate')]
     if area == 'D' and case['kind'] == 'memory':
         visit(2)
         admitted = candidate.memory_gate(case)
         fits, total = oracle.live_allocation_bound(case, visit=visit)
-        policy = interpretations.get('outside_arena')
-        return [result('D1', admitted if policy == 'permitted' or fits or not admitted else None,
+        policy = outside_arena(interpretations)
+        return [emit('D1', admitted if policy == 'permitted' else None,
                        admitted and not fits, {'gate': admitted, 'live_bytes': total},
                        None if policy == 'permitted' else 'outside-arena')]
     if area == 'D' and case['kind'] == 'steps':
         visit(2)
         actual = candidate.step_gate(case, visit=visit)
         expected = oracle.conserved_steps(case, visit=visit)
-        return [result('D2', True, actual != expected, {'consumed': actual, 'oracle': expected})]
+        return [emit('D2', True, actual != expected, {'consumed': actual, 'oracle': expected})]
     if area == 'D':
         visit(2)
-        return [result('D3', None, candidate.queue_gate(case) != oracle.capacity_bound(case),
+        return [emit('D3', None, candidate.queue_gate(case) != oracle.capacity_bound(case),
                        {'retention': 'undefined'}, 'slot-lifecycle')]
     if area == 'E' and case['kind'] == 'bitflip':
         visit()
         raw = bytearray(oracle.immutable_record(case))
         raw[case['offset']] ^= 1
-        return [result('E-checksum-control', True, oracle.record_valid(raw),
+        return [emit('E-checksum-control', True, oracle.record_valid(raw),
                        {'offset': case['offset']})]
     if area == 'E':
         visit()
@@ -124,15 +136,15 @@ def compare(area, case, schema, interpretations, cache, visit):
         final = history[-1]
         in_memory_valid = oracle.record_valid(bytes.fromhex(final['record']))
         ack_valid = oracle.durable_ack_valid(final)
-        return [result('E1', True if case['prefix'] == 512 or in_memory_valid else None, not in_memory_valid,
+        return [emit('E1', True if case['prefix'] == 512 or in_memory_valid else None, not in_memory_valid,
                        {'snapshots': history}, None if case['prefix'] == 512 else 'partial-write-continuation'),
-                result('E2', True if ack_valid else None, not ack_valid, {'snapshots': history}, 'acknowledgement')]
+                emit('E2', True if ack_valid else None, not ack_valid, {'snapshots': history}, 'acknowledgement')]
     if area == 'F':
         visit()
         actual = candidate.admission(case, schema)
         reference = oracle.manifest_reference(case, schema)
-        return [result('F-validator', True, actual['schema'] != reference['schema'],
+        return [emit('F-validator', True, actual['schema'] != reference['schema'],
                        {'candidate': actual, 'oracle': reference}),
-                result('F-satisfiability', True, not reference['binding_satisfiable'],
+                emit('F-satisfiability', True, not reference['binding_satisfiable'],
                        {'schema': actual['schema'], 'oracle': reference})]
     raise ValueError(area)

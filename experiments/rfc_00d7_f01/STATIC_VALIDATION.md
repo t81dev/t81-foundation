@@ -67,3 +67,44 @@ are all unverified; only proposed Linux execution is supported by the gate.
 Do not infer readiness from syntax/schema checks or publication of this branch.
 See `LINUX_QUALIFICATION.md` for the separate proposed qualification and one-run
 authorization procedure. All research/release holds remain unchanged.
+
+## Independent-review correction verification
+
+Reviewed baseline: `71997805e156e64f3cb4d3b58bd4493ca8b71a32`. Protocol
+head/hash and all source pins above remain unchanged. This is a new static
+preparation check, not a rerun of any A–F experiment.
+
+The same static-check command exited 0 with:
+
+```json
+{"artifact_hashes":4,"candidate_oracle_invocations":0,"closed_form_cap_bounds_checked":6,"compiled_modules":9,"cross_module_calls_checked":48,"declared_interpretations_checked":8,"execution_qualified":false,"experimental_states_enumerated":0,"locked_distributions":5,"model_imports":0,"preparation_only":true,"schemas_checked":2,"source_pins":9}
+```
+
+Additional AST/schema checks verify the exact interpretation registry and
+required/unknown-key constraints, guarded missing/unknown-value rejection,
+validation before model comparisons, D's literal `outside-arena` lookup, and
+the candidate-publication read set against the memo key. The F generator's
+AST is identical to its reviewed baseline. The two B event chains are checked
+as literals and no permutation generator remains. No generator was imported
+or invoked to establish these facts. No policy function was called: metadata
+guards were inspected as ASTs and schema definitions.
+
+Six cap bounds were checked by fixed integer arithmetic, not by generating
+inputs or evaluating candidate/reference logic. `CAP_ACCOUNTING.md` distinguishes
+exact full-path counts, conservative bounds and impossible exhaustive coverage.
+F remains 288 inputs and is explicitly BLOCKED at its unchanged 256-state cap.
+The protocol amendment document is unapplied. No cap or scientific-domain
+reduction was implemented. B's full upper bound is 3,783 states, including
+controls, prefix construction, memo entries, repeated case observations, actual
+transitions and every constructed result row.
+
+Commons proposal validation and staged whitespace checking passed again.
+Candidate/oracle source files, pinned D3 schema, dependency lock and all
+protocol-packet files are unchanged from the reviewed baseline. Metadata
+reservation guards now bound mandatory control records to 4 KiB each and
+runner metadata to 64 KiB inside existing artifact ceilings.
+
+No A–F cases, controls, candidate/oracle functions, Linux qualification probes
+or resource-enforcement checks were executed. State fit does not establish
+wall-time fit. Source re-review is appropriate; execution remains unauthorized
+and unqualified, with F requiring a separate protocol decision.

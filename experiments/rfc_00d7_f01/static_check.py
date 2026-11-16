@@ -65,6 +65,92 @@ def verify(root):
             if isinstance(node, ast.ImportFrom):
                 imported.add(node.module)
         assert not imported & {'candidate', 'oracle', 'domains', 'evaluate'}, name
+    declarations = json.loads((root / 'interpretations.json').read_text())['choices']
+    policy = parsed['interpretation_policy.py']
+    supported = next(node for node in policy.body if isinstance(node, ast.Assign)
+                     and any(isinstance(target, ast.Name) and target.id == 'SUPPORTED_KEYS'
+                             for target in node.targets))
+    keys = ast.literal_eval(supported.value)
+    assert len(keys) == len(set(keys)) and set(keys) == set(declarations)
+    definition = json.loads((root / 'evidence.schema.json').read_text())
+    configuration = definition['$defs']['authorization']['properties']['interpretations']
+    assert configuration['additionalProperties'] is False
+    assert set(configuration['required']) == set(keys) == set(configuration['properties'])
+    for key in keys:
+        assert configuration['properties'][key]['enum'] == [None] + declarations[key]['alternatives']
+    # Literal metadata lookups must use declared keys. No configuration .get()
+    # or alias may silently supply a favorable default.
+    for tree in parsed.values():
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+                assert not (isinstance(node.func.value, ast.Name)
+                            and node.func.value.id == 'interpretations'
+                            and node.func.attr == 'get')
+            if isinstance(node, ast.Subscript) and isinstance(node.value, ast.Name):
+                if node.value.id == 'values' and isinstance(node.slice, ast.Constant):
+                    assert node.slice.value in keys
+    functions = {node.name: node for node in policy.body if isinstance(node, ast.FunctionDef)}
+    assert "set(values) != set(SUPPORTED_KEYS)" in ast.unparse(functions['validate'])
+    assert isinstance(functions['validate'].body[0], ast.If)
+    assert isinstance(functions['validate'].body[0].body[0], ast.Raise)
+    assert 'value is not None and value not in alternatives' in ast.unparse(functions['validate'])
+    assert "key != 'outside-arena' and value is not None" in ast.unparse(functions['validate'])
+    assert "values['outside-arena']" in ast.unparse(functions['outside_arena'])
+    comparison = next(node for node in parsed['evaluate.py'].body
+                      if isinstance(node, ast.FunctionDef) and node.name == 'compare')
+    assert ast.unparse(comparison.body[0]) == 'validate(interpretations, declarations)'
+    # Candidate memoization is valid only while these are ALL semantic inputs.
+    publication = next(node for node in parsed['candidate.py'].body
+                       if isinstance(node, ast.FunctionDef) and node.name == 'publication')
+    consumed_keys = {node.slice.value for node in ast.walk(publication)
+                     if isinstance(node, ast.Subscript) and isinstance(node.value, ast.Name)
+                     and node.value.id == 'case' and isinstance(node.slice, ast.Constant)}
+    assert consumed_keys == {'order', 'initial_revoked', 'applicable'}
+    memo_key = next(node for node in ast.walk(comparison) if isinstance(node, ast.Assign)
+                    and any(isinstance(target, ast.Name) and target.id == 'key'
+                            for target in node.targets))
+    assert {node.slice.value for node in memo_key.value.elts} == consumed_keys
+    assert not any(isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                   and node.func.attr == 'permutations'
+                   for node in ast.walk(parsed['domains.py']))
+    old_domain = ast.parse(subprocess.check_output([
+        'git', 'show', '71997805e156e64f3cb4d3b58bd4493ca8b71a32:experiments/rfc_00d7_f01/domains.py'
+    ], cwd=repo, text=True))
+    def f_recipe(tree):
+        function = next(node for node in tree.body
+                        if isinstance(node, ast.FunctionDef) and node.name == 'cases')
+        branch = next(node for node in ast.walk(function)
+                      if isinstance(node, ast.If) and ast.unparse(node.test) == "area == 'F'")
+        return [ast.dump(node) for node in branch.body]
+    assert f_recipe(old_domain) == f_recipe(parsed['domains.py'])
+    order_generator = next(node for node in parsed['domains.py'].body
+                           if isinstance(node, ast.FunctionDef) and node.name == 'publication_orders')
+    chain_assignments = {node.targets[0].id: ast.literal_eval(node.value)
+                         for node in order_generator.body if isinstance(node, ast.Assign)}
+    assert chain_assignments == {'revoke': ('invoke', 'commit', 'response'),
+                                 'fence': ('acquire', 'check', 'publish', 'release')}
+    # Closed-form arithmetic only: no domains, orders, cases or controls run.
+    accounting = json.loads((root / 'CAP_ACCOUNTING.json').read_text())
+    bounds = {
+        'A': 3088 + 4 * 114 + 24 + 84 + 252 + 17422,
+        'B': 88 + 125 + 560 + 2 * 560 + 140 + 7 * 140 + 560 + 210,
+        'C': 80 + 1555 + 5910 + 6 + 3 * 341 + 2 * 1252 + 6 * 12,
+        'D': 8168 + 8748 * 14 + 576 + 512 * 29 + 976 + 96 * 6,
+        'E': 72 + 6156 * 6 + 1026 * 21 + 144 * 12 + 9 * 5,
+        'F': 32 + 288 * 6,
+    }
+    assert 9 * (8 + 2 + 11 * 2) == accounting['areas']['F']['inputs']
+    assert 35 * 16 == accounting['areas']['B']['inputs']
+    assert sum(row['cap'] for row in accounting['areas'].values()) == 49408
+    for area, bound in bounds.items():
+        row = accounting['areas'][area]
+        assert row['full_states_upper'] == bound
+        assert row['artifact_bytes_upper'] == (row['ledger_rows_upper'] * 128
+                                               + row['rotated_controls'] * 4096 + 512 * 1024)
+        assert row['artifact_bytes_upper'] <= 4 * 1024**2
+    assert bounds['B'] <= accounting['areas']['B']['cap']
+    assert accounting['areas']['F']['inputs'] > accounting['areas']['F']['cap']
+    assert sum(row['artifact_bytes_upper'] for row in accounting['areas'].values()) + 131072 < 25 * 1024**2
     # Bind cross-module call signatures from ASTs without importing either side.
     definitions = {name[:-3]: {node.name: node for node in tree.body
                               if isinstance(node, ast.FunctionDef)}
@@ -100,6 +186,8 @@ def verify(root):
     return {'preparation_only': True, 'source_pins': len(pins['sources']),
             'artifact_hashes': 4, 'compiled_modules': len(parsed),
             'schemas_checked': 2, 'cross_module_calls_checked': calls_checked, 'locked_distributions': len(lock['packages']),
+            'declared_interpretations_checked': len(keys),
+            'closed_form_cap_bounds_checked': len(bounds),
             'model_imports': 0, 'experimental_states_enumerated': 0,
             'candidate_oracle_invocations': 0, 'execution_qualified': False}
 
