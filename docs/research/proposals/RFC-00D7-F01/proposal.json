@@ -31,7 +31,7 @@
   "human_authorization": {
     "status": "not_requested",
     "human": null,
-    "record": "Current session instruction authorizes preparation only and explicitly forbids experiment implementation or execution. Future harness preparation and one bounded run require separate attributable human authorization under PROTOCOL.md section 10."
+    "record": "The current session human authorizes bounded synthetic harness preparation on a separate experimental branch and static verification only. A–F state enumeration, candidate/oracle execution and experimental results remain forbidden. Status not_requested refers to a future run; human execution authorization must separately identify protocol and reviewed harness hashes."
   },
   "research_question": "For RFC-00D7 at ec22a7588282d37ad027cff61c807bcf159ac2e0, are A commitment-to-halt bounds, B publication/revocation ordering, C canonical replay logs, D live-memory and step accounting, E emergency record ordering, and F admission under the actual RFC-00D3 schema internally consistent over the finite domains in PROTOCOL.md?",
   "falsification_criterion": "An independently checked history or object must satisfy the declared draft-admissibility predicate and contradict its scoped claim. Deliberately broken controls are not RFC falsifiers. Missing semantic choices yield UNDERDETERMINED; incomplete searches or limit failures cannot yield NO_COUNTEREXAMPLE_IN_DOMAIN. Preserve all counterexamples, ambiguities, invalid runs and negative outcomes.",

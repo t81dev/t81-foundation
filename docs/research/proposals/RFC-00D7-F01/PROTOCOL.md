@@ -2,11 +2,11 @@
 
 Status: **PROPOSED / NON-NORMATIVE / NOT IMPLEMENTED / NOT EXECUTED**.
 
-This document authorizes nothing. The current human instruction permits preparing this protocol and explicitly excludes implementing or executing its experiments. No production code, specification, research gate, PR #804, Commons index or historical finding is changed.
+This document authorizes nothing. The current human instruction permits preparing a synthetic harness on a separate experimental branch, while explicitly excluding A–F experimental execution. This documentation PR contains only the protocol packet. No production code, specification, research gate, PR #804, Commons index or historical finding is changed.
 
 ## 1. Identity, question and provenance
 
-- Protocol identifier: `RFC-00D7-F01`, revision 1; six scoped experiment labels A–F.
+- Protocol identifier: `RFC-00D7-F01`, revision 2; six scoped experiment labels A–F.
 - Candidate under test: PR #804 at **`ec22a7588282d37ad027cff61c807bcf159ac2e0`**.
 - Comparison document: **`4fdba573cc3be94ceb69cbcb3b04b62083b4d252`**.
 - Original repository base: **`40695b0ba5cea3e43563b6ed2443c987d2738089`**.
@@ -58,7 +58,7 @@ Core cases use exhaustive enumeration once in ascending tuple order; **no random
 | E | 16,384 | 10 s | 128 MiB | 4 MiB |
 | F | 256 | 10 s | 128 MiB | 4 MiB |
 
-Suite ceiling: **49,408** visited states/cases; **60 seconds wall**, **50 seconds CPU**, **one CPU**, **256 MiB aggregate memory including the budget supervisor**, and **25 MiB uncompressed artifacts** including suite metadata. These are ceilings, not completion-time predictions. Limits apply across all rotations and reruns together. No retries receive a new allowance.
+Suite ceiling: **49,408** visited states/cases; **60 seconds wall**, **50 seconds CPU**, **one CPU**, **256 MiB aggregate memory including the budget supervisor**, and **25 MiB uncompressed artifacts** including suite metadata. **A–F execute sequentially, with at most one active 128 MiB runner, under the shared 256 MiB aggregate-memory and 50-second CPU ceilings.** These are ceilings, not completion-time predictions. Limits apply across all rotations and reruns together. No retries receive a new allowance.
 
 The proposed execution platform is one qualified Linux hosted runner with an existing delegated resource-control facility. A trusted external budget supervisor may launch one trusted experiment process at a time; these are harness processes, not native backend workers. Hard per-process/group memory limits and external monotonic deadlines must be established before a run; checking memory only by occasional samples does not establish the hard limit. If enforcement cannot be established within existing authority, report `BLOCKED`; do not escalate privileges or substitute an unqualified platform. This protocol does not claim feasibility or cross-platform equivalence of its future enforcement mechanism.
 
@@ -136,6 +136,8 @@ Use the common rotations; no random allocation sizes or actual large allocations
 
 **Hypotheses / claims.** E1: the §4.5 512-byte layout and post-sync flag update preserve checksum validity. E2: an acknowledged `durable_persisted=1` has a recoverable matching record under the **declared simulated storage model**. AT-MS-19/22/23 must use that same model. This does not test actual `fsync`, power-loss behavior or CanonFS durability.
 
+**Exact flag location.** `durable_persisted` is bit 0 (least significant bit, mask `0x01`) of byte offset **10** in the 512-byte record. The flags field is a little-endian uint16 at offsets 10–11. Byte 10 lies **inside** the inclusive hashed range **[0..479]**; changing that bit changes the hashed input.
+
 **Reference oracle.** Independent literal field-offset/coverage tables check a 512-byte record, fixed zero padding and the checksum over bytes 0–479. The digest is SHA3-512 truncated to its first 32 bytes after the ASCII emergency-domain prefix, as in the pinned `t81::hash::hash_bytes` implementation. One oracle uses a separately checked literal byte vector and Python `hashlib`; it must not reuse the candidate record packer. A storage oracle keeps distinct `volatile_image` and `durable_image`: successful simulated sync copies the former to the latter; failed sync does not establish persistence; simulated restart discards volatile state.
 
 **Minimal model / domain.** One or two 512-byte slots. The enumerated crash core uses request/epoch/generation `1`, logical step `256` and a fixed short ASCII reason. Identifier `2`, logical steps `{0,1}` and reasons up to 16 bytes are control variants only, not a Cartesian multiplier of every crash case. Diagnostic status bytes are test-only tags; no stable production enum assignment is inferred. Execute the as-written abstract action sequence `Construct -> Hash -> Write -> Sync -> SetDurableBit -> Crash/Recover`, with explicit branches for recomputing and rewriting that are labeled **candidate interpretations or counterfactual repairs**, not silently added requirements.
@@ -172,7 +174,7 @@ Every future run must produce a bounded evidence packet containing:
 - `inputs-manifest.json`: protocol/source/dependency identities, exact harness and oracle revision, environment, commands, seed/rotation definitions, and the approved interpretation table. Working-tree changes are identified explicitly; moving refs are not sufficient.
 - One bounded case ledger per area with case ID, input digest, explored-state count, control outcome, admissibility, oracle outcome, result and stop reason. Prefer fixed-width records of at most 128 bytes plus a documented decoder; cap retained full witnesses at 512 KiB per area. Artifacts must remain independently readable and uncompressed caps must be enforced before appending.
 - Complete minimal witness histories and byte arrays; ambiguity branches; positive/negative control records; allocation or storage ledgers sufficient for independent replay; observed limits and failures.
-- `summary.json` and `REPORT.md`, with A–F verdicts, exact checked domains, exclusions, counterexamples, incomplete coverage and interpretation limits.
+- `summary.json` and `REPORT.md`, with A–F verdicts, exact checked domains, exclusions, counterexamples, incomplete coverage and interpretation limits. `summary.json` MUST contain separate per-area and suite-total integer counters named `admissible_falsifiers`, `negative_controls`, and `underdetermined_cases`. A rejected defective control increments only the negative-control counter, never the admissible-falsifier counter; unresolved admissibility increments the underdetermined counter. Counters describe distinct case classes and cannot substitute for raw evidence.
 - `SHA256SUMS` for all packet artifacts except itself. A digest establishes content identity, not truth, authenticity, authorization or independent review.
 
 Do not retain only hashes of missing raw witnesses. Do not log secrets or host account information. Do not generate more cases once the remaining artifact allowance cannot retain their required evidence.
@@ -183,12 +185,12 @@ The first run may not be called a confirmatory or independent replication study.
 
 ## 10. Proposed execution authorization boundary
 
-**Current authorization:** protocol preparation only. `human_authorization.status = not_requested` refers specifically to experiment implementation/execution; no implementation or execution is granted by this file or its validation.
+**Current authorization:** the session human has authorized bounded non-production harness preparation on a separate experimental branch and static verification only. `human_authorization.status = not_requested` refers specifically to experiment execution; no A–F execution is granted by this file or its validation.
 
-After review, a human may separately authorize:
+The authorization stages remain separate:
 
-1. **Harness preparation:** a small off-core synthetic model, independent oracles and controls in an isolated experimental branch/directory; no service implementation or production dependency. Pin the final code, protocol, source inputs and dependency lock; obtain oracle/admissibility review. This step itself is not authorized by the current task.
-2. **One bounded run:** precisely the approved A–F domains, interpretations, resource limits, seeds and artifact destination, with an accountable budget supervisor and no hidden repeated allowances. The execution authorization must identify the reviewed harness SHA and protocol SHA-256, not just this protocol ID.
+1. **Harness preparation:** a small off-core synthetic model, independent oracles and controls in an isolated experimental branch/directory; no service implementation or production dependency. Pin the final code, protocol, source inputs and dependency lock; obtain oracle/admissibility review. This stage is authorized by the current session instruction; A–F enumeration or candidate/oracle execution remains excluded, including through tests or import side effects.
+2. **One bounded run (not authorized):** precisely the approved A–F domains, interpretations, resource limits, seeds and artifact destination, with an accountable budget supervisor and no hidden repeated allowances. The execution authorization must identify the reviewed harness SHA and protocol SHA-256, not just this protocol ID.
 
 Permitted run operations would be integer/byte-array modeling, schema validation and hashing in RAM, plus bounded writes to a newly designated scratch evidence directory. A trusted external supervisor is allowed only for enforcing this experiment's resource limits. No native backend workers, real model inference, networking, credentials, OS sandbox tests, kernel changes, real journal writes/flushes, process-kill tests, performance measurements, production integration or release actions are included.
 

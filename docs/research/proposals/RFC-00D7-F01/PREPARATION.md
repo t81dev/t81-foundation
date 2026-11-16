@@ -25,3 +25,7 @@ Proposal validation exited 0 and returned:
 Both JSON documents parse. The new draft files were separately checked for trailing whitespace because `git diff --check` does not inspect untracked files. `SHA256SUMS` identifies this preparation packet; it excludes itself. Hashes establish identity, not truth or acceptance.
 
 Only this new proposal directory was written for the current task. Existing untracked PR #798 review evidence was left in place. No production code, normative specifications, gates, Commons manifest, PR #804, branches or commits were changed; no push or merge occurred. Execution remains unrequested and unauthorized. The two proposed future authorization stages and their limits are in `PROTOCOL.md` §10.
+
+## Harness-preparation clarification revision
+
+The subsequent human instruction authorizes bounded harness preparation separately and prohibits A–F execution. Protocol revision 2 clarifies byte 10 bit 0 of the hashed emergency payload, sequential runners under shared ceilings, and distinct summary counters. Domains and ceilings are unchanged. This draft PR still contains only documentation; harness code belongs on a separate experimental branch. Original preparation evidence above is historical and remains preserved. Hashes were refreshed for the clarified packet.
