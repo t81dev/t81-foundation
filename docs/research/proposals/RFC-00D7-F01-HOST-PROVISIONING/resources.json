@@ -18,12 +18,61 @@
   },
   "build_allowed": false,
   "dependency_resolution": false,
+  "enforcement_contract": {
+    "FINAL_deadlines": "min(F_entry+10,T0+54) wall; min(U_F+5,48) CPU; all transition/kill/write/seal/exit costs included",
+    "clock": "CLOCK_MONOTONIC",
+    "cpu_counter": "fresh aggregate D/cpu.stat usage_usec from zero, never reset; all descendants and custom guards included",
+    "finalizer": "same controller in64MiB leaf; no ExecStop/Post finalizer",
+    "independent_guard_required": {
+      "all_custom_guard_work_charged_to_D": true,
+      "cpu_max_or_RLIMIT_alone_sufficient": false,
+      "implementation_identity": null,
+      "must_survive_blocked_or_dead_finalizer": true,
+      "normal_write_cutoff": "min(F_entry+9,T0+53) wall and min(U_F+4,47) CPU",
+      "phase_deadlines_acknowledged_before_helper_release": true,
+      "shared_leaf_OOM_starvation_failure_coverage_evidence": null,
+      "trigger_to_all_custom_work_quiescence_required_cpu_seconds": 1,
+      "trigger_to_all_custom_work_quiescence_required_wall_seconds": 1
+    },
+    "manager": {
+      "activation_bound_seconds": 1,
+      "actual_unit_identity_and_test_receipt": null,
+      "clock": "CLOCK_MONOTONIC",
+      "earliest_expiry_from_T0_seconds": 55,
+      "extensions_hooks_restarts": false,
+      "final_kill_signal": "SIGKILL",
+      "kill_mode": "control-group",
+      "kill_signal": "SIGTERM",
+      "latest_expiry_from_T0_seconds": 56,
+      "latest_required_fallback_quiescence_from_T0_seconds": 58,
+      "minimum_planned_quiescence_margin_seconds": 1,
+      "notify_access": "none",
+      "remain_after_exit": false,
+      "remaining_wall_ceiling_margin_seconds": 2,
+      "runtime_expiry_to_quiescence_required_seconds": 2,
+      "runtime_max_seconds": 55,
+      "runtime_origin": "Ta actual ActiveEnterTimestampMonotonic; 0<=Ta-T0<=1 required",
+      "runtime_randomized_extra_seconds": 0,
+      "send_sigkill": true,
+      "timeout_start_failure_mode": "kill",
+      "timeout_start_seconds": 1,
+      "timeout_stop_failure_mode": "kill",
+      "timeout_stop_seconds": 1,
+      "type": "exec"
+    },
+    "origin": "T0 manager activation begins, before first custom work; startup charged to P0",
+    "phase_timer": "absolute earliest of entry+phase cap, cumulative prefix cap and work44/43; deadline/overrun ends admission and enters FINAL",
+    "phase_values_are_candidate_limits_not_enforcement": true,
+    "status": "REQUIRED_NOT_IMPLEMENTED_OR_TESTED",
+    "target_delivery_quiescence_cpu_and_durability_evidence": null
+  },
   "evidence_reservations_mib": {
     "content_manifests": 12,
     "final_hash_inventory_reserved": 1,
     "inputs_and_approvals": 2,
+    "manager_terminal_record_reserved": 1,
     "native_and_host_observations": 4,
-    "phase_logs": 2,
+    "phase_logs": 1,
     "terminal_and_cleanup_reserved": 4
   },
   "network_access": false,
@@ -31,36 +80,48 @@
   "phases": [
     {
       "cpu_seconds": 3,
+      "cumulative_cpu_limit_seconds": 3,
+      "cumulative_wall_deadline_seconds": 4,
       "id": "P0",
       "purpose": "immutable input/preflight verification",
-      "wall_seconds": 5
+      "wall_seconds": 4
     },
     {
       "cpu_seconds": 10,
+      "cumulative_cpu_limit_seconds": 13,
+      "cumulative_wall_deadline_seconds": 14,
       "id": "P1",
       "purpose": "binary payload materialization",
-      "wall_seconds": 12
+      "wall_seconds": 10
     },
     {
-      "cpu_seconds": 15,
+      "cpu_seconds": 14,
+      "cumulative_cpu_limit_seconds": 27,
+      "cumulative_wall_deadline_seconds": 28,
       "id": "P2",
       "purpose": "venv and offline five-wheel install",
-      "wall_seconds": 15
+      "wall_seconds": 14
     },
     {
-      "cpu_seconds": 15,
+      "cpu_seconds": 13,
+      "cumulative_cpu_limit_seconds": 40,
+      "cumulative_wall_deadline_seconds": 41,
       "id": "P3",
       "purpose": "freeze and exhaustive inventories",
-      "wall_seconds": 15
+      "wall_seconds": 13
     },
     {
-      "cpu_seconds": 2,
+      "cpu_seconds": 3,
+      "cumulative_cpu_limit_seconds": 43,
+      "cumulative_wall_deadline_seconds": 44,
       "id": "P4",
-      "purpose": "optional approved metadata-only diagnostics/receipt",
+      "purpose": "optional approved metadata diagnostics and checkpoint; terminal seal belongs to FINAL",
       "wall_seconds": 3
     },
     {
       "cpu_seconds": 5,
+      "cumulative_cpu_limit_seconds": 48,
+      "cumulative_wall_deadline_seconds": 54,
       "id": "FINAL",
       "purpose": "cleanup/evidence finalization reserved",
       "wall_seconds": 10
@@ -74,6 +135,7 @@
     "staging_bytes": 268435456,
     "volume_quota_bytes": 1073741824
   },
+  "reviewed_correction_baseline": "a2f49d7b4a6d89c743a7192dabaf95d727cc5a20",
   "source_fallback": false,
   "status": "PROPOSED_NOT_AUTHORIZED_NOT_ENFORCED",
   "whole_operation": {
@@ -81,13 +143,15 @@
     "cpu_affinity_count": 1,
     "cpu_seconds": 50,
     "evidence_bytes": 26214400,
-    "finalization_cpu_guard_seconds": 49,
-    "finalization_wall_guard_seconds": 59,
+    "finalization_cpu_guard_seconds": 47,
+    "finalization_wall_guard_seconds": 53,
     "helper_leaf_bytes": 134217728,
-    "inner_cpu_seconds": 48,
-    "inner_wall_seconds": 58,
     "memory_bytes": 268435456,
+    "planned_quiescence_cpu_seconds": 48,
+    "planned_quiescence_wall_seconds": 54,
     "swap_bytes": 0,
-    "wall_seconds": 60
+    "wall_seconds": 60,
+    "work_cpu_limit_seconds": 43,
+    "work_wall_limit_seconds": 44
   }
 }

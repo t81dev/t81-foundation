@@ -136,45 +136,144 @@ Offline phases (full details in INVENTORY_AND_OFFLINE.md):
 The currently permitted task executes none of those phases. Native import or
 load tests/resource probes remain separately authorized qualification activities.
 
-## Proposed operation resources and STOP behavior
+## Candidate cumulative timeline and enforcement contract
 
-Machine-readable ceilings and phase reservations are in resources.json. One
-attempt, sequential phases, no retry, fresh host or architecture fallback:
+This correction supersedes the original50/45 plus10/5 phase allocation and the
+provisioning58/48,59/49 guards. It does not change #809's implementation or any
+F01 experiment limit. resources.json contains candidate setpoints, not installed
+or tested enforcement. **Provisioning remains blocked on reviewed tooling and
+host demonstrations of the requirements below.**
 
-- 60s whole-operation wall,50s aggregate CPU, one logical CPU,256MiB aggregate
- memory, zero swap; one active128MiB helper and a64MiB controller leaf.
-- Inner wall/CPU guard58s/48s; bounded finalization before59s/49s. Outer manager
- must cover activation, execution and shutdown within60s; the proposed profile
- runtime<=55s, activation/stop<=1s and no extensions/restarts needs host evidence.
-- 25MiB total evidence output, including raw logs/manifests, summaries, receipts,
- temporary/partial evidence and final hashes. No unbounded output or compression
- trick hides a larger retained raw record. Reserve cleanup/terminal space first.
-- Separately proposed provisioning storage: read-only inputs<=128MiB, installed
- payload<=512MiB, staging<=256MiB, evidence<=25MiB; combined<=921MiB, enforced
- within a1GiB quota-controlled operation volume. These are distinct provisioning
- input/payload outputs requiring approval, not a redefinition or enlargement of
- the F01 experiment's25MiB evidence cap. OS/image bytes are pre-existing approved
- infrastructure, not free custom build/download/install work inside the campaign.
+T0 is the existing manager's CLOCK_MONOTONIC timestamp at this operation unit's
+activation beginning, before any custom work; require a retained trustworthy
+origin (for example the verified InactiveExitTimestampMonotonic for the single
+invocation). P0 includes all launcher/controller/guard startup, imports and
+preflight; it does not begin at a later convenient sample. Ta is the actual
+ActiveEnterTimestampMonotonic. Admission requires0<=Ta-T0<=1s. No retries, reload,
+restart, notify extension, hooks or reactivation may reset either origin.
+All deadlines below use CLOCK_MONOTONIC in the same boot/time namespace. No
+suspend/clock namespace or VM-pause allowance is approved; unsupported clock/
+delivery behavior blocks admission. No calendar clock supplies an extra budget.
 
-Phase reservations sum50s wall/45s CPU plus10s wall/5s CPU for finalization and
-cleanup. They are caps, not estimates or measurements of fit. Any missing quota,
-exhausted budget, record limit, hash mutation, unsupported feature or failed
-phase ends the single attempt; no automatic retries, source build, alternative
-host or increase is allowed. If materialization/hash/installation cannot fit,
-retain the bounded incomplete receipt and request an independently reviewed
-resource/plan revision. Do not consume F01's experiment allowance.
+| Phase | Candidate phase wall/CPU | Cumulative deadline from T0 / aggregate CPU |
+|---|---|---|
+| P0, including startup |4s /3s |4s /3s |
+| P1 |10s /10s |14s /13s |
+| P2 |14s /14s |28s /27s |
+| P3 |13s /13s |41s /40s |
+| P4 |3s /3s |44s /43s |
+| FINAL, including helper stop, evidence and controller/guard exit |10s /5s |54s /48s |
+| Outer manager RuntimeMaxSec=55 from Ta |not another phase allowance |expiry in[T0+55,T0+56] |
+| Required fallback stop/delivery/quiescence bound |<=2s from runtime expiry |no later than T0+58 |
+| Unallocated outer wall/CPU ceilings |60s /50s |remaining margins are not work allowances |
 
-Cleanup: stop accepting work, close input channels, terminate verified owned
-process identities/groups and use the dedicated job subtree's verified cgroup
-kill via the existing manager. Bound waits/reaping and require population0 and
-no adopted/direct children. Never signal unrelated processes or kill the observer
-from its own aggregate as normal cleanup. Manager-wide termination is last resort;
-missing final records are incomplete. Keep accepted inputs read-only. Quarantine
-partial payload with no reuse/execution authority; deletion/disposal of this
-owned fresh volume must be explicit in the provisioning approval. If deletion
-cannot fit cleanup, deny access and have the administrator dispose of the whole
-disposable instance/volume under that approval. No unbounded rm traversal or
-post-budget retry is permitted. Do not delete successfully retained evidence.
+Thus normal planned quiescence by T0+54 leaves **at least1s** before the earliest
+55s active-runtime expiry; startup is already in the44s work allowance, not added
+after54.43+5=48 leaves2 CPU seconds below50. The2s fallback bound includes the
+proposed1s stop wait plus all timer delivery, final-kill delivery and reaping/
+quiescence costs:56+2=58 leaves2 wall seconds below60. These inequalities are
+conditional requirements, not claims that Linux delivers them. TimeoutStopSec=1
+alone does not prove this2s bound and may cover multiple lifecycle actions.
+Require Type=exec, TimeoutStartSec<=1, TimeoutStopSec<=1, start/stop failure mode
+kill, KillMode=control-group, SendSIGKILL=yes, no core dump/abort extension,
+no stop/post hooks and no restart/notify/randomized extensions. Review the actual
+unit and manager version/state paths; any extra wait invalidates this candidate.
+
+CPU origin is fresh aggregate D's zero usage before first custom execution.
+Charge absolute D/cpu.stat usage_usec, including controller, helper descendants,
+custom guards, startup, polling, checkpointing, kill/reaping and finalization.
+Never subtract a post-start baseline or reset counters per process/phase. cpu.max
+and one-CPU affinity constrain bandwidth/placement, not cumulative50s CPU.
+RLIMIT_CPU is per process and cannot independently bound a sequence/tree of
+helpers. Neither is accepted as aggregate CPU enforcement.
+
+A future reviewed controller must arm absolute phase timers before releasing a
+helper. Phase stop conditions are the earliest of entry+its phase wall/CPU cap,
+the cumulative prefix in the table, and the overall44s/43s work boundary. It must
+observe CPU counters through bounded nonblocking supervision, cease new work
+on the first deadline/failure, and enter FINAL without starting another phase.
+Before helper release, the independent guard must acknowledge the same phase
+identity and absolute cutoffs and be able to stop the helper even if the
+controller blocks. Timers/counters need verified accounting visibility, polling/
+delivery and kill latency; specifying a polling interval is not proof of timely enforcement. Any
+observed overrun fails that phase. In-flight stop costs consume FINAL, never a
+refreshed phase budget. Missing/blocked controller or helper feedback fails closed.
+
+FINAL begins at the actual transition F; set its absolute deadline to
+min(F+10s,T0+54s) and its CPU cutoff to min(U_F+5s,48s), where U_F is D's actual
+usage at transition. Late detection/overshoot reduces remaining time/CPU; it
+cannot move the absolute54/48 boundaries. The controller in the64MiB leaf is
+the finalizer. It closes admission, terminates the owned helper subtree and
+boundedly reaps descendants before reading stable outputs. The helper never
+finalizes its own success. Helper wait/population checks, record writes/flushes,
+hash/readback, controller and guard exits are inside FINAL, not work after it.
+If termination cannot be verified, preserve an incomplete failure checkpoint;
+never label outputs stable or install complete. No ExecStop/Post helper or
+replacement process gets a fresh finalization allowance.
+
+The last1s wall/1s CPU of FINAL is reserved for guard response/quiescence: stop
+new finalization writes by min(F+9s,T0+53s) or min(U_F+4s,47s) CPU, whichever
+comes first. Require an independent whole-operation guard that still works if
+the finalizer dies or blocks in I/O. It must terminate all custom work within
+that reserved1s wall/1s charged CPU, so quiescence remains<=54s/48s. Any custom
+guard is in D, shares the64MiB controller leaf/CPU/evidence accounting, and must
+exit within the same deadline. No unbudgeted custom observer is permitted.
+The existing OS manager is last resort, not a substitute for this cumulative
+CPU guard. The guard's source, signal/cgroup rights and bounded-latency evidence
+are currently missing. Stock RuntimeMaxSec plus cpu.max does **not** meet this
+failure-path contract. If no reviewed mechanism can meet it, STOP unsupported;
+do not claim50s CPU enforced or enlarge the budget. A custom guard sharing the controller leaf is not
+automatically independent of shared-leaf OOM, starvation or loss of signaling
+rights; those failure modes need an accepted fail-closed mechanism as well.
+No claim that this missing guard can be supplied by stock systemd is made.
+Finite host checks may only
+establish their tested scope, not universal scheduling or uninterruptible-I/O bounds.
+
+## Resource, persistence and STOP conditions
+
+Preserve256MiB aggregate, one active128MiB helper,64MiB controller leaf (all
+custom control/guard processes combined), zero swap, one logical CPU,25MiB
+aggregate evidence and the separately proposed1GiB operation volume. Storage
+remains128MiB read-only inputs+512MiB installed payload+256MiB staging+25MiB
+evidence=921MiB. These are **unverified until target tooling, readbacks, quotas,
+accounting and failure-path enforcement are demonstrated**. Host capacity is
+not enforcement and no F01 experimental allowance changes.
+
+Evidence reservations still sum25MiB, now including a1MiB reserved bounded
+manager-terminal export within the former2MiB phase-log allocation. All raw/
+partial files, checkpoints, stdout/stderr, receipts and hash metadata count.
+Before admitting a phase, reserve its output and terminal/cleanup capacity.
+Write bounded exclusive phase checkpoints with hashes and original stop reasons;
+flush/read back and record the actual persistence scope while the controller is
+alive. No successful durability claim follows from a buffered write alone.
+
+After helper termination the surviving controller seals only evidence it can
+actually write/verify before its cutoff. The independent guard and manager do
+not become substitute scientific finalizers. If the manager kills the unit,
+there is no promised terminal receipt, seal, flush or post-kill writer. Retain
+only checkpoints already successfully persisted and any ordinary pre-existing
+manager record. Later separately authorized read-only review may export the
+matching bounded manager record into its reserved evidence slot; it must label
+its collection time/scope and cannot retroactively complete the operation or
+invent a terminal observation. Missing record/seal, incomplete tail, capacity
+failure or unconfirmed quiescence means incomplete evidence and blocks reuse.
+
+Cleanup never signals unrelated processes, deletes retained evidence or starts
+an unbounded removal/retry. Quarantine partial payload without execution/lock
+activation rights. Disposal of the owned fresh instance/volume remains an
+explicit administrative scope if bounded cleanup cannot complete. Observed
+resource/latency violation, unavailable guard/manager/durability feature, missing
+identity or exhausted quota ends the one attempt. All unobserved states stay
+unknown; no host fallback, source build or new allowance follows.
+
+Clock/lifecycle reasoning was checked against
+[systemd v255 service_running_timeout](https://github.com/systemd/systemd/blob/v255/src/core/service.c)
+and [unit_arm_timer](https://github.com/systemd/systemd/blob/v255/src/core/unit.c):
+that reference uses active-enter monotonic time for the runtime limit and a
+CLOCK_MONOTONIC service timer. [Service timeout semantics](https://www.freedesktop.org/software/systemd/man/255/systemd.service.html)
+explain start/stop/extension behavior. This is source inspection, not a statement
+about the unselected host's manager binary or measured delivery. Pin and verify
+that actual implementation before treating these inequalities as usable controls.
 
 ## Approvals and remaining blockers
 

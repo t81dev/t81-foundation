@@ -32,6 +32,7 @@
       "instance_id": null,
       "kernel_release": null,
       "libc_identity": null,
+      "manager_lifecycle_and_clock_evidence_sha256": null,
       "manager_version": null
     },
     "status": "TEMPLATE_NOT_A_RECEIPT"
@@ -72,6 +73,7 @@
     "execution_authorized": false,
     "host_receipt_sha256": null,
     "human_approval": null,
+    "independent_guard_implementation_sha256": null,
     "installer_identity_sha256": null,
     "linux_relock_required": true,
     "observed": null,
@@ -81,9 +83,12 @@
     "qualified": false,
     "resources_sha256": null,
     "status": "TEMPLATE_NOT_A_RECEIPT",
+    "timing_cpu_quiescence_demonstration_sha256": null,
     "tooling_source_sha256": null
   },
   "provisioning_result": {
+    "FINAL_entry_and_absolute_deadlines": null,
+    "active_enter_Ta": null,
     "allowed_outcomes": [
       "BLOCKED",
       "FAILED",
@@ -92,17 +97,22 @@
       "COMPLETE_WITH_SCOPED_METADATA_DIAGNOSTIC"
     ],
     "cleanup_result": null,
+    "clock_origin_T0": null,
     "content_manifests": null,
     "counters": null,
     "diagnostic_profiles": null,
     "evidence_finalization": "not_attempted",
     "execution_authorized": false,
+    "guard_trigger_to_quiescence_observation": null,
     "human_approval": null,
     "independent_review": null,
     "input_identity_hashes": null,
     "installed_packages_manifest_sha256": null,
     "installed_stdlib_manifest_sha256": null,
+    "last_confirmed_checkpoint_sha256": null,
     "linux_relock_required": true,
+    "manager_expiry_Tm": null,
+    "manager_record_export_scope": null,
     "native_candidate_resolution_manifest_sha256": null,
     "native_runtime_load_scope": "not_observed",
     "observed": null,
@@ -110,7 +120,10 @@
     "orphan_observation": null,
     "outcome": null,
     "payload_quarantine_or_disposal": null,
+    "persistence_scope": null,
+    "phase_entry_exit_counters": null,
     "qualified": false,
+    "quiescence_after_seal_observed": null,
     "sealed_evidence_manifest_sha256": null,
     "status": "TEMPLATE_NOT_A_RECEIPT",
     "symlink_manifest_sha256": null

@@ -109,8 +109,10 @@ inputs/signatures are unavailable or the source/host identity changed.
    even when the scoped static inventories are complete.
    Preserve the intermediate raw manifests, subject to evidence bounds.
 7. Only if expressly approved, perform the narrowly scoped diagnostic below,
-   recheck environment/source stability and finalize evidence before cleanup.
-   Otherwise report diagnostic_not_authorized, not a passing contract check.
+   recheck environment/source stability and checkpoint the observations. Enter
+   FINAL for helper termination, then controller-only evidence sealing within
+   the PLAN.md absolute deadline. Otherwise report diagnostic_not_authorized,
+   not a passing contract check. No sealing allowance follows cleanup/deadlines.
 
 The installer is not pinned yet and no provisioning script is supplied. An
 installer/hashing/cleanup implementation must receive source review and exact
@@ -157,13 +159,34 @@ stdout/stderr and seal metadata. Reject duplicate/unsafe paths and unknown recor
 keys in later reviewed tooling. Do not truncate away a negative record to make a
 manifest pass. Record original stop reason separately from cleanup/write errors.
 
-After workers are stopped and payload frozen, produce final input/output hashes
-and before/after counters, plus a hash inventory over successfully written
-records. Verify readback within the budget. A missing/unreadable/incomplete seal
-or exhausted evidence reservation cannot produce a complete receipt. Do not
-fabricate successful persistence after OOM, kill, capacity or deadline failure.
-The independent manager's stop record may remain the only evidence of death;
-its absence is also a gap, not success. No custom out-of-budget observer.
+The controller is the only finalizer and remains in its64MiB leaf after helper
+termination. It must stop admission and terminate/reap the helper subtree at the
+actual FINAL transition, then inventory only stable outputs. Failure to confirm
+termination allows only an incomplete checkpoint, never a successful seal. All
+write/flush/readback/hashing, cleanup and controller/guard exit costs are charged
+to the same absolute FINAL wall/CPU bounds in PLAN.md; there is no post-cleanup
+or per-file clock reset. P0 includes startup and all phase timers precede release.
+
+Phase checkpoints must be written while the controller is alive, with bounded
+exclusive files, sequence/hash identity and recorded write/flush/readback scope.
+If a reviewed filesystem requires file and directory fsync, both operations must
+complete within budget before verified persistence is claimed. Blocked I/O is
+covered by the required independent guard, not an unbounded finalizer wait. Keep
+previous confirmed checkpoints and partial tails separately; never overwrite
+negative evidence or describe unconfirmed buffered data as durable. No universal
+power-loss guarantee is inferred from successful local filesystem operations.
+
+The finalizer stops new writes by min(F+9,T0+53) seconds or min(U_F+4,47) CPU;
+all custom work must quiesce by min(F+10,T0+54) / min(U_F+5,48). Manager runtime
+expiry, termination/reaping and any delivery delay consume the explicitly
+reserved margins, not a new FINAL window. Ordinary manager logging is not a
+receipt-writing replacement. No ExecStop/Post, resurrected writer or unbudgeted
+observer may finish the record after manager termination. If killed, only
+already-persisted checkpoints and existing manager records may survive. A later
+bounded authorized export labels its collection scope/time and cannot manufacture
+terminal counters or successful finalization. Missing seal/record, failed fsync,
+capacity exhaustion or unobserved quiescence remains incomplete and blocks reuse.
+The actual guard/manager/IO latency and persistence behavior are unverified.
 
 Preserve successful raw evidence in the25MiB budget. Payload is quarantined with
 no activation/execution right, even on a successful inventory. Failed/partial

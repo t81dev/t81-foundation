@@ -44,8 +44,9 @@
   "resource_requirements": [
     "One proposed offline attempt60s wall/50s CPU/256MiB aggregate/one CPU/zero swap/25MiB evidence; no execution permission",
     "Proposed installation storage separately128MiB inputs/512MiB payload/256MiB staging/25MiB evidence under1GiB volume; explicit human approval required",
-    "All custom preflight/install/hash/diagnostic/cleanup charged; phase caps50s wall45s CPU plus cleanup reserve10s/5s; no retries",
-    "Builder/infrastructure/input transfer need distinct approved scopes/budgets, never unmetered operation setup"
+    "All custom preflight/install/hash/diagnostic/cleanup charged; candidate P0-P4 totals44s wall43s CPU plus FINAL10s/5s, planned quiescence54s/48s; startup/stop/guard latencies consume reservations; no retries",
+    "Builder/infrastructure/input transfer need distinct approved scopes/budgets, never unmetered operation setup",
+    "Manager runtime55s from active-enter, activation<=1s included in P0; required runtime-expiry-to-quiescence<=2s yields latest58s; these are unimplemented/unverified conditions, not demonstrated enforcement"
   ],
   "schema": "t81.research-commons.experiment-proposal.v1",
   "security_requirements": [
@@ -55,5 +56,5 @@
     "Unfilled templates do not authorize provisioning, lock activation, qualification or one-run execution; no merge"
   ],
   "status": "proposed",
-  "uncertainty": "Only host classes and documentation are inspected; no account/AMI/instance or Linux host is observed. Provider binary/build, installer/tool identities, actual resource fit and every provisioning/qualification receipt remain missing."
+  "uncertainty": "Only host classes and documentation are inspected; no account/AMI/instance or Linux host is observed. Provider binary/build, installer/tool identities, actual resource fit and every provisioning/qualification receipt remain missing. Corrected candidate timing fits arithmetically only; phase control, independent cumulative CPU/blocked-finalizer guard, startup/stop latency and persistence implementation/evidence are missing, so enforcement and provisioning readiness remain blocked."
 }

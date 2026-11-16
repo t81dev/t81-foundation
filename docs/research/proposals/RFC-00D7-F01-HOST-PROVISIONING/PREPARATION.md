@@ -1,5 +1,9 @@
 # Planning preparation record — 2026-11-16
 
+The initial record below describes reviewed a2f49d7b. Its60/50 phase arithmetic
+is superseded by the targeted timeline correction appended below; the underlying
+observed historical validation output is retained rather than rewritten.
+
 Planning/documentation only. No Linux host/account/AMI was inspected through an
 API, selected, launched or modified. No package/archive was downloaded or
 installed, interpreter built/executed, Linux probe or metadata diagnostic run,
@@ -66,3 +70,55 @@ One documentation append initially used a repository-relative path from inside
 the packet directory and failed before writing. Existing hashes still verified;
 the append was then applied using the correct local paths and hashes refreshed.
 This was a drafting/path failure, not a host or provisioning observation.
+
+## Targeted timeline/enforcement correction — static documentation only
+
+Review baseline: a2f49d7b4a6d89c743a7192dabaf95d727cc5a20. P0–P4 now total
+44s wall/43s CPU, FINAL reserves10s/5s, planned quiescence is54s/48s, and the
+60s/50s outer ceilings remain. T0 includes startup; Ta-T0<=1s is required.
+The55s active-runtime timer expires55–56s after T0, so54s quiescence leaves at
+least1s. Required expiry-to-quiescence<=2s gives latest58s, with2s remaining
+outer wall margin. The final write cutoff53s/47s leaves1s/1s guard-response
+reservation inside FINAL; all quantities are candidate limits, not evidence of
+enforcement or fit. Actual earlier FINAL entry shortens, never resets, bounds.
+
+Source-inspected systemd v255 service_running_timeout and unit_arm_timer and
+its service timeout documentation to distinguish active-enter/monotonic origins
+and repeated stop/extension paths. Exact target manager remains unselected; no
+source fact is claimed as host-observed behavior. The source/function references
+are linked in PLAN.md. No source copy, provider/interpreter download, host API,
+probe, install, build, experimental function or diagnostic was executed.
+
+The plan explicitly requires a reviewed independent CPU/wall guard able to stop
+a blocked/dead finalizer. cpu.max, per-process RLIMIT and RuntimeMax alone do
+not demonstrate cumulative50s CPU enforcement. Guard source and target latency
+receipts remain null. Controller-only FINAL, helper stop/reaping first, pre-kill
+checkpoints, bounded existing-manager record export and absence of any guaranteed
+post-kill terminal receipt are now explicit. No extra observer or post-budget
+finalizer is introduced. No resource or existing evidence schema changes.
+
+Validation uses existing local documentation/data tools only: source-pin/blob
+checks, duplicate-key JSON parsing, candidate arithmetic, unchanged accepted
+source/profile comparisons, false/null template checks, Commons shape validation,
+packet hashes and staged whitespace. No target capability, timing or persistence
+claim follows. Corrected results are appended after checks.
+
+Corrected local JSON/source/arithmetic validation (exit0):
+
+```json
+{"FINAL_wall_cpu":[10,5],"accepted_source_profiles_unchanged":true,"enforcement_implemented_or_tested":false,"evidence_mib":25,"linux_relock_required":true,"memory_leaf_mib":[256,128,64],"minimum_manager_wall_margin":1,"outer_wall_cpu":[60,50],"planned_quiescence_wall_cpu":[54,48],"required_latest_manager_quiescence":58,"source_pins_verified":24,"storage_mib":921,"unfilled_receipt_templates":4,"work_wall_cpu":[44,43]}
+```
+
+Checked every phase/prefix sum,53/47 write cutoff and1/1 response reserve,
+activation+runtime55–56 and required2s fallback arithmetic, unchanged memory/
+swap/affinity/evidence/storage values, null enforcement/guard/authority evidence,
+24 pinned source/blob hashes, unchanged #809/#810 trees and retained active
+linux_relock_required=true. These assertions check proposed numbers and source
+identity, not any implementation, host, timer, CPU guard, kill, fsync or orphan.
+
+Existing Commons validation again returned valid_proposal_shape with execution
+unavailable and its authority/acceptance limitation. Packet SHA256SUMS was
+refreshed and all seven entries verified. Staged whitespace checking passed.
+The original numerical record above remains historical evidence of the reviewed
+plan, not the corrected operative budget. No new executable file or test/probe
+was written or run, and no existing accepted source/lock/schema was modified.
