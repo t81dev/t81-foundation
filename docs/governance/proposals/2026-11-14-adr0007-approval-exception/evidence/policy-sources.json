@@ -1,0 +1,54 @@
+{
+  "revision": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+  "files": {
+    "docs/governance/MODULE_OWNERSHIP_CHARTER.md": {
+      "sha256": "52ff83f2ef7394885bc03628a4d601f9d4d334274e15c66b502c7efcf447e58f",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/governance/MODULE_OWNERSHIP_CHARTER.md"
+    },
+    "docs/governance/APPROVAL_DELEGATION.md": {
+      "sha256": "1ec04323ca929407b800e038422f3d039730c3ef99e44e96b95e1ba1b5e30120",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/governance/APPROVAL_DELEGATION.md"
+    },
+    "docs/governance/FREEZE_ENFORCEMENT.md": {
+      "sha256": "b9a26e818ae5e753a863b057b32ac229ed9dbce3a3f80e56398d57158ccd1c05",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/governance/FREEZE_ENFORCEMENT.md"
+    },
+    "docs/governance/SPEC_AUTHORITY_MODEL.md": {
+      "sha256": "1592ee73a96456cc167e31c419c0f4677f9f6d7c7fa6ea3542fc926d8548aab5",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/governance/SPEC_AUTHORITY_MODEL.md"
+    },
+    "docs/product/RELEASE_DISCIPLINE.md": {
+      "sha256": "cb31a11ba95e07755d4487d1fff6888d3785394a8502994aa3f6cf720252c61a",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/product/RELEASE_DISCIPLINE.md"
+    },
+    "docs/governance/SPEC_DRIFT_POLICY.md": {
+      "sha256": "0ec47f73ec713d9043d1eea4b5f8d7be584932248a864c34f43200bbc056923f",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/governance/SPEC_DRIFT_POLICY.md"
+    },
+    "spec/supplemental/deterministic-core-profile-v1.md": {
+      "sha256": "c02b174e46ae93df161fa435448101a88939eba6edaa79d200174ab1f005f7b7",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/spec/supplemental/deterministic-core-profile-v1.md"
+    },
+    "spec/rfcs/RFC-0043-deterministic-conformance-validation-framework.md": {
+      "sha256": "0099a27c6239e407f8d5d2e69f3e0abd9ceb24858f51bddf2ed3c713ac538151",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/spec/rfcs/RFC-0043-deterministic-conformance-validation-framework.md"
+    },
+    "spec/rfcs/RFC-0048-deterministic-surface-definition-and-governance-boundaries.md": {
+      "sha256": "af420b53eece7c57b36d14283a980d5ed01184624aac1c0467f8a6fbc4d8f18c",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/spec/rfcs/RFC-0048-deterministic-surface-definition-and-governance-boundaries.md"
+    },
+    "spec/supplemental/constitution.md": {
+      "sha256": "0a0e29c19a2fdb133e306c8bbedf073e888e562310e5cc8abd8b454c0ac39d1a",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/spec/supplemental/constitution.md"
+    },
+    "docs/status/DECISION_LOG.md": {
+      "sha256": "a47449dbd62ac5868b8d262a4ea221afb6f4ecd88f6913b4214559b8a85e7ca5",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/status/DECISION_LOG.md"
+    },
+    ".github/CODEOWNERS": {
+      "sha256": "6c5d607214aeb90607aff2ddd340842e32c11342cf25f8e744b0cbb71f2cb29e",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/.github/CODEOWNERS"
+    }
+  },
+  "scope": "inspected authority set; no generic unilateral waiver/amendment power found; this is not a claim about undocumented external legal authority"
+}
