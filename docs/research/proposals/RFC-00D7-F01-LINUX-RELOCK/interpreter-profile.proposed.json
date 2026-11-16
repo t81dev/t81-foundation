@@ -1,0 +1,105 @@
+{
+  "execution_authorized": false,
+  "host_qualified": false,
+  "implementation": "CPython",
+  "kind": "PROPOSED_SOURCE_AND_LAYOUT_PIN_NOT_BUILT_RUNTIME_LOCK",
+  "linux_relock_required": true,
+  "proposed_layout": {
+    "DESTSHARED": "/opt/t81-f01/cpython-3.14.3/lib/python3.14/lib-dynload",
+    "alternative_config_beside_executable": "must not exist",
+    "base_prefix": "/opt/t81-f01/cpython-3.14.3",
+    "executable": "/opt/t81-f01/venv/bin/python3.14",
+    "include_system_site_packages": false,
+    "initial_sys_path": [
+      "/opt/t81-f01/cpython-3.14.3/lib/python314.zip",
+      "/opt/t81-f01/cpython-3.14.3/lib/python3.14",
+      "/opt/t81-f01/cpython-3.14.3/lib/python3.14/lib-dynload"
+    ],
+    "purelib_and_platlib": "/opt/t81-f01/venv/lib/python3.14/site-packages",
+    "pyvenv_cfg": "/opt/t81-f01/venv/pyvenv.cfg",
+    "pyvenv_cfg_proposed_bytes_file": "pyvenv.cfg.proposed",
+    "pyvenv_cfg_proposed_sha256": "a518e9ce31c8f47ab0070cfdca3b5f4dc0b24a00a20ff87ec98c9f684103d104",
+    "resolved_base_executable": "/opt/t81-f01/cpython-3.14.3/bin/python3.14",
+    "startup_hooks_and_path_overrides": "forbidden",
+    "stdlib": "/opt/t81-f01/cpython-3.14.3/lib/python3.14",
+    "stdlib_zip_must_exist": false,
+    "venv_prefix": "/opt/t81-f01/venv"
+  },
+  "required_target_evidence": {
+    "actual_pyvenv_cfg_sha256": null,
+    "binary_elf_build_id": null,
+    "binary_sha256": null,
+    "binary_symlink_inventory_sha256": null,
+    "compiler_linker_and_build_recipe_sha256": null,
+    "configure_arguments_and_config_headers_sha256": null,
+    "installed_package_file_manifest_sha256": null,
+    "installed_stdlib_and_lib_dynload_manifest_sha256": null,
+    "installer_tool_identity_sha256": null,
+    "patch_set_sha256": null,
+    "provider_image_or_package_digest": null,
+    "reproducibility_receipt_sha256": null,
+    "resolved_dynamic_loader_and_library_manifest_sha256": null,
+    "sysconfig_data_and_frozen_runtime_identity_sha256": null
+  },
+  "runtime_policy": {
+    "abi": "cp314",
+    "bytecode_writes": false,
+    "debug_build": false,
+    "experimental_jit": false,
+    "gil_enabled": true,
+    "platform": "glibc Linux; strict non-framework single-prefix lib layout",
+    "tail_call_interpreter": false
+  },
+  "source": {
+    "built": false,
+    "critical_members": [
+      {
+        "path": "Include/patchlevel.h",
+        "sha256": "cd13fb4c88765524821d2a04fd1b27e8b0f56975a280a96d76b23aec09bd125b",
+        "size": 1773
+      },
+      {
+        "path": "Makefile.pre.in",
+        "sha256": "2124f9dad60a2d478930032631b46b362592def3441f376d9a741978698d128c",
+        "size": 132098
+      },
+      {
+        "path": "Modules/getpath.py",
+        "sha256": "82c6e824b010482d7a06259e48dc86a6d23eeb39b1597ed6dba98c14fd029edc",
+        "size": 36680
+      },
+      {
+        "path": "Python/initconfig.c",
+        "sha256": "175cccc1de0514759827c997dfacfdc753b3cd814faed8a4b5a4e6b20e1f82b9",
+        "size": 134615
+      },
+      {
+        "path": "Python/pathconfig.c",
+        "sha256": "feb4e943d3e07d6bf217d67eaf60ee1fcefea004908d2f35b770a311f6bec8c9",
+        "size": 11979
+      },
+      {
+        "path": "configure",
+        "sha256": "49b8a4f3f124d677758ac2e11690653ebba3e574a987f4a7c26de7fcfd4b759c",
+        "size": 959992
+      },
+      {
+        "path": "configure.ac",
+        "sha256": "8b14b5cc48271483a5f885c9d6c501f72ac0cf8a375ef06b1ce5f1cbabcd20c1",
+        "size": 267336
+      }
+    ],
+    "interpreter_executed": false,
+    "observed_sha256": "a97d5549e9ad81fe17159ed02c68774ad5d266c72f8d9a0b5a9c371fe85d902b",
+    "size": 23778568,
+    "source_authenticity_signature_verified": false,
+    "stdlib_regular_files": 2405,
+    "stdlib_source_inventory_sha256": "5650649f996f708c0c1faf75239cf08061220555dca1e16bf1acad7994b30eb3",
+    "target_binary_sha256": null,
+    "url": "https://www.python.org/ftp/python/3.14.3/Python-3.14.3.tar.xz",
+    "version": "3.14.3"
+  },
+  "stdlib_source_inventory": "stdlib-source-inventory.json",
+  "stdlib_source_inventory_sha256": "5650649f996f708c0c1faf75239cf08061220555dca1e16bf1acad7994b30eb3",
+  "version": "3.14.3"
+}
