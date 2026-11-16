@@ -1,0 +1,65 @@
+{
+  "schema": "t81.research-commons.experiment-proposal.v1",
+  "id": "RFC-00D7-F01",
+  "status": "proposed",
+  "hypothesis_id": "H07",
+  "attribution": {
+    "name": "Codex assistant in the current session",
+    "kind": "agent",
+    "model": null,
+    "role": "Protocol author and prior RFC reviewer; same-agent prior context disclosed; no independent human oracle review or experiment execution claimed"
+  },
+  "repository_revision": "ec22a7588282d37ad027cff61c807bcf159ac2e0",
+  "evidence": [
+    {
+      "source_ref": "register",
+      "relationship": "context",
+      "scope": "Canonical H07 defines the auditability question and its limits. RFC-00D7-F01 A-F are bounded contract questions, not a replacement hypothesis or comparative assurance finding. Candidate-specific inputs are separately pinned in source-pins.json."
+    },
+    {
+      "source_ref": "charter",
+      "relationship": "context",
+      "scope": "Preserve H01-H08, Hanoi/CWEB history, negative findings, independent-oracle requirements and source-bounded claims."
+    },
+    {
+      "source_ref": "authority-model",
+      "relationship": "context",
+      "scope": "Unratified draft text and proposal validation do not authorize normative promotion, implementation, execution or changes to frozen semantics."
+    }
+  ],
+  "uncertainty": "Protocol preparation only: no A-F implementation, input enumeration, oracle execution or experiment results. Predicted witnesses come from prior source review and are not new results. Some candidate admissibility rules remain underdetermined. A bounded negative search cannot certify real VM behavior, native worker isolation, actual journal durability, hardware advantage, H07 comparative benefit or production readiness.",
+  "human_authorization": {
+    "status": "not_requested",
+    "human": null,
+    "record": "The current session human authorizes bounded synthetic harness preparation on a separate experimental branch and static verification only. A–F state enumeration, candidate/oracle execution and experimental results remain forbidden. Status not_requested refers to a future run; human execution authorization must separately identify protocol and reviewed harness hashes."
+  },
+  "research_question": "For RFC-00D7 at ec22a7588282d37ad027cff61c807bcf159ac2e0, are A commitment-to-halt bounds, B publication/revocation ordering, C canonical replay logs, D live-memory and step accounting, E emergency record ordering, and F admission under the actual RFC-00D3 schema internally consistent over the finite domains in PROTOCOL.md?",
+  "falsification_criterion": "An independently checked history or object must satisfy the declared draft-admissibility predicate and contradict its scoped claim. Deliberately broken controls are not RFC falsifiers. Missing semantic choices yield UNDERDETERMINED; incomplete searches or limit failures cannot yield NO_COUNTEREXAMPLE_IN_DOMAIN. Preserve all counterexamples, ambiguities, invalid runs and negative outcomes.",
+  "matched_control": "Exact prefix-step oracle for A; conventional atomic serial coordinator for B; complete command-history control for C; allocation-identity and non-replenishable charge ledgers for D; independently packed byte/checksum and simulated stable-storage oracle for E; unchanged Draft 2020-12 RFC-00D3 validator plus key-set proof for F. Controls share inputs and required semantics; implementation routines must remain separate. No performance claim or optimized-production comparison is proposed.",
+  "method": "Six separately reported bounded in-memory models, with exact per-area hypotheses, domains, controls, predicted witnesses, stopping rules and source anchors in PROTOCOL.md sections 3-8. Pin source-pins.json, final harness/oracle code and an explicit interpretation table before authorization. Use ascending enumeration once and fixed 0,1,42,804 rotations of at most 16 predeclared witness/control cases per area. No actual service, worker, VM program, model inference, journal or filesystem fault is exercised.",
+  "measurement_plan": "Record exact admissibility/oracle outcomes, event order, allocation and step counts, byte/checksum relationships, schema error paths and explored-state coverage. Report FALSIFIED, NO_COUNTEREXAMPLE_IN_DOMAIN, UNDERDETERMINED, INCONCLUSIVE_LIMIT, BLOCKED or INVALID_RUN per subhypothesis. No p-values or speed measurements. Real time and memory are safety ceilings distinct from modeled resource counters; no extrapolation outside the declared finite domains.",
+  "expected_artifacts": [
+    "Attributable authorization record naming the protocol digest, reviewed harness SHA, finite domains, limits and scratch artifact destination",
+    "Pinned inputs/dependencies/environment/commands and explicit admissibility interpretations",
+    "Bounded A-F case ledgers and independently readable raw minimal witnesses, including event prefixes and emergency bytes",
+    "Positive and deliberately defective control records, incomplete coverage, limit events and preserved failures",
+    "summary.json and REPORT.md with separate A-F verdicts and qualifications",
+    "SHA256SUMS establishing content identity without claiming truth, authenticity or authorization"
+  ],
+  "resource_requirements": [
+    "Maximum visited states including controls/minimization: A 4096, B 4096, C 8192, D 16384, E 16384, F 256; total ceiling 49408",
+    "Per-area maximum wall time: A 5 s, B 5 s, C 10 s, D 10 s, E 10 s, F 10 s; suite 60 s wall and 50 s CPU; one CPU",
+    "128 MiB maximum per experiment runner; 256 MiB aggregate including the trusted external budget supervisor; sequential execution only",
+    "At most 4 MiB uncompressed artifacts per area and 25 MiB total including suite metadata; no repeated fresh allowances",
+    "A qualified Linux resource-control environment with existing delegated hard limits and independent deadlines; absence or failure of enforcement blocks the run",
+    "jsonschema 4.26.0 for the schema oracle, exact source/dependency lock and reviewed independent oracle/control implementation before execution"
+  ],
+  "security_requirements": [
+    "No implementation or execution authorized by this proposal, schema validation, discovery operation or machine-readable status field",
+    "Future authorized run uses bounded integer/byte-array/schema models only, plus scratch evidence writes; simulated sync and crash never call real fsync, journal I/O or process-kill injection",
+    "No production or normative changes, PR #804 edits, native backend workers, real model inference, networking, credentials, OS sandbox tests, kernel changes, performance campaign, merge or release actions",
+    "A trusted budget supervisor may launch only the reviewed experiment runner; no privilege escalation or unqualified enforcement substitution is included",
+    "Oracle authorship, shared primitives and prior review context must be disclosed; an independent reviewer must inspect literal vectors, equations and admissibility before execution",
+    "All research/release holds, canonical hypotheses, governance boundaries and Protocol 001 authorization requirements remain unchanged"
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "protocol_id": "RFC-00D7-F01",
+  "status": "proposed",
+  "execution_authorized": false,
+  "candidate_revision": "ec22a7588282d37ad027cff61c807bcf159ac2e0",
+  "previous_reviewed_revision": "4fdba573cc3be94ceb69cbcb3b04b62083b4d252",
+  "preparation_checkout_revision": "40695b0ba5cea3e43563b6ed2443c987d2738089",
+  "sources": [
+    {
+      "revision": "ec22a7588282d37ad027cff61c807bcf159ac2e0",
+      "path": "spec/rfcs/RFC-00D7-model-service-boundary.md",
+      "git_blob": "f18c2b6062453fd5d1a86ce5d9562268f2815108",
+      "sha256": "a2f8d9fee22f6d27c57cab1d1a8a6b70ff3d0da1f0f81a72aded7a0955520aaf",
+      "url": "https://github.com/t81dev/t81-foundation/blob/ec22a7588282d37ad027cff61c807bcf159ac2e0/spec/rfcs/RFC-00D7-model-service-boundary.md",
+      "scope": "Candidate contract; no implementation status inferred"
+    },
+    {
+      "revision": "ec22a7588282d37ad027cff61c807bcf159ac2e0",
+      "path": "spec/rfcs/RFC-00D3-model-manifest-schema.json",
+      "git_blob": "4688a9ae6c3fb2436dd58061cc6356d0ec352dd8",
+      "sha256": "a7c2cf69c9fc3b2030075cca2ea902fc5c28c53ebd28dc80b65ac4f5c3b8cbe8",
+      "url": "https://github.com/t81dev/t81-foundation/blob/ec22a7588282d37ad027cff61c807bcf159ac2e0/spec/rfcs/RFC-00D3-model-manifest-schema.json",
+      "scope": "Actual schema for experiment F"
+    },
+    {
+      "revision": "ec22a7588282d37ad027cff61c807bcf159ac2e0",
+      "path": "vm/tracing/canonhash81.cpp",
+      "git_blob": "200b8f15b70b08e16db768ce6fb39cb8595faef0",
+      "sha256": "cdc6a4e504c5fbe92b9b53df80ba4b6157162032834e24f6169333780bbd1f5d",
+      "url": "https://github.com/t81dev/t81-foundation/blob/ec22a7588282d37ad027cff61c807bcf159ac2e0/vm/tracing/canonhash81.cpp",
+      "scope": "Digest-byte algorithm context for experiment E"
+    },
+    {
+      "revision": "ec22a7588282d37ad027cff61c807bcf159ac2e0",
+      "path": "include/t81/tracing/canonhash.hpp",
+      "git_blob": "f3f4d2b10163dba8fb25a6a5290a4da3db2e217a",
+      "sha256": "9ecdf751dce3708bbd2c61882cc5504f2527bd3378cd2bbc681f6ea7b293d882",
+      "url": "https://github.com/t81dev/t81-foundation/blob/ec22a7588282d37ad027cff61c807bcf159ac2e0/include/t81/tracing/canonhash.hpp",
+      "scope": "32-byte CanonHash81 type context"
+    },
+    {
+      "revision": "40695b0ba5cea3e43563b6ed2443c987d2738089",
+      "path": "docs/research/continuity/HYPOTHESIS_REGISTER_v1.json",
+      "git_blob": "a917b019fd80091ee872fce5c8316d0d32b8045b",
+      "sha256": "af8ca65dcef136f294eb33010b5a6621875a52db4f3e60b94a4e28db5318a1c1",
+      "url": "https://github.com/t81dev/t81-foundation/blob/40695b0ba5cea3e43563b6ed2443c987d2738089/docs/research/continuity/HYPOTHESIS_REGISTER_v1.json",
+      "scope": "Canonical H07 context; dated record, not fresh PR status"
+    },
+    {
+      "revision": "40695b0ba5cea3e43563b6ed2443c987d2738089",
+      "path": "docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md",
+      "git_blob": "c7932c0465610a2ec29b1ba8ca9cd35b96bca60a",
+      "sha256": "bb073bafcd00a81d6790558d05ab60b2e53eee9a8724e19563228983bc575ca7",
+      "url": "https://github.com/t81dev/t81-foundation/blob/40695b0ba5cea3e43563b6ed2443c987d2738089/docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md",
+      "scope": "Research continuity and evidence boundaries"
+    },
+    {
+      "revision": "40695b0ba5cea3e43563b6ed2443c987d2738089",
+      "path": "docs/research/RESEARCH_CHARTER.md",
+      "git_blob": "0b160fb788844dc8892d1917ff9e3d89685af575",
+      "sha256": "a89e4c4338fc8b91412a862db24512d44f38d07f84f3e2c45b195c18fc49b4fa",
+      "url": "https://github.com/t81dev/t81-foundation/blob/40695b0ba5cea3e43563b6ed2443c987d2738089/docs/research/RESEARCH_CHARTER.md",
+      "scope": "Current research and engineering separation"
+    },
+    {
+      "revision": "40695b0ba5cea3e43563b6ed2443c987d2738089",
+      "path": "docs/research/commons/experiment-proposal.schema.json",
+      "git_blob": "d8ce055ee8dfd80c1ae9733168e04f9addf45087",
+      "sha256": "7021b1d9a97a1a410d9b23b1acdbc5ff4a0a3f24b4f41a2b60bd6e7a63dfe529",
+      "url": "https://github.com/t81dev/t81-foundation/blob/40695b0ba5cea3e43563b6ed2443c987d2738089/docs/research/commons/experiment-proposal.schema.json",
+      "scope": "Proposal shape only; not execution authority"
+    },
+    {
+      "revision": "40695b0ba5cea3e43563b6ed2443c987d2738089",
+      "path": "docs/research/commons/manifest.v1.json",
+      "git_blob": "adf59a4751f0754a61f574848c5b7e44be72c927",
+      "sha256": "c6e2642365399b85a98e53727d1ec5a8240c3cb51ea86416565543a0658de911",
+      "url": "https://github.com/t81dev/t81-foundation/blob/40695b0ba5cea3e43563b6ed2443c987d2738089/docs/research/commons/manifest.v1.json",
+      "scope": "Historical discovery snapshot, not live integration state"
+    }
+  ]
+}
