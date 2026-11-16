@@ -1,0 +1,4 @@
+home = /opt/t81-f01/cpython-3.14.3/bin
+include-system-site-packages = false
+version = 3.14.3
+executable = /opt/t81-f01/cpython-3.14.3/bin/python3.14

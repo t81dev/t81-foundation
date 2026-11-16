@@ -1,0 +1,59 @@
+{
+  "attribution": {
+    "kind": "agent",
+    "model": null,
+    "name": "Codex assistant in the current session",
+    "role": "Re-lock proposal author and prior same-agent harness/package author; static evidence only, not independent scientific validation"
+  },
+  "evidence": [
+    {
+      "relationship": "context",
+      "scope": "Canonical H07 defines the auditability question and its limits. RFC-00D7-F01 A-F are bounded contract questions, not a replacement hypothesis or comparative assurance finding. Candidate-specific inputs are separately pinned in source-pins.json.",
+      "source_ref": "register"
+    },
+    {
+      "relationship": "context",
+      "scope": "Preserve H01-H08, Hanoi/CWEB history, negative findings, independent-oracle requirements and source-bounded claims.",
+      "source_ref": "charter"
+    },
+    {
+      "relationship": "context",
+      "scope": "Unratified draft text and proposal validation do not authorize normative promotion, implementation, execution or changes to frozen semantics.",
+      "source_ref": "authority-model"
+    }
+  ],
+  "expected_artifacts": [
+    "Two distinct proposed Linux wheel profiles and hash requirements",
+    "Verified CPython3.14.3 source and source-Lib inventory; proposed venv bytes/layout",
+    "Static inspection records, registry metadata, source pins and packet hashes",
+    "Unfilled target-runtime requirements and independent review/activation plan"
+  ],
+  "falsification_criterion": "Any artifact/hash/RECORD/architecture/tag/schema/source mismatch fails static review. Missing runtime identity, unsupported interpreter layout or unverified linking blocks lock activation. No static success authorizes qualification or A-F.",
+  "human_authorization": {
+    "human": null,
+    "record": "Current human permits dependency/interpreter re-lock preparation and static artifact inspection only. Installation, execution, activation and merging remain excluded.",
+    "status": "not_requested"
+  },
+  "hypothesis_id": "H07",
+  "id": "RFC-00D7-F01-LINUX-RELOCK",
+  "matched_control": "Publisher metadata plus independent future byte rehash, source-RECORD and ELF parsing and human diff review. No comparative performance or assurance claim.",
+  "measurement_plan": "Record exact byte lengths, hashes, metadata, native dependencies, source inventories, command results and explicit missing host evidence; never substitute source hashes for built interpreter/installed stdlib hashes.",
+  "method": "Bounded inert archive retrieval; SHA-256, full wheel RECORD/member verification, ELF section/symbol/version inspection, source-Lib inventory and source/AST/schema checks only. No installation, package/source execution, native loading or target-host probe.",
+  "repository_revision": "0afbc339288b44cc7536af6c227f957257bb8ff6",
+  "research_question": "Which exact artifact and runtime identities are needed to prepare an independently reviewable Linux F01 dependency re-lock without installing or claiming host qualification?",
+  "resource_requirements": [
+    "No experimental or qualification campaign authorized; preserve49408 states/60s wall/50s CPU/256MiB aggregate/25MiB experimental artifacts",
+    "Static archive retrieval caps:2MiB per wheel,32MiB CPython source,1MiB metadata response,60s per response; no archive extraction or package loading",
+    "Static packet capped4MiB; streaming source-member hashing; no native execution"
+  ],
+  "schema": "t81.research-commons.experiment-proposal.v1",
+  "security_requirements": [
+    "No packages installed, interpreter built/executed or artifact code imported; no ldd/native loader",
+    "No supervisor/bootstrap/runner, probe, proof checker or A-F execution",
+    "No production/schema/protocol/harness/gate changes; linux_relock_required remains true",
+    "No merge, normative promotion, authorization or qualification receipt supplied",
+    "Future provisioning, lock activation and qualification need distinct reviewed human authorization"
+  ],
+  "status": "proposed",
+  "uncertainty": "Six exact wheel archives and CPython source bytes are statically inspected; no Linux binary, installed stdlib, actual venv, installed packages or native loader is observed. Source and layout pins are proposals; target identity fields remain null and block activation. Same-author checks are not independent scientific validation."
+}

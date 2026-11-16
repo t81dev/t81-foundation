@@ -1,0 +1,49 @@
+{
+  "built": false,
+  "critical_members": [
+    {
+      "path": "Include/patchlevel.h",
+      "sha256": "cd13fb4c88765524821d2a04fd1b27e8b0f56975a280a96d76b23aec09bd125b",
+      "size": 1773
+    },
+    {
+      "path": "Makefile.pre.in",
+      "sha256": "2124f9dad60a2d478930032631b46b362592def3441f376d9a741978698d128c",
+      "size": 132098
+    },
+    {
+      "path": "Modules/getpath.py",
+      "sha256": "82c6e824b010482d7a06259e48dc86a6d23eeb39b1597ed6dba98c14fd029edc",
+      "size": 36680
+    },
+    {
+      "path": "Python/initconfig.c",
+      "sha256": "175cccc1de0514759827c997dfacfdc753b3cd814faed8a4b5a4e6b20e1f82b9",
+      "size": 134615
+    },
+    {
+      "path": "Python/pathconfig.c",
+      "sha256": "feb4e943d3e07d6bf217d67eaf60ee1fcefea004908d2f35b770a311f6bec8c9",
+      "size": 11979
+    },
+    {
+      "path": "configure",
+      "sha256": "49b8a4f3f124d677758ac2e11690653ebba3e574a987f4a7c26de7fcfd4b759c",
+      "size": 959992
+    },
+    {
+      "path": "configure.ac",
+      "sha256": "8b14b5cc48271483a5f885c9d6c501f72ac0cf8a375ef06b1ce5f1cbabcd20c1",
+      "size": 267336
+    }
+  ],
+  "interpreter_executed": false,
+  "observed_sha256": "a97d5549e9ad81fe17159ed02c68774ad5d266c72f8d9a0b5a9c371fe85d902b",
+  "size": 23778568,
+  "source_authenticity_signature_verified": false,
+  "stdlib_regular_files": 2405,
+  "stdlib_source_inventory_sha256": "5650649f996f708c0c1faf75239cf08061220555dca1e16bf1acad7994b30eb3",
+  "target_binary_sha256": null,
+  "url": "https://www.python.org/ftp/python/3.14.3/Python-3.14.3.tar.xz",
+  "version": "3.14.3"
+}
