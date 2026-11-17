@@ -1,0 +1,59 @@
+{
+  "attribution": {
+    "kind": "agent",
+    "model": null,
+    "name": "Codex assistant in the current session",
+    "role": "Candidate documentation author and prior same-agent artifact author; Gate0 freshly computed from Git objects, not independent scientific/human review"
+  },
+  "evidence": [
+    {
+      "relationship": "context",
+      "scope": "Canonical H07 defines the auditability question and its limits. RFC-00D7-F01 A-F are bounded contract questions, not a replacement hypothesis or comparative assurance finding. Candidate-specific inputs are separately pinned in source-pins.json.",
+      "source_ref": "register"
+    },
+    {
+      "relationship": "context",
+      "scope": "Preserve H01-H08, Hanoi/CWEB history, negative findings, independent-oracle requirements and source-bounded claims.",
+      "source_ref": "charter"
+    },
+    {
+      "relationship": "context",
+      "scope": "Unratified draft text and proposal validation do not authorize normative promotion, implementation, execution or changes to frozen semantics.",
+      "source_ref": "authority-model"
+    }
+  ],
+  "expected_artifacts": [
+    "NON-NORMATIVE host-assurance/stopping/authorization candidate amendment",
+    "Explicit PR811 provisioning-vs-AF applicability and unchanged arithmetic",
+    "Separate versioned host-qualification field dictionary, not an active schema or receipt",
+    "O01-O10/L01-L08 traceability, exact candidate/source hashes and validation including Gate0"
+  ],
+  "falsification_criterion": "Gate0 checksum mismatch requires STOP/CORRECTIONS REQUIRED. Candidate drafting fails if it adopts/implements the model, changes operative bytes/limits, silently reinterprets legacy receipts, erases UNSUPPORTED or grants a runtime/observer allowance.",
+  "human_authorization": {
+    "human": null,
+    "record": "The2026-11-17 human instruction authorizes drafting this separate candidate only after Gate0 passes. Adoption, implementation, model/host qualification and execution remain unrequested/ungranted; the status field refers to those future decisions, not the granted drafting scope.",
+    "status": "not_requested"
+  },
+  "hypothesis_id": "H07",
+  "id": "RFC-00D7-F01-BOLQ-CANDIDATE",
+  "matched_control": "Exact pinned PR813 checksum entries and O01-O10/L01-L08 source traceability; separate future human contract/receipt/source/host review. No comparative performance or assurance result.",
+  "measurement_plan": "No target measurements or scenarios are executed. Record Gate0 command/cwd/output/status and candidate/source validation; proposed future receipts distinguish mechanism/admission/measurement, uncertainty, criterion and operation outcomes.",
+  "method": "Fresh pre-authoring four-entry Git-object checksum reconciliation; documentation-only candidate text/applicability/field dictionary; pinned source and artifact hashes plus local structural/Commons validation only.",
+  "repository_revision": "473770c7a4aaf83327eaaededd1de14bad177e4c",
+  "research_question": "What exact non-normative candidate host-assurance/stopping/authorization text, provisioning applicability and versioned receipt dictionary would implement the PR813 decision proposal if later independently adopted, without changing current contracts?",
+  "resource_requirements": [
+    "Documentation-only candidate packet<=128KiB; no host or experiment budget used",
+    "Preserve all original memory/swap/placement/wall/CPU/state/evidence caps, separate1GiB provisioning storage and no reset/retry/extra observer allowance",
+    "Proposed receipt core<=8192 UTF8 bytes and referenced evidence inside25MiB; no fit or implementation claim; STOP rather than silently enlarge limits"
+  ],
+  "schema": "t81.research-commons.experiment-proposal.v1",
+  "security_requirements": [
+    "Gate0 must pass all four pinned checksums before authoring; original source manifest is never regenerated to mask a mismatch",
+    "No operative/normative protocol, active schema/gate/supervisor/lock or experimental semantics changes",
+    "No guard/tool implementation, host acquisition/provisioning, interpreter/native/probe/proof/fixture/AF execution or merge",
+    "Preserve linux_relock_required=true, original PR812 UNSUPPORTED finding and all research/governance/release holds",
+    "Do not reinterpret limits_demonstrated:true or route this proposed type into legacy gates; no receipt/adoption/qualification/execution authority supplied"
+  ],
+  "status": "proposed",
+  "uncertainty": "Draft preparation only is authorized. The model remains unadopted/unqualified, shared-failure and physical-overrun risks remain, and future contract/schema/gate/lock/host/source decisions are absent. Numeric caps are unchanged; observation does not establish prevention."
+}
