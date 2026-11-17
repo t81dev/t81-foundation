@@ -1,0 +1,255 @@
+{
+  "observed_at": "2026-11-17T15:15:29Z",
+  "scope": "Selected PRs #823/#824 and pinned documentation/source identities only; not a repository-wide PR inventory, scientific replication, CI refresh or qualification receipt.",
+  "collector": "Codex documentation reconciliation author, with prior F01 authoring context; not an independent reviewer of its own work.",
+  "main": "ab15820a2dd8ebcadde0efecf1fbb0d43b57d3f9",
+  "collection_methods": [
+    "git fetch origin main",
+    "GitHub connector get_pr_info for #823 and #824",
+    "GitHub connector fetch_pr_comments for #823 and #824",
+    "git fetch origin pull/823/head pull/824/head",
+    "git show and SHA-256 of exact pinned Git blobs"
+  ],
+  "timestamp_scope": "Receipt assembly time after the metadata queries; source merged_at/updated_at timestamps below are GitHub metadata, not local execution measurements.",
+  "pull_requests": [
+    {
+      "number": 823,
+      "title": "docs(ai-context): Nov 17 morning status and F01 BOLQ governance handoff",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "head": "52604ee1d4b7d90f69b19651a942f68dd5653183",
+      "head_ref": "docs/ai-context-morning-2026-11-17",
+      "base": "40695b0ba5cea3e43563b6ed2443c987d2738089",
+      "merge": null,
+      "merged_at": null,
+      "updated_at": "2026-11-17T14:39:24Z",
+      "url": "https://github.com/t81dev/t81-foundation/pull/823",
+      "changed_files": 1
+    },
+    {
+      "number": 824,
+      "title": "docs(f01): non-normative BOLQ contract migration review plan",
+      "state": "closed",
+      "draft": false,
+      "merged": true,
+      "head": "f803e15ebcf4896fc70608cb11d69505134e5578",
+      "head_ref": "docs/f01-bolq-migration-review-2026-11-17",
+      "base": "40695b0ba5cea3e43563b6ed2443c987d2738089",
+      "merge": "ab15820a2dd8ebcadde0efecf1fbb0d43b57d3f9",
+      "merged_at": "2026-11-17T15:09:05Z",
+      "updated_at": "2026-11-17T15:10:23Z",
+      "url": "https://github.com/t81dev/t81-foundation/pull/824",
+      "changed_files": 1
+    }
+  ],
+  "discussion_observations": [
+    {
+      "pr_number": 823,
+      "comments": [],
+      "interpretation": "No discussion/review entries returned; draft review pending or unverified. This does not prove absence of external review."
+    },
+    {
+      "pr_number": 824,
+      "comments": [
+        {
+          "url": "https://github.com/t81dev/t81-foundation/pull/824#issuecomment-6951995203",
+          "author": "chatgpt-codex-connector[bot]",
+          "created_at": "2026-11-17T15:09:11Z",
+          "updated_at": "2026-11-17T15:10:23Z",
+          "body": "<!-- codex-pull-request-review-summary -->\n<!-- codex-review-state:v1 {\"code_review\":{\"commit_sha\":\"f803e15ebcf4896fc70608cb11d69505134e5578\",\"has_any_findings\":false,\"has_unresolved_findings\":false,\"status\":\"completed\"},\"security_review\":{\"commit_sha\":null,\"has_any_findings\":null,\"has_unresolved_findings\":null,\"status\":null}} -->\n\n<details>\n<summary><strong>Codex Review Summary</strong>: ✅ Completed</summary>\n\nThis comment shows the latest Codex review activity on this pull request.\n\n| Review | Status | Commit | Review trigger |\n| --- | --- | --- | --- |\n| 📝 **Code Review** | ✅ **Completed** <relative-time datetime=\"2026-11-17T15:10:23.045599Z\">2026-11-17T15:10:23.045599Z</relative-time> | `f803e15` | Draft marked ready |\n\n\n\n<details> <summary>ℹ️ About Codex in GitHub</summary>\n<br/>\n\n[Your team has set up Codex to review pull requests in this repo](https://chatgpt.com/codex/cloud/settings/general). Reviews are triggered when you\n- Open a pull request for review\n- Mark a draft as ready\n- Comment \"@codex review\" or \"@codex security review\".\n\nCodex reacts with 👀 while any review is running, comments if it has suggestions, and reacts with 👍 once all reviews finish with no findings.\n\n</details>\n\n</details>"
+        }
+      ],
+      "interpretation": "Returned discussion is a Codex bot review summary for f803e15, not an independent Gemini review artifact."
+    }
+  ],
+  "user_attestations": {
+    "source": "User assignment in this session: Proceed with T81 Foundation AI-context reconciliation following the authorized merge of PR #824.",
+    "independent_gemini_review": {
+      "status": "user_reported",
+      "scope": "Independent Gemini documentation review of the corrected PR #824 source; original Gemini review artifact and authenticated reviewer identity were not supplied or independently verified by this collector."
+    },
+    "human_authorization": {
+      "status": "user_reported_documentation_only_merge_authorization",
+      "scope": "PR #824 non-normative migration review plan only; integration is independently confirmed by Git/GitHub. Original authorization artifact is not retained here. No model adoption, residual-risk acceptance, implementation, host work, qualification or A-F authority follows."
+    }
+  },
+  "historical_index_controls": {
+    "generated_at": "2026-11-05",
+    "selected_view": "2026-11-02-reconciled",
+    "next_gate": "2026-11-13 non-normative overlay: read T81_RESEARCH_STATUS_2026-11-13.md first, with receipts/2026-11-13-pr-integration-observations.json. Supplied reviews ACCEPT #779 at 4d5f3586c04a69c520e613166291c0974877628d and #780 at a31b862e6bbdc7c136a74c9117aa085a13b4da2c; both draft/unmerged. #782 at 125a1897b7e7e068ef6d576d97c487295c7203a7 has Windows builds and required quality gate SUCCESS; CodeQL and final review remain pending at snapshot. #645/#747/#760/#766/#769 closed without merge by explicit maintainer decision; preserve dependencies and #767 unique checks. Reconcile #778/#779 before integration. RFC-00E1 DRAFT, SCG-08 Gate 1 WITHHELD, Gate 2 STRICT NO-GO. selected_view remains historical 2026-11-02 partial inventory; no merge or release authority granted."
+  },
+  "pinned_sources": [
+    {
+      "source_revision": {
+        "commit_sha": "ab15820a2dd8ebcadde0efecf1fbb0d43b57d3f9"
+      },
+      "path": "docs/research/proposals/RFC-00D7-F01-BOLQ-MIGRATION/REVIEW_PLAN.md",
+      "sha256": "ca668d1c78578e3beeafe4f36e5dc56f77415a2562cd0aeecc6b56043d06e769"
+    },
+    {
+      "source_revision": {
+        "commit_sha": "f803e15ebcf4896fc70608cb11d69505134e5578"
+      },
+      "path": "docs/research/proposals/RFC-00D7-F01-BOLQ-MIGRATION/REVIEW_PLAN.md",
+      "sha256": "ca668d1c78578e3beeafe4f36e5dc56f77415a2562cd0aeecc6b56043d06e769"
+    },
+    {
+      "source_revision": {
+        "commit_sha": "52604ee1d4b7d90f69b19651a942f68dd5653183"
+      },
+      "path": "docs/ai-context/MORNING_STATUS_2026-11-17.md",
+      "sha256": "1614181a2a3a061ae872f450009658ba338992d141b81f6d49765d8ead67059e"
+    },
+    {
+      "source_revision": {
+        "commit_sha": "0afbc339288b44cc7536af6c227f957257bb8ff6"
+      },
+      "path": "docs/research/proposals/RFC-00D7-F01/PROTOCOL.md",
+      "sha256": "d48aeedc924cf505cab8a7fed316fc84d8f2c259dd502fd1d0a7fe8432f05de3"
+    },
+    {
+      "source_revision": {
+        "commit_sha": "0afbc339288b44cc7536af6c227f957257bb8ff6"
+      },
+      "path": "experiments/rfc_00d7_f01/dependency-lock.json",
+      "sha256": "51faf03f86a7237b3927e0fa3ced4fc342898bbc53ed087e3b798b35ad6bba8c"
+    },
+    {
+      "source_revision": {
+        "commit_sha": "0afbc339288b44cc7536af6c227f957257bb8ff6"
+      },
+      "path": "experiments/rfc_00d7_f01/evidence.schema.json",
+      "sha256": "dface268fecf8fcf41670105078bfe1ad8e5c70988941de6e5c459a460765b95"
+    },
+    {
+      "source_revision": {
+        "commit_sha": "d0edeb486993860d733abc04b2ce740b35442874"
+      },
+      "path": "docs/research/proposals/RFC-00D7-F01-HOST-PROVISIONING/PLAN.md",
+      "sha256": "bb9caa0816a25d444c63fc9c2f732ab3045f91b08ad3aaf0348508f1f9404030"
+    },
+    {
+      "source_revision": {
+        "commit_sha": "8ced4f076c3ea18594175a8e0a72885f54bb3c42"
+      },
+      "path": "docs/research/proposals/RFC-00D7-F01-GUARD-FEASIBILITY/ASSESSMENT.md",
+      "sha256": "88d1056333da94da2d1e2fd01708f236f7ff18613b93d9d88792a6936fc13733"
+    },
+    {
+      "source_revision": {
+        "commit_sha": "ab15820a2dd8ebcadde0efecf1fbb0d43b57d3f9"
+      },
+      "path": "docs/ai-context/CURRENT_STATE.schema.json",
+      "sha256": "c1b2655842ea6c06790545b0c60efe49d7cc27d9df57694e0b57c36adc7ad958"
+    },
+    {
+      "source_revision": {
+        "commit_sha": "ab15820a2dd8ebcadde0efecf1fbb0d43b57d3f9"
+      },
+      "path": "scripts/validate_current_state.py",
+      "sha256": "564f5eba8f704539c3a57dec59f2672e2ba96f1cba07097505c6ba11c67f700c"
+    }
+  ],
+  "boundaries": {
+    "assurance_model": "F01-HOST-BOLQ-v1 NOT ADOPTED",
+    "residual_risks": "NOT ACCEPTED",
+    "migration_stages": "M1-M6 STOP",
+    "linux_relock_required": true,
+    "operative_protocol_sha256": "d48aeedc924cf505cab8a7fed316fc84d8f2c259dd502fd1d0a7fe8432f05de3",
+    "legacy_limits_demonstrated": "Unchanged; no BOLQ alias, auto-upgrade or reinterpretation.",
+    "pr812": "Original UNSUPPORTED finding preserved; no new enforcement evidence."
+  },
+  "limitations": [
+    "PR metadata is a dated observation and must be refreshed before action.",
+    "PR #823 morning report remains on its independent draft branch; its other PR/CI/scientific assertions were not freshly verified here.",
+    "No host, interpreter, latency, durability, reaping or experimental evidence generated.",
+    "Hashes establish content identity, not authenticity, scientific truth or authorization."
+  ],
+  "baseline_ai_context_inventory": [
+    {
+      "path": "docs/ai-context/ACTIVE_RESEARCH_HANDOFF.md",
+      "sha256": "3f92475f242398e8c0caf97ec7c88c4755c21dae6ba7a8c587504f1e33dddf3a"
+    },
+    {
+      "path": "docs/ai-context/BASE01_2026-11-03.md",
+      "sha256": "505d0f53484a813252468f631796ef2a21d839dc25d7efecbd9bbd15003c69a5"
+    },
+    {
+      "path": "docs/ai-context/BASE81_LEGACY_CLAIMS_CORRECTION_2026-11-06.md",
+      "sha256": "ca290fd296de4e2361264616ccb03e9897873543c8c09d1b9634b0530b1cda75"
+    },
+    {
+      "path": "docs/ai-context/BOOTSTRAP.md",
+      "sha256": "7cf09894dcf5f22069c56a2b8ca79cc9c4ea9ea2b060aed24128c3408001d183"
+    },
+    {
+      "path": "docs/ai-context/CURRENT_STATE.json",
+      "sha256": "2bd1dda97e3e591cf48bd9b2b1b4e2501f950b10d74968cc4219beeafdaaa57d"
+    },
+    {
+      "path": "docs/ai-context/CURRENT_STATE.schema.json",
+      "sha256": "c1b2655842ea6c06790545b0c60efe49d7cc27d9df57694e0b57c36adc7ad958"
+    },
+    {
+      "path": "docs/ai-context/DECISIONS_AND_GOVERNANCE.md",
+      "sha256": "c44351380d5bd96229d229623395169d1c1c752c8e461bc25534e4eea15c0215"
+    },
+    {
+      "path": "docs/ai-context/EVIDENCE_AND_FINDINGS.md",
+      "sha256": "44799a435b7607ba9004823197b47c8f5f13a934f5873efa160717a9da420772"
+    },
+    {
+      "path": "docs/ai-context/H04_R03_ACCEPTANCE_FINDINGS_2026-11-06.md",
+      "sha256": "8b46d9553506139baa53cadce0c5e9729d6fc0a7a926881bb569e9ed8448f3c2"
+    },
+    {
+      "path": "docs/ai-context/RESEARCH_IDENTITY.md",
+      "sha256": "767616f2e346bc2731544fc7ea33e60a06eaef86b28cfa93e60d620ce5a95974"
+    },
+    {
+      "path": "docs/ai-context/START_HERE.md",
+      "sha256": "6b6a6fc260443332ea089ff0c6ef8c8184f8dd020dfd2f2817b6e8537e08083e"
+    },
+    {
+      "path": "docs/ai-context/SYSTEM_ARCHITECTURE.md",
+      "sha256": "320ae2d151c46e57874000544c08b847a666c3363568f71f047caf4687a00f64"
+    },
+    {
+      "path": "docs/ai-context/T81_COMPLETE_STATUS_2026-11-08.md",
+      "sha256": "1e434e60fc127f087451bf73e513a4db5ef35777375493d22ed2cf5aba4b0842"
+    },
+    {
+      "path": "docs/ai-context/T81_RESEARCH_STATUS_2026-11-09.md",
+      "sha256": "76a3c18a1b2a1e24061040789682a7ee9a7d437e05f6f65ebd63d16fba864d82"
+    },
+    {
+      "path": "docs/ai-context/T81_RESEARCH_STATUS_2026-11-10.md",
+      "sha256": "8eaf216123f6f2130f201fe9328e3951d2c15adcb9447fd12f5bdcbf4ea73843"
+    },
+    {
+      "path": "docs/ai-context/T81_RESEARCH_STATUS_2026-11-12.md",
+      "sha256": "3941dcf2e804c25a425a6cdd6c835574262a5bb8580aab50a624070104e76be4"
+    },
+    {
+      "path": "docs/ai-context/T81_RESEARCH_STATUS_2026-11-13.md",
+      "sha256": "8f3541f283f38648a1dcca2613aa491d4073e0e74e546b35ff2605896de99c70"
+    },
+    {
+      "path": "docs/ai-context/T81_RESEARCH_STATUS_2026-11-15.md",
+      "sha256": "02e0be3e603b42c2b3640284962fc48200a8c6c22eff815a3975d2bb565348d8"
+    },
+    {
+      "path": "docs/ai-context/receipts/2026-11-02-pr678-observations.json",
+      "sha256": "17a36ead26264c007a42ad7d515192160852894b537d11ba9c5e577bb967a8c0"
+    },
+    {
+      "path": "docs/ai-context/receipts/2026-11-02-pr678-validation.json",
+      "sha256": "ff8c6f7eb68fbdb22d92679eae90536b2d48bf2e114712ea4c20b09010963379"
+    },
+    {
+      "path": "docs/ai-context/receipts/2026-11-13-pr-integration-observations.json",
+      "sha256": "a6588c033a00c7057d7e1ad1467a9159d7e8b1a58dfdddd7d338ff0ea86cd0c3"
+    }
+  ]
+}
