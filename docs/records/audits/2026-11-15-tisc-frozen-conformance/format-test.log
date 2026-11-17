@@ -1,0 +1,7 @@
+Test project /private/tmp/t81-tisc-build
+    Start 1: t81_vm_frozen_semantics_differential_test
+1/1 Test #1: t81_vm_frozen_semantics_differential_test ...   Passed    0.39 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   0.40 sec

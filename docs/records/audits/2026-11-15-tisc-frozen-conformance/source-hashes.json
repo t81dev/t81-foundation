@@ -1,0 +1,53 @@
+{
+  "revision": "40695b0ba5cea3e43563b6ed2443c987d2738089",
+  "files": [
+    {
+      "path": "spec/tisc-spec.md",
+      "sha256": "c0a1f84a0669a61f1092902470f899c0811ea071f7cf69707d928510e0e5b01c"
+    },
+    {
+      "path": "spec/tisc/opcode-semantics.md",
+      "sha256": "21bc9d6161ef26f98466423691f3a7517ad3b9f15020fde839007a526280cc59"
+    },
+    {
+      "path": "docs/records/archive/TISC_v1.1.0_Canonical_Freeze.md",
+      "sha256": "6b3c42ffd151653428003a93e81708123d088b137fca31c3a870fcdd6f2c593b"
+    },
+    {
+      "path": "spec/rfcs/RFC-0002-deterministic-execution-contract.md",
+      "sha256": "1a50f888ac4fe5e056acc93355b3230febfb7cde9b39f0d23d54227949e854dc"
+    },
+    {
+      "path": "spec/rfcs/RFC-0027-spec-as-executable.md",
+      "sha256": "00c7ee990d6f30462448967425656a5a990f816fa9daa874c003c30101af5ee8"
+    },
+    {
+      "path": "spec/rfcs/RFC-0049-canonical-ternary-arithmetic-semantics.md",
+      "sha256": "776b767deb49456bd7a30e01288e58ee9c889f8542d6c8da9f2da95c38fea568"
+    },
+    {
+      "path": "vm/vm.cpp",
+      "sha256": "2ed93572891bc9e32f7525270c7ff6a88edb3d5f22529e3f19195f71cb1ff998"
+    },
+    {
+      "path": "isa/encoding.cpp",
+      "sha256": "d9fd81f87e9b6b47c55c8ddf5e7bdeef95e0ce48a965b1973e23526c32f2a391"
+    },
+    {
+      "path": "isa/binary_io.cpp",
+      "sha256": "797d3fe424136cb9109811b1bc47de4b453791d12bc0f860c7dcc96947de6aec"
+    },
+    {
+      "path": "tests/fixtures/canonical_traces/08_bounded_loop_print.trace",
+      "sha256": "772f1883b62b162783c5eb344be6577a8837a05d8077d66947b113ce2d9ee6a3"
+    },
+    {
+      "path": "spec/conformance/tisc/ternary-logic-canonical.t81",
+      "sha256": "7b0ca64a3e9279353904ab529574b87d77eb7e6d5e1072680fc384cbfcad9f57"
+    },
+    {
+      "path": "spec/conformance/tisc/bounds-fault-contract.t81",
+      "sha256": "1c3f2c8ab94677557ed252695f7f247e10729545c9b3f27f93cb75470cca0ff7"
+    }
+  ]
+}

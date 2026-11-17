@@ -431,6 +431,12 @@ if(T81_BUILD_TESTS)
   add_executable(t81_vm_fault_test tests/cpp/vm_fault_test.cpp)
   target_link_libraries(t81_vm_fault_test PRIVATE t81_vm t81_core)
 
+  add_executable(t81_vm_frozen_semantics_differential_test
+                 tests/cpp/vm_frozen_semantics_differential_test.cpp)
+  target_link_libraries(t81_vm_frozen_semantics_differential_test PRIVATE t81_vm t81_isa)
+  add_test(NAME t81_vm_frozen_semantics_differential_test
+           COMMAND t81_vm_frozen_semantics_differential_test)
+
   add_executable(t81_vm_deterministic_fault_test tests/cpp/test_vm_deterministic_fault.cpp)
   target_link_libraries(t81_vm_deterministic_fault_test PRIVATE t81_vm t81_core)
 

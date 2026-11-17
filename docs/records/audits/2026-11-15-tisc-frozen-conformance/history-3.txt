@@ -1,0 +1,1 @@
+$ git show --format=fuller f3dd5417f845195342ed143c7bb4c9d2881d3f84 -- spec/rfcs docs/releases spec/tisc-spec.md

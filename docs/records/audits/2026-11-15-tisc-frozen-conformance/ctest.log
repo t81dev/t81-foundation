@@ -1,0 +1,11 @@
+Test project /private/tmp/t81-tisc-build
+    Start   1: t81_vm_frozen_semantics_differential_test
+1/3 Test   #1: t81_vm_frozen_semantics_differential_test ...   Passed    0.01 sec
+    Start  99: t81_isa_encoding_test
+2/3 Test  #99: t81_isa_encoding_test .......................   Passed    0.24 sec
+    Start 138: t81_vm_load_store_test
+3/3 Test #138: t81_vm_load_store_test ......................   Passed    0.01 sec
+
+100% tests passed, 0 tests failed out of 3
+
+Total Test time (real) =   0.27 sec

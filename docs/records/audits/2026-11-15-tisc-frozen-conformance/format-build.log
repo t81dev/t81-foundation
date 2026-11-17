@@ -1,0 +1,11 @@
+[  0%] Built target t81_tracing
+[  0%] Built target t81_jit
+[ 33%] Built target t81_core
+[ 50%] Built target t81_ffi
+[ 50%] Built target t81_isa
+[ 66%] Built target t81_experimental
+[ 83%] Built target t81_axion
+[100%] Built target t81_vm
+[100%] Building CXX object CMakeFiles/t81_vm_frozen_semantics_differential_test.dir/tests/cpp/vm_frozen_semantics_differential_test.cpp.o
+[100%] Linking CXX executable t81_vm_frozen_semantics_differential_test
+[100%] Built target t81_vm_frozen_semantics_differential_test
