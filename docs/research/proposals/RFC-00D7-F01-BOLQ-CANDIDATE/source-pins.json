@@ -1,0 +1,260 @@
+{
+  "candidate_id": "RFC-00D7-F01-BOLQ-CANDIDATE-01",
+  "candidate_model": "F01-HOST-BOLQ-v1",
+  "current_protocol_sha256": "d48aeedc924cf505cab8a7fed316fc84d8f2c259dd502fd1d0a7fe8432f05de3",
+  "draft_preparation_authorized": true,
+  "execution_authorized": false,
+  "gate0_exit_status": 0,
+  "gate0_original_manifest_sha256": "c17aa249e491e50fc90a51eb6ded995118abfe8b1d8c2b04e5cdb72883d4e5a6",
+  "gate0_result": "PASS",
+  "implementation_authorized": false,
+  "linux_relock_required": true,
+  "model_adopted": false,
+  "model_adoption_decision_record": null,
+  "model_qualified": false,
+  "normative_or_operative_edit_performed": false,
+  "proposed_receipt_type": "t81.f01.host-qualification.bolq.v1",
+  "reference_PR813_head": "473770c7a4aaf83327eaaededd1de14bad177e4c",
+  "sources": [
+    {
+      "git_blob": "e7dbc944b6eb157a9e2aa45f9aa77d233408832b",
+      "path": "docs/research/proposals/RFC-00D7-F01-HOST-PROVISIONING/PLAN.md",
+      "revision": "d0edeb486993860d733abc04b2ce740b35442874",
+      "sha256": "bb9caa0816a25d444c63fc9c2f732ab3045f91b08ad3aaf0348508f1f9404030"
+    },
+    {
+      "git_blob": "33085d370c0269ab35a0215950d7a1d929aa1bb6",
+      "path": "docs/research/proposals/RFC-00D7-F01-HOST-PROVISIONING/INVENTORY_AND_OFFLINE.md",
+      "revision": "d0edeb486993860d733abc04b2ce740b35442874",
+      "sha256": "fddd4d0752d33d7d9bd09c9a01d15fe189264a4294c5c8c73c87a15c95e313cb"
+    },
+    {
+      "git_blob": "0cc9eb200e2486850fd8e3428a3917cfb87e3734",
+      "path": "docs/research/proposals/RFC-00D7-F01-HOST-PROVISIONING/resources.json",
+      "revision": "d0edeb486993860d733abc04b2ce740b35442874",
+      "sha256": "dbb9b50fcbdac559cbc33c4f9611e2a8988905175b4b15c9671f25cff124f7f2"
+    },
+    {
+      "git_blob": "9a25d3a49026936b399a86c77e979693f3804830",
+      "path": "docs/research/proposals/RFC-00D7-F01-HOST-PROVISIONING/receipt-templates.json",
+      "revision": "d0edeb486993860d733abc04b2ce740b35442874",
+      "sha256": "83ef05bdd52f80471e962c8d0984731b1f3a74eb53be2aac06734896880ae291"
+    },
+    {
+      "git_blob": "5e735b18f1127bbc58f7721b2cfa64783d48c5a3",
+      "path": "docs/research/proposals/RFC-00D7-F01-HOST-PROVISIONING/source-pins.json",
+      "revision": "d0edeb486993860d733abc04b2ce740b35442874",
+      "sha256": "db0d0c15b11c185ff08782b80a7cf0081042686ae0b27b2a821c06a7891eecba"
+    },
+    {
+      "git_blob": "94cdb98d0331ec993e1c2a646476aa37031957be",
+      "path": "docs/research/proposals/RFC-00D7-F01-HOST-PROVISIONING/SHA256SUMS",
+      "revision": "d0edeb486993860d733abc04b2ce740b35442874",
+      "sha256": "63645ddb9511317d02bd38874f9d03f3ea3af955a0bc7ce4d76c8f1d1f30eee5"
+    },
+    {
+      "git_blob": "27e65bb0c47d70388923fcd78f8ab02f7529fde9",
+      "path": "docs/research/proposals/RFC-00D7-F01-LINUX-RELOCK/RELOCK.md",
+      "revision": "0a369b8c7ce00979c970389e02e0da8d89d6ab0a",
+      "sha256": "0172bbd0717fa8df57d7969479cdc0111c03c3ab6438b2f42461bd48b8977a40"
+    },
+    {
+      "git_blob": "8cb8fa797c34c2845b33345f7fbd200650438af5",
+      "path": "docs/research/proposals/RFC-00D7-F01-LINUX-RELOCK/PREPARATION.md",
+      "revision": "0a369b8c7ce00979c970389e02e0da8d89d6ab0a",
+      "sha256": "90b13ac8624a2580c9f55d35982fce8d765cb6d3868bd1a5c80b6640288edfaa"
+    },
+    {
+      "git_blob": "71288ed2bbaa54971ccd6ec66d418fece7be344d",
+      "path": "docs/research/proposals/RFC-00D7-F01-LINUX-RELOCK/interpreter-profile.proposed.json",
+      "revision": "0a369b8c7ce00979c970389e02e0da8d89d6ab0a",
+      "sha256": "40f9a95df94f83f66de63f151eb0ff159bf2816ac3f9922005bdf84b8cb9fa79"
+    },
+    {
+      "git_blob": "201aec1e59920f894ffd9002f436ffaf854e7346",
+      "path": "docs/research/proposals/RFC-00D7-F01-LINUX-RELOCK/profile-x86_64.proposed.json",
+      "revision": "0a369b8c7ce00979c970389e02e0da8d89d6ab0a",
+      "sha256": "402053741b89f81cdd9eb236232eb0e36c48511d53d29b1c49686102227384a0"
+    },
+    {
+      "git_blob": "8395f6c7f5c2528e94d508006e4ef9e35f7c13c8",
+      "path": "docs/research/proposals/RFC-00D7-F01-LINUX-RELOCK/profile-aarch64.proposed.json",
+      "revision": "0a369b8c7ce00979c970389e02e0da8d89d6ab0a",
+      "sha256": "ad9257cafc672c38558f919e33653a587852a4ca3632cb5bf695703d32e274e9"
+    },
+    {
+      "git_blob": "188a05b88f5ab12633165fe0a32a8fe2063ae67b",
+      "path": "docs/research/proposals/RFC-00D7-F01-LINUX-RELOCK/requirements-x86_64.proposed.lock",
+      "revision": "0a369b8c7ce00979c970389e02e0da8d89d6ab0a",
+      "sha256": "4893dc8c96e99a976e6ff8798fd601fc9395f8f1c8db24c57cf41b3139cd8b63"
+    },
+    {
+      "git_blob": "a1e6b434c2c2d8d845070699213176161fe25c25",
+      "path": "docs/research/proposals/RFC-00D7-F01-LINUX-RELOCK/requirements-aarch64.proposed.lock",
+      "revision": "0a369b8c7ce00979c970389e02e0da8d89d6ab0a",
+      "sha256": "1612e2ff651556aa6878cc79384329b0940cd53c4f00858cdd9f06c7e2839f9f"
+    },
+    {
+      "git_blob": "236cbac6ac5562ede061a9dfd0fb999668669474",
+      "path": "docs/research/proposals/RFC-00D7-F01-LINUX-RELOCK/pyvenv.cfg.proposed",
+      "revision": "0a369b8c7ce00979c970389e02e0da8d89d6ab0a",
+      "sha256": "a518e9ce31c8f47ab0070cfdca3b5f4dc0b24a00a20ff87ec98c9f684103d104"
+    },
+    {
+      "git_blob": "4e16097a856665444737e740e281afa27d7a9e14",
+      "path": "docs/research/proposals/RFC-00D7-F01-LINUX-RELOCK/SHA256SUMS",
+      "revision": "0a369b8c7ce00979c970389e02e0da8d89d6ab0a",
+      "sha256": "a42e515c11770eaa97b1b7fc3742c24c66837645e687968d19f9cf196475bdc5"
+    },
+    {
+      "git_blob": "fa2589bfee91c21d8a691333ef3de10601bff497",
+      "path": "docs/research/proposals/RFC-00D7-F01-LINUX-RELOCK/cpython-source-inspection.json",
+      "revision": "0a369b8c7ce00979c970389e02e0da8d89d6ab0a",
+      "sha256": "38fb1b644d5dba6afff43612bb0878b984f0d5858f2343e713c5f062ef918b2f"
+    },
+    {
+      "git_blob": "8e53f329b5018e448b5f0dd1a5aa0e83b254859d",
+      "path": "docs/research/proposals/RFC-00D7-F01-LINUX-RELOCK/wheel-inspection.json",
+      "revision": "0a369b8c7ce00979c970389e02e0da8d89d6ab0a",
+      "sha256": "798a645f8883726cd4c298c8618cac8712f8a6756f3cd2be54ed39eff54a445d"
+    },
+    {
+      "git_blob": "2bee155077aa6f777d388ae8783f3d5782628144",
+      "path": "experiments/rfc_00d7_f01/supervise.py",
+      "revision": "0afbc339288b44cc7536af6c227f957257bb8ff6",
+      "sha256": "c99d4926d97340db897ca765c7cd0b946f9b9f7c8c8f9bdb892ec7c3ad29bb17"
+    },
+    {
+      "git_blob": "35e00ad98a7efba83b0c07e637102043f540e84a",
+      "path": "experiments/rfc_00d7_f01/runner_bootstrap.py",
+      "revision": "0afbc339288b44cc7536af6c227f957257bb8ff6",
+      "sha256": "55e4857acfa97829f0ee8d3b6bc8b5772bae3b9414353ad3129a782f14f6ded7"
+    },
+    {
+      "git_blob": "fbc76daa1a80b1a547bcf179d20fe5b77cb603fb",
+      "path": "experiments/rfc_00d7_f01/run.py",
+      "revision": "0afbc339288b44cc7536af6c227f957257bb8ff6",
+      "sha256": "2cf393cb085422bf660e69de09a799a36004797a40365515194c5b02b46e00d9"
+    },
+    {
+      "git_blob": "1836210ef44aa1ac28be65b4e38dc93cf236a834",
+      "path": "experiments/rfc_00d7_f01/static_check.py",
+      "revision": "0afbc339288b44cc7536af6c227f957257bb8ff6",
+      "sha256": "40da7a4a8198ec02d92ef4a4c27dbdc80e43c319c71dfd44b15b6fa3ff6f512a"
+    },
+    {
+      "git_blob": "91affc58af7e43b4dadc59756cf2bdc0a995b232",
+      "path": "experiments/rfc_00d7_f01/dependency-lock.json",
+      "revision": "0afbc339288b44cc7536af6c227f957257bb8ff6",
+      "sha256": "51faf03f86a7237b3927e0fa3ced4fc342898bbc53ed087e3b798b35ad6bba8c"
+    },
+    {
+      "git_blob": "f1bea6525649b287a16736c53e029ff04754269e",
+      "path": "experiments/rfc_00d7_f01/identities.json",
+      "revision": "0afbc339288b44cc7536af6c227f957257bb8ff6",
+      "sha256": "917ad27586d4d03bde3006e3948155a3b608580921027e6b77becc0814fded4f"
+    },
+    {
+      "git_blob": "9ef3c69c02c6ee9ae2c3ab4ff0dc02caca55808f",
+      "path": "experiments/rfc_00d7_f01/fa01-plan.json",
+      "revision": "0afbc339288b44cc7536af6c227f957257bb8ff6",
+      "sha256": "67e4d5e7d4f41475f3e518545c41cd98e5d71fc7f0a8393ded0aeb417246b716"
+    },
+    {
+      "git_blob": "954aeb8ce9019d41a24aff6b82a3b784ced8ccfc",
+      "path": "experiments/rfc_00d7_f01/evidence.schema.json",
+      "revision": "0afbc339288b44cc7536af6c227f957257bb8ff6",
+      "sha256": "dface268fecf8fcf41670105078bfe1ad8e5c70988941de6e5c459a460765b95"
+    },
+    {
+      "git_blob": "3eadd41e9f61c228dce6ad628d396dd79c698f17",
+      "path": "docs/research/proposals/RFC-00D7-F01/PROTOCOL.md",
+      "revision": "0a369b8c7ce00979c970389e02e0da8d89d6ab0a",
+      "sha256": "d48aeedc924cf505cab8a7fed316fc84d8f2c259dd502fd1d0a7fe8432f05de3"
+    },
+    {
+      "git_blob": "c7932c0465610a2ec29b1ba8ca9cd35b96bca60a",
+      "path": "docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md",
+      "revision": "0a369b8c7ce00979c970389e02e0da8d89d6ab0a",
+      "sha256": "bb073bafcd00a81d6790558d05ab60b2e53eee9a8724e19563228983bc575ca7"
+    },
+    {
+      "git_blob": "0b160fb788844dc8892d1917ff9e3d89685af575",
+      "path": "docs/research/RESEARCH_CHARTER.md",
+      "revision": "0a369b8c7ce00979c970389e02e0da8d89d6ab0a",
+      "sha256": "a89e4c4338fc8b91412a862db24512d44f38d07f84f3e2c45b195c18fc49b4fa"
+    },
+    {
+      "git_blob": "a917b019fd80091ee872fce5c8316d0d32b8045b",
+      "path": "docs/research/continuity/HYPOTHESIS_REGISTER_v1.json",
+      "revision": "0a369b8c7ce00979c970389e02e0da8d89d6ab0a",
+      "sha256": "af8ca65dcef136f294eb33010b5a6621875a52db4f3e60b94a4e28db5318a1c1"
+    },
+    {
+      "git_blob": "9970d7fbc2eba445ed614f8c3cec2d8463a64365",
+      "path": ".github/workflows/release.yml",
+      "revision": "0a369b8c7ce00979c970389e02e0da8d89d6ab0a",
+      "sha256": "f37e13d1bcd8e372ea62bd80ffbd91a5fa260e677cd328d26aec74f47a2ef86a"
+    },
+    {
+      "git_blob": "7edb0cb73a3e0f57e96c550fe7f65eab6c5d3392",
+      "path": "docs/research/proposals/RFC-00D7-F01-GUARD-FEASIBILITY/ASSESSMENT.md",
+      "revision": "8ced4f076c3ea18594175a8e0a72885f54bb3c42",
+      "sha256": "88d1056333da94da2d1e2fd01708f236f7ff18613b93d9d88792a6936fc13733"
+    },
+    {
+      "git_blob": "30b685630e852586d505cf61b348f936af003fe5",
+      "path": "docs/research/proposals/RFC-00D7-F01-GUARD-FEASIBILITY/TEST_REQUIREMENTS.md",
+      "revision": "8ced4f076c3ea18594175a8e0a72885f54bb3c42",
+      "sha256": "300d20436637f39ea2cf8a4f0c8d463c9c269734f944aac301a5e49181dc28fb"
+    },
+    {
+      "git_blob": "665c20bc805e84dad06108525f78829eb4eb5a4a",
+      "path": "docs/research/proposals/RFC-00D7-F01-GUARD-FEASIBILITY/decision.json",
+      "revision": "8ced4f076c3ea18594175a8e0a72885f54bb3c42",
+      "sha256": "2cc633d1614139d7fef52a60772d6d41a61225582e8ff41d8547d36aeb5eba85"
+    },
+    {
+      "git_blob": "3715c38ebc7e5700a26ba34b0776ec41930f75ab",
+      "path": "docs/research/proposals/RFC-00D7-F01-GUARD-FEASIBILITY/source-pins.json",
+      "revision": "8ced4f076c3ea18594175a8e0a72885f54bb3c42",
+      "sha256": "f10a75fa25bf5edd8ab8dca9342d8231f48f4b5944ad7003f5f6d538a028048d"
+    },
+    {
+      "git_blob": "1706e6d4d083fc7df4550434d3470cb36dd598b0",
+      "path": "docs/research/proposals/RFC-00D7-F01-GUARD-FEASIBILITY/SHA256SUMS",
+      "revision": "8ced4f076c3ea18594175a8e0a72885f54bb3c42",
+      "sha256": "6d9f55354301125cbec4efc53a12f112ba470bd513a5087c84bf6a022286fef6"
+    },
+    {
+      "git_blob": "3f50b1054ad56e933fe3680146c202579a3020e2",
+      "path": "docs/research/proposals/RFC-00D7-F01-CONTRACT-DECISION/DECISION_MEMORANDUM.md",
+      "revision": "473770c7a4aaf83327eaaededd1de14bad177e4c",
+      "sha256": "60b3d3cd763b0aa1ccdb60cfb5c7ca4426cbd928171f04fc655490172abd408c"
+    },
+    {
+      "git_blob": "3c8b23dd21b6d038abbb76ef3a8544d965bd8b90",
+      "path": "docs/research/proposals/RFC-00D7-F01-CONTRACT-DECISION/PREPARATION.md",
+      "revision": "473770c7a4aaf83327eaaededd1de14bad177e4c",
+      "sha256": "0086c736f2f3f0e0608946084f194d60b6753c456769cdb6b0ff80a1e165dd12"
+    },
+    {
+      "git_blob": "706fdca336b5df32fba91b291c37823f7220d05a",
+      "path": "docs/research/proposals/RFC-00D7-F01-CONTRACT-DECISION/proposal.json",
+      "revision": "473770c7a4aaf83327eaaededd1de14bad177e4c",
+      "sha256": "1816efebdd907ca0e366a0adffa5a25790fa8fcc4e69ab6c900e7594e8f5c213"
+    },
+    {
+      "git_blob": "143d9700daaf2bbe6106dd4a18313162c67ad6cd",
+      "path": "docs/research/proposals/RFC-00D7-F01-CONTRACT-DECISION/source-pins.json",
+      "revision": "473770c7a4aaf83327eaaededd1de14bad177e4c",
+      "sha256": "58e192e9c798caa444f2c166cc2ad2e2819118c3fd7447b753cc05a6e0e51cd3"
+    },
+    {
+      "git_blob": "4aa0fff366923dc725134b939e8ec6e1c6c3115b",
+      "path": "docs/research/proposals/RFC-00D7-F01-CONTRACT-DECISION/SHA256SUMS",
+      "revision": "473770c7a4aaf83327eaaededd1de14bad177e4c",
+      "sha256": "c17aa249e491e50fc90a51eb6ded995118abfe8b1d8c2b04e5cdb72883d4e5a6"
+    }
+  ]
+}

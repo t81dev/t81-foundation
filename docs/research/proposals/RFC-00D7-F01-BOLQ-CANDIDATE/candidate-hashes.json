@@ -1,0 +1,36 @@
+{
+  "base_protocol_sha256": "d48aeedc924cf505cab8a7fed316fc84d8f2c259dd502fd1d0a7fe8432f05de3",
+  "candidate_id": "RFC-00D7-F01-BOLQ-CANDIDATE-01",
+  "candidate_model": "F01-HOST-BOLQ-v1",
+  "files": [
+    {
+      "bytes": 13999,
+      "path": "CANDIDATE_AMENDMENT.md",
+      "sha256": "c1f6a6a520f1ef48aa60ba624639e4631f12a6bdb2d748521ba5b2be46db0080"
+    },
+    {
+      "bytes": 5400,
+      "path": "PR811_APPLICABILITY.md",
+      "sha256": "a15e9700469292ee8b11b8d776f4861043bce2e47df3b3d18ca99b105271d125"
+    },
+    {
+      "bytes": 10619,
+      "path": "HOST_RECEIPT_FIELD_DICTIONARY.md",
+      "sha256": "a6aec27d53080995f4c4bd39b295aaf23c6da92bba195264cb90251c13e0228b"
+    },
+    {
+      "bytes": 5179,
+      "path": "TRACEABILITY.md",
+      "sha256": "da9febeae6e34720c18f77a0461f1f57abc5e7d6a386c3d2ed5e9d096f3f0bac"
+    },
+    {
+      "bytes": 12784,
+      "path": "source-pins.json",
+      "sha256": "6bb753905df38ad29d03e22fb098af927436fb6301cc285b5eb2c0465935fca9"
+    }
+  ],
+  "kind": "NON_NORMATIVE_CANDIDATE_DOCUMENT_IDENTITIES",
+  "model_adopted": false,
+  "not_a_complete_or_operative_protocol": true,
+  "reference_PR813_head": "473770c7a4aaf83327eaaededd1de14bad177e4c"
+}
