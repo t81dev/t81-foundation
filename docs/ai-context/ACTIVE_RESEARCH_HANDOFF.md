@@ -317,3 +317,29 @@ Draft a **versioned authoritative TISC state-transition RFC** with exact operand
 
 ### Handoff rules
 Do not restart feasibility experiments, silently resolve the spec, claim merged-to-main status from PR #710, overwrite negative research, or confuse verified content hashes with independently replicated execution. Refresh GitHub PR tips and main before any subsequent action.
+
+
+## 2026-11-17 selected-PR reconciliation — PR #824 integrated, operations STOP
+
+Read the [dated reconciliation](T81_RESEARCH_STATUS_2026-11-17_PR824.md),
+[new observation receipt](receipts/2026-11-17-pr824-reconciliation.json) and
+[validation record](receipts/2026-11-17-pr824-validation.md). Fresh main is
+`ab15820a2dd8ebcadde0efecf1fbb0d43b57d3f9`; the #824 reviewed plan at
+`f803e15ebcf4896fc70608cb11d69505134e5578` is integrated without byte changes.
+PR #823 at `52604ee1d4b7d90f69b19651a942f68dd5653183` remains a separate
+draft/unmerged morning report, with independent review unverified here.
+User-reported Gemini review and human documentation-only merge authorization
+are attributed as such, not authenticated by hashes or the Codex bot review.
+
+**F01-HOST-BOLQ-v1 NOT ADOPTED; residual risks NOT ACCEPTED; M1–M6 STOP;
+`linux_relock_required=true`.** Operative protocol SHA-256
+`d48aeedc924cf505cab8a7fed316fc84d8f2c259dd502fd1d0a7fe8432f05de3`, legacy
+qualification semantics and original PR #812 UNSUPPORTED finding remain intact.
+M2–M4 require renewed joint review/co-pinning after any component change; M5
+implementation and H0–H5 each need their own applicable authorization; H6
+remains outside M5. Preserve 49,408 suite states, F254/256 and separate
+1 GiB / 921 MiB proposed provisioning storage with no A–F storage transfer.
+All prior observations, research/release holds and no-reset/no-retry rules
+remain historical evidence or applicable constraints. No new scientific result,
+repository-wide inventory or operational GO is recorded. Next: independent
+Gemini review of this documentation-only reconciliation.
