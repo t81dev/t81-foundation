@@ -135,14 +135,14 @@ class OperationalStateContractTest(unittest.TestCase):
         code, stdout, stderr = self.run_validator(good)
         self.assertEqual(code, 0)
 
-        # Missing reason
+        # Missing reason (PR #658 in 2026-11-02-reconciled has {"value": null, "reason": "pr_is_open"})
         bad = copy.deepcopy(self.state)
-        bad["operational_views"][self.state["selected_view"]]["pr_observations"][2]["merge_sha"] = {"value": None}
+        bad["operational_views"]["2026-11-02-reconciled"]["pr_observations"][2]["merge_sha"] = {"value": None}
         self.assert_rejected(bad)
 
         # Non-null value in unavailable structure
         bad_val = copy.deepcopy(self.state)
-        bad_val["operational_views"][self.state["selected_view"]]["pr_observations"][2]["merge_sha"] = {"value": "unknown", "reason": "test"}
+        bad_val["operational_views"]["2026-11-02-reconciled"]["pr_observations"][2]["merge_sha"] = {"value": "unknown", "reason": "test"}
         self.assert_rejected(bad_val)
 
     def test_source_revision_inheritance(self):
@@ -196,7 +196,8 @@ class OperationalStateContractTest(unittest.TestCase):
 
     def test_current_observations_resolve_pinned_receipts(self):
         import hashlib
-        view = self.state["operational_views"][self.state["selected_view"]]
+        self.assertIn(self.state["selected_view"], self.state["operational_views"])
+        view = self.state["operational_views"]["2026-11-02-reconciled"]
         m1 = next(x for x in view["scientific_observations"] if x["id"] == "AIOPT-001-M1")
         revision = m1["envelope"]["source_revision"]["commit_sha"]
         receipt = m1["envelope"]["retained_receipt"]
