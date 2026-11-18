@@ -47,3 +47,8 @@ See [results](evidence/hanoi-arithmetic-results.json), [exact extracted C](evide
 ## Unclosed provenance gaps
 
 Private pre-publication chronology, original Knuth notes, the named PDF/transcripts and the original LLM mathematics paper remain unavailable. No private-history inference is made from filesystem dates, archive dates or README prose. Complete source inheritance into modern Foundation VM/Axion, whole-system Hanoi reachability and an operational common tier-domain contract remain unproved. These gaps are recorded rather than filled with a more elaborate architecture.
+
+
+## SCG-05 Generic Result Contract Feasibility Assessment (2026-11-08)
+
+Under Maintainer Decision D4=4B (SCG-04-MDR-001) at baseline `e45c5435aa47d4ccb8f343798214eb917352c871`, [SCG05_GENERIC_RESULT_FEASIBILITY_REPORT.md](SCG05_GENERIC_RESULT_FEASIBILITY_REPORT.md) inventories all 18 files referencing `Result<T>` and `T81Result<T>` across Foundation. It documents the fragmentation of local subsystem aliases (`t81::canonfs::Result`, `t81::hanoi::Result`, `t81::cog::Result`) arising from `T81Error`'s host timestamp and entropy capture overhead. The recommended architecture introduces an additive generic container `t81::Result<T, E = T81Error>` while preserving the concrete `T81Result<T>` class unchanged in `include/t81/types/T81Result.hpp`, establishing a clean path toward zero-allocation, `constexpr`-capable arithmetic result types for future D1/D2 implementation.
