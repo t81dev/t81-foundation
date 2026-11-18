@@ -2049,6 +2049,30 @@ int main(int argc, char* argv[]) {
         run_cli(t81_bin, {"canonfs", "fsck", "--canonfs-root", canonfs_root.string(), "--json"});
     T81_TEST_CHECK(fsck_result.exit_code == 0);
     T81_TEST_CHECK(contains(fsck_result.stdout_text, "\"schema\": \"t81.canonfs-fsck.v1\""));
+
+    const auto fsck_verify_ok = run_cli(
+        t81_bin,
+        {"canonfs", "fsck", "--verify-hashes", "--canonfs-root", canonfs_root.string(), "--json"});
+    T81_TEST_CHECK(fsck_verify_ok.exit_code == 0);
+    T81_TEST_CHECK(contains(fsck_verify_ok.stdout_text, "\"ok\": true"));
+
+    // Tamper with one persisted object and verify --verify-hashes catches it.
+    bool tampered = false;
+    for (const auto& entry : fs::directory_iterator(canonfs_root / "objects", ignore_ec)) {
+      if (entry.is_regular_file() && entry.path().extension() == ".blk") {
+        std::ofstream tamper_out(entry.path(), std::ios::binary | std::ios::app);
+        tamper_out << 'X';
+        tampered = true;
+        break;
+      }
+    }
+    T81_TEST_CHECK(tampered);
+    const auto fsck_verify_tampered = run_cli(
+        t81_bin,
+        {"canonfs", "fsck", "--verify-hashes", "--canonfs-root", canonfs_root.string(), "--json"});
+    T81_TEST_CHECK(fsck_verify_tampered.exit_code != 0);
+    T81_TEST_CHECK(contains(fsck_verify_tampered.stdout_text, "\"ok\": false"));
+    T81_TEST_CHECK(contains(fsck_verify_tampered.stdout_text, "hash mismatch"));
     fs::remove_all(canonfs_root, ignore_ec);
 
     const fs::path outside_payload = make_temp_path("t81-cli-contract-outside", ".txt");

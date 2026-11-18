@@ -126,6 +126,10 @@ jobs:
       - name: Copy install scripts to artifacts
         run: cp install.sh install.ps1 artifacts/
 
+      - name: Generate SHA256SUMS
+        run: |
+          (cd artifacts && sha256sum * > SHA256SUMS)
+
       - name: Generate SBOM
         uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
         with:

@@ -1,0 +1,36 @@
+// Zero-Drift Exact Rational & BigInt Lab (T81 Foundation v2.0.0)
+// Exercises exact T81Fraction and T81BigInt invariants that binary IEEE-754
+// floats cannot represent without rounding drift. Traps via 1/0 on any error.
+
+let one: T81Fraction = 1;
+let tenth: T81Fraction = one / 10;
+let two_tenths: T81Fraction = one * 2 / 10;
+let three_tenths: T81Fraction = one * 3 / 10;
+
+// 1. Classic binary float failure: 0.1 + 0.2 == 0.3 exactly
+if (tenth + two_tenths != three_tenths) {
+  let trap = 1 / 0;
+}
+
+// 2. Catastrophic cancellation test: (10^12 + 1/3) - 10^12 == 1/3
+let big: T81Fraction = 1000000000000;
+let third: T81Fraction = one / 3;
+if ((big + third) - big != third) {
+  let trap = 1 / 0;
+}
+
+// 3. Exact harmonic sum H_4 = 1 + 1/2 + 1/3 + 1/4 = 25/12
+let h4: T81Fraction = one + (one / 2) + (one / 3) + (one / 4);
+let expected_h4: T81Fraction = (one * 25) / 12;
+if (h4 != expected_h4) {
+  let trap = 1 / 0;
+}
+
+// 4. Exact BigInt conservation check
+let x: T81BigInt = 1000000000000;
+let y: T81BigInt = 2000000000000;
+if ((x + y) * 3 - (y * 3) != x * 3) {
+  let trap = 1 / 0;
+}
+
+print("Zero-drift exact rational & BigInt invariants verified.");

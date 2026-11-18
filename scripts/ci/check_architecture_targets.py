@@ -39,7 +39,11 @@ def cmake_targets(cmake_files: list[Path]) -> set[str]:
 def main() -> int:
     root = Path(__file__).resolve().parents[2]
     architecture_md = root / "docs/explanation/ARCHITECTURE.md"
-    cmake_files = [root / "CMakeLists.txt", root / "benchmarks/CMakeLists.txt"]
+    cmake_files = [
+        root / "CMakeLists.txt",
+        root / "benchmarks/CMakeLists.txt",
+        *sorted((root / "src").rglob("CMakeLists.txt")),
+    ]
 
     if not architecture_md.exists():
         print(f"error: missing {architecture_md}")

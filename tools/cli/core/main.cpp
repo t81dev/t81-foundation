@@ -238,8 +238,8 @@ struct TempBinaryFile {
 void print_version() {
   std::cout << T81_FULL_VERSION << R"(
 Ternary-Native Computing Stack
-Copyright © 2025 T81 Foundation
-Licensed under MIT and GPL-3.0
+Copyright © 2026 T81 Foundation
+Licensed under Apache-2.0
 )";
 }
 
@@ -783,7 +783,8 @@ Policy profiles:
   snapshot-diff <lhs> <rhs> [--json] [--canonfs-root <path>]
   rollback --to <hash> [--dry-run] [--json] [--canonfs-root <path>]
   gc [--dry-run] [--json] [--canonfs-root <path>]  Remove unreferenced objects from the store
-  fsck [--json] [--canonfs-root <path>]            Verify object readability and snapshot manifests
+  fsck [--verify-hashes] [--json] [--canonfs-root <path>]
+                                                   Verify object readability, optional hashes, and snapshot manifests
   repair [--dry-run] [--json] [--canonfs-root <path>]
                                                    Remove legacy snapshot-local object copies
 
@@ -1389,7 +1390,7 @@ snapshot. Prints a summary of bytes reclaimed.
 
 void print_help_canonfs_fsck() {
   std::cerr << R"(
-Usage: t81 canonfs fsck [--json] [--canonfs-root <path>]
+Usage: t81 canonfs fsck [--verify-hashes] [--json] [--canonfs-root <path>]
 
 Verifies that CanonFS object blocks are readable and that each snapshot contains
 its manifest. Returns non-zero when corruption or missing metadata is detected.
@@ -5591,6 +5592,7 @@ int run_canonfs_command(const Args& args) {
   fs::path canonfs_root = discover_canonfs_root();
   bool as_json = false;
   bool dry_run = false;
+  bool verify_hashes = false;
   std::optional<fs::path> output_path = args.output;
   std::optional<fs::path> policy_path = args.policy;
   std::optional<std::string> policy_profile;
@@ -5619,6 +5621,8 @@ int run_canonfs_command(const Args& args) {
       policy_profile = args.command_args[i];
     } else if (token == "--dry-run") {
       dry_run = true;
+    } else if (token == "--verify-hashes") {
+      verify_hashes = true;
     } else if (token == "--out" || token == "--output" || token == "-o") {
       if (++i >= args.command_args.size()) {
         error("canonfs get: missing value for " + token + ".");
@@ -5854,9 +5858,36 @@ int run_canonfs_command(const Args& args) {
           errors.push_back(obj.path().filename().string() + ": object unreadable");
           continue;
         }
-        in.peek();
-        if (in.bad()) {
-          errors.push_back(obj.path().filename().string() + ": object read failed");
+        if (verify_hashes) {
+          const std::string stem = obj.path().stem().string();
+          const auto expected = t81::canonfs::parse_storage_key_v1(stem);
+          if (!expected.has_value()) {
+            errors.push_back(obj.path().filename().string() + ": invalid storage key");
+            continue;
+          }
+          std::vector<std::byte> bytes;
+          in.seekg(0, std::ios::end);
+          const auto sz = in.tellg();
+          if (sz > 0) {
+            bytes.resize(static_cast<std::size_t>(sz));
+            in.seekg(0, std::ios::beg);
+            in.read(reinterpret_cast<char*>(bytes.data()), sz);
+          }
+          if (in.bad()) {
+            errors.push_back(obj.path().filename().string() + ": object read failed");
+            continue;
+          }
+          const auto actual = t81::hash::hash_bytes(bytes);
+          if (actual != expected->h) {
+            errors.push_back(
+                obj.path().filename().string() + ": hash mismatch (expected " + stem + ", actual " +
+                t81::canonfs::storage_key_v1(t81::canonfs::CanonHash{actual}) + ")");
+          }
+        } else {
+          in.peek();
+          if (in.bad()) {
+            errors.push_back(obj.path().filename().string() + ": object read failed");
+          }
         }
       }
     }

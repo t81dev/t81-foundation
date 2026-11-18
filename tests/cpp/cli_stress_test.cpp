@@ -222,7 +222,7 @@ int main(int argc, char* argv[]) {
     for (const std::string alias : {"version", "--version", "-V"}) {
       const auto r = run_cli(t81_bin, {alias});
       T81_TEST_CHECK(r.exit_code == 0);
-      T81_TEST_CHECK(contains(r.stdout_text, "1.") || contains(r.stdout_text, "t81"));
+      T81_TEST_CHECK(contains(r.stdout_text, "T81 Foundation") || contains(r.stdout_text, "t81"));
     }
   }
 

@@ -343,3 +343,27 @@ All prior observations, research/release holds and no-reset/no-retry rules
 remain historical evidence or applicable constraints. No new scientific result,
 repository-wide inventory or operational GO is recorded. Next: independent
 Gemini review of this documentation-only reconciliation.
+
+---
+
+## 2026-11-18 v2.0.0 Engineering Audit & Horizon Suggestions
+
+Added [V2_0_0_AUDIT_AND_HORIZON_2026-11-18.md](V2_0_0_AUDIT_AND_HORIZON_2026-11-18.md)
+(non-normative; pinned to `main` at `b7b1345ed162129133a7948ead7ed52e8fa5fc60`
+on ARM64 macOS). Records:
+- **Release-readiness blockers/gaps:** `t81_cli_stress_test_runner` version-string
+  assertion (`cli_stress_test.cpp:225`), `check_architecture_targets.py` +
+  `ARCHITECTURE.md` `_t81` target drift, `check_architecture_coherence.py` stale
+  `core/vm/` paths, `tools/cli/core/main.cpp:242` license string mismatch
+  (`MIT and GPL-3.0` vs `Apache-2.0`), `experiments/` `-Wc++17-extensions` warnings,
+  `spec/axion-kernel.md` §1.1 AX-M5 note, and `release.yml` `SHA256SUMS`/repro-hash
+  follow-ups.
+- **Horizon proposals (Tier E):** `canonfs fsck --verify-hashes` (closing the
+  observed readability-only `fsck` blind spot), portable SHA3-256 in
+  `Axion::DeterminismDetector`, `T81VM::get_execution_mode()` (`FW-02`),
+  `t81 ai inference run --checkpoint-canonfs`, and the zero-drift exact-rational
+  lab example.
+
+All existing holds (`RFC-00D7-F01` `M1–M6 STOP`, `SCG-08` Gate 2 `NO-GO`,
+`H01`/10A `BLOCKED`, `AXION-AI-001` `HD01–HD06` open, canonical `H01–H08`)
+remain unchanged.
