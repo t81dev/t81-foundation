@@ -32,7 +32,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
       - name: Verify native architecture
         run: test "$(uname -m)" = '${{ matrix.machine }}'
       - name: Install Linux compiler
@@ -65,7 +65,7 @@ jobs:
         run: tar -czf audit-bundle.tar.gz audit
       - name: Upload native observations even on failure
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: float-audit-${{ matrix.platform }}
           path: audit-bundle.tar.gz
@@ -91,7 +91,7 @@ jobs:
           echo 'PASS: eight bounded integer provenance records match. Floating-point conversions remain UNSUPPORTED and excluded; this is not a numerical conformance pass.' >> "$GITHUB_STEP_SUMMARY"
       - name: Upload comparison evidence
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: float-audit-comparison
           path: |

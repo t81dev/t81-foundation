@@ -155,7 +155,7 @@ jobs:
     
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
     - name: Validate AI status document freshness
       run: |
@@ -708,7 +708,7 @@ jobs:
 
     - name: Upload AI evidence artifacts
       if: steps.build_ai.outputs.has_target == 'true'
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: ai-evidence-bundle
         path: |
