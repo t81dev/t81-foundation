@@ -718,6 +718,30 @@ bool is_valid_ternary(const std::vector<TernaryType>& input) {
   });
 }
 
+std::vector<t81::Trit> to_t81_ternary(const std::vector<int8_t>& input) {
+  std::vector<t81::Trit> result;
+  result.reserve(input.size());
+  for (int8_t val : input) {
+    if (val < 0) {
+      result.push_back(t81::Trit::Neg);
+    } else if (val > 0) {
+      result.push_back(t81::Trit::Pos);
+    } else {
+      result.push_back(t81::Trit::Zero);
+    }
+  }
+  return result;
+}
+
+std::vector<int8_t> from_t81_ternary(const std::vector<t81::Trit>& input) {
+  std::vector<int8_t> result;
+  result.reserve(input.size());
+  for (t81::Trit val : input) {
+    result.push_back(static_cast<int8_t>(val));
+  }
+  return result;
+}
+
 float calculate_ternary_balance(const std::vector<int8_t>& input) {
   if (input.empty()) {
     return 0.0f;
