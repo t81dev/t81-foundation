@@ -1723,6 +1723,24 @@ int main(int argc, char* argv[]) {
                           "\"code\": \"canonfs-import-invalid-policy-profile\"",
                           "\"reason\": \"invalid_policy_profile\""}));
 
+    const auto export_invalid_profile_result =
+        run_cli(t81_bin, {"canonfs", "export", hash, "--canonfs-root", canonfs_root.string(),
+                          "--policy-profile", "bogus", "--out", imported_file_restore.string(),
+                          "--json"});
+    T81_TEST_CHECK(export_invalid_profile_result.exit_code != 0);
+    T81_TEST_CHECK(contains(export_invalid_profile_result.stdout_text,
+                            "\"schema\": \"t81.canonfs-export.v1\""));
+    T81_TEST_CHECK(contains(export_invalid_profile_result.stdout_text, "invalid policy profile"));
+    T81_TEST_CHECK(contains(export_invalid_profile_result.stdout_text,
+                            "\"code\": \"canonfs-export-invalid-policy-profile\""));
+    T81_TEST_CHECK(contains(export_invalid_profile_result.stdout_text,
+                            "\"reason\": \"invalid_policy_profile\""));
+    T81_TEST_CHECK(appears_in_order(
+        export_invalid_profile_result.stdout_text,
+        {"\"kind\": \"materialization-failure\"", "\"message\": \"invalid policy profile",
+         "\"code\": \"canonfs-export-invalid-policy-profile\"",
+         "\"reason\": \"invalid_policy_profile\""}));
+
     const fs::path example_input_dir =
         repo_root / "examples" / "storage-and-canonfs" / "canonfs-interchange" / "input";
     const fs::path example_deny_policy = repo_root / "examples" / "storage-and-canonfs" /
