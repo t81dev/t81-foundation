@@ -49,9 +49,9 @@ cmake.args = [
 ]
 cmake.build-type = "Release"
 
-# Pure-Python package lives in ffi/python/; the compiled _t81.so is installed
-# into t81/ by the CMake install() rule and picked up automatically.
-wheel.packages = ["ffi/python"]
+# Pure-Python files (ffi/python/__init__.py, py.typed) are installed into
+# t81/ alongside _t81 by CMakeLists.txt.
+wheel.packages = []
 
 # ── cibuildwheel ─────────────────────────────────────────────────────────────
 
@@ -64,6 +64,9 @@ skip   = ["*-win32", "*-manylinux_i686", "*-musllinux*"]
 before-build = "pip install cmake ninja"
 
 test-command = "python -c \"import t81; assert t81.compile_and_run('fn main() -> i32 { return 1; }') == 1\""
+
+[tool.cibuildwheel.macos]
+environment = { MACOSX_DEPLOYMENT_TARGET = "11.0" }
 
 # ── Linux: manylinux_2_28 + GCC 13 ───────────────────────────────────────────
 # manylinux2014 ships GCC 10 which does not support cxx_std_23.
