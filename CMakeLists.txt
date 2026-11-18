@@ -2154,7 +2154,11 @@ install(TARGETS ${T81_INSTALL_TARGETS}
 )
 
 # Install headers
-install(DIRECTORY include/t81 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY include/t81
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  PATTERN "config.hpp.in" EXCLUDE
+  PATTERN "config.hpp.backup" EXCLUDE
+)
 
 # Install export file
 install(EXPORT T81Targets
