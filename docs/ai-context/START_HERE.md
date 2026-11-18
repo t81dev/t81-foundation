@@ -1,38 +1,12 @@
-> **Selected-PR reconciliation (2026-11-17):** Read [T81_RESEARCH_STATUS_2026-11-17_PR824.md](T81_RESEARCH_STATUS_2026-11-17_PR824.md) and the new dated view in [CURRENT_STATE.json](CURRENT_STATE.json). PR #824 is squash-merged at `ab15820a2dd8ebcadde0efecf1fbb0d43b57d3f9`; PR #823 remains independent draft/unmerged. **F01-HOST-BOLQ-v1 NOT ADOPTED; residual risks NOT ACCEPTED; M1–M6 STOP; `linux_relock_required=true`.** This is a partial overlay; the historical selector, earlier observations and unrelated holds remain intact. Gemini review and human documentation-only merge authorization are user-reported, separately identified from verified Git/GitHub integration. No implementation, host, qualification or A–F authority follows.
+> **Latest PM operational status (2026-11-17):** Read [T81_PM_STATUS_2026-11-17.md](T81_PM_STATUS_2026-11-17.md) first. `#801` is merged (`0c89cec6a`), `#802`/`#823` are closed as superseded, `#790`/`#791` are flagged for `ADR-0008` renumbering, and `#798` + `#829` (Batch 1) are in CI. All `F01` (`M1–M6 STOP`), `SCG-08` Gate 2 (`NO-GO`), `H01`/10A (`BLOCKED`), and `AXION-AI-001` (`HD01–HD06` open) holds remain intact.
 
-> **Latest operational status (2026-11-15):** Read [T81_RESEARCH_STATUS_2026-11-15.md](T81_RESEARCH_STATUS_2026-11-15.md) first. PRs `#792` (`a3ae3b16b`), `#793` (`c2ab68e58`), and `#796` (`24d40f4d9`, integrating `#794`, `#795`, `#780`, fail-closed SIMD CI checks, and preserved readiness receipts) are merged into `main`. Superseded PRs `#748`, `#750`, `#751`, `#780`, `#794`, and `#795` are closed without merge (heads/evidence retained). The pinned evidence-linked architecture assessment is recorded at [docs/records/audits/2026-11-15-architecture-assessment/README.md](../records/audits/2026-11-15-architecture-assessment/README.md). Older overlays are historical. No new scientific gate, release, or experiment authorization is granted.
-
-> **Latest operational status (2026-11-13):** Read [T81_RESEARCH_STATUS_2026-11-13.md](T81_RESEARCH_STATUS_2026-11-13.md) first. Supplied Codex reviews accept bounded #779/#780 changes; both remain draft/unmerged. #782 Windows builds and required quality gate now pass at the recorded head; CodeQL and final review remain pending. Five superseded PRs closed without merge; reconcile #778/#779 and preserve dependent work. Older overlays are historical. No scientific gate, release, or merge authority is granted.
-
-> **Latest operational status (2026-11-12):** Read [T81_RESEARCH_STATUS_2026-11-12.md](T81_RESEARCH_STATUS_2026-11-12.md) first. PR #780 provides a measured but independently unaccepted Apple M2 Cell-throughput baseline candidate; PR #779 has corrective source changes awaiting targeted independent retest. Both remain draft/open/unmerged. RFC-00E1 DRAFT, SCG-08 Gate 1 WITHHELD, Gate 2 STRICT NO-GO. Older dated next-action statements are historical.
-
-> **Latest reviewed program status (2026-11-10):** Read [T81_RESEARCH_STATUS_2026-11-10.md](T81_RESEARCH_STATUS_2026-11-10.md) first. SCG-08 Phase 0 charter merged in PR #753; PR #745 closed unmerged as superseded. SCG-07 remains QUALIFIED WITH LIMITATIONS. SCG-08 Phase 1 signed-domain amendment and arithmetic-result semantics still require authoritative reconciliation; Gate 1 implementation and Gate 2 execution are not granted by this handoff. The current open-PR backlog has stacked CI/security fixes (#747, #748, #750, #751, #752); review and rebase before merge. Older dated status paragraphs below are historical.
-
-> **Latest verified program status (2026-11-09):** Read [T81_RESEARCH_STATUS_2026-11-09.md](T81_RESEARCH_STATUS_2026-11-09.md) **before** the 2026-11-08 snapshot and dated operational views below. PR #741 (SCG-07 Phase 6) is merged into main at `8dec43ac2a9a702c9ae54229cf6891ee63f285c0`; F1–F7 are **QUALIFIED WITH LIMITATIONS**, not universally proven. SCG-08 Phase 0 is a proposed documentation-only research charter pending Jules; no new experiment or authorization is established. Older statements that F1–F7 are still awaiting repair are historical, not current.
-
-> **Latest verified program status (2026-11-08):** Read [T81_COMPLETE_STATUS_2026-11-08.md](T81_COMPLETE_STATUS_2026-11-08.md) **before** older operational and research-gate summaries. Main observed at `e45c5435aa47d4ccb8f343798214eb917352c871`. SCG-03 (#729) and SCG-04 (#731) are merged; SCG-05 (#732) and SCG-06 (#733) remain open/unmerged. SCG-06 reports F4 fixed and F6 changed from silent corruption to termination; F1–F3/F5/F7 remain unresolved. PR #733 needs evidence corrections, including F2/F3 oracle coverage and the nine-check CI attribution. This is a non-normative dated status; it supersedes older *operational next-step* suggestions, not historical experiment evidence or authorizations.
+> **Selected-PR reconciliation (2026-11-17):** Read [T81_RESEARCH_STATUS_2026-11-17_PR824.md](T81_RESEARCH_STATUS_2026-11-17_PR824.md) and the new dated view in [CURRENT_STATE.json](CURRENT_STATE.json). PR #824 is squash-merged at `ab15820a2dd8ebcadde0efecf1fbb0d43b57d3f9`; PR #823 is closed as superseded. **F01-HOST-BOLQ-v1 NOT ADOPTED; residual risks NOT ACCEPTED; M1–M6 STOP; `linux_relock_required=true`.** Earlier dated status overlays are indexed in Section 14 below.
 
 # T81 Research Continuity — START_HERE
 
-**Latest Cross-Profile Architecture & Identity View (2026-11-05):** T81 has demonstrated a functioning bounded computational architecture. Bounded cross-profile TISC execution is verified across hosted T81VM and freestanding Axion OS (AArch64 QEMU) against an independent mathematical oracle across all 25 observation boundaries (CPA-004/CPA-005). Incoming research agents should **not** re-verify whether the bounded cross-profile implementation works; focus on open research hypotheses, remaining ISA discrepancies, and disciplined comparative advantage benchmarks.
-
-**Latest BASE-01 integration and readiness view (2026-11-03):** Read [BASE01_2026-11-03.md](BASE01_2026-11-03.md) first. PRs #694 and #695 are merged; integration acceptance does not authorize B1 measurement. Older dated operational views below remain historical.
-
-**Latest operational view (2026-11-02):** Read the selected view in
-[`CURRENT_STATE.json`](CURRENT_STATE.json), backed by the bounded
-[PR/source receipt](receipts/2026-11-02-pr678-observations.json), before older status tables.
-Observed main is `8e44c0f667c62e0d4143bb93169fc3235d5ebd66`: #675 is merged with
-arithmetic validation accepted within its declared scope; #676 is merged historical
-backlog-audit evidence; #677 is merged H04-R03 Candidate A preregistration, with
-**Phase C still unauthorized as of 2026-11-02**. At the 2026-11-02 snapshot, H04-R03 Candidate A implementation and correctness validation were reported and PRs #679/#680 were open; a subsequent 2026-11-06 repository check found both merged, without implying Phase C authorization. #656 remains open pending integration and #678
-remains open with corrections pending acceptance. Local cleanup's audit is reported
-completed; its execution outcome is **not independently verified** by this index.
-The earlier views and snapshots below remain dated history. This update grants no
-merge, measurement, M2 execution or governance authority.
-
 **Document ID:** `docs/ai-context/START_HERE.md`
-**Version:** 1.0.1 · **Last Reviewed:** 2026-10-29
-**Source Snapshot:** `main` at `f8ac77159ded2c4b93f4cc83abd48f6f35655468` (checked 2026-10-29; refresh before use)
+**Version:** 1.0.1 · **Last Reviewed:** 2026-11-17
+**Source Snapshot:** `main` at `0c89cec6ab87fe7aad16666b2bd75bbc6722ebe9` (refresh before use)
 **Status:** Non-normative navigation and research handoff index; not an accepted contract or independent verification
 
 ---
@@ -224,3 +198,18 @@ The Cross-Profile Architecture (CPA) program achieved a major milestone:
 **Next authorized action:** Draft/review the precise versioned TISC transition-contract RFC and maintainer decision matrix **without changing implementation or historical CPA artifacts**. After approval, separately authorize discriminating tests and one cumulative integration candidate; then preregister an H02 signed-rounding comparison against optimized binary and encoding-cost controls. Do not restart CPA execution-feasibility research.
 
 **Evidence hierarchy:** Normative specification and governance controls decide required semantics; pinned executed artifacts decide observed historical behavior; this non-normative continuity index cannot confer acceptance, merge, or performance authority.
+
+---
+
+## 14. Historical Status Overlays
+
+Preserved for audit traceability (superseded as live operational guidance by the 2026-11-17 overlays above):
+
+- 2026-11-15: [T81_RESEARCH_STATUS_2026-11-15.md](T81_RESEARCH_STATUS_2026-11-15.md) · [Architecture Assessment](../records/audits/2026-11-15-architecture-assessment/README.md)
+- 2026-11-13: [T81_RESEARCH_STATUS_2026-11-13.md](T81_RESEARCH_STATUS_2026-11-13.md)
+- 2026-11-12: [T81_RESEARCH_STATUS_2026-11-12.md](T81_RESEARCH_STATUS_2026-11-12.md)
+- 2026-11-10: [T81_RESEARCH_STATUS_2026-11-10.md](T81_RESEARCH_STATUS_2026-11-10.md)
+- 2026-11-09: [T81_RESEARCH_STATUS_2026-11-09.md](T81_RESEARCH_STATUS_2026-11-09.md)
+- 2026-11-08: [T81_COMPLETE_STATUS_2026-11-08.md](T81_COMPLETE_STATUS_2026-11-08.md)
+- 2026-11-03: [BASE01_2026-11-03.md](BASE01_2026-11-03.md)
+- 2026-11-02: [PR/source receipt](receipts/2026-11-02-pr678-observations.json)

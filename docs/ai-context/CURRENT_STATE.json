@@ -2,7 +2,7 @@
   "schema_version": "2.0.0",
   "generated_at": "2026-11-17",
   "purpose": "Non-normative operational index; never grants authorization",
-  "selected_view": "2026-11-02-reconciled",
+  "selected_view": "2026-11-17-pr824-reconciled",
   "operational_views": {
     "2026-11-02": {
       "view_date": "2026-11-02",
