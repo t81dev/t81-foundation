@@ -3102,7 +3102,6 @@ def build_coverage_manifest():
             "ffi": "Directory ffi/ not yet explicitly modeled as standalone nodes in visualization dataset.",
             "logs": "Directory logs/ not yet explicitly modeled as standalone nodes in visualization dataset.",
             "review": "Directory review/ not yet explicitly modeled as standalone nodes in visualization dataset.",
-            "skills": "Directory skills/ not yet explicitly modeled as standalone nodes in visualization dataset.",
             "third_party": "Directory third_party/ not yet explicitly modeled as standalone nodes in visualization dataset."
         }
     },

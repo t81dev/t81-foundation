@@ -59,7 +59,6 @@ EXPECTED_TOP_LEVEL = {
     "pyproject.toml",
     "review",
     "scripts",
-    "skills",
     "spec",
     "src",
     "ternaryos",

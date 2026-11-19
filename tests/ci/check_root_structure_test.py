@@ -134,7 +134,7 @@ def main() -> int:
                 return 1
 
         # Check for key historical unexpected entries (omitted in 617 allowlist)
-        for unexpected_item in ["src", "experiments", "skills", "archive", "PROJECT_STRUCTURE.md"]:
+        for unexpected_item in ["src", "experiments", "archive", "PROJECT_STRUCTURE.md"]:
             if unexpected_item not in res_hist.stdout:
                 print(f"Test 4 FAILED: Expected unexpected item {unexpected_item} not found in output.")
                 print("stdout:", res_hist.stdout)

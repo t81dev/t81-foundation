@@ -40,7 +40,7 @@ The root [support guide](SUPPORT_TAXONOMY.md) explains this distinction.
 - `tests/`: unit, contract, conformance, fixture, and regression tests. Enabled targets depend on CMake options.
 - `scripts/`, `.github/`: validation tooling, workflows, and contributor templates. Workflow definitions are not evidence that a particular run passed.
 - `docs/`: research, governance, references, maintenance handoff, and historical records.
-- `archive/`: consolidated historical development, product, and market material (`customer_tools/`, `development_tests/`, `execution_reports/`, `market-demos/`, `market_analysis/`, `strategic_docs/`). These names and documents do not establish validated customer, performance, or security capabilities.
+- `archive/`: consolidated historical development, product, OpenClaw skill wrapper, and market material (`customer_tools/`, `development_tests/`, `execution_reports/`, `market-demos/`, `market_analysis/`, `skills/`, `strategic_docs/`). These names and documents do not establish validated customer, performance, or security capabilities.
 - `artifacts/`, `logs/`, and `examples/legacy-root-samples/`: recorded/generated material and relocated legacy root sample records; inspect provenance before treating it as reproducible evidence.
 - `third_party/`: external dependencies. Some dependencies are fetched during configuration; see [build instructions](CONTRIBUTING.md).
 
