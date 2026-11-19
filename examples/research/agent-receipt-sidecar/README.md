@@ -13,7 +13,12 @@ This prototype implements Experiments 1 & 2 for using T81 as a deterministic **F
 
 ```bash
 python3 examples/research/agent-receipt-sidecar/run_agent_gauntlet.py
+bash scripts/ci/run_agent_receipt_dogfood_smoke.sh
 ```
+
+## MCP Client Configuration
+
+See [`mcp_config.example.json`](mcp_config.example.json) for registering `t81-receipt-sidecar` as a stdio MCP server in an AI coding agent.
 
 ## Explicit Scope & Limits
 
