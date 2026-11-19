@@ -40,6 +40,7 @@ struct DualRail64 {
     const int8_t* src = trits.data();
     size_t w = 0;
     const size_t full_words = trits.size() / 64;
+    (void)full_words;
 
 #if defined(__aarch64__) && defined(__ARM_NEON)
     const int8x16_t zero = vdupq_n_s8(0);
@@ -107,6 +108,7 @@ struct DualRail64 {
     int8_t* dst = out.data();
     const size_t words = pos.size();
     const size_t full_words = n_trits / 64;
+    (void)full_words;
     size_t w = 0;
 
 #if defined(__aarch64__) && defined(__ARM_NEON)
