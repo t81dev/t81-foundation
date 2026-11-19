@@ -488,6 +488,7 @@ struct Options {
   std::string field;
   int max_tokens = static_cast<int>(kBoundedDecodeTraceSteps);
   bool verbose = false;
+  bool checkpoint_canonfs = false;
 };
 
 bool parse_named_args(const std::vector<std::string_view>& argv, std::size_t start, Options& opts,
@@ -518,6 +519,8 @@ bool parse_named_args(const std::vector<std::string_view>& argv, std::size_t sta
         return false;
       }
       opts.canonfs_root = fs::absolute(fs::path(std::string(argv[++i])));
+    } else if (arg == "--checkpoint-canonfs") {
+      opts.checkpoint_canonfs = true;
     } else if (arg == "--model") {
       if (i + 1 >= argv.size()) {
         error = "missing value for --model";
@@ -2011,6 +2014,46 @@ int cmd_inference_run(const Options& opts) {
                 ? "summary_only_on_degraded.v1"
                 : guarded_artifact_caution ? "full_evidence_with_guarded_caution.v1"
                                            : "full_evidence.v1";
+        std::vector<std::string> checkpoint_canonfs_refs;
+        if (opts.checkpoint_canonfs && !decode_steps.empty()) {
+          const fs::path canon_root = resolve_canonfs_root(opts.canonfs_root);
+          std::string prev_ref;
+          for (const auto& step : decode_steps) {
+            std::ostringstream ckpt;
+            ckpt << "{\n"
+                 << "  \"schema\": \"t81.ai.inference-checkpoint.v1\",\n"
+                 << "  \"step\": " << step.step << ",\n"
+                 << "  \"selected_token_id\": " << step.selected_token_id << ",\n"
+                 << "  \"hidden_tensor_signature_sha256\": \""
+                 << json_escape(step.hidden_tensor_signature_sha256) << "\",\n"
+                 << "  \"forward_state_signature_sha256\": \""
+                 << json_escape(step.forward_state_signature_sha256) << "\",\n"
+                 << "  \"architecture_state_signature_sha256\": \""
+                 << json_escape(step.architecture_state_signature_sha256) << "\",\n"
+                 << "  \"prev_checkpoint_ref\": "
+                 << (prev_ref.empty() ? "null" : ("\"" + json_escape(prev_ref) + "\"")) << "\n"
+                 << "}\n";
+            std::string ref;
+            std::string ckpt_error;
+            if (!write_canonfs_raw_block(canon_root, ckpt.str(), ref, ckpt_error)) {
+              std::cerr << "error: failed to checkpoint inference step to CanonFS: "
+                        << ckpt_error << "\n";
+              return 1;
+            }
+            checkpoint_canonfs_refs.push_back(ref);
+            prev_ref = ref;
+          }
+          extra << "  \"checkpoint_canonfs_enabled\": true,\n"
+                << "  \"checkpoint_canonfs_refs\": [\n";
+          for (std::size_t idx = 0; idx < checkpoint_canonfs_refs.size(); ++idx) {
+            extra << "    \"" << json_escape(checkpoint_canonfs_refs[idx]) << "\"";
+            if (idx + 1 < checkpoint_canonfs_refs.size()) {
+              extra << ",";
+            }
+            extra << "\n";
+          }
+          extra << "  ],\n";
+        }
         extra << "  \"stateful_decode_supported\": false,\n"
               << "  \"true_state_carry_supported\": "
               << (intermediate_tensor_import_used ? "true" : "false") << ",\n"
@@ -3371,7 +3414,7 @@ void print_usage(std::string_view prog) {
       << "  backend select --format <fmt> --mode <mode> [--out <file>]\n"
       << "  model inspect <model-file>\n"
       << "  verify determinism <model-file>\n"
-      << "  inference run --model <id> --model-file <path> [--format <fmt>] [--mode <mode>] [--max-tokens <n>] --prompt <text> [--out <file>]\n"
+      << "  inference run --model <id> --model-file <path> [--format <fmt>] [--mode <mode>] [--max-tokens <n>] --prompt <text> [--checkpoint-canonfs] [--canonfs-root <path>] [--out <file>]\n"
       << "  task answer-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n"
       << "  task classify-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n"
       << "  task route-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n"
