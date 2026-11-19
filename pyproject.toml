@@ -49,9 +49,9 @@ cmake.args = [
 ]
 cmake.build-type = "Release"
 
-# Pure-Python package lives in ffi/python/; the compiled _t81.so is installed
-# into t81/ by the CMake install() rule and picked up automatically.
-wheel.packages = ["ffi/python"]
+# Pure-Python package lives in ffi/python/t81/; the compiled _t81 extension is
+# installed into t81/ by the CMake install() rule and picked up automatically.
+wheel.packages = ["ffi/python/t81"]
 
 # ── cibuildwheel ─────────────────────────────────────────────────────────────
 
