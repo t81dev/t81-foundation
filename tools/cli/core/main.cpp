@@ -3,7 +3,7 @@
  * @brief T81 Foundation Command-Line Interface
  *
  * Sovereign-grade, zero-dependency, ternary-native toolchain driver.
- * MIT + GPL-3.0 dual-licensed.
+ * Licensed under Apache-2.0.
  */
 
 #include <fcntl.h>
@@ -10664,6 +10664,10 @@ int main(int argc, char* argv[]) {
       return run_canonfs_command(args);
 
     } else if (args.command == "mcp") {
+      if (!args.command_args.empty() && args.command_args[0] == "help") {
+        print_help_mcp();
+        return 0;
+      }
       return t81::cli::run_mcp_serve(args.command_args, [](const std::string& croot) -> int {
         Args fsck_args;
         fsck_args.command = "canonfs";

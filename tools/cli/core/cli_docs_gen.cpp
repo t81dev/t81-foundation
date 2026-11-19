@@ -28,7 +28,7 @@ std::string build_bash_completion() {
       COMPREPLY=( $(compgen -W "pkg benchmark repro-hash canonize-tensor canonize-file memory-stats llama-run" -- "${cur}") )
       ;;
     canonfs)
-      COMPREPLY=( $(compgen -W "put-file put-tensor ls get stat verify snapshot snapshot-diff rollback gc fsck repair" -- "${cur}") )
+      COMPREPLY=( $(compgen -W "put-file put-tensor ls get stat verify snapshot snapshot-diff rollback gc fsck repair import export" -- "${cur}") )
       ;;
     determinism)
       COMPREPLY=( $(compgen -W "verify verify-run compare-run certify explain hash trace-hash diff diff-trace baseline bisect multi-run" -- "${cur}") )
@@ -53,6 +53,9 @@ std::string build_bash_completion() {
       ;;
     weights)
       COMPREPLY=( $(compgen -W "import info verify export quantize" -- "${cur}") )
+      ;;
+    model)
+      COMPREPLY=( $(compgen -W "import inspect diff" -- "${cur}") )
       ;;
     policy)
       COMPREPLY=( $(compgen -W "compile validate run test list" -- "${cur}") )
@@ -160,7 +163,7 @@ case $state in
         _values 'internal action' pkg benchmark repro-hash canonize-tensor canonize-file memory-stats llama-run
         ;;
       canonfs)
-        _values 'canonfs action' put-file put-tensor ls get stat verify snapshot snapshot-diff rollback gc fsck repair
+        _values 'canonfs action' put-file put-tensor ls get stat verify snapshot snapshot-diff rollback gc fsck repair import export
         ;;
       determinism)
         _values 'determinism action' verify verify-run compare-run certify explain hash trace-hash diff diff-trace baseline bisect multi-run
@@ -185,6 +188,9 @@ case $state in
         ;;
       weights)
         _values 'weights action' import info verify export quantize
+        ;;
+      model)
+        _values 'model action' import inspect diff
         ;;
       policy)
         _values 'policy action' compile validate run test list
@@ -233,7 +239,7 @@ complete -c t81 -f -n '__fish_seen_subcommand_from code' -a 'check lint fmt buil
 complete -c t81 -f -n '__fish_seen_subcommand_from project' -a 'init build run test'
 complete -c t81 -f -n '__fish_seen_subcommand_from env' -a 'check doctor paths diag toolchain clean feedback'
 complete -c t81 -f -n '__fish_seen_subcommand_from internal' -a 'pkg benchmark repro-hash canonize-tensor canonize-file memory-stats llama-run'
-complete -c t81 -f -n '__fish_seen_subcommand_from canonfs' -a 'put-file put-tensor ls get stat verify snapshot snapshot-diff rollback gc fsck repair'
+complete -c t81 -f -n '__fish_seen_subcommand_from canonfs' -a 'put-file put-tensor ls get stat verify snapshot snapshot-diff rollback gc fsck repair import export'
 complete -c t81 -f -n '__fish_seen_subcommand_from determinism' -a 'verify verify-run compare-run certify explain hash trace-hash diff diff-trace baseline bisect multi-run'
 complete -c t81 -f -n '__fish_seen_subcommand_from vm' -a 'run debug trace until step regs stack mem state profile explain-trap'
 complete -c t81 -f -n '__fish_seen_subcommand_from tisc' -a 'disasm validate stats encode decode diff'
@@ -242,6 +248,7 @@ complete -c t81 -f -n '__fish_seen_subcommand_from tier' -a 'info check gate'
 complete -c t81 -f -n '__fish_seen_subcommand_from tensor' -a 'canonize hash inspect'
 complete -c t81 -f -n '__fish_seen_subcommand_from ai' -a 'backend model verify inference quantization benchmark policy workflow observability run quantize'
 complete -c t81 -f -n '__fish_seen_subcommand_from weights' -a 'import info verify export quantize'
+complete -c t81 -f -n '__fish_seen_subcommand_from model' -a 'import inspect diff'
 complete -c t81 -f -n '__fish_seen_subcommand_from policy' -a 'compile validate run test list'
 complete -c t81 -f -n '__fish_seen_subcommand_from axion' -a 'status optimize simulate explain snapshot snapshot-diff rollback log audit'
 complete -c t81 -f -n '__fish_seen_subcommand_from trace' -a 'show diff replay summary stats filter canonicalize export'
@@ -256,7 +263,7 @@ complete -c t81 -f -n '__fish_seen_subcommand_from feedback' -a 'submit report'
 }
 
 std::string build_manpage_text() {
-  return R"(.TH T81 1 "2026-02-26" "t81 CLI" "User Commands"
+  return R"(.TH T81 1 "2026-11-19" "t81 CLI" "User Commands"
 .SH NAME
 t81 \- T81 Foundation CLI
 .SH SYNOPSIS

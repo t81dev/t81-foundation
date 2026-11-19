@@ -1693,6 +1693,51 @@ bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
       c_data[m * N + n + 2] = static_cast<float>(s2);
       c_data[m * N + n + 3] = static_cast<float>(s3);
     }
+#elif defined(__x86_64__) && defined(__AVX2__)
+    const __m256i low_mask = _mm256_set1_epi8(0x0F);
+    const __m256i pop_lut = _mm256_setr_epi8(0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4, 0, 1,
+                                             1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4);
+    const __m256i vzero = _mm256_setzero_si256();
+    auto avx2_popcnt_u8 = [&](__m256i v) -> __m256i {
+      const __m256i lo = _mm256_shuffle_epi8(pop_lut, _mm256_and_si256(v, low_mask));
+      const __m256i hi =
+          _mm256_shuffle_epi8(pop_lut, _mm256_and_si256(_mm256_srli_epi16(v, 4), low_mask));
+      return _mm256_sad_epu8(_mm256_add_epi8(lo, hi), vzero);
+    };
+    auto hsum_epi64 = [](__m256i v) -> std::int32_t {
+      alignas(32) std::uint64_t tmp[4];
+      _mm256_store_si256(reinterpret_cast<__m256i*>(tmp), v);
+      return static_cast<std::int32_t>(tmp[0] + tmp[1] + tmp[2] + tmp[3]);
+    };
+    for (; n < N; ++n) {
+      const std::uint64_t* bp = Bp.data() + n * W64;
+      const std::uint64_t* bn = Bn.data() + n * W64;
+      __m256i p_acc = vzero;
+      __m256i n_acc = vzero;
+      std::size_t w = 0;
+      for (; w + 4 <= W64; w += 4) {
+        if ((ap[w] | an[w] | ap[w + 1] | an[w + 1] | ap[w + 2] | an[w + 2] | ap[w + 3] |
+             an[w + 3]) == 0ULL) {
+          continue;
+        }
+        const __m256i avp = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(ap + w));
+        const __m256i avn = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(an + w));
+        const __m256i bvp = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(bp + w));
+        const __m256i bvn = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(bn + w));
+        const __m256i agree =
+            _mm256_or_si256(_mm256_and_si256(avp, bvp), _mm256_and_si256(avn, bvn));
+        const __m256i dis = _mm256_or_si256(_mm256_and_si256(avp, bvn), _mm256_and_si256(avn, bvp));
+        p_acc = _mm256_add_epi64(p_acc, avx2_popcnt_u8(agree));
+        n_acc = _mm256_add_epi64(n_acc, avx2_popcnt_u8(dis));
+      }
+      std::int32_t acc = hsum_epi64(p_acc) - hsum_epi64(n_acc);
+      for (; w < W64; ++w) {
+        if ((ap[w] | an[w]) == 0ULL) continue;
+        acc += std::popcount((ap[w] & bp[w]) | (an[w] & bn[w])) -
+               std::popcount((ap[w] & bn[w]) | (an[w] & bp[w]));
+      }
+      c_data[m * N + n] = static_cast<float>(acc);
+    }
 #endif
     for (; n < N; ++n) {
       const std::uint64_t* bp = Bp.data() + n * W64;

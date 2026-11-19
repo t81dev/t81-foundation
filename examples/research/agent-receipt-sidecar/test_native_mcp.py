@@ -59,12 +59,17 @@ def main() -> int:
         try:
             init = rpc("initialize")
             assert init["result"]["serverInfo"]["name"] == "t81-native-mcp"
-            assert init["result"]["serverInfo"]["version"] == "2.0.1"
+            assert init["result"]["serverInfo"]["version"] == "2.1.0"
             # JSON-RPC 2.0 notification must produce NO response; next ping must match its own id.
             proc.stdin.write(json.dumps({"jsonrpc": "2.0", "method": "notifications/initialized"}) + "\n")
             proc.stdin.flush()
             pong = rpc("ping")
             assert pong["id"] == rid and pong["result"] == {}
+            # String ID containing spaces must round-trip cleanly via scoped JSON parser.
+            proc.stdin.write(json.dumps({"jsonrpc": "2.0", "id": "req 1", "method": "ping"}) + "\n")
+            proc.stdin.flush()
+            pong_sp = json.loads(proc.stdout.readline())
+            assert pong_sp["id"] == "req 1" and pong_sp["result"] == {}
             tools = rpc("tools/list")["result"]["tools"]
             assert len(tools) == 15
             assert all("inputSchema" in t for t in tools)
@@ -165,6 +170,16 @@ def main() -> int:
             run_bad = rpc("tools/call", {"name": "t81.run_subgraph", "arguments": {"bytecode_hex": bad_bc}})["result"]["structured"]
             assert not run_bad["ok"] and not run_bad["executed"] and run_bad["verdict"] == "REJECT_UNVERIFIED_POLICY"
 
+            # Real halting deterministic subgraph: LoadImm(r0, 21) -> Add(r1, r0, r0) -> Halt under Tier-1 policy
+            exec_pol = tmp / "exec_policy.apl"
+            exec_pol.write_text("(policy (tier 1))\n", encoding="utf-8")
+            halt_bc = (enc_insn(2, 0, 21, 0) + enc_insn(5, 1, 0, 0) + enc_insn(1, 0, 0, 0)).hex()
+            run_ok_resp = rpc("tools/call", {"name": "t81.run_subgraph", "arguments": {"bytecode_hex": halt_bc, "policy_path": str(exec_pol)}})["result"]
+            run_ok = run_ok_resp["structured"]
+            assert run_ok["ok"] and run_ok["executed"] and run_ok["halted"] and run_ok["trap_code"] == 0
+            assert run_ok["verdict"] == "VERIFIED_AND_EXECUTED" and run_ok_resp["isError"] is False
+            assert run_ok["execution_receipt"].startswith("sha3-512:")
+
             # Verified bytecode without loaded model weights traps cleanly (fail-closed VM_TRAP, not false ok:true)
             run_trap_resp = rpc("tools/call", {"name": "t81.run_subgraph", "arguments": {"bytecode_hex": valid_bc, "policy_path": str(pol)}})["result"]
             run_trap = run_trap_resp["structured"]
@@ -214,6 +229,13 @@ def main() -> int:
             assert ms["results"][0]["doc_id"] == 1 and ms["results"][0]["score"] == 64
             assert ms["results"][1]["doc_id"] == 0 and ms["results"][1]["score"] == 0
             assert ms["retrieval_receipt"].startswith("sha3-512:")
+
+            # Negative dim must be rejected fail-closed (no uint64 wraparound)
+            ms_neg = rpc("tools/call", {"name": "t81.memory_search", "arguments": {
+                "index_pos_path": str(idx_pos), "index_neg_path": str(idx_neg),
+                "query_pos_path": str(q_pos), "query_neg_path": str(q_neg),
+                "dim": -64, "top_k": 2}})["result"]
+            assert ms_neg["isError"] is True and not ms_neg["structured"]["ok"]
 
             # 11. t81.adapter_apply (zero-dequantization saturated ternary LoRA composition)
             # Base word: bit0=+1, bit1=-1, bit2=0, bit3=+1 -> pos=0b1001, neg=0b0010

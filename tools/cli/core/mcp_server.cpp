@@ -66,57 +66,231 @@ std::string json_escape_mcp(std::string_view input) {
   return out;
 }
 
-std::string extract_str(const std::string& json, const std::string& key) {
-  const std::string pat = "\"" + key + "\"";
-  const size_t kpos = json.find(pat);
-  if (kpos == std::string::npos) return {};
-  const size_t colon = json.find(':', kpos + pat.size());
-  if (colon == std::string::npos) return {};
-  size_t i = colon + 1;
-  while (i < json.size() && (json[i] == ' ' || json[i] == '\t')) ++i;
-  if (i >= json.size() || json[i] != '"') return {};
-  std::string out;
-  for (++i; i < json.size(); ++i) {
-    if (json[i] == '\\' && i + 1 < json.size()) {
-      out.push_back(json[++i]);
-    } else if (json[i] == '"') {
-      break;
-    } else {
-      out.push_back(json[i]);
+struct JsonNode {
+  enum class Kind { Null, Bool, Number, String, Array, Object } kind = Kind::Null;
+  std::string str;  // decoded string for String; raw token for Number/Bool/Null
+  std::string raw;  // exact raw JSON slice (useful for preserving JSON-RPC id)
+  std::unordered_map<std::string, JsonNode> obj;
+};
+
+class ScopedJsonParser {
+public:
+  explicit ScopedJsonParser(std::string_view src) : s_(src) {}
+
+  bool parse(JsonNode& out) {
+    skip_ws();
+    if (!parse_val(out)) return false;
+    skip_ws();
+    return i_ == s_.size();
+  }
+
+private:
+  void skip_ws() {
+    while (i_ < s_.size() &&
+           (s_[i_] == ' ' || s_[i_] == '\t' || s_[i_] == '\r' || s_[i_] == '\n')) {
+      ++i_;
     }
   }
-  return out;
-}
 
-std::string extract_num_or_str(const std::string& json, const std::string& key) {
-  const std::string pat = "\"" + key + "\"";
-  const size_t kpos = json.find(pat);
-  if (kpos == std::string::npos) return {};
-  const size_t colon = json.find(':', kpos + pat.size());
-  if (colon == std::string::npos) return {};
-  size_t i = colon + 1;
-  while (i < json.size() && (json[i] == ' ' || json[i] == '\t')) ++i;
-  if (i >= json.size()) return {};
-  if (json[i] == '"') return extract_str(json, key);
-  size_t j = i;
-  while (j < json.size() &&
-         (std::isdigit(static_cast<unsigned char>(json[j])) || json[j] == '-' || json[j] == '+' ||
-          json[j] == '.' || json[j] == 'e' || json[j] == 'E')) {
-    ++j;
+  bool parse_string(std::string& decoded, std::string& raw) {
+    if (i_ >= s_.size() || s_[i_] != '"') return false;
+    const size_t start = i_++;
+    decoded.clear();
+    while (i_ < s_.size()) {
+      const char c = s_[i_++];
+      if (c == '"') {
+        raw.assign(s_.substr(start, i_ - start));
+        return true;
+      }
+      if (c == '\\') {
+        if (i_ >= s_.size()) return false;
+        const char e = s_[i_++];
+        switch (e) {
+          case '"':
+            decoded.push_back('"');
+            break;
+          case '\\':
+            decoded.push_back('\\');
+            break;
+          case '/':
+            decoded.push_back('/');
+            break;
+          case 'b':
+            decoded.push_back('\b');
+            break;
+          case 'f':
+            decoded.push_back('\f');
+            break;
+          case 'n':
+            decoded.push_back('\n');
+            break;
+          case 'r':
+            decoded.push_back('\r');
+            break;
+          case 't':
+            decoded.push_back('\t');
+            break;
+          default:
+            decoded.push_back(e);
+            break;
+        }
+      } else {
+        decoded.push_back(c);
+      }
+    }
+    return false;
   }
-  return json.substr(i, j - i);
+
+  bool parse_val(JsonNode& out) {
+    skip_ws();
+    if (i_ >= s_.size()) return false;
+    const char c = s_[i_];
+    if (c == '"') {
+      out.kind = JsonNode::Kind::String;
+      return parse_string(out.str, out.raw);
+    }
+    if (c == '{') {
+      out.kind = JsonNode::Kind::Object;
+      const size_t start = i_++;
+      skip_ws();
+      if (i_ < s_.size() && s_[i_] == '}') {
+        ++i_;
+        out.raw.assign(s_.substr(start, i_ - start));
+        return true;
+      }
+      while (true) {
+        skip_ws();
+        std::string k, kraw;
+        if (!parse_string(k, kraw)) return false;
+        skip_ws();
+        if (i_ >= s_.size() || s_[i_] != ':') return false;
+        ++i_;
+        JsonNode val;
+        if (!parse_val(val)) return false;
+        out.obj[std::move(k)] = std::move(val);
+        skip_ws();
+        if (i_ < s_.size() && s_[i_] == ',') {
+          ++i_;
+          continue;
+        }
+        if (i_ < s_.size() && s_[i_] == '}') {
+          ++i_;
+          out.raw.assign(s_.substr(start, i_ - start));
+          return true;
+        }
+        return false;
+      }
+    }
+    if (c == '[') {
+      out.kind = JsonNode::Kind::Array;
+      const size_t start = i_++;
+      skip_ws();
+      if (i_ < s_.size() && s_[i_] == ']') {
+        ++i_;
+        out.raw.assign(s_.substr(start, i_ - start));
+        return true;
+      }
+      while (true) {
+        JsonNode elem;
+        if (!parse_val(elem)) return false;
+        skip_ws();
+        if (i_ < s_.size() && s_[i_] == ',') {
+          ++i_;
+          continue;
+        }
+        if (i_ < s_.size() && s_[i_] == ']') {
+          ++i_;
+          out.raw.assign(s_.substr(start, i_ - start));
+          return true;
+        }
+        return false;
+      }
+    }
+    const size_t start = i_;
+    while (i_ < s_.size() && s_[i_] != ',' && s_[i_] != '}' && s_[i_] != ']' && s_[i_] != ' ' &&
+           s_[i_] != '\t' && s_[i_] != '\r' && s_[i_] != '\n') {
+      ++i_;
+    }
+    if (i_ == start) return false;
+    out.raw.assign(s_.substr(start, i_ - start));
+    out.str = out.raw;
+    if (out.raw == "null") {
+      out.kind = JsonNode::Kind::Null;
+    } else if (out.raw == "true" || out.raw == "false") {
+      out.kind = JsonNode::Kind::Bool;
+    } else {
+      out.kind = JsonNode::Kind::Number;
+    }
+    return true;
+  }
+
+  std::string_view s_;
+  size_t i_ = 0;
+};
+
+std::string arg_str(const JsonNode& obj, const std::string& key) {
+  if (obj.kind != JsonNode::Kind::Object) return {};
+  auto it = obj.obj.find(key);
+  if (it == obj.obj.end() || it->second.kind != JsonNode::Kind::String) return {};
+  return it->second.str;
 }
 
-std::string extract_id(const std::string& json) {
-  const size_t kpos = json.find("\"id\"");
-  if (kpos == std::string::npos) return "null";
-  const size_t colon = json.find(':', kpos + 4);
-  if (colon == std::string::npos) return "null";
-  size_t i = colon + 1;
-  while (i < json.size() && (json[i] == ' ' || json[i] == '\t')) ++i;
-  size_t end = i;
-  while (end < json.size() && json[end] != ',' && json[end] != '}' && json[end] != ' ') ++end;
-  return end > i ? json.substr(i, end - i) : "null";
+bool arg_double(const JsonNode& obj, const std::string& key, double default_val, double& out) {
+  out = default_val;
+  if (obj.kind != JsonNode::Kind::Object) return true;
+  auto it = obj.obj.find(key);
+  if (it == obj.obj.end() || it->second.kind == JsonNode::Kind::Null) return true;
+  if (it->second.kind != JsonNode::Kind::Number && it->second.kind != JsonNode::Kind::String) {
+    return false;
+  }
+  const std::string& s = it->second.str;
+  if (s.empty()) return true;
+  char* endp = nullptr;
+  const double v = std::strtod(s.c_str(), &endp);
+  if (endp == s.c_str() || *endp != '\0') return false;
+  out = v;
+  return true;
+}
+
+bool arg_u64(const JsonNode& obj, const std::string& key, uint64_t default_val, uint64_t& out) {
+  out = default_val;
+  if (obj.kind != JsonNode::Kind::Object) return true;
+  auto it = obj.obj.find(key);
+  if (it == obj.obj.end() || it->second.kind == JsonNode::Kind::Null) return true;
+  if (it->second.kind != JsonNode::Kind::Number && it->second.kind != JsonNode::Kind::String) {
+    return false;
+  }
+  const std::string& s = it->second.str;
+  if (s.empty()) return true;
+  if (s.front() == '-') return false;
+  char* endp = nullptr;
+  const unsigned long long v = std::strtoull(s.c_str(), &endp, 10);
+  if (endp == s.c_str() || *endp != '\0') return false;
+  out = static_cast<uint64_t>(v);
+  return true;
+}
+
+bool write_file_bytes_atomic(const fs::path& path, const std::vector<uint8_t>& data) {
+  fs::path tmp = path;
+  tmp += ".tmp.t81";
+  std::ofstream ofs(tmp, std::ios::binary | std::ios::trunc);
+  if (!ofs) return false;
+  ofs.write(reinterpret_cast<const char*>(data.data()), static_cast<std::streamsize>(data.size()));
+  ofs.flush();
+  const bool ok = static_cast<bool>(ofs);
+  ofs.close();
+  if (!ok) {
+    std::error_code ec;
+    fs::remove(tmp, ec);
+    return false;
+  }
+  std::error_code ec;
+  fs::rename(tmp, path, ec);
+  if (ec) {
+    fs::remove(tmp, ec);
+    return false;
+  }
+  return true;
 }
 
 std::string sha3_512_hex(const std::vector<uint8_t>& bytes) {
@@ -295,7 +469,7 @@ std::string build_tools_list_json() {
          "\"candidate_pos_path\",\"candidate_neg_path\"],"
          "\"properties\":{\"base_pos_path\":{\"type\":\"string\"},\"base_neg_path\":{\"type\":"
          "\"string\"},\"candidate_pos_path\":{\"type\":\"string\"},\"candidate_neg_path\":{"
-         "\"type\":\"string\"},\"max_flip_pct\":{\"type\":\"string\"}}}},"
+         "\"type\":\"string\"},\"max_flip_pct\":{\"type\":\"number\"}}}},"
 
          "{\"name\":\"t81.memory_search\","
          "\"description\":\"Zero-float deterministic top-K similarity search over a Dual-Rail "
@@ -305,7 +479,7 @@ std::string build_tools_list_json() {
          "\"index_neg_path\",\"query_pos_path\",\"query_neg_path\",\"dim\"],"
          "\"properties\":{\"index_pos_path\":{\"type\":\"string\"},\"index_neg_path\":{\"type\":"
          "\"string\"},\"query_pos_path\":{\"type\":\"string\"},\"query_neg_path\":{\"type\":"
-         "\"string\"},\"dim\":{\"type\":\"string\"},\"top_k\":{\"type\":\"string\"}}}},"
+         "\"string\"},\"dim\":{\"type\":\"integer\"},\"top_k\":{\"type\":\"integer\"}}}},"
 
          "{\"name\":\"t81.adapter_apply\","
          "\"description\":\"Compose a Dual-Rail ternary adapter delta (dense pos/neg or compact "
@@ -318,7 +492,7 @@ std::string build_tools_list_json() {
          "\"string\"},\"delta_pos_path\":{\"type\":\"string\"},\"delta_neg_path\":{\"type\":"
          "\"string\"},\"delta_sbdr_path\":{\"type\":\"string\"},\"out_pos_path\":{\"type\":"
          "\"string\"},\"out_neg_path\":{\"type\":\"string\"},\"max_flip_pct\":{\"type\":"
-         "\"string\"}}}}"
+         "\"number\"}}}}"
          "]";
 }
 
@@ -373,9 +547,19 @@ SubgraphVerifyResult verify_tisc_subgraph(const t81::tisc::Program& prog) {
   std::unordered_set<int32_t> loaded, shaped, verified;
   bool saw_halt = false;
   size_t matmuls = 0;
+  size_t pure_compute_ops = 0;
   for (const auto& insn : prog.insns) {
     if (saw_halt) return {false, "REJECT_TRAILING_CODE_AFTER_HALT", matmuls};
     switch (insn.opcode) {
+      case Opcode::Nop:
+        break;
+      case Opcode::LoadImm:
+      case Opcode::Add:
+      case Opcode::Sub:
+      case Opcode::Mul:
+      case Opcode::TNew:
+        ++pure_compute_ops;
+        break;
       case Opcode::WeightsLoad:
         loaded.insert(insn.a);
         break;
@@ -401,7 +585,7 @@ SubgraphVerifyResult verify_tisc_subgraph(const t81::tisc::Program& prog) {
     }
   }
   if (!saw_halt) return {false, "REJECT_MISSING_HALT", matmuls};
-  if (matmuls == 0) return {false, "REJECT_NO_COMPUTE", 0};
+  if (matmuls == 0 && pure_compute_ops == 0) return {false, "REJECT_NO_COMPUTE", 0};
   return {true, "VERIFIED_OK", matmuls};
 }
 
@@ -421,16 +605,23 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
   std::string line;
   while (std::getline(std::cin, line)) {
     if (line.empty()) continue;
-    const std::string id = extract_id(line);
-    const std::string method = extract_str(line, "method");
+    JsonNode req;
+    ScopedJsonParser parser(line);
+    if (!parser.parse(req) || req.kind != JsonNode::Kind::Object) {
+      continue;
+    }
+    const auto id_it = req.obj.find("id");
+    const bool has_id = (id_it != req.obj.end() && id_it->second.kind != JsonNode::Kind::Null);
+    const std::string id = has_id ? id_it->second.raw : "null";
+    const std::string method = arg_str(req, "method");
     // Per JSON-RPC 2.0 / MCP spec, notifications carry no id and must not receive a response.
-    if (id == "null" || method.rfind("notifications/", 0) == 0) {
+    if (!has_id || method.rfind("notifications/", 0) == 0) {
       continue;
     }
     if (method == "initialize") {
       std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id
                 << ",\"result\":{\"protocolVersion\":\"2024-11-05\",\"serverInfo\":{\"name\":\"t81-"
-                   "native-mcp\",\"version\":\"2.0.1\"},\"capabilities\":{\"tools\":{}}}}\n"
+                   "native-mcp\",\"version\":\"2.1.0\"},\"capabilities\":{\"tools\":{}}}}\n"
                 << std::flush;
     } else if (method == "ping") {
       std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id << ",\"result\":{}}\n" << std::flush;
@@ -439,13 +630,24 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                 << ",\"result\":{\"tools\":" << build_tools_list_json() << "}}\n"
                 << std::flush;
     } else if (method == "tools/call") {
-      const std::string name = extract_str(line, "name");
+      static const JsonNode kEmptyObj{JsonNode::Kind::Object, {}, "{}", {}};
+      const auto params_it = req.obj.find("params");
+      const JsonNode& params =
+          (params_it != req.obj.end() && params_it->second.kind == JsonNode::Kind::Object)
+              ? params_it->second
+              : kEmptyObj;
+      const std::string name = arg_str(params, "name");
+      const auto args_it = params.obj.find("arguments");
+      const JsonNode& args =
+          (args_it != params.obj.end() && args_it->second.kind == JsonNode::Kind::Object)
+              ? args_it->second
+              : kEmptyObj;
       std::string structured = "{\"ok\":false,\"error\":\"unknown tool\",\"hint\":\"call "
                                "tools/list to inspect valid tool names and inputSchema\"}";
 
       if (name == "t81.policy_validate" || name == "t81.policy_test" ||
           name == "t81.get_effective_policy") {
-        const std::string ppath = extract_str(line, "policy_path");
+        const std::string ppath = arg_str(args, "policy_path");
         if (ppath.empty()) {
           structured = "{\"ok\":false,\"error\":\"missing required argument: "
                        "policy_path\",\"expected\":[\"policy_path\"]}";
@@ -465,14 +667,14 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
               structured =
                   "{\"ok\":true,\"valid\":true,\"tier\":" + std::to_string(res.value().tier) + "}";
             } else if (name == "t81.get_effective_policy") {
-              const std::string action_type = extract_str(line, "action_type");
+              const std::string action_type = arg_str(args, "action_type");
               const std::string floor = resolve_floor(content, action_type);
               structured = "{\"ok\":true,\"policy_hash\":\"" + sha3_512_hex(pbytes) +
                            "\",\"action_type\":\"" + json_escape_mcp(action_type) +
                            "\",\"policy_floor\":\"" + floor + "\",\"allowed_hash_count\":" +
                            std::to_string(policy_allowed_hash_count(res.value())) + "}";
             } else {
-              const std::string mhash = extract_str(line, "model_hash");
+              const std::string mhash = arg_str(args, "model_hash");
               if (mhash.empty()) {
                 structured = "{\"ok\":false,\"error\":\"missing required argument: "
                              "model_hash\",\"expected\":[\"policy_path\",\"model_hash\"]}";
@@ -485,10 +687,10 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           }
         }
       } else if (name == "t81.gate_check") {
-        const std::string apath = extract_str(line, "artifact_path");
-        const std::string ppath = extract_str(line, "policy_path");
-        const std::string action_type = extract_str(line, "action_type");
-        const std::string req_mode = extract_str(line, "mode");
+        const std::string apath = arg_str(args, "artifact_path");
+        const std::string ppath = arg_str(args, "policy_path");
+        const std::string action_type = arg_str(args, "action_type");
+        const std::string req_mode = arg_str(args, "mode");
         std::vector<uint8_t> abytes, pbytes;
         if (apath.empty() || ppath.empty()) {
           structured = "{\"ok\":false,\"decision\":\"DENY\",\"blocked\":true,\"error\":\"missing "
@@ -529,7 +731,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           }
         }
       } else if (name == "t81.canonfs_fsck") {
-        const std::string croot = extract_str(line, "canonfs_root");
+        const std::string croot = arg_str(args, "canonfs_root");
         if (croot.empty()) {
           structured = "{\"ok\":false,\"error\":\"missing required argument: "
                        "canonfs_root\",\"expected\":[\"canonfs_root\"]}";
@@ -551,7 +753,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           }
         }
       } else if (name == "t81.determinism_hash") {
-        const std::string fpath = extract_str(line, "path");
+        const std::string fpath = arg_str(args, "path");
         std::vector<uint8_t> bytes;
         if (fpath.empty()) {
           structured = "{\"ok\":false,\"error\":\"missing required argument: "
@@ -562,7 +764,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           structured = "{\"ok\":true,\"sha3_512\":\"" + sha3_512_hex(bytes) + "\"}";
         }
       } else if (name == "t81.session_bootstrap") {
-        const std::string root_arg = extract_str(line, "repo_root");
+        const std::string root_arg = arg_str(args, "repo_root");
         const fs::path root = root_arg.empty() ? fs::current_path() : fs::path(root_arg);
         std::string git_ref;
         const std::string head_sha = read_git_head_sha(root, git_ref);
@@ -572,7 +774,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         const bool lock_ok = read_file_bytes(lock_path, lock_bytes);
         const bool reg_ok = fs::exists(reg_path);
         structured =
-            "{\"ok\":true,\"version\":\"2.0.1\",\"repo_root\":\"" + json_escape_mcp(root.string()) +
+            "{\"ok\":true,\"version\":\"2.1.0\",\"repo_root\":\"" + json_escape_mcp(root.string()) +
             "\",\"git_ref\":\"" + json_escape_mcp(git_ref) + "\",\"git_head_sha\":\"" +
             json_escape_mcp(head_sha) +
             "\",\"public_api_lock_present\":" + (lock_ok ? "true" : "false") +
@@ -580,8 +782,8 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
             "\",\"determinism_registry_present\":" + (reg_ok ? "true" : "false") +
             ",\"native_mcp_tools\":15,\"capabilities\":" + detect_host_capabilities_json() + "}";
       } else if (name == "t81.tx_begin") {
-        const std::string tpath = extract_str(line, "target_path");
-        const std::string bdir = extract_str(line, "backup_dir");
+        const std::string tpath = arg_str(args, "target_path");
+        const std::string bdir = arg_str(args, "backup_dir");
         std::vector<uint8_t> bytes;
         if (tpath.empty() || bdir.empty()) {
           structured = "{\"ok\":false,\"error\":\"missing required "
@@ -604,7 +806,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           }
         }
       } else if (name == "t81.tx_abort") {
-        const std::string tx_id = extract_str(line, "tx_id");
+        const std::string tx_id = arg_str(args, "tx_id");
         auto it = active_txs.find(tx_id);
         if (it == active_txs.end()) {
           structured = "{\"ok\":false,\"error\":\"unknown or closed tx_id\"}";
@@ -626,8 +828,8 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           }
         }
       } else if (name == "t81.tx_commit") {
-        const std::string tx_id = extract_str(line, "tx_id");
-        const std::string ppath = extract_str(line, "policy_path");
+        const std::string tx_id = arg_str(args, "tx_id");
+        const std::string ppath = arg_str(args, "policy_path");
         auto it = active_txs.find(tx_id);
         if (it == active_txs.end()) {
           structured = "{\"ok\":false,\"error\":\"unknown or closed tx_id\"}";
@@ -675,8 +877,8 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           }
         }
       } else if (name == "t81.verify_subgraph") {
-        const std::string bc_path = extract_str(line, "bytecode_path");
-        const std::string bc_hex = extract_str(line, "bytecode_hex");
+        const std::string bc_path = arg_str(args, "bytecode_path");
+        const std::string bc_hex = arg_str(args, "bytecode_hex");
         std::vector<uint8_t> raw;
         bool loaded_ok = false;
         if (!bc_hex.empty()) {
@@ -711,9 +913,9 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           }
         }
       } else if (name == "t81.run_subgraph") {
-        const std::string bc_path = extract_str(line, "bytecode_path");
-        const std::string bc_hex = extract_str(line, "bytecode_hex");
-        const std::string ppath = extract_str(line, "policy_path");
+        const std::string bc_path = arg_str(args, "bytecode_path");
+        const std::string bc_hex = arg_str(args, "bytecode_hex");
+        const std::string ppath = arg_str(args, "policy_path");
         std::vector<uint8_t> raw;
         bool loaded_ok = false;
         if (!bc_hex.empty()) {
@@ -786,16 +988,19 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           }
         }
       } else if (name == "t81.diff_check") {
-        const std::string bp_path = extract_str(line, "base_pos_path");
-        const std::string bn_path = extract_str(line, "base_neg_path");
-        const std::string cp_path = extract_str(line, "candidate_pos_path");
-        const std::string cn_path = extract_str(line, "candidate_neg_path");
-        const std::string max_str = extract_num_or_str(line, "max_flip_pct");
-        const double max_flip_pct = max_str.empty() ? 1.0 : std::strtod(max_str.c_str(), nullptr);
+        const std::string bp_path = arg_str(args, "base_pos_path");
+        const std::string bn_path = arg_str(args, "base_neg_path");
+        const std::string cp_path = arg_str(args, "candidate_pos_path");
+        const std::string cn_path = arg_str(args, "candidate_neg_path");
+        double max_flip_pct = 1.0;
+        const bool max_ok = arg_double(args, "max_flip_pct", 1.0, max_flip_pct) &&
+                            max_flip_pct >= 0.0 && max_flip_pct <= 100.0;
         std::vector<uint8_t> bp, bn, cp, cn;
-        if (bp_path.empty() || bn_path.empty() || cp_path.empty() || cn_path.empty() ||
-            !read_file_bytes(bp_path, bp) || !read_file_bytes(bn_path, bn) ||
-            !read_file_bytes(cp_path, cp) || !read_file_bytes(cn_path, cn)) {
+        if (!max_ok) {
+          structured = "{\"ok\":false,\"allowed\":false,\"verdict\":\"REJECT_INVALID_ARGUMENT\"}";
+        } else if (bp_path.empty() || bn_path.empty() || cp_path.empty() || cn_path.empty() ||
+                   !read_file_bytes(bp_path, bp) || !read_file_bytes(bn_path, bn) ||
+                   !read_file_bytes(cp_path, cp) || !read_file_bytes(cn_path, cn)) {
           structured = "{\"ok\":false,\"allowed\":false,\"verdict\":\"REJECT_IO_ERROR\"}";
         } else if (bp.empty() || bp.size() != bn.size() || bp.size() != cp.size() ||
                    bp.size() != cn.size() || (bp.size() % 8 != 0)) {
@@ -840,17 +1045,18 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           }
         }
       } else if (name == "t81.memory_search") {
-        const std::string ip_path = extract_str(line, "index_pos_path");
-        const std::string in_path = extract_str(line, "index_neg_path");
-        const std::string qp_path = extract_str(line, "query_pos_path");
-        const std::string qn_path = extract_str(line, "query_neg_path");
-        const std::string dim_str = extract_num_or_str(line, "dim");
-        const std::string k_str = extract_num_or_str(line, "top_k");
-        const size_t dim = static_cast<size_t>(std::strtoull(dim_str.c_str(), nullptr, 10));
-        const size_t top_k_req =
-            k_str.empty() ? 5 : static_cast<size_t>(std::strtoull(k_str.c_str(), nullptr, 10));
+        const std::string ip_path = arg_str(args, "index_pos_path");
+        const std::string in_path = arg_str(args, "index_neg_path");
+        const std::string qp_path = arg_str(args, "query_pos_path");
+        const std::string qn_path = arg_str(args, "query_neg_path");
+        uint64_t dim_u64 = 0;
+        uint64_t top_k_u64 = 5;
+        const bool dims_ok =
+            arg_u64(args, "dim", 0, dim_u64) && arg_u64(args, "top_k", 5, top_k_u64);
+        const size_t dim = static_cast<size_t>(dim_u64);
+        const size_t top_k_req = static_cast<size_t>(top_k_u64);
         std::vector<uint8_t> ip, in, qp, qn;
-        if (dim == 0 || (dim % 64 != 0) || !read_file_bytes(ip_path, ip) ||
+        if (!dims_ok || dim == 0 || (dim % 64 != 0) || !read_file_bytes(ip_path, ip) ||
             !read_file_bytes(in_path, in) || !read_file_bytes(qp_path, qp) ||
             !read_file_bytes(qn_path, qn)) {
           structured = "{\"ok\":false,\"error\":\"invalid dim or unreadable index/query files\"}";
@@ -911,19 +1117,21 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           }
         }
       } else if (name == "t81.adapter_apply") {
-        const std::string bp_path = extract_str(line, "base_pos_path");
-        const std::string bn_path = extract_str(line, "base_neg_path");
-        const std::string dp_path = extract_str(line, "delta_pos_path");
-        const std::string dn_path = extract_str(line, "delta_neg_path");
-        const std::string sbdr_path = extract_str(line, "delta_sbdr_path");
-        const std::string op_path = extract_str(line, "out_pos_path");
-        const std::string on_path = extract_str(line, "out_neg_path");
-        const std::string max_str = extract_num_or_str(line, "max_flip_pct");
-        const double max_flip_pct = max_str.empty() ? 100.0 : std::strtod(max_str.c_str(), nullptr);
+        const std::string bp_path = arg_str(args, "base_pos_path");
+        const std::string bn_path = arg_str(args, "base_neg_path");
+        const std::string dp_path = arg_str(args, "delta_pos_path");
+        const std::string dn_path = arg_str(args, "delta_neg_path");
+        const std::string sbdr_path = arg_str(args, "delta_sbdr_path");
+        const std::string op_path = arg_str(args, "out_pos_path");
+        const std::string on_path = arg_str(args, "out_neg_path");
+        double max_flip_pct = 100.0;
+        const bool max_ok = arg_double(args, "max_flip_pct", 100.0, max_flip_pct) &&
+                            max_flip_pct >= 0.0 && max_flip_pct <= 100.0;
         const bool use_sbdr = !sbdr_path.empty();
         std::vector<uint8_t> bp, bn, dp, dn, sbdr;
-        bool io_ok = !bp_path.empty() && !bn_path.empty() && !op_path.empty() && !on_path.empty() &&
-                     read_file_bytes(bp_path, bp) && read_file_bytes(bn_path, bn);
+        bool io_ok = max_ok && !bp_path.empty() && !bn_path.empty() && !op_path.empty() &&
+                     !on_path.empty() && read_file_bytes(bp_path, bp) &&
+                     read_file_bytes(bn_path, bn);
         if (io_ok) {
           if (use_sbdr) {
             io_ok = read_file_bytes(sbdr_path, sbdr);
@@ -1067,7 +1275,8 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
 
             bool wrote_ok = false;
             if (within_budget) {
-              wrote_ok = write_file_bytes(op_path, op) && write_file_bytes(on_path, on);
+              wrote_ok =
+                  write_file_bytes_atomic(op_path, op) && write_file_bytes_atomic(on_path, on);
             }
             const bool ok = within_budget && wrote_ok;
             const std::string verdict =

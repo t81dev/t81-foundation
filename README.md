@@ -10,7 +10,7 @@
 
 ---
 
-## 60-Second Proof (`v2.0.1`)
+## 60-Second Proof (`v2.1.0`)
 
 Run the verified end-to-end stack locally right after `cmake -S . -B build -G Ninja && cmake --build build --target t81 -j8`:
 
@@ -280,19 +280,16 @@ These are different evidentiary levels, not interchangeable labels. An experimen
 
 ---
 
-## Quick Verification (`v2.0.0`)
+## Extended Verification & Research Labs
 
-To build the CLI and verify the deterministic runtime, CanonFS integrity, native C++ MCP airlock (`t81 mcp serve`), and exact-rational/triage examples locally:
+To run the full compromised-agent gauntlet, exact-rational lab, replay consensus, and deterministic risk triage alongside the 60-Second Proof above:
 
 ```bash
-cmake -S . -B build -G Ninja
-cmake --build build --target t81 -j
-
-# Native C++ MCP server (6 in-process tools, ~110 µs warm gate_check)
-python3 examples/research/agent-receipt-sidecar/test_native_mcp.py
-
 # Self-hosted MCP receipt dogfooding + 11-scenario compromised-agent gauntlet
 bash scripts/ci/run_agent_receipt_dogfood_smoke.sh
+
+# Ternary AI primitives (Dual-Rail RAG, flip-budget diffs, block-zero skip, SBDR1 vs Base-243, Kleene policy)
+./examples/research/ternary-ai-primitives/run_primitives.sh
 
 # Exact-rational lab, two-node replay consensus, and deterministic risk triage
 bash examples/research/exact-rational-lab/run_lab.sh
