@@ -166,6 +166,51 @@ def main() -> int:
             assert not ver_revoked["ok"] and ver_revoked["stage"] == "authority"
             scenarios["4_midflight_revocation"] = "PASS (blocked at authority)"
 
+            # 6. Anti-downgrade: compromised Proposer passes mode="observe-only" against fail-closed policy
+            gate_downgrade = client.tool(
+                "t81.gate_and_seal",
+                {
+                    "artifact_path": str(poisoned_artifact),
+                    "policy_path": str(policy_v1),
+                    "canonfs_root": str(canonfs),
+                    "signing_key": str(priv),
+                    "public_key_uri": f"file://{pub}",
+                    "principal_id": "proposer-agent-01",
+                    "mode": "observe-only",
+                },
+            )
+            if gate_downgrade["ok"] or not gate_downgrade.get("blocked"):
+                unauthorized_side_effects += 1
+            assert not gate_downgrade["ok"] and gate_downgrade["mode_applied"] == "fail-closed" and gate_downgrade["downgrade_attempt_blocked"]
+            scenarios["6_mode_downgrade_blocked"] = "PASS (clamped to fail-closed)"
+
+            # 7. Observe-only policy emits shadow receipt (verdict=DENY, blocked=False); fail-closed verifier still rejects it
+            policy_observe = tmp / "policy_observe.apl"
+            policy_observe.write_text(
+                f'(policy\n  (tier 1)\n  (enforcement-mode "observe-only")\n  (allowed-ternary-model-hashes ["{good_sha}"])\n  (require-axion-event (reason "agent:promote")))\n',
+                encoding="utf-8",
+            )
+            gate_obs = client.tool(
+                "t81.gate_and_seal",
+                {
+                    "artifact_path": str(poisoned_artifact),
+                    "policy_path": str(policy_observe),
+                    "canonfs_root": str(canonfs),
+                    "signing_key": str(priv),
+                    "public_key_uri": f"file://{pub}",
+                    "principal_id": "proposer-agent-01",
+                },
+            )
+            assert gate_obs["ok"] and not gate_obs["blocked"] and gate_obs["decision"] == "DENY"
+            ver_obs_shadow = client.tool(
+                "t81.verify_receipt",
+                {"bundle": gate_obs["receipt"], "public_key": str(pub), "trusted_policy": str(policy_observe)},
+            )
+            if ver_obs_shadow["ok"]:
+                unauthorized_side_effects += 1
+            assert not ver_obs_shadow["ok"] and ver_obs_shadow["stage"] == "authority"
+            scenarios["7_observe_shadow_receipt"] = "PASS (non-blocking emit, fail-closed verify rejects)"
+
             # --- Experiment 2: 100-Call Warm Resident Latency Benchmark ---
             # Run BEFORE tampering with CanonFS objects!
             latencies_ms: list[float] = []

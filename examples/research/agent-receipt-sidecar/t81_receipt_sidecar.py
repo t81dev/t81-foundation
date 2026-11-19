@@ -96,6 +96,26 @@ def extract_allowed_hashes(policy_text: str) -> list[str]:
     return re.findall(r'"([^"]+)"', match.group(1))
 
 
+MODE_RANK = {"observe-only": 0, "warn": 1, "fail-closed": 2}
+
+
+def extract_policy_mode(policy_text: str) -> str:
+    match = re.search(r'\(enforcement-mode\s+"(observe-only|warn|fail-closed)"\)', policy_text)
+    if match:
+        return match.group(1)
+    env_mode = os.environ.get("T81_ENFORCEMENT_MODE", "fail-closed")
+    return env_mode if env_mode in MODE_RANK else "fail-closed"
+
+
+def resolve_enforcement_mode(policy_mode: str, requested_mode: str | None) -> tuple[str, bool]:
+    """Resolve effective mode. Callers may tighten mode, NEVER downgrade policy floor."""
+    if not requested_mode or requested_mode not in MODE_RANK:
+        return policy_mode, False
+    if MODE_RANK[requested_mode] < MODE_RANK[policy_mode]:
+        return policy_mode, True
+    return requested_mode, False
+
+
 def tool_canonfs_fsck(args: dict[str, Any]) -> dict[str, Any]:
     t81_bin = args.get("t81_bin", DEFAULT_T81_BIN)
     canonfs_root = args["canonfs_root"]
@@ -141,14 +161,24 @@ def tool_gate_and_seal(args: dict[str, Any]) -> dict[str, Any]:
     artifact_bytes = artifact_path.read_bytes()
     artifact_sha3_512 = "sha3-512:" + hashlib.sha3_512(artifact_bytes).hexdigest()
     policy_bytes = policy_path.read_bytes()
+    policy_text = policy_bytes.decode("utf-8")
     policy_sha3_512 = "sha3-512:" + hashlib.sha3_512(policy_bytes).hexdigest()
-    allowed = extract_allowed_hashes(policy_bytes.decode("utf-8"))
+    allowed = extract_allowed_hashes(policy_text)
 
-    # Pre-side-effect policy check (fail closed)
-    if artifact_sha3_512 not in allowed:
+    policy_mode = extract_policy_mode(policy_text)
+    effective_mode, downgrade_attempt = resolve_enforcement_mode(policy_mode, args.get("mode"))
+    admitted = artifact_sha3_512 in allowed
+
+    # Pre-side-effect policy check (fail closed when effective_mode == "fail-closed")
+    if not admitted and effective_mode == "fail-closed":
         return {
             "ok": False,
+            "decision": "DENY",
             "verdict": "DENY",
+            "mode_applied": effective_mode,
+            "downgrade_attempt_blocked": downgrade_attempt,
+            "blocked": True,
+            "receipt": None,
             "reason": f"SecurityFault: artifact {artifact_sha3_512} not admitted by {policy_path.name}",
             "side_effect_executed": False,
         }
@@ -160,10 +190,21 @@ def tool_gate_and_seal(args: dict[str, Any]) -> dict[str, Any]:
         text=True,
     )
     if imp.returncode != 0:
-        return {"ok": False, "verdict": "DENY", "reason": f"canonfs import failed: {imp.stderr.strip()}"}
+        return {"ok": False, "decision": "DENY", "verdict": "DENY", "blocked": True, "reason": f"canonfs import failed: {imp.stderr.strip()}"}
     imp_data = json.loads(imp.stdout)
     canon_ref = imp_data["imported_objects"][0]
     prov_ref = imp_data["provenance_ref"]
+
+    # Truthful verdict: never emit ALLOW in observe-only/warn when policy denied
+    if admitted:
+        true_verdict = "ALLOW"
+        reason = "admitted by policy"
+    elif effective_mode == "warn":
+        true_verdict = "WARN"
+        reason = f"WARNING: artifact {artifact_sha3_512} not admitted by {policy_path.name} (allowed only due to warn mode)"
+    else:
+        true_verdict = "DENY"
+        reason = f"OBSERVE-ONLY: artifact {artifact_sha3_512} would be denied by {policy_path.name}"
 
     now_utc = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     bundle: dict[str, Any] = {
@@ -177,7 +218,7 @@ def tool_gate_and_seal(args: dict[str, Any]) -> dict[str, Any]:
                 "artifact_sha3_512": artifact_sha3_512,
                 "canon_ref": canon_ref,
             },
-            "proposed_side_effects": [{"target": target, "mutation": "ALLOW"}],
+            "proposed_side_effects": [{"target": target, "mutation": true_verdict}],
         },
         "evidence": {
             "input_digest": artifact_sha3_512,
@@ -193,9 +234,10 @@ def tool_gate_and_seal(args: dict[str, Any]) -> dict[str, Any]:
         "authority": {
             "policy_id": policy_path.name,
             "policy_hash": policy_sha3_512,
-            "verdict": "ALLOW",
+            "verdict": true_verdict,
+            "enforcement_mode": effective_mode,
             "evaluation_timestamp": now_utc,
-            "matched_rules": ["allowed-ternary-model-hashes"],
+            "matched_rules": ["allowed-ternary-model-hashes"] if admitted else [],
         },
         "challengeability": {
             "replayable": True,
@@ -209,7 +251,17 @@ def tool_gate_and_seal(args: dict[str, Any]) -> dict[str, Any]:
         "signing_scheme": "ed25519-canonical-json-v1",
         "signature": sign_ed25519(signing_key, canonical_signing_bytes(bundle)),
     }
-    return {"ok": True, "verdict": "ALLOW", "bundle": bundle}
+    return {
+        "ok": True,
+        "decision": true_verdict,
+        "verdict": true_verdict,
+        "mode_applied": effective_mode,
+        "downgrade_attempt_blocked": downgrade_attempt,
+        "blocked": False,
+        "reason": reason,
+        "bundle": bundle,
+        "receipt": bundle,
+    }
 
 
 def tool_verify_receipt(args: dict[str, Any]) -> dict[str, Any]:
