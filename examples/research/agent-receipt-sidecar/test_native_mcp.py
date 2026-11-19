@@ -60,7 +60,30 @@ def main() -> int:
             init = rpc("initialize")
             assert init["result"]["serverInfo"]["name"] == "t81-native-mcp"
             tools = rpc("tools/list")["result"]["tools"]
-            assert len(tools) == 6
+            assert len(tools) == 10
+            assert all("inputSchema" in t for t in tools)
+
+            # 0. session_bootstrap (1-call verified wake-up packet)
+            boot = rpc("tools/call", {"name": "t81.session_bootstrap", "arguments": {"repo_root": str(ROOT_DIR)}})["result"]["structured"]
+            assert boot["ok"] and boot["public_api_lock_present"] and boot["determinism_registry_present"]
+            assert len(boot["git_head_sha"]) == 40
+
+            # 0b. Actionable error hint on missing required arg
+            err_hint = rpc("tools/call", {"name": "t81.policy_validate", "arguments": {}})["result"]["structured"]
+            assert not err_hint["ok"] and "expected" in err_hint
+
+            # 0c. Atomic transaction: begin -> mutate -> denied commit -> abort restores exact bytes
+            tx_file = tmp / "tx_target.txt"
+            tx_file.write_bytes(b"original-safe-state")
+            tx_bak_dir = tmp / "tx_bak"
+            tx_b = rpc("tools/call", {"name": "t81.tx_begin", "arguments": {"target_path": str(tx_file), "backup_dir": str(tx_bak_dir)}})["result"]["structured"]
+            assert tx_b["ok"]
+            tx_file.write_bytes(b"corrupted-mutation")
+            tx_bad_commit = rpc("tools/call", {"name": "t81.tx_commit", "arguments": {"tx_id": tx_b["tx_id"], "policy_path": str(pol)}})["result"]["structured"]
+            assert not tx_bad_commit["ok"] and not tx_bad_commit["committed"]
+            tx_ab = rpc("tools/call", {"name": "t81.tx_abort", "arguments": {"tx_id": tx_b["tx_id"]}})["result"]["structured"]
+            assert tx_ab["ok"] and tx_ab["aborted"]
+            assert tx_file.read_bytes() == b"original-safe-state"
 
             # 1. get_effective_policy
             eff_deploy = rpc("tools/call", {"name": "t81.get_effective_policy", "arguments": {"policy_path": str(pol), "action_type": "deploy_config"}})["result"]["structured"]
