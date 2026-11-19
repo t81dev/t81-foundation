@@ -1,5 +1,7 @@
 # T81 Agent-Native Receipt & Policy Sidecar (MCP / JSON-RPC 2.0)
 
+> **New here?** Start with the **[60-Second Quickstart](QUICKSTART.md)** (`./build/t81 mcp serve` in `~110 µs` or signed `RFC-00D4` receipts in `~10 ms`).
+
 This prototype implements Experiments 1 & 2 for using T81 as a deterministic **Flight Recorder & Gatekeeper** around autonomous AI agents:
 
 - **[`t81_receipt_sidecar.py`](t81_receipt_sidecar.py)**: A warm stdio JSON-RPC 2.0 / MCP-compatible server exposing:
