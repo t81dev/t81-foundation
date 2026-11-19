@@ -1,3 +1,0 @@
-2026-02-15T09:20:42.9190000Z Evaluating t3k-cross-arch-bit-identity.if
-2026-02-15T09:20:42.9190000Z Evaluating: success()
-2026-02-15T09:20:42.9190000Z Result: false

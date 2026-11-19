@@ -55,7 +55,6 @@ EXPECTED_TOP_LEVEL = {
     "isa",
     "kernel",
     "lang",
-    "logs",
     "pyproject.toml",
     "review",
     "scripts",

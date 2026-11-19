@@ -3100,7 +3100,6 @@ def build_coverage_manifest():
             "examples": "Directory examples/ not yet explicitly modeled as standalone nodes in visualization dataset.",
             "experimental": "Directory experimental/ not yet explicitly modeled as standalone nodes in visualization dataset.",
             "ffi": "Directory ffi/ not yet explicitly modeled as standalone nodes in visualization dataset.",
-            "logs": "Directory logs/ not yet explicitly modeled as standalone nodes in visualization dataset.",
             "review": "Directory review/ not yet explicitly modeled as standalone nodes in visualization dataset.",
             "third_party": "Directory third_party/ not yet explicitly modeled as standalone nodes in visualization dataset."
         }
