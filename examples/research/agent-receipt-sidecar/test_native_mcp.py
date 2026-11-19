@@ -60,7 +60,7 @@ def main() -> int:
             init = rpc("initialize")
             assert init["result"]["serverInfo"]["name"] == "t81-native-mcp"
             tools = rpc("tools/list")["result"]["tools"]
-            assert len(tools) == 10
+            assert len(tools) == 11
             assert all("inputSchema" in t for t in tools)
 
             # 0. session_bootstrap (1-call verified wake-up packet)
@@ -119,6 +119,32 @@ def main() -> int:
             blk.write_bytes(blk.read_bytes() + b"X")
             fsck_bad = rpc("tools/call", {"name": "t81.canonfs_fsck", "arguments": {"canonfs_root": str(croot)}})["result"]["structured"]
             assert not fsck_bad["ok"]
+
+            # 7. Narrowed TISC subgraph static verification (valid + fail-closed adversarial)
+            import struct
+            def enc_insn(op, a, b, c):
+                return struct.pack("<Biii", op, a, b, c)
+            # Opcodes: Halt=1, AxVerify=24, TMatMul=34, ChkShape=45, WeightsLoad=72
+            valid_bc = (
+                enc_insn(72, 1, 0, 0) +
+                enc_insn(45, 1, 4096, 4096) +
+                enc_insn(24, 1, 1, 0) +
+                enc_insn(34, 10, 0, 1) +
+                enc_insn(1, 0, 0, 0)
+            ).hex()
+            vr_ok = rpc("tools/call", {"name": "t81.verify_subgraph", "arguments": {"bytecode_hex": valid_bc}})["result"]["structured"]
+            assert vr_ok["ok"] and vr_ok["verdict"] == "VERIFIED_OK" and vr_ok["matmul_count"] == 1
+            assert vr_ok["program_sha3_512"].startswith("sha3-512:")
+
+            # Adversarial subgraph missing AxVerify -> fail-closed REJECT_UNVERIFIED_POLICY
+            bad_bc = (
+                enc_insn(72, 1, 0, 0) +
+                enc_insn(45, 1, 4096, 4096) +
+                enc_insn(34, 10, 0, 1) +
+                enc_insn(1, 0, 0, 0)
+            ).hex()
+            vr_bad = rpc("tools/call", {"name": "t81.verify_subgraph", "arguments": {"bytecode_hex": bad_bc}})["result"]["structured"]
+            assert not vr_bad["ok"] and vr_bad["verdict"] == "REJECT_UNVERIFIED_POLICY"
 
             print(json.dumps({
                 "native_cpp_mcp_tools": len(tools),

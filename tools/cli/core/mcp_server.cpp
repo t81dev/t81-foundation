@@ -2,8 +2,11 @@
 
 #include "t81/axion/policy.hpp"
 #include "t81/crypto/sha3.hpp"
+#include "t81/isa/encoding.hpp"
+#include "t81/isa/opcodes.hpp"
 
 #include <cstdint>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -11,6 +14,7 @@
 #include <sstream>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace t81::cli {
 
@@ -30,12 +34,24 @@ std::string json_escape_mcp(std::string_view input) {
   out.reserve(input.size() + 8);
   for (char c : input) {
     switch (c) {
-      case '"': out += "\\\""; break;
-      case '\\': out += "\\\\"; break;
-      case '\n': out += "\\n"; break;
-      case '\r': out += "\\r"; break;
-      case '\t': out += "\\t"; break;
-      default: out.push_back(c); break;
+      case '"':
+        out += "\\\"";
+        break;
+      case '\\':
+        out += "\\\\";
+        break;
+      case '\n':
+        out += "\\n";
+        break;
+      case '\r':
+        out += "\\r";
+        break;
+      case '\t':
+        out += "\\t";
+        break;
+      default:
+        out.push_back(c);
+        break;
     }
   }
   return out;
@@ -174,18 +190,24 @@ std::string build_tools_list_json() {
          "{\"name\":\"t81.policy_test\","
          "\"description\":\"Evaluate a SHA3-512 hash against an Axion .apl policy in-process.\","
          "\"inputSchema\":{\"type\":\"object\",\"required\":[\"policy_path\",\"model_hash\"],"
-         "\"properties\":{\"policy_path\":{\"type\":\"string\"},\"model_hash\":{\"type\":\"string\"}}}},"
+         "\"properties\":{\"policy_path\":{\"type\":\"string\"},\"model_hash\":{\"type\":"
+         "\"string\"}}}},"
 
          "{\"name\":\"t81.get_effective_policy\","
-         "\"description\":\"Introspect authoritative .apl policy floor and SHA3-512 digest in-process.\","
+         "\"description\":\"Introspect authoritative .apl policy floor and SHA3-512 digest "
+         "in-process.\","
          "\"inputSchema\":{\"type\":\"object\",\"required\":[\"policy_path\"],"
-         "\"properties\":{\"policy_path\":{\"type\":\"string\"},\"action_type\":{\"type\":\"string\"}}}},"
+         "\"properties\":{\"policy_path\":{\"type\":\"string\"},\"action_type\":{\"type\":"
+         "\"string\"}}}},"
 
          "{\"name\":\"t81.gate_check\","
-         "\"description\":\"Evaluate artifact admission with anti-downgrade per-action enforcement floor in-process.\","
+         "\"description\":\"Evaluate artifact admission with anti-downgrade per-action enforcement "
+         "floor in-process.\","
          "\"inputSchema\":{\"type\":\"object\",\"required\":[\"artifact_path\",\"policy_path\"],"
-         "\"properties\":{\"artifact_path\":{\"type\":\"string\"},\"policy_path\":{\"type\":\"string\"},"
-         "\"action_type\":{\"type\":\"string\"},\"mode\":{\"type\":\"string\",\"enum\":[\"observe-only\",\"warn\",\"fail-closed\"]}}}},"
+         "\"properties\":{\"artifact_path\":{\"type\":\"string\"},\"policy_path\":{\"type\":"
+         "\"string\"},"
+         "\"action_type\":{\"type\":\"string\"},\"mode\":{\"type\":\"string\",\"enum\":[\"observe-"
+         "only\",\"warn\",\"fail-closed\"]}}}},"
 
          "{\"name\":\"t81.canonfs_fsck\","
          "\"description\":\"Verify CanonFS object hashes and snapshots in-process.\","
@@ -198,25 +220,101 @@ std::string build_tools_list_json() {
          "\"properties\":{\"path\":{\"type\":\"string\"}}}},"
 
          "{\"name\":\"t81.session_bootstrap\","
-         "\"description\":\"Return a compact, live ground-truth workspace packet (git HEAD, PUBLIC_API_LOCK digest, registry presence) in one call.\","
+         "\"description\":\"Return a compact, live ground-truth workspace packet (git HEAD, "
+         "PUBLIC_API_LOCK digest, registry presence) in one call.\","
          "\"inputSchema\":{\"type\":\"object\","
          "\"properties\":{\"repo_root\":{\"type\":\"string\"}}}},"
 
          "{\"name\":\"t81.tx_begin\","
-         "\"description\":\"Begin an atomic file transaction by sealing a SHA3-512 verified backup before mutation.\","
+         "\"description\":\"Begin an atomic file transaction by sealing a SHA3-512 verified backup "
+         "before mutation.\","
          "\"inputSchema\":{\"type\":\"object\",\"required\":[\"target_path\",\"backup_dir\"],"
-         "\"properties\":{\"target_path\":{\"type\":\"string\"},\"backup_dir\":{\"type\":\"string\"}}}},"
+         "\"properties\":{\"target_path\":{\"type\":\"string\"},\"backup_dir\":{\"type\":"
+         "\"string\"}}}},"
 
          "{\"name\":\"t81.tx_commit\","
-         "\"description\":\"Commit an active file transaction after optional .apl policy check on the mutated artifact.\","
+         "\"description\":\"Commit an active file transaction after optional .apl policy check on "
+         "the mutated artifact.\","
          "\"inputSchema\":{\"type\":\"object\",\"required\":[\"tx_id\"],"
          "\"properties\":{\"tx_id\":{\"type\":\"string\"},\"policy_path\":{\"type\":\"string\"}}}},"
 
          "{\"name\":\"t81.tx_abort\","
-         "\"description\":\"Abort an active file transaction and restore the exact pre-mutation bytes verified by SHA3-512.\","
+         "\"description\":\"Abort an active file transaction and restore the exact pre-mutation "
+         "bytes verified by SHA3-512.\","
          "\"inputSchema\":{\"type\":\"object\",\"required\":[\"tx_id\"],"
-         "\"properties\":{\"tx_id\":{\"type\":\"string\"}}}}"
+         "\"properties\":{\"tx_id\":{\"type\":\"string\"}}}},"
+
+         "{\"name\":\"t81.verify_subgraph\","
+         "\"description\":\"Statically verify a narrowed TISC tensor+policy subgraph "
+         "(WeightsLoad->ChkShape->AxVerify->TMatMul->Halt) before execution and return its "
+         "SHA3-512 digest and recommended Dual-Rail backend.\","
+         "\"inputSchema\":{\"type\":\"object\","
+         "\"properties\":{\"bytecode_path\":{\"type\":\"string\"},\"bytecode_hex\":{\"type\":"
+         "\"string\"}}}}"
          "]";
+}
+
+bool decode_hex_bytes(std::string_view hex, std::vector<uint8_t>& out) {
+  if (hex.size() % 2 != 0) return false;
+  out.clear();
+  out.reserve(hex.size() / 2);
+  auto nibble = [](char c) -> int {
+    if (c >= '0' && c <= '9') return c - '0';
+    if (c >= 'a' && c <= 'f') return 10 + (c - 'a');
+    if (c >= 'A' && c <= 'F') return 10 + (c - 'A');
+    return -1;
+  };
+  for (size_t i = 0; i < hex.size(); i += 2) {
+    int hi = nibble(hex[i]);
+    int lo = nibble(hex[i + 1]);
+    if (hi < 0 || lo < 0) return false;
+    out.push_back(static_cast<uint8_t>((hi << 4) | lo));
+  }
+  return true;
+}
+
+struct SubgraphVerifyResult {
+  bool ok = false;
+  std::string verdict;
+  size_t matmul_count = 0;
+};
+
+SubgraphVerifyResult verify_tisc_subgraph(const t81::tisc::Program& prog) {
+  using t81::tisc::Opcode;
+  if (prog.insns.empty()) return {false, "REJECT_EMPTY_PROGRAM", 0};
+  std::unordered_set<int32_t> loaded, shaped, verified;
+  bool saw_halt = false;
+  size_t matmuls = 0;
+  for (const auto& insn : prog.insns) {
+    if (saw_halt) return {false, "REJECT_TRAILING_CODE_AFTER_HALT", matmuls};
+    switch (insn.opcode) {
+      case Opcode::WeightsLoad:
+        loaded.insert(insn.a);
+        break;
+      case Opcode::ChkShape:
+        if (!loaded.contains(insn.a)) return {false, "REJECT_SHAPE_BEFORE_LOAD", matmuls};
+        shaped.insert(insn.a);
+        break;
+      case Opcode::AxVerify:
+        if (!loaded.contains(insn.b)) return {false, "REJECT_POLICY_BEFORE_LOAD", matmuls};
+        verified.insert(insn.b);
+        break;
+      case Opcode::TMatMul:
+        if (!loaded.contains(insn.c)) return {false, "REJECT_UNLOADED_WEIGHT", matmuls};
+        if (!shaped.contains(insn.c)) return {false, "REJECT_UNCHECKED_SHAPE", matmuls};
+        if (!verified.contains(insn.c)) return {false, "REJECT_UNVERIFIED_POLICY", matmuls};
+        ++matmuls;
+        break;
+      case Opcode::Halt:
+        saw_halt = true;
+        break;
+      default:
+        return {false, "REJECT_DISALLOWED_OPCODE", matmuls};
+    }
+  }
+  if (!saw_halt) return {false, "REJECT_MISSING_HALT", matmuls};
+  if (matmuls == 0) return {false, "REJECT_NO_COMPUTE", 0};
+  return {true, "VERIFIED_OK", matmuls};
 }
 
 }  // namespace
@@ -238,7 +336,8 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
     const std::string method = extract_str(line, "method");
     if (method == "initialize") {
       std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id
-                << ",\"result\":{\"protocolVersion\":\"2024-11-05\",\"serverInfo\":{\"name\":\"t81-native-mcp\",\"version\":\"2.0.0\"},\"capabilities\":{\"tools\":{}}}}\n"
+                << ",\"result\":{\"protocolVersion\":\"2024-11-05\",\"serverInfo\":{\"name\":\"t81-"
+                   "native-mcp\",\"version\":\"2.0.0\"},\"capabilities\":{\"tools\":{}}}}\n"
                 << std::flush;
     } else if (method == "tools/list") {
       std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id
@@ -246,14 +345,15 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                 << std::flush;
     } else if (method == "tools/call") {
       const std::string name = extract_str(line, "name");
-      std::string structured =
-          "{\"ok\":false,\"error\":\"unknown tool\",\"hint\":\"call tools/list to inspect valid tool names and inputSchema\"}";
+      std::string structured = "{\"ok\":false,\"error\":\"unknown tool\",\"hint\":\"call "
+                               "tools/list to inspect valid tool names and inputSchema\"}";
 
       if (name == "t81.policy_validate" || name == "t81.policy_test" ||
           name == "t81.get_effective_policy") {
         const std::string ppath = extract_str(line, "policy_path");
         if (ppath.empty()) {
-          structured = "{\"ok\":false,\"error\":\"missing required argument: policy_path\",\"expected\":[\"policy_path\"]}";
+          structured = "{\"ok\":false,\"error\":\"missing required argument: "
+                       "policy_path\",\"expected\":[\"policy_path\"]}";
         } else {
           std::vector<uint8_t> pbytes;
           if (!read_file_bytes(ppath, pbytes)) {
@@ -262,24 +362,25 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
             std::string content(pbytes.begin(), pbytes.end());
             auto res = t81::axion::parse_policy(content);
             if (!res) {
-              structured = "{\"ok\":false,\"valid\":false,\"error\":\"" +
-                           json_escape_mcp(res.error()) +
-                           "\",\"hint\":\"use valid .apl clauses such as (tier 1), (allowed-tensor-hashes [...]), (require-axion-event (reason \\\"...\\\"))\"}";
+              structured =
+                  "{\"ok\":false,\"valid\":false,\"error\":\"" + json_escape_mcp(res.error()) +
+                  "\",\"hint\":\"use valid .apl clauses such as (tier 1), (allowed-tensor-hashes "
+                  "[...]), (require-axion-event (reason \\\"...\\\"))\"}";
             } else if (name == "t81.policy_validate") {
-              structured = "{\"ok\":true,\"valid\":true,\"tier\":" +
-                           std::to_string(res.value().tier) + "}";
+              structured =
+                  "{\"ok\":true,\"valid\":true,\"tier\":" + std::to_string(res.value().tier) + "}";
             } else if (name == "t81.get_effective_policy") {
               const std::string action_type = extract_str(line, "action_type");
               const std::string floor = resolve_floor(content, action_type);
               structured = "{\"ok\":true,\"policy_hash\":\"" + sha3_512_hex(pbytes) +
                            "\",\"action_type\":\"" + json_escape_mcp(action_type) +
-                           "\",\"policy_floor\":\"" + floor +
-                           "\",\"allowed_hash_count\":" +
+                           "\",\"policy_floor\":\"" + floor + "\",\"allowed_hash_count\":" +
                            std::to_string(policy_allowed_hash_count(res.value())) + "}";
             } else {
               const std::string mhash = extract_str(line, "model_hash");
               if (mhash.empty()) {
-                structured = "{\"ok\":false,\"error\":\"missing required argument: model_hash\",\"expected\":[\"policy_path\",\"model_hash\"]}";
+                structured = "{\"ok\":false,\"error\":\"missing required argument: "
+                             "model_hash\",\"expected\":[\"policy_path\",\"model_hash\"]}";
               } else {
                 const bool allowed = policy_admits_hash(res.value(), mhash);
                 structured = std::string("{\"ok\":") + (allowed ? "true" : "false") +
@@ -295,14 +396,18 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         const std::string req_mode = extract_str(line, "mode");
         std::vector<uint8_t> abytes, pbytes;
         if (apath.empty() || ppath.empty()) {
-          structured = "{\"ok\":false,\"decision\":\"DENY\",\"blocked\":true,\"error\":\"missing required arguments\",\"expected\":[\"artifact_path\",\"policy_path\"]}";
+          structured = "{\"ok\":false,\"decision\":\"DENY\",\"blocked\":true,\"error\":\"missing "
+                       "required arguments\",\"expected\":[\"artifact_path\",\"policy_path\"]}";
         } else if (!read_file_bytes(apath, abytes) || !read_file_bytes(ppath, pbytes)) {
-          structured = "{\"ok\":false,\"decision\":\"DENY\",\"blocked\":true,\"error\":\"missing artifact or policy file\"}";
+          structured = "{\"ok\":false,\"decision\":\"DENY\",\"blocked\":true,\"error\":\"missing "
+                       "artifact or policy file\"}";
         } else {
           std::string content(pbytes.begin(), pbytes.end());
           auto res = t81::axion::parse_policy(content);
           if (!res) {
-            structured = "{\"ok\":false,\"decision\":\"DENY\",\"policy_floor\":\"fail-closed\",\"mode_applied\":\"fail-closed\",\"downgrade_attempt_blocked\":false,\"blocked\":true,\"error\":\"" +
+            structured = "{\"ok\":false,\"decision\":\"DENY\",\"policy_floor\":\"fail-closed\","
+                         "\"mode_applied\":\"fail-closed\",\"downgrade_attempt_blocked\":false,"
+                         "\"blocked\":true,\"error\":\"" +
                          json_escape_mcp(res.error()) + "\"}";
           } else {
             const std::string asha = sha3_512_hex(abytes);
@@ -319,23 +424,20 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
             }
             const bool admitted = policy_admits_hash(res.value(), asha);
             const bool blocked = (!admitted && eff == "fail-closed");
-            const std::string decision =
-                admitted ? "ALLOW" : (eff == "warn" ? "WARN" : "DENY");
-            structured = std::string("{\"ok\":") + (blocked ? "false" : "true") +
-                         ",\"decision\":\"" + decision +
-                         "\",\"policy_floor\":\"" + floor +
-                         "\",\"mode_applied\":\"" + eff +
-                         "\",\"downgrade_attempt_blocked\":" +
-                         (downgrade_blocked ? "true" : "false") +
-                         ",\"blocked\":" + (blocked ? "true" : "false") +
-                         ",\"artifact_sha3_512\":\"" + asha +
-                         "\",\"policy_hash\":\"" + psha + "\"}";
+            const std::string decision = admitted ? "ALLOW" : (eff == "warn" ? "WARN" : "DENY");
+            structured =
+                std::string("{\"ok\":") + (blocked ? "false" : "true") + ",\"decision\":\"" +
+                decision + "\",\"policy_floor\":\"" + floor + "\",\"mode_applied\":\"" + eff +
+                "\",\"downgrade_attempt_blocked\":" + (downgrade_blocked ? "true" : "false") +
+                ",\"blocked\":" + (blocked ? "true" : "false") + ",\"artifact_sha3_512\":\"" +
+                asha + "\",\"policy_hash\":\"" + psha + "\"}";
           }
         }
       } else if (name == "t81.canonfs_fsck") {
         const std::string croot = extract_str(line, "canonfs_root");
         if (croot.empty()) {
-          structured = "{\"ok\":false,\"error\":\"missing required argument: canonfs_root\",\"expected\":[\"canonfs_root\"]}";
+          structured = "{\"ok\":false,\"error\":\"missing required argument: "
+                       "canonfs_root\",\"expected\":[\"canonfs_root\"]}";
         } else {
           std::ostringstream cap;
           std::streambuf* old_buf = std::cout.rdbuf(cap.rdbuf());
@@ -357,7 +459,8 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         const std::string fpath = extract_str(line, "path");
         std::vector<uint8_t> bytes;
         if (fpath.empty()) {
-          structured = "{\"ok\":false,\"error\":\"missing required argument: path\",\"expected\":[\"path\"]}";
+          structured = "{\"ok\":false,\"error\":\"missing required argument: "
+                       "path\",\"expected\":[\"path\"]}";
         } else if (!read_file_bytes(fpath, bytes)) {
           structured = "{\"ok\":false,\"error\":\"could not open file\"}";
         } else {
@@ -373,21 +476,21 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         std::vector<uint8_t> lock_bytes;
         const bool lock_ok = read_file_bytes(lock_path, lock_bytes);
         const bool reg_ok = fs::exists(reg_path);
-        structured = "{\"ok\":true,\"version\":\"2.0.0\",\"repo_root\":\"" +
-                     json_escape_mcp(root.string()) +
-                     "\",\"git_ref\":\"" + json_escape_mcp(git_ref) +
-                     "\",\"git_head_sha\":\"" + json_escape_mcp(head_sha) +
-                     "\",\"public_api_lock_present\":" + (lock_ok ? "true" : "false") +
-                     ",\"public_api_lock_sha3_512\":\"" +
-                     (lock_ok ? sha3_512_hex(lock_bytes) : "") +
-                     "\",\"determinism_registry_present\":" + (reg_ok ? "true" : "false") +
-                     ",\"native_mcp_tools\":10}";
+        structured =
+            "{\"ok\":true,\"version\":\"2.0.0\",\"repo_root\":\"" + json_escape_mcp(root.string()) +
+            "\",\"git_ref\":\"" + json_escape_mcp(git_ref) + "\",\"git_head_sha\":\"" +
+            json_escape_mcp(head_sha) +
+            "\",\"public_api_lock_present\":" + (lock_ok ? "true" : "false") +
+            ",\"public_api_lock_sha3_512\":\"" + (lock_ok ? sha3_512_hex(lock_bytes) : "") +
+            "\",\"determinism_registry_present\":" + (reg_ok ? "true" : "false") +
+            ",\"native_mcp_tools\":10}";
       } else if (name == "t81.tx_begin") {
         const std::string tpath = extract_str(line, "target_path");
         const std::string bdir = extract_str(line, "backup_dir");
         std::vector<uint8_t> bytes;
         if (tpath.empty() || bdir.empty()) {
-          structured = "{\"ok\":false,\"error\":\"missing required arguments\",\"expected\":[\"target_path\",\"backup_dir\"]}";
+          structured = "{\"ok\":false,\"error\":\"missing required "
+                       "arguments\",\"expected\":[\"target_path\",\"backup_dir\"]}";
         } else if (!read_file_bytes(tpath, bytes)) {
           structured = "{\"ok\":false,\"error\":\"could not read target_path\"}";
         } else {
@@ -400,9 +503,9 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           } else {
             const std::string before_sha = sha3_512_hex(bytes);
             active_txs[tx_id] = ActiveTx{tx_id, fs::path(tpath), bpath, before_sha};
-            structured = "{\"ok\":true,\"tx_id\":\"" + tx_id +
-                         "\",\"before_sha3_512\":\"" + before_sha +
-                         "\",\"backup_path\":\"" + json_escape_mcp(bpath.string()) + "\"}";
+            structured = "{\"ok\":true,\"tx_id\":\"" + tx_id + "\",\"before_sha3_512\":\"" +
+                         before_sha + "\",\"backup_path\":\"" + json_escape_mcp(bpath.string()) +
+                         "\"}";
           }
         }
       } else if (name == "t81.tx_abort") {
@@ -414,7 +517,8 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           std::vector<uint8_t> bbytes;
           if (!read_file_bytes(it->second.backup_path, bbytes) ||
               sha3_512_hex(bbytes) != it->second.before_sha3_512) {
-            structured = "{\"ok\":false,\"error\":\"backup integrity verification failed (SHA3-512 mismatch)\"}";
+            structured = "{\"ok\":false,\"error\":\"backup integrity verification failed (SHA3-512 "
+                         "mismatch)\"}";
           } else if (!write_file_bytes(it->second.target_path, bbytes)) {
             structured = "{\"ok\":false,\"error\":\"failed restoring target_path\"}";
           } else {
@@ -454,7 +558,8 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                 } else {
                   if (!policy_admits_hash(pres.value(), after_sha)) {
                     policy_ok = false;
-                    policy_err = "mutated target_path SHA3-512 denied by policy; call t81.tx_abort to restore";
+                    policy_err = "mutated target_path SHA3-512 denied by policy; call t81.tx_abort "
+                                 "to restore";
                   }
                 }
               }
@@ -469,10 +574,45 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
               const bool changed = (before_sha != after_sha);
               active_txs.erase(it);
               structured = "{\"ok\":true,\"committed\":true,\"tx_id\":\"" + tx_id +
-                           "\",\"before_sha3_512\":\"" + before_sha +
-                           "\",\"after_sha3_512\":\"" + after_sha +
-                           "\",\"changed\":" + (changed ? "true" : "false") + "}";
+                           "\",\"before_sha3_512\":\"" + before_sha + "\",\"after_sha3_512\":\"" +
+                           after_sha + "\",\"changed\":" + (changed ? "true" : "false") + "}";
             }
+          }
+        }
+      } else if (name == "t81.verify_subgraph") {
+        const std::string bc_path = extract_str(line, "bytecode_path");
+        const std::string bc_hex = extract_str(line, "bytecode_hex");
+        std::vector<uint8_t> raw;
+        bool loaded_ok = false;
+        if (!bc_hex.empty()) {
+          loaded_ok = decode_hex_bytes(bc_hex, raw);
+        } else if (!bc_path.empty()) {
+          loaded_ok = read_file_bytes(bc_path, raw);
+        }
+        if (!loaded_ok || raw.empty()) {
+          structured = "{\"ok\":false,\"verdict\":\"REJECT_INVALID_INPUT\","
+                       "\"hint\":\"provide valid bytecode_hex or readable bytecode_path\"}";
+        } else {
+          std::vector<std::byte> bvec(raw.size());
+          std::memcpy(bvec.data(), raw.data(), raw.size());
+          auto dec = t81::tisc::decode(bvec);
+          if (!dec.has_value()) {
+            const std::string err_code = dec.error() == t81::tisc::EncodingError::Truncated
+                                             ? "REJECT_TRUNCATED_BYTECODE"
+                                             : "REJECT_INVALID_OPCODE";
+            structured = "{\"ok\":false,\"verdict\":\"" + err_code + "\"}";
+          } else {
+            const auto vr = verify_tisc_subgraph(dec.value());
+            const std::string prog_sha = sha3_512_hex(raw);
+            const std::string rec_backend =
+                vr.matmul_count >= 4 ? "gpu_dualrail_fused" : "cpu_dualrail_neon";
+            structured = "{\"ok\":" + std::string(vr.ok ? "true" : "false") + ",\"verdict\":\"" +
+                         vr.verdict +
+                         "\",\"instruction_count\":" + std::to_string(dec.value().insns.size()) +
+                         ",\"matmul_count\":" + std::to_string(vr.matmul_count) +
+                         ",\"bytecode_bytes\":" + std::to_string(raw.size()) +
+                         ",\"program_sha3_512\":\"" + prog_sha + "\",\"recommended_backend\":\"" +
+                         rec_backend + "\"}";
           }
         }
       }
