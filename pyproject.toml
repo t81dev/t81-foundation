@@ -49,6 +49,7 @@ cmake.args = [
 ]
 cmake.build-type = "Release"
 build.targets = ["_t81"]
+install.components = ["python"]
 
 # Pure-Python package lives in ffi/python/t81/; the compiled _t81 extension is
 # installed into t81/ by the CMake install() rule and picked up automatically.
