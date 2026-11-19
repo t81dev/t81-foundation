@@ -97,5 +97,8 @@ finally:
     proc.wait(timeout=5)
 PY
 
-echo "=== [2/2] Running Compromised-Agent Gauntlet & Warm Latency Benchmark ==="
+echo "=== [2/3] Running Compromised-Agent Gauntlet & Warm Latency Benchmark ==="
 python3 "${GAUNTLET}"
+
+echo "=== [3/3] Running Native C++ t81 mcp serve Test & Sub-Millisecond Benchmark ==="
+python3 "${ROOT_DIR}/examples/research/agent-receipt-sidecar/test_native_mcp.py"

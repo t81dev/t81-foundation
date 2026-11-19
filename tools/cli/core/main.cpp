@@ -10983,24 +10983,70 @@ int main(int argc, char* argv[]) {
                     << ",\"result\":{\"tools\":["
                     << "{\"name\":\"t81.policy_validate\",\"description\":\"Validate an Axion .apl policy in-process.\"},"
                     << "{\"name\":\"t81.policy_test\",\"description\":\"Evaluate a SHA3-512 hash against an Axion .apl policy in-process.\"},"
+                    << "{\"name\":\"t81.get_effective_policy\",\"description\":\"Introspect authoritative .apl policy floor and SHA3-512 digest in-process.\"},"
+                    << "{\"name\":\"t81.gate_check\",\"description\":\"Evaluate artifact admission with anti-downgrade per-action enforcement floor in-process.\"},"
+                    << "{\"name\":\"t81.canonfs_fsck\",\"description\":\"Verify CanonFS object hashes and snapshots in-process.\"},"
                     << "{\"name\":\"t81.determinism_hash\",\"description\":\"Compute SHA3-512 digest of a file in-process.\"}"
                     << "]}}\n"
                     << std::flush;
         } else if (method == "tools/call") {
+          auto sha3_512_hex = [](const std::vector<uint8_t>& bytes) -> std::string {
+            const auto digest = t81::crypto::sha3_512(bytes);
+            static const char* kHex = "0123456789abcdef";
+            std::string hex;
+            hex.reserve(digest.size() * 2);
+            for (uint8_t b : digest) {
+              hex.push_back(kHex[(b >> 4) & 0xF]);
+              hex.push_back(kHex[b & 0xF]);
+            }
+            return "sha3-512:" + hex;
+          };
+          auto mode_rank = [](const std::string& m) -> int {
+            if (m == "observe-only") return 0;
+            if (m == "warn") return 1;
+            if (m == "fail-closed") return 2;
+            return -1;
+          };
+          auto resolve_floor = [](const std::string& policy_text,
+                                  const std::string& action_type) -> std::string {
+            if (!action_type.empty()) {
+              for (const char* m : {"observe-only", "warn", "fail-closed"}) {
+                const std::string needle = "action-policy:" + action_type + "=" + m;
+                if (policy_text.find(needle) != std::string::npos) return m;
+              }
+            }
+            for (const char* m : {"observe-only", "warn", "fail-closed"}) {
+              const std::string needle = std::string("enforcement-mode:") + m;
+              if (policy_text.find(needle) != std::string::npos) return m;
+            }
+            return "fail-closed";
+          };
+
           const std::string name = extract_str(line, "name");
           std::string structured = "{\"ok\":false,\"error\":\"unknown tool\"}";
-          if (name == "t81.policy_validate" || name == "t81.policy_test") {
+          if (name == "t81.policy_validate" || name == "t81.policy_test" ||
+              name == "t81.get_effective_policy") {
             const std::string ppath = extract_str(line, "policy_path");
-            std::ifstream ifs(ppath);
+            std::ifstream ifs(ppath, std::ios::binary);
             if (!ifs) {
               structured = "{\"ok\":false,\"valid\":false,\"error\":\"could not open policy file\"}";
             } else {
-              std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+              std::vector<uint8_t> pbytes((std::istreambuf_iterator<char>(ifs)),
+                                          std::istreambuf_iterator<char>());
+              std::string content(pbytes.begin(), pbytes.end());
               auto res = t81::axion::parse_policy(content);
               if (!res) {
                 structured = "{\"ok\":false,\"valid\":false,\"error\":\"" + json_escape(res.error()) + "\"}";
               } else if (name == "t81.policy_validate") {
                 structured = "{\"ok\":true,\"valid\":true,\"tier\":" + std::to_string(res.value().tier) + "}";
+              } else if (name == "t81.get_effective_policy") {
+                const std::string action_type = extract_str(line, "action_type");
+                const std::string floor = resolve_floor(content, action_type);
+                structured = "{\"ok\":true,\"policy_hash\":\"" + sha3_512_hex(pbytes) +
+                             "\",\"action_type\":\"" + json_escape(action_type) +
+                             "\",\"policy_floor\":\"" + floor +
+                             "\",\"allowed_hash_count\":" +
+                             std::to_string(res.value().allowed_tensor_hashes.size()) + "}";
               } else {
                 const std::string mhash = extract_str(line, "model_hash");
                 bool allowed = false;
@@ -11014,6 +11060,80 @@ int main(int argc, char* argv[]) {
                              ",\"admitted\":" + (allowed ? "true" : "false") + "}";
               }
             }
+          } else if (name == "t81.gate_check") {
+            const std::string apath = extract_str(line, "artifact_path");
+            const std::string ppath = extract_str(line, "policy_path");
+            const std::string action_type = extract_str(line, "action_type");
+            const std::string req_mode = extract_str(line, "mode");
+            std::ifstream aifs(apath, std::ios::binary);
+            std::ifstream pifs(ppath, std::ios::binary);
+            if (!aifs || !pifs) {
+              structured = "{\"ok\":false,\"decision\":\"DENY\",\"blocked\":true,\"error\":\"missing artifact or policy file\"}";
+            } else {
+              std::vector<uint8_t> abytes((std::istreambuf_iterator<char>(aifs)),
+                                          std::istreambuf_iterator<char>());
+              std::vector<uint8_t> pbytes((std::istreambuf_iterator<char>(pifs)),
+                                          std::istreambuf_iterator<char>());
+              std::string content(pbytes.begin(), pbytes.end());
+              auto res = t81::axion::parse_policy(content);
+              if (!res) {
+                structured = "{\"ok\":false,\"decision\":\"DENY\",\"policy_floor\":\"fail-closed\",\"mode_applied\":\"fail-closed\",\"downgrade_attempt_blocked\":false,\"blocked\":true,\"error\":\"" +
+                             json_escape(res.error()) + "\"}";
+              } else {
+                const std::string asha = sha3_512_hex(abytes);
+                const std::string psha = sha3_512_hex(pbytes);
+                const std::string floor = resolve_floor(content, action_type);
+                std::string eff = floor;
+                bool downgrade_blocked = false;
+                if (mode_rank(req_mode) >= 0) {
+                  if (mode_rank(req_mode) < mode_rank(floor)) {
+                    downgrade_blocked = true;
+                  } else {
+                    eff = req_mode;
+                  }
+                }
+                bool admitted = false;
+                for (const auto& h : res.value().allowed_tensor_hashes) {
+                  if (h == asha) {
+                    admitted = true;
+                    break;
+                  }
+                }
+                const bool blocked = (!admitted && eff == "fail-closed");
+                const std::string decision =
+                    admitted ? "ALLOW" : (eff == "warn" ? "WARN" : "DENY");
+                structured = std::string("{\"ok\":") + (blocked ? "false" : "true") +
+                             ",\"decision\":\"" + decision +
+                             "\",\"policy_floor\":\"" + floor +
+                             "\",\"mode_applied\":\"" + eff +
+                             "\",\"downgrade_attempt_blocked\":" +
+                             (downgrade_blocked ? "true" : "false") +
+                             ",\"blocked\":" + (blocked ? "true" : "false") +
+                             ",\"artifact_sha3_512\":\"" + asha +
+                             "\",\"policy_hash\":\"" + psha + "\"}";
+              }
+            }
+          } else if (name == "t81.canonfs_fsck") {
+            const std::string croot = extract_str(line, "canonfs_root");
+            decltype(args) fsck_args;
+            fsck_args.command = "canonfs";
+            fsck_args.command_args = {"fsck", "--verify-hashes", "--json", "--canonfs-root", croot};
+            std::ostringstream cap;
+            std::streambuf* old_buf = std::cout.rdbuf(cap.rdbuf());
+            const int rc = run_canonfs_command(fsck_args);
+            std::cout.rdbuf(old_buf);
+            std::string raw = cap.str();
+            if (!raw.empty() && raw.front() == '{') {
+              // Compact newlines for single-line JSON-RPC framing
+              std::string compact;
+              compact.reserve(raw.size());
+              for (char ch : raw) {
+                if (ch != '\n' && ch != '\r') compact.push_back(ch);
+              }
+              structured = compact;
+            } else {
+              structured = std::string("{\"ok\":") + (rc == 0 ? "true" : "false") + "}";
+            }
           } else if (name == "t81.determinism_hash") {
             const std::string fpath = extract_str(line, "path");
             std::ifstream ifs(fpath, std::ios::binary);
@@ -11022,15 +11142,7 @@ int main(int argc, char* argv[]) {
             } else {
               std::vector<uint8_t> bytes((std::istreambuf_iterator<char>(ifs)),
                                          std::istreambuf_iterator<char>());
-              const auto digest = t81::crypto::sha3_512(bytes);
-              static const char* kHex = "0123456789abcdef";
-              std::string hex;
-              hex.reserve(digest.size() * 2);
-              for (uint8_t b : digest) {
-                hex.push_back(kHex[(b >> 4) & 0xF]);
-                hex.push_back(kHex[b & 0xF]);
-              }
-              structured = "{\"ok\":true,\"sha3_512\":\"sha3-512:" + hex + "\"}";
+              structured = "{\"ok\":true,\"sha3_512\":\"" + sha3_512_hex(bytes) + "\"}";
             }
           }
           std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id
