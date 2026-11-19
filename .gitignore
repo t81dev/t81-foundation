@@ -136,3 +136,6 @@ generate_dummy_safetensors
 # ── Model Files (too large for GitHub) ───────────────────────
 models/
 build-win/
+
+# Local build logs
+build.log
