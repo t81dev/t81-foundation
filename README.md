@@ -10,6 +10,25 @@
 
 ---
 
+## 60-Second Proof (`v2.0.1`)
+
+Run the verified end-to-end stack locally right after `cmake -S . -B build -G Ninja && cmake --build build --target t81 -j8`:
+
+```bash
+# 1. Native C++ MCP server (12 in-process tools: Axion policy, CanonFS, atomic tx, TISC subgraph verify/run)
+python3 examples/research/agent-receipt-sidecar/test_native_mcp.py
+
+# 2. Full-stack CanonFS -> Axion -> TISC -> T81VM -> Dual-Rail TMatMul (bit-exact SHA3-512 receipt)
+./examples/research/full-stack-t81-pipeline/run_pipeline.sh
+
+# 3. Zero-copy CPU NEON <-> Apple Silicon Metal GPU 32-layer Dual-Rail decode (89.1 GB/s on M2; CPU fallback on Linux)
+./examples/research/heterogeneous-dualrail/run_demo.sh --layers=8
+```
+
+See [docs/research/DUAL_RAIL_HETEROGENEOUS_TISC_NOTE.md](docs/research/DUAL_RAIL_HETEROGENEOUS_TISC_NOTE.md) for pinned measurements, controls, caveats, and preserved negative results.
+
+---
+
 ## What is T81?
 
 **T81 Foundation is an implemented experimental computing architecture and open-source scientific research program investigating whether alternative computational representations—particularly balanced ternary—can provide measurable advantages over conventional binary systems.**

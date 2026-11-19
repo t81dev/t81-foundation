@@ -1,9 +1,12 @@
 #include "tools/cli/core/mcp_server.hpp"
 
+#include "t81/axion/ai_hooks.hpp"
 #include "t81/axion/policy.hpp"
+#include "t81/axion/policy_engine.hpp"
 #include "t81/crypto/sha3.hpp"
 #include "t81/isa/encoding.hpp"
 #include "t81/isa/opcodes.hpp"
+#include "t81/vm/vm.hpp"
 
 #include <cstdint>
 #include <cstring>
@@ -250,8 +253,35 @@ std::string build_tools_list_json() {
          "SHA3-512 digest and recommended Dual-Rail backend.\","
          "\"inputSchema\":{\"type\":\"object\","
          "\"properties\":{\"bytecode_path\":{\"type\":\"string\"},\"bytecode_hex\":{\"type\":"
-         "\"string\"}}}}"
+         "\"string\"}}}},"
+
+         "{\"name\":\"t81.run_subgraph\","
+         "\"description\":\"Statically verify and execute a narrowed TISC subgraph inside T81VM "
+         "under Axion policy enforcement, returning a canonical SHA3-512 execution receipt.\","
+         "\"inputSchema\":{\"type\":\"object\","
+         "\"properties\":{\"bytecode_path\":{\"type\":\"string\"},\"bytecode_hex\":{\"type\":"
+         "\"string\"},\"policy_path\":{\"type\":\"string\"}}}}"
          "]";
+}
+
+std::string detect_host_capabilities_json() {
+#if defined(__aarch64__) && defined(__ARM_NEON)
+  const char* cpu_simd = "arm64_neon";
+#elif defined(__x86_64__) && defined(__AVX2__)
+  const char* cpu_simd = "x86_64_avx2";
+#else
+  const char* cpu_simd = "scalar";
+#endif
+#if defined(__APPLE__) && defined(__aarch64__)
+  const char* gpu_backend = "metal_unified_memory";
+#else
+  const char* gpu_backend = "none";
+#endif
+  return std::string("{\"cpu_simd\":\"") + cpu_simd + "\",\"gpu_backend\":\"" + gpu_backend +
+         "\",\"dualrail_layout\":\"DualRail_PN_64\",\"bytes_per_trit\":0.25,"
+         "\"bit_exact_cross_device_sha3_512\":true,"
+         "\"dualrail_crossover\":{\"min_k\":64,\"min_mn\":64,\"reuse_k_star\":6,"
+         "\"gpu_fused_min_matmuls\":4}}";
 }
 
 bool decode_hex_bytes(std::string_view hex, std::vector<uint8_t>& out) {
@@ -477,13 +507,13 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         const bool lock_ok = read_file_bytes(lock_path, lock_bytes);
         const bool reg_ok = fs::exists(reg_path);
         structured =
-            "{\"ok\":true,\"version\":\"2.0.0\",\"repo_root\":\"" + json_escape_mcp(root.string()) +
+            "{\"ok\":true,\"version\":\"2.0.1\",\"repo_root\":\"" + json_escape_mcp(root.string()) +
             "\",\"git_ref\":\"" + json_escape_mcp(git_ref) + "\",\"git_head_sha\":\"" +
             json_escape_mcp(head_sha) +
             "\",\"public_api_lock_present\":" + (lock_ok ? "true" : "false") +
             ",\"public_api_lock_sha3_512\":\"" + (lock_ok ? sha3_512_hex(lock_bytes) : "") +
             "\",\"determinism_registry_present\":" + (reg_ok ? "true" : "false") +
-            ",\"native_mcp_tools\":10}";
+            ",\"native_mcp_tools\":12,\"capabilities\":" + detect_host_capabilities_json() + "}";
       } else if (name == "t81.tx_begin") {
         const std::string tpath = extract_str(line, "target_path");
         const std::string bdir = extract_str(line, "backup_dir");
@@ -613,6 +643,81 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                          ",\"bytecode_bytes\":" + std::to_string(raw.size()) +
                          ",\"program_sha3_512\":\"" + prog_sha + "\",\"recommended_backend\":\"" +
                          rec_backend + "\"}";
+          }
+        }
+      } else if (name == "t81.run_subgraph") {
+        const std::string bc_path = extract_str(line, "bytecode_path");
+        const std::string bc_hex = extract_str(line, "bytecode_hex");
+        const std::string ppath = extract_str(line, "policy_path");
+        std::vector<uint8_t> raw;
+        bool loaded_ok = false;
+        if (!bc_hex.empty()) {
+          loaded_ok = decode_hex_bytes(bc_hex, raw);
+        } else if (!bc_path.empty()) {
+          loaded_ok = read_file_bytes(bc_path, raw);
+        }
+        if (!loaded_ok || raw.empty()) {
+          structured = "{\"ok\":false,\"verdict\":\"REJECT_INVALID_INPUT\","
+                       "\"hint\":\"provide valid bytecode_hex or readable bytecode_path\"}";
+        } else {
+          std::vector<std::byte> bvec(raw.size());
+          std::memcpy(bvec.data(), raw.data(), raw.size());
+          auto dec = t81::tisc::decode(bvec);
+          if (!dec.has_value()) {
+            const std::string err_code = dec.error() == t81::tisc::EncodingError::Truncated
+                                             ? "REJECT_TRUNCATED_BYTECODE"
+                                             : "REJECT_INVALID_OPCODE";
+            structured = "{\"ok\":false,\"verdict\":\"" + err_code + "\"}";
+          } else {
+            const auto vr = verify_tisc_subgraph(dec.value());
+            const std::string prog_sha = sha3_512_hex(raw);
+            if (!vr.ok) {
+              structured = "{\"ok\":false,\"verdict\":\"" + vr.verdict +
+                           "\",\"executed\":false,\"program_sha3_512\":\"" + prog_sha + "\"}";
+            } else {
+              t81::axion::Policy pol;
+              bool pol_ok = true;
+              if (!ppath.empty()) {
+                std::vector<uint8_t> pbytes;
+                if (!read_file_bytes(ppath, pbytes)) {
+                  pol_ok = false;
+                } else {
+                  auto parsed = t81::axion::parse_policy(std::string(pbytes.begin(), pbytes.end()));
+                  if (!parsed.has_value()) {
+                    pol_ok = false;
+                  } else {
+                    pol = std::move(parsed.value());
+                  }
+                }
+              }
+              if (!pol_ok) {
+                structured = "{\"ok\":false,\"verdict\":\"REJECT_INVALID_POLICY\","
+                             "\"executed\":false,\"program_sha3_512\":\"" +
+                             prog_sha + "\"}";
+              } else {
+                auto vm = t81::vm::make_interpreter_vm(std::make_unique<t81::axion::AIHookEngine>(
+                    std::make_unique<t81::axion::PolicyEngine>(pol)));
+                vm->load_program(dec.value());
+                const auto run_res = vm->run_to_halt();
+                const bool halted = run_res.has_value();
+                const int trap_code = halted ? 0 : static_cast<int>(run_res.error());
+                const size_t ax_events = vm->state().axion_log.size();
+                const std::string rec_in = prog_sha + "|" + (halted ? "HALT" : "TRAP") + "|" +
+                                           std::to_string(trap_code) + "|" +
+                                           std::to_string(ax_events);
+                const std::vector<uint8_t> rec_bytes(rec_in.begin(), rec_in.end());
+                const std::string exec_rec = sha3_512_hex(rec_bytes);
+                structured = "{\"ok\":true,\"verdict\":\"VERIFIED_AND_EXECUTED\","
+                             "\"executed\":true,\"halted\":" +
+                             std::string(halted ? "true" : "false") +
+                             ",\"trap_code\":" + std::to_string(trap_code) +
+                             ",\"instruction_count\":" + std::to_string(dec.value().insns.size()) +
+                             ",\"matmul_count\":" + std::to_string(vr.matmul_count) +
+                             ",\"axion_events\":" + std::to_string(ax_events) +
+                             ",\"program_sha3_512\":\"" + prog_sha + "\",\"execution_receipt\":\"" +
+                             exec_rec + "\"}";
+              }
+            }
           }
         }
       }

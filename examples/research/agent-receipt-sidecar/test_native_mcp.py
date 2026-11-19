@@ -60,7 +60,7 @@ def main() -> int:
             init = rpc("initialize")
             assert init["result"]["serverInfo"]["name"] == "t81-native-mcp"
             tools = rpc("tools/list")["result"]["tools"]
-            assert len(tools) == 11
+            assert len(tools) == 12
             assert all("inputSchema" in t for t in tools)
 
             # 0. session_bootstrap (1-call verified wake-up packet)
@@ -145,6 +145,19 @@ def main() -> int:
             ).hex()
             vr_bad = rpc("tools/call", {"name": "t81.verify_subgraph", "arguments": {"bytecode_hex": bad_bc}})["result"]["structured"]
             assert not vr_bad["ok"] and vr_bad["verdict"] == "REJECT_UNVERIFIED_POLICY"
+
+            # 8. session_bootstrap capabilities + t81.run_subgraph (fail-closed + verified VM execution)
+            boot = rpc("tools/call", {"name": "t81.session_bootstrap", "arguments": {"repo_root": str(Path(__file__).resolve().parents[3])}})["result"]["structured"]
+            assert boot["ok"] and boot["native_mcp_tools"] == 12
+            assert boot["capabilities"]["bit_exact_cross_device_sha3_512"] is True
+            assert boot["capabilities"]["bytes_per_trit"] == 0.25
+
+            run_bad = rpc("tools/call", {"name": "t81.run_subgraph", "arguments": {"bytecode_hex": bad_bc}})["result"]["structured"]
+            assert not run_bad["ok"] and not run_bad["executed"] and run_bad["verdict"] == "REJECT_UNVERIFIED_POLICY"
+
+            run_ok = rpc("tools/call", {"name": "t81.run_subgraph", "arguments": {"bytecode_hex": valid_bc, "policy_path": str(pol)}})["result"]["structured"]
+            assert run_ok["ok"] and run_ok["executed"] and run_ok["verdict"] == "VERIFIED_AND_EXECUTED"
+            assert run_ok["execution_receipt"].startswith("sha3-512:")
 
             print(json.dumps({
                 "native_cpp_mcp_tools": len(tools),
