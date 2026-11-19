@@ -25,8 +25,9 @@ static uint64_t read_checked_size(std::istream& is) {
     throw std::runtime_error("TISC: unexpected end of file reading length prefix");
   }
   if (size > kMaxDeserialiseCount) {
-    throw std::runtime_error("TISC: corrupt file — unreasonable element count " +
-                             std::to_string(size));
+    throw std::runtime_error(
+        "TISC: corrupt file — unreasonable element count " + std::to_string(size) +
+        " (hint: if this is a text .tisc/.t81 file, compile it with 't81 code build <file.t81> -o <out.tisc>')");
   }
   return size;
 }

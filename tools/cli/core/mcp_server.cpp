@@ -103,6 +103,20 @@ bool write_file_bytes(const fs::path& path, const std::vector<uint8_t>& data) {
   return ofs.good();
 }
 
+bool policy_admits_hash(const t81::axion::Policy& policy, const std::string& hash) {
+  for (const auto& h : policy.allowed_tensor_hashes) {
+    if (h == hash) return true;
+  }
+  for (const auto& h : policy.allowed_ternary_model_hashes) {
+    if (h == hash) return true;
+  }
+  return false;
+}
+
+size_t policy_allowed_hash_count(const t81::axion::Policy& policy) {
+  return policy.allowed_tensor_hashes.size() + policy.allowed_ternary_model_hashes.size();
+}
+
 int mode_rank(const std::string& m) {
   if (m == "observe-only") return 0;
   if (m == "warn") return 1;
@@ -261,19 +275,13 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                            "\",\"action_type\":\"" + json_escape_mcp(action_type) +
                            "\",\"policy_floor\":\"" + floor +
                            "\",\"allowed_hash_count\":" +
-                           std::to_string(res.value().allowed_tensor_hashes.size()) + "}";
+                           std::to_string(policy_allowed_hash_count(res.value())) + "}";
             } else {
               const std::string mhash = extract_str(line, "model_hash");
               if (mhash.empty()) {
                 structured = "{\"ok\":false,\"error\":\"missing required argument: model_hash\",\"expected\":[\"policy_path\",\"model_hash\"]}";
               } else {
-                bool allowed = false;
-                for (const auto& h : res.value().allowed_tensor_hashes) {
-                  if (h == mhash) {
-                    allowed = true;
-                    break;
-                  }
-                }
+                const bool allowed = policy_admits_hash(res.value(), mhash);
                 structured = std::string("{\"ok\":") + (allowed ? "true" : "false") +
                              ",\"admitted\":" + (allowed ? "true" : "false") + "}";
               }
@@ -309,13 +317,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                 eff = req_mode;
               }
             }
-            bool admitted = false;
-            for (const auto& h : res.value().allowed_tensor_hashes) {
-              if (h == asha) {
-                admitted = true;
-                break;
-              }
-            }
+            const bool admitted = policy_admits_hash(res.value(), asha);
             const bool blocked = (!admitted && eff == "fail-closed");
             const std::string decision =
                 admitted ? "ALLOW" : (eff == "warn" ? "WARN" : "DENY");
@@ -450,14 +452,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                   policy_ok = false;
                   policy_err = pres.error();
                 } else {
-                  bool admitted = false;
-                  for (const auto& h : pres.value().allowed_tensor_hashes) {
-                    if (h == after_sha) {
-                      admitted = true;
-                      break;
-                    }
-                  }
-                  if (!admitted) {
+                  if (!policy_admits_hash(pres.value(), after_sha)) {
                     policy_ok = false;
                     policy_err = "mutated target_path SHA3-512 denied by policy; call t81.tx_abort to restore";
                   }
