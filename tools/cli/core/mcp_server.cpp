@@ -404,7 +404,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
     if (method == "initialize") {
       std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id
                 << ",\"result\":{\"protocolVersion\":\"2024-11-05\",\"serverInfo\":{\"name\":\"t81-"
-                   "native-mcp\",\"version\":\"2.0.0\"},\"capabilities\":{\"tools\":{}}}}\n"
+                   "native-mcp\",\"version\":\"2.0.1\"},\"capabilities\":{\"tools\":{}}}}\n"
                 << std::flush;
     } else if (method == "tools/list") {
       std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id

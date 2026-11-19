@@ -6,7 +6,7 @@ std::string build_bash_completion() {
   return R"(_t81_complete() {
   local cur prev words cword
   _init_completion || return
-  local commands="code lang project env internal canonfs determinism vm tisc ir tier tensor ai weights policy axion trace c rust python llvm mlir repl studio agent ui completion man feedback version help"
+  local commands="code lang project env internal canonfs determinism vm tisc ir tier tensor ai weights model policy axion trace mcp c rust python llvm mlir repl studio agent ui completion man feedback version help"
   if [[ ${cword} -eq 1 ]]; then
     COMPREPLY=( $(compgen -W "${commands}" -- "${cur}") )
     return
@@ -63,6 +63,9 @@ std::string build_bash_completion() {
     trace)
       COMPREPLY=( $(compgen -W "show diff replay summary stats filter canonicalize export" -- "${cur}") )
       ;;
+    mcp)
+      COMPREPLY=( $(compgen -W "serve help" -- "${cur}") )
+      ;;
     c)
       COMPREPLY=( $(compgen -W "compile help" -- "${cur}") )
       ;;
@@ -114,6 +117,7 @@ commands=(
   'policy:Axion policy tools'
   'axion:Axion governor tools'
   'trace:trace inspection tools'
+  'mcp:native C++ JSON-RPC 2.0 MCP server (15 tools)'
   'c:Experimental C-subset frontend to MLIR'
   'rust:Experimental Rust-subset frontend to MLIR'
   'python:Experimental Python-subset frontend to MLIR'
@@ -190,6 +194,9 @@ case $state in
       trace)
         _values 'trace action' show diff replay summary stats filter canonicalize export
         ;;
+      mcp)
+        _values 'mcp action' serve help
+        ;;
       c)
         _values 'c action' compile help
         ;;
@@ -218,7 +225,7 @@ esac
 }
 
 std::string build_fish_completion() {
-  return R"(complete -c t81 -f -n '__fish_use_subcommand' -a 'code lang project env internal canonfs determinism vm tisc ir tier tensor ai weights policy axion trace c rust python llvm mlir repl studio agent ui completion man feedback version help'
+  return R"(complete -c t81 -f -n '__fish_use_subcommand' -a 'code lang project env internal canonfs determinism vm tisc ir tier tensor ai weights model policy axion trace mcp c rust python llvm mlir repl studio agent ui completion man feedback version help'
 complete -c t81 -f -n '__fish_seen_subcommand_from completion' -a 'bash zsh fish'
 complete -c t81 -f -n '__fish_seen_subcommand_from lang' -a 'check lint fmt build run test disasm debug repl show dump export validate profile'
 complete -c t81 -f -n '__fish_seen_subcommand_from code' -a 'check lint fmt build run test disasm debug repl profile'
@@ -237,6 +244,7 @@ complete -c t81 -f -n '__fish_seen_subcommand_from weights' -a 'import info veri
 complete -c t81 -f -n '__fish_seen_subcommand_from policy' -a 'compile validate run test list'
 complete -c t81 -f -n '__fish_seen_subcommand_from axion' -a 'status optimize simulate explain snapshot snapshot-diff rollback log audit'
 complete -c t81 -f -n '__fish_seen_subcommand_from trace' -a 'show diff replay summary stats filter canonicalize export'
+complete -c t81 -f -n '__fish_seen_subcommand_from mcp' -a 'serve help'
 complete -c t81 -f -n '__fish_seen_subcommand_from c' -a 'compile help'
 complete -c t81 -f -n '__fish_seen_subcommand_from rust' -a 'compile help'
 complete -c t81 -f -n '__fish_seen_subcommand_from python' -a 'compile help'
@@ -291,6 +299,9 @@ Inspect governor state, simulate, snapshot, diff snapshots, and roll back.
 .TP
 trace
 Show, diff, replay, canonicalize, and export execution traces.
+.TP
+mcp
+Run the native C++ JSON-RPC 2.0 MCP server (`t81 mcp serve`, 15 tools).
 .TP
 project
 Project lifecycle commands.
