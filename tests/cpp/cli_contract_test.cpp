@@ -511,8 +511,16 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(result.stdout_text, "policy <action> [args]"));
     T81_TEST_CHECK(contains(result.stdout_text, "axion <action> [args]"));
     T81_TEST_CHECK(contains(result.stdout_text, "trace <action> [args]"));
+    T81_TEST_CHECK(contains(result.stdout_text, "mcp     <action> [args]"));
     T81_TEST_CHECK(!contains(result.stdout_text, "compile <file.t81|.t81w>"));
     T81_TEST_CHECK(!contains(result.stderr_text, "check   <file.t81>"));
+  }
+
+  {
+    const auto result = run_cli(t81_bin, {"help", "mcp"});
+    T81_TEST_CHECK(result.exit_code == 0);
+    T81_TEST_CHECK(contains(result.stdout_text, "t81 mcp serve"));
+    T81_TEST_CHECK(contains(result.stdout_text, "t81.adapter_apply"));
   }
 
   {
@@ -1356,8 +1364,8 @@ int main(int argc, char* argv[]) {
       std::ofstream out(payload);
       out << "canonfs-contract";
     }
-    const auto put_result = run_cli(
-        t81_bin, {"canonfs", "put-file", payload.string(), "--canonfs-root", canonfs_root.string()});
+    const auto put_result = run_cli(t81_bin, {"canonfs", "put-file", payload.string(),
+                                              "--canonfs-root", canonfs_root.string()});
     T81_TEST_CHECK(put_result.exit_code == 0);
     T81_TEST_CHECK(contains(put_result.stdout_text, "sha3-256:"));
     std::string hash = put_result.stdout_text;
@@ -1440,10 +1448,10 @@ int main(int argc, char* argv[]) {
         contains(import_missing_result.stdout_text, "\"code\": \"canonfs-import-missing-source\""));
     T81_TEST_CHECK(contains(import_missing_result.stdout_text, "\"reason\": \"missing_source\""));
 
-    const auto export_missing_result =
-        run_cli(t81_bin, {"canonfs", "export", "sha3-256:11111111111111111111111111111111111111111111",
-                          "--canonfs-root", canonfs_root.string(), "--out",
-                          imported_file_restore.string(), "--json"});
+    const auto export_missing_result = run_cli(
+        t81_bin, {"canonfs", "export", "sha3-256:11111111111111111111111111111111111111111111",
+                  "--canonfs-root", canonfs_root.string(), "--out", imported_file_restore.string(),
+                  "--json"});
     T81_TEST_CHECK(export_missing_result.exit_code != 0);
     T81_TEST_CHECK(
         contains(export_missing_result.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
@@ -1466,9 +1474,9 @@ int main(int argc, char* argv[]) {
       std::ofstream out(import_tree / "nested" / "beta.txt");
       out << "beta";
     }
-    const auto import_tree_result = run_cli(
-        t81_bin,
-        {"canonfs", "import", import_tree.string(), "--canonfs-root", canonfs_root.string(), "--json"});
+    const auto import_tree_result =
+        run_cli(t81_bin, {"canonfs", "import", import_tree.string(), "--canonfs-root",
+                          canonfs_root.string(), "--json"});
     T81_TEST_CHECK(import_tree_result.exit_code == 0);
     T81_TEST_CHECK(
         contains(import_tree_result.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
@@ -1541,11 +1549,10 @@ int main(int argc, char* argv[]) {
            std::isspace(static_cast<unsigned char>(invalid_schema_hash.back()))) {
       invalid_schema_hash.pop_back();
     }
-    const auto invalid_schema_export =
-        run_cli(t81_bin,
-                {"canonfs", "export", invalid_schema_hash, "--canonfs-root", canonfs_root.string(),
-                 "--out", make_temp_path("t81-cli-contract-invalid-schema-out", ".bin").string(),
-                 "--json"});
+    const auto invalid_schema_export = run_cli(
+        t81_bin,
+        {"canonfs", "export", invalid_schema_hash, "--canonfs-root", canonfs_root.string(), "--out",
+         make_temp_path("t81-cli-contract-invalid-schema-out", ".bin").string(), "--json"});
     T81_TEST_CHECK(invalid_schema_export.exit_code != 0);
     T81_TEST_CHECK(
         contains(invalid_schema_export.stdout_text, "\"code\": \"canonfs-export-invalid-schema\""));
@@ -1605,9 +1612,9 @@ int main(int argc, char* argv[]) {
       std::ofstream out(canonfs_policy);
       out << "(policy (tier 1) (allowed-tensor-hashes []))\n";
     }
-    const auto import_policy_deny_result = run_cli(
-        t81_bin, {"canonfs", "import", payload.string(), "--canonfs-root", canonfs_root.string(),
-                  "--policy", canonfs_policy.string(), "--json"});
+    const auto import_policy_deny_result =
+        run_cli(t81_bin, {"canonfs", "import", payload.string(), "--canonfs-root",
+                          canonfs_root.string(), "--policy", canonfs_policy.string(), "--json"});
     T81_TEST_CHECK(import_policy_deny_result.exit_code != 0);
     T81_TEST_CHECK(
         contains(import_policy_deny_result.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
@@ -1626,10 +1633,9 @@ int main(int argc, char* argv[]) {
                          {"\"kind\": \"policy-failure\"", "\"message\": \"policy denied import of ",
                           "\"code\": \"canonfs-policy-denied\"", "\"reason\": \"policy_denied\""}));
 
-    const auto export_policy_deny_result =
-        run_cli(t81_bin, {"canonfs", "export", hash, "--canonfs-root", canonfs_root.string(),
-                          "--policy", canonfs_policy.string(), "--out",
-                          imported_file_restore.string(), "--json"});
+    const auto export_policy_deny_result = run_cli(
+        t81_bin, {"canonfs", "export", hash, "--canonfs-root", canonfs_root.string(), "--policy",
+                  canonfs_policy.string(), "--out", imported_file_restore.string(), "--json"});
     T81_TEST_CHECK(export_policy_deny_result.exit_code != 0);
     T81_TEST_CHECK(
         contains(export_policy_deny_result.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
@@ -1648,9 +1654,9 @@ int main(int argc, char* argv[]) {
                          {"\"kind\": \"policy-failure\"", "\"message\": \"policy denied export",
                           "\"code\": \"canonfs-policy-denied\"", "\"reason\": \"policy_denied\""}));
 
-    const auto import_profile_deny_result = run_cli(
-        t81_bin, {"canonfs", "import", payload.string(), "--canonfs-root", canonfs_root.string(),
-                  "--policy-profile", "export-only", "--json"});
+    const auto import_profile_deny_result =
+        run_cli(t81_bin, {"canonfs", "import", payload.string(), "--canonfs-root",
+                          canonfs_root.string(), "--policy-profile", "export-only", "--json"});
     T81_TEST_CHECK(import_profile_deny_result.exit_code != 0);
     T81_TEST_CHECK(
         contains(import_profile_deny_result.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
@@ -1679,9 +1685,9 @@ int main(int argc, char* argv[]) {
                             "policy-profile import-only denies canonfs.export before host-side "
                             "materialization"));
 
-    const auto deny_all_import_result = run_cli(
-        t81_bin, {"canonfs", "import", payload.string(), "--canonfs-root", canonfs_root.string(),
-                  "--policy-profile", "deny-all", "--json"});
+    const auto deny_all_import_result =
+        run_cli(t81_bin, {"canonfs", "import", payload.string(), "--canonfs-root",
+                          canonfs_root.string(), "--policy-profile", "deny-all", "--json"});
     T81_TEST_CHECK(deny_all_import_result.exit_code != 0);
     T81_TEST_CHECK(contains(deny_all_import_result.stdout_text, "\"policy_result\": \"denied\""));
     T81_TEST_CHECK(
@@ -1706,9 +1712,9 @@ int main(int argc, char* argv[]) {
                             "policy-profile deny-all denies canonfs.export before host-side "
                             "materialization"));
 
-    const auto invalid_profile_result = run_cli(
-        t81_bin, {"canonfs", "import", payload.string(), "--canonfs-root", canonfs_root.string(),
-                  "--policy-profile", "bogus", "--json"});
+    const auto invalid_profile_result =
+        run_cli(t81_bin, {"canonfs", "import", payload.string(), "--canonfs-root",
+                          canonfs_root.string(), "--policy-profile", "bogus", "--json"});
     T81_TEST_CHECK(invalid_profile_result.exit_code != 0);
     T81_TEST_CHECK(
         contains(invalid_profile_result.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
@@ -1723,10 +1729,9 @@ int main(int argc, char* argv[]) {
                           "\"code\": \"canonfs-import-invalid-policy-profile\"",
                           "\"reason\": \"invalid_policy_profile\""}));
 
-    const auto export_invalid_profile_result =
-        run_cli(t81_bin, {"canonfs", "export", hash, "--canonfs-root", canonfs_root.string(),
-                          "--policy-profile", "bogus", "--out", imported_file_restore.string(),
-                          "--json"});
+    const auto export_invalid_profile_result = run_cli(
+        t81_bin, {"canonfs", "export", hash, "--canonfs-root", canonfs_root.string(),
+                  "--policy-profile", "bogus", "--out", imported_file_restore.string(), "--json"});
     T81_TEST_CHECK(export_invalid_profile_result.exit_code != 0);
     T81_TEST_CHECK(contains(export_invalid_profile_result.stdout_text,
                             "\"schema\": \"t81.canonfs-export.v1\""));
@@ -1999,9 +2004,9 @@ int main(int argc, char* argv[]) {
                    v1_export_policy_denied_result.stdout_text);
 
     const fs::path restored = make_temp_path("t81-cli-contract", ".restored");
-    const auto get_result = run_cli(
-        t81_bin, {"canonfs", "get", hash, "--canonfs-root", canonfs_root.string(), "--out",
-                  restored.string(), "--json"});
+    const auto get_result =
+        run_cli(t81_bin, {"canonfs", "get", hash, "--canonfs-root", canonfs_root.string(), "--out",
+                          restored.string(), "--json"});
     T81_TEST_CHECK(get_result.exit_code == 0);
     T81_TEST_CHECK(contains(get_result.stdout_text, "\"schema\": \"t81.canonfs-get.v1\""));
     T81_TEST_CHECK(read_file(restored) == "canonfs-contract");
@@ -2022,9 +2027,8 @@ int main(int argc, char* argv[]) {
       std::ofstream out(payload_two);
       out << "canonfs-contract-two-" << payload_two.filename().string();
     }
-    const auto put_result_two = run_cli(
-        t81_bin,
-        {"canonfs", "put-file", payload_two.string(), "--canonfs-root", canonfs_root.string()});
+    const auto put_result_two = run_cli(t81_bin, {"canonfs", "put-file", payload_two.string(),
+                                                  "--canonfs-root", canonfs_root.string()});
     T81_TEST_CHECK(put_result_two.exit_code == 0);
 
     const auto snapshot_b = run_cli(
@@ -2038,9 +2042,9 @@ int main(int argc, char* argv[]) {
     const std::string snapshot_hash_b =
         snapshot_b.stdout_text.substr(second_hash_start, second_hash_end - second_hash_start);
 
-    const auto snapshot_diff_result = run_cli(
-        t81_bin, {"canonfs", "snapshot-diff", snapshot_hash_a, snapshot_hash_b, "--canonfs-root",
-                  canonfs_root.string(), "--json"});
+    const auto snapshot_diff_result =
+        run_cli(t81_bin, {"canonfs", "snapshot-diff", snapshot_hash_a, snapshot_hash_b,
+                          "--canonfs-root", canonfs_root.string(), "--json"});
     T81_TEST_CHECK(snapshot_diff_result.exit_code != 0);
     T81_TEST_CHECK(
         contains(snapshot_diff_result.stdout_text, "\"schema\": \"t81.canonfs-snapshot-diff.v1\""));

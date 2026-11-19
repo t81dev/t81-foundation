@@ -28,15 +28,15 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include "tools/cli/core/process_capture.hpp"
-#include "tools/cli/core/execution_policy.hpp"
-#include "tools/cli/core/mcp_server.hpp"
-#include "tools/cli/core/cli_docs_gen.hpp"
 #include <thread>
 #include <tuple>
 #include <type_traits>
 #include <unordered_set>
 #include <vector>
+#include "tools/cli/core/cli_docs_gen.hpp"
+#include "tools/cli/core/execution_policy.hpp"
+#include "tools/cli/core/mcp_server.hpp"
+#include "tools/cli/core/process_capture.hpp"
 
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
@@ -45,8 +45,8 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#include <windows.h>
 #include <shellapi.h>
+#include <windows.h>
 // Windows GDI's ERROR macro collides with monitoring::AlertLevel::ERROR.
 #ifdef ERROR
 #undef ERROR
@@ -1514,6 +1514,37 @@ Examples:
 
 void print_help_ai() { t81::cli::ai::print_usage("t81 ai"); }
 
+void print_help_mcp() {
+  std::cerr << R"(Usage: t81 mcp <action> [options]
+
+Native C++ JSON-RPC 2.0 MCP server (zero Python runtime dependency).
+
+Actions:
+  serve                                 Start stdio JSON-RPC 2.0 MCP server (15 native tools)
+
+Native MCP tools exposed by `t81 mcp serve`:
+  Governance & Receipts:
+    t81.session_bootstrap               1-call workspace ground-truth & host SIMD/GPU capabilities
+    t81.policy_validate                 Validate an Axion .apl policy file
+    t81.policy_test                     Test whether a model/artifact hash is admitted by .apl
+    t81.get_effective_policy            Resolve effective policy floor for an action type
+    t81.gate_check                      Fail-closed anti-downgrade artifact gate with SHA3-512
+    t81.canonfs_fsck                    Verify CanonFS object hashes and snapshots in-process
+    t81.determinism_hash                Compute canonical SHA3-512 digest of a file
+
+  Atomic Transactions:
+    t81.tx_begin / t81.tx_commit / t81.tx_abort
+                                        SHA3-512 verified backup, policy-gated commit, exact rollback
+
+  Subgraphs & Dual-Rail Ternary AI:
+    t81.verify_subgraph                 Static verifier for narrowed TISC tensor+policy subgraphs
+    t81.run_subgraph                    Verify + execute TISC subgraph in T81VM with SHA3-512 receipt
+    t81.diff_check                      Exact Hamming flip-budget audit on Dual-Rail (P, N) planes
+    t81.memory_search                   Zero-float deterministic top-K Dual-Rail RAG with receipt
+    t81.adapter_apply                   Zero-dequantization saturated adapter compose (dense or SBDR1)
+)";
+}
+
 void print_usage(const char* prog) {
   std::cerr << R"(T81 Foundation - Ternary-Native Computing Stack
 Version )" << T81_VERSION
@@ -1524,34 +1555,43 @@ Usage: )" << prog
             << R"( <command> [options] [args]
 
 
-Commands:
+Core Workflow:
   code    <action> [args]               Primary code workflow commands
   lang    <action> [args]               T81 language frontend workflow commands
   project <action> [args]               Project lifecycle commands
-  env     <action> [args]               Environment/toolchain diagnostics
-  internal <action> [args]              Internal/experimental command group
-  canonfs <action> [args]               CanonFS inspection and snapshot commands
-  determinism <action> [args]           Determinism verification and hashing commands
   vm <action> [args]                    VM execution and state inspection
   tisc <action> [args]                  TISC artifact inspection and validation
   ir <action> [args]                    IR inspection for frontend lowering
+  env     <action> [args]               Environment/toolchain diagnostics
+
+Governance, Verification & Storage:
+  policy <action> [args]                Axion policy compile, validate, and test
+  axion <action> [args]                 Axion governor and policy-facing operations
+  canonfs <action> [args]               CanonFS inspection and snapshot commands
+  determinism <action> [args]           Determinism verification and hashing commands
+  trace <action> [args]                 Trace inspection, replay, export, canonicalization
   tier   <action> [args]                Cognitive tier inspection and gating
-  tensor <action> [args]                Tensor artifact canonicalization and inspection
+
+AI, Tensors & Ternary Weights:
   ai     <action> [args]                Bounded AI tasks, model inspection, and partial inference tools
   weights <action> [args]               Model weights import, inspect, and verify
   model  <action> [args]                Model artifact intake and inspection
-  policy <action> [args]                Axion policy compile, validate, and test
-  axion <action> [args]                 Axion governor and policy-facing operations
-  trace <action> [args]                 Trace inspection, replay, export, canonicalization
+  tensor <action> [args]                Tensor artifact canonicalization and inspection
+
+Agent, MCP & Interactive:
+  mcp     <action> [args]               Native C++ MCP server (`t81 mcp serve`, 15 tools)
+  repl                                  Start interactive REPL
+  studio                                Human Operator TUI
+  agent   [--resume <f>] [--session <f>] AI-Native / Agentic TUI
+  ui                                    Interactive TUI launcher (choose studio/agent)
+
+Experimental Frontends, Backends & Utilities:
   c     <subcommand> [args]             Experimental C-subset frontend to MLIR
   rust  <subcommand> [args]             Experimental Rust-subset frontend to MLIR
   python <subcommand> [args]            Experimental Python-subset frontend to MLIR
   llvm  <subcommand> [args]             LLVM IR backend: translate TISC to LLVM IR/bitcode
   mlir  <subcommand> [args]             MLIR frontend: translate TISC to MLIR / LLVM IR
-  repl                                  Start interactive REPL
-  studio                                Human Operator TUI
-  agent   [--resume <f>] [--session <f>] AI-Native / Agentic TUI
-  ui                                    Interactive TUI launcher (choose studio/agent)
+  internal <action> [args]              Internal/experimental command group
   completion <shell>                    Print shell completion script
   man [--install-dir <dir>]             Show or install CLI manpage
   feedback <subcommand> [args]          Local CLI UX feedback loop
@@ -1574,6 +1614,7 @@ More command groups:
   t81 help code
   t81 help project
   t81 help env
+  t81 help mcp
   t81 help internal
   t81 help advanced
   t81 help canonfs
@@ -1638,6 +1679,10 @@ bool print_help_topic(std::string_view topic, const char* prog) {
   }
   if (topic == "ai") {
     print_help_ai();
+    return true;
+  }
+  if (topic == "mcp") {
+    print_help_mcp();
     return true;
   }
   if (topic == "policy") {
@@ -2725,8 +2770,7 @@ int run_artifact_command(const Args& args) {
     error("artifact read-field requires --field <name>");
     return 1;
   }
-  if (subcommand == "read-field" &&
-      !t81::cli::artifact_family::is_supported_field(schema, field)) {
+  if (subcommand == "read-field" && !t81::cli::artifact_family::is_supported_field(schema, field)) {
     error("artifact read-field supports only fixed downstream artifact fields");
     return 1;
   }
@@ -3135,8 +3179,7 @@ const t81::weights::JsonValue& require_object_field(const t81::weights::JsonValu
   return it->second;
 }
 
-std::string require_string_field(const t81::weights::JsonValue& object,
-                                 std::string_view key,
+std::string require_string_field(const t81::weights::JsonValue& object, std::string_view key,
                                  std::string_view command_name) {
   const auto& value = require_object_field(object, key, command_name);
   if (!value.is_string) {
@@ -3146,8 +3189,7 @@ std::string require_string_field(const t81::weights::JsonValue& object,
   return value.string_value;
 }
 
-uint64_t require_uint_field(const t81::weights::JsonValue& object,
-                            std::string_view key,
+uint64_t require_uint_field(const t81::weights::JsonValue& object, std::string_view key,
                             std::string_view command_name) {
   const auto& value = require_object_field(object, key, command_name);
   if (!value.is_number || value.number_value < 0.0 ||
@@ -3161,12 +3203,14 @@ uint64_t require_uint_field(const t81::weights::JsonValue& object,
 std::vector<uint64_t> manifest_shape_from_json(const t81::weights::JsonValue& value,
                                                std::string_view command_name) {
   if (value.array_value.empty()) {
-    throw std::runtime_error(std::string(command_name) + ": manifest tensor shape must be an array");
+    throw std::runtime_error(std::string(command_name) +
+                             ": manifest tensor shape must be an array");
   }
   std::vector<uint64_t> shape;
   shape.reserve(value.array_value.size());
   for (const auto& entry : value.array_value) {
-    if (!entry.is_number || entry.number_value < 1.0 || std::floor(entry.number_value) != entry.number_value) {
+    if (!entry.is_number || entry.number_value < 1.0 ||
+        std::floor(entry.number_value) != entry.number_value) {
       throw std::runtime_error(std::string(command_name) +
                                ": manifest tensor shape entries must be positive whole numbers");
     }
@@ -3188,14 +3232,15 @@ struct LoadedModelArtifact {
   std::string source_format;
 };
 
-LoadedModelArtifact load_model_manifest_artifact(const fs::path& path, std::string_view command_name) {
+LoadedModelArtifact load_model_manifest_artifact(const fs::path& path,
+                                                 std::string_view command_name) {
   const std::string text = read_text_file_or_throw(path, command_name);
   ModelManifestJsonParser parser(text);
   const auto root = parser.parse();
   const std::string schema = require_string_field(root, "schema", command_name);
   if (schema != "t81.model-manifest.v1") {
-    throw std::runtime_error(std::string(command_name) + ": unsupported manifest schema '" + schema +
-                             "'");
+    throw std::runtime_error(std::string(command_name) + ": unsupported manifest schema '" +
+                             schema + "'");
   }
 
   LoadedModelArtifact loaded;
@@ -3229,8 +3274,8 @@ LoadedModelArtifact load_model_manifest_artifact(const fs::path& path, std::stri
   for (const auto& tensor_value : tensors.array_value) {
     t81::weights::TensorInfo info;
     info.name = require_string_field(tensor_value, "name", command_name);
-    info.shape =
-        manifest_shape_from_json(require_object_field(tensor_value, "shape", command_name), command_name);
+    info.shape = manifest_shape_from_json(require_object_field(tensor_value, "shape", command_name),
+                                          command_name);
     info.num_trits = require_uint_field(tensor_value, "trits", command_name);
     info.sparsity = std::numeric_limits<double>::quiet_NaN();
     const auto sparsity_it = tensor_value.object_value.find("sparsity");
@@ -3247,8 +3292,7 @@ LoadedModelArtifact load_model_manifest_artifact(const fs::path& path, std::stri
   return loaded;
 }
 
-t81::weights::ModelFile load_model_artifact(const fs::path& input,
-                                            const std::string& format,
+t81::weights::ModelFile load_model_artifact(const fs::path& input, const std::string& format,
                                             std::string_view command_name,
                                             std::string_view help_topic);
 
@@ -3265,14 +3309,12 @@ LoadedModelArtifact load_model_artifact_or_manifest(const fs::path& input,
   return loaded;
 }
 
-bool resolve_model_input_and_format(fs::path& input,
-                                    std::string& format,
-                                    bool format_explicit,
+bool resolve_model_input_and_format(fs::path& input, std::string& format, bool format_explicit,
                                     std::string_view command_name) {
   if (!fs::exists(input)) {
     std::string resolution_error;
-    auto resolved =
-        t81::cli::resolve_repo_model_path(input.string(), {".gguf", ".safetensors"}, &resolution_error);
+    auto resolved = t81::cli::resolve_repo_model_path(input.string(), {".gguf", ".safetensors"},
+                                                      &resolution_error);
     if (!resolved) {
       error(std::string(command_name) + ": " + resolution_error);
       return false;
@@ -3290,15 +3332,15 @@ bool resolve_model_input_and_format(fs::path& input,
   return true;
 }
 
-t81::weights::ModelFile load_model_artifact(const fs::path& input,
-                                            const std::string& format,
+t81::weights::ModelFile load_model_artifact(const fs::path& input, const std::string& format,
                                             std::string_view command_name,
                                             std::string_view help_topic) {
   if (format == "safetensors") {
     if (!has_extension_ci(input, ".safetensors")) {
-      throw std::runtime_error(std::string(command_name) +
-                               ": --format safetensors requires a .safetensors input file. Run 't81 " +
-                               std::string(help_topic) + "'.");
+      throw std::runtime_error(
+          std::string(command_name) +
+          ": --format safetensors requires a .safetensors input file. Run 't81 " +
+          std::string(help_topic) + "'.");
     }
     return t81::weights::load_safetensors(input);
   }
@@ -3323,8 +3365,7 @@ t81::weights::ModelFile load_model_artifact(const fs::path& input,
                            std::string(help_topic) + "'.");
 }
 
-void emit_model_import_json(const fs::path& input,
-                            const std::string& source_format,
+void emit_model_import_json(const fs::path& input, const std::string& source_format,
                             const t81::weights::ModelFile& mf) {
   std::cout << "{\n";
   std::cout << "  \"schema\": \"t81.model-import.v1\",\n";
@@ -3360,7 +3401,8 @@ void emit_model_import_json(const fs::path& input,
     }
     std::cout << "],\n";
     std::cout << "      \"trits\": " << tensor.num_trits << ",\n";
-    std::cout << "      \"sparsity\": " << std::fixed << std::setprecision(6) << tensor.sparsity << "\n";
+    std::cout << "      \"sparsity\": " << std::fixed << std::setprecision(6) << tensor.sparsity
+              << "\n";
     std::cout << std::defaultfloat;
     std::cout << "    }";
     if (i + 1 < mf.tensors.size()) {
@@ -3372,8 +3414,7 @@ void emit_model_import_json(const fs::path& input,
   std::cout << "}\n";
 }
 
-void emit_model_import_report(const fs::path& input,
-                              const std::string& source_format,
+void emit_model_import_report(const fs::path& input, const std::string& source_format,
                               const t81::weights::ModelFile& mf) {
   std::cout << "Model Artifact: " << input << "\n";
   std::cout << "Source Format:  " << source_format << "\n";
@@ -3405,8 +3446,7 @@ void emit_model_import_report(const fs::path& input,
   }
 }
 
-void emit_model_manifest_json(const fs::path& input,
-                              const std::string& source_format,
+void emit_model_manifest_json(const fs::path& input, const std::string& source_format,
                               const t81::weights::ModelFile& mf) {
   std::map<std::string, std::string> manifest_provenance;
   manifest_provenance.emplace("host_format_reader", source_format);
@@ -3579,8 +3619,7 @@ bool is_cross_format_normalization_pair(std::string_view lhs_source_format,
   return (lhs_gguf && rhs_safetensors_family) || (rhs_gguf && lhs_safetensors_family);
 }
 
-bool shape_matches_normalized(std::span<const uint64_t> lhs,
-                              std::span<const uint64_t> rhs,
+bool shape_matches_normalized(std::span<const uint64_t> lhs, std::span<const uint64_t> rhs,
                               bool allow_known_transpose) {
   if (lhs.size() == rhs.size() && std::equal(lhs.begin(), lhs.end(), rhs.begin())) {
     return true;
@@ -3643,7 +3682,8 @@ NormalizedModelTensorDiffSummary diff_model_tensors_normalized(const LoadedModel
   return summary;
 }
 
-void emit_string_array(std::string_view key, const std::vector<std::string>& values, int indent = 2) {
+void emit_string_array(std::string_view key, const std::vector<std::string>& values,
+                       int indent = 2) {
   const std::string pad(static_cast<std::size_t>(indent), ' ');
   std::cout << pad << "\"" << key << "\": [";
   for (std::size_t i = 0; i < values.size(); ++i) {
@@ -3655,8 +3695,7 @@ void emit_string_array(std::string_view key, const std::vector<std::string>& val
   std::cout << "]";
 }
 
-void emit_string_map(std::string_view key,
-                     const std::map<std::string, std::string>& values,
+void emit_string_map(std::string_view key, const std::map<std::string, std::string>& values,
                      int indent = 2) {
   const std::string pad(static_cast<std::size_t>(indent), ' ');
   const std::string child_pad(static_cast<std::size_t>(indent + 2), ' ');
@@ -3678,16 +3717,14 @@ void emit_string_map(std::string_view key,
   std::cout << pad << "}";
 }
 
-void emit_model_diff_json(const fs::path& lhs_path,
-                          const fs::path& rhs_path,
-                          const t81::weights::ModelFile& lhs,
-                          const t81::weights::ModelFile& rhs,
+void emit_model_diff_json(const fs::path& lhs_path, const fs::path& rhs_path,
+                          const t81::weights::ModelFile& lhs, const t81::weights::ModelFile& rhs,
                           const ModelTensorDiffSummary& tensor_diff,
                           const ProvenanceDiffSummary& provenance_diff) {
   const bool identical = lhs.format == rhs.format && lhs.total_parameters == rhs.total_parameters &&
-                         lhs.total_trits == rhs.total_trits && lhs.tensors.size() == rhs.tensors.size() &&
-                         tensor_diff.lhs_only.empty() && tensor_diff.rhs_only.empty() &&
-                         tensor_diff.changed.empty();
+                         lhs.total_trits == rhs.total_trits &&
+                         lhs.tensors.size() == rhs.tensors.size() && tensor_diff.lhs_only.empty() &&
+                         tensor_diff.rhs_only.empty() && tensor_diff.changed.empty();
 
   std::cout << "{\n";
   std::cout << "  \"schema\": \"t81.model-diff.v1\",\n";
@@ -3728,10 +3765,8 @@ void emit_model_diff_json(const fs::path& lhs_path,
   std::cout << "\n}\n";
 }
 
-void emit_model_diff_normalized_json(const fs::path& lhs_path,
-                                     const fs::path& rhs_path,
-                                     const LoadedModelArtifact& lhs,
-                                     const LoadedModelArtifact& rhs,
+void emit_model_diff_normalized_json(const fs::path& lhs_path, const fs::path& rhs_path,
+                                     const LoadedModelArtifact& lhs, const LoadedModelArtifact& rhs,
                                      const NormalizedModelTensorDiffSummary& tensor_diff,
                                      const ProvenanceDiffSummary& provenance_diff) {
   const bool identical = lhs.model.total_parameters == rhs.model.total_parameters &&
@@ -3790,16 +3825,14 @@ void emit_model_diff_normalized_json(const fs::path& lhs_path,
   std::cout << "\n}\n";
 }
 
-void emit_model_diff_report(const fs::path& lhs_path,
-                            const fs::path& rhs_path,
-                            const t81::weights::ModelFile& lhs,
-                            const t81::weights::ModelFile& rhs,
+void emit_model_diff_report(const fs::path& lhs_path, const fs::path& rhs_path,
+                            const t81::weights::ModelFile& lhs, const t81::weights::ModelFile& rhs,
                             const ModelTensorDiffSummary& tensor_diff,
                             const ProvenanceDiffSummary& provenance_diff) {
   const bool identical = lhs.format == rhs.format && lhs.total_parameters == rhs.total_parameters &&
-                         lhs.total_trits == rhs.total_trits && lhs.tensors.size() == rhs.tensors.size() &&
-                         tensor_diff.lhs_only.empty() && tensor_diff.rhs_only.empty() &&
-                         tensor_diff.changed.empty();
+                         lhs.total_trits == rhs.total_trits &&
+                         lhs.tensors.size() == rhs.tensors.size() && tensor_diff.lhs_only.empty() &&
+                         tensor_diff.rhs_only.empty() && tensor_diff.changed.empty();
 
   std::cout << "LHS:            " << lhs_path << "\n";
   std::cout << "RHS:            " << rhs_path << "\n";
@@ -3930,7 +3963,8 @@ int run_weights_import(const Args& args) {
     return 1;
   }
 
-  if (!resolve_model_input_and_format(opts.input, opts.format, opts.format_explicit, "weights import")) {
+  if (!resolve_model_input_and_format(opts.input, opts.format, opts.format_explicit,
+                                      "weights import")) {
     return 1;
   }
 
@@ -3992,12 +4026,14 @@ int run_model_import(const Args& args) {
     error("model import requires an input file. Run 't81 help model import'.");
     return 1;
   }
-  if (!resolve_model_input_and_format(opts.input, opts.format, opts.format_explicit, "model import")) {
+  if (!resolve_model_input_and_format(opts.input, opts.format, opts.format_explicit,
+                                      "model import")) {
     return 1;
   }
 
   try {
-    const auto mf = load_model_artifact(opts.input, opts.format, "model import", "help model import");
+    const auto mf =
+        load_model_artifact(opts.input, opts.format, "model import", "help model import");
     std::ostringstream rendered;
     {
       ScopedStreamRedirect redirect(std::cout, rendered);
@@ -4061,8 +4097,7 @@ int run_model_diff(const Args& args) {
       }
       comparison_mode = args.command_args[++i];
       if (comparison_mode != "raw" && comparison_mode != "normalized") {
-        error("model diff: unsupported mode '" + comparison_mode +
-              "'. Run 't81 help model diff'.");
+        error("model diff: unsupported mode '" + comparison_mode + "'. Run 't81 help model diff'.");
         return 1;
       }
     } else if (token == "-h" || token == "--help") {
@@ -4140,7 +4175,8 @@ int run_model_diff(const Args& args) {
     if (as_json) {
       emit_model_diff_json(lhs_path, rhs_path, lhs.model, rhs.model, tensor_diff, provenance_diff);
     } else {
-      emit_model_diff_report(lhs_path, rhs_path, lhs.model, rhs.model, tensor_diff, provenance_diff);
+      emit_model_diff_report(lhs_path, rhs_path, lhs.model, rhs.model, tensor_diff,
+                             provenance_diff);
     }
 
     const bool identical = lhs.model.format == rhs.model.format &&
@@ -4522,7 +4558,8 @@ int run_weights(const Args& args) {
 }
 
 int run_model(const Args& args) {
-  if (args.command_args.empty() || args.command_args[0] == "-h" || args.command_args[0] == "--help") {
+  if (args.command_args.empty() || args.command_args[0] == "-h" ||
+      args.command_args[0] == "--help") {
     return emit_help([&] { print_help_model(); });
   }
   if (args.command_args.size() >= 2 &&
@@ -5882,9 +5919,9 @@ int run_canonfs_command(const Args& args) {
           }
           const auto actual = t81::hash::hash_bytes(bytes);
           if (actual != expected->h) {
-            errors.push_back(
-                obj.path().filename().string() + ": hash mismatch (expected " + stem + ", actual " +
-                t81::canonfs::storage_key_v1(t81::canonfs::CanonHash{actual}) + ")");
+            errors.push_back(obj.path().filename().string() + ": hash mismatch (expected " + stem +
+                             ", actual " +
+                             t81::canonfs::storage_key_v1(t81::canonfs::CanonHash{actual}) + ")");
           }
         } else {
           in.peek();
@@ -10627,13 +10664,12 @@ int main(int argc, char* argv[]) {
       return run_canonfs_command(args);
 
     } else if (args.command == "mcp") {
-      return t81::cli::run_mcp_serve(
-          args.command_args, [](const std::string& croot) -> int {
-            Args fsck_args;
-            fsck_args.command = "canonfs";
-            fsck_args.command_args = {"fsck", "--verify-hashes", "--json", "--canonfs-root", croot};
-            return run_canonfs_command(fsck_args);
-          });
+      return t81::cli::run_mcp_serve(args.command_args, [](const std::string& croot) -> int {
+        Args fsck_args;
+        fsck_args.command = "canonfs";
+        fsck_args.command_args = {"fsck", "--verify-hashes", "--json", "--canonfs-root", croot};
+        return run_canonfs_command(fsck_args);
+      });
 
     } else if (args.command == "artifact") {
       return run_artifact_command(args);
