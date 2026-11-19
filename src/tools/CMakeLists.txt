@@ -33,6 +33,7 @@ add_library(t81_tool_cli STATIC
   # ${PROJECT_SOURCE_DIR}/tools/cli/ai/t81_ai_controlled.cpp  # Skip problematic file
   ${PROJECT_SOURCE_DIR}/tools/cli/core/artifact_family.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/core/canonize_tensor.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/cli_docs_gen.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/core/debugger.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/core/driver.cpp
   # ${PROJECT_SOURCE_DIR}/tools/cli/core/driver_refactored.cpp  # Skip problematic file
