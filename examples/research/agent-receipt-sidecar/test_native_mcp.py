@@ -60,7 +60,7 @@ def main() -> int:
             init = rpc("initialize")
             assert init["result"]["serverInfo"]["name"] == "t81-native-mcp"
             tools = rpc("tools/list")["result"]["tools"]
-            assert len(tools) == 12
+            assert len(tools) == 14
             assert all("inputSchema" in t for t in tools)
 
             # 0. session_bootstrap (1-call verified wake-up packet)
@@ -148,7 +148,7 @@ def main() -> int:
 
             # 8. session_bootstrap capabilities + t81.run_subgraph (fail-closed + verified VM execution)
             boot = rpc("tools/call", {"name": "t81.session_bootstrap", "arguments": {"repo_root": str(Path(__file__).resolve().parents[3])}})["result"]["structured"]
-            assert boot["ok"] and boot["native_mcp_tools"] == 12
+            assert boot["ok"] and boot["native_mcp_tools"] == 14
             assert boot["capabilities"]["bit_exact_cross_device_sha3_512"] is True
             assert boot["capabilities"]["bytes_per_trit"] == 0.25
 
@@ -158,6 +158,48 @@ def main() -> int:
             run_ok = rpc("tools/call", {"name": "t81.run_subgraph", "arguments": {"bytecode_hex": valid_bc, "policy_path": str(pol)}})["result"]["structured"]
             assert run_ok["ok"] and run_ok["executed"] and run_ok["verdict"] == "VERIFIED_AND_EXECUTED"
             assert run_ok["execution_receipt"].startswith("sha3-512:")
+
+            # 9. t81.diff_check (admit <= 1% flip, deny > 1% flip)
+            # 16 words = 1024 weights: flipping 4 bits = 0.39% (ADMIT), flipping 32 bits = 3.125% (DENY)
+            b_pos = tmp / "base.pos"
+            b_neg = tmp / "base.neg"
+            c_ok_pos = tmp / "cand_ok.pos"
+            c_bad_pos = tmp / "cand_bad.pos"
+            b_pos.write_bytes(b"\x00" * 128)
+            b_neg.write_bytes(b"\x00" * 128)
+            c_ok_pos.write_bytes(struct.pack("<Q", 0xF) + b"\x00" * 120)
+            c_bad_pos.write_bytes(struct.pack("<Q", 0xFFFFFFFF) + b"\x00" * 120)
+
+            dc_ok = rpc("tools/call", {"name": "t81.diff_check", "arguments": {
+                "base_pos_path": str(b_pos), "base_neg_path": str(b_neg),
+                "candidate_pos_path": str(c_ok_pos), "candidate_neg_path": str(b_neg),
+                "max_flip_pct": "1.0"}})["result"]["structured"]
+            assert dc_ok["ok"] and dc_ok["allowed"] and dc_ok["flipped_weights"] == 4
+
+            dc_bad = rpc("tools/call", {"name": "t81.diff_check", "arguments": {
+                "base_pos_path": str(b_pos), "base_neg_path": str(b_neg),
+                "candidate_pos_path": str(c_bad_pos), "candidate_neg_path": str(b_neg),
+                "max_flip_pct": "1.0"}})["result"]["structured"]
+            assert not dc_bad["ok"] and not dc_bad["allowed"] and dc_bad["verdict"] == "DENY_EXCEEDS_FLIP_BUDGET"
+
+            # 10. t81.memory_search (zero-float Dual-Rail top-K retrieval + SHA3-512 receipt)
+            # 3 docs x 64 dims: doc 0 = all 0, doc 1 = all +1 (exact match), doc 2 = all -1
+            idx_pos = tmp / "idx.pos"
+            idx_neg = tmp / "idx.neg"
+            q_pos = tmp / "q.pos"
+            q_neg = tmp / "q.neg"
+            idx_pos.write_bytes(struct.pack("<QQQ", 0, 0xFFFFFFFFFFFFFFFF, 0))
+            idx_neg.write_bytes(struct.pack("<QQQ", 0, 0, 0xFFFFFFFFFFFFFFFF))
+            q_pos.write_bytes(struct.pack("<Q", 0xFFFFFFFFFFFFFFFF))
+            q_neg.write_bytes(struct.pack("<Q", 0))
+            ms = rpc("tools/call", {"name": "t81.memory_search", "arguments": {
+                "index_pos_path": str(idx_pos), "index_neg_path": str(idx_neg),
+                "query_pos_path": str(q_pos), "query_neg_path": str(q_neg),
+                "dim": "64", "top_k": "2"}})["result"]["structured"]
+            assert ms["ok"] and ms["docs_searched"] == 3
+            assert ms["results"][0]["doc_id"] == 1 and ms["results"][0]["score"] == 64
+            assert ms["results"][1]["doc_id"] == 0 and ms["results"][1]["score"] == 0
+            assert ms["retrieval_receipt"].startswith("sha3-512:")
 
             print(json.dumps({
                 "native_cpp_mcp_tools": len(tools),

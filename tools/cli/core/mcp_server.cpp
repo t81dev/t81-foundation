@@ -8,12 +8,17 @@
 #include "t81/isa/opcodes.hpp"
 #include "t81/vm/vm.hpp"
 
+#include <algorithm>
+#include <bit>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <numeric>
 #include <sstream>
 #include <string_view>
 #include <unordered_map>
@@ -260,7 +265,26 @@ std::string build_tools_list_json() {
          "under Axion policy enforcement, returning a canonical SHA3-512 execution receipt.\","
          "\"inputSchema\":{\"type\":\"object\","
          "\"properties\":{\"bytecode_path\":{\"type\":\"string\"},\"bytecode_hex\":{\"type\":"
-         "\"string\"},\"policy_path\":{\"type\":\"string\"}}}}"
+         "\"string\"},\"policy_path\":{\"type\":\"string\"}}}},"
+
+         "{\"name\":\"t81.diff_check\","
+         "\"description\":\"Audit exact Hamming weight-flip distance between two Dual-Rail (P,N) "
+         "bitplane checkpoints against a fail-closed max_flip_pct budget.\","
+         "\"inputSchema\":{\"type\":\"object\",\"required\":[\"base_pos_path\",\"base_neg_path\","
+         "\"candidate_pos_path\",\"candidate_neg_path\"],"
+         "\"properties\":{\"base_pos_path\":{\"type\":\"string\"},\"base_neg_path\":{\"type\":"
+         "\"string\"},\"candidate_pos_path\":{\"type\":\"string\"},\"candidate_neg_path\":{"
+         "\"type\":\"string\"},\"max_flip_pct\":{\"type\":\"string\"}}}},"
+
+         "{\"name\":\"t81.memory_search\","
+         "\"description\":\"Zero-float deterministic top-K similarity search over a Dual-Rail "
+         "(P,N) agent memory index, returning exact integer scores and a SHA3-512 retrieval "
+         "receipt.\","
+         "\"inputSchema\":{\"type\":\"object\",\"required\":[\"index_pos_path\","
+         "\"index_neg_path\",\"query_pos_path\",\"query_neg_path\",\"dim\"],"
+         "\"properties\":{\"index_pos_path\":{\"type\":\"string\"},\"index_neg_path\":{\"type\":"
+         "\"string\"},\"query_pos_path\":{\"type\":\"string\"},\"query_neg_path\":{\"type\":"
+         "\"string\"},\"dim\":{\"type\":\"string\"},\"top_k\":{\"type\":\"string\"}}}}"
          "]";
 }
 
@@ -513,7 +537,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
             "\",\"public_api_lock_present\":" + (lock_ok ? "true" : "false") +
             ",\"public_api_lock_sha3_512\":\"" + (lock_ok ? sha3_512_hex(lock_bytes) : "") +
             "\",\"determinism_registry_present\":" + (reg_ok ? "true" : "false") +
-            ",\"native_mcp_tools\":12,\"capabilities\":" + detect_host_capabilities_json() + "}";
+            ",\"native_mcp_tools\":14,\"capabilities\":" + detect_host_capabilities_json() + "}";
       } else if (name == "t81.tx_begin") {
         const std::string tpath = extract_str(line, "target_path");
         const std::string bdir = extract_str(line, "backup_dir");
@@ -718,6 +742,131 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                              exec_rec + "\"}";
               }
             }
+          }
+        }
+      } else if (name == "t81.diff_check") {
+        const std::string bp_path = extract_str(line, "base_pos_path");
+        const std::string bn_path = extract_str(line, "base_neg_path");
+        const std::string cp_path = extract_str(line, "candidate_pos_path");
+        const std::string cn_path = extract_str(line, "candidate_neg_path");
+        const std::string max_str = extract_str(line, "max_flip_pct");
+        const double max_flip_pct = max_str.empty() ? 1.0 : std::strtod(max_str.c_str(), nullptr);
+        std::vector<uint8_t> bp, bn, cp, cn;
+        if (bp_path.empty() || bn_path.empty() || cp_path.empty() || cn_path.empty() ||
+            !read_file_bytes(bp_path, bp) || !read_file_bytes(bn_path, bn) ||
+            !read_file_bytes(cp_path, cp) || !read_file_bytes(cn_path, cn)) {
+          structured = "{\"ok\":false,\"allowed\":false,\"verdict\":\"REJECT_IO_ERROR\"}";
+        } else if (bp.empty() || bp.size() != bn.size() || bp.size() != cp.size() ||
+                   bp.size() != cn.size() || (bp.size() % 8 != 0)) {
+          structured = "{\"ok\":false,\"allowed\":false,\"verdict\":\"REJECT_SIZE_MISMATCH\"}";
+        } else {
+          const size_t words = bp.size() / 8;
+          const uint64_t total_weights = static_cast<uint64_t>(words) * 64ULL;
+          uint64_t flips = 0;
+          bool disjoint_ok = true;
+          for (size_t w = 0; w < words; ++w) {
+            uint64_t p0 = 0, n0 = 0, p1 = 0, n1 = 0;
+            std::memcpy(&p0, bp.data() + w * 8, 8);
+            std::memcpy(&n0, bn.data() + w * 8, 8);
+            std::memcpy(&p1, cp.data() + w * 8, 8);
+            std::memcpy(&n1, cn.data() + w * 8, 8);
+            if (((p0 & n0) | (p1 & n1)) != 0ULL) {
+              disjoint_ok = false;
+              break;
+            }
+            flips += static_cast<uint64_t>(std::popcount((p0 ^ p1) | (n0 ^ n1)));
+          }
+          if (!disjoint_ok) {
+            structured =
+                "{\"ok\":false,\"allowed\":false,\"verdict\":\"REJECT_NON_DISJOINT_PLANES\"}";
+          } else {
+            const double flip_pct =
+                100.0 * static_cast<double>(flips) / static_cast<double>(total_weights);
+            const bool allowed = (flip_pct <= max_flip_pct);
+            std::vector<uint8_t> b_cat = bp;
+            b_cat.insert(b_cat.end(), bn.begin(), bn.end());
+            std::vector<uint8_t> c_cat = cp;
+            c_cat.insert(c_cat.end(), cn.begin(), cn.end());
+            std::ostringstream oss;
+            oss << std::fixed << std::setprecision(4) << "{\"ok\":" << (allowed ? "true" : "false")
+                << ",\"allowed\":" << (allowed ? "true" : "false") << ",\"verdict\":\""
+                << (allowed ? "ADMIT_WITHIN_FLIP_BUDGET" : "DENY_EXCEEDS_FLIP_BUDGET")
+                << "\",\"total_weights\":" << total_weights << ",\"flipped_weights\":" << flips
+                << ",\"flip_pct\":" << flip_pct << ",\"max_flip_pct\":" << max_flip_pct
+                << ",\"base_sha3_512\":\"" << sha3_512_hex(b_cat) << "\",\"candidate_sha3_512\":\""
+                << sha3_512_hex(c_cat) << "\"}";
+            structured = oss.str();
+          }
+        }
+      } else if (name == "t81.memory_search") {
+        const std::string ip_path = extract_str(line, "index_pos_path");
+        const std::string in_path = extract_str(line, "index_neg_path");
+        const std::string qp_path = extract_str(line, "query_pos_path");
+        const std::string qn_path = extract_str(line, "query_neg_path");
+        const std::string dim_str = extract_str(line, "dim");
+        const std::string k_str = extract_str(line, "top_k");
+        const size_t dim = static_cast<size_t>(std::strtoull(dim_str.c_str(), nullptr, 10));
+        const size_t top_k_req =
+            k_str.empty() ? 5 : static_cast<size_t>(std::strtoull(k_str.c_str(), nullptr, 10));
+        std::vector<uint8_t> ip, in, qp, qn;
+        if (dim == 0 || (dim % 64 != 0) || !read_file_bytes(ip_path, ip) ||
+            !read_file_bytes(in_path, in) || !read_file_bytes(qp_path, qp) ||
+            !read_file_bytes(qn_path, qn)) {
+          structured = "{\"ok\":false,\"error\":\"invalid dim or unreadable index/query files\"}";
+        } else {
+          const size_t row_bytes = (dim / 64) * 8;
+          if (ip.empty() || ip.size() != in.size() || (ip.size() % row_bytes != 0) ||
+              qp.size() != row_bytes || qn.size() != row_bytes) {
+            structured = "{\"ok\":false,\"error\":\"index/query byte size mismatch\"}";
+          } else {
+            const size_t W64 = dim / 64;
+            const size_t docs = ip.size() / row_bytes;
+            const size_t top_k = std::min(std::max<size_t>(top_k_req, 1), docs);
+            std::vector<uint64_t> qpw(W64), qnw(W64);
+            std::memcpy(qpw.data(), qp.data(), row_bytes);
+            std::memcpy(qnw.data(), qn.data(), row_bytes);
+
+            std::vector<int32_t> scores(docs, 0);
+            for (size_t d = 0; d < docs; ++d) {
+              int32_t acc = 0;
+              const uint8_t* dp = ip.data() + d * row_bytes;
+              const uint8_t* dn = in.data() + d * row_bytes;
+              for (size_t w = 0; w < W64; ++w) {
+                uint64_t bp = 0, bn = 0;
+                std::memcpy(&bp, dp + w * 8, 8);
+                std::memcpy(&bn, dn + w * 8, 8);
+                acc += std::popcount((qpw[w] & bp) | (qnw[w] & bn)) -
+                       std::popcount((qpw[w] & bn) | (qnw[w] & bp));
+              }
+              scores[d] = acc;
+            }
+
+            std::vector<size_t> idx(docs);
+            std::iota(idx.begin(), idx.end(), 0);
+            std::partial_sort(idx.begin(), idx.begin() + static_cast<std::ptrdiff_t>(top_k),
+                              idx.end(), [&](size_t a, size_t b) {
+                                if (scores[a] != scores[b]) return scores[a] > scores[b];
+                                return a < b;
+                              });
+
+            std::vector<uint8_t> idx_cat = ip;
+            idx_cat.insert(idx_cat.end(), in.begin(), in.end());
+            const std::string idx_sha = sha3_512_hex(idx_cat);
+
+            std::ostringstream res_arr;
+            std::string rec_canon = idx_sha + "|";
+            res_arr << "[";
+            for (size_t i = 0; i < top_k; ++i) {
+              if (i > 0) res_arr << ",";
+              res_arr << "{\"doc_id\":" << idx[i] << ",\"score\":" << scores[idx[i]] << "}";
+              rec_canon += std::to_string(idx[i]) + ":" + std::to_string(scores[idx[i]]) + ",";
+            }
+            res_arr << "]";
+            const std::vector<uint8_t> rec_bytes(rec_canon.begin(), rec_canon.end());
+            structured = "{\"ok\":true,\"docs_searched\":" + std::to_string(docs) +
+                         ",\"dim\":" + std::to_string(dim) + ",\"top_k\":" + std::to_string(top_k) +
+                         ",\"results\":" + res_arr.str() + ",\"index_sha3_512\":\"" + idx_sha +
+                         "\",\"retrieval_receipt\":\"" + sha3_512_hex(rec_bytes) + "\"}";
           }
         }
       }

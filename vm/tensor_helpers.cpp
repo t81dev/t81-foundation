@@ -1509,9 +1509,35 @@ bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
   out = t81::T729DynamicTensor({static_cast<int>(M), static_cast<int>(N)});
   float* c_data = out.data().data();
 
+  std::vector<std::size_t> active_pairs;
+  active_pairs.reserve(W64 / 2);
+  std::vector<std::size_t> active_words;
+  active_words.reserve(W64);
+
   for (std::size_t m = 0; m < M; ++m) {
     const std::uint64_t* ap = Ap.data() + m * W64;
     const std::uint64_t* an = An.data() + m * W64;
+
+    // Primitive #3: Pre-collect active non-zero 128-trit blocks once per row (O(W64)).
+    // Zero branch mispredictions in the N loop; skips empty MoE/ReLU2 activation blocks.
+    active_pairs.clear();
+    active_words.clear();
+    std::size_t w_scan = 0;
+    for (; w_scan + 2 <= W64; w_scan += 2) {
+      if ((ap[w_scan] | an[w_scan] | ap[w_scan + 1] | an[w_scan + 1]) != 0ULL) {
+        active_pairs.push_back(w_scan);
+        if ((ap[w_scan] | an[w_scan]) != 0ULL) active_words.push_back(w_scan);
+        if ((ap[w_scan + 1] | an[w_scan + 1]) != 0ULL) active_words.push_back(w_scan + 1);
+      }
+    }
+    const bool has_tail = (w_scan < W64) && ((ap[w_scan] | an[w_scan]) != 0ULL);
+    if (has_tail) active_words.push_back(w_scan);
+
+    if (active_words.empty()) {
+      std::fill(c_data + m * N, c_data + (m + 1) * N, 0.0f);
+      continue;
+    }
+
     std::size_t n = 0;
 #if defined(__aarch64__) && defined(__ARM_NEON)
     for (; n + 4 <= N; n += 4) {
@@ -1529,8 +1555,7 @@ bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
       uint16x8_t p2 = vdupq_n_u16(0), n2 = vdupq_n_u16(0);
       uint16x8_t p3 = vdupq_n_u16(0), n3 = vdupq_n_u16(0);
 
-      std::size_t w = 0;
-      for (; w + 2 <= W64; w += 2) {
+      for (const std::size_t w : active_pairs) {
         const uint8x16_t avp = vreinterpretq_u8_u64(vld1q_u64(ap + w));
         const uint8x16_t avn = vreinterpretq_u8_u64(vld1q_u64(an + w));
         auto acc = [&](const std::uint64_t* bp, const std::uint64_t* bn, uint16x8_t& pa,
@@ -1554,7 +1579,8 @@ bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
           static_cast<std::int32_t>(vaddlvq_u16(p2)) - static_cast<std::int32_t>(vaddlvq_u16(n2));
       std::int32_t s3 =
           static_cast<std::int32_t>(vaddlvq_u16(p3)) - static_cast<std::int32_t>(vaddlvq_u16(n3));
-      for (; w < W64; ++w) {
+      if (has_tail) {
+        const std::size_t w = w_scan;
         s0 += std::popcount((ap[w] & bp0[w]) | (an[w] & bn0[w])) -
               std::popcount((ap[w] & bn0[w]) | (an[w] & bp0[w]));
         s1 += std::popcount((ap[w] & bp1[w]) | (an[w] & bn1[w])) -
@@ -1574,7 +1600,7 @@ bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
       const std::uint64_t* bp = Bp.data() + n * W64;
       const std::uint64_t* bn = Bn.data() + n * W64;
       std::int32_t acc = 0;
-      for (std::size_t w = 0; w < W64; ++w) {
+      for (const std::size_t w : active_words) {
         acc += std::popcount((ap[w] & bp[w]) | (an[w] & bn[w])) -
                std::popcount((ap[w] & bn[w]) | (an[w] & bp[w]));
       }
