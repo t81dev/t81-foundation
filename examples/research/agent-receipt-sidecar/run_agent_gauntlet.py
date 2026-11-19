@@ -95,7 +95,7 @@ def main() -> int:
             init = client.call("initialize")
             assert init["result"]["serverInfo"]["name"] == "t81-receipt-sidecar"
             tools = client.call("tools/list")["result"]["tools"]
-            assert len(tools) == 4
+            assert len(tools) == 5
 
             # --- Experiment 1: Compromised-Agent Gauntlet ---
             unauthorized_side_effects = 0
@@ -210,6 +210,50 @@ def main() -> int:
                 unauthorized_side_effects += 1
             assert not ver_obs_shadow["ok"] and ver_obs_shadow["stage"] == "authority"
             scenarios["7_observe_shadow_receipt"] = "PASS (non-blocking emit, fail-closed verify rejects)"
+
+            # 8. Per-action-class .apl policy floor + t81.get_effective_policy introspection
+            policy_per_action = tmp / "policy_per_action.apl"
+            policy_per_action.write_text(
+                f'(policy\n'
+                f'  (tier 1)\n'
+                f'  (enforcement-mode "warn")\n'
+                f'  (action-policy "deploy_config" (enforcement-mode "fail-closed"))\n'
+                f'  (action-policy "read_metrics" (enforcement-mode "observe-only"))\n'
+                f'  (allowed-ternary-model-hashes ["{good_sha}"]))\n',
+                encoding="utf-8",
+            )
+            eff_deploy = client.tool(
+                "t81.get_effective_policy",
+                {"policy_path": str(policy_per_action), "action_type": "deploy_config"},
+            )
+            eff_metrics = client.tool(
+                "t81.get_effective_policy",
+                {"policy_path": str(policy_per_action), "action_type": "read_metrics"},
+            )
+            eff_default = client.tool(
+                "t81.get_effective_policy",
+                {"policy_path": str(policy_per_action), "action_type": "other_action"},
+            )
+            assert eff_deploy["policy_floor"] == "fail-closed"
+            assert eff_metrics["policy_floor"] == "observe-only"
+            assert eff_default["policy_floor"] == "warn"
+            gate_deploy_deny = client.tool(
+                "t81.gate_and_seal",
+                {
+                    "artifact_path": str(poisoned_artifact),
+                    "policy_path": str(policy_per_action),
+                    "canonfs_root": str(canonfs),
+                    "signing_key": str(priv),
+                    "public_key_uri": f"file://{pub}",
+                    "principal_id": "proposer-agent-01",
+                    "action_type": "deploy_config",
+                    "mode": "observe-only",
+                },
+            )
+            if gate_deploy_deny["ok"] or not gate_deploy_deny["blocked"]:
+                unauthorized_side_effects += 1
+            assert gate_deploy_deny["policy_floor"] == "fail-closed" and gate_deploy_deny["downgrade_attempt_blocked"]
+            scenarios["8_action_class_policy_introspection"] = "PASS (per-action floor enforced & introspectable)"
 
             # --- Experiment 2: 100-Call Warm Resident Latency Benchmark ---
             # Run BEFORE tampering with CanonFS objects!

@@ -99,8 +99,20 @@ def extract_allowed_hashes(policy_text: str) -> list[str]:
 MODE_RANK = {"observe-only": 0, "warn": 1, "fail-closed": 2}
 
 
-def extract_policy_mode(policy_text: str) -> str:
-    match = re.search(r'\(enforcement-mode\s+"(observe-only|warn|fail-closed)"\)', policy_text)
+def extract_policy_mode(policy_text: str, action_type: str | None = None) -> str:
+    """Resolve enforcement floor from .apl: action-policy overrides top-level, then env/fail-closed."""
+    if action_type:
+        ap_pat = (
+            r'\(action-policy\s+"'
+            + re.escape(action_type)
+            + r'"[^)]*\(enforcement-mode\s+"(observe-only|warn|fail-closed)"\)'
+        )
+        ap_match = re.search(ap_pat, policy_text, re.S)
+        if ap_match:
+            return ap_match.group(1)
+    # Strip action-policy blocks before checking top-level default enforcement-mode
+    stripped = re.sub(r'\(action-policy\s+"[^"]+"[^)]*\([^)]*\)[^)]*\)', "", policy_text, flags=re.S)
+    match = re.search(r'\(enforcement-mode\s+"(observe-only|warn|fail-closed)"\)', stripped)
     if match:
         return match.group(1)
     env_mode = os.environ.get("T81_ENFORCEMENT_MODE", "fail-closed")
@@ -165,7 +177,7 @@ def tool_gate_and_seal(args: dict[str, Any]) -> dict[str, Any]:
     policy_sha3_512 = "sha3-512:" + hashlib.sha3_512(policy_bytes).hexdigest()
     allowed = extract_allowed_hashes(policy_text)
 
-    policy_mode = extract_policy_mode(policy_text)
+    policy_mode = extract_policy_mode(policy_text, action_type)
     effective_mode, downgrade_attempt = resolve_enforcement_mode(policy_mode, args.get("mode"))
     admitted = artifact_sha3_512 in allowed
 
@@ -175,6 +187,7 @@ def tool_gate_and_seal(args: dict[str, Any]) -> dict[str, Any]:
             "ok": False,
             "decision": "DENY",
             "verdict": "DENY",
+            "policy_floor": policy_mode,
             "mode_applied": effective_mode,
             "downgrade_attempt_blocked": downgrade_attempt,
             "blocked": True,
@@ -255,12 +268,31 @@ def tool_gate_and_seal(args: dict[str, Any]) -> dict[str, Any]:
         "ok": True,
         "decision": true_verdict,
         "verdict": true_verdict,
+        "policy_floor": policy_mode,
         "mode_applied": effective_mode,
         "downgrade_attempt_blocked": downgrade_attempt,
         "blocked": False,
         "reason": reason,
         "bundle": bundle,
         "receipt": bundle,
+    }
+
+
+def tool_get_effective_policy(args: dict[str, Any]) -> dict[str, Any]:
+    policy_path = Path(args["policy_path"])
+    if not policy_path.is_file():
+        return {"ok": False, "error": f"missing policy file: {policy_path}"}
+    policy_bytes = policy_path.read_bytes()
+    policy_text = policy_bytes.decode("utf-8")
+    action_type = args.get("action_type")
+    policy_floor = extract_policy_mode(policy_text, action_type)
+    return {
+        "ok": True,
+        "policy_id": policy_path.name,
+        "policy_hash": "sha3-512:" + hashlib.sha3_512(policy_bytes).hexdigest(),
+        "action_type": action_type,
+        "policy_floor": policy_floor,
+        "allowed_hash_count": len(extract_allowed_hashes(policy_text)),
     }
 
 
@@ -317,6 +349,10 @@ TOOLS = {
     "t81.verify_receipt": {
         "description": "Verify an RFC-00D4 Accountable Decision Bundle offline (schema, policy, Ed25519 signature, optional CanonFS fsck).",
         "handler": tool_verify_receipt,
+    },
+    "t81.get_effective_policy": {
+        "description": "Introspect the authoritative .apl policy floor and digest for a given action class.",
+        "handler": tool_get_effective_policy,
     },
     "t81.canonfs_fsck": {
         "description": "Run `t81 canonfs fsck --verify-hashes --json` on a CanonFS root.",
