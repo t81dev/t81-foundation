@@ -48,6 +48,7 @@ cmake.args = [
   "-DT81_BUILD_BENCHMARKS=OFF",
 ]
 cmake.build-type = "Release"
+build.targets = ["_t81"]
 
 # Pure-Python package lives in ffi/python/t81/; the compiled _t81 extension is
 # installed into t81/ by the CMake install() rule and picked up automatically.
@@ -75,6 +76,10 @@ manylinux-x86_64-image  = "manylinux_2_28"
 manylinux-aarch64-image = "manylinux_2_28"
 before-all = "dnf install -y gcc-toolset-13 gcc-toolset-13-gcc-c++ gcc-toolset-13-libstdc++-devel"
 environment = {CC = "/opt/rh/gcc-toolset-13/root/usr/bin/gcc", CXX = "/opt/rh/gcc-toolset-13/root/usr/bin/g++"}
+
+[tool.cibuildwheel.macos]
+# std::filesystem::path requires macOS 10.15+
+environment = {MACOSX_DEPLOYMENT_TARGET = "10.15"}
 
 # Per-platform arch is controlled by CIBW_ARCHS in the workflow matrix,
 # one runner per architecture, to avoid cross-compilation failures.
