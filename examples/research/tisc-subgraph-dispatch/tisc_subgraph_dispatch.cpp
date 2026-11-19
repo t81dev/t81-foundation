@@ -1,9 +1,12 @@
 // Stage 3: Narrowed TISC Tensor + Policy Subgraph Static Verifier & Heterogeneous Dispatcher
 // Consumes locked v2.0.0 t81::tisc::Program / Opcode / encode() + t81::crypto::sha3_512().
 // Demonstrates:
-//   1. ~60-line static pre-execution verifier enforcing WeightsLoad -> ChkShape -> AxVerify -> TMatMul
-//   2. Fail-closed rejection of adversarial subgraphs (missing AxVerify, missing ChkShape, tampered weights)
-//   3. Zero-copy heterogeneous dispatch of the SAME verified TISC bytecode to CPU NEON & Fused Metal GPU
+//   1. ~60-line static pre-execution verifier enforcing WeightsLoad -> ChkShape -> AxVerify ->
+//   TMatMul
+//   2. Fail-closed rejection of adversarial subgraphs (missing AxVerify, missing ChkShape, tampered
+//   weights)
+//   3. Zero-copy heterogeneous dispatch of the SAME verified TISC bytecode to CPU NEON & Fused
+//   Metal GPU
 //      producing identical SHA3-512 execution receipts.
 
 #if defined(__APPLE__) && defined(__OBJC__)
@@ -77,7 +80,8 @@ VerifyResult verify_tisc_subgraph(const Program& prog) {
       case Opcode::TMatMul:
         if (!loaded_weights.contains(insn.c)) return {false, "REJECT_UNLOADED_WEIGHT", matmuls};
         if (!shaped_weights.contains(insn.c)) return {false, "REJECT_UNCHECKED_SHAPE", matmuls};
-        if (!policy_verified_weights.contains(insn.c)) return {false, "REJECT_UNVERIFIED_POLICY", matmuls};
+        if (!policy_verified_weights.contains(insn.c))
+          return {false, "REJECT_UNVERIFIED_POLICY", matmuls};
         ++matmuls;
         break;
       case Opcode::Halt:
@@ -128,20 +132,27 @@ kernel void dualrail_gemv_m1(
   if (simd_lane == 0) C[n] = acc;
 }
 )";
-struct GemvDims { uint32_t K; uint32_t N; uint32_t W32; };
+struct GemvDims {
+  uint32_t K;
+  uint32_t N;
+  uint32_t W32;
+};
 #endif
 
-void cpu_dualrail_gemv(const uint64_t* ap, const uint64_t* an,
-                       const uint64_t* Bp, const uint64_t* Bn,
-                       int32_t* C, size_t K, size_t N) {
+void cpu_dualrail_gemv(const uint64_t* ap, const uint64_t* an, const uint64_t* Bp,
+                       const uint64_t* Bn, int32_t* C, size_t K, size_t N) {
   const size_t W64 = K / 64;
   size_t n = 0;
 #if defined(__aarch64__) && defined(__ARM_NEON)
   for (; n + 4 <= N; n += 4) {
-    const uint64_t* bp0 = Bp + (n + 0) * W64; const uint64_t* bn0 = Bn + (n + 0) * W64;
-    const uint64_t* bp1 = Bp + (n + 1) * W64; const uint64_t* bn1 = Bn + (n + 1) * W64;
-    const uint64_t* bp2 = Bp + (n + 2) * W64; const uint64_t* bn2 = Bn + (n + 2) * W64;
-    const uint64_t* bp3 = Bp + (n + 3) * W64; const uint64_t* bn3 = Bn + (n + 3) * W64;
+    const uint64_t* bp0 = Bp + (n + 0) * W64;
+    const uint64_t* bn0 = Bn + (n + 0) * W64;
+    const uint64_t* bp1 = Bp + (n + 1) * W64;
+    const uint64_t* bn1 = Bn + (n + 1) * W64;
+    const uint64_t* bp2 = Bp + (n + 2) * W64;
+    const uint64_t* bn2 = Bn + (n + 2) * W64;
+    const uint64_t* bp3 = Bp + (n + 3) * W64;
+    const uint64_t* bn3 = Bn + (n + 3) * W64;
     uint16x8_t p0 = vdupq_n_u16(0), n0 = vdupq_n_u16(0);
     uint16x8_t p1 = vdupq_n_u16(0), n1 = vdupq_n_u16(0);
     uint16x8_t p2 = vdupq_n_u16(0), n2 = vdupq_n_u16(0);
@@ -155,8 +166,10 @@ void cpu_dualrail_gemv(const uint64_t* ap, const uint64_t* an,
         pa = vpadalq_u8(pa, vcntq_u8(vorrq_u8(vandq_u8(avp, bvp), vandq_u8(avn, bvn))));
         na = vpadalq_u8(na, vcntq_u8(vorrq_u8(vandq_u8(avp, bvn), vandq_u8(avn, bvp))));
       };
-      acc(bp0, bn0, p0, n0); acc(bp1, bn1, p1, n1);
-      acc(bp2, bn2, p2, n2); acc(bp3, bn3, p3, n3);
+      acc(bp0, bn0, p0, n0);
+      acc(bp1, bn1, p1, n1);
+      acc(bp2, bn2, p2, n2);
+      acc(bp3, bn3, p3, n3);
     }
     C[n + 0] = static_cast<int32_t>(vaddlvq_u16(p0)) - static_cast<int32_t>(vaddlvq_u16(n0));
     C[n + 1] = static_cast<int32_t>(vaddlvq_u16(p1)) - static_cast<int32_t>(vaddlvq_u16(n1));
@@ -212,8 +225,8 @@ int main() {
   };
   const auto neg2 = verify_tisc_subgraph(bad_no_shape);
 
-  if (neg1.ok || neg1.code != "REJECT_UNVERIFIED_POLICY" ||
-      neg2.ok || neg2.code != "REJECT_UNCHECKED_SHAPE") {
+  if (neg1.ok || neg1.code != "REJECT_UNVERIFIED_POLICY" || neg2.ok ||
+      neg2.code != "REJECT_UNCHECKED_SHAPE") {
     std::cerr << "FAIL: static verifier failed to reject adversarial TISC subgraphs\n";
     return 1;
   }
@@ -230,7 +243,7 @@ int main() {
   Program prog;
   for (int32_t l = 0; l < kLayers; ++l) {
     const int32_t w_proj = 100 + l * 2;
-    const int32_t w_ffn  = 100 + l * 2 + 1;
+    const int32_t w_ffn = 100 + l * 2 + 1;
     prog.insns.push_back(Insn{Opcode::WeightsLoad, w_proj, l * 2, 0});
     prog.insns.push_back(Insn{Opcode::ChkShape, w_proj, K, N_proj});
     prog.insns.push_back(Insn{Opcode::AxVerify, 1, w_proj, 0});
@@ -286,14 +299,20 @@ int main() {
     NSError* err = nil;
     id<MTLLibrary> lib = [device newLibraryWithSource:kMetalSource options:nil error:&err];
     id<MTLComputePipelineState> pso =
-        [device newComputePipelineStateWithFunction:[lib newFunctionWithName:@"dualrail_gemv_m1"] error:&err];
+        [device newComputePipelineStateWithFunction:[lib newFunctionWithName:@"dualrail_gemv_m1"]
+                                              error:&err];
     id<MTLCommandQueue> queue = [device newCommandQueue];
 
-    id<MTLBuffer> buf_Ap = [device newBufferWithLength:W64 * sizeof(uint64_t) options:MTLResourceStorageModeShared];
-    id<MTLBuffer> buf_An = [device newBufferWithLength:W64 * sizeof(uint64_t) options:MTLResourceStorageModeShared];
-    id<MTLBuffer> buf_Bp = [device newBufferWithLength:total_words * sizeof(uint64_t) options:MTLResourceStorageModeShared];
-    id<MTLBuffer> buf_Bn = [device newBufferWithLength:total_words * sizeof(uint64_t) options:MTLResourceStorageModeShared];
-    id<MTLBuffer> buf_C  = [device newBufferWithLength:total_out * sizeof(int32_t) options:MTLResourceStorageModeShared];
+    id<MTLBuffer> buf_Ap =
+        [device newBufferWithLength:W64 * sizeof(uint64_t) options:MTLResourceStorageModeShared];
+    id<MTLBuffer> buf_An =
+        [device newBufferWithLength:W64 * sizeof(uint64_t) options:MTLResourceStorageModeShared];
+    id<MTLBuffer> buf_Bp = [device newBufferWithLength:total_words * sizeof(uint64_t)
+                                               options:MTLResourceStorageModeShared];
+    id<MTLBuffer> buf_Bn = [device newBufferWithLength:total_words * sizeof(uint64_t)
+                                               options:MTLResourceStorageModeShared];
+    id<MTLBuffer> buf_C = [device newBufferWithLength:total_out * sizeof(int32_t)
+                                              options:MTLResourceStorageModeShared];
 
     uint64_t* Ap = static_cast<uint64_t*>([buf_Ap contents]);
     uint64_t* An = static_cast<uint64_t*>([buf_An contents]);
@@ -315,7 +334,8 @@ int main() {
         const bool is_ffn = (op_idx % 2) == 1;
         const size_t w_off = static_cast<size_t>(layer) * layer_words + (is_ffn ? proj_words : 0);
         const size_t c_off = static_cast<size_t>(layer) * (N_proj + N_ffn) + (is_ffn ? N_proj : 0);
-        cpu_dualrail_gemv(Ap, An, Bp + w_off, Bn + w_off, out_cpu.data() + c_off, K, is_ffn ? N_ffn : N_proj);
+        cpu_dualrail_gemv(Ap, An, Bp + w_off, Bn + w_off, out_cpu.data() + c_off, K,
+                          is_ffn ? N_ffn : N_proj);
       }
     };
     run_cpu();  // warmup
@@ -339,12 +359,16 @@ int main() {
         const int32_t layer = op_idx / 2;
         const bool is_ffn = (op_idx % 2) == 1;
         const uint32_t N_cur = is_ffn ? N_ffn : N_proj;
-        const size_t w_off = (static_cast<size_t>(layer) * layer_words + (is_ffn ? proj_words : 0)) * sizeof(uint64_t);
-        const size_t c_off = (static_cast<size_t>(layer) * (N_proj + N_ffn) + (is_ffn ? N_proj : 0)) * sizeof(int32_t);
+        const size_t w_off =
+            (static_cast<size_t>(layer) * layer_words + (is_ffn ? proj_words : 0)) *
+            sizeof(uint64_t);
+        const size_t c_off =
+            (static_cast<size_t>(layer) * (N_proj + N_ffn) + (is_ffn ? N_proj : 0)) *
+            sizeof(int32_t);
         GemvDims dims{static_cast<uint32_t>(K), N_cur, static_cast<uint32_t>(K / 32)};
         [enc setBuffer:buf_Bp offset:w_off atIndex:2];
         [enc setBuffer:buf_Bn offset:w_off atIndex:3];
-        [enc setBuffer:buf_C  offset:c_off atIndex:4];
+        [enc setBuffer:buf_C offset:c_off atIndex:4];
         [enc setBytes:&dims length:sizeof(dims) atIndex:5];
         [enc dispatchThreadgroups:MTLSizeMake((N_cur + simds_per_tg - 1) / simds_per_tg, 1, 1)
             threadsPerThreadgroup:MTLSizeMake(tg_threads, 1, 1)];
@@ -381,7 +405,8 @@ int main() {
       const bool is_ffn = (op_idx % 2) == 1;
       const size_t w_off = static_cast<size_t>(layer) * layer_words + (is_ffn ? proj_words : 0);
       const size_t c_off = static_cast<size_t>(layer) * (N_proj + N_ffn) + (is_ffn ? N_proj : 0);
-      cpu_dualrail_gemv(Ap.data(), An.data(), Bp.data() + w_off, Bn.data() + w_off, out_cpu.data() + c_off, K, is_ffn ? N_ffn : N_proj);
+      cpu_dualrail_gemv(Ap.data(), An.data(), Bp.data() + w_off, Bn.data() + w_off,
+                        out_cpu.data() + c_off, K, is_ffn ? N_ffn : N_proj);
     }
   };
   run_cpu();
@@ -407,7 +432,8 @@ int main() {
             << "  \"cpu_dualrail_ms\": " << cpu_ms << ",\n"
             << "  \"gpu_fused_dualrail_ms\": " << gpu_ms << ",\n"
             << "  \"gpu_vs_cpu_speedup\": " << (gpu_ms > 0.0 ? (cpu_ms / gpu_ms) : 1.0) << ",\n"
-            << "  \"cross_device_receipt_exact_match\": " << (receipt_cpu == receipt_gpu ? "true" : "false") << ",\n"
+            << "  \"cross_device_receipt_exact_match\": "
+            << (receipt_cpu == receipt_gpu ? "true" : "false") << ",\n"
             << "  \"execution_receipt\": \"" << receipt_cpu << "\"\n"
             << "}\n";
   return 0;

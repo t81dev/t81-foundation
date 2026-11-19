@@ -43,8 +43,8 @@ struct DualRail64 {
 
 #if defined(__aarch64__) && defined(__ARM_NEON)
     const int8x16_t zero = vdupq_n_s8(0);
-    static constexpr uint8_t kBitWeights[16] = {
-        1, 2, 4, 8, 16, 32, 64, 128, 1, 2, 4, 8, 16, 32, 64, 128};
+    static constexpr uint8_t kBitWeights[16] = {1, 2, 4, 8, 16, 32, 64, 128,
+                                                1, 2, 4, 8, 16, 32, 64, 128};
     const uint8x16_t weights = vld1q_u8(kBitWeights);
 
     for (; w < full_words; ++w) {
@@ -91,8 +91,10 @@ struct DualRail64 {
       for (size_t i = base; i < lim; ++i) {
         const int8_t t = src[i];
         const uint64_t bit = 1ULL << (i - base);
-        if (t > 0) p |= bit;
-        else if (t < 0) n |= bit;
+        if (t > 0)
+          p |= bit;
+        else if (t < 0)
+          n |= bit;
       }
       dr.pos[w] = p;
       dr.neg[w] = n;
@@ -108,8 +110,8 @@ struct DualRail64 {
     size_t w = 0;
 
 #if defined(__aarch64__) && defined(__ARM_NEON)
-    static constexpr uint8_t kBitWeights[16] = {
-        1, 2, 4, 8, 16, 32, 64, 128, 1, 2, 4, 8, 16, 32, 64, 128};
+    static constexpr uint8_t kBitWeights[16] = {1, 2, 4, 8, 16, 32, 64, 128,
+                                                1, 2, 4, 8, 16, 32, 64, 128};
     const uint8x16_t weights = vld1q_u8(kBitWeights);
     static constexpr uint8_t kShuffleIdx[4][16] = {
         {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1},

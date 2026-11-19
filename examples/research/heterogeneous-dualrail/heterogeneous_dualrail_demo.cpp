@@ -1,6 +1,7 @@
 // Heterogeneous Dual-Rail (P, N) CPU <-> GPU Capability & Verification Demo
 // Portable C++23 with zero-copy Apple Silicon Metal GPU path on macOS (__APPLE__ && __OBJC__).
-// Verifies bit-exact SHA3-512 output equivalence across CPU int8, CPU DualRail, and Fused GPU DualRail.
+// Verifies bit-exact SHA3-512 output equivalence across CPU int8, CPU DualRail, and Fused GPU
+// DualRail.
 
 #if defined(__APPLE__) && defined(__OBJC__)
 #import <Foundation/Foundation.h>
@@ -12,6 +13,10 @@
 
 #if defined(__aarch64__) && defined(__ARM_NEON)
 #include <arm_neon.h>
+#endif
+
+#if defined(__x86_64__) && defined(__AVX2__)
+#include <immintrin.h>
 #endif
 
 #include "t81/crypto/sha3.hpp"
@@ -90,13 +95,13 @@ struct GemvDims {
 };
 #endif
 
-void pack_dualrail_into(const int8_t* src, uint64_t* dst_p, uint64_t* dst_n,
-                        size_t rows, size_t cols) {
+void pack_dualrail_into(const int8_t* src, uint64_t* dst_p, uint64_t* dst_n, size_t rows,
+                        size_t cols) {
   const size_t W64 = cols / 64;
 #if defined(__aarch64__) && defined(__ARM_NEON)
   const int8x16_t zero = vdupq_n_s8(0);
-  static constexpr uint8_t kBitWeights[16] = {
-      1, 2, 4, 8, 16, 32, 64, 128, 1, 2, 4, 8, 16, 32, 64, 128};
+  static constexpr uint8_t kBitWeights[16] = {1, 2, 4, 8, 16, 32, 64, 128,
+                                              1, 2, 4, 8, 16, 32, 64, 128};
   const uint8x16_t weights = vld1q_u8(kBitWeights);
 #endif
   for (size_t r = 0; r < rows; ++r) {
@@ -120,12 +125,25 @@ void pack_dualrail_into(const int8_t* src, uint64_t* dst_p, uint64_t* dst_n,
           vpaddq_u8(vandq_u8(vcltq_s8(v0, zero), weights), vandq_u8(vcltq_s8(v1, zero), weights)),
           vpaddq_u8(vandq_u8(vcltq_s8(v2, zero), weights), vandq_u8(vcltq_s8(v3, zero), weights)));
       dn[w] = vgetq_lane_u64(vreinterpretq_u64_u8(vpaddq_u8(nq, nq)), 0);
+#elif defined(__x86_64__) && defined(__AVX2__)
+      const int8_t* p = row + w * 64;
+      const __m256i z = _mm256_setzero_si256();
+      const __m256i v0 = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(p + 0));
+      const __m256i v1 = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(p + 32));
+      const uint32_t plo = static_cast<uint32_t>(_mm256_movemask_epi8(_mm256_cmpgt_epi8(v0, z)));
+      const uint32_t phi = static_cast<uint32_t>(_mm256_movemask_epi8(_mm256_cmpgt_epi8(v1, z)));
+      const uint32_t nlo = static_cast<uint32_t>(_mm256_movemask_epi8(_mm256_cmpgt_epi8(z, v0)));
+      const uint32_t nhi = static_cast<uint32_t>(_mm256_movemask_epi8(_mm256_cmpgt_epi8(z, v1)));
+      dp[w] = static_cast<uint64_t>(plo) | (static_cast<uint64_t>(phi) << 32);
+      dn[w] = static_cast<uint64_t>(nlo) | (static_cast<uint64_t>(nhi) << 32);
 #else
       uint64_t p = 0, n = 0;
       const int8_t* ptr = row + w * 64;
       for (size_t i = 0; i < 64; ++i) {
-        if (ptr[i] > 0) p |= (1ULL << i);
-        else if (ptr[i] < 0) n |= (1ULL << i);
+        if (ptr[i] > 0)
+          p |= (1ULL << i);
+        else if (ptr[i] < 0)
+          n |= (1ULL << i);
       }
       dp[w] = p;
       dn[w] = n;
@@ -134,17 +152,20 @@ void pack_dualrail_into(const int8_t* src, uint64_t* dst_p, uint64_t* dst_n,
   }
 }
 
-void cpu_dualrail_gemv(const uint64_t* ap, const uint64_t* an,
-                       const uint64_t* Bp, const uint64_t* Bn,
-                       int32_t* C, size_t K, size_t N) {
+void cpu_dualrail_gemv(const uint64_t* ap, const uint64_t* an, const uint64_t* Bp,
+                       const uint64_t* Bn, int32_t* C, size_t K, size_t N) {
   const size_t W64 = K / 64;
   size_t n = 0;
 #if defined(__aarch64__) && defined(__ARM_NEON)
   for (; n + 4 <= N; n += 4) {
-    const uint64_t* bp0 = Bp + (n + 0) * W64; const uint64_t* bn0 = Bn + (n + 0) * W64;
-    const uint64_t* bp1 = Bp + (n + 1) * W64; const uint64_t* bn1 = Bn + (n + 1) * W64;
-    const uint64_t* bp2 = Bp + (n + 2) * W64; const uint64_t* bn2 = Bn + (n + 2) * W64;
-    const uint64_t* bp3 = Bp + (n + 3) * W64; const uint64_t* bn3 = Bn + (n + 3) * W64;
+    const uint64_t* bp0 = Bp + (n + 0) * W64;
+    const uint64_t* bn0 = Bn + (n + 0) * W64;
+    const uint64_t* bp1 = Bp + (n + 1) * W64;
+    const uint64_t* bn1 = Bn + (n + 1) * W64;
+    const uint64_t* bp2 = Bp + (n + 2) * W64;
+    const uint64_t* bn2 = Bn + (n + 2) * W64;
+    const uint64_t* bp3 = Bp + (n + 3) * W64;
+    const uint64_t* bn3 = Bn + (n + 3) * W64;
 
     uint16x8_t p0 = vdupq_n_u16(0), n0 = vdupq_n_u16(0);
     uint16x8_t p1 = vdupq_n_u16(0), n1 = vdupq_n_u16(0);
@@ -169,6 +190,43 @@ void cpu_dualrail_gemv(const uint64_t* ap, const uint64_t* an,
     C[n + 1] = static_cast<int32_t>(vaddlvq_u16(p1)) - static_cast<int32_t>(vaddlvq_u16(n1));
     C[n + 2] = static_cast<int32_t>(vaddlvq_u16(p2)) - static_cast<int32_t>(vaddlvq_u16(n2));
     C[n + 3] = static_cast<int32_t>(vaddlvq_u16(p3)) - static_cast<int32_t>(vaddlvq_u16(n3));
+  }
+#elif defined(__x86_64__) && defined(__AVX2__)
+  const __m256i low_mask = _mm256_set1_epi8(0x0F);
+  const __m256i lut = _mm256_setr_epi8(0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4, 0, 1, 1, 2,
+                                       1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4);
+  const __m256i zero = _mm256_setzero_si256();
+  auto popcnt256 = [&](__m256i v) noexcept {
+    const __m256i lo = _mm256_and_si256(v, low_mask);
+    const __m256i hi = _mm256_and_si256(_mm256_srli_epi16(v, 4), low_mask);
+    return _mm256_sad_epu8(
+        _mm256_add_epi8(_mm256_shuffle_epi8(lut, lo), _mm256_shuffle_epi8(lut, hi)), zero);
+  };
+  for (; n < N; ++n) {
+    const uint64_t* bp = Bp + n * W64;
+    const uint64_t* bn = Bn + n * W64;
+    __m256i pa = zero, na = zero;
+    size_t w = 0;
+    for (; w + 4 <= W64; w += 4) {
+      const __m256i avp = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(ap + w));
+      const __m256i avn = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(an + w));
+      const __m256i bvp = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(bp + w));
+      const __m256i bvn = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(bn + w));
+      const __m256i same = _mm256_or_si256(_mm256_and_si256(avp, bvp), _mm256_and_si256(avn, bvn));
+      const __m256i diff = _mm256_or_si256(_mm256_and_si256(avp, bvn), _mm256_and_si256(avn, bvp));
+      pa = _mm256_add_epi64(pa, popcnt256(same));
+      na = _mm256_add_epi64(na, popcnt256(diff));
+    }
+    alignas(32) int64_t p_lanes[4], n_lanes[4];
+    _mm256_store_si256(reinterpret_cast<__m256i*>(p_lanes), pa);
+    _mm256_store_si256(reinterpret_cast<__m256i*>(n_lanes), na);
+    int32_t acc = static_cast<int32_t>((p_lanes[0] + p_lanes[1] + p_lanes[2] + p_lanes[3]) -
+                                       (n_lanes[0] + n_lanes[1] + n_lanes[2] + n_lanes[3]));
+    for (; w < W64; ++w) {
+      acc += std::popcount((ap[w] & bp[w]) | (an[w] & bn[w])) -
+             std::popcount((ap[w] & bn[w]) | (an[w] & bp[w]));
+    }
+    C[n] = acc;
   }
 #endif
   for (; n < N; ++n) {
@@ -270,15 +328,22 @@ int main(int argc, char** argv) {
     NSError* err = nil;
     id<MTLLibrary> lib = [device newLibraryWithSource:kMetalSource options:nil error:&err];
     id<MTLComputePipelineState> pso =
-        [device newComputePipelineStateWithFunction:[lib newFunctionWithName:@"dualrail_gemv_m1"] error:&err];
+        [device newComputePipelineStateWithFunction:[lib newFunctionWithName:@"dualrail_gemv_m1"]
+                                              error:&err];
     id<MTLCommandQueue> queue = [device newCommandQueue];
 
-    id<MTLBuffer> buf_Ap = [device newBufferWithLength:W64 * sizeof(uint64_t) options:MTLResourceStorageModeShared];
-    id<MTLBuffer> buf_An = [device newBufferWithLength:W64 * sizeof(uint64_t) options:MTLResourceStorageModeShared];
-    id<MTLBuffer> buf_Bp = [device newBufferWithLength:total_words * sizeof(uint64_t) options:MTLResourceStorageModeShared];
-    id<MTLBuffer> buf_Bn = [device newBufferWithLength:total_words * sizeof(uint64_t) options:MTLResourceStorageModeShared];
-    id<MTLBuffer> buf_C_proj = [device newBufferWithLength:layers * N_proj * sizeof(int32_t) options:MTLResourceStorageModeShared];
-    id<MTLBuffer> buf_C_ffn  = [device newBufferWithLength:layers * N_ffn  * sizeof(int32_t) options:MTLResourceStorageModeShared];
+    id<MTLBuffer> buf_Ap =
+        [device newBufferWithLength:W64 * sizeof(uint64_t) options:MTLResourceStorageModeShared];
+    id<MTLBuffer> buf_An =
+        [device newBufferWithLength:W64 * sizeof(uint64_t) options:MTLResourceStorageModeShared];
+    id<MTLBuffer> buf_Bp = [device newBufferWithLength:total_words * sizeof(uint64_t)
+                                               options:MTLResourceStorageModeShared];
+    id<MTLBuffer> buf_Bn = [device newBufferWithLength:total_words * sizeof(uint64_t)
+                                               options:MTLResourceStorageModeShared];
+    id<MTLBuffer> buf_C_proj = [device newBufferWithLength:layers * N_proj * sizeof(int32_t)
+                                                   options:MTLResourceStorageModeShared];
+    id<MTLBuffer> buf_C_ffn = [device newBufferWithLength:layers * N_ffn * sizeof(int32_t)
+                                                  options:MTLResourceStorageModeShared];
 
     uint64_t* Ap = static_cast<uint64_t*>([buf_Ap contents]);
     uint64_t* An = static_cast<uint64_t*>([buf_An contents]);
@@ -299,7 +364,8 @@ int main(int argc, char** argv) {
       for (size_t l = 0; l < layers; ++l) {
         const size_t off_p = l * layer_words;
         const size_t off_f = off_p + proj_words;
-        cpu_dualrail_gemv(Ap, An, Bp + off_p, Bn + off_p, C_cpu_proj.data() + l * N_proj, K, N_proj);
+        cpu_dualrail_gemv(Ap, An, Bp + off_p, Bn + off_p, C_cpu_proj.data() + l * N_proj, K,
+                          N_proj);
         cpu_dualrail_gemv(Ap, An, Bp + off_f, Bn + off_f, C_cpu_ffn.data() + l * N_ffn, K, N_ffn);
       }
     };
@@ -344,8 +410,9 @@ int main(int argc, char** argv) {
     const int32_t* G_proj = static_cast<const int32_t*>([buf_C_proj contents]);
     const int32_t* G_ffn = static_cast<const int32_t*>([buf_C_ffn contents]);
 
-    const bool l0_i8_ok = (hash_i32(c0_i8_proj.data(), N_proj) == hash_i32(C_cpu_proj.data(), N_proj)) &&
-                          (hash_i32(c0_i8_ffn.data(), N_ffn) == hash_i32(C_cpu_ffn.data(), N_ffn));
+    const bool l0_i8_ok =
+        (hash_i32(c0_i8_proj.data(), N_proj) == hash_i32(C_cpu_proj.data(), N_proj)) &&
+        (hash_i32(c0_i8_ffn.data(), N_ffn) == hash_i32(C_cpu_ffn.data(), N_ffn));
     const std::string h_cpu_p = hash_i32(C_cpu_proj.data(), C_cpu_proj.size());
     const std::string h_gpu_p = hash_i32(G_proj, C_cpu_proj.size());
     const std::string h_cpu_f = hash_i32(C_cpu_ffn.data(), C_cpu_ffn.size());
@@ -368,7 +435,8 @@ int main(int argc, char** argv) {
               << "  \"device\": \"" << [[device name] UTF8String] << "\",\n"
               << "  \"unified_memory\": " << ([device hasUnifiedMemory] ? "true" : "false") << ",\n"
               << "  \"layers\": " << layers << ",\n"
-              << "  \"dualrail_weight_mb\": " << (static_cast<double>(total_dr_bytes) / (1024.0 * 1024.0)) << ",\n"
+              << "  \"dualrail_weight_mb\": "
+              << (static_cast<double>(total_dr_bytes) / (1024.0 * 1024.0)) << ",\n"
               << "  \"bit_exact_cross_device_sha3_512\": true,\n"
               << "  \"proj_digest\": \"sha3-512:" << h_cpu_p << "\",\n"
               << "  \"ffn_digest\": \"sha3-512:" << h_cpu_f << "\",\n"
@@ -406,8 +474,10 @@ int main(int argc, char** argv) {
     for (size_t l = 0; l < layers; ++l) {
       const size_t off_p = l * layer_words;
       const size_t off_f = off_p + proj_words;
-      cpu_dualrail_gemv(Ap.data(), An.data(), Bp.data() + off_p, Bn.data() + off_p, C_cpu_proj.data() + l * N_proj, K, N_proj);
-      cpu_dualrail_gemv(Ap.data(), An.data(), Bp.data() + off_f, Bn.data() + off_f, C_cpu_ffn.data() + l * N_ffn, K, N_ffn);
+      cpu_dualrail_gemv(Ap.data(), An.data(), Bp.data() + off_p, Bn.data() + off_p,
+                        C_cpu_proj.data() + l * N_proj, K, N_proj);
+      cpu_dualrail_gemv(Ap.data(), An.data(), Bp.data() + off_f, Bn.data() + off_f,
+                        C_cpu_ffn.data() + l * N_ffn, K, N_ffn);
     }
   };
   const double ms_cpu_dr = measure_ms(run_cpu_dr, 3);

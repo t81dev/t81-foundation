@@ -303,7 +303,8 @@ Token Lexer::number() {
       advance();  // consume hex digit or separator
     }
     // Check for BigInt Base81 t81 suffix
-    if (peek() == 't' && peek_next() == '8' && (_current + 2 < _source.end()) && *(_current + 2) == '1') {
+    if (peek() == 't' && peek_next() == '8' && (_current + 2 < _source.end()) &&
+        *(_current + 2) == '1') {
       advance();
       advance();
       advance();
@@ -318,7 +319,8 @@ Token Lexer::number() {
     while (peek() == '0' || peek() == '1' || peek() == '_') {
       advance();
     }
-    if (peek() == 't' && peek_next() == '8' && (_current + 2 < _source.end()) && *(_current + 2) == '1') {
+    if (peek() == 't' && peek_next() == '8' && (_current + 2 < _source.end()) &&
+        *(_current + 2) == '1') {
       advance();
       advance();
       advance();
@@ -333,7 +335,8 @@ Token Lexer::number() {
     while ((peek() >= '0' && peek() <= '7') || peek() == '_') {
       advance();
     }
-    if (peek() == 't' && peek_next() == '8' && (_current + 2 < _source.end()) && *(_current + 2) == '1') {
+    if (peek() == 't' && peek_next() == '8' && (_current + 2 < _source.end()) &&
+        *(_current + 2) == '1') {
       advance();
       advance();
       advance();
