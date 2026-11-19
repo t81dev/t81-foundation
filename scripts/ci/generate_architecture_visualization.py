@@ -3092,22 +3092,17 @@ def build_coverage_manifest():
             "vm": "sub.layer.2_exec.t81vm, mod.vm.interpreter_core, mod.vm.system_registers, sub.layer.2_exec.jit_engine"
         },
         "unmapped": {
+            "archive": "Directory archive/ not yet explicitly modeled as standalone nodes in visualization dataset.",
             "artifacts": "Directory artifacts/ not yet explicitly modeled as standalone nodes in visualization dataset.",
             "benchmarks": "Directory benchmarks/ not yet explicitly modeled as standalone nodes in visualization dataset.",
             "cmake": "Directory cmake/ not yet explicitly modeled as standalone nodes in visualization dataset.",
             "contracts": "Directory contracts/ not yet explicitly modeled as standalone nodes in visualization dataset.",
-            "customer_tools": "Directory customer_tools/ not yet explicitly modeled as standalone nodes in visualization dataset.",
-            "development_tests": "Directory development_tests/ not yet explicitly modeled as standalone nodes in visualization dataset.",
             "examples": "Directory examples/ not yet explicitly modeled as standalone nodes in visualization dataset.",
-            "execution_reports": "Directory execution_reports/ not yet explicitly modeled as standalone nodes in visualization dataset.",
             "experimental": "Directory experimental/ not yet explicitly modeled as standalone nodes in visualization dataset.",
             "ffi": "Directory ffi/ not yet explicitly modeled as standalone nodes in visualization dataset.",
             "logs": "Directory logs/ not yet explicitly modeled as standalone nodes in visualization dataset.",
-            "market-demos": "Directory market-demos/ not yet explicitly modeled as standalone nodes in visualization dataset.",
-            "market_analysis": "Directory market_analysis/ not yet explicitly modeled as standalone nodes in visualization dataset.",
             "review": "Directory review/ not yet explicitly modeled as standalone nodes in visualization dataset.",
             "skills": "Directory skills/ not yet explicitly modeled as standalone nodes in visualization dataset.",
-            "strategic_docs": "Directory strategic_docs/ not yet explicitly modeled as standalone nodes in visualization dataset.",
             "third_party": "Directory third_party/ not yet explicitly modeled as standalone nodes in visualization dataset."
         }
     },

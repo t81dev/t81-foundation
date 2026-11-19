@@ -539,7 +539,7 @@ jobs:
             /benchmarks/**
             /spec/**
             /third_party/**
-            /development_tests/**
+            /archive/development_tests/**
             /docs/reference/STABLE_BASELINE_CONTRACT.md
             /docs/reference/AI_OS_OBJECT_BUNDLE_CONSUMPTION_CONTRACT.md
             /docs/reference/AI_OS_OBJECT_BUNDLE_VERSIONING_BOUNDARY.md
