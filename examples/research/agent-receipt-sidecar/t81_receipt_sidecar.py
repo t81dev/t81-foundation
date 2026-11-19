@@ -220,9 +220,24 @@ def tool_gate_and_seal(args: dict[str, Any]) -> dict[str, Any]:
         reason = f"OBSERVE-ONLY: artifact {artifact_sha3_512} would be denied by {policy_path.name}"
 
     now_utc = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    parent_bundle_ids = args.get("parent_bundle_ids") or []
+    if parent_bundle_ids:
+        dag_seed = f"{canon_ref}|{action_type}|{principal_id}|{','.join(parent_bundle_ids)}".encode("utf-8")
+        bundle_id = "sha3-256:" + hashlib.sha3_256(dag_seed).hexdigest()
+    else:
+        bundle_id = canon_ref
+    evidence_obj: dict[str, Any] = {
+        "input_digest": artifact_sha3_512,
+        "output_digest": canon_ref,
+        "execution_trace_hash": prov_ref,
+        "intermediate_state_hashes": [canon_ref, prov_ref],
+    }
+    if parent_bundle_ids:
+        evidence_obj["parent_bundle_ids"] = list(parent_bundle_ids)
+
     bundle: dict[str, Any] = {
         "schema_version": "1.0.0-draft",
-        "bundle_id": canon_ref,
+        "bundle_id": bundle_id,
         "timestamp_utc": now_utc,
         "meaning": {
             "action_type": action_type,
@@ -233,12 +248,7 @@ def tool_gate_and_seal(args: dict[str, Any]) -> dict[str, Any]:
             },
             "proposed_side_effects": [{"target": target, "mutation": true_verdict}],
         },
-        "evidence": {
-            "input_digest": artifact_sha3_512,
-            "output_digest": canon_ref,
-            "execution_trace_hash": prov_ref,
-            "intermediate_state_hashes": [canon_ref, prov_ref],
-        },
+        "evidence": evidence_obj,
         "method": {
             "runtime_environment": "t81-receipt-sidecar-v1",
             "transformation_id": action_type,
@@ -341,6 +351,101 @@ def tool_verify_receipt(args: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def tool_verify_dag(args: dict[str, Any]) -> dict[str, Any]:
+    raw_bundles = args["bundles"]
+    head_id = args["head_bundle_id"]
+    public_keys = args["public_keys"]
+    trusted_policies = args.get("trusted_policies")
+    canonfs_root = args.get("canonfs_root")
+    t81_bin = args.get("t81_bin", DEFAULT_T81_BIN)
+
+    by_id: dict[str, dict[str, Any]] = {}
+    if isinstance(raw_bundles, list):
+        for b in raw_bundles:
+            if isinstance(b, dict) and "bundle_id" in b:
+                by_id[b["bundle_id"]] = b
+    elif isinstance(raw_bundles, dict):
+        by_id = raw_bundles
+
+    if head_id not in by_id:
+        return {"ok": False, "stage": "dag", "failed_bundle_id": head_id, "error": "head_bundle_id not found"}
+
+    visited: set[str] = set()
+    visiting: set[str] = set()
+    verified_order: list[str] = []
+
+    def dfs(bid: str) -> dict[str, Any] | None:
+        if bid in visiting:
+            return {"ok": False, "stage": "dag", "failed_bundle_id": bid, "error": "cycle detected in receipt DAG"}
+        if bid in visited:
+            return None
+        if bid not in by_id:
+            return {"ok": False, "stage": "dag", "failed_bundle_id": bid, "error": "missing parent bundle in DAG"}
+
+        visiting.add(bid)
+        bundle = by_id[bid]
+
+        # Resolve public key (single path or per-principal map)
+        principal = bundle.get("accountability", {}).get("principal_id", "")
+        if isinstance(public_keys, dict):
+            pub_key = public_keys.get(principal)
+            if not pub_key:
+                return {"ok": False, "stage": "signature", "failed_bundle_id": bid, "error": f"no public key for principal {principal}"}
+        else:
+            pub_key = public_keys
+
+        # Resolve trusted policy (optional single path or per-policy_id map)
+        policy_path = None
+        if isinstance(trusted_policies, dict):
+            pid = bundle.get("authority", {}).get("policy_id", "")
+            policy_path = trusted_policies.get(pid)
+        elif isinstance(trusted_policies, str):
+            policy_path = trusted_policies
+
+        ver = tool_verify_receipt(
+            {
+                "bundle": bundle,
+                "public_key": pub_key,
+                "trusted_policy": policy_path,
+                "t81_bin": t81_bin,
+            }
+        )
+        if not ver.get("ok"):
+            return {
+                "ok": False,
+                "stage": ver.get("stage", "verify"),
+                "failed_bundle_id": bid,
+                "error": ver.get("error", "receipt verification failed"),
+            }
+
+        for parent_id in bundle.get("evidence", {}).get("parent_bundle_ids", []):
+            err = dfs(parent_id)
+            if err:
+                return err
+
+        visiting.remove(bid)
+        visited.add(bid)
+        verified_order.append(bid)
+        return None
+
+    err = dfs(head_id)
+    if err:
+        return err
+
+    if canonfs_root:
+        fsck = tool_canonfs_fsck({"canonfs_root": canonfs_root, "t81_bin": t81_bin})
+        if not fsck.get("ok"):
+            return {"ok": False, "stage": "canonfs", "failed_bundle_id": head_id, "error": "CanonFS fsck --verify-hashes failed"}
+
+    return {
+        "ok": True,
+        "head_bundle_id": head_id,
+        "verified_nodes": len(verified_order),
+        "verified_bundle_ids": verified_order,
+        "canonfs_verified": bool(canonfs_root),
+    }
+
+
 TOOLS = {
     "t81.gate_and_seal": {
         "description": "Evaluate Axion .apl policy pre-side-effect, seal artifact into CanonFS, and emit signed RFC-00D4 bundle.",
@@ -349,6 +454,10 @@ TOOLS = {
     "t81.verify_receipt": {
         "description": "Verify an RFC-00D4 Accountable Decision Bundle offline (schema, policy, Ed25519 signature, optional CanonFS fsck).",
         "handler": tool_verify_receipt,
+    },
+    "t81.verify_dag": {
+        "description": "Verify a multi-agent Merkle DAG of RFC-00D4 receipts backwards from head_bundle_id via parent_bundle_ids.",
+        "handler": tool_verify_dag,
     },
     "t81.get_effective_policy": {
         "description": "Introspect the authoritative .apl policy floor and digest for a given action class.",

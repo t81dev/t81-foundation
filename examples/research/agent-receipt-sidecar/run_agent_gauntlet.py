@@ -95,7 +95,7 @@ def main() -> int:
             init = client.call("initialize")
             assert init["result"]["serverInfo"]["name"] == "t81-receipt-sidecar"
             tools = client.call("tools/list")["result"]["tools"]
-            assert len(tools) == 5
+            assert len(tools) == 6
 
             # --- Experiment 1: Compromised-Agent Gauntlet ---
             unauthorized_side_effects = 0
@@ -254,6 +254,88 @@ def main() -> int:
                 unauthorized_side_effects += 1
             assert gate_deploy_deny["policy_floor"] == "fail-closed" and gate_deploy_deny["downgrade_attempt_blocked"]
             scenarios["8_action_class_policy_introspection"] = "PASS (per-action floor enforced & introspectable)"
+
+            # 9. Multi-agent 3-node Receipt DAG (Agent-1 -> Agent-2 -> Agent-3) + upstream compromise
+            priv2, pub2 = keys / "agent2.priv.pem", keys / "agent2.pub.pem"
+            priv3, pub3 = keys / "agent3.priv.pem", keys / "agent3.pub.pem"
+            for pr, pu in ((priv2, pub2), (priv3, pub3)):
+                subprocess.run(["openssl", "genpkey", "-algorithm", "ED25519", "-out", str(pr)], check=True, capture_output=True)
+                subprocess.run(["openssl", "pkey", "-in", str(pr), "-pubout", "-out", str(pu)], check=True, capture_output=True)
+
+            b1 = valid_bundle  # principal: proposer-agent-01
+            b2 = client.tool(
+                "t81.gate_and_seal",
+                {
+                    "artifact_path": str(good_artifact),
+                    "policy_path": str(policy_v1),
+                    "canonfs_root": str(canonfs),
+                    "signing_key": str(priv2),
+                    "public_key_uri": f"file://{pub2}",
+                    "principal_id": "reviewer-agent-02",
+                    "action_type": "agent.review.v1",
+                    "parent_bundle_ids": [b1["bundle_id"]],
+                },
+            )["receipt"]
+            b3 = client.tool(
+                "t81.gate_and_seal",
+                {
+                    "artifact_path": str(good_artifact),
+                    "policy_path": str(policy_v1),
+                    "canonfs_root": str(canonfs),
+                    "signing_key": str(priv3),
+                    "public_key_uri": f"file://{pub3}",
+                    "principal_id": "deployer-agent-03",
+                    "action_type": "agent.deploy.v1",
+                    "parent_bundle_ids": [b2["bundle_id"]],
+                },
+            )["receipt"]
+            pub_map = {
+                "proposer-agent-01": str(pub),
+                "reviewer-agent-02": str(pub2),
+                "deployer-agent-03": str(pub3),
+            }
+            dag_ok = client.tool(
+                "t81.verify_dag",
+                {
+                    "bundles": [b1, b2, b3],
+                    "head_bundle_id": b3["bundle_id"],
+                    "public_keys": pub_map,
+                    "trusted_policies": str(policy_v1),
+                    "canonfs_root": str(canonfs),
+                },
+            )
+            assert dag_ok["ok"] and dag_ok["verified_nodes"] == 3
+
+            # Upstream tamper on Agent-1 invalidates Agent-3 head
+            b1_tampered = json.loads(json.dumps(b1))
+            b1_tampered["meaning"]["parameters"]["artifact_name"] = "tampered_upstream.bin"
+            dag_tampered = client.tool(
+                "t81.verify_dag",
+                {
+                    "bundles": [b1_tampered, b2, b3],
+                    "head_bundle_id": b3["bundle_id"],
+                    "public_keys": pub_map,
+                    "trusted_policies": str(policy_v1),
+                },
+            )
+            if dag_tampered["ok"]:
+                unauthorized_side_effects += 1
+            assert not dag_tampered["ok"] and dag_tampered["failed_bundle_id"] == b1["bundle_id"] and dag_tampered["stage"] == "signature"
+
+            # Upstream policy revocation invalidates Agent-3 head
+            dag_revoked = client.tool(
+                "t81.verify_dag",
+                {
+                    "bundles": [b1, b2, b3],
+                    "head_bundle_id": b3["bundle_id"],
+                    "public_keys": pub_map,
+                    "trusted_policies": str(policy_v2_revoked),
+                },
+            )
+            if dag_revoked["ok"]:
+                unauthorized_side_effects += 1
+            assert not dag_revoked["ok"] and dag_revoked["stage"] == "authority"
+            scenarios["9_multi_agent_receipt_dag"] = "PASS (3-node DAG verified; upstream tamper & revocation blocked)"
 
             # --- Experiment 2: 100-Call Warm Resident Latency Benchmark ---
             # Run BEFORE tampering with CanonFS objects!
