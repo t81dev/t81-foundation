@@ -63,7 +63,7 @@ try:
         model_sha = "sha3-512:" + hashlib.sha3_512(Path(model_exported).read_bytes()).hexdigest()
         policy = tmp / "repo_model_policy.apl"
         policy.write_text(
-            f'(policy\n  (tier 1)\n  (allowed-ternary-model-hashes ["{model_sha}"])\n  (require-axion-event (reason "ci:model_review")))\n',
+            f'(policy\n  (tier 1)\n  (allowed-tensor-hashes ["{model_sha}"])\n  (require-axion-event (reason "ci:model_review")))\n',
             encoding="utf-8",
         )
         sealed = call_tool("t81.gate_and_seal", {

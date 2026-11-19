@@ -90,33 +90,70 @@ def verify_ed25519(public_key_pem: str, data: bytes, signature_b64: str) -> bool
 
 
 def extract_allowed_hashes(policy_text: str) -> list[str]:
-    match = re.search(r"\(allowed-ternary-model-hashes\s+\[(.*?)\]\)", policy_text, re.S)
-    if not match:
-        return []
-    return re.findall(r'"([^"]+)"', match.group(1))
+    hashes: list[str] = []
+    for clause in ("allowed-tensor-hashes", "allowed-ternary-model-hashes"):
+        match = re.search(rf"\({clause}\s+\[(.*?)\]\)", policy_text, re.S)
+        if match:
+            hashes.extend(re.findall(r'"([^"]+)"', match.group(1)))
+    return list(dict.fromkeys(hashes))
 
 
 MODE_RANK = {"observe-only": 0, "warn": 1, "fail-closed": 2}
 
 
 def extract_policy_mode(policy_text: str, action_type: str | None = None) -> str:
-    """Resolve enforcement floor from .apl: action-policy overrides top-level, then env/fail-closed."""
+    """Resolve enforcement floor from valid .apl require-axion-event reasons, then env/fail-closed."""
     if action_type:
         ap_pat = (
-            r'\(action-policy\s+"'
+            r'\(require-axion-event\s+\(reason\s+"action-policy:'
             + re.escape(action_type)
-            + r'"[^)]*\(enforcement-mode\s+"(observe-only|warn|fail-closed)"\)'
+            + r'=(observe-only|warn|fail-closed)"\)\)'
         )
-        ap_match = re.search(ap_pat, policy_text, re.S)
+        ap_match = re.search(ap_pat, policy_text)
         if ap_match:
             return ap_match.group(1)
-    # Strip action-policy blocks before checking top-level default enforcement-mode
-    stripped = re.sub(r'\(action-policy\s+"[^"]+"[^)]*\([^)]*\)[^)]*\)', "", policy_text, flags=re.S)
-    match = re.search(r'\(enforcement-mode\s+"(observe-only|warn|fail-closed)"\)', stripped)
-    if match:
-        return match.group(1)
+    top_match = re.search(
+        r'\(require-axion-event\s+\(reason\s+"enforcement-mode:(observe-only|warn|fail-closed)"\)\)',
+        policy_text,
+    )
+    if top_match:
+        return top_match.group(1)
     env_mode = os.environ.get("T81_ENFORCEMENT_MODE", "fail-closed")
     return env_mode if env_mode in MODE_RANK else "fail-closed"
+
+
+_VALIDATED_POLICY_CACHE: dict[tuple[str, str], tuple[bool, str]] = {}
+
+
+def validate_apl_with_t81(t81_bin: str, policy_path: Path, policy_sha3_512: str) -> tuple[bool, str]:
+    """Validate .apl syntax via real `t81 policy validate --json` (cached by content hash)."""
+    key = (str(policy_path), policy_sha3_512)
+    if key in _VALIDATED_POLICY_CACHE:
+        return _VALIDATED_POLICY_CACHE[key]
+    proc = subprocess.run(
+        [t81_bin, "policy", "validate", str(policy_path), "--json"],
+        capture_output=True,
+        text=True,
+    )
+    try:
+        data = json.loads(proc.stdout)
+        ok = bool(data.get("valid"))
+        err = data.get("error", "")
+    except Exception:
+        ok = False
+        err = proc.stderr.strip() or proc.stdout.strip() or "policy validate failed"
+    _VALIDATED_POLICY_CACHE[key] = (ok, err)
+    return ok, err
+
+
+def test_model_hash_with_t81(t81_bin: str, policy_path: Path, artifact_sha3_512: str) -> bool:
+    """Evaluate artifact hash admission via real `t81 policy test --model-hash`."""
+    proc = subprocess.run(
+        [t81_bin, "policy", "test", str(policy_path), "--model-hash", artifact_sha3_512],
+        capture_output=True,
+        text=True,
+    )
+    return proc.returncode == 0 and "Status: VALID" in proc.stdout
 
 
 def resolve_enforcement_mode(policy_mode: str, requested_mode: str | None) -> tuple[str, bool]:
@@ -175,11 +212,27 @@ def tool_gate_and_seal(args: dict[str, Any]) -> dict[str, Any]:
     policy_bytes = policy_path.read_bytes()
     policy_text = policy_bytes.decode("utf-8")
     policy_sha3_512 = "sha3-512:" + hashlib.sha3_512(policy_bytes).hexdigest()
-    allowed = extract_allowed_hashes(policy_text)
+
+    # Authoritative Axion .apl syntax validation via `t81 policy validate`
+    valid_apl, apl_err = validate_apl_with_t81(t81_bin, policy_path, policy_sha3_512)
+    if not valid_apl:
+        return {
+            "ok": False,
+            "decision": "DENY",
+            "verdict": "DENY",
+            "policy_floor": "fail-closed",
+            "mode_applied": "fail-closed",
+            "downgrade_attempt_blocked": False,
+            "blocked": True,
+            "receipt": None,
+            "reason": f"PolicyValidationFault: {apl_err}",
+            "side_effect_executed": False,
+        }
 
     policy_mode = extract_policy_mode(policy_text, action_type)
     effective_mode, downgrade_attempt = resolve_enforcement_mode(policy_mode, args.get("mode"))
-    admitted = artifact_sha3_512 in allowed
+    # Authoritative Axion admission check via `t81 policy test --model-hash`
+    admitted = test_model_hash_with_t81(t81_bin, policy_path, artifact_sha3_512)
 
     # Pre-side-effect policy check (fail closed when effective_mode == "fail-closed")
     if not admitted and effective_mode == "fail-closed":
@@ -289,17 +342,22 @@ def tool_gate_and_seal(args: dict[str, Any]) -> dict[str, Any]:
 
 
 def tool_get_effective_policy(args: dict[str, Any]) -> dict[str, Any]:
+    t81_bin = args.get("t81_bin", DEFAULT_T81_BIN)
     policy_path = Path(args["policy_path"])
     if not policy_path.is_file():
         return {"ok": False, "error": f"missing policy file: {policy_path}"}
     policy_bytes = policy_path.read_bytes()
     policy_text = policy_bytes.decode("utf-8")
+    policy_sha3_512 = "sha3-512:" + hashlib.sha3_512(policy_bytes).hexdigest()
+    valid_apl, apl_err = validate_apl_with_t81(t81_bin, policy_path, policy_sha3_512)
+    if not valid_apl:
+        return {"ok": False, "policy_id": policy_path.name, "error": f"PolicyValidationFault: {apl_err}"}
     action_type = args.get("action_type")
     policy_floor = extract_policy_mode(policy_text, action_type)
     return {
         "ok": True,
         "policy_id": policy_path.name,
-        "policy_hash": "sha3-512:" + hashlib.sha3_512(policy_bytes).hexdigest(),
+        "policy_hash": policy_sha3_512,
         "action_type": action_type,
         "policy_floor": policy_floor,
         "allowed_hash_count": len(extract_allowed_hashes(policy_text)),

@@ -81,12 +81,12 @@ def main() -> int:
         good_sha = "sha3-512:" + hashlib.sha3_512(good_artifact.read_bytes()).hexdigest()
         policy_v1 = tmp / "policy_v1.apl"
         policy_v1.write_text(
-            f'(policy\n  (tier 1)\n  (allowed-ternary-model-hashes ["{good_sha}"])\n  (require-axion-event (reason "agent:promote")))\n',
+            f'(policy\n  (tier 1)\n  (allowed-tensor-hashes ["{good_sha}"])\n  (require-axion-event (reason "agent:promote")))\n',
             encoding="utf-8",
         )
         policy_v2_revoked = tmp / "policy_v2_revoked.apl"
         policy_v2_revoked.write_text(
-            '(policy\n  (tier 1)\n  (allowed-ternary-model-hashes ["sha3-512:' + ("0" * 128) + '"])\n  (require-axion-event (reason "agent:promote")))\n',
+            '(policy\n  (tier 1)\n  (allowed-tensor-hashes ["sha3-512:' + ("0" * 128) + '"])\n  (require-axion-event (reason "agent:promote")))\n',
             encoding="utf-8",
         )
 
@@ -187,7 +187,7 @@ def main() -> int:
             # 7. Observe-only policy emits shadow receipt (verdict=DENY, blocked=False); fail-closed verifier still rejects it
             policy_observe = tmp / "policy_observe.apl"
             policy_observe.write_text(
-                f'(policy\n  (tier 1)\n  (enforcement-mode "observe-only")\n  (allowed-ternary-model-hashes ["{good_sha}"])\n  (require-axion-event (reason "agent:promote")))\n',
+                f'(policy\n  (tier 1)\n  (allowed-tensor-hashes ["{good_sha}"])\n  (require-axion-event (reason "enforcement-mode:observe-only")))\n',
                 encoding="utf-8",
             )
             gate_obs = client.tool(
@@ -216,10 +216,10 @@ def main() -> int:
             policy_per_action.write_text(
                 f'(policy\n'
                 f'  (tier 1)\n'
-                f'  (enforcement-mode "warn")\n'
-                f'  (action-policy "deploy_config" (enforcement-mode "fail-closed"))\n'
-                f'  (action-policy "read_metrics" (enforcement-mode "observe-only"))\n'
-                f'  (allowed-ternary-model-hashes ["{good_sha}"]))\n',
+                f'  (allowed-tensor-hashes ["{good_sha}"])\n'
+                f'  (require-axion-event (reason "enforcement-mode:warn"))\n'
+                f'  (require-axion-event (reason "action-policy:deploy_config=fail-closed"))\n'
+                f'  (require-axion-event (reason "action-policy:read_metrics=observe-only")))\n',
                 encoding="utf-8",
             )
             eff_deploy = client.tool(
@@ -336,6 +336,25 @@ def main() -> int:
                 unauthorized_side_effects += 1
             assert not dag_revoked["ok"] and dag_revoked["stage"] == "authority"
             scenarios["9_multi_agent_receipt_dag"] = "PASS (3-node DAG verified; upstream tamper & revocation blocked)"
+
+            # 10. Malformed .apl rejected by real `t81 policy validate`
+            bad_policy = tmp / "malformed.apl"
+            bad_policy.write_text('(policy (unknown-clause "evil"))\n', encoding="utf-8")
+            gate_bad_apl = client.tool(
+                "t81.gate_and_seal",
+                {
+                    "artifact_path": str(good_artifact),
+                    "policy_path": str(bad_policy),
+                    "canonfs_root": str(canonfs),
+                    "signing_key": str(priv),
+                    "public_key_uri": f"file://{pub}",
+                    "principal_id": "proposer-agent-01",
+                },
+            )
+            if gate_bad_apl["ok"] or not gate_bad_apl.get("blocked"):
+                unauthorized_side_effects += 1
+            assert not gate_bad_apl["ok"] and "PolicyValidationFault" in gate_bad_apl["reason"]
+            scenarios["10_malformed_apl_rejected"] = "PASS (rejected by real t81 policy validate)"
 
             # --- Experiment 2: 100-Call Warm Resident Latency Benchmark ---
             # Run BEFORE tampering with CanonFS objects!
