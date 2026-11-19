@@ -25,7 +25,6 @@ EXPECTED_TOP_LEVEL = {
     "CONTRIBUTING.md",
     "Dockerfile",
     "LICENSE",
-    "Makefile",
     "PROJECT_STRUCTURE.md",
     "README.es.md",
     "README.md",

@@ -36,7 +36,7 @@ The root [support guide](SUPPORT_TAXONOMY.md) explains this distinction.
 
 ## Build, tests, and documentation
 
-- `CMakeLists.txt`, `cmake/`, `CMakePresets.json`: authoritative build configuration. Use an out-of-source build; the tracked root `Makefile` is generated and contains machine-specific paths.
+- `CMakeLists.txt`, `cmake/`, `CMakePresets.json`: authoritative out-of-source CMake build configuration.
 - `tests/`: unit, contract, conformance, fixture, and regression tests. Enabled targets depend on CMake options.
 - `scripts/`, `.github/`: validation tooling, workflows, and contributor templates. Workflow definitions are not evidence that a particular run passed.
 - `docs/`: research, governance, references, maintenance handoff, and historical records.
