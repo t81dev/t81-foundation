@@ -205,7 +205,7 @@ def main() -> int:
             ms = rpc("tools/call", {"name": "t81.memory_search", "arguments": {
                 "index_pos_path": str(idx_pos), "index_neg_path": str(idx_neg),
                 "query_pos_path": str(q_pos), "query_neg_path": str(q_neg),
-                "dim": "64", "top_k": "2"}})["result"]["structured"]
+                "dim": 64, "top_k": 2}})["result"]["structured"]
             assert ms["ok"] and ms["docs_searched"] == 3
             assert ms["results"][0]["doc_id"] == 1 and ms["results"][0]["score"] == 64
             assert ms["results"][1]["doc_id"] == 0 and ms["results"][1]["score"] == 0
@@ -258,7 +258,7 @@ def main() -> int:
                 "base_pos_path": str(ab_pos), "base_neg_path": str(ab_neg),
                 "delta_sbdr_path": str(sbdr_file),
                 "out_pos_path": str(sbdr_out_pos), "out_neg_path": str(sbdr_out_neg),
-                "max_flip_pct": "5.0"}})["result"]["structured"]
+                "max_flip_pct": 5.0}})["result"]["structured"]
             assert aa_sbdr["ok"] and aa_sbdr["applied"] and aa_sbdr["delta_format"] == "sbdr1"
             assert aa_sbdr["effective_flips"] == 2 and aa_sbdr["active_blocks"] == 1
             assert aa_sbdr["merged_sha3_512"] == aa_ok["merged_sha3_512"]

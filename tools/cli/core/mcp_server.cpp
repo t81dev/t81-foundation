@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <bit>
+#include <cctype>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -71,10 +72,11 @@ std::string extract_str(const std::string& json, const std::string& key) {
   if (kpos == std::string::npos) return {};
   const size_t colon = json.find(':', kpos + pat.size());
   if (colon == std::string::npos) return {};
-  const size_t q1 = json.find('"', colon + 1);
-  if (q1 == std::string::npos) return {};
+  size_t i = colon + 1;
+  while (i < json.size() && (json[i] == ' ' || json[i] == '\t')) ++i;
+  if (i >= json.size() || json[i] != '"') return {};
   std::string out;
-  for (size_t i = q1 + 1; i < json.size(); ++i) {
+  for (++i; i < json.size(); ++i) {
     if (json[i] == '\\' && i + 1 < json.size()) {
       out.push_back(json[++i]);
     } else if (json[i] == '"') {
@@ -84,6 +86,25 @@ std::string extract_str(const std::string& json, const std::string& key) {
     }
   }
   return out;
+}
+
+std::string extract_num_or_str(const std::string& json, const std::string& key) {
+  const std::string pat = "\"" + key + "\"";
+  const size_t kpos = json.find(pat);
+  if (kpos == std::string::npos) return {};
+  const size_t colon = json.find(':', kpos + pat.size());
+  if (colon == std::string::npos) return {};
+  size_t i = colon + 1;
+  while (i < json.size() && (json[i] == ' ' || json[i] == '\t')) ++i;
+  if (i >= json.size()) return {};
+  if (json[i] == '"') return extract_str(json, key);
+  size_t j = i;
+  while (j < json.size() &&
+         (std::isdigit(static_cast<unsigned char>(json[j])) || json[j] == '-' || json[j] == '+' ||
+          json[j] == '.' || json[j] == 'e' || json[j] == 'E')) {
+    ++j;
+  }
+  return json.substr(i, j - i);
 }
 
 std::string extract_id(const std::string& json) {
@@ -769,7 +790,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         const std::string bn_path = extract_str(line, "base_neg_path");
         const std::string cp_path = extract_str(line, "candidate_pos_path");
         const std::string cn_path = extract_str(line, "candidate_neg_path");
-        const std::string max_str = extract_str(line, "max_flip_pct");
+        const std::string max_str = extract_num_or_str(line, "max_flip_pct");
         const double max_flip_pct = max_str.empty() ? 1.0 : std::strtod(max_str.c_str(), nullptr);
         std::vector<uint8_t> bp, bn, cp, cn;
         if (bp_path.empty() || bn_path.empty() || cp_path.empty() || cn_path.empty() ||
@@ -823,8 +844,8 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         const std::string in_path = extract_str(line, "index_neg_path");
         const std::string qp_path = extract_str(line, "query_pos_path");
         const std::string qn_path = extract_str(line, "query_neg_path");
-        const std::string dim_str = extract_str(line, "dim");
-        const std::string k_str = extract_str(line, "top_k");
+        const std::string dim_str = extract_num_or_str(line, "dim");
+        const std::string k_str = extract_num_or_str(line, "top_k");
         const size_t dim = static_cast<size_t>(std::strtoull(dim_str.c_str(), nullptr, 10));
         const size_t top_k_req =
             k_str.empty() ? 5 : static_cast<size_t>(std::strtoull(k_str.c_str(), nullptr, 10));
@@ -897,7 +918,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         const std::string sbdr_path = extract_str(line, "delta_sbdr_path");
         const std::string op_path = extract_str(line, "out_pos_path");
         const std::string on_path = extract_str(line, "out_neg_path");
-        const std::string max_str = extract_str(line, "max_flip_pct");
+        const std::string max_str = extract_num_or_str(line, "max_flip_pct");
         const double max_flip_pct = max_str.empty() ? 100.0 : std::strtod(max_str.c_str(), nullptr);
         const bool use_sbdr = !sbdr_path.empty();
         std::vector<uint8_t> bp, bn, dp, dn, sbdr;
