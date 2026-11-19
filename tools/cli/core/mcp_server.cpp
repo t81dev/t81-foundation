@@ -287,15 +287,17 @@ std::string build_tools_list_json() {
          "\"string\"},\"dim\":{\"type\":\"string\"},\"top_k\":{\"type\":\"string\"}}}},"
 
          "{\"name\":\"t81.adapter_apply\","
-         "\"description\":\"Compose a Dual-Rail ternary adapter delta onto base weights via "
-         "zero-dequantization saturated addition clamp(W + delta, -1, +1) with a fail-closed "
-         "max_flip_pct gate and SHA3-512 adapter receipt.\","
+         "\"description\":\"Compose a Dual-Rail ternary adapter delta (dense pos/neg or compact "
+         "SBDR1 sparse-block wire format) onto base weights via zero-dequantization saturated "
+         "addition clamp(W + delta, -1, +1) with a fail-closed max_flip_pct gate and SHA3-512 "
+         "adapter receipt.\","
          "\"inputSchema\":{\"type\":\"object\",\"required\":[\"base_pos_path\",\"base_neg_path\","
-         "\"delta_pos_path\",\"delta_neg_path\",\"out_pos_path\",\"out_neg_path\"],"
+         "\"out_pos_path\",\"out_neg_path\"],"
          "\"properties\":{\"base_pos_path\":{\"type\":\"string\"},\"base_neg_path\":{\"type\":"
          "\"string\"},\"delta_pos_path\":{\"type\":\"string\"},\"delta_neg_path\":{\"type\":"
-         "\"string\"},\"out_pos_path\":{\"type\":\"string\"},\"out_neg_path\":{\"type\":"
-         "\"string\"},\"max_flip_pct\":{\"type\":\"string\"}}}}"
+         "\"string\"},\"delta_sbdr_path\":{\"type\":\"string\"},\"out_pos_path\":{\"type\":"
+         "\"string\"},\"out_neg_path\":{\"type\":\"string\"},\"max_flip_pct\":{\"type\":"
+         "\"string\"}}}}"
          "]";
 }
 
@@ -885,57 +887,150 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         const std::string bn_path = extract_str(line, "base_neg_path");
         const std::string dp_path = extract_str(line, "delta_pos_path");
         const std::string dn_path = extract_str(line, "delta_neg_path");
+        const std::string sbdr_path = extract_str(line, "delta_sbdr_path");
         const std::string op_path = extract_str(line, "out_pos_path");
         const std::string on_path = extract_str(line, "out_neg_path");
         const std::string max_str = extract_str(line, "max_flip_pct");
         const double max_flip_pct = max_str.empty() ? 100.0 : std::strtod(max_str.c_str(), nullptr);
-        std::vector<uint8_t> bp, bn, dp, dn;
-        if (bp_path.empty() || bn_path.empty() || dp_path.empty() || dn_path.empty() ||
-            op_path.empty() || on_path.empty() || !read_file_bytes(bp_path, bp) ||
-            !read_file_bytes(bn_path, bn) || !read_file_bytes(dp_path, dp) ||
-            !read_file_bytes(dn_path, dn)) {
+        const bool use_sbdr = !sbdr_path.empty();
+        std::vector<uint8_t> bp, bn, dp, dn, sbdr;
+        bool io_ok = !bp_path.empty() && !bn_path.empty() && !op_path.empty() && !on_path.empty() &&
+                     read_file_bytes(bp_path, bp) && read_file_bytes(bn_path, bn);
+        if (io_ok) {
+          if (use_sbdr) {
+            io_ok = read_file_bytes(sbdr_path, sbdr);
+          } else {
+            io_ok = !dp_path.empty() && !dn_path.empty() && read_file_bytes(dp_path, dp) &&
+                    read_file_bytes(dn_path, dn);
+          }
+        }
+        if (!io_ok) {
           structured = "{\"ok\":false,\"applied\":false,\"verdict\":\"REJECT_IO_ERROR\"}";
-        } else if (bp.empty() || bp.size() != bn.size() || bp.size() != dp.size() ||
-                   bp.size() != dn.size() || (bp.size() % 8 != 0)) {
+        } else if (bp.empty() || bp.size() != bn.size() || (bp.size() % 8 != 0) ||
+                   (!use_sbdr && (bp.size() != dp.size() || bp.size() != dn.size()))) {
           structured = "{\"ok\":false,\"applied\":false,\"verdict\":\"REJECT_SIZE_MISMATCH\"}";
         } else {
           const size_t words = bp.size() / 8;
           const uint64_t total_weights = static_cast<uint64_t>(words) * 64ULL;
-          std::vector<uint8_t> op(bp.size(), 0);
-          std::vector<uint8_t> on(bn.size(), 0);
+          std::vector<uint8_t> op = bp;
+          std::vector<uint8_t> on = bn;
           uint64_t flips = 0;
-          bool disjoint_ok = true;
+          uint64_t active_blocks = 0;
+          std::string reject_verdict;
+
+          // Validate base planes are disjoint
           for (size_t w = 0; w < words; ++w) {
-            uint64_t wp = 0, wn = 0, ap = 0, an = 0;
+            uint64_t wp = 0, wn = 0;
             std::memcpy(&wp, bp.data() + w * 8, 8);
             std::memcpy(&wn, bn.data() + w * 8, 8);
-            std::memcpy(&ap, dp.data() + w * 8, 8);
-            std::memcpy(&an, dn.data() + w * 8, 8);
-            if (((wp & wn) | (ap & an)) != 0ULL) {
-              disjoint_ok = false;
+            if ((wp & wn) != 0ULL) {
+              reject_verdict = "REJECT_NON_DISJOINT_PLANES";
               break;
             }
-            const uint64_t rp = (wp & ~an) | (ap & ~wn);
-            const uint64_t rn = (wn & ~ap) | (an & ~wp);
-            std::memcpy(op.data() + w * 8, &rp, 8);
-            std::memcpy(on.data() + w * 8, &rn, 8);
-            flips += static_cast<uint64_t>(std::popcount((wp ^ rp) | (wn ^ rn)));
           }
-          if (!disjoint_ok) {
-            structured =
-                "{\"ok\":false,\"applied\":false,\"verdict\":\"REJECT_NON_DISJOINT_PLANES\"}";
+
+          if (reject_verdict.empty() && use_sbdr) {
+            // Canonical SBDR1 format: "SBDR1\0\0\0" (8B) | total_words (u64) |
+            // mask[(W+63)/64] (u64[]) | active_blocks * (pos u64, neg u64)
+            static constexpr uint8_t kMagic[8] = {'S', 'B', 'D', 'R', '1', 0, 0, 0};
+            const size_t mask_words = (words + 63) / 64;
+            const size_t header_bytes = 16 + mask_words * 8;
+            if (sbdr.size() < header_bytes || std::memcmp(sbdr.data(), kMagic, 8) != 0) {
+              reject_verdict = "REJECT_INVALID_SBDR1_HEADER";
+            } else {
+              uint64_t file_words = 0;
+              std::memcpy(&file_words, sbdr.data() + 8, 8);
+              if (file_words != static_cast<uint64_t>(words)) {
+                reject_verdict = "REJECT_SIZE_MISMATCH";
+              } else {
+                for (size_t m = 0; m < mask_words; ++m) {
+                  uint64_t mw = 0;
+                  std::memcpy(&mw, sbdr.data() + 16 + m * 8, 8);
+                  if (m + 1 == mask_words && (words % 64) != 0) {
+                    const uint64_t valid_mask = (1ULL << (words % 64)) - 1ULL;
+                    if ((mw & ~valid_mask) != 0ULL) {
+                      reject_verdict = "REJECT_NON_CANONICAL_SBDR1_MASK";
+                      break;
+                    }
+                  }
+                  active_blocks += static_cast<uint64_t>(std::popcount(mw));
+                }
+                if (reject_verdict.empty() &&
+                    sbdr.size() != header_bytes + static_cast<size_t>(active_blocks) * 16) {
+                  reject_verdict = "REJECT_INVALID_SBDR1_LENGTH";
+                }
+              }
+            }
+            if (reject_verdict.empty()) {
+              size_t payload_off = header_bytes;
+              for (size_t m = 0; m < mask_words && reject_verdict.empty(); ++m) {
+                uint64_t bits = 0;
+                std::memcpy(&bits, sbdr.data() + 16 + m * 8, 8);
+                while (bits != 0ULL) {
+                  const unsigned tz = static_cast<unsigned>(std::countr_zero(bits));
+                  const size_t w = (m << 6) + tz;
+                  uint64_t wp = 0, wn = 0, ap = 0, an = 0;
+                  std::memcpy(&wp, op.data() + w * 8, 8);
+                  std::memcpy(&wn, on.data() + w * 8, 8);
+                  std::memcpy(&ap, sbdr.data() + payload_off, 8);
+                  std::memcpy(&an, sbdr.data() + payload_off + 8, 8);
+                  payload_off += 16;
+                  if ((ap & an) != 0ULL) {
+                    reject_verdict = "REJECT_NON_DISJOINT_PLANES";
+                    break;
+                  }
+                  if ((ap | an) == 0ULL) {
+                    reject_verdict = "REJECT_NON_CANONICAL_SBDR1_ZERO_BLOCK";
+                    break;
+                  }
+                  const uint64_t rp = (wp & ~an) | (ap & ~wn);
+                  const uint64_t rn = (wn & ~ap) | (an & ~wp);
+                  std::memcpy(op.data() + w * 8, &rp, 8);
+                  std::memcpy(on.data() + w * 8, &rn, 8);
+                  flips += static_cast<uint64_t>(std::popcount((wp ^ rp) | (wn ^ rn)));
+                  bits &= (bits - 1ULL);
+                }
+              }
+            }
+          } else if (reject_verdict.empty()) {
+            for (size_t w = 0; w < words; ++w) {
+              uint64_t wp = 0, wn = 0, ap = 0, an = 0;
+              std::memcpy(&wp, bp.data() + w * 8, 8);
+              std::memcpy(&wn, bn.data() + w * 8, 8);
+              std::memcpy(&ap, dp.data() + w * 8, 8);
+              std::memcpy(&an, dn.data() + w * 8, 8);
+              if ((ap & an) != 0ULL) {
+                reject_verdict = "REJECT_NON_DISJOINT_PLANES";
+                break;
+              }
+              if ((ap | an) != 0ULL) ++active_blocks;
+              const uint64_t rp = (wp & ~an) | (ap & ~wn);
+              const uint64_t rn = (wn & ~ap) | (an & ~wp);
+              std::memcpy(op.data() + w * 8, &rp, 8);
+              std::memcpy(on.data() + w * 8, &rn, 8);
+              flips += static_cast<uint64_t>(std::popcount((wp ^ rp) | (wn ^ rn)));
+            }
+          }
+
+          if (!reject_verdict.empty()) {
+            structured = "{\"ok\":false,\"applied\":false,\"verdict\":\"" + reject_verdict + "\"}";
           } else {
             const double flip_pct =
                 100.0 * static_cast<double>(flips) / static_cast<double>(total_weights);
             const bool within_budget = (flip_pct <= max_flip_pct);
             std::vector<uint8_t> b_cat = bp;
             b_cat.insert(b_cat.end(), bn.begin(), bn.end());
-            std::vector<uint8_t> d_cat = dp;
-            d_cat.insert(d_cat.end(), dn.begin(), dn.end());
             std::vector<uint8_t> m_cat = op;
             m_cat.insert(m_cat.end(), on.begin(), on.end());
             const std::string b_sha = sha3_512_hex(b_cat);
-            const std::string d_sha = sha3_512_hex(d_cat);
+            std::string d_sha;
+            if (use_sbdr) {
+              d_sha = sha3_512_hex(sbdr);
+            } else {
+              std::vector<uint8_t> d_cat = dp;
+              d_cat.insert(d_cat.end(), dn.begin(), dn.end());
+              d_sha = sha3_512_hex(d_cat);
+            }
             const std::string m_sha = sha3_512_hex(m_cat);
             const std::string rec_in =
                 b_sha + "|" + d_sha + "|" + m_sha + "|" + std::to_string(flips);
@@ -950,14 +1045,19 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
             const std::string verdict =
                 !within_budget ? "DENY_EXCEEDS_FLIP_BUDGET"
                                : (wrote_ok ? "APPLIED_WITHIN_BUDGET" : "REJECT_WRITE_ERROR");
+            const double dense_bytes = static_cast<double>(bp.size() + bn.size());
+            const double delta_bytes = use_sbdr ? static_cast<double>(sbdr.size()) : dense_bytes;
             std::ostringstream oss;
             oss << std::fixed << std::setprecision(4) << "{\"ok\":" << (ok ? "true" : "false")
                 << ",\"applied\":" << (ok ? "true" : "false") << ",\"verdict\":\"" << verdict
-                << "\",\"total_weights\":" << total_weights << ",\"effective_flips\":" << flips
-                << ",\"flip_pct\":" << flip_pct << ",\"max_flip_pct\":" << max_flip_pct
-                << ",\"base_sha3_512\":\"" << b_sha << "\",\"delta_sha3_512\":\"" << d_sha
-                << "\",\"merged_sha3_512\":\"" << m_sha << "\",\"adapter_receipt\":\""
-                << adapter_rec << "\"}";
+                << "\",\"delta_format\":\"" << (use_sbdr ? "sbdr1" : "dense")
+                << "\",\"total_weights\":" << total_weights
+                << ",\"active_blocks\":" << active_blocks
+                << ",\"compression_ratio\":" << (dense_bytes / std::max(1.0, delta_bytes))
+                << ",\"effective_flips\":" << flips << ",\"flip_pct\":" << flip_pct
+                << ",\"max_flip_pct\":" << max_flip_pct << ",\"base_sha3_512\":\"" << b_sha
+                << "\",\"delta_sha3_512\":\"" << d_sha << "\",\"merged_sha3_512\":\"" << m_sha
+                << "\",\"adapter_receipt\":\"" << adapter_rec << "\"}";
             structured = oss.str();
           }
         }

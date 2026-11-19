@@ -238,6 +238,23 @@ def main() -> int:
             assert struct.unpack("<Q", ao_pos.read_bytes())[0] == 0b1001
             assert struct.unpack("<Q", ao_neg.read_bytes())[0] == 0b0100
 
+            # 11b. t81.adapter_apply via compact SBDR1 wire format -> bit-exact merged_sha3_512!
+            sbdr_file = tmp / "ad_delta.sbdr"
+            sbdr_out_pos = tmp / "ad_sbdr_out.pos"
+            sbdr_out_neg = tmp / "ad_sbdr_out.neg"
+            # 1 word total, mask=0b1 (word 0 active), payload=(pos=0b0011, neg=0b0100)
+            sbdr_file.write_bytes(b"SBDR1\x00\x00\x00" + struct.pack("<QQQQ", 1, 1, 0b0011, 0b0100))
+            aa_sbdr = rpc("tools/call", {"name": "t81.adapter_apply", "arguments": {
+                "base_pos_path": str(ab_pos), "base_neg_path": str(ab_neg),
+                "delta_sbdr_path": str(sbdr_file),
+                "out_pos_path": str(sbdr_out_pos), "out_neg_path": str(sbdr_out_neg),
+                "max_flip_pct": "5.0"}})["result"]["structured"]
+            assert aa_sbdr["ok"] and aa_sbdr["applied"] and aa_sbdr["delta_format"] == "sbdr1"
+            assert aa_sbdr["effective_flips"] == 2 and aa_sbdr["active_blocks"] == 1
+            assert aa_sbdr["merged_sha3_512"] == aa_ok["merged_sha3_512"]
+            assert sbdr_out_pos.read_bytes() == ao_pos.read_bytes()
+            assert sbdr_out_neg.read_bytes() == ao_neg.read_bytes()
+
             print(json.dumps({
                 "native_cpp_mcp_tools": len(tools),
                 "all_checks_passed": True,

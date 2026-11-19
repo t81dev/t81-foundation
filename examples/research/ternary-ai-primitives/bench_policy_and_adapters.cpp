@@ -309,6 +309,77 @@ int main() {
   const double s_i8 = elapsed_us(t4, t5) / ITERS;
   const double f_ns = (elapsed_us(t6, t7) * 1000.0) / static_cast<double>(Q);
 
+  // Sparse-Block Dual-Rail (SBDR1) vs Base-243 at 95% block-zero adapter sparsity (N=1M trits)
+  int8_t lut243[243][5];
+  for (int b = 0; b < 243; ++b) {
+    int x = b;
+    for (int k = 0; k < 5; ++k) {
+      lut243[b][k] = static_cast<int8_t>((x % 3) - 1);
+      x /= 3;
+    }
+  }
+  std::vector<int8_t> sp_raw(N, 0);
+  std::vector<uint64_t> sp_p(WORDS, 0), sp_n(WORDS, 0);
+  std::uniform_int_distribution<int> sp_gate(0, 19);  // 5% active blocks (95% block-zero)
+  for (size_t w = 0; w < WORDS; ++w) {
+    if (sp_gate(rng) != 0) continue;
+    for (size_t b = 0; b < 64; ++b) {
+      const int8_t v = static_cast<int8_t>(dist(rng));
+      sp_raw[w * 64 + b] = v;
+      if (v > 0)
+        sp_p[w] |= (1ULL << b);
+      else if (v < 0)
+        sp_n[w] |= (1ULL << b);
+    }
+  }
+  std::vector<uint8_t> b243((N + 4) / 5, 0);
+  for (size_t i = 0, o = 0; i + 5 <= N; i += 5, ++o) {
+    b243[o] =
+        static_cast<uint8_t>((sp_raw[i] + 1) + 3 * (sp_raw[i + 1] + 1) + 9 * (sp_raw[i + 2] + 1) +
+                             27 * (sp_raw[i + 3] + 1) + 81 * (sp_raw[i + 4] + 1));
+  }
+  std::vector<uint64_t> sb_mask(WORDS / 64, 0), sb_p, sb_n;
+  for (size_t w = 0; w < WORDS; ++w) {
+    if ((sp_p[w] | sp_n[w]) != 0ULL) {
+      sb_mask[w >> 6] |= (1ULL << (w & 63));
+      sb_p.push_back(sp_p[w]);
+      sb_n.push_back(sp_n[w]);
+    }
+  }
+  std::vector<int8_t> dec243(N, 0);
+  auto t8 = Clock::now();
+  for (size_t i = 0, o = 0; i + 5 <= N; i += 5, ++o) {
+    const int8_t* t = lut243[b243[o]];
+    dec243[i] = t[0];
+    dec243[i + 1] = t[1];
+    dec243[i + 2] = t[2];
+    dec243[i + 3] = t[3];
+    dec243[i + 4] = t[4];
+  }
+  sink += static_cast<uint64_t>(dec243[0] + dec243[N - 5]);
+  auto t9 = Clock::now();
+  std::vector<uint64_t> rec_p(WORDS, 0), rec_n(WORDS, 0);
+  size_t sidx = 0;
+  for (size_t m = 0; m < sb_mask.size(); ++m) {
+    uint64_t bits = sb_mask[m];
+    while (bits != 0ULL) {
+      const unsigned tz = static_cast<unsigned>(std::countr_zero(bits));
+      const size_t w = (m << 6) + tz;
+      rec_p[w] = sb_p[sidx];
+      rec_n[w] = sb_n[sidx];
+      ++sidx;
+      bits &= (bits - 1ULL);
+    }
+  }
+  sink += rec_p[0] + rec_n[WORDS - 1];
+  auto t10 = Clock::now();
+  const bool sbdr_exact = (rec_p == sp_p && rec_n == sp_n);
+  const double sbdr_bpt =
+      static_cast<double>(16 + sb_mask.size() * 8 + (sb_p.size() + sb_n.size()) * 8) * 8.0 /
+      static_cast<double>(N);
+  const double b243_us = elapsed_us(t8, t9);
+  const double sbdr_us = elapsed_us(t9, t10);
+
   std::cout << std::fixed << std::setprecision(2) << "{\n"
             << "  \"schema\": \"t81.policy-and-adapters-bench.v1\",\n"
             << "  \"simd\": \"" << (T81_HAS_NEON ? "arm64_neon" : "portable_scalar") << "\",\n"
@@ -327,7 +398,15 @@ int main() {
             << "  \"tristate_revocation_filter_256kb\": {\n"
             << "    \"revoked_false_negatives\": " << fn_revoked << ",\n"
             << "    \"ns_per_query\": " << f_ns << "\n"
+            << "  },\n"
+            << "  \"sbdr1_vs_base243_95pct_sparse_1m\": {\n"
+            << "    \"exact_match\": " << (sbdr_exact ? "true" : "false") << ",\n"
+            << "    \"base243_bits_per_trit\": 1.60,\n"
+            << "    \"sbdr1_bits_per_trit\": " << sbdr_bpt << ",\n"
+            << "    \"base243_decode_us\": " << b243_us << ",\n"
+            << "    \"sbdr1_decode_us\": " << sbdr_us << ",\n"
+            << "    \"decode_speedup\": " << (b243_us / std::max(0.01, sbdr_us)) << "\n"
             << "  }\n"
             << "}\n";
-  return (kleene_exact && sat_add_exact && fn_revoked == 0) ? 0 : 1;
+  return (kleene_exact && sat_add_exact && sbdr_exact && fn_revoked == 0) ? 0 : 1;
 }
