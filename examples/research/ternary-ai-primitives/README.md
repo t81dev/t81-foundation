@@ -11,6 +11,12 @@ Demonstrates three novel AI primitives enabled directly by balanced ternary's **
 3. **Block-Structured Activation-Sparsity Zero-Skipping (`1×4096×4096`):**
    - Pre-extracts active 128-trit activation blocks once per token (`O(32)`) and streams only active weight blocks branchlessly across `N = 4096` rows (`0.99×` at `0%` zero, `1.77×` at `50%`, `5.13×` at `87.5%` / 8-expert MoE, `10.09×` at `93.8%` / 16-expert MoE).
    - *Caveat:* Applies to block-structured sparsity (MoE / grouped channels), not uniform unstructured random sparsity where every 128-trit block contains a non-zero element.
+4. **Zero-Dequantization Saturated Ternary Adapter Composition (`t81.adapter_apply` & `bench_policy_and_adapters.cpp`):**
+   - Composes a ternary adapter `Δ ∈ {-1, 0, +1}` directly onto packed Dual-Rail weights via exact 6-op bitwise saturated addition `out_p = (wp & ~dn) | (dp & ~wn)`, `out_n = (wn & ~dp) | (dn & ~wp)` while counting exact flips in the same pass (`4.58×` vs NEON `int8_t` at 1M weights, `3.94×` at 16M DRAM-bound; `64–77 B weights/s` on Apple M2).
+5. **Kleene 3-Valued Policy Composition & Tri-State Revocation Filter (`bench_policy_and_adapters.cpp`):**
+   - Vectorized Kleene strong conjunction (`ALLOW=+1`, `UNKNOWN=0`, `DENY=-1` where `DENY` overrides `UNKNOWN`) plus single-pass conflict mask (`5.08×` vs NEON `int8_t` at 1M rules, `75.6 B rules/s` on Apple M2).
+   - 256 KB Dual-Rail Tri-State Bloom filter (`0/5000` revoked false negatives, fail-closed, `~7.2 ns/query` = `138 M checks/s`).
+   - *Parked negative finding (Ternary KV-Cache Attention):* Standalone 1-stage ternary `Q·K^T` at `D=128` suffers integer tie collisions (`18.2%–40.6%` Recall@10); 2-stage ternary top-64 pre-filter → FP32 rerank reaches `85.6%` vs `57.0%` binary on sparse needles, but remains parked pending evaluation on real LLM KV traces.
 
 ## Quick Start
 

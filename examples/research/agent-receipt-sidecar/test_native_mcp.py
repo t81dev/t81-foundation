@@ -60,7 +60,7 @@ def main() -> int:
             init = rpc("initialize")
             assert init["result"]["serverInfo"]["name"] == "t81-native-mcp"
             tools = rpc("tools/list")["result"]["tools"]
-            assert len(tools) == 14
+            assert len(tools) == 15
             assert all("inputSchema" in t for t in tools)
 
             # 0. session_bootstrap (1-call verified wake-up packet)
@@ -148,7 +148,7 @@ def main() -> int:
 
             # 8. session_bootstrap capabilities + t81.run_subgraph (fail-closed + verified VM execution)
             boot = rpc("tools/call", {"name": "t81.session_bootstrap", "arguments": {"repo_root": str(Path(__file__).resolve().parents[3])}})["result"]["structured"]
-            assert boot["ok"] and boot["native_mcp_tools"] == 14
+            assert boot["ok"] and boot["native_mcp_tools"] == 15
             assert boot["capabilities"]["bit_exact_cross_device_sha3_512"] is True
             assert boot["capabilities"]["bytes_per_trit"] == 0.25
 
@@ -200,6 +200,43 @@ def main() -> int:
             assert ms["results"][0]["doc_id"] == 1 and ms["results"][0]["score"] == 64
             assert ms["results"][1]["doc_id"] == 0 and ms["results"][1]["score"] == 0
             assert ms["retrieval_receipt"].startswith("sha3-512:")
+
+            # 11. t81.adapter_apply (zero-dequantization saturated ternary LoRA composition)
+            # Base word: bit0=+1, bit1=-1, bit2=0, bit3=+1 -> pos=0b1001, neg=0b0010
+            # Delta word: bit0=+1 (sat->+1, no flip), bit1=+1 (cancel->0, flip),
+            #             bit2=-1 (0->-1, flip), bit3=0 (keep +1, no flip)
+            # Expected merged: pos=0b1001, neg=0b0100, effective_flips=2
+            ab_pos = tmp / "ad_base.pos"
+            ab_neg = tmp / "ad_base.neg"
+            ad_pos = tmp / "ad_delta.pos"
+            ad_neg = tmp / "ad_delta.neg"
+            ao_pos = tmp / "ad_out.pos"
+            ao_neg = tmp / "ad_out.neg"
+            ab_pos.write_bytes(struct.pack("<Q", 0b1001))
+            ab_neg.write_bytes(struct.pack("<Q", 0b0010))
+            ad_pos.write_bytes(struct.pack("<Q", 0b0011))
+            ad_neg.write_bytes(struct.pack("<Q", 0b0100))
+
+            # Fail-closed when max_flip_pct = 1.0% (2/64 = 3.125% > 1.0%)
+            aa_deny = rpc("tools/call", {"name": "t81.adapter_apply", "arguments": {
+                "base_pos_path": str(ab_pos), "base_neg_path": str(ab_neg),
+                "delta_pos_path": str(ad_pos), "delta_neg_path": str(ad_neg),
+                "out_pos_path": str(ao_pos), "out_neg_path": str(ao_neg),
+                "max_flip_pct": "1.0"}})["result"]["structured"]
+            assert not aa_deny["ok"] and not aa_deny["applied"]
+            assert aa_deny["verdict"] == "DENY_EXCEEDS_FLIP_BUDGET"
+            assert aa_deny["effective_flips"] == 2 and not ao_pos.exists()
+
+            # Admitted when max_flip_pct = 5.0%
+            aa_ok = rpc("tools/call", {"name": "t81.adapter_apply", "arguments": {
+                "base_pos_path": str(ab_pos), "base_neg_path": str(ab_neg),
+                "delta_pos_path": str(ad_pos), "delta_neg_path": str(ad_neg),
+                "out_pos_path": str(ao_pos), "out_neg_path": str(ao_neg),
+                "max_flip_pct": "5.0"}})["result"]["structured"]
+            assert aa_ok["ok"] and aa_ok["applied"] and aa_ok["effective_flips"] == 2
+            assert aa_ok["adapter_receipt"].startswith("sha3-512:")
+            assert struct.unpack("<Q", ao_pos.read_bytes())[0] == 0b1001
+            assert struct.unpack("<Q", ao_neg.read_bytes())[0] == 0b0100
 
             print(json.dumps({
                 "native_cpp_mcp_tools": len(tools),

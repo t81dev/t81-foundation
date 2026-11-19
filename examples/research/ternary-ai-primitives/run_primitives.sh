@@ -21,3 +21,9 @@ if [[ "${R1}" != "${R2}" ]]; then
   exit 1
 fi
 printf '%s\n' "${OUT1}"
+
+BIN2="${TMPDIR}/bench_policy_and_adapters"
+"${CXX}" -std=c++23 -O3 -DNDEBUG \
+  "${ROOT_DIR}/examples/research/ternary-ai-primitives/bench_policy_and_adapters.cpp" \
+  -o "${BIN2}"
+"${BIN2}"
