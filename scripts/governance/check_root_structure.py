@@ -18,7 +18,6 @@ EXPECTED_TOP_LEVEL = {
     ".pre-commit-config.yaml",
     ".t81",
     "AGENTS.md",
-    "BUILD.bazel",
     "CMakeDoxyfile.in",
     "CMakeLists.txt",
     "CMakePresets.json",
