@@ -261,6 +261,30 @@ These are different evidentiary levels, not interchangeable labels. An experimen
 
 ---
 
+## Quick Verification (`v2.0.0`)
+
+To build the CLI and verify the deterministic runtime, CanonFS integrity, native C++ MCP airlock (`t81 mcp serve`), and exact-rational/triage examples locally:
+
+```bash
+cmake -S . -B build -G Ninja
+cmake --build build --target t81 -j
+
+# Native C++ MCP server (6 in-process tools, ~110 µs warm gate_check)
+python3 examples/research/agent-receipt-sidecar/test_native_mcp.py
+
+# Self-hosted MCP receipt dogfooding + 11-scenario compromised-agent gauntlet
+bash scripts/ci/run_agent_receipt_dogfood_smoke.sh
+
+# Exact-rational lab, two-node replay consensus, and deterministic risk triage
+bash examples/research/exact-rational-lab/run_lab.sh
+bash examples/research/replay-consensus/run_consensus.sh
+bash examples/research/deterministic-risk-triage/run_triage_demo.sh
+```
+
+See [`examples/research/agent-receipt-sidecar/QUICKSTART.md`](examples/research/agent-receipt-sidecar/QUICKSTART.md) and [`THREAT_MODEL.md`](examples/research/agent-receipt-sidecar/THREAT_MODEL.md) for MCP client setup and explicit security boundaries.
+
+---
+
 ## Documentation Navigation
 
 | Directory / File | Description |
