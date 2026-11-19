@@ -1905,6 +1905,7 @@ public:
           }
           ctx.registers[insn.a] = *res;
           ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+          tensor_canon_hashes_[*res] = hash_str;
 
           t81::axion::Verdict success_verdict;
           success_verdict.kind = t81::axion::VerdictKind::Allow;
@@ -4730,7 +4731,13 @@ public:
           t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "TMatMul kernel execution"};
           record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), ctx.registers[insn.b],
                              verdict);
-          auto computed = t81::vm::internal::tensor_matmul_checked(*tensor_a, *tensor_b);
+          std::string_view rhs_canon_hash;
+          if (auto hit = tensor_canon_hashes_.find(ctx.registers[insn.c]);
+              hit != tensor_canon_hashes_.end()) {
+            rhs_canon_hash = hit->second;
+          }
+          auto computed =
+              t81::vm::internal::tensor_matmul_checked_cached(*tensor_a, *tensor_b, rhs_canon_hash);
           if (!computed.has_value()) {
             log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor, 0, "TMatMul shape mismatch");
             trap = computed.error();
@@ -7724,6 +7731,7 @@ private:
   t81::tisc::Program program_{};
   std::unique_ptr<t81::axion::Engine> axion_engine_;
   std::shared_ptr<t81::canonfs::Driver> canonfs_driver_;
+  std::unordered_map<std::int64_t, std::string> tensor_canon_hashes_;
   t81::axion::DeterminismDetector* determinism_detector_{nullptr};
   static constexpr std::size_t kGcInterval = 64;
   /// RFC-0006 §2.3: canonical byte threshold = 3^12 = 531441 bytes.

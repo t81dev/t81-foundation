@@ -29,4 +29,11 @@ if [[ "${REC1}" != "${REC2}" ]]; then
   echo "ERROR: non-deterministic execution receipt across consecutive runs" >&2
   exit 1
 fi
+
+# Seam 3: Compile real .t81 source (@axion_verify) & verify TISC subgraph via live t81 mcp serve
+if [[ -x "${ROOT_DIR}/build/t81" ]]; then
+  "${ROOT_DIR}/build/t81" code check "${ROOT_DIR}/examples/research/full-stack-t81-pipeline/verified_inference.t81" >/dev/null
+  python3 "${ROOT_DIR}/examples/research/agent-receipt-sidecar/test_native_mcp.py" >/dev/null
+fi
+
 printf '%s\n' "${OUT1}"

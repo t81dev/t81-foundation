@@ -1,0 +1,10 @@
+// Seam 3: T81Lang source lowered through Lexer -> Parser -> IRGenerator (@axion_verify -> AXVERIFY)
+@axion_verify
+fn verified_score(a: i32, b: i32) -> i32 {
+  return a + b;
+}
+
+fn main() -> i32 {
+  let s: i32 = verified_score(21, 21);
+  return s;
+}

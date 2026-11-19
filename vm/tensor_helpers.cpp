@@ -6,7 +6,10 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <deque>
+#include <mutex>
 #include <sstream>
+#include <unordered_map>
 
 #ifdef __ARM_NEON
 #include <arm_neon.h>
@@ -1390,13 +1393,59 @@ bool tensor_softmax_compatible(const t81::T729DynamicTensor& tensor) {
 
 namespace {
 
+struct CachedDualRailRhs {
+  std::size_t K = 0;
+  std::size_t N = 0;
+  std::size_t W64 = 0;
+  std::vector<std::uint64_t> Bp;
+  std::vector<std::uint64_t> Bn;
+};
+
+class CanonDualRailRhsCache {
+public:
+  static constexpr std::size_t kCapacity = 64;
+
+  std::shared_ptr<const CachedDualRailRhs> get(std::string_view key, std::size_t K,
+                                               std::size_t N) const {
+    if (key.empty()) return nullptr;
+    std::lock_guard<std::mutex> lock(mu_);
+    auto it = map_.find(std::string(key));
+    if (it == map_.end()) return nullptr;
+    if (it->second->K != K || it->second->N != N) return nullptr;
+    return it->second;
+  }
+
+  void put(std::string_view key, std::shared_ptr<const CachedDualRailRhs> entry) {
+    if (key.empty() || !entry) return;
+    std::lock_guard<std::mutex> lock(mu_);
+    std::string k(key);
+    if (map_.contains(k)) return;
+    if (fifo_.size() >= kCapacity) {
+      map_.erase(fifo_.front());
+      fifo_.pop_front();
+    }
+    fifo_.push_back(k);
+    map_.emplace(std::move(k), std::move(entry));
+  }
+
+private:
+  mutable std::mutex mu_;
+  std::unordered_map<std::string, std::shared_ptr<const CachedDualRailRhs>> map_;
+  std::deque<std::string> fifo_;
+};
+
+CanonDualRailRhsCache& canon_dualrail_rhs_cache() {
+  static CanonDualRailRhsCache cache;
+  return cache;
+}
+
 // Fast-path Dual-Rail (P, N) ternary 2D matmul for T729DynamicTensor when both
 // operands contain exact balanced-ternary values {-1.0f, 0.0f, +1.0f} and dimensions
 // exceed the SIMD amortization threshold. Falls back to t81::ops::matmul() on any
 // non-ternary float element with zero semantic change.
 bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
                                     const t81::T729DynamicTensor& rhs,
-                                    t81::T729DynamicTensor& out) {
+                                    std::string_view rhs_canon_hash, t81::T729DynamicTensor& out) {
   if (lhs.shape().size() != 2 || rhs.shape().size() != 2) return false;
   const std::size_t M = static_cast<std::size_t>(lhs.shape()[0]);
   const std::size_t K = static_cast<std::size_t>(lhs.shape()[1]);
@@ -1425,23 +1474,37 @@ bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
     }
   }
 
-  // Pack rhs (K x N) transposed into (N x W64) for contiguous inner-loop reads
-  std::vector<std::uint64_t> Bp(N * W64, 0ULL), Bn(N * W64, 0ULL);
-  for (std::size_t k = 0; k < K; ++k) {
-    const float* row = b_data.data() + k * N;
-    const std::size_t word = k >> 6;
-    const std::uint64_t bit = 1ULL << (k & 63);
-    for (std::size_t n = 0; n < N; ++n) {
-      const float v = row[n];
-      if (v == 1.0f) {
-        Bp[n * W64 + word] |= bit;
-      } else if (v == -1.0f) {
-        Bn[n * W64 + word] |= bit;
-      } else if (v != 0.0f) {
-        return false;
+  // Seam 2: Reuse content-addressed DualRail transposed rhs on CanonFS TLoadHash hit
+  auto cached_rhs = canon_dualrail_rhs_cache().get(rhs_canon_hash, K, N);
+  if (!cached_rhs) {
+    auto built = std::make_shared<CachedDualRailRhs>();
+    built->K = K;
+    built->N = N;
+    built->W64 = W64;
+    built->Bp.assign(N * W64, 0ULL);
+    built->Bn.assign(N * W64, 0ULL);
+    for (std::size_t k = 0; k < K; ++k) {
+      const float* row = b_data.data() + k * N;
+      const std::size_t word = k >> 6;
+      const std::uint64_t bit = 1ULL << (k & 63);
+      for (std::size_t n = 0; n < N; ++n) {
+        const float v = row[n];
+        if (v == 1.0f) {
+          built->Bp[n * W64 + word] |= bit;
+        } else if (v == -1.0f) {
+          built->Bn[n * W64 + word] |= bit;
+        } else if (v != 0.0f) {
+          return false;
+        }
       }
     }
+    if (!rhs_canon_hash.empty()) {
+      canon_dualrail_rhs_cache().put(rhs_canon_hash, built);
+    }
+    cached_rhs = std::move(built);
   }
+  const auto& Bp = cached_rhs->Bp;
+  const auto& Bn = cached_rhs->Bn;
 
   out = t81::T729DynamicTensor({static_cast<int>(M), static_cast<int>(N)});
   float* c_data = out.data().data();
@@ -1526,7 +1589,7 @@ bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
 t81::T729DynamicTensor tensor_matmul_2d(const t81::T729DynamicTensor& lhs,
                                         const t81::T729DynamicTensor& rhs) {
   t81::T729DynamicTensor fast_out;
-  if (try_dualrail_ternary_matmul_2d(lhs, rhs, fast_out)) {
+  if (try_dualrail_ternary_matmul_2d(lhs, rhs, {}, fast_out)) {
     return fast_out;
   }
   return t81::ops::matmul(lhs, rhs);
@@ -1699,11 +1762,21 @@ std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_transpose_checked(
 
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_matmul_checked(
     const t81::T729DynamicTensor& lhs, const t81::T729DynamicTensor& rhs) {
+  return tensor_matmul_checked_cached(lhs, rhs, {});
+}
+
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_matmul_checked_cached(
+    const t81::T729DynamicTensor& lhs, const t81::T729DynamicTensor& rhs,
+    std::string_view rhs_canon_hash) {
   if (!tensor_matmul_compatible(lhs, rhs)) {
     return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
                                                                 t81::vm::Trap::ShapeFault);
   }
-  return tensor_matmul_2d(lhs, rhs);
+  t81::T729DynamicTensor fast_out;
+  if (try_dualrail_ternary_matmul_2d(lhs, rhs, rhs_canon_hash, fast_out)) {
+    return fast_out;
+  }
+  return t81::ops::matmul(lhs, rhs);
 }
 
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_contract_dot_checked(
