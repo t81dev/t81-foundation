@@ -95,7 +95,7 @@ def main() -> int:
             init = client.call("initialize")
             assert init["result"]["serverInfo"]["name"] == "t81-receipt-sidecar"
             tools = client.call("tools/list")["result"]["tools"]
-            assert len(tools) == 6
+            assert len(tools) == 7
 
             # --- Experiment 1: Compromised-Agent Gauntlet ---
             unauthorized_side_effects = 0
@@ -355,6 +355,28 @@ def main() -> int:
                 unauthorized_side_effects += 1
             assert not gate_bad_apl["ok"] and "PolicyValidationFault" in gate_bad_apl["reason"]
             scenarios["10_malformed_apl_rejected"] = "PASS (rejected by real t81 policy validate)"
+
+            # 11. Tier 1 -> Tier 2 bridge: exact-rational .t81 VM certification over MCP
+            exact_lab = HERE.parent / "exact-rational-lab" / "exact_rational_lab.t81"
+            vm_cert = client.tool(
+                "t81.certify_and_replay",
+                {
+                    "kind": "t81_program",
+                    "source_path": str(exact_lab),
+                    "policy_path": str(policy_v1),
+                    "canonfs_root": str(canonfs),
+                    "signing_key": str(priv),
+                    "public_key_uri": f"file://{pub}",
+                    "principal_id": "vm-arbiter-agent",
+                },
+            )
+            assert vm_cert["ok"] and vm_cert["deterministic"]
+            ver_vm = client.tool(
+                "t81.verify_receipt",
+                {"bundle": vm_cert["receipt"], "public_key": str(pub)},
+            )
+            assert ver_vm["ok"] and ver_vm["signature_verified"]
+            scenarios["11_tier2_vm_exact_rational_cert"] = "PASS (T81VM certified & signed RFC-00D4 receipt verified)"
 
             # --- Experiment 2: 100-Call Warm Resident Latency Benchmark ---
             # Run BEFORE tampering with CanonFS objects!

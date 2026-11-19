@@ -504,6 +504,106 @@ def tool_verify_dag(args: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def tool_certify_and_replay(args: dict[str, Any]) -> dict[str, Any]:
+    """Tier 1 -> Tier 2 bridge: execute T81VM determinism certify (or assess-fixed) and emit signed RFC-00D4 receipt."""
+    t81_bin = args.get("t81_bin", DEFAULT_T81_BIN)
+    kind = args.get("kind", "t81_program")
+    canonfs_root = args["canonfs_root"]
+    signing_key = args["signing_key"]
+    public_key_uri = args["public_key_uri"]
+    principal_id = args["principal_id"]
+    policy_path = Path(args["policy_path"])
+    parent_bundle_ids = args.get("parent_bundle_ids") or []
+
+    if not policy_path.is_file():
+        return {"ok": False, "error": f"missing policy file: {policy_path}"}
+    policy_bytes = policy_path.read_bytes()
+    policy_sha3_512 = "sha3-512:" + hashlib.sha3_512(policy_bytes).hexdigest()
+    valid_apl, apl_err = validate_apl_with_t81(t81_bin, policy_path, policy_sha3_512)
+    if not valid_apl:
+        return {"ok": False, "error": f"PolicyValidationFault: {apl_err}"}
+
+    now_utc = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    if kind == "t81_program":
+        src_path = Path(args["source_path"])
+        if not src_path.is_file():
+            return {"ok": False, "error": f"missing source_path: {src_path}"}
+        with tempfile.TemporaryDirectory() as td:
+            tisc_path = Path(td) / (src_path.stem + ".tisc")
+            build = subprocess.run([t81_bin, "code", "build", str(src_path), "-o", str(tisc_path)], capture_output=True, text=True)
+            if build.returncode != 0:
+                return {"ok": False, "error": f"t81 code build failed: {build.stderr.strip() or build.stdout.strip()}"}
+            cert_proc = subprocess.run([t81_bin, "determinism", "certify", str(tisc_path), "--json"], capture_output=True, text=True)
+            if cert_proc.returncode != 0:
+                return {"ok": False, "error": f"t81 determinism certify failed: {cert_proc.stderr.strip() or cert_proc.stdout.strip()}"}
+            cert = json.loads(cert_proc.stdout)
+            if not cert.get("ok") or not cert.get("deterministic"):
+                return {"ok": False, "error": "program failed determinism certification", "cert": cert}
+            imp = subprocess.run([t81_bin, "canonfs", "import", str(tisc_path), "--canonfs-root", canonfs_root, "--json"], capture_output=True, text=True)
+            if imp.returncode != 0:
+                return {"ok": False, "error": f"canonfs import failed: {imp.stderr.strip()}"}
+            imp_data = json.loads(imp.stdout)
+            canon_ref = imp_data["imported_objects"][0]
+            prov_ref = imp_data["provenance_ref"]
+
+        src_sha = "sha3-512:" + hashlib.sha3_512(src_path.read_bytes()).hexdigest()
+        bundle_id = canon_ref
+        if parent_bundle_ids:
+            dag_seed = f"{canon_ref}|vm.certify.v1|{principal_id}|{','.join(parent_bundle_ids)}".encode("utf-8")
+            bundle_id = "sha3-256:" + hashlib.sha3_256(dag_seed).hexdigest()
+        evidence_obj: dict[str, Any] = {
+            "input_digest": src_sha,
+            "output_digest": "sha3-512:" + cert["run1_output_sha3_512"],
+            "execution_trace_hash": "sha3-512:" + cert["run1_trace_sha3_512"],
+            "intermediate_state_hashes": [canon_ref, prov_ref],
+        }
+        if parent_bundle_ids:
+            evidence_obj["parent_bundle_ids"] = list(parent_bundle_ids)
+        bundle: dict[str, Any] = {
+            "schema_version": "1.0.0-draft",
+            "bundle_id": bundle_id,
+            "timestamp_utc": now_utc,
+            "meaning": {
+                "action_type": "vm.determinism_certify.v1",
+                "parameters": {
+                    "source_name": src_path.name,
+                    "program_sha3_512": "sha3-512:" + cert["program_sha3_512"],
+                    "canon_ref": canon_ref,
+                },
+                "proposed_side_effects": [{"target": "deterministic_arbiter", "mutation": "CERTIFIED"}],
+            },
+            "evidence": evidence_obj,
+            "method": {
+                "runtime_environment": "t81vm-reference",
+                "transformation_id": "determinism.certify.v1",
+                "model_weights_digest": "sha3-512:" + cert["program_sha3_512"],
+            },
+            "authority": {
+                "policy_id": policy_path.name,
+                "policy_hash": policy_sha3_512,
+                "verdict": "ALLOW",
+                "enforcement_mode": "fail-closed",
+                "evaluation_timestamp": now_utc,
+                "matched_rules": ["determinism-certified"],
+            },
+            "challengeability": {
+                "replayable": True,
+                "verification_procedure": "t81 determinism certify <tisc> --json",
+                "audit_package_uri": canon_ref,
+            },
+        }
+        bundle["accountability"] = {
+            "principal_id": principal_id,
+            "public_key_uri": public_key_uri,
+            "signing_scheme": "ed25519-canonical-json-v1",
+            "signature": sign_ed25519(signing_key, canonical_signing_bytes(bundle)),
+        }
+        return {"ok": True, "kind": kind, "deterministic": True, "cert": cert, "receipt": bundle}
+
+    return {"ok": False, "error": f"unsupported certify_and_replay kind: {kind}"}
+
+
 TOOLS = {
     "t81.gate_and_seal": {
         "description": "Evaluate Axion .apl policy pre-side-effect, seal artifact into CanonFS, and emit signed RFC-00D4 bundle.",
@@ -516,6 +616,10 @@ TOOLS = {
     "t81.verify_dag": {
         "description": "Verify a multi-agent Merkle DAG of RFC-00D4 receipts backwards from head_bundle_id via parent_bundle_ids.",
         "handler": tool_verify_dag,
+    },
+    "t81.certify_and_replay": {
+        "description": "Tier 1 -> Tier 2 bridge: compile and determinism-certify a .t81 program in T81VM, seal into CanonFS, and emit a signed RFC-00D4 receipt.",
+        "handler": tool_certify_and_replay,
     },
     "t81.get_effective_policy": {
         "description": "Introspect the authoritative .apl policy floor and digest for a given action class.",

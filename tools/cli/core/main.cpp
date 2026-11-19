@@ -2426,7 +2426,7 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "canonize-file" || a.command == "memory-stats" ||
                  a.command == "tier" || a.command == "profile" || a.command == "c" ||
                  a.command == "rust" || a.command == "python" || a.command == "llvm" ||
-                 a.command == "mlir") {
+                 a.command == "mlir" || a.command == "mcp") {
         a.command_args.emplace_back(argv[i]);
       } else {
         throw_usage_error("Unknown option: " + std::string(arg));
@@ -2446,7 +2446,8 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "man" || a.command == "feedback" || a.command == "canonize-tensor" ||
                  a.command == "canonize-file" || a.command == "memory-stats" ||
                  a.command == "tier" || a.command == "c" || a.command == "rust" ||
-                 a.command == "python" || a.command == "llvm" || a.command == "mlir") {
+                 a.command == "python" || a.command == "llvm" || a.command == "mlir" ||
+                 a.command == "mcp") {
         a.command_args.emplace_back(argv[i]);
       } else {
         if (!a.input.empty()) {
@@ -10930,6 +10931,118 @@ int main(int argc, char* argv[]) {
 
     } else if (args.command == "canonfs") {
       return run_canonfs_command(args);
+
+    } else if (args.command == "mcp") {
+      if (args.command_args.empty() || args.command_args[0] != "serve") {
+        std::cerr << "Usage: t81 mcp serve\n";
+        return 1;
+      }
+      auto extract_str = [](const std::string& json, const std::string& key) -> std::string {
+        const std::string pat = "\"" + key + "\"";
+        const size_t kpos = json.find(pat);
+        if (kpos == std::string::npos) return {};
+        const size_t colon = json.find(':', kpos + pat.size());
+        if (colon == std::string::npos) return {};
+        const size_t q1 = json.find('"', colon + 1);
+        if (q1 == std::string::npos) return {};
+        std::string out;
+        for (size_t i = q1 + 1; i < json.size(); ++i) {
+          if (json[i] == '\\' && i + 1 < json.size()) {
+            out.push_back(json[++i]);
+          } else if (json[i] == '"') {
+            break;
+          } else {
+            out.push_back(json[i]);
+          }
+        }
+        return out;
+      };
+      auto extract_id = [](const std::string& json) -> std::string {
+        const size_t kpos = json.find("\"id\"");
+        if (kpos == std::string::npos) return "null";
+        const size_t colon = json.find(':', kpos + 4);
+        if (colon == std::string::npos) return "null";
+        size_t i = colon + 1;
+        while (i < json.size() && (json[i] == ' ' || json[i] == '\t')) ++i;
+        size_t end = i;
+        while (end < json.size() && json[end] != ',' && json[end] != '}' && json[end] != ' ') ++end;
+        return end > i ? json.substr(i, end - i) : "null";
+      };
+
+      std::string line;
+      while (std::getline(std::cin, line)) {
+        if (line.empty()) continue;
+        const std::string id = extract_id(line);
+        const std::string method = extract_str(line, "method");
+        if (method == "initialize") {
+          std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id
+                    << ",\"result\":{\"protocolVersion\":\"2024-11-05\",\"serverInfo\":{\"name\":\"t81-native-mcp\",\"version\":\"2.0.0\"},\"capabilities\":{\"tools\":{}}}}\n"
+                    << std::flush;
+        } else if (method == "tools/list") {
+          std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id
+                    << ",\"result\":{\"tools\":["
+                    << "{\"name\":\"t81.policy_validate\",\"description\":\"Validate an Axion .apl policy in-process.\"},"
+                    << "{\"name\":\"t81.policy_test\",\"description\":\"Evaluate a SHA3-512 hash against an Axion .apl policy in-process.\"},"
+                    << "{\"name\":\"t81.determinism_hash\",\"description\":\"Compute SHA3-512 digest of a file in-process.\"}"
+                    << "]}}\n"
+                    << std::flush;
+        } else if (method == "tools/call") {
+          const std::string name = extract_str(line, "name");
+          std::string structured = "{\"ok\":false,\"error\":\"unknown tool\"}";
+          if (name == "t81.policy_validate" || name == "t81.policy_test") {
+            const std::string ppath = extract_str(line, "policy_path");
+            std::ifstream ifs(ppath);
+            if (!ifs) {
+              structured = "{\"ok\":false,\"valid\":false,\"error\":\"could not open policy file\"}";
+            } else {
+              std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+              auto res = t81::axion::parse_policy(content);
+              if (!res) {
+                structured = "{\"ok\":false,\"valid\":false,\"error\":\"" + json_escape(res.error()) + "\"}";
+              } else if (name == "t81.policy_validate") {
+                structured = "{\"ok\":true,\"valid\":true,\"tier\":" + std::to_string(res.value().tier) + "}";
+              } else {
+                const std::string mhash = extract_str(line, "model_hash");
+                bool allowed = false;
+                for (const auto& h : res.value().allowed_tensor_hashes) {
+                  if (h == mhash) {
+                    allowed = true;
+                    break;
+                  }
+                }
+                structured = std::string("{\"ok\":") + (allowed ? "true" : "false") +
+                             ",\"admitted\":" + (allowed ? "true" : "false") + "}";
+              }
+            }
+          } else if (name == "t81.determinism_hash") {
+            const std::string fpath = extract_str(line, "path");
+            std::ifstream ifs(fpath, std::ios::binary);
+            if (!ifs) {
+              structured = "{\"ok\":false,\"error\":\"could not open file\"}";
+            } else {
+              std::vector<uint8_t> bytes((std::istreambuf_iterator<char>(ifs)),
+                                         std::istreambuf_iterator<char>());
+              const auto digest = t81::crypto::sha3_512(bytes);
+              static const char* kHex = "0123456789abcdef";
+              std::string hex;
+              hex.reserve(digest.size() * 2);
+              for (uint8_t b : digest) {
+                hex.push_back(kHex[(b >> 4) & 0xF]);
+                hex.push_back(kHex[b & 0xF]);
+              }
+              structured = "{\"ok\":true,\"sha3_512\":\"sha3-512:" + hex + "\"}";
+            }
+          }
+          std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id
+                    << ",\"result\":{\"structured\":" << structured << "}}\n"
+                    << std::flush;
+        } else {
+          std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id
+                    << ",\"error\":{\"code\":-32601,\"message\":\"unknown method\"}}\n"
+                    << std::flush;
+        }
+      }
+      return 0;
 
     } else if (args.command == "artifact") {
       return run_artifact_command(args);

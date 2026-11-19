@@ -704,6 +704,14 @@ jobs:
           set -eo pipefail
           bash scripts/ci/run_model_artifact_review_smoke.sh 2>&1 | tee -a .github/logs/build-and-test.log
 
+      - name: Run agent receipt sidecar dogfood smoke (single matrix lane)
+        if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
+        shell: bash
+        run: |
+          set -eo pipefail
+          bash scripts/ci/run_agent_receipt_dogfood_smoke.sh 2>&1 | tee -a .github/logs/build-and-test.log
+          python3 examples/research/agent-receipt-sidecar/run_live_llm_redteam.py 2>&1 | tee -a .github/logs/build-and-test.log
+
       - name: Verify stable baseline docs and platform test surfaces
         shell: bash
         run: |
