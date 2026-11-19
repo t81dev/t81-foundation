@@ -3,6 +3,7 @@
 #include "t81/axion/ai_hooks.hpp"
 #include "t81/axion/policy.hpp"
 #include "t81/axion/policy_engine.hpp"
+#include "t81/config.hpp"
 #include "t81/crypto/sha3.hpp"
 #include "t81/isa/encoding.hpp"
 #include "t81/isa/opcodes.hpp"
@@ -11,6 +12,7 @@
 #include <algorithm>
 #include <bit>
 #include <cctype>
+#include <cerrno>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -141,7 +143,9 @@ private:
     return false;
   }
 
-  bool parse_val(JsonNode& out) {
+  bool parse_val(JsonNode& out, int depth = 0) {
+    static constexpr int kMaxDepth = 64;
+    if (depth > kMaxDepth) return false;
     skip_ws();
     if (i_ >= s_.size()) return false;
     const char c = s_[i_];
@@ -166,7 +170,7 @@ private:
         if (i_ >= s_.size() || s_[i_] != ':') return false;
         ++i_;
         JsonNode val;
-        if (!parse_val(val)) return false;
+        if (!parse_val(val, depth + 1)) return false;
         out.obj[std::move(k)] = std::move(val);
         skip_ws();
         if (i_ < s_.size() && s_[i_] == ',') {
@@ -192,7 +196,7 @@ private:
       }
       while (true) {
         JsonNode elem;
-        if (!parse_val(elem)) return false;
+        if (!parse_val(elem, depth + 1)) return false;
         skip_ws();
         if (i_ < s_.size() && s_[i_] == ',') {
           ++i_;
@@ -244,10 +248,11 @@ bool arg_double(const JsonNode& obj, const std::string& key, double default_val,
     return false;
   }
   const std::string& s = it->second.str;
-  if (s.empty()) return true;
+  if (s.empty() || std::isspace(static_cast<unsigned char>(s.front()))) return false;
+  errno = 0;
   char* endp = nullptr;
   const double v = std::strtod(s.c_str(), &endp);
-  if (endp == s.c_str() || *endp != '\0') return false;
+  if (errno == ERANGE || endp == s.c_str() || *endp != '\0') return false;
   out = v;
   return true;
 }
@@ -261,11 +266,11 @@ bool arg_u64(const JsonNode& obj, const std::string& key, uint64_t default_val, 
     return false;
   }
   const std::string& s = it->second.str;
-  if (s.empty()) return true;
-  if (s.front() == '-') return false;
+  if (s.empty() || !std::isdigit(static_cast<unsigned char>(s.front()))) return false;
+  errno = 0;
   char* endp = nullptr;
   const unsigned long long v = std::strtoull(s.c_str(), &endp, 10);
-  if (endp == s.c_str() || *endp != '\0') return false;
+  if (errno == ERANGE || endp == s.c_str() || *endp != '\0') return false;
   out = static_cast<uint64_t>(v);
   return true;
 }
@@ -621,7 +626,8 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
     if (method == "initialize") {
       std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id
                 << ",\"result\":{\"protocolVersion\":\"2024-11-05\",\"serverInfo\":{\"name\":\"t81-"
-                   "native-mcp\",\"version\":\"2.1.0\"},\"capabilities\":{\"tools\":{}}}}\n"
+                   "native-mcp\",\"version\":\""
+                << T81_VERSION_STR << "\"},\"capabilities\":{\"tools\":{}}}}\n"
                 << std::flush;
     } else if (method == "ping") {
       std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id << ",\"result\":{}}\n" << std::flush;
@@ -774,9 +780,9 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         const bool lock_ok = read_file_bytes(lock_path, lock_bytes);
         const bool reg_ok = fs::exists(reg_path);
         structured =
-            "{\"ok\":true,\"version\":\"2.1.0\",\"repo_root\":\"" + json_escape_mcp(root.string()) +
-            "\",\"git_ref\":\"" + json_escape_mcp(git_ref) + "\",\"git_head_sha\":\"" +
-            json_escape_mcp(head_sha) +
+            std::string("{\"ok\":true,\"version\":\"") + T81_VERSION_STR + "\",\"repo_root\":\"" +
+            json_escape_mcp(root.string()) + "\",\"git_ref\":\"" + json_escape_mcp(git_ref) +
+            "\",\"git_head_sha\":\"" + json_escape_mcp(head_sha) +
             "\",\"public_api_lock_present\":" + (lock_ok ? "true" : "false") +
             ",\"public_api_lock_sha3_512\":\"" + (lock_ok ? sha3_512_hex(lock_bytes) : "") +
             "\",\"determinism_registry_present\":" + (reg_ok ? "true" : "false") +

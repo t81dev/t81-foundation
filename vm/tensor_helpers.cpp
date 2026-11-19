@@ -1693,7 +1693,7 @@ bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
       c_data[m * N + n + 2] = static_cast<float>(s2);
       c_data[m * N + n + 3] = static_cast<float>(s3);
     }
-#elif defined(__x86_64__) && defined(__AVX2__)
+#elif defined(__AVX2__)
     const __m256i low_mask = _mm256_set1_epi8(0x0F);
     const __m256i pop_lut = _mm256_setr_epi8(0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4, 0, 1,
                                              1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4);

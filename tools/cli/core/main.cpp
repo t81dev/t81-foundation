@@ -10665,8 +10665,7 @@ int main(int argc, char* argv[]) {
 
     } else if (args.command == "mcp") {
       if (!args.command_args.empty() && args.command_args[0] == "help") {
-        print_help_mcp();
-        return 0;
+        return emit_help([&] { print_help_mcp(); });
       }
       return t81::cli::run_mcp_serve(args.command_args, [](const std::string& croot) -> int {
         Args fsck_args;
