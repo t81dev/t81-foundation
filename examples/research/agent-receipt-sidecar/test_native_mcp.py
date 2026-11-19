@@ -59,12 +59,22 @@ def main() -> int:
         try:
             init = rpc("initialize")
             assert init["result"]["serverInfo"]["name"] == "t81-native-mcp"
+            assert init["result"]["serverInfo"]["version"] == "2.0.1"
+            # JSON-RPC 2.0 notification must produce NO response; next ping must match its own id.
+            proc.stdin.write(json.dumps({"jsonrpc": "2.0", "method": "notifications/initialized"}) + "\n")
+            proc.stdin.flush()
+            pong = rpc("ping")
+            assert pong["id"] == rid and pong["result"] == {}
             tools = rpc("tools/list")["result"]["tools"]
             assert len(tools) == 15
             assert all("inputSchema" in t for t in tools)
 
-            # 0. session_bootstrap (1-call verified wake-up packet)
-            boot = rpc("tools/call", {"name": "t81.session_bootstrap", "arguments": {"repo_root": str(ROOT_DIR)}})["result"]["structured"]
+            # 0. session_bootstrap (1-call verified wake-up packet + standard MCP content envelope)
+            boot_resp = rpc("tools/call", {"name": "t81.session_bootstrap", "arguments": {"repo_root": str(ROOT_DIR)}})["result"]
+            assert boot_resp["isError"] is False
+            assert boot_resp["content"][0]["type"] == "text"
+            assert json.loads(boot_resp["content"][0]["text"]) == boot_resp["structured"]
+            boot = boot_resp["structured"]
             assert boot["ok"] and boot["public_api_lock_present"] and boot["determinism_registry_present"]
             assert len(boot["git_head_sha"]) == 40
 

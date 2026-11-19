@@ -389,7 +389,8 @@ SubgraphVerifyResult verify_tisc_subgraph(const t81::tisc::Program& prog) {
 int run_mcp_serve(const std::vector<std::string>& command_args,
                   const std::function<int(const std::string&)>& run_canonfs_fsck_json) {
   if (command_args.empty() || command_args[0] != "serve") {
-    std::cerr << "Usage: t81 mcp serve\n";
+    std::cerr << "Usage: t81 mcp serve\n"
+              << "Run 't81 help mcp' to list all 15 native MCP tools.\n";
     return 1;
   }
 
@@ -401,11 +402,17 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
     if (line.empty()) continue;
     const std::string id = extract_id(line);
     const std::string method = extract_str(line, "method");
+    // Per JSON-RPC 2.0 / MCP spec, notifications carry no id and must not receive a response.
+    if (id == "null" || method.rfind("notifications/", 0) == 0) {
+      continue;
+    }
     if (method == "initialize") {
       std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id
                 << ",\"result\":{\"protocolVersion\":\"2024-11-05\",\"serverInfo\":{\"name\":\"t81-"
                    "native-mcp\",\"version\":\"2.0.1\"},\"capabilities\":{\"tools\":{}}}}\n"
                 << std::flush;
+    } else if (method == "ping") {
+      std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id << ",\"result\":{}}\n" << std::flush;
     } else if (method == "tools/list") {
       std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id
                 << ",\"result\":{\"tools\":" << build_tools_list_json() << "}}\n"
@@ -1062,8 +1069,11 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           }
         }
       }
+      const bool is_err = (structured.find("\"ok\":false") != std::string::npos);
       std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id
-                << ",\"result\":{\"structured\":" << structured << "}}\n"
+                << ",\"result\":{\"content\":[{\"type\":\"text\",\"text\":\""
+                << json_escape_mcp(structured) << "\"}],\"isError\":" << (is_err ? "true" : "false")
+                << ",\"structured\":" << structured << "}}\n"
                 << std::flush;
     } else {
       std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id
