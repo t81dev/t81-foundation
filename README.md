@@ -15,7 +15,7 @@
 Run the verified end-to-end stack locally right after `cmake -S . -B build -G Ninja && cmake --build build --target t81 -j8`:
 
 ```bash
-# 1. Native C++ MCP server (12 in-process tools: Axion policy, CanonFS, atomic tx, TISC subgraph verify/run)
+# 1. Native C++ MCP server (15 in-process tools: Axion policy, CanonFS, atomic tx, TISC subgraph, Dual-Rail diff/RAG/adapter)
 python3 examples/research/agent-receipt-sidecar/test_native_mcp.py
 
 # 2. Full-stack CanonFS -> Axion -> TISC -> T81VM -> Dual-Rail TMatMul (bit-exact SHA3-512 receipt)

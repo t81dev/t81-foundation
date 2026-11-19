@@ -341,6 +341,7 @@ public:
     state_.symbols = program_.symbol_pool;
     state_.string_vectors.clear();
     state_.tensors.clear();
+    tensor_canon_hashes_.clear();
     state_.tensors.reserve(program_.tensor_pool.size());
     for (const auto& t : program_.tensor_pool) {
       state_.tensors.push_back(t);
@@ -4907,6 +4908,7 @@ public:
             trap = set_res.error();
             break;
           }
+          tensor_canon_hashes_.erase(ctx.registers[insn.a]);
           t81::vm::internal::log_tensor_provenance(state_, state_.current_context, insn.opcode,
                                                    static_cast<std::size_t>(ctx.registers[insn.a]),
                                                    *tensor, "set");
@@ -7677,6 +7679,11 @@ private:
                        static_cast<std::int64_t>(state_.gc_cycles), verdict);
 
     auto reclaimed = t81::vm::internal::mark_and_sweep(state_);
+    if (reclaimed.tensors > 0) {
+      for (std::size_t free_idx : state_.free_tensor_indices) {
+        tensor_canon_hashes_.erase(static_cast<std::int64_t>(free_idx + 1));
+      }
+    }
     if (reclaimed.tensors > 0 || reclaimed.infinite_forms > 0) {
       t81::axion::Verdict reclaimed_verdict;
       reclaimed_verdict.kind = t81::axion::VerdictKind::Allow;

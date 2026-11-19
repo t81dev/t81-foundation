@@ -114,6 +114,7 @@ commands=(
   'tensor:tensor artifact tools'
   'ai:Bounded AI tasks, model inspection, and partial inference tools'
   'weights:model weight tools'
+  'model:model artifact intake and inspection'
   'policy:Axion policy tools'
   'axion:Axion governor tools'
   'trace:trace inspection tools'

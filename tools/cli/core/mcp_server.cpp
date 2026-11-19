@@ -772,9 +772,9 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                                            std::to_string(ax_events);
                 const std::vector<uint8_t> rec_bytes(rec_in.begin(), rec_in.end());
                 const std::string exec_rec = sha3_512_hex(rec_bytes);
-                structured = "{\"ok\":true,\"verdict\":\"VERIFIED_AND_EXECUTED\","
-                             "\"executed\":true,\"halted\":" +
-                             std::string(halted ? "true" : "false") +
+                structured = std::string("{\"ok\":") + (halted ? "true" : "false") +
+                             ",\"verdict\":\"" + (halted ? "VERIFIED_AND_EXECUTED" : "VM_TRAP") +
+                             "\",\"executed\":true,\"halted\":" + (halted ? "true" : "false") +
                              ",\"trap_code\":" + std::to_string(trap_code) +
                              ",\"instruction_count\":" + std::to_string(dec.value().insns.size()) +
                              ",\"matmul_count\":" + std::to_string(vr.matmul_count) +
@@ -1090,7 +1090,8 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           }
         }
       }
-      const bool is_err = (structured.find("\"ok\":false") != std::string::npos);
+      const bool is_err = (structured.find("\"ok\":false") != std::string::npos) ||
+                          (structured.find("\"ok\": false") != std::string::npos);
       std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id
                 << ",\"result\":{\"content\":[{\"type\":\"text\",\"text\":\""
                 << json_escape_mcp(structured) << "\"}],\"isError\":" << (is_err ? "true" : "false")

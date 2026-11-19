@@ -165,9 +165,13 @@ def main() -> int:
             run_bad = rpc("tools/call", {"name": "t81.run_subgraph", "arguments": {"bytecode_hex": bad_bc}})["result"]["structured"]
             assert not run_bad["ok"] and not run_bad["executed"] and run_bad["verdict"] == "REJECT_UNVERIFIED_POLICY"
 
-            run_ok = rpc("tools/call", {"name": "t81.run_subgraph", "arguments": {"bytecode_hex": valid_bc, "policy_path": str(pol)}})["result"]["structured"]
-            assert run_ok["ok"] and run_ok["executed"] and run_ok["verdict"] == "VERIFIED_AND_EXECUTED"
-            assert run_ok["execution_receipt"].startswith("sha3-512:")
+            # Verified bytecode without loaded model weights traps cleanly (fail-closed VM_TRAP, not false ok:true)
+            run_trap_resp = rpc("tools/call", {"name": "t81.run_subgraph", "arguments": {"bytecode_hex": valid_bc, "policy_path": str(pol)}})["result"]
+            run_trap = run_trap_resp["structured"]
+            assert not run_trap["ok"] and run_trap["executed"] and not run_trap["halted"]
+            assert run_trap["verdict"] == "VM_TRAP" and run_trap["trap_code"] != 0
+            assert run_trap_resp["isError"] is True
+            assert run_trap["execution_receipt"].startswith("sha3-512:")
 
             # 9. t81.diff_check (admit <= 1% flip, deny > 1% flip)
             # 16 words = 1024 weights: flipping 4 bits = 0.39% (ADMIT), flipping 32 bits = 3.125% (DENY)

@@ -1551,7 +1551,6 @@ bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
   if (K != K2 || K < 64 || M * N < 64) return false;
 
   const auto& a_data = lhs.data();
-  const auto& b_data = rhs.data();
   const std::size_t W64 = (K + 63) / 64;
 
   std::vector<std::uint64_t> Ap(M * W64, 0ULL), An(M * W64, 0ULL);
@@ -1571,9 +1570,11 @@ bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
     }
   }
 
-  // Seam 2: Reuse content-addressed DualRail transposed rhs on CanonFS TLoadHash hit
+  // Seam 2: Check CanonDualRailRhsCache BEFORE touching rhs.data() so SBDR1T2D / cached
+  // CanonFS weights never trigger DFixed -> float materialization on TMatMul.
   auto cached_rhs = canon_dualrail_rhs_cache().get(rhs_canon_hash, K, N);
   if (!cached_rhs) {
+    const auto& b_data = rhs.data();
     auto built = std::make_shared<CachedDualRailRhs>();
     built->K = K;
     built->N = N;
@@ -1703,6 +1704,21 @@ bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
       }
       c_data[m * N + n] = static_cast<float>(acc);
     }
+  }
+  if (lhs.numeric_class() == t81::TensorNumericClass::HostFloat ||
+      rhs.numeric_class() == t81::TensorNumericClass::HostFloat) {
+    out.set_numeric_class(t81::TensorNumericClass::HostFloat);
+  } else {
+    bool all_trits = true;
+    for (std::size_t i = 0; i < M * N; ++i) {
+      const float v = c_data[i];
+      if (v != -1.0f && v != 0.0f && v != 1.0f) {
+        all_trits = false;
+        break;
+      }
+    }
+    out.set_numeric_class(all_trits ? t81::TensorNumericClass::ExactTrit
+                                    : t81::TensorNumericClass::ExactInt);
   }
   return true;
 }
