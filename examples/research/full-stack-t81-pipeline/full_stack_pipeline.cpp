@@ -93,6 +93,46 @@ std::vector<std::byte> serialize_canon_tensor(const t81::weights::NativeTensor& 
   return buffer;
 }
 
+std::vector<std::byte> serialize_sbdr1t2d(const std::vector<int8_t>& trits, size_t K, size_t N) {
+  const size_t W64 = (K + 63) / 64;
+  const size_t total_words = N * W64;
+  const size_t mask_words = (total_words + 63) / 64;
+  std::vector<uint64_t> Bp(total_words, 0ULL), Bn(total_words, 0ULL);
+  for (size_t k = 0; k < K; ++k) {
+    const size_t w = k >> 6;
+    const uint64_t bit = 1ULL << (k & 63);
+    for (size_t n = 0; n < N; ++n) {
+      const int8_t v = trits[k * N + n];
+      if (v > 0)
+        Bp[n * W64 + w] |= bit;
+      else if (v < 0)
+        Bn[n * W64 + w] |= bit;
+    }
+  }
+  std::vector<uint64_t> mask(mask_words, 0ULL);
+  std::vector<uint64_t> payload;
+  for (size_t wi = 0; wi < total_words; ++wi) {
+    if ((Bp[wi] | Bn[wi]) != 0ULL) {
+      mask[wi >> 6] |= (1ULL << (wi & 63));
+      payload.push_back(Bp[wi]);
+      payload.push_back(Bn[wi]);
+    }
+  }
+  const size_t total_bytes = 24 + mask_words * 8 + payload.size() * 8;
+  std::vector<std::byte> out(total_bytes);
+  static constexpr char kMagic[8] = {'S', 'B', 'D', 'R', '1', 'T', '2', 'D'};
+  const uint64_t K64 = static_cast<uint64_t>(K);
+  const uint64_t N64 = static_cast<uint64_t>(N);
+  std::memcpy(out.data(), kMagic, 8);
+  std::memcpy(out.data() + 8, &K64, 8);
+  std::memcpy(out.data() + 16, &N64, 8);
+  std::memcpy(out.data() + 24, mask.data(), mask_words * 8);
+  if (!payload.empty()) {
+    std::memcpy(out.data() + 24 + mask_words * 8, payload.data(), payload.size() * 8);
+  }
+  return out;
+}
+
 std::string sha3_hex(const void* data, size_t bytes) {
   return t81::crypto::sha3_512_hex(
       std::span<const uint8_t>(reinterpret_cast<const uint8_t*>(data), bytes));
@@ -121,11 +161,11 @@ int main() {
     }
   }
 
-  // 1. Write packed ternary tensors into live CanonFS driver
+  // 1. Write packed ternary tensors into live CanonFS driver (A=CanonicalFixed, B=SBDR1T2D!)
   auto driver =
       std::shared_ptr<t81::canonfs::Driver>(t81::canonfs::make_in_memory_driver().release());
   const auto bytes_a = serialize_canon_tensor(pack_ternary_native_tensor(A_trits, {M, K}));
-  const auto bytes_b = serialize_canon_tensor(pack_ternary_native_tensor(B_trits, {K, N}));
+  const auto bytes_b = serialize_sbdr1t2d(B_trits, K, N);
 
   auto ref_a = driver->write_object(t81::canonfs::ObjectType::CanonTensor, bytes_a);
   auto ref_b = driver->write_object(t81::canonfs::ObjectType::CanonTensor, bytes_b);

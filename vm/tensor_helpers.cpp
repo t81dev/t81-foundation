@@ -1347,6 +1347,11 @@ std::optional<t81::canonfs::CanonRef> parse_canon_tensor_ref(std::string_view ha
   return t81::canonfs::CanonRef{ch};
 }
 
+namespace {
+std::optional<t81::T729DynamicTensor> try_decode_sbdr1t2d_and_cache(
+    const std::vector<std::byte>& bytes, std::string_view hash_text);
+}  // namespace
+
 TensorLoadHashResult load_canon_tensor_by_hash(t81::canonfs::Driver& driver,
                                                std::string_view hash_text) {
   auto ref = parse_canon_tensor_ref(hash_text);
@@ -1357,6 +1362,18 @@ TensorLoadHashResult load_canon_tensor_by_hash(t81::canonfs::Driver& driver,
   auto obj_res = driver.read_object_bytes(*ref);
   if (!obj_res.has_value()) {
     return {TensorLoadHashStatus::CanonFsMiss, std::nullopt};
+  }
+
+  // Fast path: canonical SBDR1T2D sparse-block Dual-Rail 2D weight matrix.
+  // Pre-populates CanonDualRailRhsCache directly from active blocks with zero transpose.
+  static constexpr char kSbdr2dMagic[8] = {'S', 'B', 'D', 'R', '1', 'T', '2', 'D'};
+  if (obj_res.value().size() >= 24 &&
+      std::memcmp(obj_res.value().data(), kSbdr2dMagic, sizeof(kSbdr2dMagic)) == 0) {
+    auto sbdr_tensor = try_decode_sbdr1t2d_and_cache(obj_res.value(), hash_text);
+    if (!sbdr_tensor.has_value()) {
+      return {TensorLoadHashStatus::DecodeFault, std::nullopt};
+    }
+    return {TensorLoadHashStatus::Ok, std::move(sbdr_tensor)};
   }
 
   auto decoded = decode_canon_tensor_object(obj_res.value());
@@ -1437,6 +1454,86 @@ private:
 CanonDualRailRhsCache& canon_dualrail_rhs_cache() {
   static CanonDualRailRhsCache cache;
   return cache;
+}
+
+std::optional<t81::T729DynamicTensor> try_decode_sbdr1t2d_and_cache(
+    const std::vector<std::byte>& bytes, std::string_view hash_text) {
+  if (bytes.size() < 24) return std::nullopt;
+  std::uint64_t K64 = 0, N64 = 0;
+  std::memcpy(&K64, bytes.data() + 8, 8);
+  std::memcpy(&N64, bytes.data() + 16, 8);
+  if (K64 == 0 || N64 == 0 || K64 > 65536ULL || N64 > 65536ULL) return std::nullopt;
+
+  const std::size_t K = static_cast<std::size_t>(K64);
+  const std::size_t N = static_cast<std::size_t>(N64);
+  const std::size_t W64 = (K + 63) / 64;
+  const std::size_t total_words = N * W64;
+  const std::size_t mask_words = (total_words + 63) / 64;
+  const std::size_t header_bytes = 24 + mask_words * 8;
+  if (bytes.size() < header_bytes) return std::nullopt;
+
+  std::uint64_t active_blocks = 0;
+  for (std::size_t m = 0; m < mask_words; ++m) {
+    std::uint64_t mw = 0;
+    std::memcpy(&mw, bytes.data() + 24 + m * 8, 8);
+    if (m + 1 == mask_words && (total_words % 64) != 0) {
+      const std::uint64_t valid_mask = (1ULL << (total_words % 64)) - 1ULL;
+      if ((mw & ~valid_mask) != 0ULL) return std::nullopt;
+    }
+    active_blocks += static_cast<std::uint64_t>(std::popcount(mw));
+  }
+  if (bytes.size() != header_bytes + static_cast<std::size_t>(active_blocks) * 16) {
+    return std::nullopt;
+  }
+
+  auto built = std::make_shared<CachedDualRailRhs>();
+  built->K = K;
+  built->N = N;
+  built->W64 = W64;
+  built->Bp.assign(total_words, 0ULL);
+  built->Bn.assign(total_words, 0ULL);
+
+  std::vector<t81::core::detail::DFixed> fixed_vals(K * N, t81::core::detail::DFixed::zero());
+  const auto df_pos = t81::core::detail::DFixed::one();
+  const auto df_neg = -t81::core::detail::DFixed::one();
+
+  std::size_t payload_off = header_bytes;
+  for (std::size_t m = 0; m < mask_words; ++m) {
+    std::uint64_t bits = 0;
+    std::memcpy(&bits, bytes.data() + 24 + m * 8, 8);
+    while (bits != 0ULL) {
+      const unsigned tz = static_cast<unsigned>(std::countr_zero(bits));
+      const std::size_t word_idx = (m << 6) + tz;
+      std::uint64_t wp = 0, wn = 0;
+      std::memcpy(&wp, bytes.data() + payload_off, 8);
+      std::memcpy(&wn, bytes.data() + payload_off + 8, 8);
+      payload_off += 16;
+      if ((wp & wn) != 0ULL || (wp | wn) == 0ULL) return std::nullopt;
+      built->Bp[word_idx] = wp;
+      built->Bn[word_idx] = wn;
+
+      const std::size_t col = word_idx / W64;
+      const std::size_t k_base = (word_idx % W64) * 64;
+      const std::size_t k_lim = std::min(K, k_base + 64);
+      for (std::size_t k = k_base; k < k_lim; ++k) {
+        const std::uint64_t bit = 1ULL << (k - k_base);
+        if ((wp & bit) != 0ULL) {
+          fixed_vals[k * N + col] = df_pos;
+        } else if ((wn & bit) != 0ULL) {
+          fixed_vals[k * N + col] = df_neg;
+        }
+      }
+      bits &= (bits - 1ULL);
+    }
+  }
+
+  if (!hash_text.empty()) {
+    canon_dualrail_rhs_cache().put(hash_text, built);
+  }
+  auto tensor = t81::T729DynamicTensor::from_canonical_fixed(
+      {static_cast<int>(K), static_cast<int>(N)}, std::move(fixed_vals));
+  tensor.set_numeric_class(t81::TensorNumericClass::ExactTrit);
+  return tensor;
 }
 
 // Fast-path Dual-Rail (P, N) ternary 2D matmul for T729DynamicTensor when both
