@@ -52,6 +52,13 @@ from t81._t81 import (  # noqa: F401  (re-exported as public API)
     CanonDriver,
     make_in_memory_driver,
     make_persistent_driver,
+    # ── v2.1.0 Dual-Rail, Axion Policy, & SHA3-512 primitives ────────────────
+    sha3_512_hex,
+    validate_policy,
+    dualrail_pack,
+    dualrail_dot,
+    dualrail_diff_check,
+    dualrail_adapter_apply,
 )
 
 # Friendly alias: `t81.VM()` instead of `t81.make_interpreter_vm()`
@@ -82,4 +89,11 @@ __all__ = [
     "CanonDriver",
     "make_in_memory_driver",
     "make_persistent_driver",
+    # v2.1.0 Primitives
+    "sha3_512_hex",
+    "validate_policy",
+    "dualrail_pack",
+    "dualrail_dot",
+    "dualrail_diff_check",
+    "dualrail_adapter_apply",
 ]
