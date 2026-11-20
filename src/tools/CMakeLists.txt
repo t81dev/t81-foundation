@@ -115,6 +115,8 @@ add_executable(t81
   ${PROJECT_SOURCE_DIR}/tools/cli/core/main.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/core/cmd_axion_canonfs.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/core/cmd_determinism.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/cmd_policy.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/cmd_vm_tisc_ir.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/ai/ai_cli_shared.cpp
 )
 t81_preserve_root_output(t81)
