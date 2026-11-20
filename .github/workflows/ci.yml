@@ -153,7 +153,9 @@ jobs:
           python3 scripts/ci/audit_workflow_permissions.py --max-missing 0 2>&1 | tee -a .github/logs/spec-and-docs.log
 
       - name: Run governance policy structure/license/artifact checks
+        shell: bash
         run: |
+          set -euo pipefail
           python3 scripts/governance/check_root_structure.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_readme_naming.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_translation_metadata.py 2>&1 | tee -a .github/logs/spec-and-docs.log
@@ -173,7 +175,9 @@ jobs:
           python3 scripts/governance/check_rfc_lifecycle_hygiene.py 2>&1 | tee -a .github/logs/spec-and-docs.log
 
       - name: Run governance audit wrapper
+        shell: bash
         run: |
+          set -euo pipefail
           python3 scripts/governance/check_docs_governance_hygiene.py 2>&1 | tee -a .github/logs/spec-and-docs.log
 
       - name: Job Failure Summary
