@@ -48,27 +48,6 @@ const char* ir_primitive_name(t81::tisc::ir::PrimitiveKind kind);
 const char* ir_relation_name(t81::tisc::ir::ComparisonRelation relation);
 std::string format_ir_operand(const t81::tisc::ir::Operand& operand);
 
-namespace {
-
-struct ScopedStreamRedirect {
-  std::ostream& from;
-  std::streambuf* old_buf;
-
-  ScopedStreamRedirect(std::ostream& from_stream, std::ostream& to_stream)
-      : from(from_stream), old_buf(from_stream.rdbuf(to_stream.rdbuf())) {}
-
-  ~ScopedStreamRedirect() { from.rdbuf(old_buf); }
-};
-
-template <typename Fn>
-int emit_help(Fn&& fn, int rc = 0) {
-  ScopedStreamRedirect redirect(std::cerr, std::cout);
-  fn();
-  return rc;
-}
-
-}  // namespace
-
 int run_tensor_command(const char* command_name, const Args& args) {
   (void)command_name;
   if (args.command_args.empty() || args.command_args[0] == "-h" ||

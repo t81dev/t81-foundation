@@ -34,27 +34,6 @@ namespace fs = std::filesystem;
 std::string json_escape(std::string_view text);
 fs::path discover_canonfs_root();
 
-namespace {
-
-struct ScopedStreamRedirect {
-  std::ostream& from;
-  std::streambuf* old_buf;
-
-  ScopedStreamRedirect(std::ostream& from_stream, std::ostream& to_stream)
-      : from(from_stream), old_buf(from_stream.rdbuf(to_stream.rdbuf())) {}
-
-  ~ScopedStreamRedirect() { from.rdbuf(old_buf); }
-};
-
-template <typename Fn>
-int emit_help(Fn&& fn, int rc = 0) {
-  ScopedStreamRedirect redirect(std::cerr, std::cout);
-  fn();
-  return rc;
-}
-
-}  // namespace
-
 bool is_valid_snapshot_hash_text(std::string_view text) {
   if (text.empty()) {
     return false;
