@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 
-def read_safetensors(path: Path) -> Tuple[Dict[str, dict], bytes]:
+def read_safetensors(path: Path) -> Tuple[Dict[str, dict], bytes, bytes]:
     raw = path.read_bytes()
     if len(raw) < 8:
         raise ValueError("safetensors file too small")
@@ -30,7 +30,7 @@ def read_safetensors(path: Path) -> Tuple[Dict[str, dict], bytes]:
         raise ValueError("truncated safetensors header")
     header = json.loads(raw[8 : 8 + header_len].decode("utf-8"))
     data_buf = raw[8 + header_len :]
-    return header, data_buf
+    return header, data_buf, raw
 
 
 def decode_tensor_floats(dtype: str, blob: bytes) -> List[float]:
@@ -40,21 +40,27 @@ def decode_tensor_floats(dtype: str, blob: bytes) -> List[float]:
     if dtype == "F16":
         count = len(blob) // 2
         return list(struct.unpack(f"<{count}e", blob))
+    if dtype == "BF16":
+        count = len(blob) // 2
+        u16s = struct.unpack(f"<{count}H", blob)
+        # Convert BF16 -> IEEE-754 F32 by placing 16 bits into upper half of uint32
+        f32_bytes = b"".join(struct.pack("<I", u << 16) for u in u16s)
+        return list(struct.unpack(f"<{count}f", f32_bytes))
     if dtype == "I8":
         count = len(blob)
         return [float(x) for x in struct.unpack(f"<{count}b", blob)]
     raise ValueError(f"unsupported safetensors dtype: {dtype}")
 
 
-def quantize_bitnet_b158(vals: List[float]) -> List[int]:
+def quantize_bitnet_b158(vals: List[float]) -> Tuple[List[int], float]:
     if not vals:
-        return []
+        return [], 0.0
     gamma = max(sum(abs(v) for v in vals) / len(vals), 1e-6)
     out = []
     for v in vals:
         scaled = max(-1.0, min(1.0, v / gamma))
         out.append(int(math.floor(scaled + 0.5)) if scaled >= 0.0 else int(math.ceil(scaled - 0.5)))
-    return out
+    return out, gamma
 
 
 def pack_dualrail_64(trits: List[int]) -> Tuple[bytes, bytes]:
@@ -151,12 +157,58 @@ def unpack_sbdr1(blob: bytes) -> Tuple[bytes, bytes]:
     return bytes(pos), bytes(neg)
 
 
-def ingest_safetensors(path: Path, out_dir: Path | None = None, emit_sbdr: bool = False) -> dict:
-    header, data_buf = read_safetensors(path)
+def pack_sbdr1t2d(trits: List[int], K: int, N: int) -> bytes:
+    """Pack a 2D (K x N) ternary weight matrix into T81VM's canonical SBDR1T2D format.
+
+    Layout (little-endian, column-major transposed into N rows of W64 64-trit words):
+      magic[8]       = b"SBDR1T2D"
+      K, N           = uint64, uint64
+      mask[M]        = uint64[(N * W64 + 63) // 64]
+      active_pairs   = (uint64 pos, uint64 neg) for each set bit in ascending order
+    """
+    if len(trits) != K * N:
+        raise ValueError(f"trit count {len(trits)} != K*N ({K}*{N})")
+    w64 = (K + 63) // 64
+    total_words = N * w64
+    bp = [0] * total_words
+    bn = [0] * total_words
+    for k in range(K):
+        w = k >> 6
+        bit = 1 << (k & 63)
+        row_off = k * N
+        for n in range(N):
+            v = trits[row_off + n]
+            if v > 0:
+                bp[n * w64 + w] |= bit
+            elif v < 0:
+                bn[n * w64 + w] |= bit
+    mask_words = (total_words + 63) // 64
+    mask = [0] * mask_words
+    payload = bytearray()
+    for wi in range(total_words):
+        if (bp[wi] | bn[wi]) != 0:
+            mask[wi >> 6] |= 1 << (wi & 63)
+            payload.extend(struct.pack("<QQ", bp[wi], bn[wi]))
+    out = bytearray(b"SBDR1T2D")
+    out.extend(struct.pack("<QQ", K, N))
+    for mw in mask:
+        out.extend(struct.pack("<Q", mw))
+    out.extend(payload)
+    return bytes(out)
+
+
+def ingest_safetensors(
+    path: Path,
+    out_dir: Path | None = None,
+    emit_sbdr: bool = False,
+    emit_sbdr2d: bool = False,
+) -> dict:
+    header, data_buf, raw_buf = read_safetensors(path)
     entries = []
     total_src_bytes = 0
     total_dr_bytes = 0
     total_sbdr_bytes = 0
+    total_sbdr2d_bytes = 0
     manifest_hasher = hashlib.sha3_512()
 
     if out_dir is not None:
@@ -166,18 +218,31 @@ def ingest_safetensors(path: Path, out_dir: Path | None = None, emit_sbdr: bool 
         meta = header[name]
         dtype = meta["dtype"]
         shape = meta["shape"]
-        start, end = meta["data_offsets"]
-        blob = data_buf[start:end]
+        offsets = meta["data_offsets"]
+        if len(offsets) == 2:
+            start, end = offsets
+            blob = data_buf[start:end]
+        elif len(offsets) == 1 and "data_lengths" in meta and len(meta["data_lengths"]) == 1:
+            start = offsets[0]
+            length = meta["data_lengths"][0]
+            blob = raw_buf[start : start + length]
+        else:
+            raise ValueError(f"unsupported data_offsets for tensor {name}: {offsets}")
         total_src_bytes += len(blob)
 
         vals = decode_tensor_floats(dtype, blob)
-        trits = quantize_bitnet_b158(vals)
+        trits, gamma = quantize_bitnet_b158(vals)
         pos, neg = pack_dualrail_64(trits)
         total_dr_bytes += len(pos) + len(neg)
 
         sbdr_blob = pack_sbdr1(pos, neg) if emit_sbdr else None
         if sbdr_blob is not None:
             total_sbdr_bytes += len(sbdr_blob)
+
+        sbdr2d_blob = None
+        if emit_sbdr2d and len(shape) == 2 and shape[0] > 0 and shape[1] > 0:
+            sbdr2d_blob = pack_sbdr1t2d(trits, shape[0], shape[1])
+            total_sbdr2d_bytes += len(sbdr2d_blob)
 
         tensor_digest = hashlib.sha3_512(pos + neg).hexdigest()
         manifest_hasher.update(f"{name}:{shape}:{tensor_digest}\n".encode("utf-8"))
@@ -188,12 +253,15 @@ def ingest_safetensors(path: Path, out_dir: Path | None = None, emit_sbdr: bool 
             (out_dir / f"{safe}.neg.bin").write_bytes(neg)
             if sbdr_blob is not None:
                 (out_dir / f"{safe}.sbdr").write_bytes(sbdr_blob)
+            if sbdr2d_blob is not None:
+                (out_dir / f"{safe}.sbdr2d").write_bytes(sbdr2d_blob)
 
         entry = {
             "name": name,
             "src_dtype": dtype,
             "shape": shape,
             "trits": len(trits),
+            "absmean_gamma": round(gamma, 6),
             "src_bytes": len(blob),
             "dualrail_bytes": len(pos) + len(neg),
             "sha3_512": f"sha3-512:{tensor_digest}",
@@ -201,6 +269,9 @@ def ingest_safetensors(path: Path, out_dir: Path | None = None, emit_sbdr: bool 
         if sbdr_blob is not None:
             entry["sbdr_bytes"] = len(sbdr_blob)
             entry["sbdr_sha3_512"] = f"sha3-512:{hashlib.sha3_512(sbdr_blob).hexdigest()}"
+        if sbdr2d_blob is not None:
+            entry["sbdr2d_bytes"] = len(sbdr2d_blob)
+            entry["sbdr2d_sha3_512"] = f"sha3-512:{hashlib.sha3_512(sbdr2d_blob).hexdigest()}"
         entries.append(entry)
 
     out = {
@@ -216,6 +287,8 @@ def ingest_safetensors(path: Path, out_dir: Path | None = None, emit_sbdr: bool 
     }
     if emit_sbdr:
         out["total_sbdr_bytes"] = total_sbdr_bytes
+    if emit_sbdr2d:
+        out["total_sbdr2d_bytes"] = total_sbdr2d_bytes
     return out
 
 
@@ -250,10 +323,14 @@ def run_self_test() -> int:
         out_dir = root / "dualrail_bundle"
         write_synthetic_safetensors(sf)
 
-        res1 = ingest_safetensors(sf, out_dir, emit_sbdr=True)
-        res2 = ingest_safetensors(sf, emit_sbdr=True)
+        res1 = ingest_safetensors(sf, out_dir, emit_sbdr=True, emit_sbdr2d=True)
+        res2 = ingest_safetensors(sf, emit_sbdr=True, emit_sbdr2d=True)
         assert res1["manifest_sha3_512"] == res2["manifest_sha3_512"]
         assert res1["tensor_count"] == 2
+        assert (out_dir / "layers_0_mlp_up_proj_weight.sbdr2d").read_bytes()[:8] == b"SBDR1T2D"
+        # Verify BF16 decoder round-trip on [1.0, -2.5, 0.0]
+        bf16_raw = b"".join(struct.pack("<H", struct.unpack("<I", struct.pack("<f", x))[0] >> 16) for x in (1.0, -2.5, 0.0))
+        assert decode_tensor_floats("BF16", bf16_raw) == [1.0, -2.5, 0.0]
 
         # Verify lossless DualRail & SBDR1 unpack & disjointness on persisted bundle
         pos = (out_dir / "layers_0_mlp_up_proj_weight.pos.bin").read_bytes()
@@ -277,14 +354,15 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Ingest .safetensors into BitNet b1.58 Dual-Rail (P, N)")
     ap.add_argument("--input", type=Path, help="Path to input .safetensors file")
     ap.add_argument("--out-dir", type=Path, help="Optional output directory for Dual-Rail .pos/.neg files")
-    ap.add_argument("--emit-sbdr", action="store_true", help="Also emit canonical SBDR1 sparse-block .sbdr files")
+    ap.add_argument("--emit-sbdr", action="store_true", help="Also emit canonical 1D SBDR1 .sbdr files")
+    ap.add_argument("--emit-sbdr2d", action="store_true", help="Also emit 2D SBDR1T2D .sbdr2d files for T81VM TLoadHash")
     ap.add_argument("--self-test", action="store_true", help="Run built-in safetensors ingest + roundtrip + tamper self-test")
     args = ap.parse_args()
     if args.self_test:
         return run_self_test()
     if not args.input:
         ap.error("provide --input <file.safetensors> or --self-test")
-    print(json.dumps(ingest_safetensors(args.input, args.out_dir, emit_sbdr=args.emit_sbdr), indent=2))
+    print(json.dumps(ingest_safetensors(args.input, args.out_dir, emit_sbdr=args.emit_sbdr, emit_sbdr2d=args.emit_sbdr2d), indent=2))
     return 0
 
 
