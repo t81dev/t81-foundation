@@ -367,3 +367,106 @@ TEST_F(CanonFSCLIContractTests, ExportInvalidRefJSONStructure) {
   EXPECT_TRUE(json_output.find("\"error\"") != std::string::npos);
   EXPECT_TRUE(json_output.find("\"errors\"") != std::string::npos);
 }
+
+// Test import denial under ExportOnly policy profile (RFC-00D1)
+TEST_F(CanonFSCLIContractTests, ImportDeniedByExportOnlyProfileJSONStructure) {
+  auto test_file = test_dir_ / "export_only_import.txt";
+  create_test_file(test_file);
+
+  ImportOptions options;
+  options.canonfs_root = canonfs_root_.string();
+  options.policy_profile = InterchangePolicyProfile::ExportOnly;
+  options.policy_evaluator = [](std::string_view, std::string_view,
+                                std::string_view) -> InterchangePolicyDecision {
+    return InterchangePolicyDecision{true, "allow"};
+  };
+
+  auto outcome = import_path(test_file, options);
+  EXPECT_FALSE(outcome.ok());
+  EXPECT_FALSE(outcome.errors.empty());
+  EXPECT_TRUE(outcome.imported_objects.empty());
+
+  std::string json_output = render_import_result(
+      outcome.status, outcome.source_kind, outcome.source_ref, outcome.imported_objects,
+      outcome.provenance_ref, outcome.manifest_ref, outcome.imported_paths, outcome.warnings,
+      outcome.errors, outcome.policy_result, outcome.policy_profile);
+
+  validate_import_result_schema(json_output);
+  validate_error_object_structure(json_output);
+  EXPECT_TRUE(json_output.find("\"export-only\"") != std::string::npos);
+}
+
+// Test export denial under ImportOnly policy profile (RFC-00D1)
+TEST_F(CanonFSCLIContractTests, ExportDeniedByImportOnlyProfileJSONStructure) {
+  auto test_file = test_dir_ / "import_only_export.txt";
+  create_test_file(test_file);
+
+  ImportOptions import_options;
+  import_options.canonfs_root = canonfs_root_.string();
+  import_options.policy_profile = InterchangePolicyProfile::ImportOnly;
+  import_options.policy_evaluator = [](std::string_view, std::string_view,
+                                       std::string_view) -> InterchangePolicyDecision {
+    return InterchangePolicyDecision{true, "allow"};
+  };
+  auto import_outcome = import_path(test_file, import_options);
+  ASSERT_TRUE(import_outcome.ok());
+  ASSERT_FALSE(import_outcome.imported_objects.empty());
+
+  auto export_dir = test_dir_ / "export_import_only";
+  std::filesystem::create_directories(export_dir);
+
+  ExportOptions export_options;
+  export_options.canonfs_root = canonfs_root_.string();
+  export_options.policy_profile = InterchangePolicyProfile::ImportOnly;
+  export_options.policy_evaluator = [](std::string_view, std::string_view,
+                                       std::string_view) -> InterchangePolicyDecision {
+    return InterchangePolicyDecision{true, "allow"};
+  };
+
+  auto outcome =
+      export_ref(import_outcome.imported_objects[0], export_dir / "blocked.bin", export_options);
+  EXPECT_FALSE(outcome.ok());
+  EXPECT_FALSE(outcome.errors.empty());
+  EXPECT_FALSE(std::filesystem::exists(export_dir / "blocked.bin"));
+
+  std::string json_output = render_export_result(
+      outcome.status, outcome.source_objects, outcome.target_kind, outcome.target_ref,
+      outcome.provenance_ref, outcome.manifest_ref, outcome.materialized_paths, outcome.warnings,
+      outcome.errors, outcome.policy_result, outcome.policy_profile);
+
+  validate_export_result_schema(json_output);
+  validate_error_object_structure(json_output);
+  EXPECT_TRUE(json_output.find("\"import-only\"") != std::string::npos);
+}
+
+// Test policy profile parser and preflight error JSON contracts (RFC-00D1)
+TEST_F(CanonFSCLIContractTests, ParseInterchangePolicyProfileAndPreflightErrorContracts) {
+  EXPECT_EQ(parse_interchange_policy_profile("permissive"), InterchangePolicyProfile::Permissive);
+  EXPECT_EQ(parse_interchange_policy_profile("import-only"), InterchangePolicyProfile::ImportOnly);
+  EXPECT_EQ(parse_interchange_policy_profile("export-only"), InterchangePolicyProfile::ExportOnly);
+  EXPECT_EQ(parse_interchange_policy_profile("deny-all"), InterchangePolicyProfile::DenyAll);
+  EXPECT_EQ(parse_interchange_policy_profile("unknown-profile"), std::nullopt);
+
+  auto import_err = make_import_preflight_error("host-file", "bad.txt", "invalid_policy_profile",
+                                                "Unknown policy profile", "unknown-profile");
+  EXPECT_FALSE(import_err.ok());
+  ASSERT_FALSE(import_err.errors.empty());
+  std::string import_json = render_import_result(
+      import_err.status, import_err.source_kind, import_err.source_ref, import_err.imported_objects,
+      import_err.provenance_ref, import_err.manifest_ref, import_err.imported_paths,
+      import_err.warnings, import_err.errors, import_err.policy_result, import_err.policy_profile);
+  validate_import_result_schema(import_json);
+  validate_error_object_structure(import_json);
+
+  auto export_err =
+      make_export_preflight_error("sha3-256:bad", "host-file", "out.bin", "invalid_policy_profile",
+                                  "Unknown policy profile", "unknown-profile");
+  EXPECT_FALSE(export_err.ok());
+  ASSERT_FALSE(export_err.errors.empty());
+  std::string export_json = render_export_result(
+      export_err.status, export_err.source_objects, export_err.target_kind, export_err.target_ref,
+      export_err.provenance_ref, export_err.manifest_ref, export_err.materialized_paths,
+      export_err.warnings, export_err.errors, export_err.policy_result, export_err.policy_profile);
+  validate_export_result_schema(export_json);
+  validate_error_object_structure(export_json);
+}
