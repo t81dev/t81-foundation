@@ -1,5 +1,26 @@
 # Release Readiness Packet (2026-03)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Release Readiness Packet (2026-03)](#release-readiness-packet-2026-03)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Decision-Stamp Continuity](#decision-stamp-continuity)
+  - [Required-Context Verification (Procedure Alignment)](#required-context-verification-procedure-alignment)
+  - [Decision Basis](#decision-basis)
+  - [AGI-Facing Boundary Classification (Cycle Declaration)](#agi-facing-boundary-classification-cycle-declaration)
+  - [Candidate Verification Snapshot (2026-02-26, refreshed at 13:44:01Z) — SUPERSEDED](#candidate-verification-snapshot-2026-02-26-refreshed-at-134401z-—-superseded)
+  - [Candidate Verification Snapshot (2026-02-28)](#candidate-verification-snapshot-2026-02-28)
+  - [Open Blocking Items](#open-blocking-items)
+  - [Follow-Up (Non-Blocking)](#follow-up-non-blocking)
+  - [Release Manager Checklist Pointers](#release-manager-checklist-pointers)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: GO (Decisioned)
 Date (UTC): 2026-02-28
 Owner: Release / Governance

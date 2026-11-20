@@ -1,5 +1,25 @@
 # T81 Operator Guide
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Operator Guide](#t81-operator-guide)
+  - [Start Here](#start-here)
+  - [What This System Actually Is](#what-this-system-actually-is)
+  - [How This Differs From Typical AI Systems](#how-this-differs-from-typical-ai-systems)
+  - [1. Governed CanonFS Interchange](#1-governed-canonfs-interchange)
+  - [2. Bounded AI OS-Object Chains](#2-bounded-ai-os-object-chains)
+  - [3. Bundle-First Consumption](#3-bundle-first-consumption)
+  - [What T81 Is Capable Of Right Now](#what-t81-is-capable-of-right-now)
+  - [What T81 Is Not Yet](#what-t81-is-not-yet)
+  - [Best Learning Order](#best-learning-order)
+  - [If You Want X, Run Y](#if-you-want-x-run-y)
+  - [One-Line Operating Rule](#one-line-operating-rule)
+
+<!-- T81-TOC:END -->
+
+
 This guide answers a simple question:
 
 If you want to use T81 today, what should you run?

@@ -1,5 +1,29 @@
 # Chapter 7: Programming in T81Lang
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Chapter 7: Programming in T81Lang](#chapter-7-programming-in-t81lang)
+  - [7.1 Design Philosophy](#71-design-philosophy)
+  - [7.2 Syntax Basics](#72-syntax-basics)
+  - [7.3 Data Types](#73-data-types)
+  - [7.4 Control Flow](#74-control-flow)
+  - [7.5 Functions](#75-functions)
+  - [7.6 Structures and Methods](#76-structures-and-methods)
+  - [7.7 Axion Integration](#77-axion-integration)
+  - [7.8 Examples](#78-examples)
+    - [Practice Path](#practice-path)
+    - [Role-Based Learning Path](#role-based-learning-path)
+    - [Worked Example](#worked-example)
+    - [Hands-On Lab](#hands-on-lab)
+    - [Expected Outcomes](#expected-outcomes)
+    - [Chapter Summary](#chapter-summary)
+    - [Read Next](#read-next)
+
+<!-- T81-TOC:END -->
+
+
 T81Lang is designed to keep programs readable, auditable, and predictable under governed execution. This chapter teaches the language as a practical craft: write code that humans can reason about and systems can verify.
 
 For onboarding, the central shift is this: correctness is not only "does it run," but also "can we explain why it behaved this way under explicit constraints?"

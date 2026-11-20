@@ -1,5 +1,39 @@
 # SCG-07 Phase 6: Consolidated Arithmetic Qualification Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [SCG-07 Phase 6: Consolidated Arithmetic Qualification Report](#scg-07-phase-6-consolidated-arithmetic-qualification-report)
+  - [1. Executive Disposition](#1-executive-disposition)
+    - [**QUALIFIED WITH LIMITATIONS**](#**qualified-with-limitations**)
+  - [2. Baseline Pinning & Provenance](#2-baseline-pinning-&-provenance)
+    - [Cryptographic SHA-256 Pinning of Audited Artifacts](#cryptographic-sha-256-pinning-of-audited-artifacts)
+  - [3. Exact Changed-File Inventory (Phase 6 PR)](#3-exact-changed-file-inventory-phase-6-pr)
+  - [4. Consolidated F1–F7 Evidence Matrix](#4-consolidated-f1–f7-evidence-matrix)
+  - [5. Mathematical Contract Audit Matrix](#5-mathematical-contract-audit-matrix)
+  - [6. Historical versus Current Results Comparison](#6-historical-versus-current-results-comparison)
+  - [7. Independent Oracle Methodology & Soundness](#7-independent-oracle-methodology-&-soundness)
+  - [8. Cross-Component Integration Verification](#8-cross-component-integration-verification)
+  - [9. Configuration Validation Matrix](#9-configuration-validation-matrix)
+    - [Assertion Effectiveness Under `-DNDEBUG`](#assertion-effectiveness-under-`-dndebug`)
+    - [Sanitizer Instrumentation Boundary Clarification](#sanitizer-instrumentation-boundary-clarification)
+  - [10. CI Failure Attribution](#10-ci-failure-attribution)
+  - [11. Evidence Discrepancies & Audit Findings](#11-evidence-discrepancies-&-audit-findings)
+  - [12. Residual Risks & Untested Domains](#12-residual-risks-&-untested-domains)
+  - [13. Reproducible Commands & Deterministic Seeds](#13-reproducible-commands-&-deterministic-seeds)
+    - [Compilation & Test Execution](#compilation-&-test-execution)
+- [1. CMake Debug Build & CTest](#1-cmake-debug-build-&-ctest)
+- [2. Standalone Release Build (-O3 -DNDEBUG)](#2-standalone-release-build--o3--dndebug)
+- [3. Standalone Address & Undefined Sanitizer Build](#3-standalone-address-&-undefined-sanitizer-build)
+- [4. Clang-Format Style Conformance Gate](#4-clang-format-style-conformance-gate)
+    - [Deterministic Pseudo-Random Seeds](#deterministic-pseudo-random-seeds)
+  - [14. Final Qualification Boundaries](#14-final-qualification-boundaries)
+  - [15. Recommended Next Research Step](#15-recommended-next-research-step)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `T81-SCG-07-PHASE6-QUALIFICATION-001-R1`
 **Classification:** INDEPENDENT QUALIFICATION & VERIFICATION ASSESSMENT
 **Baseline Anchor Commit:** `ecb1e32b9458a1a1df51d7cdd4a19496c0584103` (`origin/main`)

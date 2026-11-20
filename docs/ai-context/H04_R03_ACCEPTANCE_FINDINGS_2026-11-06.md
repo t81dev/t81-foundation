@@ -1,5 +1,20 @@
 # H04-R03 — Dated Acceptance-Finding Reconciliation (2026-11-06; Reconciled 2026-11-07)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [H04-R03 — Dated Acceptance-Finding Reconciliation (2026-11-06; Reconciled 2026-11-07)](#h04-r03-—-dated-acceptance-finding-reconciliation-2026-11-06-reconciled-2026-11-07)
+  - [Exact repository and review identities](#exact-repository-and-review-identities)
+  - [Three acceptance-related findings and FC1 corrective resolution](#three-acceptance-related-findings-and-fc1-corrective-resolution)
+    - [Status classification](#status-classification)
+  - [Other bounded findings to preserve](#other-bounded-findings-to-preserve)
+  - [FC1 milestone status summary](#fc1-milestone-status-summary)
+  - [Next bounded action](#next-bounded-action)
+
+<!-- T81-TOC:END -->
+
+
 > **Non-normative continuity addendum.** This is a repository/review-record observation, not an amendment to the accepted protocol, historical receipts, scientific measurements, or `CURRENT_STATE.json`. The three findings below were independently **reported by Codex on PR #679** and addressed via the H04-R03-FC1 corrective implementation merged at `50087972e078a09d7aff79cf6d8ae15db45c17ba` (PR #724). Overall milestone disposition is **FC1 PARTIAL**; Phase 4 retention enforcement remains unimplemented. Refresh current source and review state before acting.
 
 ## Exact repository and review identities

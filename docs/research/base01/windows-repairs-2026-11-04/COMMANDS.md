@@ -1,5 +1,20 @@
 # Recorded correctness commands
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Recorded correctness commands](#recorded-correctness-commands)
+  - [base01-ubuntu-24.04-Debug](#base01-ubuntu-2404-debug)
+  - [base01-windows-2022-Release](#base01-windows-2022-release)
+  - [base01-windows-2022-Debug](#base01-windows-2022-debug)
+  - [base01-ubuntu-24.04-Release](#base01-ubuntu-2404-release)
+  - [macOS-Release](#macos-release)
+  - [macOS-snapshot](#macos-snapshot)
+
+<!-- T81-TOC:END -->
+
+
 Source: `e09540caeb826df7eaeb9e876be5beb745784921`.
 Exact argument vectors and working directories follow. Full output, compiler/link commands, caches and controller sources are archived. Build-tool timing text is incidental, not a performance sample.
 

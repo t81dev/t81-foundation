@@ -1,5 +1,30 @@
 # Dependency Health
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Dependency Health](#dependency-health)
+  - [Purpose](#purpose)
+  - [Dependency Inventory](#dependency-inventory)
+    - [Build Tooling](#build-tooling)
+    - [Vendored Dependencies](#vendored-dependencies)
+    - [FetchContent Dependencies](#fetchcontent-dependencies)
+    - [GitHub Actions (CI Tooling)](#github-actions-ci-tooling)
+  - [Dependency Detail](#dependency-detail)
+    - [llama.cpp (Vendored)](#llamacpp-vendored)
+    - [Asio — Standalone (FetchContent)](#asio-—-standalone-fetchcontent)
+    - [CMake](#cmake)
+    - [Python (CI / Governance Scripts)](#python-ci--governance-scripts)
+  - [Known CVEs and Security Advisories](#known-cves-and-security-advisories)
+  - [Upgrade Review Cadence](#upgrade-review-cadence)
+  - [Determinism Impact Assessment](#determinism-impact-assessment)
+  - [Cross-References](#cross-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Last Updated: 2026-03-14
 Owner: @t81dev

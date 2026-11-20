@@ -1,5 +1,25 @@
 # AXION-AI-001 Phase 2 — HD01 Model-Binding Authority Research
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [AXION-AI-001 Phase 2 — HD01 Model-Binding Authority Research](#axion-ai-001-phase-2-—-hd01-model-binding-authority-research)
+  - [Purpose, authorization and evidence boundary](#purpose-authorization-and-evidence-boundary)
+  - [1. Baseline observations and research question](#1-baseline-observations-and-research-question)
+  - [2. Separate authority objects and role boundaries](#2-separate-authority-objects-and-role-boundaries)
+  - [3. Three competing authority models — no winner selected](#3-three-competing-authority-models-—-no-winner-selected)
+    - [Limited external precedents](#limited-external-precedents)
+  - [4. Exact identity and verification profile candidates](#4-exact-identity-and-verification-profile-candidates)
+  - [5. Custodian, verifier and worker responsibilities](#5-custodian-verifier-and-worker-responsibilities)
+  - [6. Revocation, replay protection, substitution and recovery](#6-revocation-replay-protection-substitution-and-recovery)
+  - [7. Adversarial counterexamples and proposed conformance evidence](#7-adversarial-counterexamples-and-proposed-conformance-evidence)
+  - [8. Dependencies and unresolved human decisions](#8-dependencies-and-unresolved-human-decisions)
+  - [Evidence and preparation references](#evidence-and-preparation-references)
+
+<!-- T81-TOC:END -->
+
+
 Status: NON-NORMATIVE research memorandum — authority model NOT SELECTED / NOT ADOPTED
 Date: 2026-11-17
 Version: 0.1.0

@@ -1,5 +1,20 @@
 # Architecture Documentation Standard
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Architecture Documentation Standard](#architecture-documentation-standard)
+  - [Purpose](#purpose)
+  - [Required Header Fields](#required-header-fields)
+  - [Required Sections](#required-sections)
+  - [Evidence Rules](#evidence-rules)
+  - [Diagram Rules](#diagram-rules)
+  - [Authority Reminder](#authority-reminder)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active  
 Last Updated: 2026-02-26
 

@@ -1,5 +1,18 @@
 # Consuming T81 via CMake
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Consuming T81 via CMake](#consuming-t81-via-cmake)
+  - [Public API Rule](#public-api-rule)
+  - [Install T81](#install-t81)
+  - [Build External Consumer](#build-external-consumer)
+  - [Troubleshooting](#troubleshooting)
+
+<!-- T81-TOC:END -->
+
+
 This guide shows how an external CMake project can consume T81 using installed package exports and public headers only.
 
 ## Public API Rule

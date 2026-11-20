@@ -1,5 +1,20 @@
 # T81 'Go Broad' Killer Demo: Deterministic Llama-3.2-1B Inference
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 'Go Broad' Killer Demo: Deterministic Llama-3.2-1B Inference](#t81-'go-broad'-killer-demo-deterministic-llama-32-1b-inference)
+  - [Overview](#overview)
+  - [Demo Execution](#demo-execution)
+    - [Sample Output](#sample-output)
+  - [Determinism Verification](#determinism-verification)
+  - [Axion Trace Significance](#axion-trace-significance)
+  - [Performance Note](#performance-note)
+
+<!-- T81-TOC:END -->
+
+
 ## Overview
 
 This document captures the "Go Broad" killer demo for the T81 Foundation: a fully deterministic, bit-identical inference block for a Llama-3.2-1B model (T3_K quantized).

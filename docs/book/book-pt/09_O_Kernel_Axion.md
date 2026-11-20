@@ -1,5 +1,24 @@
 # Capítulo 9: O Kernel de Segurança Axion
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Capítulo 9: O Kernel de Segurança Axion](#capítulo-9-o-kernel-de-segurança-axion)
+  - [9.1 Definição Formal](#91-definição-formal)
+  - [9.2 O Modelo de Política](#92-o-modelo-de-política)
+    - [9.2.1 Linguagem de Política (S-Expressions)](#921-linguagem-de-política-s-expressions)
+    - [9.2.2 Capacidades](#922-capacidades)
+  - [9.3 Interceptação de Instrução](#93-interceptação-de-instrução)
+    - [9.3.1 O Gancho Interceptor](#931-o-gancho-interceptor)
+    - [9.3.2 Abstrações de Custo Zero?](#932-abstrações-de-custo-zero?)
+  - [9.4 O Log de Auditoria (Trace)](#94-o-log-de-auditoria-trace)
+    - [9.4.1 Estrutura do Trace](#941-estrutura-do-trace)
+  - [9.5 Promoção Cognitiva](#95-promoção-cognitiva)
+
+<!-- T81-TOC:END -->
+
+
 ## 9.1 Definição Formal
 
 **Status: Implementado e Testado**

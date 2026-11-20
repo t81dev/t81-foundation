@@ -1,5 +1,20 @@
 # T81 Hardware Roadmap (Conceptual)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Hardware Roadmap (Conceptual)](#t81-hardware-roadmap-conceptual)
+  - [1. Current state](#1-current-state)
+  - [2. Ternary hardware landscape](#2-ternary-hardware-landscape)
+  - [3. Mapping T81 to future ternary chips](#3-mapping-t81-to-future-ternary-chips)
+  - [4. Hardware Investigation & Abstraction](#4-hardware-investigation-&-abstraction)
+    - [Investigate FPGA/Hardware-Backed Execution](#investigate-fpgahardware-backed-execution)
+    - [Hardware Abstraction Boundaries](#hardware-abstraction-boundaries)
+
+<!-- T81-TOC:END -->
+
+
 T81 is currently implemented as a hardware-agnostic, spec-first stack. It targets
 balanced ternary arithmetic and a ternary VM model, but runs today on conventional
 binary hardware.

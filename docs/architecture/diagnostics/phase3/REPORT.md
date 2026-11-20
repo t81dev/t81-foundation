@@ -1,5 +1,23 @@
 # T81-ARCH-ENG-002 Phase 3: UEFI boot investigation
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81-ARCH-ENG-002 Phase 3: UEFI boot investigation](#t81-arch-eng-002-phase-3-uefi-boot-investigation)
+  - [Findings](#findings)
+  - [Inputs and build](#inputs-and-build)
+  - [Controlled real execution](#controlled-real-execution)
+  - [Correction and acceptance status](#correction-and-acceptance-status)
+  - [Reproduction](#reproduction)
+- [Reproduce authoritative rejection; expected exit is 1 on the recorded inputs.](#reproduce-authoritative-rejection-expected-exit-is-1-on-the-recorded-inputs)
+- [Read-only media inspection and unchanged regression suite.](#read-only-media-inspection-and-unchanged-regression-suite)
+  - [Limits and next boundary](#limits-and-next-boundary)
+  - [Changed-file inventory](#changed-file-inventory)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-11-10. **READY FOR INDEPENDENT REVIEW — investigation and artifact-status
 documentation only. No complete native verification pass or boot repair is claimed.**
 

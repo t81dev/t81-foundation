@@ -1,5 +1,31 @@
 # PackedTritVector Prototype Phase 2C Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [PackedTritVector Prototype Phase 2C Report](#packedtritvector-prototype-phase-2c-report)
+  - [1. Summary](#1-summary)
+  - [2. Phase 2B Follow-Through Adjustments](#2-phase-2b-follow-through-adjustments)
+  - [3. SWAR-First Packed Optimization Design](#3-swar-first-packed-optimization-design)
+    - [Op-Class Split](#op-class-split)
+    - [Chunk Strategy](#chunk-strategy)
+    - [Invalid State Policy](#invalid-state-policy)
+  - [4. Implementation of Phase 2C Fast Paths](#4-implementation-of-phase-2c-fast-paths)
+  - [5. `TXor` Path Decision and Verification](#5-`txor`-path-decision-and-verification)
+  - [6. Conformance and Safety Verification](#6-conformance-and-safety-verification)
+  - [7. Benchmark Comparisons](#7-benchmark-comparisons)
+  - [8. Validation Results](#8-validation-results)
+  - [9. Phase 2D Recommendations and Remaining Gaps](#9-phase-2d-recommendations-and-remaining-gaps)
+  - [10. Phase 2C Hardening Audit (Feb 2026)](#10-phase-2c-hardening-audit-feb-2026)
+    - [10.1 Semantic Verification](#101-semantic-verification)
+    - [10.2 Stress Testing & Edge Cases](#102-stress-testing-&-edge-cases)
+    - [10.3 Sanitizer Audit](#103-sanitizer-audit)
+    - [10.4 Real-World Performance Benchmarks](#104-real-world-performance-benchmarks)
+
+<!-- T81-TOC:END -->
+
+
 *   **Status:** Completed (Prototype Phase 2C)
 *   **Hardening:** Completed (semantic + sanitizer audit)
 *   **Next Step:** Phase 2D (Native SIMD + integration thresholds)

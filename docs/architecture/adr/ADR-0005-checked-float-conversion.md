@@ -1,5 +1,21 @@
 # ADR-0005: Additive checked conversion with an explicit numerical profile
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [ADR-0005: Additive checked conversion with an explicit numerical profile](#adr-0005-additive-checked-conversion-with-an-explicit-numerical-profile)
+  - [Context](#context)
+  - [Proposed decision](#proposed-decision)
+  - [API strategies](#api-strategies)
+  - [Implementation alternatives after approval](#implementation-alternatives-after-approval)
+  - [Rounding and representation decision](#rounding-and-representation-decision)
+  - [Migration and consequences](#migration-and-consequences)
+  - [Approval record](#approval-record)
+
+<!-- T81-TOC:END -->
+
+
 Status: Proposed — maintainer approval pending
 Date: 2026-10-22
 Authority: Design recommendation only; RFC-00D5 is draft, production unchanged

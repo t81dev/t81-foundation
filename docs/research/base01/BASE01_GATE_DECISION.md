@@ -1,5 +1,29 @@
 # BASE-01 Reference Performance Baseline: Phase A Gate Decision
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [BASE-01 Reference Performance Baseline: Phase A Gate Decision](#base-01-reference-performance-baseline-phase-a-gate-decision)
+  - [1. Overall Gate Disposition](#1-overall-gate-disposition)
+    - [Definitive Gate Justification](#definitive-gate-justification)
+  - [2. Reconciled Workload Candidate Inventory](#2-reconciled-workload-candidate-inventory)
+    - [2.1 Eligible Workload IDs (8)](#21-eligible-workload-ids-8)
+    - [2.2 Conditional Workload IDs (1)](#22-conditional-workload-ids-1)
+    - [2.3 Excluded Workload IDs (2)](#23-excluded-workload-ids-2)
+  - [3. Four-Domain Minimal Phase B Workload Set](#3-four-domain-minimal-phase-b-workload-set)
+    - [Correctness Oracle & Measurement Boundaries](#correctness-oracle-&-measurement-boundaries)
+  - [4. Remaining Requirements for Phase B Measurement Activation](#4-remaining-requirements-for-phase-b-measurement-activation)
+    - [4.1 Runner Scaffolding & Validation](#41-runner-scaffolding-&-validation)
+    - [4.2 Host Environment Identification & Configuration Controls](#42-host-environment-identification-&-configuration-controls)
+    - [4.3 Raw Measurement & Metadata Retention](#43-raw-measurement-&-metadata-retention)
+    - [4.4 Explicit Maintainer Authorization Gate](#44-explicit-maintainer-authorization-gate)
+  - [5. Scope Boundaries: Prohibited Phase B Actions](#5-scope-boundaries-prohibited-phase-b-actions)
+  - [6. Recommended Next Engineering Action](#6-recommended-next-engineering-action)
+
+<!-- T81-TOC:END -->
+
+
 **Document:** `docs/research/base01/BASE01_GATE_DECISION.md`
 **Mission:** BASE-01 Phase A — Workload Discovery, Eligibility Audit, and Measurement Readiness
 **Protocol:** BASE-01

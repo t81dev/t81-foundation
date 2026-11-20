@@ -1,5 +1,30 @@
 # Chapter 6: CLI and API Usage
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Chapter 6: CLI and API Usage](#chapter-6-cli-and-api-usage)
+  - [6.1 The T81 Command Line Interface](#61-the-t81-command-line-interface)
+    - [6.1.1 Compilation (`compile`)](#611-compilation-`compile`)
+    - [6.1.2 Execution (`run`)](#612-execution-`run`)
+    - [6.1.3 Trace Analysis (`trace`)](#613-trace-analysis-`trace`)
+    - [6.1.4 Interactive Mode (`repl`)](#614-interactive-mode-`repl`)
+  - [6.2 Embedding T81 (C++ API)](#62-embedding-t81-c++-api)
+  - [6.3 Embedding T81 (Python API)](#63-embedding-t81-python-api)
+  - [6.4 Debugging](#64-debugging)
+    - [Onboarding Drill](#onboarding-drill)
+    - [Role-Based Learning Path](#role-based-learning-path)
+    - [Worked Example](#worked-example)
+    - [Hands-On Lab](#hands-on-lab)
+    - [Cross-Chapter Continuity](#cross-chapter-continuity)
+    - [Expected Outcomes](#expected-outcomes)
+    - [Chapter Summary](#chapter-summary)
+    - [Read Next](#read-next)
+
+<!-- T81-TOC:END -->
+
+
 This chapter teaches how to operate T81 day-to-day without losing assurance discipline. The command line and APIs are not competing interfaces; they are complementary ways to run the same accountable workflow.
 
 A useful model for onboarding is:

@@ -1,5 +1,17 @@
 # T81 Foundation — Research & Integration Status (2026-11-15)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation — Research & Integration Status (2026-11-15)](#t81-foundation-—-research-&-integration-status-2026-11-15)
+  - [1. Merged Integration State on `main`](#1-merged-integration-state-on-`main`)
+  - [2. Superseded PR Closures (Heads & Evidence Preserved)](#2-superseded-pr-closures-heads-&-evidence-preserved)
+  - [3. Pinned Architecture Assessment & Next Lanes](#3-pinned-architecture-assessment-&-next-lanes)
+
+<!-- T81-TOC:END -->
+
+
 **Observed `main` head:** `24d40f4d9fabf735f988f2852751c2cadd9beffb` (PR `#796` merged `2026-11-15`).
 **Non-normative operational snapshot:** Records merged integration state, closed superseded PRs, and the pinned architecture assessment. No new scientific gate, release, or experiment authorization is granted by this status file.
 

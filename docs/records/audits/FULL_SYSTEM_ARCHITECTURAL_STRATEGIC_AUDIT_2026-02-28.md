@@ -1,5 +1,38 @@
 # Full-System Architectural & Strategic Audit
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Full-System Architectural & Strategic Audit](#full-system-architectural-&-strategic-audit)
+  - [Executive Summary](#executive-summary)
+- [1. Architectural Integrity](#1-architectural-integrity)
+    - [Evaluation:](#evaluation)
+  - [Drift Matrix (Spec vs Implementation)](#drift-matrix-spec-vs-implementation)
+- [2. Determinism Validation](#2-determinism-validation)
+    - [Evaluation:](#evaluation)
+  - [Determinism Threat Map](#determinism-threat-map)
+- [3. Instruction Set Coherence (TISC)](#3-instruction-set-coherence-tisc)
+    - [Evaluation:](#evaluation)
+- [4. VM & Execution Engine](#4-vm-&-execution-engine)
+    - [Evaluation:](#evaluation)
+- [5. Axion Governance & Enforcement](#5-axion-governance-&-enforcement)
+    - [Evaluation:](#evaluation)
+- [6. Documentation vs Reality](#6-documentation-vs-reality)
+    - [Evaluation:](#evaluation)
+  - [Required corrections list:](#required-corrections-list)
+- [7. Code Quality & Engineering Discipline](#7-code-quality-&-engineering-discipline)
+    - [Evaluation:](#evaluation)
+  - [Refactor priority ranking:](#refactor-priority-ranking)
+- [8. Strategic Position Assessment](#8-strategic-position-assessment)
+- [9. Hard Truth Section](#9-hard-truth-section)
+  - [The 5 most serious structural risks:](#the-5-most-serious-structural-risks)
+  - [The 5 most valuable strengths:](#the-5-most-valuable-strengths)
+  - [The single most important next move:](#the-single-most-important-next-move)
+
+<!-- T81-TOC:END -->
+
+
 **Date: March 2026**
 
 ---

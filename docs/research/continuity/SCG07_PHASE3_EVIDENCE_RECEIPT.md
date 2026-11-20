@@ -1,5 +1,25 @@
 # SCG-07 Phase 3 Evidence Receipt: F1 T81Limb27 Multiplication Correctness Repair
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [SCG-07 Phase 3 Evidence Receipt: F1 T81Limb27 Multiplication Correctness Repair](#scg-07-phase-3-evidence-receipt-f1-t81limb27-multiplication-correctness-repair)
+  - [1. Executive Summary](#1-executive-summary)
+  - [2. Inventory of Changed Files](#2-inventory-of-changed-files)
+  - [3. Finding F1 Root Cause & Repair Disposition](#3-finding-f1-root-cause-&-repair-disposition)
+    - [3.1 Pre-Repair Defect Mechanism](#31-pre-repair-defect-mechanism)
+    - [3.2 Phase 3 Mathematical Repair](#32-phase-3-mathematical-repair)
+  - [4. Verification Evidence](#4-verification-evidence)
+    - [4.1 Before and After Results for F1 Reproducer](#41-before-and-after-results-for-f1-reproducer)
+    - [4.2 Test Execution Matrix](#42-test-execution-matrix)
+    - [4.3 Independent Oracle Comparison](#43-independent-oracle-comparison)
+  - [5. CI Attribution & Inherited Baseline Failures](#5-ci-attribution-&-inherited-baseline-failures)
+  - [6. Scope Constraints & Remaining Limitations](#6-scope-constraints-&-remaining-limitations)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** T81-SCG-07-PHASE3-RECEIPT-001-R1
 **Author:** T81 Continuity Engineering Task Force (SCG-07)
 **Baseline Anchor:** Commit `1604fd204346c0ca09d14abe6be6f2417170f741` (origin/main, merging PR #737)

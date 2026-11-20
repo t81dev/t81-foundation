@@ -1,5 +1,20 @@
 # T81 Foundation — Operational Handoff (2026-11-13)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation — Operational Handoff (2026-11-13)](#t81-foundation-—-operational-handoff-2026-11-13)
+  - [Active changes](#active-changes)
+    - [BASE-PERF-00 boundaries](#base-perf-00-boundaries)
+    - [Windows repair and verification boundaries](#windows-repair-and-verification-boundaries)
+  - [Backlog audit and completed closures](#backlog-audit-and-completed-closures)
+  - [Next actions and work ownership](#next-actions-and-work-ownership)
+  - [Preserved governance and history](#preserved-governance-and-history)
+
+<!-- T81-TOC:END -->
+
+
 **Classification:** Non-normative operational update. No scientific gate advancement, RFC ratification, release publication, or merge authorization.
 **Observed main:** `88300f14c1da1066ad6db25d31be0e8e912b3ef0`.
 **Evidence:** [dated GitHub receipt](receipts/2026-11-13-pr-integration-observations.json). GitHub observations were refreshed during this update; no local build or experiment was executed by this collector. Review outcomes below are supplied Codex review reports in the maintainer session, not fresh independent execution by this document's author.

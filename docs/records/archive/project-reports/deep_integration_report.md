@@ -1,5 +1,67 @@
 # T81 + llama.cpp Deep Integration Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 + llama.cpp Deep Integration Report](#t81-+-llamacpp-deep-integration-report)
+  - [Executive Summary](#executive-summary)
+  - [Key Achievements](#key-achievements)
+    - [✅ Governed LLM Module with Cognitive Tiers](#✅-governed-llm-module-with-cognitive-tiers)
+    - [✅ Multi-Tier Cognitive Reasoning](#✅-multi-tier-cognitive-reasoning)
+    - [✅ Deterministic Execution Guarantees](#✅-deterministic-execution-guarantees)
+    - [✅ AI-Native ISA Framework](#✅-ai-native-isa-framework)
+    - [✅ Ternary Quantization Integration](#✅-ternary-quantization-integration)
+  - [Technical Implementation](#technical-implementation)
+    - [Core Components](#core-components)
+      - [1. GovernedLLMModule](#1-governedllmmodule)
+      - [2. CognitiveEngine](#2-cognitiveengine)
+      - [3. Ternary Quantization](#3-ternary-quantization)
+    - [Performance Characteristics](#performance-characteristics)
+      - [Cognitive Tier Performance](#cognitive-tier-performance)
+      - [Quantization Performance](#quantization-performance)
+      - [Determinism Metrics](#determinism-metrics)
+    - [Integration Architecture](#integration-architecture)
+      - [Data Flow](#data-flow)
+      - [Cognitive Tier Pipeline](#cognitive-tier-pipeline)
+      - [Policy Enforcement](#policy-enforcement)
+  - [Validation Results](#validation-results)
+    - [✅ Build System](#✅-build-system)
+    - [✅ Functional Testing](#✅-functional-testing)
+    - [✅ Performance Validation](#✅-performance-validation)
+  - [Files and Components](#files-and-components)
+    - [New Implementation Files](#new-implementation-files)
+    - [Updated Files](#updated-files)
+    - [Generated Artifacts](#generated-artifacts)
+  - [Usage Examples](#usage-examples)
+    - [Basic Governed Inference](#basic-governed-inference)
+- [Run deep integration demo](#run-deep-integration-demo)
+- [Output includes:](#output-includes)
+- [- Governed LLM module with cognitive tiers](#--governed-llm-module-with-cognitive-tiers)
+- [- Policy-gated execution and governance](#--policy-gated-execution-and-governance)
+- [- Deterministic execution guarantees](#--deterministic-execution-guarantees)
+- [- Multi-tier cognitive reasoning](#--multi-tier-cognitive-reasoning)
+- [- AI-native opcode concepts](#--ai-native-opcode-concepts)
+- [- Ternary quantization integration](#--ternary-quantization-integration)
+    - [Cognitive Tier Usage](#cognitive-tier-usage)
+    - [Policy Enforcement](#policy-enforcement)
+  - [Integration Levels Summary](#integration-levels-summary)
+    - [✅ Minimal Integration (Completed)](#✅-minimal-integration-completed)
+    - [✅ Moderate Integration (Completed)](#✅-moderate-integration-completed)
+    - [✅ Deep Integration (Completed)](#✅-deep-integration-completed)
+  - [Production Readiness](#production-readiness)
+    - [✅ Governance Framework](#✅-governance-framework)
+    - [✅ Scalability](#✅-scalability)
+    - [✅ Security & Compliance](#✅-security-&-compliance)
+    - [✅ Performance](#✅-performance)
+  - [Next Steps: Production Deployment](#next-steps-production-deployment)
+    - [Immediate Priorities](#immediate-priorities)
+    - [Long-term Roadmap](#long-term-roadmap)
+  - [Conclusion](#conclusion)
+
+<!-- T81-TOC:END -->
+
+
 **Generated:** Tue Mar 4 12:05:00 UTC 2026
 **Integration Level:** Deep (Cognitive Tiers & Governance)
 **Status:** ✅ SUCCESSFULLY COMPLETED

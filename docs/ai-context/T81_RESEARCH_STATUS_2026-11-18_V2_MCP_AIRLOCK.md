@@ -1,5 +1,16 @@
 # T81 Research & Engineering Status — 2026-11-18 (`v2.0.0` + Deterministic Agent Airlock)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Research & Engineering Status — 2026-11-18 (`v2.0.0` + Deterministic Agent Airlock)](#t81-research-&-engineering-status-—-2026-11-18-`v200`-+-deterministic-agent-airlock)
+  - [1. Summary of What Shipped & Was Measured](#1-summary-of-what-shipped-&-was-measured)
+  - [2. Explicit Limits & Next Boring Priorities](#2-explicit-limits-&-next-boring-priorities)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** 2026-11-18  
 **Frozen Release Tag:** `v2.0.0` at `7d4582ce5`  
 **Current `main` Head:** `47fa1c399`  

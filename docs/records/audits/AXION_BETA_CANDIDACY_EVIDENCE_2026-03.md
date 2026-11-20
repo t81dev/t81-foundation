@@ -1,5 +1,39 @@
 # Axion Beta Candidacy Evidence (2026-03)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Axion Beta Candidacy Evidence (2026-03)](#axion-beta-candidacy-evidence-2026-03)
+  - [📋 **Executive Summary**](#📋-**executive-summary**)
+  - [🎯 **Alpha → Beta Promotion Requirements**](#🎯-**alpha-→-beta-promotion-requirements**)
+    - [**Requirement 1: Specification Completeness**](#**requirement-1-specification-completeness**)
+    - [**Requirement 2: Verification Coverage**](#**requirement-2-verification-coverage**)
+    - [**Requirement 3: Evidence Milestones**](#**requirement-3-evidence-milestones**)
+  - [🔍 **Detailed Evidence Analysis**](#🔍-**detailed-evidence-analysis**)
+    - [**1. Core Governance Infrastructure**](#**1-core-governance-infrastructure**)
+    - [**2. Determinism Stewardship**](#**2-determinism-stewardship**)
+    - [**3. Policy Enforcement Coverage**](#**3-policy-enforcement-coverage**)
+    - [**4. Safety and Ethics Integration**](#**4-safety-and-ethics-integration**)
+  - [📊 **Quantitative Metrics**](#📊-**quantitative-metrics**)
+    - [**Test Coverage Analysis:**](#**test-coverage-analysis**)
+    - [**Performance Metrics:**](#**performance-metrics**)
+    - [**Code Quality Metrics:**](#**code-quality-metrics**)
+  - [✅ **Beta Readiness Assessment**](#✅-**beta-readiness-assessment**)
+    - [**Strengths:**](#**strengths**)
+    - [**Known Limitations (Bounded):**](#**known-limitations-bounded**)
+    - [**Risk Assessment:**](#**risk-assessment**)
+  - [🚀 **Beta Promotion Recommendation**](#🚀-**beta-promotion-recommendation**)
+    - [**Decision:** **APPROVE FOR BETA PROMOTION**](#**decision**-**approve-for-beta-promotion**)
+    - [**Post-Promotion Focus Areas:**](#**post-promotion-focus-areas**)
+  - [📋 **Evidence Bundle Contents**](#📋-**evidence-bundle-contents**)
+    - [**Primary Evidence Artifacts:**](#**primary-evidence-artifacts**)
+    - [**Supporting Evidence:**](#**supporting-evidence**)
+  - [✅ **Governance Acceptance**](#✅-**governance-acceptance**)
+
+<!-- T81-TOC:END -->
+
+
 **Evidence ID:** AXION-BETA-2026-03-14  
 **Target Promotion:** Alpha → Beta  
 **Status:** ✅ **BETA CANDIDACY READY**  

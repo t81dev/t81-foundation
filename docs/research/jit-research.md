@@ -1,5 +1,24 @@
 # HanoiVM JIT Research Document
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [HanoiVM JIT Research Document](#hanoivm-jit-research-document)
+  - [Overview](#overview)
+  - [HanoiVM Bytecode Analysis](#hanoivm-bytecode-analysis)
+  - [Target Architectures](#target-architectures)
+  - [Library Selection](#library-selection)
+  - [Proposed Architecture](#proposed-architecture)
+  - [Initial Performance Estimates](#initial-performance-estimates)
+  - [Future Work](#future-work)
+    - [1. Incremental Deterministic Trace-JIT Hardening](#1-incremental-deterministic-trace-jit-hardening)
+    - [2. Native Trace-JIT Backend Prototype (x86_64/ARM64)](#2-native-trace-jit-backend-prototype-x86_64arm64)
+    - [3. Distributed Tensor Orchestration](#3-distributed-tensor-orchestration)
+
+<!-- T81-TOC:END -->
+
+
 ## Overview
 This document explores the feasibility and architectural design for a Just-In-Time (JIT) compiler for HanoiVM, focusing on strict determinism and high performance for balanced ternary workloads.
 

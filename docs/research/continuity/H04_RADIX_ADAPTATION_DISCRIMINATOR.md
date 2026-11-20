@@ -1,5 +1,18 @@
 # Selected next experiment: H04-R01 radix × adaptation discriminator
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Selected next experiment: H04-R01 radix × adaptation discriminator](#selected-next-experiment-h04-r01-radix-×-adaptation-discriminator)
+  - [Falsifiable question](#falsifiable-question)
+  - [Smallest meaningful first-stage packet](#smallest-meaningful-first-stage-packet)
+  - [Controls and decision](#controls-and-decision)
+  - [Next single action and stop](#next-single-action-and-stop)
+
+<!-- T81-TOC:END -->
+
+
 Status: selected, mathematically bounded specification; not implemented or benchmarked. Parent H04's original Hanoi semantics remain unresolved. This is a declared refinement, not a claim that Hanoi's tier labels are precision widths. It is separate from Research Protocol 001.
 
 ## Falsifiable question

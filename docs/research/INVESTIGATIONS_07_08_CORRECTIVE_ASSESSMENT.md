@@ -1,5 +1,25 @@
 # Scientific Investigations 07 and 08 — Corrective Assessment & Experimental Integrity Audit
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Scientific Investigations 07 and 08 — Corrective Assessment & Experimental Integrity Audit](#scientific-investigations-07-and-08-—-corrective-assessment-&-experimental-integrity-audit)
+  - [1. Executive Summary & Purpose](#1-executive-summary-&-purpose)
+  - [2. Revised Scientific Dispositions Summary](#2-revised-scientific-dispositions-summary)
+  - [3. Toolchain & Environment Specifications](#3-toolchain-&-environment-specifications)
+  - [4. Findings Traceability Matrix](#4-findings-traceability-matrix)
+    - [4.1 Investigation 07 Findings (PR #595)](#41-investigation-07-findings-pr-#595)
+    - [4.2 Investigation 08 Findings (PR #596)](#42-investigation-08-findings-pr-#596)
+  - [5. Machine-Readable Results Summary](#5-machine-readable-results-summary)
+    - [5.1 Investigation 07 Machine-Readable Results (`experiments/ternary_hardware_feasibility/synthesis_results.json`)](#51-investigation-07-machine-readable-results-`experimentsternary_hardware_feasibilitysynthesis_resultsjson`)
+    - [5.2 Investigation 08 Machine-Readable Results (`experiments/integrated_system_advantage/results.json`)](#52-investigation-08-machine-readable-results-`experimentsintegrated_system_advantageresultsjson`)
+  - [6. Unresolved Confounding Factors & Limitations](#6-unresolved-confounding-factors-&-limitations)
+  - [7. Final Verification Commands Executed](#7-final-verification-commands-executed)
+
+<!-- T81-TOC:END -->
+
+
 **Repository:** T81 Foundation (`t81dev/t81-foundation`)
 **Document ID:** `docs/research/INVESTIGATIONS_07_08_CORRECTIVE_ASSESSMENT.md`
 **Date:** October 2026

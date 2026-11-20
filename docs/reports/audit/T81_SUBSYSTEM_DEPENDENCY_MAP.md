@@ -1,5 +1,23 @@
 # T81 Foundation — Subsystem Dependency Map
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation — Subsystem Dependency Map](#t81-foundation-—-subsystem-dependency-map)
+  - [1. System Integration Call Graph](#1-system-integration-call-graph)
+  - [2. CMake Target Link Dependency Matrix](#2-cmake-target-link-dependency-matrix)
+  - [3. Subsystem Coupling & Interface Analysis](#3-subsystem-coupling-&-interface-analysis)
+    - [1. T81Lang → TISC Interface](#1-t81lang-→-tisc-interface)
+    - [2. TISC → T81VM Interface](#2-tisc-→-t81vm-interface)
+    - [3. T81VM → Axion Policy Interface](#3-t81vm-→-axion-policy-interface)
+    - [4. Axion Policy → CanonFS Interface](#4-axion-policy-→-canonfs-interface)
+    - [5. Hosted Runtime vs. Freestanding TernaryOS (The Broken Bridge)](#5-hosted-runtime-vs-freestanding-ternaryos-the-broken-bridge)
+  - [4. Subsystem Dependency Invariants Summary](#4-subsystem-dependency-invariants-summary)
+
+<!-- T81-TOC:END -->
+
+
 **Audit Designation:** T81-SIA-001
 **Reference Document:** Architectural Call Graph, Inter-System Coupling & Dependency Analysis
 **Evaluated Systems:** T81Lang Frontend, TISC Instruction Architecture, T81VM Runtime, Axion Policy Engine, CanonFS Storage Subsystem, and TernaryOS Freestanding Microkernel.

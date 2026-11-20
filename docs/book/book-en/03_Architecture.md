@@ -1,5 +1,28 @@
 # Chapter 3: T81VM Architecture
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Chapter 3: T81VM Architecture](#chapter-3-t81vm-architecture)
+  - [3.1 Overview](#31-overview)
+    - [Architecture Map](#architecture-map)
+  - [3.2 The Runtime Boundary](#32-the-runtime-boundary)
+  - [3.3 Memory Model](#33-memory-model)
+  - [3.4 The Instruction Set (TISC)](#34-the-instruction-set-tisc)
+  - [3.5 JIT Compilation (Trace-JIT)](#35-jit-compilation-trace-jit)
+    - [Walkthrough Scenario](#walkthrough-scenario)
+    - [Role-Based Learning Path](#role-based-learning-path)
+    - [Worked Example](#worked-example)
+    - [Hands-On Lab](#hands-on-lab)
+    - [Cross-Chapter Continuity](#cross-chapter-continuity)
+    - [Expected Outcomes](#expected-outcomes)
+    - [Chapter Summary](#chapter-summary)
+    - [Read Next](#read-next)
+
+<!-- T81-TOC:END -->
+
+
 Architecture docs often become abstract diagrams with little onboarding value. This chapter takes the opposite approach: it explains architecture as a practical flow you can reason about while building and debugging.
 
 ## 3.1 Overview

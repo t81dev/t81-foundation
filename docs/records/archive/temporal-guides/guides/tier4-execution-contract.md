@@ -1,5 +1,25 @@
 # Tier 4 Execution Contract
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Tier 4 Execution Contract](#tier-4-execution-contract)
+  - [1. Reflection Semantics](#1-reflection-semantics)
+    - [1.1 Cognitive Snapshots](#11-cognitive-snapshots)
+    - [1.2 Reflection Handles](#12-reflection-handles)
+  - [2. Refinement Semantics](#2-refinement-semantics)
+    - [2.1 Refinement Commands](#21-refinement-commands)
+    - [2.2 Atomicity](#22-atomicity)
+    - [2.3 Self-Patching](#23-self-patching)
+  - [3. Safety and Determinism](#3-safety-and-determinism)
+    - [3.1 Cognitive Budgets](#31-cognitive-budgets)
+    - [3.2 Determinism Guarantees](#32-determinism-guarantees)
+  - [4. Canonical Reason Strings](#4-canonical-reason-strings)
+
+<!-- T81-TOC:END -->
+
+
 This document specifies the normative behavior of Tier 4 Cognition within the T81 stack. It defines the semantics of reflection, refinement, and the associated safety boundaries.
 
 ## 1. Reflection Semantics

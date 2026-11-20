@@ -1,5 +1,22 @@
 # ADR-0004: Determinism Surface Registry as Release Gate Artifact
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [ADR-0004: Determinism Surface Registry as Release Gate Artifact](#adr-0004-determinism-surface-registry-as-release-gate-artifact)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Context](#context)
+  - [Decision](#decision)
+  - [Alternatives Considered](#alternatives-considered)
+  - [Consequences](#consequences)
+  - [References](#references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Accepted
 Date: 2026-02-25
 Version: 1.0.0

@@ -1,5 +1,17 @@
 # Support
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Support](#support)
+  - [1. Where to Get Help](#1-where-to-get-help)
+  - [2. Before Asking](#2-before-asking)
+  - [3. Commercial Support](#3-commercial-support)
+
+<!-- T81-TOC:END -->
+
+
 > **Source of Truth:** This document defines the **channels for help and support**.
 
 **Last Updated:** February 10, 2026

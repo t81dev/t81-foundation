@@ -1,5 +1,31 @@
 # CLI UX Product Spec (t81)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [CLI UX Product Spec (t81)](#cli-ux-product-spec-t81)
+  - [1. Product Goal](#1-product-goal)
+  - [2. Non-Negotiable UX Principles](#2-non-negotiable-ux-principles)
+  - [3. CLI Contract (Normative)](#3-cli-contract-normative)
+    - [3.1 Command Grammar](#31-command-grammar)
+    - [3.2 Help and Discoverability](#32-help-and-discoverability)
+    - [3.3 Exit Code Policy](#33-exit-code-policy)
+    - [3.4 Output Channel Policy](#34-output-channel-policy)
+    - [3.5 Error Message Style](#35-error-message-style)
+  - [4. Scope for Current Hardening Cycle](#4-scope-for-current-hardening-cycle)
+  - [5. Quality Gates (Definition of Done)](#5-quality-gates-definition-of-done)
+  - [6. Metrics and Targets](#6-metrics-and-targets)
+  - [7. Phased Execution Plan](#7-phased-execution-plan)
+    - [Phase 0 (Week 1): Contract Lock](#phase-0-week-1-contract-lock)
+    - [Phase 1 (Week 2): Test and CI Enforcement](#phase-1-week-2-test-and-ci-enforcement)
+    - [Phase 2 (Week 3): Docs and Onboarding Rewrite](#phase-2-week-3-docs-and-onboarding-rewrite)
+  - [8. Known Prior Failure Modes (Must Not Repeat)](#8-known-prior-failure-modes-must-not-repeat)
+  - [9. Ownership](#9-ownership)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Last Updated: 2026-02-26
 Owner: Product/Tooling

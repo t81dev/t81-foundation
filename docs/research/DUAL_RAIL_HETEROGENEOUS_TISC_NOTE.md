@@ -1,5 +1,21 @@
 # Empirical Note: Dual-Rail `(P, N)` Heterogeneous Execution & Narrowed TISC Subgraphs
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Empirical Note: Dual-Rail `(P, N)` Heterogeneous Execution & Narrowed TISC Subgraphs](#empirical-note-dual-rail-`p-n`-heterogeneous-execution-&-narrowed-tisc-subgraphs)
+  - [1. Summary of Findings](#1-summary-of-findings)
+    - [Positive Results (Verified & Reproducible)](#positive-results-verified-&-reproducible)
+  - [2. Preserved Negative Results (Falsifiers Triggered & Reverted)](#2-preserved-negative-results-falsifiers-triggered-&-reverted)
+  - [3. Reproducing Locally](#3-reproducing-locally)
+- [1. Dual-Rail CPU SIMD benchmark](#1-dual-rail-cpu-simd-benchmark)
+- [2. Heterogeneous CPU/Metal Dual-Rail fused decode + capability report](#2-heterogeneous-cpumetal-dual-rail-fused-decode-+-capability-report)
+- [3. Narrowed TISC static policy verifier + cross-device receipt equivalence](#3-narrowed-tisc-static-policy-verifier-+-cross-device-receipt-equivalence)
+
+<!-- T81-TOC:END -->
+
+
 - **Status:** Evidence-bounded engineering note (reproducible on pinned commits `cfe7a269a`–`123745f2b`)
 - **Platform:** Apple M2 (`arm64-apple-darwin`, `UnifiedMemory = YES`, `100 GB/s` peak bandwidth), Apple Clang `-std=c++23 -O3 -DNDEBUG`
 - **Scope:** Evaluates balanced-ternary `{-1, 0, +1}` execution on conventional binary CPU/GPU/AMX silicon with full pack/unpack accounting, competent binary controls, and preserved negative results. Does **not** claim general ternary superiority or native three-state hardware advantages (`H01` remains open).

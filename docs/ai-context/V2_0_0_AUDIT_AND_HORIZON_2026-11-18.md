@@ -1,5 +1,19 @@
 # T81 Foundation v2.0.0 — Audit Findings & Horizon Suggestions (2026-11-18)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation v2.0.0 — Audit Findings & Horizon Suggestions (2026-11-18)](#t81-foundation-v200-—-audit-findings-&-horizon-suggestions-2026-11-18)
+  - [1. Observed Baseline (`Tier A` / `Tier B`)](#1-observed-baseline-`tier-a`--`tier-b`)
+  - [2. Release-Readiness Gaps & Actionable Patches (`Tier A` / `Tier B`)](#2-release-readiness-gaps-&-actionable-patches-`tier-a`--`tier-b`)
+    - [Concrete Patches for Immediate Blockers & High Gap](#concrete-patches-for-immediate-blockers-&-high-gap)
+    - [Live CLI & Governance Receipts (`Tier A`)](#live-cli-&-governance-receipts-`tier-a`)
+  - [3. Horizon Capabilities & Immediate Engineering Next Steps (`Tier E` Proposals)](#3-horizon-capabilities-&-immediate-engineering-next-steps-`tier-e`-proposals)
+
+<!-- T81-TOC:END -->
+
+
 **Observed `main` head:** `b7b1345ed162129133a7948ead7ed52e8fa5fc60` (evaluated with local edits in `docs/releases/v2.0.0.md`, `docs/research/SYSTEMS_AND_SUBSYSTEMS_REPORT.md`, `docs/research/T81_CAPABILITIES_REPORT.md`)  
 **Host / Toolchain:** macOS `Darwin 25.5.0` ARM64 (`arm64-apple-darwin25.5.0`), AppleClang `21.0.0`, CMake `4.3.0`, Ninja `1.13.2`, Python `3.14.3`  
 **Classification:** Non-normative engineering audit and horizon-planning index. Grants no scientific gate advancement, RFC ratification, release publication, or merge authority. Preserves all active holds (`RFC-00D7-F01` `M1–M6 STOP`, `SCG-08` Gate 2 `NO-GO`, `H01`/10A `BLOCKED`, `AXION-AI-001` `HD01–HD06` open, canonical `H01–H08`).

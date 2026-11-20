@@ -1,5 +1,24 @@
 # Determinism Surface Registry
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Determinism Surface Registry](#determinism-surface-registry)
+  - [1. Purpose](#1-purpose)
+  - [2. Definition of a Determinism Surface](#2-definition-of-a-determinism-surface)
+  - [3. Verified Determinism Surfaces](#3-verified-determinism-surfaces)
+  - [3.1 Governing RFCs For Verified Surfaces](#31-governing-rfcs-for-verified-surfaces)
+  - [4. Non-Deterministic or Undefined Surfaces](#4-non-deterministic-or-undefined-surfaces)
+  - [5. Verification Map](#5-verification-map)
+    - [5.1 Conformance Layer Mapping (RFC-0043 §1)](#51-conformance-layer-mapping-rfc-0043-§1)
+    - [5.2 Cross-Platform Replay Artifacts](#52-cross-platform-replay-artifacts)
+  - [6. Breach Handling Reference](#6-breach-handling-reference)
+  - [7. Scope Boundaries](#7-scope-boundaries)
+
+<!-- T81-TOC:END -->
+
+
 ## 1. Purpose
 
 Define what is and is not guaranteed to be deterministic in the T81 system.

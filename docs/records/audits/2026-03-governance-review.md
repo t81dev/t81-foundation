@@ -1,5 +1,28 @@
 # Governance Review (2026-03)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Governance Review (2026-03)](#governance-review-2026-03)
+  - [Purpose](#purpose)
+  - [A1 Tracking — T81Lang Drift Decomposition](#a1-tracking-—-t81lang-drift-decomposition)
+  - [C3 Tracking — Status Cross-Link Integrity Sweep](#c3-tracking-—-status-cross-link-integrity-sweep)
+  - [B2 Tracking — Release Decision Lifecycle Standardization](#b2-tracking-—-release-decision-lifecycle-standardization)
+  - [A2 Tracking — Axion Partial-Coverage Alignment](#a2-tracking-—-axion-partial-coverage-alignment)
+  - [A3 Tracking — Experimental Tiers Boundary Clarification](#a3-tracking-—-experimental-tiers-boundary-clarification)
+  - [D1 Tracking — Governed AGI Orientation Hardening](#d1-tracking-—-governed-agi-orientation-hardening)
+  - [C2 Tracking — Records Cadence Enforcement](#c2-tracking-—-records-cadence-enforcement)
+  - [Checklist Outcomes (Interim Snapshot)](#checklist-outcomes-interim-snapshot)
+  - [Checklist Exceptions](#checklist-exceptions)
+  - [Remediation Actions](#remediation-actions)
+  - [Month-Close Finalization Gate (Scheduled)](#month-close-finalization-gate-scheduled)
+  - [Final C2 Execution Outcome](#final-c2-execution-outcome)
+  - [Post-Close Addendum (2026-03-16)](#post-close-addendum-2026-03-16)
+
+<!-- T81-TOC:END -->
+
+
 Status: Final
 Review Window: 2026-03
 Owner: @t81dev

@@ -1,5 +1,25 @@
 # BASE-01 physical Linux onboarding: correctness only
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [BASE-01 physical Linux onboarding: correctness only](#base-01-physical-linux-onboarding-correctness-only)
+  - [1. Session and evidence capture](#1-session-and-evidence-capture)
+- [Every invocation retains argv, stdout, stderr and exit code. No elapsed clock.](#every-invocation-retains-argv-stdout-stderr-and-exit-code-no-elapsed-clock)
+  - [2. One-shot hardware and control inventory](#2-one-shot-hardware-and-control-inventory)
+  - [3. Pinned sources, manifest and toolchain](#3-pinned-sources-manifest-and-toolchain)
+  - [4. Build and correctness execution allowlist](#4-build-and-correctness-execution-allowlist)
+- [Pause here to review actual compile/link flags and required ISA against cpuinfo.](#pause-here-to-review-actual-compilelink-flags-and-required-isa-against-cpuinfo)
+- [Resolve any mismatch before invoking an executable; do not adjust flags silently.](#resolve-any-mismatch-before-invoking-an-executable-do-not-adjust-flags-silently)
+- [Preserve #691 tests without unittest elapsed-duration collection.](#preserve-#691-tests-without-unittest-elapsed-duration-collection)
+  - [5. Stop before dynamic qualification](#5-stop-before-dynamic-qualification)
+  - [6. Seal raw evidence, including failures](#6-seal-raw-evidence-including-failures)
+  - [Minimum access needed; stop here](#minimum-access-needed-stop-here)
+
+<!-- T81-TOC:END -->
+
+
 Status: operator instructions, not an executed host report or qualification.
 Use only after a maintainer assigns a dedicated physical Linux x86_64 host and
 an operator. No host is assigned by this document. Do not run these commands on

@@ -1,5 +1,22 @@
 # Test File Organization - 2026-03-04
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Test File Organization - 2026-03-04](#test-file-organization---2026-03-04)
+  - [📁 **File Organization Complete**](#📁-**file-organization-complete**)
+    - [**✅ Test Files Moved to Proper Locations:**](#**✅-test-files-moved-to-proper-locations**)
+      - [**T81Lang Test Files (.t81) → `tests/fixtures/t81lang_determinism/`**](#**t81lang-test-files-t81-→-`testsfixturest81lang_determinism`**)
+      - [**C++ Test Files (.cpp) → `tests/cpp/`**](#**c++-test-files-cpp-→-`testscpp`**)
+    - [**✅ Documentation Updated:**](#**✅-documentation-updated**)
+    - [**✅ Verification Complete:**](#**✅-verification-complete**)
+    - [**📊 Organization Benefits:**](#**📊-organization-benefits**)
+    - [**🎯 Impact:**](#**🎯-impact**)
+
+<!-- T81-TOC:END -->
+
+
 ## 📁 **File Organization Complete**
 
 ### **✅ Test Files Moved to Proper Locations:**

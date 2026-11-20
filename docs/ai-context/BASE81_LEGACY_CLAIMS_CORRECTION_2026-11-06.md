@@ -1,5 +1,17 @@
 # Base-81 legacy explanation — correction and non-authoritative warning (2026-11-06)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Base-81 legacy explanation — correction and non-authoritative warning (2026-11-06)](#base-81-legacy-explanation-—-correction-and-non-authoritative-warning-2026-11-06)
+  - [Corrections that any AI reader must apply](#corrections-that-any-ai-reader-must-apply)
+  - [Measured counterevidence and valid scope](#measured-counterevidence-and-valid-scope)
+  - [Loading and provenance rule](#loading-and-provenance-rule)
+
+<!-- T81-TOC:END -->
+
+
 > **Non-normative correction / context-loading tombstone.** An earlier assistant-generated explanation circulated in conversation, beginning “Base-81 (T81) is a unique numeral system” and claiming, among other things, “A single T81 digit can represent 4.32 bits of information.” That explanation is **withdrawn as research guidance**. Its original file provenance is **not established**: do not attribute it to `TYRNARY_-_T81Analysis.pdf` or another document without source verification. This note does not alter the canonical hypothesis register, historical records, or experimental receipts.
 
 ## Corrections that any AI reader must apply

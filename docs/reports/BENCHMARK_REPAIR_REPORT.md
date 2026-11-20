@@ -1,5 +1,25 @@
 # T81 Benchmark Suite Repair & Performance Optimization Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Benchmark Suite Repair & Performance Optimization Report](#t81-benchmark-suite-repair-&-performance-optimization-report)
+  - [1. Executive Summary](#1-executive-summary)
+  - [2. Benchmarks Found Invalid or Misleading](#2-benchmarks-found-invalid-or-misleading)
+  - [3. Root Causes](#3-root-causes)
+  - [4. Code Changes Made](#4-code-changes-made)
+    - [Core Runtime (`include/t81/`)](#core-runtime-`includet81`)
+    - [Benchmarks (`benchmarks/runner/`)](#benchmarks-`benchmarksrunner`)
+    - [Tests (`tests/determinism/`)](#tests-`testsdeterminism`)
+  - [5. Performance Improvements Achieved](#5-performance-improvements-achieved)
+  - [6. Benchmarks Still Underperforming](#6-benchmarks-still-underperforming)
+  - [7. Recommended Next Optimization Targets](#7-recommended-next-optimization-targets)
+  - [8. Risk / Determinism Impact Assessment](#8-risk--determinism-impact-assessment)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** March 14, 2026
 **Author:** Jules, Senior Performance Engineer
 **Status:** Completed

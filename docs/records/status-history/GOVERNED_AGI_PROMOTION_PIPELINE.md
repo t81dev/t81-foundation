@@ -1,5 +1,21 @@
 # Governed AGI Promotion Pipeline
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Governed AGI Promotion Pipeline](#governed-agi-promotion-pipeline)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Promotion States](#promotion-states)
+  - [Mandatory Promotion Gates](#mandatory-promotion-gates)
+  - [Rejection / Rollback Conditions](#rejection--rollback-conditions)
+  - [Cross-References](#cross-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Owner: Product/Governance
 Last Updated: 2026-02-25

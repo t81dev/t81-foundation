@@ -1,5 +1,38 @@
 # T81 BASE-01 — Final Integration Acceptance Review Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 BASE-01 — Final Integration Acceptance Review Report](#t81-base-01-—-final-integration-acceptance-review-report)
+  - [1. Executive Summary and Final Disposition](#1-executive-summary-and-final-disposition)
+    - [Permitted Outcomes](#permitted-outcomes)
+    - [Final Recommendation](#final-recommendation)
+  - [2. Refreshed Commit SHAs and PR Identification](#2-refreshed-commit-shas-and-pr-identification)
+  - [3. Independent Blob-by-Blob Comparison (126/126 Matches)](#3-independent-blob-by-blob-comparison-126126-matches)
+    - [Breakdown by Source PR](#breakdown-by-source-pr)
+  - [4. Retained SHA-256 Index and Receipt Validation](#4-retained-sha-256-index-and-receipt-validation)
+    - [4.1. Phase A Manifest Verification](#41-phase-a-manifest-verification)
+    - [4.2. Per-Package Evidence Hash Indexes](#42-per-package-evidence-hash-indexes)
+  - [5. Codex Historical P1 Finding Resolution](#5-codex-historical-p1-finding-resolution)
+    - [Historical Defect Summary](#historical-defect-summary)
+    - [Resolution & Verification at Head `851cfef0`](#resolution-&-verification-at-head-`851cfef0`)
+  - [6. Execution of Non-Measuring Integrity and Correctness Tests](#6-execution-of-non-measuring-integrity-and-correctness-tests)
+    - [6.1. Suite 1: `experiments/base01_lane_a`](#61-suite-1-`experimentsbase01_lane_a`)
+    - [6.2. Suite 2: `experiments/base01_b1_foundation`](#62-suite-2-`experimentsbase01_b1_foundation`)
+    - [6.3. Suite 3: `experiments/base01_resource_accounting`](#63-suite-3-`experimentsbase01_resource_accounting`)
+    - [6.4. Aggregate Test Execution Metrics](#64-aggregate-test-execution-metrics)
+  - [7. Protocol Boundaries, Native Verification Qualification, and Invariant Verification](#7-protocol-boundaries-native-verification-qualification-and-invariant-verification)
+    - [7.1. Qualification of Native Boundary Checks](#71-qualification-of-native-boundary-checks)
+    - [7.2. Protocol Invariants](#72-protocol-invariants)
+  - [8. GitHub CI Checks and Failure Attribution](#8-github-ci-checks-and-failure-attribution)
+    - [Baseline Failure Attribution](#baseline-failure-attribution)
+  - [9. Retained Review Evidence Summary](#9-retained-review-evidence-summary)
+  - [10. Conclusion and Merge Recommendation](#10-conclusion-and-merge-recommendation)
+
+<!-- T81-TOC:END -->
+
+
 **Repository:** `t81dev/t81-foundation`
 **Target Pull Request:** PR #694
 **Observed Head Commit:** `851cfef0ef16a56f59d3e933460af1d949cacdf9`

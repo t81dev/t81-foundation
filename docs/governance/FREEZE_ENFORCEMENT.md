@@ -1,5 +1,22 @@
 # Freeze Enforcement & Versioning Discipline
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Freeze Enforcement & Versioning Discipline](#freeze-enforcement-&-versioning-discipline)
+  - [1. Freeze Boundaries](#1-freeze-boundaries)
+    - [A. Data Types](#a-data-types)
+    - [B. TISC ISA](#b-tisc-isa)
+    - [C. Determinism Guarantees](#c-determinism-guarantees)
+    - [D. Public C++ API Surface](#d-public-c++-api-surface)
+  - [2. Versioning Rules](#2-versioning-rules)
+  - [3. Break Procedure](#3-break-procedure)
+  - [4. Determinism Breach Protocol](#4-determinism-breach-protocol)
+
+<!-- T81-TOC:END -->
+
+
 **Effective Date:** 2024-10-27
 **Status:** **Active**
 **Authority:** High (Supersedes `CONTRIBUTING.md` for core subsystems)

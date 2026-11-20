@@ -1,5 +1,18 @@
 # T81 Foundation — Active Research Handoff (2026-11-12)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation — Active Research Handoff (2026-11-12)](#t81-foundation-—-active-research-handoff-2026-11-12)
+  - [Immediate handoff](#immediate-handoff)
+  - [BASE-PERF-00 candidate observations (PR #780 agent report)](#base-perf-00-candidate-observations-pr-#780-agent-report)
+  - [Holding-pattern instructions for the next agent](#holding-pattern-instructions-for-the-next-agent)
+  - [Disposition matrix](#disposition-matrix)
+
+<!-- T81-TOC:END -->
+
+
 **Class:** Non-normative, dated operational status; not a scientific acceptance, benchmark authorization, RFC ratification, merge approval, or claim of independent reproduction.
 **Repository:** https://github.com/t81dev/t81-foundation
 **Reference main for active work:** `d3a6cf55517a3098d7bae91b07c72694bc3472da` (PR #779 and #780 base; recheck current main before use).

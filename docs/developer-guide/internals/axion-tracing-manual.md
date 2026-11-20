@@ -1,5 +1,24 @@
 # Axion Tracing Manual
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Axion Tracing Manual](#axion-tracing-manual)
+  - [1. Trace architecture at a glance](#1-trace-architecture-at-a-glance)
+  - [2. Canonical event strings](#2-canonical-event-strings)
+    - [2.1 Segment transitions](#21-segment-transitions)
+    - [2.2 Guard metadata](#22-guard-metadata)
+  - [3. Observing traces via CLI](#3-observing-traces-via-cli)
+    - [3.1 Build + run tracing](#31-build-+-run-tracing)
+    - [3.2 REPL tracing](#32-repl-tracing)
+  - [4. Trace regressions and helpers](#4-trace-regressions-and-helpers)
+  - [5. Matching policies to traces](#5-matching-policies-to-traces)
+  - [6. Related references](#6-related-references)
+
+<!-- T81-TOC:END -->
+
+
 This manual dives deep into the Axion trace surface: the runtime events, their canonical `verdict.reason` strings, the CLI/testing hooks that emit them, and the policy obligations they satisfy. It expands on `docs/developer-guide/internals/axion-trace.md` by grouping the instrumentation into an ordered workflow so auditors and Axion stewards can reproduce the deterministic trace without referring directly to source code.
 
 ## 1. Trace architecture at a glance

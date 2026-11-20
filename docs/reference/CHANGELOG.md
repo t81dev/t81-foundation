@@ -1,5 +1,29 @@
 # Changelog
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Changelog](#changelog)
+  - [[Unreleased]](#[unreleased])
+  - [[1.5.0] - 2026-03-14](#[150]---2026-03-14)
+    - [Added](#added)
+    - [Changed](#changed)
+    - [Fixed](#fixed)
+    - [Build/CI](#buildci)
+  - [[1.3.2] - 2026-03-08](#[132]---2026-03-08)
+    - [Added](#added)
+    - [Fixed](#fixed)
+    - [Changed](#changed)
+    - [Added](#added)
+    - [Fixed](#fixed)
+    - [Changed](#changed)
+    - [Build/CI](#buildci)
+    - [Notes](#notes)
+
+<!-- T81-TOC:END -->
+
+
 > **Source of Truth:** This document defines the **history of changes** released to the public. For future plans, see [../process/roadmaps-plans/ROADMAP.md](../process/roadmaps-plans/ROADMAP.md).
 
 All notable changes to this project are documented in this file.

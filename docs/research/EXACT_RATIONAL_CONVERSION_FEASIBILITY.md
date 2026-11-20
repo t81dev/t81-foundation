@@ -1,4 +1,45 @@
 # T81 Foundation — Scientific Investigation 02
+
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation — Scientific Investigation 02](#t81-foundation-—-scientific-investigation-02)
+  - [Exact Rational Conversion Feasibility Report](#exact-rational-conversion-feasibility-report)
+    - [Executive Summary](#executive-summary)
+    - [Section 1: Evaluated Repository Revision & Evidence Inventory](#section-1-evaluated-repository-revision-&-evidence-inventory)
+      - [1.1 Evaluated Repository Revision](#11-evaluated-repository-revision)
+      - [1.2 Evidence Inventory](#12-evidence-inventory)
+    - [Section 2: Precise Mathematical Conversion Contract](#section-2-precise-mathematical-conversion-contract)
+      - [2.1 Representation Value Equation](#21-representation-value-equation)
+      - [2.2 Finite Representable Range and Precision (`<27, 9>`)](#22-finite-representable-range-and-precision-`<27-9>`)
+      - [2.3 Encoding Uniqueness and Canonicality](#23-encoding-uniqueness-and-canonicality)
+      - [2.4 Required Rounding Mode and Tie-Breaking](#24-required-rounding-mode-and-tie-breaking)
+      - [2.5 Required Special Value Behavior](#25-required-special-value-behavior)
+      - [2.6 Specification vs. Implementation Discrepancies](#26-specification-vs-implementation-discrepancies)
+    - [Section 3: Independently Reproduced Counterexamples](#section-3-independently-reproduced-counterexamples)
+      - [Case 1: Maximum Finite Positive (`0x7fefffffffffffff`)](#case-1-maximum-finite-positive-`0x7fefffffffffffff`)
+      - [Case 2: Minimum Positive Subnormal (`0x0000000000000001`)](#case-2-minimum-positive-subnormal-`0x0000000000000001`)
+      - [Case 3: Positive One-Half (`0x3fe0000000000000`)](#case-3-positive-one-half-`0x3fe0000000000000`)
+    - [Section 4: Exact Expected and Observed Outputs](#section-4-exact-expected-and-observed-outputs)
+    - [Section 5: Reference-Oracle Validation](#section-5-reference-oracle-validation)
+      - [5.1 Validation Results](#51-validation-results)
+    - [Section 6: Conventional Baseline Comparison](#section-6-conventional-baseline-comparison)
+      - [6.1 Determinism Analysis: Ternary vs. Conventional](#61-determinism-analysis-ternary-vs-conventional)
+    - [Section 7: Algorithmic Complexity and Measured Costs](#section-7-algorithmic-complexity-and-measured-costs)
+      - [7.1 Complexity Analysis](#71-complexity-analysis)
+      - [7.2 Measured Benchmark Costs](#72-measured-benchmark-costs)
+    - [Section 8: Remaining Specification Ambiguities](#section-8-remaining-specification-ambiguities)
+    - [Section 9: Final Disposition](#section-9-final-disposition)
+    - [**Disposition: REVISE**](#**disposition-revise**)
+      - [Reproduction Commands](#reproduction-commands)
+- [1. Run exact audit reference tests](#1-run-exact-audit-reference-tests)
+- [2. Run RFC-00D5 draft checked contract reference tests](#2-run-rfc-00d5-draft-checked-contract-reference-tests)
+- [3. Probe production C++ implementation counterexamples](#3-probe-production-c++-implementation-counterexamples)
+    - [Section 10: Falsifiable Follow-Up Experiment (Gate 1B Closure)](#section-10-falsifiable-follow-up-experiment-gate-1b-closure)
+
+<!-- T81-TOC:END -->
+
 ## Exact Rational Conversion Feasibility Report
 
 **Repository:** https://github.com/t81dev/t81-foundation  

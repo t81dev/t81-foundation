@@ -1,5 +1,17 @@
 # T81 — PR #824 Integration Reconciliation (2026-11-17)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 — PR #824 Integration Reconciliation (2026-11-17)](#t81-—-pr-#824-integration-reconciliation-2026-11-17)
+  - [Integrated documentation and independent draft](#integrated-documentation-and-independent-draft)
+  - [Unchanged STOP and qualification contract](#unchanged-stop-and-qualification-contract)
+  - [Structured continuity and remaining issues](#structured-continuity-and-remaining-issues)
+
+<!-- T81-TOC:END -->
+
+
 **NON-NORMATIVE / DOCUMENTATION ONLY / NO OPERATIONAL AUTHORIZATION**
 
 Freshly fetched `origin/main`: `ab15820a2dd8ebcadde0efecf1fbb0d43b57d3f9`.

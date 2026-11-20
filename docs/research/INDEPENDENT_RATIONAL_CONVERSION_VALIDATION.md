@@ -1,4 +1,32 @@
 # T81 Foundation — Scientific Investigation 04
+
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation — Scientific Investigation 04](#t81-foundation-—-scientific-investigation-04)
+  - [Independent Validation Report of Exact Rational Conversion](#independent-validation-report-of-exact-rational-conversion)
+    - [Executive Summary](#executive-summary)
+    - [Section 1: Exact Revision & Test Environment Baseline](#section-1-exact-revision-&-test-environment-baseline)
+      - [1.1 Revision Provenance](#11-revision-provenance)
+      - [1.2 Execution Environment](#12-execution-environment)
+    - [Section 2: Independent Test Methodology](#section-2-independent-test-methodology)
+    - [Section 3: Arbitrary-Precision Arithmetic Validation Results](#section-3-arbitrary-precision-arithmetic-validation-results)
+      - [Identified Arithmetic Scope Note](#identified-arithmetic-scope-note)
+    - [Section 4: Conversion Test Matrix](#section-4-conversion-test-matrix)
+    - [Section 5: Reproducible Counterexamples](#section-5-reproducible-counterexamples)
+    - [Section 6: Cross-Platform Evidence](#section-6-cross-platform-evidence)
+    - [Section 7: Audit of Performance Claims](#section-7-audit-of-performance-claims)
+      - [7.1 Benchmark Evaluation](#71-benchmark-evaluation)
+      - [7.2 Ternary Performance Claim Assessment](#72-ternary-performance-claim-assessment)
+    - [Section 8: Limitations and Uncertainties](#section-8-limitations-and-uncertainties)
+    - [Section 9: Final Scientific Disposition](#section-9-final-scientific-disposition)
+    - [**Disposition: VALIDATED**](#**disposition-validated**)
+    - [Section 10: Recommendation](#section-10-recommendation)
+    - [**Recommendation: PRESERVE AS VALIDATED REFERENCE**](#**recommendation-preserve-as-validated-reference**)
+
+<!-- T81-TOC:END -->
+
 ## Independent Validation Report of Exact Rational Conversion
 
 **Repository:** https://github.com/t81dev/t81-foundation

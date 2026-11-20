@@ -1,5 +1,22 @@
 # Scientific Investigation 10A — Physical Storage Evidence Discovery & H01 Assessment
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Scientific Investigation 10A — Physical Storage Evidence Discovery & H01 Assessment](#scientific-investigation-10a-—-physical-storage-evidence-discovery-&-h01-assessment)
+  - [1. Review boundary and provenance status](#1-review-boundary-and-provenance-status)
+  - [2. Independent publication audit: all ten original entries](#2-independent-publication-audit-all-ten-original-entries)
+    - [Identifiable primary records and limits of extraction](#identifiable-primary-records-and-limits-of-extraction)
+  - [3. Quarantined numerical ledger from #624](#3-quarantined-numerical-ledger-from-#624)
+  - [4. Recalculated area, feature-size and normalization arithmetic](#4-recalculated-area-feature-size-and-normalization-arithmetic)
+  - [5. Matched measurements versus technology context](#5-matched-measurements-versus-technology-context)
+  - [6. Reconciliation with Investigation 10B and stopping decision](#6-reconciliation-with-investigation-10b-and-stopping-decision)
+  - [7. Transparent correction and validation record](#7-transparent-correction-and-validation-record)
+
+<!-- T81-TOC:END -->
+
+
 **Repository:** T81 Foundation (`t81dev/t81-foundation`)
 
 **Original assessment:** PR [#624](https://github.com/t81dev/t81-foundation/pull/624), merge `934b93192a2aa80e352005193ac516e09a90f432`; original document date was April 2026.

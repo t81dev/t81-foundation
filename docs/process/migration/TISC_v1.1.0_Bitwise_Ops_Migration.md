@@ -1,5 +1,21 @@
 # Migration Guide: TISC v1.1.0 Bitwise Operations
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Migration Guide: TISC v1.1.0 Bitwise Operations](#migration-guide-tisc-v110-bitwise-operations)
+  - [1. Overview](#1-overview)
+  - [2. New Opcodes](#2-new-opcodes)
+  - [3. Shift Behavior & Masking](#3-shift-behavior-&-masking)
+    - [Example](#example)
+  - [4. Arithmetic vs. Logical Right Shift](#4-arithmetic-vs-logical-right-shift)
+  - [5. Migration from Ternary Logic](#5-migration-from-ternary-logic)
+  - [6. Polyfilling Missing Opcodes](#6-polyfilling-missing-opcodes)
+
+<!-- T81-TOC:END -->
+
+
 **Target Audience:** T81 Assembly Programmers, Compiler Writers
 **Date:** 2025-02-15
 

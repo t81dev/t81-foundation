@@ -1,5 +1,45 @@
 # Comparative synthesis of six deep research reports on
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Comparative synthesis of six deep research reports on](#comparative-synthesis-of-six-deep-research-reports-on)
+  - [Source set and approach](#source-set-and-approach)
+  - [Similarities](#similarities)
+    - [Determinism as the Primary Differentiator](#determinism-as-the-primary-differentiator)
+    - [Documentation and Contract Surface](#documentation-and-contract-surface)
+    - [Innovation Themes](#innovation-themes)
+    - [Shared Challenges](#shared-challenges)
+    - [Most Consistent Recommendation: Integration](#most-consistent-recommendation-integration)
+  - [Differences](#differences)
+    - [Tonal Posture](#tonal-posture)
+    - [Evidence Style](#evidence-style)
+  - [Reported Community Metrics Diverge Sharply](#reported-community-metrics-diverge-sharply)
+  - [Quantization and Bit-Accounting Inconsistency](#quantization-and-bit-accounting-inconsistency)
+  - [Unique “One-Report-Only” Contributions](#unique-“one-report-only”-contributions)
+  - [Strengths and Weaknesses of Each Report](#strengths-and-weaknesses-of-each-report)
+    - [Gemini](#gemini)
+    - [DeepSeek](#deepseek)
+    - [Mistral](#mistral)
+    - [Jules](#jules)
+    - [Grok](#grok)
+    - [ChatGPT](#chatgpt)
+  - [Consensus Summary and Gaps](#consensus-summary-and-gaps)
+    - [Consensus Summary](#consensus-summary)
+    - [Major Gaps Across the Report Set](#major-gaps-across-the-report-set)
+  - [Recommended Next Actions](#recommended-next-actions)
+    - [1. Python-First Integration Wedge](#1-python-first-integration-wedge)
+    - [2. Determinism Contract](#2-determinism-contract)
+    - [3. Publish Benchmarks](#3-publish-benchmarks)
+    - [4. Mature Axion Control Plane](#4-mature-axion-control-plane)
+    - [5. Engineered Onboarding](#5-engineered-onboarding)
+    - [6. Community Scaffolding](#6-community-scaffolding)
+    - [7. Hardware & Acceleration Roadmap](#7-hardware-&-acceleration-roadmap)
+
+<!-- T81-TOC:END -->
+
+
 ## Source set and approach
 
 This synthesis compares six model-generated deep research reports (Gemini, DeepSeek, Mistral, Jules, Grok, ChatGPT), all dated March 2, 2026, that analyze the same repository hosted on https://github.com/t81dev/t81-foundation/ and owned by @t81dev.

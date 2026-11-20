@@ -1,5 +1,29 @@
 # T81 Research Program — Master Continuity Charter
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Research Program — Master Continuity Charter](#t81-research-program-—-master-continuity-charter)
+  - [0. Read this first: instructions for the next research instance](#0-read-this-first-instructions-for-the-next-research-instance)
+  - [1. Foundational mission and boundaries](#1-foundational-mission-and-boundaries)
+  - [2. Intellectual and architectural lineage](#2-intellectual-and-architectural-lineage)
+    - [Stage A — Knuth and discrete mathematics](#stage-a-—-knuth-and-discrete-mathematics)
+    - [Stage B — Hanoi (CWEB precursor)](#stage-b-—-hanoi-cweb-precursor)
+    - [Stage C — Early base-81 / ternary ecosystem](#stage-c-—-early-base-81--ternary-ecosystem)
+    - [Stage D — Modern T81 Foundation](#stage-d-—-modern-t81-foundation)
+  - [3. The October 25 validation-integrity warning](#3-the-october-25-validation-integrity-warning)
+  - [4. Hypothesis register — initial edition](#4-hypothesis-register-—-initial-edition)
+  - [5. Experimental standards and controls](#5-experimental-standards-and-controls)
+  - [6. Two coordinated tracks, not a forced choice](#6-two-coordinated-tracks-not-a-forced-choice)
+  - [7. Immediate executable research sequence](#7-immediate-executable-research-sequence)
+  - [8. Source inventory and confidence](#8-source-inventory-and-confidence)
+  - [9. Session handoff protocol (append each time)](#9-session-handoff-protocol-append-each-time)
+  - [10. Ready-to-paste prompt for the next ChatGPT instance](#10-ready-to-paste-prompt-for-the-next-chatgpt-instance)
+
+<!-- T81-TOC:END -->
+
+
 **Version:** 1.0 · **As of:** 2026-10-25
 **Status:** Research continuity and hypothesis register; not a certification of implementations
 **Intended readers:** Future ChatGPT instances, Codex, Jules, collaborating researchers, and project maintainers.

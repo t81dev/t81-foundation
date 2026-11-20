@@ -1,5 +1,21 @@
 # Experimental Surface Inventory
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Experimental Surface Inventory](#experimental-surface-inventory)
+  - [Experimental Inventory](#experimental-inventory)
+  - [Isolation Status](#isolation-status)
+    - [1. JIT Compiler](#1-jit-compiler)
+    - [2. Cognitive Tiers (Axion/Hanoi)](#2-cognitive-tiers-axionhanoi)
+    - [3. Distributed Compute](#3-distributed-compute)
+  - [Deterministic Core Boundary](#deterministic-core-boundary)
+  - [Governance Rule](#governance-rule)
+
+<!-- T81-TOC:END -->
+
+
 **Status:** Active Inventory
 **Last Updated:** 2026-02-25
 **Reference:** `spec/supplemental/deterministic-core-profile-v1.md`

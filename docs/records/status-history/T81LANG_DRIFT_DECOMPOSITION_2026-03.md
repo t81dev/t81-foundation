@@ -1,5 +1,52 @@
 # T81Lang Drift Decomposition (2026-03)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Drift Decomposition (2026-03)](#t81lang-drift-decomposition-2026-03)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Baseline Signals](#baseline-signals)
+  - [Milestone Checklist](#milestone-checklist)
+    - [M1 — Drift Surface Inventory Lock](#m1-—-drift-surface-inventory-lock)
+    - [M2 — Deterministic Compilation Profile Gap Plan](#m2-—-deterministic-compilation-profile-gap-plan)
+    - [M3 — Conformance and Repro Evidence Mapping](#m3-—-conformance-and-repro-evidence-mapping)
+    - [M4 — Matrix and Governance Sync Update](#m4-—-matrix-and-governance-sync-update)
+  - [Milestone Status Snapshot](#milestone-status-snapshot)
+  - [A1 Closure State (A1-CODE-06)](#a1-closure-state-a1-code-06)
+  - [Decomposition Table (M1 Inventory Lock)](#decomposition-table-m1-inventory-lock)
+  - [Appendix A Parser Coverage Matrix (A1-CODE-01)](#appendix-a-parser-coverage-matrix-a1-code-01)
+  - [M2 Deterministic Compilation Profile Gap Plan](#m2-deterministic-compilation-profile-gap-plan)
+  - [M3 Conformance and Repro Evidence Mapping](#m3-conformance-and-repro-evidence-mapping)
+  - [Stage 3 Semantic Coverage Tightening (A1-CODE-02)](#stage-3-semantic-coverage-tightening-a1-code-02)
+  - [Section-Level Semantic Coverage Index (A1B-CODE-02)](#section-level-semantic-coverage-index-a1b-code-02)
+  - [Control-Flow Edge Conformance Coverage (A1-CODE-05)](#control-flow-edge-conformance-coverage-a1-code-05)
+  - [Section-Level Purity/Control-Flow Coverage Index (A1C-CODE-01)](#section-level-puritycontrol-flow-coverage-index-a1c-code-01)
+  - [Section 7 Axion Integration Evidence Index (A1C-CODE-02)](#section-7-axion-integration-evidence-index-a1c-code-02)
+  - [Section 7 Guard/Segment Metadata Traceability Addendum (A1F-CODE-01)](#section-7-guardsegment-metadata-traceability-addendum-a1f-code-01)
+  - [Section 5 IR/Lowering Determinism Evidence Index (A1D-CODE-01)](#section-5-irlowering-determinism-evidence-index-a1d-code-01)
+  - [Section 5 Compilation-Profile Maintenance Evidence Addendum (A1F-CODE-02)](#section-5-compilation-profile-maintenance-evidence-addendum-a1f-code-02)
+  - [Section 5 Reproducibility-Hash Maintenance Addendum (A1G-CODE-02)](#section-5-reproducibility-hash-maintenance-addendum-a1g-code-02)
+  - [Section 8 Stdlib Alignment Evidence Index (A1D-CODE-02)](#section-8-stdlib-alignment-evidence-index-a1d-code-02)
+  - [Section 4 Name-Resolution/Scoping Evidence Index (A1E-CODE-01)](#section-4-name-resolutionscoping-evidence-index-a1e-code-01)
+  - [Residual Section 3/6 Alignment Evidence Addendum (A1E-CODE-02)](#residual-section-36-alignment-evidence-addendum-a1e-code-02)
+  - [Section 2/6 Structural-Type Control-Flow Traceability Addendum (A1G-CODE-01)](#section-26-structural-type-control-flow-traceability-addendum-a1g-code-01)
+  - [Executable Code Task Queue](#executable-code-task-queue)
+  - [Post-A1 Evidence Deltas (Next Cycle Inputs)](#post-a1-evidence-deltas-next-cycle-inputs)
+  - [Next-Cycle Candidate Deltas (A1C Seed)](#next-cycle-candidate-deltas-a1c-seed)
+  - [Post-A1C Candidate Deltas (A1D Seed)](#post-a1c-candidate-deltas-a1d-seed)
+  - [Post-A1D Candidate Deltas (A1E Seed)](#post-a1d-candidate-deltas-a1e-seed)
+  - [Post-A1E Candidate Deltas (A1F Seed)](#post-a1e-candidate-deltas-a1f-seed)
+  - [Post-A1F Candidate Deltas (A1G Seed)](#post-a1f-candidate-deltas-a1g-seed)
+  - [Risks and Controls](#risks-and-controls)
+  - [Cycle Closure Gate](#cycle-closure-gate)
+  - [Cross-References](#cross-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Owner: @t81dev
 Last Updated: 2026-02-25

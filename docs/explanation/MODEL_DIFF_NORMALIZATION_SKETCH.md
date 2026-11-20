@@ -1,5 +1,26 @@
 # Model Diff Normalization Sketch
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Model Diff Normalization Sketch](#model-diff-normalization-sketch)
+  - [Purpose](#purpose)
+  - [Current Boundary](#current-boundary)
+  - [Problem To Solve](#problem-to-solve)
+  - [Proposed Principle](#proposed-principle)
+  - [Smallest Useful Normalization Scope](#smallest-useful-normalization-scope)
+  - [Candidate Rules](#candidate-rules)
+    - [Rule 1: Known layout transpose](#rule-1-known-layout-transpose)
+    - [Rule 2: Metadata-only format summary differences](#rule-2-metadata-only-format-summary-differences)
+    - [Rule 3: Unknown sparsity on one side](#rule-3-unknown-sparsity-on-one-side)
+  - [Output Shape](#output-shape)
+  - [First Buildable Experiment](#first-buildable-experiment)
+  - [Recommended Decision](#recommended-decision)
+
+<!-- T81-TOC:END -->
+
+
 Status: Draft
 Last Updated: 2026-04-08
 

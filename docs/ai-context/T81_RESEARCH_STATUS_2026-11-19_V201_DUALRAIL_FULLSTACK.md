@@ -1,5 +1,17 @@
 # T81 Research & Engineering Status — 2026-11-19 (`v2.0.1` + Dual-Rail Heterogeneous & Full-Stack VM Integration)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Research & Engineering Status — 2026-11-19 (`v2.0.1` + Dual-Rail Heterogeneous & Full-Stack VM Integration)](#t81-research-&-engineering-status-—-2026-11-19-`v201`-+-dual-rail-heterogeneous-&-full-stack-vm-integration)
+  - [1. Verified Engineering & Research Wins (`cfe7a269a` → `16d083136`)](#1-verified-engineering-&-research-wins-`cfe7a269a`-→-`16d083136`)
+  - [2. Preserved Negative Results (Falsifiers Triggered & Reverted)](#2-preserved-negative-results-falsifiers-triggered-&-reverted)
+  - [3. Explicit Limits & Next Concrete Steps](#3-explicit-limits-&-next-concrete-steps)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** 2026-11-19  
 **Frozen Release Tags:** `v2.0.0` (`7d4582ce5`), `v2.0.1` (`f3b41b583`)  
 **Current `main` Head:** `16d083136`  

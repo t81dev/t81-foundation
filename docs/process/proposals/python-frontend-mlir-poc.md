@@ -1,5 +1,19 @@
 # Python Frontend MLIR Proof of Concept
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Python Frontend MLIR Proof of Concept](#python-frontend-mlir-proof-of-concept)
+  - [Current State](#current-state)
+  - [Supported Python Subset v0](#supported-python-subset-v0)
+  - [Integration Strategy](#integration-strategy)
+  - [Last Verified Locally](#last-verified-locally)
+  - [Recommended Resume Point](#recommended-resume-point)
+
+<!-- T81-TOC:END -->
+
+
 This proposal records the Python ingress milestone after the C and Rust subset
 frontends: accept a tightly restricted subset of Python and lower it through
 the existing T81 MLIR/TISC pipeline.

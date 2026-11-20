@@ -1,5 +1,19 @@
 # AXION-AI-001 HD01 — Documentation Preparation Record
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [AXION-AI-001 HD01 — Documentation Preparation Record](#axion-ai-001-hd01-—-documentation-preparation-record)
+  - [Attribution, prior reading and authorization](#attribution-prior-reading-and-authorization)
+  - [Exact documentation-only scope](#exact-documentation-only-scope)
+  - [Source identities and observations](#source-identities-and-observations)
+  - [External documentary precedents](#external-documentary-precedents)
+  - [Preparation commands and execution exclusions](#preparation-commands-and-execution-exclusions)
+
+<!-- T81-TOC:END -->
+
+
 Status: NON-NORMATIVE / NO AUTHORITY MODEL SELECTED OR ADOPTED
 Date: 2026-11-17
 Baseline: `cb9216f42f63e95e58709a71e08d38139c71e48b`

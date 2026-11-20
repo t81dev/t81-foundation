@@ -1,5 +1,24 @@
 # Release Discipline Manifest
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Release Discipline Manifest](#release-discipline-manifest)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Definitions](#definitions)
+  - [1. Release Preconditions](#1-release-preconditions)
+  - [2. Versioning Rules](#2-versioning-rules)
+  - [3. Release Checklist](#3-release-checklist)
+  - [3A. Release Boundary Classification Policy](#3a-release-boundary-classification-policy)
+  - [4. Non-Required Workflow Failure Handling](#4-non-required-workflow-failure-handling)
+  - [Cross-References](#cross-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Version: 1.0.0
 Owner: Product/Governance

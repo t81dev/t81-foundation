@@ -1,5 +1,20 @@
 # F01 BOLQ Contract Migration — Independent Review Plan
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [F01 BOLQ Contract Migration — Independent Review Plan](#f01-bolq-contract-migration-—-independent-review-plan)
+  - [Source and decision pins](#source-and-decision-pins)
+  - [Proposed migration sequence — each step requires its own future authorization](#proposed-migration-sequence-—-each-step-requires-its-own-future-authorization)
+  - [Non-negotiable review invariants](#non-negotiable-review-invariants)
+  - [Independent reviewer questions](#independent-reviewer-questions)
+  - [Reviewer disposition](#reviewer-disposition)
+  - [Present state](#present-state)
+
+<!-- T81-TOC:END -->
+
+
 **NON-NORMATIVE / PROPOSAL ONLY / NOT ADOPTED / NOT QUALIFIED**  
 Prepared: 2026-11-17. No implementation, execution, host acquisition, active gate/schema/lock edits or merge authorized.
 

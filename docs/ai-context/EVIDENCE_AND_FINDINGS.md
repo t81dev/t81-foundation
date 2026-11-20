@@ -2,6 +2,46 @@
 
 # T81 Research Continuity — EVIDENCE_AND_FINDINGS
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Research Continuity — EVIDENCE_AND_FINDINGS](#t81-research-continuity-—-evidence_and_findings)
+  - [1. Executive Scientific Evidence Index](#1-executive-scientific-evidence-index)
+    - [Summary Disposition Table](#summary-disposition-table)
+  - [2. Detailed Empirical Investigation Findings](#2-detailed-empirical-investigation-findings)
+    - [2.1 Hanoi Historical Arithmetic Probes (H02)](#21-hanoi-historical-arithmetic-probes-h02)
+    - [2.2 TISC ISA Code Compactness Investigation 09-E1 (H03)](#22-tisc-isa-code-compactness-investigation-09-e1-h03)
+    - [2.3 Packed Ternary MatVec Performance (`experiments/packed_ternary_matvec/`) (H03, H06)](#23-packed-ternary-matvec-performance-`experimentspacked_ternary_matvec`-h03-h06)
+    - [2.4 Software Radix Addition Benchmark (`experiments/radix_comparison/`) (H01, H02)](#24-software-radix-addition-benchmark-`experimentsradix_comparison`-h01-h02)
+    - [2.5 Hardware Feasibility & Storage Evidence Assessment (Inv 07 & Inv 10A) (H01, H05)](#25-hardware-feasibility-&-storage-evidence-assessment-inv-07-&-inv-10a-h01-h05)
+    - [2.6 Accountable Computation Precursor & Baseline-X (H07)](#26-accountable-computation-precursor-&-baseline-x-h07)
+    - [2.7 Adaptive Representation Tiering (H04 & H04-R01)](#27-adaptive-representation-tiering-h04-&-h04-r01)
+    - [2.8 AI-Assisted Research Methodology (H08)](#28-ai-assisted-research-methodology-h08)
+  - [3. Reproduction Commands](#3-reproduction-commands)
+- [1. Build release binaries with test flags enabled](#1-build-release-binaries-with-test-flags-enabled)
+- [2. Run radix addition performance benchmark (H01, H02)](#2-run-radix-addition-performance-benchmark-h01-h02)
+- [3. Run 2-bit packed ternary MatVec benchmark (H03, H06)](#3-run-2-bit-packed-ternary-matvec-benchmark-h03-h06)
+- [4. Run exact float conversion audit oracle](#4-run-exact-float-conversion-audit-oracle)
+- [5. Execute full research regression suite](#5-execute-full-research-regression-suite)
+  - [4. Unsupported Claims That Must Never Be Repeated](#4-unsupported-claims-that-must-never-be-repeated)
+  - [5. Key Discriminating Experiments](#5-key-discriminating-experiments)
+  - [6. Evidence interpretation correction — 2026-10-31](#6-evidence-interpretation-correction-—-2026-10-31)
+  - [2026-10-31 evidence addendum — local candidate status](#2026-10-31-evidence-addendum-—-local-candidate-status)
+  - [2026-10-31 synthesis update: accepted correctness versus unresolved advantage](#2026-10-31-synthesis-update-accepted-correctness-versus-unresolved-advantage)
+    - [H04-R03 Phase B (commit-scoped acceptance)](#h04-r03-phase-b-commit-scoped-acceptance)
+    - [Comprehensive assessment boundary](#comprehensive-assessment-boundary)
+    - [PR #660 baseline-assessment evidence warning](#pr-#660-baseline-assessment-evidence-warning)
+  - [2026-11-01 AIOPT-001 M1/M2 evidence boundary](#2026-11-01-aiopt-001-m1m2-evidence-boundary)
+  - [2026-11-05 CPA-001 through CPA-005 Cross-Profile Architecture Evidence](#2026-11-05-cpa-001-through-cpa-005-cross-profile-architecture-evidence)
+    - [1. Program and Oracle Artifacts](#1-program-and-oracle-artifacts)
+    - [2. Dual-Profile Execution Results](#2-dual-profile-execution-results)
+    - [3. Evidentiary Distinctions](#3-evidentiary-distinctions)
+  - [2026-11-05 CPA-006 bounded conformance and ISA-001 evidence boundary](#2026-11-05-cpa-006-bounded-conformance-and-isa-001-evidence-boundary)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `docs/ai-context/EVIDENCE_AND_FINDINGS.md`
 **Version:** 1.0.1 · **Last Reviewed:** 2026-10-29
 **Source Snapshot:** `main` at `f8ac77159ded2c4b93f4cc83abd48f6f35655468` (checked 2026-10-29; refresh before use)

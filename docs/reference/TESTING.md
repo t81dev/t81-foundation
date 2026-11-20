@@ -1,5 +1,17 @@
 # Testing Strategy
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Testing Strategy](#testing-strategy)
+  - [1. Testing Taxonomy](#1-testing-taxonomy)
+  - [2. Coverage Position](#2-coverage-position)
+  - [3. CI Matrix](#3-ci-matrix)
+
+<!-- T81-TOC:END -->
+
+
 > **Source of Truth:** This document defines the **testing taxonomy and coverage expectations**.
 
 **Last Updated:** February 10, 2026

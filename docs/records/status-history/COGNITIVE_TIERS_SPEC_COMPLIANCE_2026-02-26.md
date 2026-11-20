@@ -1,5 +1,18 @@
 # Cognitive Tiers Spec Compliance (2026-02-26)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Cognitive Tiers Spec Compliance (2026-02-26)](#cognitive-tiers-spec-compliance-2026-02-26)
+  - [Scope](#scope)
+  - [Closed in This Pass](#closed-in-this-pass)
+  - [Validation](#validation)
+  - [Residual Gaps (Still Open)](#residual-gaps-still-open)
+
+<!-- T81-TOC:END -->
+
+
 Status: Substantial Compliance (Runtime/Frontend Closures Applied)
 Date (UTC): 2026-02-26
 Owner: Project Management / Runtime

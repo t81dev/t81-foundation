@@ -1,4 +1,45 @@
 # Scientific Investigation 06
+
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Scientific Investigation 06](#scientific-investigation-06)
+  - [Adversarial Review of Balanced Ternary Comparative Claims](#adversarial-review-of-balanced-ternary-comparative-claims)
+    - [Executive Summary](#executive-summary)
+      - [Key Findings of the Audit:](#key-findings-of-the-audit)
+    - [1. Claim-by-Claim Evidence Matrix](#1-claim-by-claim-evidence-matrix)
+    - [2. Corrected Mathematical Derivations](#2-corrected-mathematical-derivations)
+      - [2.1 Radix Economy and Physical Substrate Assumptions](#21-radix-economy-and-physical-substrate-assumptions)
+      - [2.2 Partial Product Multiplication: Ternary vs Binary Booth Encoding](#22-partial-product-multiplication-ternary-vs-binary-booth-encoding)
+      - [2.3 Redundant Signed-Digit (RSD) Zero Uniqueness & Canonicalization Cost](#23-redundant-signed-digit-rsd-zero-uniqueness-&-canonicalization-cost)
+    - [3. Reproducibility Assessment of Benchmarks](#3-reproducibility-assessment-of-benchmarks)
+      - [Detailed Findings on Software MatVec Benchmarks:](#detailed-findings-on-software-matvec-benchmarks)
+    - [4. Comparative Fairness & Physical Substrate Assessment](#4-comparative-fairness-&-physical-substrate-assessment)
+      - [4.1 Match Constraints & Information Capacity](#41-match-constraints-&-information-capacity)
+      - [4.2 Memory Packing and Byte Alignment Waste](#42-memory-packing-and-byte-alignment-waste)
+      - [4.3 Asymmetric Optimization Effort & Compiler Maturity](#43-asymmetric-optimization-effort-&-compiler-maturity)
+      - [4.4 Non-CMOS Physical Substrates](#44-non-cmos-physical-substrates)
+    - [5. Historical Source Assessment (Setun & Hanoi Lineage)](#5-historical-source-assessment-setun-&-hanoi-lineage)
+      - [5.1 Setun Computer Lineage (Moscow State University, 1958)](#51-setun-computer-lineage-moscow-state-university-1958)
+      - [5.2 Hanoi / CWEB Lineage (`legacy/hanoivm`)](#52-hanoi--cweb-lineage-`legacyhanoivm`)
+    - [6. Supported and Unsupported Conclusions](#6-supported-and-unsupported-conclusions)
+      - [6.1 Supported Conclusions (Sustained from Investigation 05)](#61-supported-conclusions-sustained-from-investigation-05)
+      - [6.2 Unsupported / Falsified Conclusions (Refuted by Investigation 06)](#62-unsupported--falsified-conclusions-refuted-by-investigation-06)
+    - [7. Prioritized Ternary-Specific Experiment](#7-prioritized-ternary-specific-experiment)
+      - [Strongest Falsifiable Hypothesis](#strongest-falsifiable-hypothesis)
+      - [Mathematical Specification:](#mathematical-specification)
+      - [Equivalent Binary Baseline:](#equivalent-binary-baseline)
+      - [Determinism Surface Registry Acknowledgment:](#determinism-surface-registry-acknowledgment)
+    - [8. Explicit Stopping Criteria](#8-explicit-stopping-criteria)
+      - [Criterion 1 (Software CPU Arithmetic Rule):](#criterion-1-software-cpu-arithmetic-rule)
+      - [Criterion 2 (FPGA / Custom Overlay Rule):](#criterion-2-fpga--custom-overlay-rule)
+      - [Criterion 3 (Memory Storage & Identity Boundary):](#criterion-3-memory-storage-&-identity-boundary)
+    - [Final Audit Disposition](#final-audit-disposition)
+    - [**Disposition: NARROW SCOPE / FROZEN CPU ARITHMETIC (SUSTAINED WITH CORRECTIONS)**](#**disposition-narrow-scope--frozen-cpu-arithmetic-sustained-with-corrections**)
+
+<!-- T81-TOC:END -->
+
 ## Adversarial Review of Balanced Ternary Comparative Claims
 
 **Repository:** https://github.com/t81dev/t81-foundation
