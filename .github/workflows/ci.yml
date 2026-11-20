@@ -1610,7 +1610,7 @@ jobs:
         shell: bash
         run: |
           set -eo pipefail
-          wget -qO- https://apt.repos.intel.com/oneapi/intel-oneapi-apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/oneapi-archive-keyring.gpg
+          wget -qO- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | sudo gpg --dearmor -o /usr/share/keyrings/oneapi-archive-keyring.gpg
           echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
           sudo apt-get update
           sudo apt-get install -y intel-oneapi-compiler-dpcpp-cpp
