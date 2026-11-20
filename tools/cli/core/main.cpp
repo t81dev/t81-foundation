@@ -45,8 +45,10 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#include <shellapi.h>
+// clang-format off
 #include <windows.h>
+#include <shellapi.h>
+// clang-format on
 // Windows GDI's ERROR macro collides with monitoring::AlertLevel::ERROR.
 #ifdef ERROR
 #undef ERROR
