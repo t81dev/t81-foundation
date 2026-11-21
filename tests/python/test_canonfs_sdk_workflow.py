@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shlex
 import subprocess
 import sys
@@ -14,6 +15,15 @@ import t81
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW_SCRIPT = REPO_ROOT / "examples" / "python" / "canonfs_decision_workflow.py"
+NATIVE_CLI = os.environ.get("T81_CLI")
+
+
+def printed_command(output: str, label: str) -> list[str]:
+    prefix = f"{label}: "
+    for line in output.splitlines():
+        if line.startswith(prefix):
+            return shlex.split(line.removeprefix(prefix))
+    raise AssertionError(f"missing {label} command in {output!r}")
 
 
 class CanonRefAndWorkflowTest(unittest.TestCase):
@@ -37,19 +47,48 @@ class CanonRefAndWorkflowTest(unittest.TestCase):
             )
             first_record = json.loads(first.stdout)
             self.assertEqual(first_record["decision"], 1)
-            read, rerun = (shlex.split(line.split(": ", 1)[1]) for line in first.stderr.splitlines())
+            read = printed_command(first.stderr, "Read")
+            rerun = printed_command(first.stderr, "Rerun")
             read_back = subprocess.check_output(read, text=True)
             self.assertEqual(read_back, first_record["payload"] + "\n")
             second = subprocess.run(rerun, check=True, capture_output=True, text=True)
             second_record = json.loads(second.stdout)
             self.assertEqual(second_record["decision"], 0)
-            read, compare = (shlex.split(line.split(": ", 1)[1]) for line in second.stderr.splitlines())
+            read = printed_command(second.stderr, "Read")
+            compare = printed_command(second.stderr, "Compare")
             read_back = subprocess.check_output(read, text=True)
             self.assertEqual(read_back, second_record["payload"] + "\n")
             comparison = json.loads(subprocess.check_output(compare, text=True))
             self.assertEqual(comparison["digest_a"], first_record["digest"])
             self.assertEqual(comparison["digest_b"], second_record["digest"])
             self.assertFalse(comparison["same_bytes"])
+
+    @unittest.skipUnless(NATIVE_CLI, "Set T81_CLI to the native t81 executable")
+    def test_native_cli_reads_python_object_directly(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = Path(tmp) / "store with spaces"
+            written = subprocess.run(
+                [sys.executable, str(WORKFLOW_SCRIPT), "run", "--store", str(store), "--score", "75"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            record = json.loads(written.stdout)
+            ref = t81.CanonRef.from_hex(record["digest"])
+            handle = record["cli_handle"]
+            self.assertEqual(handle, ref.to_cli_handle())
+            self.assertTrue(handle.startswith("sha3-256:"))
+            for label, action in (("Native verify", "verify"), ("Native get", "get")):
+                command = printed_command(written.stderr, label)
+                self.assertEqual(
+                    command, ["t81", "canonfs", action, handle, "--canonfs-root", str(store.resolve())]
+                )
+                output = subprocess.check_output([NATIVE_CLI, *command[1:]])
+                if action == "get":
+                    self.assertEqual(output, record["payload"].encode("utf-8"))
+                else:
+                    self.assertIn(b"verified: ", output)
+            self.assertEqual(list(Path(tmp).iterdir()), [store])
 
     def test_canonref_surface_on_existing_export(self) -> None:
         self.assertIn("CanonRef", t81.__all__)
@@ -77,6 +116,7 @@ class CanonRefAndWorkflowTest(unittest.TestCase):
         self.assertEqual(from_upper, ref)
         self.assertEqual(from_bytes, ref)
         self.assertEqual(from_upper.hex(), digest_hex)
+        self.assertEqual(from_hex.to_cli_handle(), from_bytes.to_cli_handle())
         self.assertEqual(hash(from_hex), hash(ref))
         self.assertEqual(hash(from_bytes), hash(ref))
         self.assertIn(from_hex, {ref})

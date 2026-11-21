@@ -349,6 +349,9 @@ PYBIND11_MODULE(_t81, m) {
                                    ref.hash.h.bytes.size());
                              })
       .def("hex", [canonref_to_hex](const canonfs::CanonRef& ref) { return canonref_to_hex(ref); })
+      .def("to_cli_handle",
+           [](const canonfs::CanonRef& ref) { return "sha3-256:" + ref.hash.h.to_string(); },
+           "Return the canonical sha3-256:<Base-81 hash> accepted by the native CanonFS CLI.")
       .def("__eq__",
            [](const canonfs::CanonRef& self, const py::object& other) -> py::object {
              if (!py::isinstance<canonfs::CanonRef>(other)) {

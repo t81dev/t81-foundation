@@ -6,6 +6,7 @@ Demonstrates:
   2. Storing the canonical serialized result in persistent CanonFS.
   3. Retrieving the exact bytes in a fresh Python process using only the store
      path and the saved 64-character hex digest (`t81.CanonRef.from_hex`).
+  4. Passing the same object's native handle to the CanonFS CLI.
 
 Scope boundary:
   This example demonstrates deterministic execution and content-addressed
@@ -64,7 +65,7 @@ def run_and_store(
     risk_flag: int,
     approve_threshold: int = 70,
     review_threshold: int = 40,
-) -> tuple[str, bytes, int]:
+) -> tuple[t81.CanonRef, bytes, int]:
     """Execute the T81Lang decision table and persist canonical result bytes."""
     source = build_decision_program(
         score=score,
@@ -85,7 +86,7 @@ def run_and_store(
 
     driver = t81.make_persistent_driver(str(store_path))
     ref = driver.write_object(t81.ObjectType.RawBlock, payload)
-    return ref.hex(), payload, decision
+    return ref, payload, decision
 
 
 def read_by_digest(store_path: Path, digest_hex: str) -> bytes:
@@ -95,9 +96,13 @@ def read_by_digest(store_path: Path, digest_hex: str) -> bytes:
     return driver.read_object_bytes(ref)
 
 
-def print_command(label: str, command: str, store: Path, *options: str) -> None:
+def print_command(label: str, *argv: str) -> None:
+    print(f"{label}: {shlex.join(argv)}", file=sys.stderr)
+
+
+def print_python_command(label: str, command: str, store: Path, *options: str) -> None:
     argv = [sys.executable, str(Path(__file__).resolve()), command, "--store", str(store.resolve())]
-    print(f"{label}: {shlex.join([*argv, *options])}", file=sys.stderr)
+    print_command(label, *argv, *options)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -134,16 +139,19 @@ def main(argv: list[str] | None = None) -> int:
                 args.compare_to = t81.CanonRef.from_hex(args.compare_to).hex()
             except ValueError as exc:
                 run_p.error(f"invalid --compare-to digest: {exc}")
-        digest_hex, payload, decision = run_and_store(
+        ref, payload, decision = run_and_store(
             args.store,
             score=args.score,
             risk_flag=args.risk_flag,
             approve_threshold=args.approve_threshold,
             review_threshold=args.review_threshold,
         )
+        digest_hex = ref.hex()
+        cli_handle = ref.to_cli_handle()
         print(
             json.dumps(
                 {
+                    "cli_handle": cli_handle,
                     "decision": decision,
                     "digest": digest_hex,
                     "payload": payload.decode("utf-8"),
@@ -151,9 +159,12 @@ def main(argv: list[str] | None = None) -> int:
                 sort_keys=True,
             )
         )
-        print_command("Read", "read", args.store, "--digest", digest_hex)
+        print_python_command("Read", "read", args.store, "--digest", digest_hex)
+        native_args = [cli_handle, "--canonfs-root", str(args.store.resolve())]
+        print_command("Native verify", "t81", "canonfs", "verify", *native_args)
+        print_command("Native get", "t81", "canonfs", "get", *native_args)
         if args.compare_to is not None:
-            print_command(
+            print_python_command(
                 "Compare",
                 "compare",
                 args.store,
@@ -163,7 +174,7 @@ def main(argv: list[str] | None = None) -> int:
                 digest_hex,
             )
         if args.next_approve_threshold is not None:
-            print_command(
+            print_python_command(
                 "Rerun",
                 "run",
                 args.store,

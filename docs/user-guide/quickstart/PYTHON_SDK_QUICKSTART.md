@@ -44,10 +44,24 @@ python canonfs_decision_workflow.py run \
 ```
 
 The first run returns `1` (`approve`). Its JSON output contains the payload and
-64-character digest. The `Read:` line contains a complete command with that
+64-character Python hex digest. The `Read:` line contains a complete command with that
 digest. Copy the command after `Read:` and run it. It starts a fresh Python
 process and reopens the store from its path. The CLI adds a newline for display.
 `CanonDriver.read_object_bytes()` returns the original bytes.
+
+### Verify and retrieve it with the native CLI
+
+The same run emits `cli_handle` and prints `Native verify:` and `Native get:`
+commands. `CanonRef.to_cli_handle()` returns the native `sha3-256:<Base-81 hash>`
+form. Use `.hex()` and `CanonRef.from_hex()` for Python digest round trips.
+
+With a separately built native `t81` on `PATH`, copy the commands after
+`Native verify:` and `Native get:`. If your binary is elsewhere, replace the
+leading `t81` with its path. Both commands already contain the quoted handle and
+the same absolute `--canonfs-root` used by Python. `verify` checks the stored
+object. `get` sends its original bytes directly to stdout. Use the printed
+`get` command as-is for raw bytes. This path requires neither a staging file nor
+`put-file`.
 
 ## 3. Change the approval threshold and compare
 
