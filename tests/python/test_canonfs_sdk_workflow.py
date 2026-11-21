@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -16,6 +17,40 @@ WORKFLOW_SCRIPT = REPO_ROOT / "examples" / "python" / "canonfs_decision_workflow
 
 
 class CanonRefAndWorkflowTest(unittest.TestCase):
+    def test_printed_commands_reuse_digests_in_fresh_processes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            first = subprocess.run(
+                [
+                    sys.executable,
+                    str(WORKFLOW_SCRIPT),
+                    "run",
+                    "--store",
+                    str(Path(tmp) / "store with spaces"),
+                    "--score",
+                    "75",
+                    "--next-approve-threshold",
+                    "80",
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            first_record = json.loads(first.stdout)
+            self.assertEqual(first_record["decision"], 1)
+            read, rerun = (shlex.split(line.split(": ", 1)[1]) for line in first.stderr.splitlines())
+            read_back = subprocess.check_output(read, text=True)
+            self.assertEqual(read_back, first_record["payload"] + "\n")
+            second = subprocess.run(rerun, check=True, capture_output=True, text=True)
+            second_record = json.loads(second.stdout)
+            self.assertEqual(second_record["decision"], 0)
+            read, compare = (shlex.split(line.split(": ", 1)[1]) for line in second.stderr.splitlines())
+            read_back = subprocess.check_output(read, text=True)
+            self.assertEqual(read_back, second_record["payload"] + "\n")
+            comparison = json.loads(subprocess.check_output(compare, text=True))
+            self.assertEqual(comparison["digest_a"], first_record["digest"])
+            self.assertEqual(comparison["digest_b"], second_record["digest"])
+            self.assertFalse(comparison["same_bytes"])
+
     def test_canonref_surface_on_existing_export(self) -> None:
         self.assertIn("CanonRef", t81.__all__)
         self.assertTrue(callable(t81.CanonRef.from_bytes))

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shlex
 import sys
 from pathlib import Path
 
@@ -94,6 +95,11 @@ def read_by_digest(store_path: Path, digest_hex: str) -> bytes:
     return driver.read_object_bytes(ref)
 
 
+def print_command(label: str, command: str, store: Path, *options: str) -> None:
+    argv = [sys.executable, str(Path(__file__).resolve()), command, "--store", str(store.resolve())]
+    print(f"{label}: {shlex.join([*argv, *options])}", file=sys.stderr)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Deterministic T81Lang decision-table + persistent CanonFS workflow."
@@ -106,6 +112,10 @@ def main(argv: list[str] | None = None) -> int:
     run_p.add_argument("--risk-flag", default=0, type=int, help="Non-zero forces deny (-1).")
     run_p.add_argument("--approve-threshold", default=70, type=int, help="Score threshold for +1.")
     run_p.add_argument("--review-threshold", default=40, type=int, help="Score threshold for 0.")
+    run_p.add_argument("--compare-to", help="Print a command comparing to this saved digest.")
+    run_p.add_argument(
+        "--next-approve-threshold", type=int, help="Print a rerun command using this threshold."
+    )
 
     read_p = sub.add_parser("read", help="Read exact bytes from CanonFS by saved hex digest.")
     read_p.add_argument("--store", required=True, type=Path, help="Persistent CanonFS directory.")
@@ -119,6 +129,11 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.command == "run":
+        if args.compare_to is not None:
+            try:
+                args.compare_to = t81.CanonRef.from_hex(args.compare_to).hex()
+            except ValueError as exc:
+                run_p.error(f"invalid --compare-to digest: {exc}")
         digest_hex, payload, decision = run_and_store(
             args.store,
             score=args.score,
@@ -136,6 +151,33 @@ def main(argv: list[str] | None = None) -> int:
                 sort_keys=True,
             )
         )
+        print_command("Read", "read", args.store, "--digest", digest_hex)
+        if args.compare_to is not None:
+            print_command(
+                "Compare",
+                "compare",
+                args.store,
+                "--digest-a",
+                args.compare_to,
+                "--digest-b",
+                digest_hex,
+            )
+        if args.next_approve_threshold is not None:
+            print_command(
+                "Rerun",
+                "run",
+                args.store,
+                "--score",
+                str(args.score),
+                "--risk-flag",
+                str(args.risk_flag),
+                "--approve-threshold",
+                str(args.next_approve_threshold),
+                "--review-threshold",
+                str(args.review_threshold),
+                "--compare-to",
+                digest_hex,
+            )
         return 0
 
     if args.command == "read":

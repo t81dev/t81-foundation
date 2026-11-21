@@ -1,88 +1,89 @@
-# Python SDK Quickstart: Deterministic Decision Table & Persistent CanonFS
+# Python SDK quickstart for a deterministic decision table
 
-This quickstart walks through the first end-to-end Python SDK workflow for T81:
+Run a small T81Lang decision table, store its canonical result bytes in
+CanonFS, and recover them in a fresh Python process. This example covers
+execution and storage. Axion policy enforcement is outside its scope. The
+native `t81` CLI and MCP server are separate builds.
 
-1. Install a `t81` Python wheel in an isolated virtual environment.
-2. Compile and run a small deterministic T81Lang ternary decision-table program (`-1` deny, `0` review, `+1` approve).
-3. Persist the canonical result bytes in CanonFS and save the 64-character hex digest.
-4. Retrieve the exact bytes in a **fresh Python process** using only the store path and the saved digest.
-5. Modify the decision-table threshold, rerun, and compare both stored results by digest.
+## 1. Install the PR candidate
 
-> **Scope boundary:** This example demonstrates **deterministic execution** and **content-addressed storage**. **Axion policy enforcement is outside this example.** The native `t81` CLI and MCP server remain separate native builds.
+This Apple Silicon candidate requires macOS 11 or later and CPython 3.12.
+The wheel shares its filename and version with the published PyPI wheel.
+Use the download below in a fresh environment to get the PR candidate.
 
-## 1. Install the wheel
+- [PR #840 candidate wheel](https://github.com/t81dev/t81-foundation/releases/download/sdk-candidate-pr840-apple-silicon-c78126c80/t81-2.1.0-cp312-cp312-macosx_11_0_arm64.whl)
+- [Matching Python example](https://github.com/t81dev/t81-foundation/releases/download/sdk-candidate-pr840-apple-silicon-c78126c80/canonfs_decision_workflow.py)
+- Wheel source revision `c78126c80a70e6dfd5b0a624c1ebd79e9dd820d9`
+- Wheel SHA-256 `b7514f019a3463a54f39ad2373f216b95191a6de1e2956cf49d58f1698dd215d`
+
+The [candidate release record](https://github.com/t81dev/t81-foundation/releases/tag/sdk-candidate-pr840-apple-silicon-c78126c80)
+records the exact PR head for the downloadable example and this quickstart.
+Paste this block in macOS Terminal. It creates a clean working directory and
+verifies the wheel before installing from the local file.
 
 ```bash
-python3.12 -m venv .venv-t81
-source .venv-t81/bin/activate
-pip install path/to/t81-*.whl
+demo_dir=$(mktemp -d "${TMPDIR:-/tmp}/t81-pr840.XXXXXX") &&
+cd "$demo_dir" &&
+base=https://github.com/t81dev/t81-foundation/releases/download/sdk-candidate-pr840-apple-silicon-c78126c80 &&
+wheel=t81-2.1.0-cp312-cp312-macosx_11_0_arm64.whl &&
+curl -fLO "$base/$wheel" &&
+curl -fLO "$base/canonfs_decision_workflow.py" &&
+printf '%s  %s\n' b7514f019a3463a54f39ad2373f216b95191a6de1e2956cf49d58f1698dd215d "$wheel" | shasum -a 256 -c - &&
+python3.12 -m venv .venv-t81 &&
+source .venv-t81/bin/activate &&
+python -m pip install --no-index --no-deps "./$wheel"
 ```
 
-## 2. Run the decision table and persist the result (Process 1)
-
-Run [`examples/python/canonfs_decision_workflow.py`](../../../examples/python/canonfs_decision_workflow.py) to execute the T81Lang decision table (`score=75`, `approve_threshold=70` -> `+1` approve) and write the canonical JSON bytes to a persistent CanonFS directory:
+## 2. Run and recover a decision
 
 ```bash
-python examples/python/canonfs_decision_workflow.py run \
+python canonfs_decision_workflow.py run \
   --store ./canonfs-demo-store \
-  --score 75 \
-  --risk-flag 0 \
-  --approve-threshold 70
+  --score 75 --risk-flag 0 --approve-threshold 70 \
+  --next-approve-threshold 80
 ```
 
-Example output:
+The first run returns `1` (`approve`). Its JSON output contains the payload and
+64-character digest. The `Read:` line contains a complete command with that
+digest. Copy the command after `Read:` and run it. It starts a fresh Python
+process and reopens the store from its path. The CLI adds a newline for display.
+`CanonDriver.read_object_bytes()` returns the original bytes.
 
-```json
-{"decision": 1, "digest": "<64-char-hex-digest-a>", "payload": "{\"approve_threshold\":70,\"decision\":1,\"label\":\"approve\",\"review_threshold\":40,\"risk_flag\":0,\"score\":75}"}
+## 3. Change the approval threshold and compare
+
+Copy the command after `Rerun:`. It preserves the inputs and raises the approval
+threshold to `80`, so score `75` now returns `0` (`review`). It carries the original
+digest in `--compare-to`. Copy the new `Read:` and `Compare:` commands to recover
+the revised result and verify both records by digest in fresh processes. The
+comparison should report `same_digest: false` and `same_bytes: false`.
+
+## 4. Add a rule and choose its precedence
+
+Open the downloaded `canonfs_decision_workflow.py` and find `fn decide` inside
+`build_decision_program`. The rules are evaluated from top to bottom. The first
+matching rule returns immediately. A nonzero risk flag comes first and forces
+`-1` (`deny`). Approval precedes review, so a score at or above both thresholds
+is approved when the risk flag is zero.
+
+To force a manual review for score `75`, add this block after the risk check and
+before the approval check. Keep the doubled braces because the T81Lang source
+is inside a Python f-string.
+
+```text
+    if (score == 75) {{
+        return 0;
+    }}
 ```
 
-Save the returned `"digest"` value (`DIGEST_A`). Running the exact same command again produces the **exact same digest** because both execution and content addressing are deterministic.
+Run the command in step 2 again. Score `75` now qualifies for both the new rule
+and approval at threshold `70`. The new rule wins because it comes first. If
+placed after the approval check, approval wins. Use the new `Read:` command to
+verify the stored result. The digest identifies the result bytes, so a rule
+change that leaves the payload identical can produce the same digest.
 
-## 3. Retrieve the exact bytes in a fresh Python process (Process 2)
+## Error semantics
 
-In a separate Python process with no shared in-memory state, reconstruct `t81.CanonRef` from the saved digest and read the exact bytes from persistent CanonFS:
-
-```bash
-python examples/python/canonfs_decision_workflow.py read \
-  --store ./canonfs-demo-store \
-  --digest "$DIGEST_A"
-```
-
-Or directly in Python:
-
-```python
-import t81
-
-driver = t81.make_persistent_driver("./canonfs-demo-store")
-ref = t81.CanonRef.from_hex(digest_a)  # or t81.CanonRef.from_bytes(raw_32_bytes)
-exact_bytes = driver.read_object_bytes(ref)
-print(exact_bytes.decode("utf-8"))
-```
-
-## 4. Modify the program, rerun, and compare results
-
-Tighten the approval rule in the T81Lang decision table by raising `--approve-threshold` from `70` to `80` (with the same input `score=75`, the decision changes from `+1` approve to `0` review):
-
-```bash
-python examples/python/canonfs_decision_workflow.py run \
-  --store ./canonfs-demo-store \
-  --score 75 \
-  --risk-flag 0 \
-  --approve-threshold 80
-```
-
-Save the new `"digest"` as `DIGEST_B`, then compare both persisted artifacts in a fresh process:
-
-```bash
-python examples/python/canonfs_decision_workflow.py compare \
-  --store ./canonfs-demo-store \
-  --digest-a "$DIGEST_A" \
-  --digest-b "$DIGEST_B"
-```
-
-Because CanonFS is content-addressed, both `DIGEST_A` (`decision: 1`) and `DIGEST_B` (`decision: 0`) remain independently retrievable by their digests without overwriting each other.
-
-## 5. Error semantics
-
-- **Malformed digests:** `t81.CanonRef.from_hex(...)` requires exactly 64 ASCII hex characters (no whitespace, `0x`, or `h1-` prefix) and `t81.CanonRef.from_bytes(...)` requires exactly 32 bytes. Invalid inputs raise `ValueError` (or `TypeError` for wrong types).
-- **Absent digests:** Looking up a syntactically valid 32-byte digest that is not present in the store via `driver.read_object_bytes(ref)` raises `RuntimeError` reporting `NotFound`.
+`CanonRef.from_hex()` requires 64 ASCII hex characters without whitespace or
+prefixes. `CanonRef.from_bytes()` requires 32 bytes. Invalid lengths or content
+raise `ValueError`, and incorrect types raise `TypeError`. A valid digest missing
+from the store raises `RuntimeError` with `NotFound`.
