@@ -8,15 +8,17 @@ native `t81` CLI and MCP server are separate builds.
 ## 1. Install the PR candidate
 
 This Apple Silicon candidate requires macOS 11 or later and CPython 3.12.
-The wheel shares its filename and version with the published PyPI wheel.
-Use the download below in a fresh environment to get the PR candidate.
+This build adds `CanonRef.to_cli_handle()`. It shares its filename and version
+with the PyPI wheel and the earlier PR candidate. Use the download below in a
+fresh environment and check the hash before installing.
 
-- [PR #840 candidate wheel](https://github.com/t81dev/t81-foundation/releases/download/sdk-candidate-pr840-apple-silicon-c78126c80/t81-2.1.0-cp312-cp312-macosx_11_0_arm64.whl)
-- [Matching Python example](https://github.com/t81dev/t81-foundation/releases/download/sdk-candidate-pr840-apple-silicon-c78126c80/canonfs_decision_workflow.py)
-- Wheel source revision `c78126c80a70e6dfd5b0a624c1ebd79e9dd820d9`
-- Wheel SHA-256 `b7514f019a3463a54f39ad2373f216b95191a6de1e2956cf49d58f1698dd215d`
+- [PR #840 candidate wheel](https://github.com/t81dev/t81-foundation/releases/download/sdk-candidate-pr840-cli-handle-34cab2569/t81-2.1.0-cp312-cp312-macosx_11_0_arm64.whl)
+- [Matching Python example](https://github.com/t81dev/t81-foundation/releases/download/sdk-candidate-pr840-cli-handle-34cab2569/canonfs_decision_workflow.py)
+- [Downloadable checksum](https://github.com/t81dev/t81-foundation/releases/download/sdk-candidate-pr840-cli-handle-34cab2569/SHA256SUMS)
+- Wheel source revision `34cab256980f3c1fe898e69a295236f934588145`
+- Wheel SHA-256 `65be95a4a1b3d125e7d133d133521178024930f7efe95423c321989407db96eb`
 
-The [candidate release record](https://github.com/t81dev/t81-foundation/releases/tag/sdk-candidate-pr840-apple-silicon-c78126c80)
+The [candidate release record](https://github.com/t81dev/t81-foundation/releases/tag/sdk-candidate-pr840-cli-handle-34cab2569)
 records the exact PR head for the downloadable example and this quickstart.
 Paste this block in macOS Terminal. It creates a clean working directory and
 verifies the wheel before installing from the local file.
@@ -24,11 +26,11 @@ verifies the wheel before installing from the local file.
 ```bash
 demo_dir=$(mktemp -d "${TMPDIR:-/tmp}/t81-pr840.XXXXXX") &&
 cd "$demo_dir" &&
-base=https://github.com/t81dev/t81-foundation/releases/download/sdk-candidate-pr840-apple-silicon-c78126c80 &&
+base=https://github.com/t81dev/t81-foundation/releases/download/sdk-candidate-pr840-cli-handle-34cab2569 &&
 wheel=t81-2.1.0-cp312-cp312-macosx_11_0_arm64.whl &&
 curl -fLO "$base/$wheel" &&
 curl -fLO "$base/canonfs_decision_workflow.py" &&
-printf '%s  %s\n' b7514f019a3463a54f39ad2373f216b95191a6de1e2956cf49d58f1698dd215d "$wheel" | shasum -a 256 -c - &&
+printf '%s  %s\n' 65be95a4a1b3d125e7d133d133521178024930f7efe95423c321989407db96eb "$wheel" | shasum -a 256 -c - &&
 python3.12 -m venv .venv-t81 &&
 source .venv-t81/bin/activate &&
 python -m pip install --no-index --no-deps "./$wheel"
@@ -55,7 +57,7 @@ The same run emits `cli_handle` and prints `Native verify:` and `Native get:`
 commands. `CanonRef.to_cli_handle()` returns the native `sha3-256:<Base-81 hash>`
 form. Use `.hex()` and `CanonRef.from_hex()` for Python digest round trips.
 
-With a separately built native `t81` on `PATH`, copy the commands after
+With a [separately built native `t81`](INSTALL.md) on `PATH`, copy the commands after
 `Native verify:` and `Native get:`. If your binary is elsewhere, replace the
 leading `t81` with its path. Both commands already contain the quoted handle and
 the same absolute `--canonfs-root` used by Python. `verify` checks the stored
