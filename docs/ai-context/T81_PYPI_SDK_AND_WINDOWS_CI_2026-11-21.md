@@ -41,4 +41,7 @@ identical Git tree `382c118a972c66d20896d0c0d6beec4ca04b6fb2`.
   text log and CMake configure diagnostics. The separate JUnit XML was absent.
 
 [Hosted Windows job](https://github.com/t81dev/t81-foundation/actions/runs/44955702634/job/137004651754)
-· [Build and configure logs](https://github.com/t81dev/t81-foundation/actions/runs/44955702634/artifacts/14727607727)
+· [Hosted workflow run](https://github.com/t81dev/t81-foundation/actions/runs/44955702634)
+
+Build and configure logs were retained as artifact `ci-build-windows-x86_64-clang-cl`
+(ID `14727607727`).
