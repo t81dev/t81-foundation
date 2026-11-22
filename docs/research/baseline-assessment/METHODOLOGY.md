@@ -59,6 +59,7 @@ To ensure full reproducibility and eliminate ambiguity, every quantitative metri
 - **Benchmark Family Denominator:** 26 total identifiable benchmark families across the repository:
   - 17 Google Benchmark suites located in `benchmarks/BM_*.cpp`.
   - 9 formal empirical experiment harnesses located in `experiments/`, `execution_reports/`, and `docs/research/`.
+- **Supplemental Model Record:** The corrected H04-R02 symbolic model has its own ledger row outside the 26-family execution and benchmark-tier counts. The historical H04-R02 run remains in Tier 5.
 - **Execution Breakdown:**
   - **EXECUTED:** 16 benchmark families with attributable execution logs, reports, or raw data.
   - **SOURCE_ONLY:** 9 suites with C++ benchmark definitions or protocol specifications but no primary execution results in tree (BM_Base81SIMD, BM_DPE, BM_DeterminismValidation, BM_GovernedWorkflows, BM_LlamaGguf, BM_NativeWeightsExecution, BM_TensorPromotion, EXP-H09-E1, EXP-H04-R01).
@@ -68,7 +69,7 @@ To ensure full reproducibility and eliminate ambiguity, every quantitative metri
   - **Tier 2 (Executed, Insufficient Provenance):** 6 families (BM_PackedTritVector, BM_DispatchOverhead, BM_VMSimulation: candidate runs preserved, but binary comparators missing/below timer resolution; EXP-CMP3-R1: PMU measurements unauthorized and uncollected, linux=null; EXP-FLOAT-CONVERSION: conversion status UNRESOLVED, platform divergence, 10k claim unpersisted; EXP-DIRECT-API-SPEEDUP: test harness relies on simulated sleep loops rather than real inference/policy evaluation).
   - **Tier 3 (Executed with Attributable Evidence):** 8 families with attributed raw logs, machine metadata, or mathematical oracle evaluations (BM_CanonFS, BM_InferenceComparison, BM_Lexer, BM_LimbMul, BM_TensorMatMul, BM_TritwiseWorkloads, EXP-S02, EXP-DURABLE-WITNESS).
   - **Tier 4 (Independently Reproduced):** 0 families (no benchmark family possesses multi-runner independent reproduction across physical machines and compilers in baseline).
-  - **Tier 5 (Methodologically Invalid / Superseded):** 2 families shown by adversarial audit to suffer from fatal methodology defects (BM_LlamaKernels, EXP-H04-R02).
+  - **Tier 5 (Methodologically Invalid / Superseded):** 2 families shown by adversarial audit to suffer from fatal methodology defects (BM_LlamaKernels, historical EXP-H04-R02).
   - **Tier 6 (Blocked / Incomplete):** 1 family (EXP-INV-10A physical solid-state storage data unavailable).
 
 ### 2.4 Scientific Hypotheses Inventory (H01–H08)

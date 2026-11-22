@@ -18,12 +18,12 @@ Based on the exhaustive audit of repository source, tests, benchmarks, and resea
 - **Consequence:** Claims of ternary storage density superiority over binary silicon remain ungrounded theoretical conjectures; H01 remains blocked.
 
 ### 2. Binary Hardware Accelerator Competitiveness Deficit (H06)
-- **The Gap:** On modern binary processors, INT8 SIMD instructions (e.g. ARM NEON `sdot`, Intel VNNI) achieve 72.2 Gops/s, outperforming T81 ternary NEON kernels (4.96 Gops/s) by 14.5x. Early claims of 74.6x speedups were artifacts of comparing against unvectorized FP32 scalar baselines.
-- **Consequence:** Ternary neural network execution on conventional binary CPUs cannot compete with standard low-bit binary quantization without dedicated ternary hardware.
+- **The Gap:** The archived Apple Silicon NEON dot-product case at N=1,024 reports 72.20 Gops/s for INT8 and 4.96 Gops/s for T81 ternary. Early claims of 74.6x speedups were artifacts of comparing against unvectorized FP32 scalar baselines.
+- **Consequence:** That measured kernel favors INT8 by about 14.5x. Accuracy-constrained model performance, energy, and other architectures remain unmeasured in this comparison.
 
 ### 3. Asymmetric State-Domain Comparisons in Representation Benchmarks (H04)
-- **The Gap:** In H04-R02, the apparent adaptive balanced ternary (AT) advantage on `boundary_oscillation` relied on comparing a 6-trit domain (729 states) against a 10-bit domain (1024 states) with metadata scaling defects (Classification D).
-- **Consequence:** When capacity domains are strictly equalized, adaptive binary matches or outperforms adaptive ternary across all tested symbol cost ratios. *(Note: EXP-H04-R03 Phase B resolves this via matched 729-state domains, independently accepted at PR #658 head `983e258ed4b57b4cd6e010f036c1eb8656856e88` as a dated post-baseline delta; Phase C benchmarking remains unauthorized).*
+- **The Gap:** The historical H04-R02 analysis had metadata scaling defects (Classification D). The corrected symbolic model separately reports a conditional crossover on `boundary_oscillation` under 10-bit Tier-0 control and documents the remaining 729-versus-1,024-state capacity difference.
+- **Consequence:** The corrected symbolic result is limited to its cost model and declared capacity assumptions. Physical cost measurements remain unavailable. *(Note: EXP-H04-R03 Phase B resolves this via matched 729-state domains, independently accepted at PR #658 head `983e258ed4b57b4cd6e010f036c1eb8656856e88` as a dated post-baseline delta; Phase C benchmarking remains unauthorized).*
 
 ### 4. Recursive Cognition Coordination & Management Tax (Track R / H09)
 - **The Gap:** Experiment H09-E1 was proposed in `docs/research/H09_RECURSIVE_PROCESS_INTELLIGENCE.md` as a Compositional Graph Routing (CGR) protocol. However, primary execution artifacts and runner scripts are absent in tree at baseline; the claimed >96% coordination tax and 7x–66x overhead figures are unverified and withdrawn as primary experimental evidence.

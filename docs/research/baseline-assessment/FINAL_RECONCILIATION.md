@@ -38,14 +38,14 @@ Crucially, this reconciliation:
 | **FINDING-07 (RFC Counting Rules)** | Frontmatter status counts (83 accepted, 11 superseded, 11 unparsed, 8 draft) inconsistent with catalog table counts (94 accepted, 11 superseded, 5 draft) | `spec/rfcs/index.md`, `spec/rfcs/RFC-*.md`, `scripts/governance/check_rfc_lifecycle_hygiene.py` | **DOCUMENTED COUNTING RULES**: Catalog table has 110 entries; RFC files total 113 (111 unique IDs due to 2 companion profiles + 1 uncataloged `RFC-00D4`). The 11 unparsed files use markdown table formatting (`\| Status \| Accepted \|`) not matched by line-prefix regex. | `METHODOLOGY.md`, `README.md` | Ran deterministic parser script evaluating table syntax vs header prefix syntax | Governance script `check_rfc_lifecycle_hygiene.py` rejects table syntax until updated |
 | **FINDING-08 (Direct API Speedup Simulation)** | EXP-DIRECT-API-SPEEDUP was Tier 3 (Attributable Evidence); claimed 864.4x speedup of Direct API over CLI baseline | `src/test_production_direct_api.cpp` (lines 184, 187: hardcoded `std::this_thread::sleep_for(2650us)` + `200us`) | **SIMULATED WORKLOAD (Tier 2)**: Direct API benchmark uses hardcoded sleep loops simulating execution duration rather than running real T81 model inference or policy checks; downgraded from Tier 3 to Tier 2 | `BENCHMARK_LEDGER.csv`, `METHODOLOGY.md`, `README.md` | Inspected C++ harness source code in `src/test_production_direct_api.cpp` | Real model inference latency unmeasured in harness; reflects mock sleep loop only |
 | **FINDING-09 (H04-R01 Artifact Attribution)** | EXP-H04-R01 was Tier 3; attributed 4-arm adaptive trace sweep to `experiments/radix_comparison/results.json` | `docs/research/continuity/H04_RADIX_ADAPTATION_DISCRIMINATOR.md`; `experiments/radix_comparison/results.json` | **UNEXECUTED / PROPOSED (Tier 1)**: H04-R01 is explicitly a selected specification, not benchmarked; `radix_comparison/results.json` is a separate 64-bit microbenchmark across radices 2/3/9/27/81, not the 4-arm adaptive sweep | `BENCHMARK_LEDGER.csv`, `METHODOLOGY.md`, `HYPOTHESIS_STATUS.md`, `README.md` | Inspected JSON schema of `results.json` vs protocol specification in `H04_RADIX_ADAPTATION_DISCRIMINATOR.md` | 4-arm adaptive capacity protocol was never executed in tree at baseline |
-| **FINDING-10 (H04-R02 Historical vs Model)** | EXP-H04-R02 conflated invalid historical reports with corrected results; did not separate physical-data limits | `experiments/h04_r02_adaptive_representation/` (`HISTORICAL_RESULTS.md`, `CORRECTED_RESULTS.md`, `LIMITATIONS.md`) | **SEPARATED INVALID HISTORICAL FROM SYMBOLIC MODEL (Tier 5)**: Disentangled historical Classification D defects from corrected symbolic model (AT=1210 < AB=1250 on boundary_oscillation under 10-bit Tier-0 control); explicitly preserved physical limits (offline DP, stipulated selection costs, unequal capacity) | `BENCHMARK_LEDGER.csv`, `HYPOTHESIS_STATUS.md` | Inspected `DISCREPANCY_LEDGER.md` and `LIMITATIONS.md` | Real encoder, conversion, and hardware silicon costs remain unmeasured |
+| **FINDING-10 (H04-R02 Historical vs Model)** | EXP-H04-R02 conflated invalid historical reports with corrected results; did not separate physical-data limits | `experiments/h04_r02_adaptive_representation/` (`HISTORICAL_RESULTS.md`, `CORRECTED_RESULTS.md`, `LIMITATIONS.md`) | **HISTORICAL RUN INVALID (Tier 5). CORRECTED MODEL SUFFICIENT FOR THE SCOPED SYMBOLIC COMPARISON**: Disentangled historical Classification D defects from corrected symbolic model (AT=1210 < AB=1250 on boundary_oscillation under 10-bit Tier-0 control); explicitly preserved physical limits (offline DP, stipulated selection costs, unequal capacity) | `BENCHMARK_LEDGER.csv`, `HYPOTHESIS_STATUS.md` | Inspected `DISCREPANCY_LEDGER.md` and `LIMITATIONS.md` | HARDWARE PARAMETERS UNAVAILABLE. Real encoder and conversion costs remain unmeasured |
 | **FINDING-11 (H06 Scope Restriction)** | H06 declared universally refuted on binary silicon based on microbenchmark | `benchmarks/results/inference_comparison.md` (ARM64 NEON dot product 72.2 vs 4.96 Gops/s) | **RESTRICTED TO MEASURED ARM64 KERNELS**: INT8 14.5x advantage is strictly restricted to measured ARM64 CPU vector kernel microbenchmarks; model-level inference, non-ARM64 platforms, and custom hardware architectures left unresolved | `HYPOTHESIS_STATUS.md`, `GAPS_AND_PRIORITIES.md`, `README.md` | Inspected raw benchmark data in `inference_comparison.md` | End-to-end full model inference benchmarks across heterogeneous hardware remain open |
 
 ---
 
 ## 3. Evidence Classification Tiers (Reconciled)
 
-Across the 26 audited benchmark families in `BENCHMARK_LEDGER.csv`:
+The ledger contains 27 records covering 26 benchmark families. The corrected H04-R02 symbolic model has a supplemental entry outside the six benchmark tiers. Tier 5 counts only the invalid historical H04-R02 run.
 
 | Evidence Tier | Grounded Criteria | Reconciled Families Count | Benchmark Families |
 | :--- | :--- | :--- | :--- |
@@ -86,7 +86,7 @@ for p in sorted(glob.glob('docs/research/baseline-assessment/*.csv')):
     print(f'{p}: {len(r)} rows')
 "
 # Output:
-# docs/research/baseline-assessment/BENCHMARK_LEDGER.csv: 27 rows (1 header + 26 data)
+# docs/research/baseline-assessment/BENCHMARK_LEDGER.csv: 28 rows (1 header + 26 benchmark-family records + 1 supplemental model record)
 # docs/research/baseline-assessment/CAPABILITY_MATRIX.csv: 24 rows (1 header + 23 data)
 # docs/research/baseline-assessment/RFC_MATRIX.csv: 114 rows (1 header + 113 data)
 
@@ -96,7 +96,7 @@ import csv
 from collections import Counter
 with open('docs/research/baseline-assessment/BENCHMARK_LEDGER.csv') as f:
     r = list(csv.DictReader(f))
-print(Counter(x['Classification_Tier'] for x in r))
+print(Counter(x['Classification_Tier'] for x in r if x['Executed_Status'] != 'MODELED'))
 "
 # Output:
 # Counter({
