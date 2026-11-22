@@ -1,0 +1,521 @@
+{
+  "task": "T81-CPA-002",
+  "baseline_revision": "803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4",
+  "validated_source_revision": "74bc8bc824a9732c57e7225077bf15ddc6c05097",
+  "validated_test_git_blob": "74a51d042d4304a8b14bb03a7704ccb25fbaf3d0",
+  "source_binding": "Fetched test content at validated_source_revision equals the exact locally compiled source; unchanged production inputs also checked byte-for-byte against baseline.",
+  "environment": {
+    "os": "Darwin 25.5.0",
+    "architecture": "arm64",
+    "compiler": "Homebrew clang 22.1.1",
+    "language": "C++23",
+    "python": "3.14.3"
+  },
+  "scope": "Existing opcode matrix, encoding, ternary arithmetic and freeze checker only. Direct compiler-mode validation; full CMake/CTest and Linux/Windows execution not performed.",
+  "before": [
+    {
+      "label": "compile-before-release",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/opt/homebrew/opt/llvm/bin/clang++",
+        "-std=c++23",
+        "-O3",
+        "-DNDEBUG",
+        "-Iinclude",
+        "/tmp/t81-cpa-002-validation/baseline_matrix.cpp",
+        "isa/encoding.cpp",
+        "-o",
+        "/tmp/t81-cpa-002-validation/before-release"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "compile-before-debug",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/opt/homebrew/opt/llvm/bin/clang++",
+        "-std=c++23",
+        "-O0",
+        "-g",
+        "-UNDEBUG",
+        "-Iinclude",
+        "/tmp/t81-cpa-002-validation/baseline_matrix.cpp",
+        "isa/encoding.cpp",
+        "-o",
+        "/tmp/t81-cpa-002-validation/before-debug"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "run-before-release",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/tmp/t81-cpa-002-validation/before-release"
+      ],
+      "exit_code": 0,
+      "stdout": "tisc opcode matrix tests passed!\n",
+      "stderr": ""
+    },
+    {
+      "label": "run-before-debug",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/tmp/t81-cpa-002-validation/before-debug"
+      ],
+      "exit_code": -6,
+      "stdout": "",
+      "stderr": "Assertion failed: (decoded.has_value()), function test_full_opcode_roundtrip_encoding, file baseline_matrix.cpp, line 64.\n"
+    }
+  ],
+  "after": [
+    {
+      "label": "compile-accept-undefined-debug",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/opt/homebrew/opt/llvm/bin/clang++",
+        "-std=c++23",
+        "-O0",
+        "-g",
+        "-UNDEBUG",
+        "-Iinclude",
+        "-Itests/cpp",
+        "tests/cpp/tisc_opcode_matrix_test.cpp",
+        "/tmp/t81-cpa-002-validation/accept-undefined.cpp",
+        "-o",
+        "/tmp/t81-cpa-002-validation/accept-undefined-debug"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "compile-accept-undefined-release",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/opt/homebrew/opt/llvm/bin/clang++",
+        "-std=c++23",
+        "-O3",
+        "-DNDEBUG",
+        "-Iinclude",
+        "-Itests/cpp",
+        "tests/cpp/tisc_opcode_matrix_test.cpp",
+        "/tmp/t81-cpa-002-validation/accept-undefined.cpp",
+        "-o",
+        "/tmp/t81-cpa-002-validation/accept-undefined-release"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "compile-arithmetic-debug",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/opt/homebrew/opt/llvm/bin/clang++",
+        "-std=c++23",
+        "-O0",
+        "-g",
+        "-UNDEBUG",
+        "-Iinclude",
+        "-Itests/cpp",
+        "tests/cpp/ternary_arith_test.cpp",
+        "-o",
+        "/tmp/t81-cpa-002-validation/arithmetic-debug"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "compile-arithmetic-release",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/opt/homebrew/opt/llvm/bin/clang++",
+        "-std=c++23",
+        "-O3",
+        "-DNDEBUG",
+        "-Iinclude",
+        "-Itests/cpp",
+        "tests/cpp/ternary_arith_test.cpp",
+        "-o",
+        "/tmp/t81-cpa-002-validation/arithmetic-release"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "compile-bad-mapping-debug",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/opt/homebrew/opt/llvm/bin/clang++",
+        "-std=c++23",
+        "-O0",
+        "-g",
+        "-UNDEBUG",
+        "-Iinclude",
+        "-Itests/cpp",
+        "/tmp/t81-cpa-002-validation/bad-mapping.cpp",
+        "isa/encoding.cpp",
+        "-o",
+        "/tmp/t81-cpa-002-validation/bad-mapping-debug"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "compile-bad-mapping-release",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/opt/homebrew/opt/llvm/bin/clang++",
+        "-std=c++23",
+        "-O3",
+        "-DNDEBUG",
+        "-Iinclude",
+        "-Itests/cpp",
+        "/tmp/t81-cpa-002-validation/bad-mapping.cpp",
+        "isa/encoding.cpp",
+        "-o",
+        "/tmp/t81-cpa-002-validation/bad-mapping-release"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "compile-encoding-debug",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/opt/homebrew/opt/llvm/bin/clang++",
+        "-std=c++23",
+        "-O0",
+        "-g",
+        "-UNDEBUG",
+        "-Iinclude",
+        "-Itests/cpp",
+        "tests/cpp/tisc_encoding_test.cpp",
+        "isa/encoding.cpp",
+        "-o",
+        "/tmp/t81-cpa-002-validation/encoding-debug"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "compile-encoding-release",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/opt/homebrew/opt/llvm/bin/clang++",
+        "-std=c++23",
+        "-O3",
+        "-DNDEBUG",
+        "-Iinclude",
+        "-Itests/cpp",
+        "tests/cpp/tisc_encoding_test.cpp",
+        "isa/encoding.cpp",
+        "-o",
+        "/tmp/t81-cpa-002-validation/encoding-release"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "compile-matrix-debug",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/opt/homebrew/opt/llvm/bin/clang++",
+        "-std=c++23",
+        "-O0",
+        "-g",
+        "-UNDEBUG",
+        "-Iinclude",
+        "-Itests/cpp",
+        "tests/cpp/tisc_opcode_matrix_test.cpp",
+        "isa/encoding.cpp",
+        "-o",
+        "/tmp/t81-cpa-002-validation/matrix-debug"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "compile-matrix-release",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/opt/homebrew/opt/llvm/bin/clang++",
+        "-std=c++23",
+        "-O3",
+        "-DNDEBUG",
+        "-Iinclude",
+        "-Itests/cpp",
+        "tests/cpp/tisc_opcode_matrix_test.cpp",
+        "isa/encoding.cpp",
+        "-o",
+        "/tmp/t81-cpa-002-validation/matrix-release"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "freeze-integrity",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "python3",
+        "-B",
+        "scripts/ci/check_tisc_freeze_integrity.py"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout": "Checking /private/tmp/t81-cpa-002/spec/tisc/opcode-registry.md...\nSUCCESS: TISC v1.1.0 Freeze Integrity Verified.\n- Count: 209 opcodes\n- Bitwise Ops: Verified\n- Reserved Range: Clean\n",
+      "stderr": ""
+    },
+    {
+      "label": "run-accept-undefined-debug",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/tmp/t81-cpa-002-validation/accept-undefined-debug"
+      ],
+      "expected_exit": 1,
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "test check failed: (!rejected_single.has_value()) at tests/cpp/tisc_opcode_matrix_test.cpp:115\n"
+    },
+    {
+      "label": "run-accept-undefined-release",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/tmp/t81-cpa-002-validation/accept-undefined-release"
+      ],
+      "expected_exit": 1,
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "test check failed: (!rejected_single.has_value()) at tests/cpp/tisc_opcode_matrix_test.cpp:115\n"
+    },
+    {
+      "label": "run-arithmetic-debug",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/tmp/t81-cpa-002-validation/arithmetic-debug"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout": "ternary_arith ok\n",
+      "stderr": ""
+    },
+    {
+      "label": "run-arithmetic-release",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/tmp/t81-cpa-002-validation/arithmetic-release"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout": "ternary_arith ok\n",
+      "stderr": ""
+    },
+    {
+      "label": "run-bad-mapping-debug",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/tmp/t81-cpa-002-validation/bad-mapping-debug"
+      ],
+      "expected_exit": 1,
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "test check failed: (static_cast<std::uint8_t>(Opcode::Int2BigInt) == 192) at /tmp/t81-cpa-002-validation/bad-mapping.cpp:42\n"
+    },
+    {
+      "label": "run-bad-mapping-release",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/tmp/t81-cpa-002-validation/bad-mapping-release"
+      ],
+      "expected_exit": 1,
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "test check failed: (static_cast<std::uint8_t>(Opcode::Int2BigInt) == 192) at /tmp/t81-cpa-002-validation/bad-mapping.cpp:42\n"
+    },
+    {
+      "label": "run-encoding-debug",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/tmp/t81-cpa-002-validation/encoding-debug"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "run-encoding-release",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/tmp/t81-cpa-002-validation/encoding-release"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "run-matrix-debug",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/tmp/t81-cpa-002-validation/matrix-debug"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout": "tisc opcode matrix tests passed: 244 defined opcodes, 12 undefined encodings rejected.\n",
+      "stderr": ""
+    },
+    {
+      "label": "run-matrix-release",
+      "cwd": "/tmp/t81-cpa-002",
+      "command": [
+        "/tmp/t81-cpa-002-validation/matrix-release"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout": "tisc opcode matrix tests passed: 244 defined opcodes, 12 undefined encodings rejected.\n",
+      "stderr": ""
+    }
+  ],
+  "unchanged_inputs": [
+    {
+      "path": "include/t81/isa/opcodes.hpp",
+      "sha256": "f9459c3b93c583f36addf19df1a5f5930a298eee5e3916abb8139f3eeb46e35a",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "isa/encoding.cpp",
+      "sha256": "d9fd81f87e9b6b47c55c8ddf5e7bdeef95e0ce48a965b1973e23526c32f2a391",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "spec/tisc/opcode-registry.md",
+      "sha256": "db6580e5fad41dbacdc024e070acbdc33bbf93f8f14a03c535f8e0e0079d53db",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "spec/tisc/TISC_CAPABILITY_CONTRACT_v1.1.0.md",
+      "sha256": "ef2e13c796de38911939aec11099795e303d9d2d5895f84334812dbf54f7f17e",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "scripts/ci/check_tisc_freeze_integrity.py",
+      "sha256": "7da2f74dbb6d2a7680e83381e2aeaa7c56983ad6ebd74ce427ecc27f43497031",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "tests/cpp/test_runtime_check.hpp",
+      "sha256": "5be1cdb3c1ca05b187479950e93a1c49c2f645763e7eaa4b1ce297d45eebb3e6",
+      "identical_to_baseline": true
+    }
+  ],
+  "validated_test_sha256": "bedb3b7992e5e7692420c331bf5e849e1355c8ac2df0cd0919bce0785ea4b658",
+  "header_inventory": {
+    "named_enum_count": 244,
+    "opcode_name_case_count": 244,
+    "numeric_interval_count": 247,
+    "undefined_bytes": [
+      221,
+      222,
+      223,
+      247,
+      248,
+      249,
+      250,
+      251,
+      252,
+      253,
+      254,
+      255
+    ]
+  },
+  "remaining_registry_discrepancies": {
+    "registry_count": 209,
+    "capability_document_frozen_count": 174,
+    "same_name_assignment_conflicts": {
+      "TAND_SWAR": {
+        "registry": 214,
+        "header": 207
+      },
+      "TNOT_SWAR": {
+        "registry": 213,
+        "header": 206
+      },
+      "TOR_SWAR": {
+        "registry": 215,
+        "header": 220
+      },
+      "TVecSub": {
+        "registry": 212,
+        "header": 205
+      }
+    },
+    "header_names_missing_from_registry": [
+      "AgentInvoke",
+      "GcSafepoint",
+      "NEURAL_ACT",
+      "NEURAL_ATTN",
+      "NEURAL_BACK",
+      "NEURAL_DROP",
+      "NEURAL_FWD",
+      "NEURAL_NORM",
+      "NEURAL_OPT",
+      "NEURAL_RES",
+      "POLICY_CONSTRAIN_ENTROPY",
+      "POLICY_EVAL_STOCHASTIC",
+      "POLICY_FILTER_TOKENS",
+      "POLICY_RECORD_DECISION",
+      "QUANT_ADAPT",
+      "QUANT_COMP",
+      "QUANT_DECOMP",
+      "QUANT_DIST",
+      "QUANT_MIXED",
+      "QUANT_PRUN",
+      "QUANT_TERN",
+      "QUANT_VERIFY",
+      "ReadIsaVersion",
+      "STOCHASTIC_CHAIN_BEGIN",
+      "STOCHASTIC_CHAIN_END",
+      "STOCHASTIC_CHAIN_STEP",
+      "STOCHASTIC_CONFIG",
+      "STOCHASTIC_DECODE",
+      "STOCHASTIC_SAMPLE",
+      "STOCHASTIC_SEED",
+      "STOCHASTIC_VERIFY",
+      "VAdd",
+      "VFma",
+      "VLoad",
+      "VStore"
+    ],
+    "status": "Reported separately; specifications, opcode assignments, decoder and freeze checker unchanged."
+  },
+  "mutations": "Temporary validation copies only: expectation Int2BigInt==192; decoder accepts undefined byte 221. Neither mutation is in the PR.",
+  "limitations": [
+    "Opcode byte roundtrip/rejection is not execution-semantic conformance.",
+    "Original encoding test still uses assert, so its NDEBUG pass alone is not evidence that its predicates executed; its UNDEBUG run exercises those predicates.",
+    "Freeze checker reads the registry only and does not validate header/registry agreement.",
+    "No freestanding evaluator or new experiment execution."
+  ]
+}
