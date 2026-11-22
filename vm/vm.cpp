@@ -1645,15 +1645,18 @@ public:
             break;
           }
           const std::string& name = state_.symbols[static_cast<std::size_t>(insn.b - 1)];
+          auto verdict = eval_axion_call(t81::axion::reasons::kStep, current_pc, insn.opcode, name);
+          if (verdict.kind == t81::axion::VerdictKind::Deny) {
+            record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), 0, verdict);
+            trap = Trap::SecurityFault;
+            break;
+          }
           auto handle = intern_weights_tensor(name);
           ctx.registers[insn.a] = handle;
           ctx.register_tags[insn.a] = ValueTag::WeightsTensorHandle;
-          {
-            t81::axion::Verdict verdict;
-            verdict.kind = t81::axion::VerdictKind::Allow;
-            verdict.reason = "weights.load \"" + name + "\"";
-            record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), handle, verdict);
-          }
+          verdict.kind = t81::axion::VerdictKind::Allow;
+          verdict.reason = "weights.load \"" + name + "\"";
+          record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), handle, verdict);
           break;
         }
         // Tensor hash loading, metadata reflection, and LLM math opcodes (TLoadHash..TRoPE)
