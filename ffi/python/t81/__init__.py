@@ -1,10 +1,9 @@
 """
 t81 — Python bindings for T81 Foundation.
 
-T81 is a deterministic virtual machine, ISA, and compiler stack built on
-balanced ternary arithmetic {-1, 0, +1}.  This package exposes the full
-stack from native ternary types through the compiler pipeline, VM execution,
-Axion governance audit trail, and CanonFS content-addressed storage.
+The Python bindings provide ternary number and tensor types, a compiler and
+VM, VM audit reason strings, and raw CanonFS storage. The standalone T81 CLI
+and MCP server are separate native builds.
 
 Quick start
 -----------
@@ -13,17 +12,17 @@ Quick start
 42
 
 >>> big = t81.BigInt(123456789)
->>> big + t81.BigInt(1)
+>>> (big + t81.BigInt(1)).to_int()
 123456790
 
 >>> vm = t81.VM()
->>> prog = t81.compile("fn main() -> i32 { return 7; }")
+>>> prog = t81.compile("@axion_verify\\nfn main() -> i32 { return 7; }")
 >>> vm.load_program(prog)
 >>> vm.run_to_halt()
->>> vm.get_register(0)
+>>> vm.get_register(2)
 7
->>> vm.axion_log   # Axion governance audit trail
-[]
+>>> "Default policy: allow all" in vm.axion_log
+True
 """
 
 from __future__ import annotations
