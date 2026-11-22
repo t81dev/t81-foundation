@@ -7,6 +7,7 @@
 #include <span>
 #include <sstream>
 #include <string>
+#include <utility>
 #include "t81/axion/policy.hpp"
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
@@ -28,8 +29,79 @@
 namespace py = pybind11;
 using namespace t81;
 
+namespace {
+
+constexpr std::size_t kDefaultStepLimit = 100000;
+
+class StepLimitExceeded : public std::runtime_error {
+public:
+  using std::runtime_error::runtime_error;
+};
+
+void run_until_halted(vm::IVirtualMachine& machine, std::size_t max_steps) {
+  if (!machine.run_to_halt(max_steps)) throw std::runtime_error("VM Trap during execution");
+  if (!machine.state().halted) throw StepLimitExceeded("VM step limit exhausted before halt");
+}
+
+tisc::Program compile_program(const std::string& source) {
+  frontend::Lexer lexer(source);
+  frontend::Parser parser(lexer);
+  auto stmts = parser.parse();
+  if (parser.had_error()) throw std::runtime_error("Parser error");
+
+  frontend::SemanticAnalyzer analyzer(stmts);
+  analyzer.analyze();
+  if (analyzer.had_error()) throw std::runtime_error("Semantic Analyzer error");
+
+  frontend::IRGenerator ir_gen;
+  ir_gen.attach_semantic_analyzer(&analyzer);
+  auto ir = ir_gen.generate(stmts);
+
+  tisc::BinaryEmitter emitter;
+  return emitter.emit(ir);
+}
+
+std::size_t tensor_index(py::handle index, py::ssize_t extent) {
+  const auto value = PyNumber_AsSsize_t(index.ptr(), PyExc_IndexError);
+  if (value == -1 && PyErr_Occurred()) throw py::error_already_set();
+  const auto normalized = value < 0 ? value + extent : value;
+  if (normalized < 0 || normalized >= extent) throw py::index_error("tensor index out of range");
+  return static_cast<std::size_t>(normalized);
+}
+
+template <typename Tensor, typename Element>
+void replace_tensor_data(Tensor& tensor, std::vector<Element> values) {
+  // Construct first to apply the usual shape validation and storage classification.
+  tensor = Tensor(tensor.shape(), std::move(values));
+}
+
+py::object exact_python_int(const T81Int<81>& number) {
+  py::object result = py::int_(0);
+  const auto radix = py::int_(3);
+  for (auto remaining = number.significant_trits(); remaining != 0; --remaining) {
+    result = result * radix + py::int_(trit_to_int(number[remaining - 1]));
+  }
+  return result;
+}
+
+py::object exact_bigint_python_int(const v1::T81BigInt& number) {
+  const std::string digits = number.str();
+  const bool negative = number.is_negative();
+  py::object result = py::int_(0);
+  const auto radix = py::int_(3);
+  for (std::size_t i = negative ? 1 : 0; i < digits.size(); ++i) {
+    const char digit = digits[i];
+    result = result * radix + py::int_(digit == '+' ? 1 : digit == '-' ? -1 : 0);
+  }
+  return negative ? py::int_(0) - result : result;
+}
+
+}  // namespace
+
 PYBIND11_MODULE(_t81, m) {
   m.doc() = "T81 Foundation Python Bindings";
+
+  py::register_exception<StepLimitExceeded>(m, "StepLimitExceeded", PyExc_RuntimeError);
 
   // Bind T81Int<81>
   py::class_<T81Int<81>>(m, "T81Int")
@@ -45,6 +117,8 @@ PYBIND11_MODULE(_t81, m) {
                return std::string("<t81.T81Int value=(large)>");
              }
            })
+      .def("__int__", &exact_python_int)
+      .def("__index__", &exact_python_int)
       .def_static("max_value", []() { return T81Int<81>::kMaxValue; })
       .def_static("min_value", []() { return T81Int<81>::kMinValue; });
 
@@ -55,7 +129,9 @@ PYBIND11_MODULE(_t81, m) {
       .def("__sub__", [](const v1::T81BigInt& a, const v1::T81BigInt& b) { return a - b; })
       .def("__mul__", [](const v1::T81BigInt& a, const v1::T81BigInt& b) { return a * b; })
       .def("__repr__", &v1::T81BigInt::str)
-      .def("to_int", &v1::T81BigInt::to_int64);
+      .def("to_int", &v1::T81BigInt::to_int64)
+      .def("__int__", &exact_bigint_python_int)
+      .def("__index__", &exact_bigint_python_int);
 
   // Bind T81Float27_9
   py::class_<v1::T81Float27_9>(m, "Float")
@@ -93,16 +169,10 @@ PYBIND11_MODULE(_t81, m) {
       .def(py::init<T81Int<81>>())
       .def(
           "__getitem__",
-          [](Tensor1D3& t, size_t i) -> T81Int<81>& {
-            if (i >= 3) throw py::index_error();
-            return t(i);
-          },
+          [](Tensor1D3& t, py::handle i) -> T81Int<81>& { return t(tensor_index(i, 3)); },
           py::return_value_policy::reference_internal)
       .def("__setitem__",
-           [](Tensor1D3& t, size_t i, const T81Int<81>& v) {
-             if (i >= 3) throw py::index_error();
-             t(i) = v;
-           })
+           [](Tensor1D3& t, py::handle i, const T81Int<81>& v) { t(tensor_index(i, 3)) = v; })
       .def("size", [](const Tensor1D3&) { return Tensor1D3::size(); })
       .def("rank", [](const Tensor1D3&) { return Tensor1D3::rank(); })
       .def("__add__", [](const Tensor1D3& a, const Tensor1D3& b) { return a + b; });
@@ -116,19 +186,13 @@ PYBIND11_MODULE(_t81, m) {
           "__getitem__",
           [](Tensor2D33& t, py::tuple idx) -> T81Int<81>& {
             if (idx.size() != 2) throw py::value_error("Index must be a 2-tuple");
-            size_t i = idx[0].cast<size_t>();
-            size_t j = idx[1].cast<size_t>();
-            if (i >= 3 || j >= 3) throw py::index_error();
-            return t(i, j);
+            return t(tensor_index(idx[0], 3), tensor_index(idx[1], 3));
           },
           py::return_value_policy::reference_internal)
       .def("__setitem__",
            [](Tensor2D33& t, py::tuple idx, const T81Int<81>& v) {
              if (idx.size() != 2) throw py::value_error("Index must be a 2-tuple");
-             size_t i = idx[0].cast<size_t>();
-             size_t j = idx[1].cast<size_t>();
-             if (i >= 3 || j >= 3) throw py::index_error();
-             t(i, j) = v;
+             t(tensor_index(idx[0], 3), tensor_index(idx[1], 3)) = v;
            })
       .def("size", [](const Tensor2D33&) { return Tensor2D33::size(); })
       .def("rank", [](const Tensor2D33&) { return Tensor2D33::rank(); })
@@ -139,9 +203,8 @@ PYBIND11_MODULE(_t81, m) {
       .def(py::init<std::vector<int>>())
       .def(py::init<std::vector<int>, std::vector<float>>())
       .def_property_readonly("shape", &T729DynamicTensor::shape)
-      .def_property(
-          "data", py::overload_cast<>(&T729DynamicTensor::data),
-          [](T729DynamicTensor& self, std::vector<float> d) { self.data() = std::move(d); })
+      .def_property("data", py::overload_cast<>(&T729DynamicTensor::data, py::const_),
+                    &replace_tensor_data<T729DynamicTensor, float>)
       .def("rank", &T729DynamicTensor::rank)
       .def("size", &T729DynamicTensor::size);
 
@@ -150,14 +213,31 @@ PYBIND11_MODULE(_t81, m) {
       .def(py::init<std::vector<int>>())
       .def(py::init<std::vector<int>, std::vector<T81Int<81>>>())
       .def_property_readonly("shape", &T729IntTensor::shape)
-      .def_property(
-          "data", py::overload_cast<>(&T729IntTensor::data),
-          [](T729IntTensor& self, std::vector<T81Int<81>> d) { self.data() = std::move(d); })
+      .def_property("data", py::overload_cast<>(&T729IntTensor::data, py::const_),
+                    &replace_tensor_data<T729IntTensor, T81Int<81>>)
       .def("rank", &T729IntTensor::rank)
       .def("size", &T729IntTensor::size);
 
   // Bind TISC Program
   py::class_<tisc::Program>(m, "Program").def(py::init<>());
+
+  py::enum_<axion::VerdictKind>(m, "VerdictKind")
+      .value("Allow", axion::VerdictKind::Allow)
+      .value("Deny", axion::VerdictKind::Deny)
+      .value("Defer", axion::VerdictKind::Defer)
+      .value("Warn", axion::VerdictKind::Warn)
+      .value("Quarantine", axion::VerdictKind::Quarantine);
+
+  py::class_<vm::AxionEvent>(m, "AxionEvent")
+      .def_property_readonly("pc", [](const vm::AxionEvent& event) { return event.structured.pc; })
+      .def_property_readonly(
+          "opcode", [](const vm::AxionEvent& event) { return static_cast<int>(event.opcode); })
+      .def_property_readonly("verdict",
+                             [](const vm::AxionEvent& event) { return event.verdict.kind; })
+      .def_property_readonly("reason",
+                             [](const vm::AxionEvent& event) { return event.verdict.reason; })
+      .def_property_readonly(
+          "reason_code", [](const vm::AxionEvent& event) { return event.structured.reason_code; });
 
   // Bind HanoiVM
   py::class_<vm::IVirtualMachine>(m, "HanoiVM")
@@ -167,13 +247,9 @@ PYBIND11_MODULE(_t81, m) {
              auto res = self.step();
              if (!res) throw std::runtime_error("VM Trap");
            })
-      .def(
-          "run_to_halt",
-          [](vm::IVirtualMachine& self, size_t max_steps) {
-            auto res = self.run_to_halt(max_steps);
-            if (!res) throw std::runtime_error("VM Trap during execution");
-          },
-          py::arg("max_steps") = 100000)
+      .def("run_to_halt", &run_until_halted, py::arg("max_steps") = kDefaultStepLimit)
+      .def_property_readonly("halted",
+                             [](const vm::IVirtualMachine& self) { return self.state().halted; })
       .def("get_register",
            [](vm::IVirtualMachine& self, int idx) {
              if (idx < 0 || idx >= 243) throw py::index_error();
@@ -187,6 +263,8 @@ PYBIND11_MODULE(_t81, m) {
              if (idx < 0 || idx >= 243) throw py::index_error();
              self.set_register(idx, val);
            })
+      .def_property_readonly("axion_events",
+                             [](const vm::IVirtualMachine& self) { return self.state().axion_log; })
       .def_property_readonly("axion_log",
                              [](vm::IVirtualMachine& self) {
                                std::vector<std::string> logs;
@@ -206,52 +284,21 @@ PYBIND11_MODULE(_t81, m) {
 
   m.def("make_interpreter_vm", []() { return vm::make_interpreter_vm(); });
 
-  m.def("compile", [](const std::string& source) {
-    frontend::Lexer lexer(source);
-    frontend::Parser parser(lexer);
-    auto stmts = parser.parse();
-    if (parser.had_error()) throw std::runtime_error("Parser error");
+  m.def("compile", &compile_program, py::arg("source"));
 
-    frontend::SemanticAnalyzer analyzer(stmts);
-    analyzer.analyze();
-    if (analyzer.had_error()) throw std::runtime_error("Semantic Analyzer error");
+  m.def(
+      "compile_and_run",
+      [](const std::string& source, std::size_t max_steps) {
+        auto vm = vm::make_interpreter_vm();
+        vm->load_program(compile_program(source));
+        run_until_halted(*vm, max_steps);
 
-    frontend::IRGenerator ir_gen;
-    ir_gen.attach_semantic_analyzer(&analyzer);
-    auto ir = ir_gen.generate(stmts);
-
-    tisc::BinaryEmitter emitter;
-    return emitter.emit(ir);
-  });
-
-  m.def("compile_and_run", [](const std::string& source) {
-    frontend::Lexer lexer(source);
-    frontend::Parser parser(lexer);
-    auto stmts = parser.parse();
-    if (parser.had_error()) throw std::runtime_error("Parser error");
-
-    frontend::SemanticAnalyzer analyzer(stmts);
-    analyzer.analyze();
-    if (analyzer.had_error()) throw std::runtime_error("Semantic Analyzer error");
-
-    frontend::IRGenerator ir_gen;
-    ir_gen.attach_semantic_analyzer(&analyzer);
-    auto ir = ir_gen.generate(stmts);
-
-    tisc::BinaryEmitter emitter;
-    auto program = emitter.emit(ir);
-
-    auto vm = vm::make_interpreter_vm();
-    vm->load_program(program);
-    auto res = vm->run_to_halt();
-    if (!res) throw std::runtime_error("VM Trap during execution");
-
-    auto& state = vm->state();
-    if (state.contexts.empty()) throw std::runtime_error("VM state invalid");
-    // R0 is unused; the TISC calling convention places main()'s return
-    // value in R2 of the root context after the call stack unwinds.
-    return state.contexts[state.current_context].registers[2];
-  });
+        const auto& state = vm->state();
+        if (state.contexts.empty()) throw std::runtime_error("VM state invalid");
+        // The TISC calling convention places main()'s return value in R2.
+        return state.contexts[state.current_context].registers[2];
+      },
+      py::arg("source"), py::kw_only(), py::arg("max_steps") = kDefaultStepLimit);
 
   // Bind CanonFS
   py::enum_<canonfs::ObjectType>(m, "ObjectType")
@@ -349,9 +396,10 @@ PYBIND11_MODULE(_t81, m) {
                                    ref.hash.h.bytes.size());
                              })
       .def("hex", [canonref_to_hex](const canonfs::CanonRef& ref) { return canonref_to_hex(ref); })
-      .def("to_cli_handle",
-           [](const canonfs::CanonRef& ref) { return "sha3-256:" + ref.hash.h.to_string(); },
-           "Return the canonical sha3-256:<Base-81 hash> accepted by the native CanonFS CLI.")
+      .def(
+          "to_cli_handle",
+          [](const canonfs::CanonRef& ref) { return "sha3-256:" + ref.hash.h.to_string(); },
+          "Return the canonical sha3-256:<Base-81 hash> accepted by the native CanonFS CLI.")
       .def("__eq__",
            [](const canonfs::CanonRef& self, const py::object& other) -> py::object {
              if (!py::isinstance<canonfs::CanonRef>(other)) {
