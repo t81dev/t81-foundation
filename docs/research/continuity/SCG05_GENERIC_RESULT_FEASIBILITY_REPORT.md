@@ -1,6 +1,6 @@
 # T81 SCG-05 — Generic Result Contract Feasibility Assessment
 
-**Document ID:** T81-SCG-05-FEASIBILITY-001-R1
+**Document ID:** T81-SCG-05-FEASIBILITY-001-R2
 **Baseline Git SHA:** `e45c5435aa47d4ccb8f343798214eb917352c871`
 **Governing Policy:** SCG-04-MDR-001, Decision D4=4B (Adopt True Generic `Result<T, E>` Sum Type)
 **Disposition:** READ-ONLY FEASIBILITY ASSESSMENT (NO PRODUCTION CODE CHANGES; NO SPECIFICATION CHANGES)
@@ -16,7 +16,7 @@ Maintainer Decision Record SCG-04-MDR-001 recorded the architectural policy choi
 This report delivers the technical feasibility assessment mandated under SCG-05, revised under PR #732 to address seven technical findings. It determines the minimum compatible architecture for introducing a generic `Result<T, E>` container while strictly preserving the existing `T81Result<T>` concrete class unchanged, identifying ABI and compatibility risks, respecting determinism constraints (`spec/determinism-profile.md`), and preserving all historical evidence receipts.
 
 ### Key Conclusions
-1. **Additive Container Strategy (Preserving Concrete `T81Result<T>`):** The recommended strategy introduces a distinct generic container `template <typename T, typename E = T81Error> class Result;` in `include/t81/types/Result.hpp` while **preserving the existing concrete `T81Result<T>` class in `include/t81/types/T81Result.hpp` completely unchanged**. Replacing the existing `T81Result<T>` class with a template alias would carry substantial risks of ABI breakage, compiler diagnostic shifts, deduction-guide disruption, and subtle overload resolution discrepancies across translation units. Interoperability between `Result<T, T81Error>` and `T81Result<T>` must be treated as a separately tested, explicit boundary concern.
+1. **Additive Container Strategy (Preserving Concrete `T81Result<T>`):** The recommended strategy introduces a distinct generic container under an illustrative separate name, `t81::GenericResult<T, E>` while **preserving the existing concrete `T81Result<T>` class in `include/t81/types/T81Result.hpp` completely unchanged**. Replacing the existing `T81Result<T>` class with a template alias would carry substantial risks of ABI breakage, compiler diagnostic shifts, deduction-guide disruption, and subtle overload resolution discrepancies across translation units. Keep the existing `t81::Result<T>` alias. Compatibility of legacy error conversions remains unresolved because `T81Error` copies can change metadata.
 2. **Toolchain Standard Distinction (`std::expected` vs C++20 `t81::expected`):** The repository toolchain supports C++20 as baseline and C++23 when `T81_USE_CXX23=ON` (enabled by default in `cmake/Options.cmake`). Standard `std::expected<T, E>` is only available in C++23 mode. The repository's C++20 fallback in `include/t81/support/expected.hpp` is a custom partial implementation; it does **not** provide full semantic equivalence to ISO C++23 `std::expected`, and its support for `constexpr` constant evaluation, move-only payloads, and monadic chaining cannot be assumed without explicit, target-specific compile-time validation.
 3. **`T81Error` Remediation vs Encapsulation:** Existing `T81Error` captures dynamic system state (`T81Time::now()` and `acquire_entropy()`), allocating heap memory and violating strict determinism (`spec/determinism-profile.md §6`). Generic `Result<T, E>` allows deterministic kernel and math libraries to use lightweight, deterministic error types (e.g. `enum class MathError : int8_t` or `enum class CodecError : uint8_t`) without modifying or destabilizing `T81Error`.
 4. **Architectural Fragmentation in Existing Subsystems:** Several existing subsystems (**CanonFS**, **Hanoi Kernel**, and **Cog Promotion**) declare their own local `Result<T>` aliases binding to `std::expected<T, SubsystemError>`. This represents observed architectural fragmentation across the codebase, demonstrating that different subsystems have evolved disparate error-handling contracts.
@@ -123,13 +123,13 @@ struct T81Error {
 
 #### Architecture B: Additive Generic `Result<T, E>` while Preserving Concrete `T81Result<T>` (Recommended)
 - **Description:**
-  - Introduce an additive generic container `template <typename T, typename E = T81Error> class Result;` in `include/t81/types/Result.hpp`.
+  - Introduce an additive generic container under an illustrative separate name, `t81::GenericResult<T, E>`.
   - **Retain the existing concrete `T81Result<T>` class in `include/t81/types/T81Result.hpp` completely unchanged.**
-  - Provide explicit, separately tested interoperability functions or converting constructors between `Result<T, T81Error>` and `T81Result<T>`.
+  - Preserve `t81::Result<T>` as the existing alias. Defer legacy conversions until the error metadata contract is decided.
 - **Advantages:**
-  - Preserves 100% ABI, API, and mangling stability for all existing `T81Result<T>` callers.
+  - Keeps existing type identities intact by construction. Source and binary compatibility still require validation on the supported toolchains.
   - Leaves existing tests (`test_T81Result.cpp`, `comprehensive_test.cpp`) testing the exact legacy container without semantic drift.
-  - Allows new code to adopt `Result<T, E>` with domain-specific error types without coupling to `T81Error`.
+  - Allows new code to adopt the generic container with domain-specific error types without coupling to `T81Error`.
   - Isolates interoperability to explicit converting boundaries.
 - **Verdict:** RECOMMENDED.
 
@@ -149,7 +149,7 @@ struct T81Error {
 
 ## 5. Proposed API Contract for Generic `Result<T, E>`
 
-The proposed contract outlines the API surface for `t81::Result<T, E = T81Error>` in `include/t81/types/Result.hpp`. Exception specifications and conditional `noexcept` clauses are defined conservatively to reflect the possibility that constructing, copying, moving, or transforming `T` or `E` may throw.
+The sketch uses the working name `t81::GenericResult<T, E = T81Error>`. The existing alias `t81::Result<T>` and a class template with the same qualified name cannot coexist. Giving the new class a default second template parameter would still change the identity of existing `t81::Result<T>` instantiations if the alias were replaced. Exception specifications and conditional `noexcept` clauses are defined conservatively to reflect the possibility that constructing, copying, moving, or transforming `T` or `E` may throw.
 
 ### 5.1 Class Template Definition
 
@@ -165,32 +165,32 @@ struct Err {
 };
 
 template <typename T, typename E = T81Error>
-class Result {
+class GenericResult {
 public:
   using value_type = T;
   using error_type = E;
 
   // Value constructors (conditional noexcept)
-  constexpr Result(const T& val) noexcept(std::is_nothrow_copy_constructible_v<T>);
-  constexpr Result(T&& val) noexcept(std::is_nothrow_move_constructible_v<T>);
+  constexpr GenericResult(const T& val) noexcept(std::is_nothrow_copy_constructible_v<T>);
+  constexpr GenericResult(T&& val) noexcept(std::is_nothrow_move_constructible_v<T>);
 
   // Tagged error constructor
-  constexpr Result(Err<E> err) noexcept(std::is_nothrow_move_constructible_v<E>);
+  constexpr GenericResult(Err<E> err) noexcept(std::is_nothrow_move_constructible_v<E>);
 
   // Copy and move constructors (conditional noexcept)
-  constexpr Result(const Result& other) noexcept(
+  constexpr GenericResult(const GenericResult& other) noexcept(
       std::is_nothrow_copy_constructible_v<T> && std::is_nothrow_copy_constructible_v<E>);
-  constexpr Result(Result&& other) noexcept(
+  constexpr GenericResult(GenericResult&& other) noexcept(
       std::is_nothrow_move_constructible_v<T> && std::is_nothrow_move_constructible_v<E>);
 
   // Factory methods
-  static constexpr Result success(T val) noexcept(std::is_nothrow_move_constructible_v<T>);
-  static constexpr Result failure(E err) noexcept(std::is_nothrow_move_constructible_v<E>);
+  static constexpr GenericResult success(T val) noexcept(std::is_nothrow_move_constructible_v<T>);
+  static constexpr GenericResult failure(E err) noexcept(std::is_nothrow_move_constructible_v<E>);
 
   // Legacy failure factory enabled ONLY when E == T81Error
   template <typename... Args, typename E2 = E,
             typename std::enable_if_t<std::is_same_v<E2, T81Error>, int> = 0>
-  static Result failure(T81Symbol code, T81String msg, T81Symbol src = symbols::unk);
+  static GenericResult failure(T81Symbol code, T81String msg, T81Symbol src = symbols::unk);
 
   // State inspection (unconditionally noexcept)
   [[nodiscard]] constexpr bool is_ok() const noexcept;
@@ -225,24 +225,19 @@ public:
   [[nodiscard]] constexpr auto and_then(F&& f) const&;
 
   template <typename F>
-  [[nodiscard]] constexpr Result or_else(F&& f) const&;
+  [[nodiscard]] constexpr GenericResult or_else(F&& f) const&;
 
   template <typename F>
   [[nodiscard]] constexpr auto transform_error(F&& f) const&;
 
-  // Separate, explicit conversion to/from legacy concrete T81Result<T>
-  template <typename E2 = E, typename std::enable_if_t<std::is_same_v<E2, T81Error>, int> = 0>
-  [[nodiscard]] static Result from_legacy(const T81Result<T>& legacy);
-
-  template <typename E2 = E, typename std::enable_if_t<std::is_same_v<E2, T81Error>, int> = 0>
-  [[nodiscard]] T81Result<T> to_legacy() const;
+  // Legacy conversions require a separate metadata contract.
 };
 
 }  // namespace t81
 ```
 
 ### 5.2 Exception Specification Principles
-1. **Conditional Noexcept:** Move and copy operations MUST NOT be marked unconditionally `noexcept`; they must be conditionally `noexcept` based on `std::is_nothrow_move_constructible_v<T>` and `<E>`.
+1. **Conditional Noexcept:** Move and copy operations MUST NOT be marked unconditionally `noexcept`; they must be conditionally `noexcept` based on the relevant copy or move construction traits of both `T` and `E`.
 2. **Accessors on Mismatched State:** `.value()`, `.unwrap()`, and `.error()` access payload elements when present. When invoked in the wrong state (e.g., accessing `.value()` when `is_err()` is true), they throw exceptions (or abort in `-fno-exceptions` mode). These accessors are therefore **not** `noexcept`.
 3. **Legacy Factory Operations:** The legacy `failure(code, msg, src)` method constructs a `T81Error`, which allocates heap memory (`T81String`) and calls system clocks; it is explicitly **not** `noexcept`.
 
@@ -256,12 +251,12 @@ Replacing `T81Result<T>` with a template alias was evaluated and rejected due to
 - **Template Deduction Guides:** Existing deduction guides for `T81Result` (e.g. `T81Result(T) -> T81Result<T>`) do not automatically transfer to aliased templates in all C++20 compilers without explicit alias deduction guides (P0608 / C++20 feature set variations).
 - **Forward Declarations:** Any code forward-declaring `template <typename T> class T81Result;` fails compilation if `T81Result` is transformed into an alias `using T81Result = Result<T, T81Error>;`.
 
-**Recommendation:** Retain `class T81Result<T>` as a distinct, unchanged concrete class in `include/t81/types/T81Result.hpp`. Treat interoperability with `Result<T, T81Error>` as a separately tested, explicit boundary.
+**Recommendation:** Retain `class T81Result<T>` as a distinct, unchanged concrete class in `include/t81/types/T81Result.hpp`. Retain the `t81::Result<T>` alias and choose a distinct public name or namespace for the generic container. The current `T81Error` copy constructor obtains a new timestamp and fresh entropy. Both legacy error construction overloads can invoke that constructor, including the overload that accepts an rvalue. An owned error round trip through those paths therefore cannot promise preservation of `occurred_at` or `fuel_spent`. A future conversion proposal must define how it handles all five fields, then verify the chosen behavior in each direction.
 
 ### 6.2 Phased Migration Strategy
-1. **Phase 1 (Additive Specification & Container):** Implement `Result<T, E = T81Error>` in `include/t81/types/Result.hpp`. Retain `include/t81/types/T81Result.hpp` unchanged. Implement unit test suite verifying `Result<T, E>` independently.
-2. **Phase 2 (Subsystem Evaluation):** Independently evaluate whether subsystems using local aliases (**CanonFS**, **Hanoi Kernel**, **Cog**) benefit from migrating to `t81::Result<T, SubsystemError>`. Each migration is scoped and verified in an isolated PR.
-3. **Phase 3 (Checked Arithmetic Integration):** When authorized under D1/D2, introduce checked arithmetic functions returning `Result<T81Int<N>, ArithmeticError>` and `Result<T81Float<M, E>, ConversionError>`, achieving zero-allocation arithmetic error handling.
+1. **Phase 1 (Additive Specification & Container):** After naming and scope approval, implement the additive container and test it independently. Retain the legacy alias and concrete class.
+2. **Phase 2 (Subsystem Evaluation):** Independently evaluate whether subsystems using local aliases (**CanonFS**, **Hanoi Kernel**, **Cog**) benefit from migrating to `t81::GenericResult<T, SubsystemError>`. Each migration is scoped and verified in an isolated PR.
+3. **Phase 3 (Checked Arithmetic Integration):** When authorized under D1/D2, introduce checked arithmetic functions returning `GenericResult<T81Int<N>, ArithmeticError>` and `GenericResult<T81Float<M, E>, ConversionError>`, achieving zero-allocation arithmetic error handling.
 
 ---
 
@@ -271,14 +266,15 @@ Future implementation verification must adhere to the following test matrix:
 
 | Test ID | Test Category | Scenario | Portable Acceptance Criteria | Stop Condition |
 | :--- | :--- | :--- | :--- | :--- |
-| **TEST-RES-01** | Default Error Type | Instantiate `Result<int>` | Compiles with `E = T81Error`. Value and error states correctly represented. | Compilation failure or incorrect default type. |
-| **TEST-RES-02** | Lightweight Error Types | Instantiate `Result<int, enum class ErrorCode : uint8_t>` | Discriminates between success and error states. Preserves exact error code value. Zero dynamic heap allocations for qualifying trivial/literal types. | Any dynamic heap allocation or failure to discriminate states. |
-| **TEST-RES-03** | Compile-Time Evaluation | `constexpr` evaluation of `Result<int, int>` | Evaluates in `constexpr` and `static_assert` contexts under supported toolchains. | Compiler error during constant expression evaluation. |
-| **TEST-RES-04** | Disambiguated Construction | `Result<int, int>` with identical value and error types | Successfully constructs ok state via `Result::success(1)` and error state via `Result::failure(Err(2))` or `Err` wrapper without ambiguity. | Ambiguous overload resolution or incorrect state. |
-| **TEST-RES-05** | Move-Only Types | `Result<std::unique_ptr<int>, CustomError>` | Move construction and move assignment operate without copy operations. | Compilation error on move-only types. |
+| **TEST-RES-01** | Default Error Type | Instantiate `GenericResult<int>` | Compiles with `E = T81Error`. Value and error states correctly represented. | Compilation failure or incorrect default type. |
+| **TEST-RES-02** | Lightweight Error Types | Instantiate `GenericResult<int, enum class ErrorCode : uint8_t>` | Discriminates between success and error states. Preserves exact error code value. Zero dynamic heap allocations for qualifying trivial/literal types. | Any dynamic heap allocation or failure to discriminate states. |
+| **TEST-RES-03** | Compile-Time Evaluation | `constexpr` evaluation of `GenericResult<int, int>` | Evaluates in `constexpr` and `static_assert` contexts under supported toolchains. | Compiler error during constant expression evaluation. |
+| **TEST-RES-04** | Disambiguated Construction | `GenericResult<int, int>` with identical value and error types | Successfully constructs ok state via `GenericResult::success(1)` and error state via `GenericResult::failure(2)` or the tagged constructor without ambiguity. | Ambiguous overload resolution or incorrect state. |
+| **TEST-RES-05** | Move-Only Types | `GenericResult<std::unique_ptr<int>, CustomError>` | Move construction and move assignment operate without copy operations. | Compilation error on move-only types. |
 | **TEST-RES-06** | Monadic Transformations | Chained invocations of `map`, `and_then`, `transform_error` | State and payload types transform correctly across the chain. Short-circuits on failure. | Type deduction failure or incorrect propagation. |
-| **TEST-RES-07** | Legacy Interoperability | Explicit conversion between `Result<T, T81Error>` and `T81Result<T>` | Values and error fields round-trip across the conversion boundary without mutation. | Data truncation or conversion failure. |
+| **TEST-RES-07** | Legacy Interoperability | Candidate conversions between `GenericResult<T, T81Error>` and `T81Result<T>` | Deferred until a metadata policy is approved. Compare `code`, `message`, `source`, `occurred_at`, and `fuel_spent` in both directions on any path advertised as lossless. | A path advertised as lossless changes any field, or conversion proceeds without a decided metadata policy. |
 | **TEST-RES-08** | Legacy Regression Gate | Execute full existing test suite (`test_T81Result`, `comprehensive_test`) | 100% of existing tests continue to compile and pass against unchanged `T81Result<T>`. | Any regression or compilation failure in existing tests. |
+| **TEST-RES-09** | Legacy Alias Identity | Include the proposed header alongside `t81/types/Result.hpp` | `std::is_same_v<t81::Result<int>, t81::T81Result<int>>` remains true, and the generic type can be named independently. | Conflicting declaration or changed legacy alias identity. |
 
 ---
 
@@ -292,7 +288,7 @@ Future implementation verification must adhere to the following test matrix:
 
 ### 8.2 Explicit Scope Limits for Future Implementation Authorization
 Authorization to proceed with implementation must be granted by the maintainer via an explicit authorization directive specifying:
-- **Strictly Scoped Files:** Implementation restricted to `include/t81/types/Result.hpp` and a new test file `tests/cpp/test_generic_result.cpp`.
+- **Strictly Scoped Files:** Approve the generic container header and focused tests after selecting the public name or namespace. Preserve the existing `Result<T>` alias.
 - **Zero Modifications to Concrete Classes:** `include/t81/types/T81Result.hpp` MUST remain unchanged.
 - **Zero Modifications to Existing Subsystems:** No changes to `canonfs`, `hanoi`, `cog`, `swar`, or `codec` call sites in the initial PR.
 - **Validation Gates:** Full passage of `clang-format-18`, C++20 and C++23 build targets, and existing CTest regression gates.
