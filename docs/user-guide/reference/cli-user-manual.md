@@ -792,11 +792,11 @@ Report emits schema `t81.feedback-report.v1`.
 ### 4.26 `mcp`
 
 ```text
-t81 mcp serve
+t81 mcp serve [--root PATH]...
 t81 mcp help
 ```
 
-Starts the zero-dependency native C++ JSON-RPC 2.0 stdio MCP server exposing 15 tools (governance/policy gating, CanonFS fsck, atomic `SHA3-512` transactions, narrowed TISC subgraph verification/execution, and Dual-Rail `t81.diff_check` / `t81.memory_search` / `t81.adapter_apply`).
+Starts the zero-dependency native C++ JSON-RPC 2.0 stdio MCP server exposing 15 tools (governance/policy gating, CanonFS fsck, atomic `SHA3-512` transactions, narrowed TISC subgraph verification/execution, and Dual-Rail `t81.diff_check` / `t81.memory_search` / `t81.adapter_apply`). Each file path is confined to a `--root` directory (the working directory when `--root` is omitted). `t81.run_subgraph` and `t81.tx_commit` require a policy file.
 
 ## 5. Help Contract
 

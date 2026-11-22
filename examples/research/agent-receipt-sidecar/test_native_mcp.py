@@ -48,7 +48,7 @@ def main() -> int:
         subprocess.run([T81_BIN, "canonfs", "import", str(good), "--canonfs-root", str(croot), "--json"], check=True, capture_output=True)
 
         proc = subprocess.Popen(
-            [T81_BIN, "mcp", "serve"],
+            [T81_BIN, "mcp", "serve", "--root", str(tmp), "--root", str(ROOT_DIR)],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             text=True,
@@ -298,6 +298,48 @@ def main() -> int:
             assert aa_sbdr["merged_sha3_512"] == aa_ok["merged_sha3_512"]
             assert sbdr_out_pos.read_bytes() == ao_pos.read_bytes()
             assert sbdr_out_neg.read_bytes() == ao_neg.read_bytes()
+
+            # Paths outside every --root are refused, including symlinks that point out.
+            outside = rpc("tools/call", {"name": "t81.determinism_hash", "arguments": {"path": "/etc/passwd"}})["result"]["structured"]
+            assert not outside["ok"] and "outside the MCP filesystem root" in outside["error"]
+            with tempfile.TemporaryDirectory() as outside_dir:
+                secret = Path(outside_dir) / "secret.bin"
+                secret.write_bytes(b"secret")
+                link = tmp / "escape.link"
+                link.symlink_to(secret)
+                linked = rpc("tools/call", {"name": "t81.determinism_hash", "arguments": {"path": str(link)}})["result"]["structured"]
+                assert not linked["ok"] and "outside the MCP filesystem root" in linked["error"]
+
+            # A comment that names a weaker mode must not override the structured fail-closed clause.
+            floor_pol = tmp / "floor.apl"
+            floor_pol.write_text(
+                '(policy\n'
+                '  (tier 1)\n'
+                f'  (allowed-tensor-hashes ["{good_sha}"])\n'
+                '  (require-axion-event (reason "enforcement-mode:fail-closed"))\n'
+                '  (require-axion-event (reason "do not use enforcement-mode:observe-only"))\n'
+                '  (require-axion-event (reason "enforcement-mode:observe-only"))\n'
+                ')\n',
+                encoding="utf-8",
+            )
+            floor = rpc("tools/call", {"name": "t81.get_effective_policy", "arguments": {"policy_path": str(floor_pol)}})["result"]["structured"]
+            assert floor["ok"] and floor["policy_floor"] == "fail-closed"
+            floor_gate = rpc("tools/call", {"name": "t81.gate_check", "arguments": {"artifact_path": str(bad), "policy_path": str(floor_pol), "mode": "observe-only"}})["result"]["structured"]
+            assert not floor_gate["ok"] and floor_gate["blocked"] and floor_gate["mode_applied"] == "fail-closed"
+
+            # Execution and commit both require a policy. A skipped commit keeps the backup.
+            missing_policy = rpc("tools/call", {"name": "t81.run_subgraph", "arguments": {"bytecode_hex": halt_bc}})["result"]["structured"]
+            assert not missing_policy["ok"] and not missing_policy["executed"]
+            assert missing_policy["verdict"] == "REJECT_MISSING_POLICY"
+            nopolicy = tmp / "tx_nopolicy.txt"
+            nopolicy.write_bytes(b"keep-me")
+            tx_open = rpc("tools/call", {"name": "t81.tx_begin", "arguments": {"target_path": str(nopolicy), "backup_dir": str(tx_bak_dir)}})["result"]["structured"]
+            assert tx_open["ok"]
+            nopolicy.write_bytes(b"mutated")
+            tx_skip = rpc("tools/call", {"name": "t81.tx_commit", "arguments": {"tx_id": tx_open["tx_id"]}})["result"]["structured"]
+            assert not tx_skip["ok"] and not tx_skip["committed"]
+            tx_back = rpc("tools/call", {"name": "t81.tx_abort", "arguments": {"tx_id": tx_open["tx_id"]}})["result"]["structured"]
+            assert tx_back["ok"] and nopolicy.read_bytes() == b"keep-me"
 
             print(json.dumps({
                 "native_cpp_mcp_tools": len(tools),
