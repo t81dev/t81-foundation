@@ -2,7 +2,7 @@
 t81 — Python bindings for T81 Foundation.
 
 The Python bindings provide ternary number and tensor types, a compiler and
-VM, VM audit reason strings, and raw CanonFS storage. The standalone T81 CLI
+VM, structured VM audit events, and raw CanonFS storage. The standalone T81 CLI
 and MCP server are separate native builds.
 
 Quick start
@@ -44,6 +44,9 @@ from t81._t81 import (  # noqa: F401  (re-exported as public API)
     compile_and_run,
     # ── Virtual machine ───────────────────────────────────────────────────────
     HanoiVM,
+    StepLimitExceeded,
+    AxionEvent,
+    VerdictKind,
     make_interpreter_vm,
     # ── CanonFS content-addressed storage ────────────────────────────────────
     ObjectType,
@@ -81,6 +84,9 @@ __all__ = [
     # VM
     "VM",
     "HanoiVM",
+    "StepLimitExceeded",
+    "AxionEvent",
+    "VerdictKind",
     "make_interpreter_vm",
     # CanonFS
     "ObjectType",
