@@ -28,6 +28,10 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
       - name: Bash syntax
-        run: bash -n drivers/qemu/scripts/automated_verification.sh drivers/qemu/scripts/verify_production.sh ternaryos/automated_verification.sh ternaryos/production_qemu_setup.sh
+        run: |
+          for script in drivers/qemu/scripts/{automated_verification,boot_demo,verify_production}.sh \
+            ternaryos/{automated_verification,production_qemu_setup}.sh; do
+            bash -n "$script"
+          done
       - name: Isolated mock QMP and serial checks (no QEMU execution)
-        run: python3 tests/qemu/test_verification.py
+        run: python3 -m unittest discover -s tests/qemu -p 'test_*.py'
