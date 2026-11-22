@@ -762,7 +762,7 @@ jobs:
         shell: bash
         run: |
           set -eo pipefail
-          ctest --test-dir build --output-on-failure --verbose --output-junit build/ctest-results.xml 2>&1 | tee -a .github/logs/build-and-test.log
+          ctest --test-dir build --output-on-failure --verbose --output-junit ctest-results.xml 2>&1 | tee -a .github/logs/build-and-test.log
 
       - name: Run T3_K reproducibility gates
         if: matrix.compiler == 'clang' && (matrix.platform == 'linux-x86_64' || matrix.platform == 'linux-arm64')
