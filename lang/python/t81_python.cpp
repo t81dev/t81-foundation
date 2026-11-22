@@ -271,36 +271,123 @@ PYBIND11_MODULE(_t81, m) {
       .value("CanonTensor", canonfs::ObjectType::CanonTensor)
       .export_values();
 
+  auto canonfs_error_name = [](canonfs::Error err) -> const char* {
+    switch (err) {
+      case canonfs::Error::None:
+        return "None";
+      case canonfs::Error::NotFound:
+        return "NotFound";
+      case canonfs::Error::InvalidObject:
+        return "InvalidObject";
+      case canonfs::Error::CapabilityError:
+        return "CapabilityError";
+      case canonfs::Error::ParityFailure:
+        return "ParityFailure";
+      case canonfs::Error::DecodeError:
+        return "DecodeError";
+    }
+    return "Unknown";
+  };
+
+  auto canonref_to_hex = [](const canonfs::CanonRef& ref) -> std::string {
+    constexpr char kHexDigits[] = "0123456789abcdef";
+    std::string out;
+    out.reserve(ref.hash.h.bytes.size() * 2);
+    for (std::uint8_t byte : ref.hash.h.bytes) {
+      out.push_back(kHexDigits[byte >> 4]);
+      out.push_back(kHexDigits[byte & 0x0F]);
+    }
+    return out;
+  };
+
   py::class_<canonfs::CanonRef>(m, "CanonRef")
       .def(py::init<>())
+      .def_static(
+          "from_bytes",
+          [](py::bytes digest) {
+            std::string raw = digest;
+            canonfs::CanonRef ref{};
+            if (raw.size() != ref.hash.h.bytes.size()) {
+              throw py::value_error("CanonRef digest must be exactly 32 bytes");
+            }
+            std::memcpy(ref.hash.h.bytes.data(), raw.data(), ref.hash.h.bytes.size());
+            return ref;
+          },
+          py::arg("digest"))
+      .def_static(
+          "from_hex",
+          [](py::str digest_obj) {
+            const std::string digest = digest_obj.cast<std::string>();
+            canonfs::CanonRef ref{};
+            constexpr std::size_t kExpectedHexLen = 64;
+            if (digest.size() != kExpectedHexLen) {
+              throw py::value_error(
+                  "CanonRef hex digest must be exactly 64 hexadecimal characters");
+            }
+            auto hex_nibble = [](unsigned char c) -> int {
+              if (c >= '0' && c <= '9') return c - '0';
+              if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+              if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+              return -1;
+            };
+            for (std::size_t i = 0; i < ref.hash.h.bytes.size(); ++i) {
+              const int hi = hex_nibble(static_cast<unsigned char>(digest[2 * i]));
+              const int lo = hex_nibble(static_cast<unsigned char>(digest[2 * i + 1]));
+              if (hi < 0 || lo < 0) {
+                throw py::value_error("CanonRef hex digest contains non-hexadecimal character");
+              }
+              ref.hash.h.bytes[i] = static_cast<std::uint8_t>((hi << 4) | lo);
+            }
+            return ref;
+          },
+          py::arg("digest"))
       .def_property_readonly("hash_bytes",
                              [](const canonfs::CanonRef& ref) {
-                               // CanonHash81 is 32 bytes (SHA3-256)
+                               // CanonHash81 is 32 bytes (SHA3-512 truncated to 256 bits)
                                return py::bytes(
                                    reinterpret_cast<const char*>(ref.hash.h.bytes.data()),
                                    ref.hash.h.bytes.size());
                              })
-      .def("__repr__", [](const canonfs::CanonRef&) {
-        return "<CanonRef>";  // We could format hash bytes if we had a formatter easily
-                              // available
+      .def("hex", [canonref_to_hex](const canonfs::CanonRef& ref) { return canonref_to_hex(ref); })
+      .def("to_cli_handle",
+           [](const canonfs::CanonRef& ref) { return "sha3-256:" + ref.hash.h.to_string(); },
+           "Return the canonical sha3-256:<Base-81 hash> accepted by the native CanonFS CLI.")
+      .def("__eq__",
+           [](const canonfs::CanonRef& self, const py::object& other) -> py::object {
+             if (!py::isinstance<canonfs::CanonRef>(other)) {
+               return py::reinterpret_borrow<py::object>(Py_NotImplemented);
+             }
+             return py::bool_(self.hash == other.cast<const canonfs::CanonRef&>().hash);
+           })
+      .def("__hash__",
+           [](const canonfs::CanonRef& ref) {
+             py::bytes b(reinterpret_cast<const char*>(ref.hash.h.bytes.data()),
+                         ref.hash.h.bytes.size());
+             return py::hash(b);
+           })
+      .def("__repr__", [canonref_to_hex](const canonfs::CanonRef& ref) {
+        return std::string("<CanonRef ") + canonref_to_hex(ref) + ">";
       });
 
   py::class_<canonfs::Driver>(m, "CanonDriver")  // Abstract base
       .def("write_object",
-           [](canonfs::Driver& self, canonfs::ObjectType type, py::bytes data) {
+           [canonfs_error_name](canonfs::Driver& self, canonfs::ObjectType type, py::bytes data) {
              std::string s = data;  // Copy from python bytes
              std::span<const std::byte> sp(reinterpret_cast<const std::byte*>(s.data()), s.size());
              auto res = self.write_object(type, sp);
              if (!res)
-               throw std::runtime_error("CanonFS Write Error: " + std::to_string((int)res.error()));
+               throw std::runtime_error("CanonFS Write Error: " + std::to_string((int)res.error()) +
+                                        " (" + canonfs_error_name(res.error()) + ")");
              return *res;
            })
-      .def("read_object_bytes", [](canonfs::Driver& self, const canonfs::CanonRef& ref) {
-        auto res = self.read_object_bytes(ref);
-        if (!res)
-          throw std::runtime_error("CanonFS Read Error: " + std::to_string((int)res.error()));
-        return py::bytes(reinterpret_cast<const char*>(res->data()), res->size());
-      });
+      .def("read_object_bytes",
+           [canonfs_error_name](canonfs::Driver& self, const canonfs::CanonRef& ref) {
+             auto res = self.read_object_bytes(ref);
+             if (!res)
+               throw std::runtime_error("CanonFS Read Error: " + std::to_string((int)res.error()) +
+                                        " (" + canonfs_error_name(res.error()) + ")");
+             return py::bytes(reinterpret_cast<const char*>(res->data()), res->size());
+           });
 
   m.def("make_in_memory_driver", &canonfs::make_in_memory_driver);
   m.def("make_persistent_driver", [](std::string path) {
