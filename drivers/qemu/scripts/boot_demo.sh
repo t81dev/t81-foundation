@@ -193,7 +193,8 @@ info "Booting under QEMU (timeout ${TIMEOUT}s — press Ctrl-A X to exit)…"
 echo ""
 echo "────────────────────────────────────────────────────────────────────────────────"
 
-if "$TIMEOUT_CMD" "$TIMEOUT" qemu-system-aarch64 \
+# Keep QEMU in the terminal foreground so its serial console can read stdin.
+if "$TIMEOUT_CMD" --foreground "$TIMEOUT" qemu-system-aarch64 \
   -nodefaults \
   -machine virt,gic-version=3 \
   -cpu cortex-a57 \

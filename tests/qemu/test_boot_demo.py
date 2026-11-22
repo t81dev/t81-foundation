@@ -26,7 +26,7 @@ class BootDemoTest(unittest.TestCase):
         for name in ("parted", "mformat", "mmd", "mcopy"):
             self.stub(name, "exit 0")
         self.stub("cmake", "exit 23")
-        self.stub("timeout", 'shift\nexec "$@"')
+        self.stub("timeout", '[ "$1" = --foreground ] || exit 64\nshift 2\nexec "$@"')
         self.stub(
             "qemu-system-aarch64",
             r"""printf '%s\n' "$@" > "$BUILD_DIR/qemu.args"
