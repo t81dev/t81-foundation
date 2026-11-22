@@ -1633,10 +1633,18 @@ int main(int argc, char* argv[]) {
                          {"\"kind\": \"policy-failure\"", "\"message\": \"policy denied import of ",
                           "\"code\": \"canonfs-policy-denied\"", "\"reason\": \"policy_denied\""}));
 
+    const std::string existing_destination_bytes = "keep these existing bytes\r\n";
+    {
+      std::ofstream out(imported_file_restore, std::ios::binary | std::ios::trunc);
+      out << existing_destination_bytes;
+    }
+    T81_TEST_CHECK(read_file(imported_file_restore) == existing_destination_bytes);
+
     const auto export_policy_deny_result = run_cli(
         t81_bin, {"canonfs", "export", hash, "--canonfs-root", canonfs_root.string(), "--policy",
                   canonfs_policy.string(), "--out", imported_file_restore.string(), "--json"});
     T81_TEST_CHECK(export_policy_deny_result.exit_code != 0);
+    T81_TEST_CHECK(read_file(imported_file_restore) == existing_destination_bytes);
     T81_TEST_CHECK(
         contains(export_policy_deny_result.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
     T81_TEST_CHECK(
@@ -1674,6 +1682,7 @@ int main(int argc, char* argv[]) {
                           "--policy-profile", "import-only", "--out",
                           imported_file_restore.string(), "--json"});
     T81_TEST_CHECK(export_profile_deny_result.exit_code != 0);
+    T81_TEST_CHECK(read_file(imported_file_restore) == existing_destination_bytes);
     T81_TEST_CHECK(
         contains(export_profile_deny_result.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
     T81_TEST_CHECK(
@@ -1703,6 +1712,7 @@ int main(int argc, char* argv[]) {
                           "--policy-profile", "deny-all", "--out", imported_file_restore.string(),
                           "--json"});
     T81_TEST_CHECK(deny_all_export_result.exit_code != 0);
+    T81_TEST_CHECK(read_file(imported_file_restore) == existing_destination_bytes);
     T81_TEST_CHECK(contains(deny_all_export_result.stdout_text, "\"policy_result\": \"denied\""));
     T81_TEST_CHECK(
         contains(deny_all_export_result.stdout_text, "\"policy_profile\": \"deny-all\""));
