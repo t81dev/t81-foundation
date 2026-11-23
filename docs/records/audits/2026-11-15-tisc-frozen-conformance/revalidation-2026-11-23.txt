@@ -1,0 +1,64 @@
+# Revalidation of the frozen TISC differential evidence
+# Host: Linux x86_64
+# Compiler: Ubuntu clang version 18.1.3 (1ubuntu1)
+# CMake: 3.28.3, Ninja, CMAKE_BUILD_TYPE=Release
+# Base: origin/main 5a005b2dea5e1eb262d4af45698f8338d16b137c
+# Merge parent: 4108c7a138b0ef7579a129878ac9d7c1e862b21e
+# The executable was built from the test source in this change, before that source was committed.
+# tests/cpp/vm_frozen_semantics_differential_test.cpp sha256: dc68944259cdf1cd68d84d8727d9f0cab87d167fb305f8fb97d5162cd11f1790
+# ctest --test-dir /tmp/t81-tisc-build -R '^t81_vm_frozen_semantics_differential_test$' passed 1/1.
+# That registration does not pass --require-normative.
+# Configure flags: -DT81_BUILD_EXAMPLES=OFF -DT81_BUILD_BENCHMARKS=OFF -DT81_BUILD_FUZZ_TESTS=OFF -DT81_BUILD_TUI=OFF -DT81_ENABLE_TERNARYOS=OFF -DT81_ENABLE_DPE=OFF -DT81_BUILD_TESTS=ON
+# Not run in this refresh: full ctest, sanitizers, macOS, Windows, ARM64, golden trace replay, freeze checker, conformance .t81 programs.
+
+command: /tmp/t81-tisc-build/t81_vm_frozen_semantics_differential_test
+compiler: Ubuntu clang version 18.1.3 (1ubuntu1)
+cmake_build_type: Release
+revision: 4108c7a138b0ef7579a129878ac9d7c1e862b21e
+main: 5a005b2dea5e1eb262d4af45698f8338d16b137c
+characterization_exit=0
+audit_exit=1
+usage_exit=2
+load_store_exit=0
+jump_flags_exit=0
+
+# characterization stdout
+Load opcode=0x03 form=A:2,B:5 spec=R[A]=MEM[R[B]] spec_value=222 vm=R[A]=MEM[B] vm_value=111 disagree=1
+Store opcode=0x04 form=A:5,B:1 spec=MEM[R[A]]=R[B] spec_addr=6 vm=MEM[A]=R[B] vm_addr=5 mem5=555 mem6=222 disagree=1
+JumpIfZero flags_zero=1 R[B]=0 spec=FLAGS,PC=R[A] spec_pc=6 vm=R[B],PC=A vm_pc=5 disagree=1
+JumpIfZero flags_zero=1 R[B]=1 spec=FLAGS,PC=R[A] spec_pc=6 vm=R[B],PC=A vm_pc=2 disagree=1
+JumpIfNotZero flags_zero=0 R[B]=1 spec=FLAGS,PC=R[A] spec_pc=6 vm=R[B],PC=A vm_pc=5 disagree=1
+JumpIfNotZero flags_zero=0 R[B]=0 spec=FLAGS,PC=R[A] spec_pc=6 vm=R[B],PC=A vm_pc=2 disagree=1
+TXor opcode=0x15 lhs=-1 rhs=-1 vm=0 wrapped_difference=0 wrapped_sum=1 spec_table=absent
+TXor opcode=0x15 lhs=-1 rhs=0 vm=-1 wrapped_difference=-1 wrapped_sum=-1 spec_table=absent
+TXor opcode=0x15 lhs=-1 rhs=1 vm=1 wrapped_difference=1 wrapped_sum=0 spec_table=absent
+TXor opcode=0x15 lhs=0 rhs=-1 vm=1 wrapped_difference=1 wrapped_sum=-1 spec_table=absent
+TXor opcode=0x15 lhs=0 rhs=0 vm=0 wrapped_difference=0 wrapped_sum=0 spec_table=absent
+TXor opcode=0x15 lhs=0 rhs=1 vm=-1 wrapped_difference=-1 wrapped_sum=1 spec_table=absent
+TXor opcode=0x15 lhs=1 rhs=-1 vm=-1 wrapped_difference=-1 wrapped_sum=0 spec_table=absent
+TXor opcode=0x15 lhs=1 rhs=0 vm=1 wrapped_difference=1 wrapped_sum=1 spec_table=absent
+TXor opcode=0x15 lhs=1 rhs=1 vm=0 wrapped_difference=0 wrapped_sum=-1 spec_table=absent
+TXor status=underspecified scalar_pairs=9 wrapped_sum_mismatches=6 counted_in_audit=0
+characterization=pass disagreements=6 note=ordinary CI does not pass --require-normative
+
+# --require-normative stdout (process exit 1)
+Load opcode=0x03 form=A:2,B:5 spec=R[A]=MEM[R[B]] spec_value=222 vm=R[A]=MEM[B] vm_value=111 disagree=1
+Store opcode=0x04 form=A:5,B:1 spec=MEM[R[A]]=R[B] spec_addr=6 vm=MEM[A]=R[B] vm_addr=5 mem5=555 mem6=222 disagree=1
+JumpIfZero flags_zero=1 R[B]=0 spec=FLAGS,PC=R[A] spec_pc=6 vm=R[B],PC=A vm_pc=5 disagree=1
+JumpIfZero flags_zero=1 R[B]=1 spec=FLAGS,PC=R[A] spec_pc=6 vm=R[B],PC=A vm_pc=2 disagree=1
+JumpIfNotZero flags_zero=0 R[B]=1 spec=FLAGS,PC=R[A] spec_pc=6 vm=R[B],PC=A vm_pc=5 disagree=1
+JumpIfNotZero flags_zero=0 R[B]=0 spec=FLAGS,PC=R[A] spec_pc=6 vm=R[B],PC=A vm_pc=2 disagree=1
+TXor opcode=0x15 lhs=-1 rhs=-1 vm=0 wrapped_difference=0 wrapped_sum=1 spec_table=absent
+TXor opcode=0x15 lhs=-1 rhs=0 vm=-1 wrapped_difference=-1 wrapped_sum=-1 spec_table=absent
+TXor opcode=0x15 lhs=-1 rhs=1 vm=1 wrapped_difference=1 wrapped_sum=0 spec_table=absent
+TXor opcode=0x15 lhs=0 rhs=-1 vm=1 wrapped_difference=1 wrapped_sum=-1 spec_table=absent
+TXor opcode=0x15 lhs=0 rhs=0 vm=0 wrapped_difference=0 wrapped_sum=0 spec_table=absent
+TXor opcode=0x15 lhs=0 rhs=1 vm=-1 wrapped_difference=-1 wrapped_sum=1 spec_table=absent
+TXor opcode=0x15 lhs=1 rhs=-1 vm=-1 wrapped_difference=-1 wrapped_sum=0 spec_table=absent
+TXor opcode=0x15 lhs=1 rhs=0 vm=1 wrapped_difference=1 wrapped_sum=1 spec_table=absent
+TXor opcode=0x15 lhs=1 rhs=1 vm=0 wrapped_difference=0 wrapped_sum=-1 spec_table=absent
+TXor status=underspecified scalar_pairs=9 wrapped_sum_mismatches=6 counted_in_audit=0
+audit=fail disagreements=6 reason=Load,Store,JumpIfZero,JumpIfNotZero still disagree with spec/tisc-spec.md §5.6 and §5.7. No normative decision is recorded here.
+
+# unknown-argument stderr (process exit 2)
+usage: t81_vm_frozen_semantics_differential_test [--require-normative]
