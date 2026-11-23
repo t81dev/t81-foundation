@@ -67,7 +67,9 @@ cmake --build build-x86 --target benchmark_runner -j $(nproc)
 Record raw timings alongside CPU model and cache hierarchy before updating x86-64 `regime_routing` priors (ARM64 M2 remains primary reference).
 
 **Key Boundary Takeaway (Closed):**
-- **Use Dual-Rail `(P, N)` + `SBDR1T2D` for `R1` (ternary activations × ternary weights):**
-  - **`M = 1` & `s >= 75%`:** Route to **1-thread CPU `SBDR128_SIMD`** (`0.837–1.204 ms` for 64L; beats dense GPU at `90%` sparsity where `7.05 MB` stays SLC/L2-resident, and beats 4T CPU `INT8_Sparse128` by `1.16×–1.93×` on 1 core).
-  - **`M = 1` & `s <= 50%` or `M >= 4` (any sparsity):** Route to **Metal `GPU_R1_DualRail_Pop`** (`L=64`: `1.163 ms` / `57.72 GB/s` at `M=1`, `0.342 ms/tok` at `M=4`, `2.45×–5.58×` faster per token than 1T CPU `SBDR128_SIMD`, cold pack break-even `K* = 2` vs `GPU_INT4` and `K* = 3` vs `4T_CPU_INT4` with `SIMD_4T` pack at `7.61 ms` / 64 layers).
+- **Heterogeneous `R1` (ternary activations × ternary weights) Dispatch Rule (M2 Apple Silicon):**
+  - **`M = 1` & `s >= 90%`:** Route to **1-thread CPU `SBDR128_SIMD`** (`0.837 ms` for 64L; beats both dense GPU `1.164 ms` and BitmaskSkip Metal `0.923 ms` on a single core with zero GPU dispatch overhead).
+  - **`s >= 75%` (`M >= 4` or `M = 1` with `75% <= s < 90%`):** Route to **Metal `GPU_R1_BitmaskSkip_Pop`** (`H06-MEM-11`: `1.039 ms` at `M = 1, s = 75%`; `0.290–0.292 ms/tok` at `M = 4`; `0.208–0.216 ms/tok` at `M = 16`, `1.47×–1.86×` faster than dense GPU with zero CSR indirection; `gpu_sparse_kernel: "GPU_R1_BitmaskSkip_Pop"`, `gpu_sparse_min_pct: 75`).
+  - **Dense / moderate sparsity (`s < 75%` with `M >= 4` or `M = 1, s <= 50%`):** Route to **dense Metal `GPU_R1_DualRail_Pop`** (`L=64`: `1.163–1.164 ms` / `57.7 GB/s` at `M = 1`, `0.342–0.357 ms/tok` at `M = 4`, cold pack break-even `K* = 2` vs `GPU_INT4` and `K* = 3` vs `4T_CPU_INT4`).
 - **Use 4-thread CPU `INT4W` (`M=1..4`) / `INT8W` (`M>=16`) for `R2` (`int8` activations × ternary weights):** `H06-MEM-03`, `H06-MEM-05A`, and `H06-MEM-06` conclusively falsify CPU and Metal LUT Dual-Rail unpacking for `R2` (`0.27×–0.72×` on 4T CPU, `0.63×–0.69×` on Metal LUT vs 4T CPU `INT4W`).
+- **Current Verified Ledger Digest (`9` accepted / `15` negative):** `sha3-512:cb0dbca89da96df89612d160c7bd22117378e94dafbf52aacbaca2e1f619213429669ff1b80fd5d3faa9bc35881f120846db8226f093f1432daf2b2d053286a9`.

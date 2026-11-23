@@ -793,7 +793,7 @@ std::string detect_host_capabilities_json() {
          "\"R1_ternary_act\":{\"dense\":\"DualRail_PN_64\",\"sparse_min_pct\":50,"
          "\"sparse_kernel\":\"SBDR128_SIMD\",\"gpu_kernel\":\"GPU_R1_DualRail_Pop\","
          "\"gpu_sparse_kernel\":\"GPU_R1_BitmaskSkip_Pop\",\"gpu_sparse_min_pct\":75,"
-         "\"m1_high_sparsity_min_pct\":75,\"m1_high_sparsity_kernel\":\"CPU_1T_SBDR128_SIMD\","
+         "\"m1_high_sparsity_min_pct\":90,\"m1_high_sparsity_kernel\":\"CPU_1T_SBDR128_SIMD\","
          "\"m1_low_sparsity_max_pct\":50,\"gpu_min_batch\":4,"
          "\"k_star_prepacked\":0,\"k_star_simd4t_vs_gpu_int4\":2,"
          "\"k_star_simd4t_vs_cpu_int4\":3,\"avoid_per_layer_cpu_thread_barrier\":true},"

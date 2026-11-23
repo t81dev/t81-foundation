@@ -632,7 +632,7 @@ def main() -> int:
             assert r1_route["gpu_kernel"] == "GPU_R1_DualRail_Pop"
             assert r1_route["gpu_sparse_kernel"] == "GPU_R1_BitmaskSkip_Pop"
             assert r1_route["gpu_sparse_min_pct"] == 75
-            assert r1_route["m1_high_sparsity_min_pct"] == 75
+            assert r1_route["m1_high_sparsity_min_pct"] == 90
             assert r1_route["m1_high_sparsity_kernel"] == "CPU_1T_SBDR128_SIMD"
             assert r1_route["m1_low_sparsity_max_pct"] == 50
             assert r1_route["gpu_min_batch"] == 4
