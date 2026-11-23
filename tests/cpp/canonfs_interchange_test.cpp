@@ -963,6 +963,93 @@ int main() {
       return 1;
     }
 
+    const fs::path blocking_file = root / "blocking-parent";
+    {
+      std::ofstream out(blocking_file, std::ios::binary | std::ios::trunc);
+      out << "keep-blocker";
+    }
+    const auto blocked_file_export =
+        t81::canonfs::export_ref(escape_payload_ref, blocking_file / "child.txt", unsafe_options);
+    if (!expect(!blocked_file_export.ok() && blocked_file_export.status == "error",
+                "single-file export under a regular-file parent should fail")) {
+      return 1;
+    }
+    if (!expect(blocked_file_export.materialized_paths.empty(),
+                "failed parent-create single-file export should materialize nothing")) {
+      return 1;
+    }
+    if (!expect(!blocked_file_export.errors.empty() &&
+                    blocked_file_export.errors.front().reason == "target_directory_create_failed",
+                "single-file export under a regular-file parent should report "
+                "target_directory_create_failed")) {
+      return 1;
+    }
+    if (!expect(read_file(blocking_file) == "keep-blocker",
+                "failed parent-create single-file export must preserve the blocking file")) {
+      return 1;
+    }
+
+    const auto blocked_dir_export =
+        t81::canonfs::export_ref(golden_import.manifest_ref, blocking_file, unsafe_options);
+    if (!expect(!blocked_dir_export.ok() && blocked_dir_export.status == "error",
+                "directory export onto an existing regular file should fail")) {
+      return 1;
+    }
+    if (!expect(blocked_dir_export.materialized_paths.empty(),
+                "failed directory-create export should materialize nothing")) {
+      return 1;
+    }
+    if (!expect(!blocked_dir_export.errors.empty() &&
+                    blocked_dir_export.errors.front().reason == "target_directory_create_failed",
+                "directory export onto an existing regular file should report "
+                "target_directory_create_failed")) {
+      return 1;
+    }
+    if (!expect(read_file(blocking_file) == "keep-blocker",
+                "failed directory-create export must preserve the blocking file")) {
+      return 1;
+    }
+
+    const fs::path existing_target_dir = root / "existing-target-dir";
+    fs::create_directories(existing_target_dir, ec);
+    if (!expect(!ec, "existing target directory fixture create failed")) return 1;
+    const auto open_failed_export =
+        t81::canonfs::export_ref(escape_payload_ref, existing_target_dir, unsafe_options);
+    if (!expect(!open_failed_export.ok() && open_failed_export.status == "error",
+                "single-file export onto an existing directory should fail")) {
+      return 1;
+    }
+    if (!expect(open_failed_export.materialized_paths.empty(),
+                "failed target-open export should materialize nothing")) {
+      return 1;
+    }
+    if (!expect(!open_failed_export.errors.empty() &&
+                    open_failed_export.errors.front().reason == "target_open_failed",
+                "single-file export onto an existing directory should report target_open_failed")) {
+      return 1;
+    }
+
+#if defined(__linux__)
+    std::error_code dev_full_ec;
+    if (fs::exists("/dev/full", dev_full_ec) && !dev_full_ec) {
+      const auto write_failed_export =
+          t81::canonfs::export_ref(escape_payload_ref, fs::path("/dev/full"), unsafe_options);
+      if (!expect(!write_failed_export.ok() && write_failed_export.status == "error",
+                  "export to /dev/full should fail")) {
+        return 1;
+      }
+      if (!expect(write_failed_export.materialized_paths.empty(),
+                  "failed target-write export should materialize nothing")) {
+        return 1;
+      }
+      if (!expect(!write_failed_export.errors.empty() &&
+                      write_failed_export.errors.front().reason == "target_write_failed",
+                  "export to /dev/full should report target_write_failed")) {
+        return 1;
+      }
+    }
+#endif
+
     fs::remove_all(root, ec);
     if (!expect(!ec, "ops test root cleanup failed")) return 1;
   }
