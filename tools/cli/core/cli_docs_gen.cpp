@@ -309,7 +309,7 @@ trace
 Show, diff, replay, canonicalize, and export execution traces.
 .TP
 mcp
-Run the native C++ JSON-RPC 2.0 MCP server (`t81 mcp serve`, 15 tools).
+Run the native C++ JSON-RPC 2.0 MCP server (`t81 mcp serve [--root PATH]...`, 15 tools). File paths stay inside `--root`.
 .TP
 project
 Project lifecycle commands.
