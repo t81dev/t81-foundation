@@ -11,7 +11,7 @@
 
 The operational index on `main` pins an earlier revision of this file at `b2b9d3c73df96d6b4227ee0061c56bc2ee04a8fe` (`docs/ai-context/CURRENT_STATE.json`, observation `AIOPT-001-M1`). Commit `a14cf48a9ec8494f876819ec457be5478dfc08d5` restored the uncorrected text and dropped those bounds. This revision restores them and corrects additional mismatches against current `main`. It does not rewrite the pinned historical receipt.
 
-**Later record:** `docs/research/aiopt/T81-AIOPT-001-M2-ADVERSARIAL-DESIGN-ASSESSMENT.md`, already on `main`, critiques wildcard pattern matching as a premise for a ternary-specific advantage and leaves M2 execution blocked. Section 6 remains this review's 2026-11-01 proposal. It does not override that later assessment. Choosing between them is a maintainer decision.
+**Governing record:** Maintainer decision, 2026-11-23: `docs/research/aiopt/T81-AIOPT-001-M2-ADVERSARIAL-DESIGN-ASSESSMENT.md`, already on `main`, governs. It critiques wildcard linear filtering as a premise for a ternary-specific advantage and leaves M2 execution blocked. Section 6 is retained as a non-binding alternative. It does not authorize execution and does not override that assessment.
 
 ---
 
@@ -40,7 +40,7 @@ Milestone M1 of T81-AIOPT-001 proposes an isolated, correctness-only verificatio
 
 ### Disposition
 
-**`M2_REDESIGN_REQUIRED`**: Milestone M1 specifies fail-closed correctness and mutual consistency among its three adapters. Those properties were not independently reproduced by this review. The protocol cannot proceed to an optimization milestone on this workload. Measuring execution time or training a selection agent on it would time loop overhead and compiler register allocation rather than representation efficiency. A later milestone needs a different workload: longer vectors, a predicate that is not a lexicographic range test, and conventional lookup-table or bitset comparators. Wildcard filtering, proposed in Section 6, was later challenged by the adversarial assessment already on `main`.
+**`M2_REDESIGN_REQUIRED`**: Milestone M1 specifies fail-closed correctness and mutual consistency among its three adapters. Those properties were not independently reproduced by this review. The protocol cannot proceed to an optimization milestone on this workload. Measuring execution time or training a selection agent on it would time loop overhead and compiler register allocation rather than representation efficiency. The governing next record is the merged M2 assessment. Section 6's wildcard grid is a non-binding alternative and does not authorize the next experiment.
 
 ---
 
@@ -289,11 +289,11 @@ To claim that an AI-guided selector provides scientific value, an experiment mus
 
 ---
 
-## 6. Preregistered Design for Milestone M2 (Specification Only)
+## 6. Non-Binding Alternative for Milestone M2 (Specification Only)
 
-*Milestone M2 is specified here as a proposed experimental protocol. It is not implemented, executed, or authorized.*
+*This section is a non-binding alternative. It is not implemented, executed, or authorized. The merged assessment `docs/research/aiopt/T81-AIOPT-001-M2-ADVERSARIAL-DESIGN-ASSESSMENT.md` governs.*
 
-`docs/research/aiopt/T81-AIOPT-001-M2-ADVERSARIAL-DESIGN-ASSESSMENT.md`, already merged on `main`, argues that wildcard linear filtering cannot establish a ternary-specific computational advantage and leaves M2 execution blocked. The grid below is this review's proposal. It is not a decision to run that grid, and it does not replace the later assessment.
+Maintainer decision, 2026-11-23: that assessment governs the M2 question. It argues that wildcard linear filtering cannot establish a ternary-specific computational advantage and leaves M2 execution blocked. The grid below remains this review's 2026-11-01 proposal, kept so the alternative is readable. It does not authorize a run.
 
 ### 6.1 Primary Research Question
 *Under what combination of vector length ($L$), catalog size ($M$), and wildcard/don't-care density ($D$) does a packed ternary representation (SWAR or SIMD) exhibit measurable execution latency advantage over conventional binary scalar and direct lookup-table comparators on general-purpose binary CPUs?*
@@ -387,11 +387,11 @@ To eliminate the degeneracy of M1, M2 must evaluate a parameterized workload spa
    **No.** The workload space ($3^4 = 81$ states) is small enough that a correct solution is an 81-byte lookup table or a scalar comparison of the lexicographic index with 40. No cycle count was measured. Optimizing a 40-iteration loop over this domain studies an algorithm the index comparison replaces.
 
 5. **What is the smallest scientifically useful next experiment?**
-   This review's proposal is not to benchmark M1. It is a parameterized wildcard-matching comparison at $L \in \{16, 64\}$, $M = 100$, and $D = 0.2$, with packed 2-bit SWAR against a binary bitmask baseline. The adversarial assessment already on `main` challenges wildcard linear filtering as a way to establish a ternary-specific advantage. Which proposal, if either, becomes the next experiment is a maintainer decision. Neither is authorized by this document.
+   Do not benchmark M1. Section 6's wildcard comparison ($L \in \{16, 64\}$, $M = 100$, $D = 0.2$) is a non-binding alternative. The governing record is the merged M2 assessment, which rejects wildcard linear filtering as a way to establish a ternary-specific advantage and leaves execution blocked.
 
 6. **Should M2 proceed, be redesigned, or be abandoned?**
    **M2 must be REDESIGNED (`M2_REDESIGN_REQUIRED`).**
-   Proceeding from M1 to a timing run or an AI selector on $C_{40}$ would time the degenerate index test and would reopen the frozen CPU-kernel program recorded in PR #549 without a new workload. Section 6 is this review's proposed redesign. The later assessment on `main` challenges that design and leaves execution blocked. Adopting either proposal, or abandoning M2, is a maintainer decision.
+   Proceeding from M1 to a timing run or an AI selector on $C_{40}$ would time the degenerate index test and would reopen the frozen CPU-kernel program recorded in PR #549 without a new workload. The merged M2 assessment governs the redesign question and leaves execution blocked. Section 6 is a non-binding alternative, not the authorized next protocol.
 
 ---
 
@@ -407,4 +407,4 @@ To eliminate the degeneracy of M1, M2 must evaluate a parameterized workload spa
 | **SWAR Nature** | 8-bit integer comparison (`payload == target`); no SIMD sub-lane parallel arithmetic. |
 | **Key Comparator** | Conventional binary scalar range check (`k < 40`) and 81-entry Direct LUT (`lut[k]`). |
 | **Most Serious Threat** | Conflating naive $O(M)$ linear scan loop overhead with representation efficiency. |
-| **Actionable Next Step** | Do not benchmark M1. Section 6 proposes a wildcard redesign; the merged M2 assessment challenges it. Maintainer decision required before any execution. |
+| **Actionable Next Step** | Do not benchmark M1. The merged M2 assessment governs. Section 6 is a non-binding wildcard alternative. Execution remains blocked. |
