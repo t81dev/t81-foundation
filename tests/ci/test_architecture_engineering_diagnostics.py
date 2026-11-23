@@ -24,6 +24,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from unittest.mock import Mock
 import pytest
 
 import importlib.util
@@ -40,6 +41,8 @@ def _load_validator_module():
 val_mod = _load_validator_module()
 detect_drift = val_mod.detect_drift
 validate = val_mod.validate
+collect_baseline_inventory = getattr(val_mod, "collect_baseline_inventory", None)
+check_git_ancestry = getattr(val_mod, "check_git_ancestry", None)
 VALID_EVIDENCE_RELATIONSHIPS = val_mod.VALID_EVIDENCE_RELATIONSHIPS
 VALID_REFERENCE_TYPES = val_mod.VALID_REFERENCE_TYPES
 
@@ -294,23 +297,34 @@ def test_evidence_index_rejects_nonexistent_test_or_receipt(isolated_dataset):
 # ---------------------------------------------------------------------------
 
 def test_bash_arithmetic_evaluation_defect_reproduction():
+    """Postincrement returns 1 at zero; errexit covers it starting in Bash 4.1.
+
+    Bash 3.2 (macOS system Bash) does not apply errexit to arithmetic commands.
+    Check both the status defect and each version's actual exit behavior.
     """
-    Subprocess test reproducing the exact Bash defect in automated_verification.sh:
-    When COMPLETED_TESTS=0, `((COMPLETED_TESTS++))` returns exit status 1.
-    Under `set -e`, this immediately crashes the script.
-    """
-    script_defect = """#!/usr/bin/env bash
-set -e
-TOTAL_TESTS=5
+    version = subprocess.check_output(
+        ["bash", "-c", 'echo "${BASH_VERSINFO[0]}.${BASH_VERSINFO[1]}"'], text=True
+    )
+    bash_version = tuple(map(int, version.strip().split(".")))
+    status = subprocess.run(
+        ["bash", "-c", 'n=0; ((n++)); result=$?; echo "$result:$n"'],
+        capture_output=True, text=True
+    )
+    assert status.returncode == 0
+    assert status.stdout.strip() == "1:1"
+    script_defect = """set -e
 COMPLETED_TESTS=0
-tmp_file=$(mktemp)
-[ -f "$tmp_file" ] && ((COMPLETED_TESTS++))
-rm -f "$tmp_file"
-echo "COMPLETED_REACHED"
+[ -n yes ] && ((COMPLETED_TESTS++))
+echo "COMPLETED_REACHED: $COMPLETED_TESTS"
 """
     res = subprocess.run(["bash", "-c", script_defect], capture_output=True, text=True)
-    assert res.returncode == 1, "Expected bash script to fail closed with exit code 1"
-    assert "COMPLETED_REACHED" not in res.stdout
+    expected_exit = 1 if bash_version >= (4, 1) else 0
+    assert res.returncode == expected_exit, f"Bash {version.strip()}: {res.stderr}"
+    if expected_exit:
+        assert "COMPLETED_REACHED" not in res.stdout
+    else:
+        assert res.stdout.strip() == "COMPLETED_REACHED: 1"
+
 
 def test_bash_arithmetic_safe_alternative_verification():
     """
@@ -387,3 +401,149 @@ def test_deterministic_drift_detection_repeated_runs():
     run1 = detect_drift(DATA_DIR)
     run2 = detect_drift(DATA_DIR)
     assert json.dumps(run1, sort_keys=True) == json.dumps(run2, sort_keys=True)
+
+# ---------------------------------------------------------------------------
+# 9. Provenance and Baseline Inventory Tests
+# ---------------------------------------------------------------------------
+
+def test_baseline_inventory_collection():
+    """Verifies collect_baseline_inventory catalogs all 13 datasets with baselines, timestamps, and scopes."""
+    assert collect_baseline_inventory is not None
+    inv_data = collect_baseline_inventory(DATA_DIR, comparison_ref="HEAD")
+    items = inv_data["inventory"]
+    assert len(items) == 13
+
+    files = {it["filename"] for it in items}
+    assert "architecture_layers.json" in files
+    assert "component_evidence_index.json" in files
+    assert "research_programs.json" in files
+    assert "pull_requests_snapshot.json" in files
+
+    distinct_baselines = {it["recorded_baseline"] for it in items if it["recorded_baseline"] != "Not recorded"}
+    assert "4f96cb24358bfd260e67387b2c4db2797b01236f" in distinct_baselines
+    assert "9a3e307ad21135749d35a4f1a6a0d5820d0cc698" in distinct_baselines
+    assert "6c9eaf1a2fc8368cd06f6dddbbdcd78e6606c0ce" in distinct_baselines
+
+    for it in items:
+        assert it["scope"] != "Not recorded"
+        assert it["ancestry_status"] in ["IDENTICAL", "ANCESTOR", "DIVERGENT", "UNAVAILABLE"]
+        if it["ancestry_status"] in ["IDENTICAL", "ANCESTOR"]:
+            assert isinstance(it["commits_behind"], int)
+            assert it["commits_behind"] >= 0
+        else:
+            assert it["commits_behind"] is None
+
+def test_git_ancestry_edge_cases(tmp_path):
+    """Use a local commit graph, independent of checkout history or shallow clones."""
+    def git(*args, input=None):
+        try:
+            return subprocess.check_output(
+                ["git", "-c", "user.name=Test", "-c", "user.email=test@example.invalid", *args],
+                cwd=tmp_path, input=input, text=True, stderr=subprocess.PIPE
+            ).strip()
+        except (OSError, subprocess.CalledProcessError) as exc:
+            pytest.fail(f"Git fixture execution failed: {exc}")
+
+    git("init")
+    tree = git("mktree", input="")
+    root = git("commit-tree", tree, input="root\n")
+    head = git("commit-tree", tree, "-p", root, input="head\n")
+    sibling = git("commit-tree", tree, "-p", root, input="sibling\n")
+    git("update-ref", "refs/heads/comparison", head)
+    ref = "refs/heads/comparison"
+
+    assert check_git_ancestry(head, ref, tmp_path) == ("IDENTICAL", 0, head)
+    assert check_git_ancestry(root, ref, tmp_path) == ("ANCESTOR", 1, head)
+    assert check_git_ancestry(sibling, ref, tmp_path) == ("DIVERGENT", None, head)
+    assert check_git_ancestry("0" * 40, ref, tmp_path) == ("UNAVAILABLE", None, head)
+    assert check_git_ancestry("Not recorded", ref, tmp_path) == ("UNAVAILABLE", None, None)
+    assert check_git_ancestry(root, "refs/nonexistent/phantom_ref", tmp_path) == ("UNAVAILABLE", None, None)
+
+
+
+@pytest.mark.parametrize("failure, expected", [
+    (subprocess.CalledProcessError(1, ["git", "merge-base"]), "DIVERGENT"),
+    (subprocess.CalledProcessError(128, ["git", "merge-base"]), "UNAVAILABLE"),
+    (OSError("Git execution unavailable"), "UNAVAILABLE"),
+])
+def test_git_ancestry_merge_base_failures(monkeypatch, failure, expected):
+    """Only merge-base exit 1 establishes non-ancestry; never count on failure."""
+    head = "a" * 40
+    baseline = "b" * 40
+    output = Mock(return_value=head.encode())
+    call = Mock(side_effect=[0, failure])  # cat-file succeeds, merge-base fails
+    monkeypatch.setattr(subprocess, "check_output", output)
+    monkeypatch.setattr(subprocess, "check_call", call)
+
+    assert check_git_ancestry(baseline) == (expected, None, head)
+    assert call.call_args.args[0] == ["git", "merge-base", "--is-ancestor", baseline, "HEAD"]
+    output.assert_called_once_with(["git", "rev-parse", "HEAD"], cwd=".", stderr=subprocess.DEVNULL)
+
+
+@pytest.mark.parametrize("count_result", [
+    subprocess.CalledProcessError(1, ["git", "rev-list"]),
+    subprocess.CalledProcessError(128, ["git", "rev-list"]),
+    OSError("Git execution unavailable"),
+    b"invalid count",
+])
+def test_git_ancestry_count_failures(monkeypatch, count_result):
+    """Counting failures after confirmed ancestry must never report divergence."""
+    head = "a" * 40
+    baseline = "b" * 40
+    output = Mock(side_effect=[head.encode(), count_result])
+    call = Mock(return_value=0)  # cat-file and merge-base both succeed
+    monkeypatch.setattr(subprocess, "check_output", output)
+    monkeypatch.setattr(subprocess, "check_call", call)
+
+    assert check_git_ancestry(baseline) == ("UNAVAILABLE", None, head)
+    assert call.call_count == 2
+    assert call.call_args.args[0] == ["git", "merge-base", "--is-ancestor", baseline, "HEAD"]
+    assert output.call_count == 2
+    assert output.call_args.args[0] == ["git", "rev-list", "--count", f"{baseline}..HEAD"]
+
+
+def test_missing_metadata_normalizes_to_not_recorded(isolated_dataset):
+    """Verifies that omitted baseline and timestamp keys normalize to 'Not recorded' without exceptions."""
+    layers_path = os.path.join(isolated_dataset, "architecture_layers.json")
+    with open(layers_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    data.pop("baseline_commit", None)
+    with open(layers_path, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+
+    inv = collect_baseline_inventory(isolated_dataset, comparison_ref="HEAD")
+    layers_item = next(it for it in inv["inventory"] if it["filename"] == "architecture_layers.json")
+    assert layers_item["recorded_baseline"] == "Not recorded"
+    assert layers_item["recorded_timestamp"] == "Not recorded"
+    assert layers_item["ancestry_status"] == "UNAVAILABLE"
+    assert layers_item["commits_behind"] is None
+
+def test_drift_detects_missing_component_evidence_paths(isolated_dataset):
+    """Verifies detect_drift reports missing test_files and receipt_files cited in component_evidence_index.json."""
+    index_path = os.path.join(isolated_dataset, "component_evidence_index.json")
+    with open(index_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    # Inject nonexistent test and receipt files
+    data["components"][0]["test_files"].append("tests/cpp/nonexistent_test_drift.cpp")
+    data["components"][0]["receipt_files"].append("docs/research/nonexistent_receipt_drift.md")
+    with open(index_path, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+
+    anomalies = detect_drift(isolated_dataset)
+    missing = anomalies["missing_source_paths"]
+    missing_paths = [m["path"] for m in missing]
+
+    assert "tests/cpp/nonexistent_test_drift.cpp" in missing_paths
+    assert "docs/research/nonexistent_receipt_drift.md" in missing_paths
+
+    test_ctx = next(m["context"] for m in missing if m["path"] == "tests/cpp/nonexistent_test_drift.cpp")
+    assert "test_files" in test_ctx
+    receipt_ctx = next(m["context"] for m in missing if m["path"] == "docs/research/nonexistent_receipt_drift.md")
+    assert "receipt_files" in receipt_ctx
+
+def test_baseline_inventory_separated_from_integrity_failures():
+    """Verifies that having mixed historical baselines does not cause validate() or detect_drift() to report drift."""
+    # Positive validation passes cleanly even though baselines are 47, 33, and 24 commits behind HEAD
+    anomalies = detect_drift(DATA_DIR)
+    assert sum(len(v) for v in anomalies.values()) == 0, f"Expected 0 drift anomalies, got: {anomalies}"

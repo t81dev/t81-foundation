@@ -81,10 +81,11 @@ Axion MUST:
 
 Axion is the final arbiter of “deterministic enough.”
 
-> **Implementation status (AX-M5):** Determinism stewardship is partially
-> implemented. `axion_log` captures instruction events but does not yet perform
-> active nondeterminism detection (cross-run divergence comparisons). Active
-> detection is AX-M5, targeting 2026-03-14.
+> **Implementation status (AX-M5):** `axion_log` captures instruction events,
+> and `t81::axion::DeterminismDetector` (`kernel/axion/nondeterminism_detector.cpp`)
+> implements cross-run event-hash comparison using canonical little-endian
+> framing and `t81::crypto::sha3_512`. Cross-architecture trace comparisons are
+> also enforced by `t81 determinism` and the CI reproducibility gates.
 
 ## 1.2 Safety & Ethics Enforcement
 

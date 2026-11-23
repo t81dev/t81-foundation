@@ -115,6 +115,11 @@ An ADB MUST be serializable to canonical JSON and MAY be imported or exported vi
         "intermediate_state_hashes": {
           "type": "array",
           "items": { "type": "string" }
+        },
+        "parent_bundle_ids": {
+          "type": "array",
+          "description": "Optional upstream RFC-00D4 bundle_ids forming a verifiable receipt DAG.",
+          "items": { "type": "string" }
         }
       }
     },
@@ -142,6 +147,11 @@ An ADB MUST be serializable to canonical JSON and MAY be imported or exported vi
         "verdict": {
           "type": "string",
           "enum": ["ALLOW", "DENY", "WARN"]
+        },
+        "enforcement_mode": {
+          "type": "string",
+          "enum": ["observe-only", "warn", "fail-closed"],
+          "description": "Policy-owned enforcement floor applied at evaluation time."
         },
         "evaluation_timestamp": { "type": "string", "format": "date-time" },
         "matched_rules": {
@@ -196,3 +206,6 @@ An offline verifier MUST be able to execute verification without network access 
 
 * **Fail-Closed Verification:** If any signature verification or policy hash match fails, the verifier MUST reject the bundle as untrusted.
 * **Malleability Protection:** Signatures MUST cover canonical representations (such as RFC 8785 JSON Canonicalization Scheme) to prevent field reordering attacks.
+* **Anti-Downgrade Enforcement Floor:** When graduated enforcement (`observe-only` < `warn` < `fail-closed`) is supported, the enforcement floor MUST be owned by policy or verifier configuration. Callers MAY request a stricter mode per call, but MUST NOT downgrade a stricter policy floor.
+* **Truthful Shadow Receipts:** In `observe-only` or `warn` modes, a denied action MUST still record its true `authority.verdict` (`"DENY"` or `"WARN"`), NEVER `"ALLOW"`, so downstream `fail-closed` verifiers reject shadow receipts.
+* **Receipt-DAG Integrity:** When `evidence.parent_bundle_ids` is present, it MUST be covered by `accountability.signature`, and DAG verifiers MUST fail closed on missing parents, cycles, or any upstream signature/policy failure.

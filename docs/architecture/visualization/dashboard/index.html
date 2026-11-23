@@ -13,7 +13,7 @@
       <div class="header-left">
         <h1 class="header-title">T81 Architecture &amp; Research Status Dashboard</h1>
         <span class="badge badge-meta">T81-ARCH-VIZ-003</span>
-        <span class="badge badge-baseline" id="baseline-badge">Baseline: 8e6918fa (PR #759)</span>
+        <button class="badge badge-baseline badge-interactive" id="baseline-badge" aria-label="Dataset Provenance &amp; Freshness" title="Click to view detailed dataset provenance across loaded datasets">Dataset Provenance (loading)</button>
       </div>
       <div class="header-right">
         <!-- View Mode Switcher -->
@@ -31,6 +31,7 @@
             <option value="activity">Engineering Activity (Active PR / Milestone / Blocked)</option>
           </select>
         </div>
+        <button id="provenance-btn" class="header-action-btn" title="View Detailed Dataset Provenance &amp; Freshness">Dataset Provenance</button>
         <button id="summary-btn" class="header-action-btn" title="View Architecture & Research Summary">Summary Metrics</button>
         <button id="research-btn" class="header-action-btn" title="View Research Programs & Hypotheses">Research Programs</button>
         <button id="pr-panel-btn" class="header-action-btn" title="View Pull Request Activity">PR Activity</button>
@@ -167,6 +168,19 @@
           <button id="close-pr-btn" class="modal-close-btn">&times;</button>
         </div>
         <div class="modal-body" id="pr-modal-body">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Dataset Provenance & Freshness Panel -->
+    <div id="provenance-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="provenance-modal-title">
+      <div class="modal-card modal-large">
+        <div class="modal-header">
+          <h2 id="provenance-modal-title">Dataset Provenance &amp; Freshness Inventory</h2>
+          <button id="close-provenance-btn" class="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body" id="provenance-modal-body">
           <!-- Populated dynamically -->
         </div>
       </div>

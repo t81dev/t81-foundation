@@ -19,7 +19,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bash", type=Path, default=Path("/bin/bash"))
     parser.add_argument("--wrapper", type=Path, default=Path(__file__).resolve().parents[2]
-                        / "skills/policy-checker/validate-policy.sh")
+                        / "archive/skills/policy-checker/validate-policy.sh")
     parser.add_argument("--t81-bin", type=Path, help="Omit to run fake-backend tests only")
     parser.add_argument("--receipt", type=Path)
     args = parser.parse_args()

@@ -36,12 +36,12 @@ The root [support guide](SUPPORT_TAXONOMY.md) explains this distinction.
 
 ## Build, tests, and documentation
 
-- `CMakeLists.txt`, `cmake/`, `CMakePresets.json`: authoritative build configuration. Use an out-of-source build; the tracked root `Makefile` is generated and contains machine-specific paths.
+- `CMakeLists.txt`, `cmake/`, `CMakePresets.json`: authoritative out-of-source CMake build configuration.
 - `tests/`: unit, contract, conformance, fixture, and regression tests. Enabled targets depend on CMake options.
 - `scripts/`, `.github/`: validation tooling, workflows, and contributor templates. Workflow definitions are not evidence that a particular run passed.
 - `docs/`: research, governance, references, maintenance handoff, and historical records.
-- `development_tests/`, `execution_reports/`, `strategic_docs/`, `market_analysis/`, `customer_tools/`, `market-demos/`: additional development and historical product/market material. These names and documents do not establish validated customer, performance, or security capabilities.
-- `artifacts/`, `logs/`, root `build.log`, and root sample records: recorded/generated material; inspect provenance before treating it as reproducible evidence.
+- `archive/`: consolidated historical development, product, OpenClaw skill wrapper, and market material (`customer_tools/`, `development_tests/`, `execution_reports/`, `market-demos/`, `market_analysis/`, `skills/`, `strategic_docs/`). These names and documents do not establish validated customer, performance, or security capabilities.
+- `artifacts/` and `examples/legacy-root-samples/`: recorded/generated material and relocated legacy root sample records; inspect provenance before treating it as reproducible evidence.
 - `third_party/`: external dependencies. Some dependencies are fetched during configuration; see [build instructions](CONTRIBUTING.md).
 
 No files or directories are relocated by this guide. Root additions and governance

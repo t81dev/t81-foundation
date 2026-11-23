@@ -25,10 +25,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
       - name: Set up Python 3.12
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v6
         with:
           python-version: "3.12"
           cache: "pip"
@@ -68,7 +68,7 @@ jobs:
 
       - name: Retain SCG-08 validator execution log
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: scg08-validator-suites
           path: |
@@ -77,7 +77,7 @@ jobs:
           if-no-files-found: error
 
       - name: Check Markdown links (lychee)
-        uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411 # v2
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2
         with:
           lycheeVersion: v0.18.1
           fail: true
@@ -153,7 +153,9 @@ jobs:
           python3 scripts/ci/audit_workflow_permissions.py --max-missing 0 2>&1 | tee -a .github/logs/spec-and-docs.log
 
       - name: Run governance policy structure/license/artifact checks
+        shell: bash
         run: |
+          set -euo pipefail
           python3 scripts/governance/check_root_structure.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_readme_naming.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_translation_metadata.py 2>&1 | tee -a .github/logs/spec-and-docs.log
@@ -173,7 +175,9 @@ jobs:
           python3 scripts/governance/check_rfc_lifecycle_hygiene.py 2>&1 | tee -a .github/logs/spec-and-docs.log
 
       - name: Run governance audit wrapper
+        shell: bash
         run: |
+          set -euo pipefail
           python3 scripts/governance/check_docs_governance_hygiene.py 2>&1 | tee -a .github/logs/spec-and-docs.log
 
       - name: Job Failure Summary
@@ -198,7 +202,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
       - name: Run dependency firewall check
         run: python3 scripts/architecture/check_dependency_firewall.py
@@ -220,7 +224,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
       - name: Verify DCP and governance documents exist
         shell: bash
@@ -291,7 +295,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
       - name: Check for undefined deterministic macros
         shell: bash
@@ -365,13 +369,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
       - name: Enforce determinism registry claims
         run: python3 scripts/governance/check_determinism_claims.py
       - name: Run governance metrics
         run: python3 scripts/ci/governance_metrics.py
       - name: Upload report
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: governance-metrics
           path: artifacts/ci_reports/governance_metrics.json
@@ -386,7 +390,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
       - name: Install Dependencies
         run: |
@@ -430,7 +434,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
       - name: Install clang-18 and dependencies
         run: |
@@ -448,7 +452,7 @@ jobs:
 
       - name: Upload warning log on failure
         if: failure()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: warn-strict-log
           path: warn-strict.log
@@ -491,6 +495,7 @@ jobs:
             compiler: gcc
             c_compiler: gcc-14
             cpp_compiler: g++-14
+            timeout_minutes: 60
           - platform: windows-x86_64
             runs_on: windows-latest
             compiler: msvc
@@ -505,11 +510,11 @@ jobs:
     steps:
       - name: Checkout repository
         if: runner.os != 'Windows'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
       - name: Checkout repository (Windows sparse)
         if: runner.os == 'Windows'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         with:
           sparse-checkout: |
             /CMakeLists.txt
@@ -538,7 +543,7 @@ jobs:
             /benchmarks/**
             /spec/**
             /third_party/**
-            /development_tests/**
+            /archive/development_tests/**
             /docs/reference/STABLE_BASELINE_CONTRACT.md
             /docs/reference/AI_OS_OBJECT_BUNDLE_CONSUMPTION_CONTRACT.md
             /docs/reference/AI_OS_OBJECT_BUNDLE_VERSIONING_BOUNDARY.md
@@ -575,15 +580,12 @@ jobs:
         run: |
           set -eo pipefail
           choco install ninja cmake ccache
-          if [ "${{ matrix.compiler }}" = "clang-cl" ]; then
-            choco install llvm
-          fi
         shell: bash
 
       # Homebrew's GoogleTest uses AppleClang/libc++; the GCC lane uses libstdc++.
       - name: Checkout GoogleTest for macOS GCC
         if: runner.os == 'macOS' && matrix.compiler == 'gcc'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         with:
           repository: google/googletest
           ref: 52eb8108c5bdec04579160ae17225d66034bd723 # v1.17.0
@@ -611,7 +613,7 @@ jobs:
           ccache --set-config=max_size=500M
 
       - name: Cache ccache
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.os == 'Linux' && '~/.ccache' || runner.os == 'macOS' && '~/Library/Caches/ccache' || 'C:/Users/runneradmin/AppData/Local/ccache' }}
           key: ccache-${{ runner.os }}-${{ matrix.compiler }}-${{ github.ref }}
@@ -619,7 +621,7 @@ jobs:
             ccache-${{ runner.os }}-${{ matrix.compiler }}-
 
       - name: Cache CMake build directory
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: build
           key: >-
@@ -647,11 +649,25 @@ jobs:
           if [ "${{ runner.os }}" = "macOS" ] && [ "${{ matrix.compiler }}" = "gcc" ]; then
             dependency_args+=("-DGTest_DIR=$PWD/.ci-deps/googletest-install/lib/cmake/GTest")
           fi
+          c_compiler="${{ matrix.c_compiler }}"
+          cpp_compiler="${{ matrix.cpp_compiler }}"
+          if [ "${{ matrix.compiler }}" = "clang-cl" ]; then
+            # Use the compiler bundled with the selected Visual Studio STL.
+            vc_install_dir=$(cygpath -m "${VCINSTALLDIR:?Visual Studio environment missing}")
+            c_compiler="${vc_install_dir%/}/Tools/Llvm/x64/bin/clang-cl.exe"
+            cpp_compiler="$c_compiler"
+            {
+              printf 'Checked-out SHA: %s\n' "$(git rev-parse HEAD)"
+              printf 'clang-cl path: %s\n' "$c_compiler"
+              printf 'MSVC toolset version: %s\n' "${VCToolsVersion:?MSVC toolset version missing}"
+              "$c_compiler" --version
+            } 2>&1 | tee -a .github/logs/build-and-test.log
+          fi
           cmake -S . -B build -G Ninja \
             "${dependency_args[@]}" \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+            "-DCMAKE_C_COMPILER=$c_compiler" \
+            "-DCMAKE_CXX_COMPILER=$cpp_compiler" \
             -DCMAKE_C_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache 2>&1 | tee -a .github/logs/build-and-test.log
 
@@ -703,6 +719,14 @@ jobs:
           set -eo pipefail
           bash scripts/ci/run_model_artifact_review_smoke.sh 2>&1 | tee -a .github/logs/build-and-test.log
 
+      - name: Run agent receipt sidecar dogfood smoke (single matrix lane)
+        if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
+        shell: bash
+        run: |
+          set -eo pipefail
+          bash scripts/ci/run_agent_receipt_dogfood_smoke.sh 2>&1 | tee -a .github/logs/build-and-test.log
+          python3 examples/research/agent-receipt-sidecar/run_live_llm_redteam.py 2>&1 | tee -a .github/logs/build-and-test.log
+
       - name: Verify stable baseline docs and platform test surfaces
         shell: bash
         run: |
@@ -738,7 +762,7 @@ jobs:
         shell: bash
         run: |
           set -eo pipefail
-          ctest --test-dir build --output-on-failure --verbose --output-junit build/ctest-results.xml 2>&1 | tee -a .github/logs/build-and-test.log
+          ctest --test-dir build --output-on-failure --verbose --output-junit ctest-results.xml 2>&1 | tee -a .github/logs/build-and-test.log
 
       - name: Run T3_K reproducibility gates
         if: matrix.compiler == 'clang' && (matrix.platform == 'linux-x86_64' || matrix.platform == 'linux-arm64')
@@ -836,11 +860,12 @@ jobs:
 
       - name: Upload build artifacts
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ci-build-${{ matrix.platform }}-${{ matrix.compiler }}
           path: |
             .github/logs/build-and-test.log
+            build/CMakeFiles/CMakeConfigureLog.yaml
             build/ctest-results.xml
             build/native-int128-probe.log
             build/artifacts/vm_workload_determinism_signatures.log
@@ -848,7 +873,7 @@ jobs:
 
       - name: Upload T3_K hash artifact
         if: matrix.compiler == 'clang' && (matrix.platform == 'linux-x86_64' || matrix.platform == 'linux-arm64')
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: t3k-hash-${{ matrix.platform }}-${{ matrix.compiler }}
           path: build/t3k-repro/hash.txt
@@ -856,7 +881,7 @@ jobs:
 
       - name: Upload T81Lang hash artifact
         if: matrix.compiler == 'clang' && (matrix.platform == 'linux-x86_64' || matrix.platform == 'linux-arm64')
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: t81lang-hash-${{ matrix.platform }}-${{ matrix.compiler }}
           path: build/t81lang-repro/hash.txt
@@ -864,7 +889,7 @@ jobs:
 
       - name: Upload llama.cpp hash artifact (optional)
         if: vars.T81_ENABLE_LLAMA_REPRO == '1' && matrix.compiler == 'clang' && matrix.platform == 'linux-x86_64' && hashFiles('tests/fixtures/llama_cpp_repro/model.gguf') != '' && hashFiles('tests/fixtures/llama_cpp_repro/model_hash.txt') != '' && hashFiles('tests/fixtures/llama_cpp_repro/policy.apl') != '' && hashFiles('tests/fixtures/llama_cpp_repro/prompt.txt') != ''
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: llama-cpp-hash-${{ matrix.platform }}-${{ matrix.compiler }}
           path: build/llama-cpp-repro/hash.txt
@@ -905,7 +930,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
       - name: Start log capture
         run: mkdir -p .github/logs
@@ -939,7 +964,7 @@ jobs:
 
       - name: Upload ARMv9 cross-compile logs
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: cross-compile-armv9-logs
           path: .github/logs/cross-compile-armv9.log
@@ -958,7 +983,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
       - name: Install Dependencies
         run: |
@@ -1032,7 +1057,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
       - name: Install Dependencies
         run: |
@@ -1073,7 +1098,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
       - name: Install Dependencies
         run: |
@@ -1118,7 +1143,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
       - name: Install Dependencies
         run: |
@@ -1149,7 +1174,7 @@ jobs:
 
       - name: Upload repeatability artifacts
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ci-determinism-repeatability
           path: |
@@ -1173,7 +1198,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
       - name: Install Dependencies (Ubuntu)
         run: |
@@ -1313,7 +1338,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
       - name: Install Dependencies
         run: |
@@ -1355,7 +1380,7 @@ jobs:
 
       - name: Upload benchmark artifacts
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ci-benchmarks-linux-x86_64
           path: |
@@ -1375,7 +1400,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
       - name: Install Dependencies
         run: |
@@ -1432,7 +1457,7 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
       - name: Install Dependencies
         run: |
@@ -1469,7 +1494,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
       - name: Install Dependencies
         run: |
@@ -1499,7 +1524,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
       - name: Install Dependencies
         run: |
@@ -1548,7 +1573,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
       - name: Install Dependencies
         run: |
@@ -1597,7 +1622,7 @@ jobs:
         shell: bash
         run: |
           set -eo pipefail
-          wget -qO- https://apt.repos.intel.com/oneapi/intel-oneapi-apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/oneapi-archive-keyring.gpg
+          wget -qO- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | sudo gpg --dearmor -o /usr/share/keyrings/oneapi-archive-keyring.gpg
           echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
           sudo apt-get update
           sudo apt-get install -y intel-oneapi-compiler-dpcpp-cpp

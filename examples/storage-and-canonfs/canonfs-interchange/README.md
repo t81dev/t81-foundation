@@ -145,6 +145,12 @@ The current profile surface is about pre-side-effect admission control, not rich
 content policy. In other words:
 
 - profile denial happens before CanonFS import writes or export materialization
+- a denied file export leaves any existing destination bytes unchanged and does
+  not create a missing destination file
+- a directory export that admits nothing does not create the destination
+  directory
+- a partial directory export writes only admitted entries and leaves an existing
+  denied file unchanged
 - JSON result documents still record `policy_result`, `policy_profile`, and a
   structured error with `kind`, `code`, `reason`, and `message`
 - in the current v1 candidate surface, each error object is emitted in stable

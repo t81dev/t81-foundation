@@ -1,0 +1,88 @@
+#pragma once
+
+#include <string>
+#include <string_view>
+#include <vector>
+
+void print_help_weights();
+void print_help_model();
+void print_help_policy();
+void print_help_axion();
+void print_help_trace();
+void print_help_canonize_file();
+void print_help_memory_stats();
+void print_help_llama_run();
+void print_help_compile();
+void print_help_run();
+void print_help_profile();
+void print_help_disasm();
+void print_help_debug();
+void print_help_check();
+void print_help_repl();
+void print_help_test();
+void print_help_doctor();
+void print_help_env_diag();
+void print_help_fmt();
+void print_help_completion();
+void print_help_man();
+void print_help_tui();
+void print_help_feedback();
+void print_help_code();
+void print_help_project();
+void print_help_env();
+void print_help_internal();
+void print_help_canonfs();
+void print_help_artifact();
+void print_help_vm();
+void print_help_tisc();
+void print_help_ir();
+void print_help_determinism();
+void print_help_repro_hash();
+void print_help_canonize_tensor();
+void print_help_init();
+void print_help_pkg();
+void print_help_benchmark();
+void print_help_mlir();
+void print_help_llvm();
+void print_help_c();
+void print_help_rust();
+void print_help_python();
+void print_help_advanced();
+void print_help_labs();
+void print_help_weights_import();
+void print_help_model_import();
+void print_help_model_diff();
+void print_help_weights_info();
+void print_help_weights_verify();
+void print_help_weights_quantize();
+void print_help_policy_compile();
+void print_help_policy_run();
+void print_help_policy_validate();
+void print_help_policy_test();
+void print_help_policy_list();
+void print_help_env_check();
+void print_help_tisc_diff();
+void print_help_axion_log();
+void print_help_determinism_baseline();
+void print_help_canonfs_gc();
+void print_help_canonfs_fsck();
+void print_help_canonfs_repair();
+void print_help_trace_show();
+void print_help_trace_diff();
+void print_help_trace_replay();
+void print_help_trace_canonicalize();
+void print_help_trace_export();
+void print_help_trace_summary(std::string_view subcommand);
+void print_help_trace_filter();
+void print_help_vm_trace();
+void print_help_tier();
+void print_help_lang();
+void print_help_tensor();
+void print_help_ai();
+void print_help_mcp();
+void print_version();
+void print_usage(const char* prog);
+bool print_help_topic(std::string_view topic, const char* prog);
+bool print_family_subcommand_help(std::string_view family, std::string_view sub);
+bool handle_help_request(const std::string& command, const std::vector<std::string>& command_args,
+                         const char* prog);

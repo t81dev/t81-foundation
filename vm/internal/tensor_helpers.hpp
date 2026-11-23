@@ -8,8 +8,8 @@
 
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
-#include "t81/tensor/mutation.hpp"
 #include "t81/support/expected.hpp"
+#include "t81/tensor/mutation.hpp"
 #include "t81/vm/state.hpp"
 #include "t81/weights.hpp"
 
@@ -136,10 +136,14 @@ std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_transpose_checked(
     const t81::T729DynamicTensor& tensor);
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_matmul_checked(
     const t81::T729DynamicTensor& lhs, const t81::T729DynamicTensor& rhs);
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_matmul_checked_cached(
+    const t81::T729DynamicTensor& lhs, const t81::T729DynamicTensor& rhs,
+    std::string_view rhs_canon_hash);
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_contract_dot_checked(
     const t81::T729DynamicTensor& lhs, const t81::T729DynamicTensor& rhs);
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_attention_checked(
-    const t81::T729DynamicTensor& q, const t81::T729DynamicTensor& k, const t81::T729DynamicTensor& v);
+    const t81::T729DynamicTensor& q, const t81::T729DynamicTensor& k,
+    const t81::T729DynamicTensor& v);
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_embed_checked(
     const t81::T729DynamicTensor& table, std::int64_t index);
 // RFC-0005 v0.4 vector helpers.
@@ -164,8 +168,8 @@ std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_scatter_checked(
     int axis = 0);
 std::expected<float, t81::vm::Trap> tensor_get_checked(const t81::T729DynamicTensor& tensor,
                                                        std::int64_t index);
-std::expected<void, t81::vm::Trap> tensor_set_checked(t81::T729DynamicTensor& tensor,
-                                                      std::int64_t index, float value,
-                                                      t81::tensor_mutation::ScalarWriteKind source_kind);
+std::expected<void, t81::vm::Trap> tensor_set_checked(
+    t81::T729DynamicTensor& tensor, std::int64_t index, float value,
+    t81::tensor_mutation::ScalarWriteKind source_kind);
 
 }  // namespace t81::vm::internal
