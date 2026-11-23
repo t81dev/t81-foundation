@@ -1,0 +1,10 @@
+configure_exit: 0
+build_exit: 0
+built_targets: t81_tracing t81_core t81_exp_scg08_01_test
+cxx_flags: -O3 -DNDEBUG -std=gnu++23 -fPIE -Wall -Wextra -Wpedantic
+cxx_defines: -DT81_DETERMINISTIC -DT81_HAS_NATIVE_INT128=1
+
+experiments/scg08_arithmetic_work/test_exp_scg08_01.cpp:665:16: warning: ‘void* memcpy(void*, const void*, size_t)’ copying an object of non-trivial type ‘std::array<t81::core::T81Limb27, 2>::value_type’ {aka ‘class t81::core::T81Limb27’} from an array of ‘int8_t’ [-Wclass-memaccess]
+    std::memcpy(&t_sum_tryte_corrupt.limbs[0], &bad_tryte, 1);
+include/t81/types/T81Limb.hpp:656:7: note: ‘class t81::core::T81Limb27’ declared here
+The build exited 0. The warning was retained and the source was not changed.

@@ -12,17 +12,17 @@
   "repository_revision": "5a005b2dea5e1eb262d4af45698f8338d16b137c",
   "evidence": [
     {
-      "source_ref": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/logs/smoke.stdout",
+      "source_ref": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/transcripts/smoke.stdout",
       "relationship": "supporting",
       "scope": "Parent Gate 1 smoke process exited 0 at 179/1000 trials and printed Gate 2 withheld"
     },
     {
-      "source_ref": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/logs/schema-positive.stdout",
+      "source_ref": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/transcripts/schema-positive.stdout",
       "relationship": "supporting",
       "scope": "Committed evidence record passed current schema and domain checks"
     },
     {
-      "source_ref": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/logs/schema-negative.stdout",
+      "source_ref": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/transcripts/schema-negative.stdout",
       "relationship": "supporting",
       "scope": "94 negative cases and 61/2 Draft 7 parity checks passed with jsonschema 4.26.0"
     },
@@ -62,22 +62,22 @@
   "artifact_identities": [
     {
       "path": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/README.md",
-      "sha256": "091c52ec43a52c9536b07981c5c2c4c83eaf7573002c83a34e7924880efbdf0f"
+      "sha256": "1c646cac6a00e34466fe74bdf201ab5f6d5b00d1e28dd2cad9ddbd12c716f26f"
     },
     {
-      "path": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/logs/smoke.stdout",
+      "path": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/transcripts/smoke.stdout",
       "sha256": "267190293c04e83469a2a65297d6f880ad5abae2ab130234ce0209be4cc205be"
     },
     {
-      "path": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/logs/schema-positive.stdout",
+      "path": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/transcripts/schema-positive.stdout",
       "sha256": "67cbdaecf414683699db9abc1de1ce4383b6655ecee1b6838945a344d6b34c4d"
     },
     {
-      "path": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/logs/schema-negative.stdout",
+      "path": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/transcripts/schema-negative.stdout",
       "sha256": "453ea7d1f777b956fe804e9cc28691c240413d0f70d7ae9c538d45699d10ea8a"
     },
     {
-      "path": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/logs/ctest.stdout",
+      "path": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/transcripts/ctest.stdout",
       "sha256": "46355716418474685bca6a1bc4fe4096f82aa3b28aa189ab8e4c219f773c59db"
     },
     {

@@ -30,7 +30,7 @@ Recorded in `environment.txt`.
 
 `T81_USE_CXX23` defaults ON, so the documented Release configure selects `-std=gnu++23`. The report's prose says GNU C++20. That difference is claim C17.
 
-Configure and the target build both exited 0. Built targets were `t81_tracing`, `t81_core`, and `t81_exp_scg08_01_test`. GCC emitted one `-Wclass-memaccess` warning at `test_exp_scg08_01.cpp:665`. The warning is in `logs/build-warning.txt`. The source was left unchanged. The smoke binary still exited 0.
+Configure and the target build both exited 0. Built targets were `t81_tracing`, `t81_core`, and `t81_exp_scg08_01_test`. GCC emitted one `-Wclass-memaccess` warning at `test_exp_scg08_01.cpp:665`. The warning is in `transcripts/build-warning.txt`. The source was left unchanged. The smoke binary still exited 0.
 
 ## Commands
 
@@ -107,7 +107,7 @@ Status meanings: **CONFIRMED** means this run's execution, git object, or source
 
 | ID | Claim | Status | Evidence |
 |---|---|---|---|
-| C19 | The five signed bands print operand/add/mul trit counts 41/42/81, 81/82/161, 162/163/323, 324/324/646, 647/647/1292 | CONFIRMED | `logs/smoke.stdout` lines for bands 64 through 1024. |
+| C19 | The five signed bands print operand/add/mul trit counts 41/42/81, 81/82/161, 162/163/323, 324/324/646, 647/647/1292 | CONFIRMED | `transcripts/smoke.stdout` lines for bands 64 through 1024. |
 | C20 | Ternary limbs Op/Add/Mul and binary limbs Op/Add/Mul match the report table | CONFIRMED | Same smoke log: ternary `In/Add/Mul` and binary `In/Add/Mul` match every row. `test_accumulator_width_specification()` ran inside the passing binary. |
 
 ### Section 4 — oracle dimensions and fail-closed mismatches
@@ -115,7 +115,7 @@ Status meanings: **CONFIRMED** means this run's execution, git object, or source
 | ID | Claim | Status | Evidence |
 |---|---|---|---|
 | C21 | Numerical equality, overflow classification, canonical digits, sign handling, and absence of truncation are fail-closed acceptance checks | CONFIRMED | Passing parent assertions, plus 11 oracle subprocesses. |
-| C22 | A deliberate oracle mismatch exits 1 and prints `INVALID EXPERIMENT (CORRECTNESS DEFECT: ORACLE MISMATCH)` | CONFIRMED | `logs/result-rejection.stdout`: 11 oracle cases, each "rejected with exit 1 and required diagnostic". |
+| C22 | A deliberate oracle mismatch exits 1 and prints `INVALID EXPERIMENT (CORRECTNESS DEFECT: ORACLE MISMATCH)` | CONFIRMED | `transcripts/result-rejection.stdout`: 11 oracle cases, each "rejected with exit 1 and required diagnostic". |
 | C23 | The parent smoke transcript says "Negative tests passed: both oracle mismatch and budget overflow fail closed." | NOT REPRODUCED | Current smoke text is "Checking deliberate 5-D oracle corruption fixtures" and "process rejection checks are registered separately in CTest." The fail-closed behavior itself is C22 and C24. |
 
 ### Section 5 — accounting
@@ -134,7 +134,7 @@ Status meanings: **CONFIRMED** means this run's execution, git object, or source
 
 | ID | Claim | Status | Evidence |
 |---|---|---|---|
-| C31 | A fresh parent smoke execution on this host prints 179 / 1000 | CONFIRMED | `logs/smoke.stdout`. |
+| C31 | A fresh parent smoke execution on this host prints 179 / 1000 | CONFIRMED | `transcripts/smoke.stdout`. |
 | C32 | The JSON's 179 trials and counters are a retained historical artifact, not a newly written campaign, and publication SHA omission is valid | CONFIRMED | This run did not rewrite the JSON. `evidence_publication_sha` is absent. Positive validation exited 0. The negative suite accepts omission and one valid SHA. |
 | C33 | Tier 1 smoke figures on this GCC run match the figures quoted in section 7 | CONFIRMED | Ternary `f_gen\|0=0.243243`, `f_occ=0.29`, mean run `1.61111`. Binary `f_gen\|0=0.272727`, `f_occ=0.47`, mean run `3.13333`. |
 | C34 | The validator success sentence is `conforms to t81.scg08.carry-experiment.v1` | NOT REPRODUCED | Current sentence, normal and `-O`: `passes supported schema checks and domain rules for t81.scg08.carry-experiment.v1`. Exit code is still 0. |
@@ -171,7 +171,7 @@ Status meanings: **CONFIRMED** means this run's execution, git object, or source
 ## What was left untested
 
 - Gate 2, including any 136,500-sequence campaign, cluster-robust variance, latency distribution, or hardware timing.
-- Every CTest or unittest duration. The retained CTest transcript in `logs/ctest.stdout` has the elapsed column removed. The driver summary keeps `Ran 3 tests` and `OK` and drops the duration clause.
+- Every CTest or unittest duration. The retained CTest transcript in `transcripts/ctest.stdout` has the elapsed column removed. The driver summary keeps `Ran 3 tests` and `OK` and drops the duration clause.
 - The macOS clang reconciliation, its three log hashes, and any claim that depends on Apple libc++.
 - Authentication of the null `evidence_generation_sha`.
 - A second configure with `T81_USE_CXX23=OFF`.
