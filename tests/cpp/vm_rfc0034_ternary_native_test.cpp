@@ -11,8 +11,8 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cstring>
 #include <cstdint>
+#include <cstring>
 #include <memory>
 
 namespace {
@@ -211,12 +211,12 @@ int test_tact_quarantine_gate() {
   T81_TEST_CHECK(res.error() == t81::vm::Trap::SecurityFault);
   T81_TEST_CHECK(vm->state().contexts[0].pc == 2);
   T81_TEST_CHECK(vm->state().contexts[0].register_tags[3] != t81::vm::ValueTag::TensorHandle);
-  T81_TEST_CHECK(std::any_of(vm->state().axion_log.begin(), vm->state().axion_log.end(),
-                             [](const auto& ev) {
-                               return ev.opcode == t81::tisc::Opcode::TACT &&
-                                      ev.verdict.kind == t81::axion::VerdictKind::Quarantine &&
-                                      ev.verdict.reason.find("Quarantine") != std::string::npos;
-                             }));
+  T81_TEST_CHECK(
+      std::any_of(vm->state().axion_log.begin(), vm->state().axion_log.end(), [](const auto& ev) {
+        return ev.opcode == t81::tisc::Opcode::TACT &&
+               ev.verdict.kind == t81::axion::VerdictKind::Quarantine &&
+               ev.verdict.reason.find("Quarantine") != std::string::npos;
+      }));
   return 0;
 }
 
@@ -250,12 +250,12 @@ int test_tact_deny_after_quarantine() {
   T81_TEST_CHECK(!second.has_value());
   T81_TEST_CHECK(second.error() == t81::vm::Trap::ActivationFault);
   T81_TEST_CHECK(vm->state().contexts[0].pc == 2);
-  T81_TEST_CHECK(std::any_of(vm->state().axion_log.begin(), vm->state().axion_log.end(),
-                             [](const auto& ev) {
-                               return ev.opcode == t81::tisc::Opcode::TACT &&
-                                      ev.verdict.kind == t81::axion::VerdictKind::Deny &&
-                                      ev.verdict.reason.find("Deny") != std::string::npos;
-                             }));
+  T81_TEST_CHECK(
+      std::any_of(vm->state().axion_log.begin(), vm->state().axion_log.end(), [](const auto& ev) {
+        return ev.opcode == t81::tisc::Opcode::TACT &&
+               ev.verdict.kind == t81::axion::VerdictKind::Deny &&
+               ev.verdict.reason.find("Deny") != std::string::npos;
+      }));
   return 0;
 }
 
@@ -272,9 +272,9 @@ int test_wload_allowed_ternary_model_hashes() {
   t81::tisc::Program p;
   p.weights_model = make_ternary_weights_model(native, "deadbeef");
   p.symbol_pool.push_back("ternary.w");
-  p.axion_policy_text =
-      "(policy (tier 2)"
-      "  (allowed-ternary-model-hashes [\"sha3-512:deadbeef\"]))";
+  p.axion_policy_text = "(policy (tier 2)"
+                        "  (allowed-tensor-hashes [\"ternary.w\"])"
+                        "  (allowed-ternary-model-hashes [\"sha3-512:deadbeef\"]))";
 
   p.insns.push_back({t81::tisc::Opcode::WeightsLoad, 1, 1, 0});
   p.insns.push_back({t81::tisc::Opcode::LoadImm, 2, 0, 0});
@@ -302,9 +302,9 @@ int test_wload_denies_non_whitelisted_ternary_model_hash() {
   t81::tisc::Program p;
   p.weights_model = make_ternary_weights_model(native, "deadbeef");
   p.symbol_pool.push_back("ternary.w");
-  p.axion_policy_text =
-      "(policy (tier 2)"
-      "  (allowed-ternary-model-hashes [\"sha3-512:cafebabe\"]))";
+  p.axion_policy_text = "(policy (tier 2)"
+                        "  (allowed-tensor-hashes [\"ternary.w\"])"
+                        "  (allowed-ternary-model-hashes [\"sha3-512:cafebabe\"]))";
 
   p.insns.push_back({t81::tisc::Opcode::WeightsLoad, 1, 1, 0});
   p.insns.push_back({t81::tisc::Opcode::LoadImm, 2, 0, 0});
@@ -316,13 +316,12 @@ int test_wload_denies_non_whitelisted_ternary_model_hash() {
   auto res = vm->run_to_halt();
   T81_TEST_CHECK(!res.has_value());
   T81_TEST_CHECK(res.error() == t81::vm::Trap::SecurityFault);
-  T81_TEST_CHECK(std::any_of(vm->state().axion_log.begin(), vm->state().axion_log.end(),
-                             [](const auto& ev) {
-                               return ev.opcode == t81::tisc::Opcode::WLOAD &&
-                                      ev.verdict.kind == t81::axion::VerdictKind::Deny &&
-                                      ev.verdict.reason.find("allowed-ternary-model-hashes") !=
-                                          std::string::npos;
-                             }));
+  T81_TEST_CHECK(
+      std::any_of(vm->state().axion_log.begin(), vm->state().axion_log.end(), [](const auto& ev) {
+        return ev.opcode == t81::tisc::Opcode::WLOAD &&
+               ev.verdict.kind == t81::axion::VerdictKind::Deny &&
+               ev.verdict.reason.find("allowed-ternary-model-hashes") != std::string::npos;
+      }));
   return 0;
 }
 
@@ -340,9 +339,9 @@ int test_promote_to_tensor_denies_non_whitelisted_ternary_model_hash() {
   p.weights_model = make_ternary_weights_model(native, "deadbeef");
   p.symbol_pool.push_back("ternary.w");
   p.tensor_pool.push_back(t81::T729DynamicTensor({2, 2}, {1.0f, 0.0f, -1.0f, 1.0f}));
-  p.axion_policy_text =
-      "(policy (tier 2)"
-      "  (allowed-ternary-model-hashes [\"sha3-512:cafebabe\"]))";
+  p.axion_policy_text = "(policy (tier 2)"
+                        "  (allowed-tensor-hashes [\"ternary.w\"])"
+                        "  (allowed-ternary-model-hashes [\"sha3-512:cafebabe\"]))";
 
   p.insns.push_back(load_tensor(1, 1));
   p.insns.push_back({t81::tisc::Opcode::WeightsLoad, 2, 1, 0});
@@ -354,13 +353,12 @@ int test_promote_to_tensor_denies_non_whitelisted_ternary_model_hash() {
   auto res = vm->run_to_halt();
   T81_TEST_CHECK(!res.has_value());
   T81_TEST_CHECK(res.error() == t81::vm::Trap::SecurityFault);
-  T81_TEST_CHECK(std::any_of(vm->state().axion_log.begin(), vm->state().axion_log.end(),
-                             [](const auto& ev) {
-                               return ev.opcode == t81::tisc::Opcode::TMatMul &&
-                                      ev.verdict.kind == t81::axion::VerdictKind::Deny &&
-                                      ev.verdict.reason.find("allowed-ternary-model-hashes") !=
-                                          std::string::npos;
-                             }));
+  T81_TEST_CHECK(
+      std::any_of(vm->state().axion_log.begin(), vm->state().axion_log.end(), [](const auto& ev) {
+        return ev.opcode == t81::tisc::Opcode::TMatMul &&
+               ev.verdict.kind == t81::axion::VerdictKind::Deny &&
+               ev.verdict.reason.find("allowed-ternary-model-hashes") != std::string::npos;
+      }));
   return 0;
 }
 
@@ -378,9 +376,9 @@ int test_twmatmul_denies_non_whitelisted_ternary_model_hash() {
   p.weights_model = make_ternary_weights_model(native, "deadbeef");
   p.symbol_pool.push_back("ternary.w");
   p.tensor_pool.push_back(t81::T729DynamicTensor({2, 2}, {1.0f, 0.0f, -1.0f, 1.0f}));
-  p.axion_policy_text =
-      "(policy (tier 2)"
-      "  (allowed-ternary-model-hashes [\"sha3-512:cafebabe\"]))";
+  p.axion_policy_text = "(policy (tier 2)"
+                        "  (allowed-tensor-hashes [\"ternary.w\"])"
+                        "  (allowed-ternary-model-hashes [\"sha3-512:cafebabe\"]))";
 
   p.insns.push_back(load_tensor(1, 1));
   p.insns.push_back({t81::tisc::Opcode::WeightsLoad, 2, 1, 0});
@@ -392,13 +390,12 @@ int test_twmatmul_denies_non_whitelisted_ternary_model_hash() {
   auto res = vm->run_to_halt();
   T81_TEST_CHECK(!res.has_value());
   T81_TEST_CHECK(res.error() == t81::vm::Trap::SecurityFault);
-  T81_TEST_CHECK(std::any_of(vm->state().axion_log.begin(), vm->state().axion_log.end(),
-                             [](const auto& ev) {
-                               return ev.opcode == t81::tisc::Opcode::TWMATMUL &&
-                                      ev.verdict.kind == t81::axion::VerdictKind::Deny &&
-                                      ev.verdict.reason.find("allowed-ternary-model-hashes") !=
-                                          std::string::npos;
-                             }));
+  T81_TEST_CHECK(
+      std::any_of(vm->state().axion_log.begin(), vm->state().axion_log.end(), [](const auto& ev) {
+        return ev.opcode == t81::tisc::Opcode::TWMATMUL &&
+               ev.verdict.kind == t81::axion::VerdictKind::Deny &&
+               ev.verdict.reason.find("allowed-ternary-model-hashes") != std::string::npos;
+      }));
   return 0;
 }
 
@@ -418,9 +415,9 @@ int test_wload_ternary_weight_domain_check() {
   t81::tisc::Program p;
   p.weights_model = make_ternary_weights_model(native, "feedface");
   p.symbol_pool.push_back("ternary.w");
-  p.axion_policy_text =
-      "(policy (tier 2)"
-      "  (ternary-weight-domain-check true))";
+  p.axion_policy_text = "(policy (tier 2)"
+                        "  (allowed-tensor-hashes [\"ternary.w\"])"
+                        "  (ternary-weight-domain-check true))";
 
   p.insns.push_back({t81::tisc::Opcode::WeightsLoad, 1, 1, 0});
   p.insns.push_back({t81::tisc::Opcode::LoadImm, 2, 0, 0});
@@ -432,13 +429,12 @@ int test_wload_ternary_weight_domain_check() {
   auto res = vm->run_to_halt();
   T81_TEST_CHECK(!res.has_value());
   T81_TEST_CHECK(res.error() == t81::vm::Trap::SecurityFault);
-  T81_TEST_CHECK(std::any_of(vm->state().axion_log.begin(), vm->state().axion_log.end(),
-                             [](const auto& ev) {
-                               return ev.opcode == t81::tisc::Opcode::WLOAD &&
-                                      ev.verdict.kind == t81::axion::VerdictKind::Deny &&
-                                      ev.verdict.reason.find("ternary-weight-domain-check") !=
-                                          std::string::npos;
-                             }));
+  T81_TEST_CHECK(
+      std::any_of(vm->state().axion_log.begin(), vm->state().axion_log.end(), [](const auto& ev) {
+        return ev.opcode == t81::tisc::Opcode::WLOAD &&
+               ev.verdict.kind == t81::axion::VerdictKind::Deny &&
+               ev.verdict.reason.find("ternary-weight-domain-check") != std::string::npos;
+      }));
   return 0;
 }
 
@@ -455,9 +451,9 @@ int test_wload_ternary_weight_domain_check_disabled() {
   t81::tisc::Program p;
   p.weights_model = make_ternary_weights_model(native, "feedface");
   p.symbol_pool.push_back("ternary.w");
-  p.axion_policy_text =
-      "(policy (tier 2)"
-      "  (ternary-weight-domain-check false))";
+  p.axion_policy_text = "(policy (tier 2)"
+                        "  (allowed-tensor-hashes [\"ternary.w\"])"
+                        "  (ternary-weight-domain-check false))";
 
   p.insns.push_back({t81::tisc::Opcode::WeightsLoad, 1, 1, 0});
   p.insns.push_back({t81::tisc::Opcode::LoadImm, 2, 0, 0});

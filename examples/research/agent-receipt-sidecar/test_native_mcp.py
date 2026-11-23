@@ -16,6 +16,257 @@ ROOT_DIR = Path(__file__).resolve().parents[3]
 T81_BIN = os.environ.get("T81_BIN", str(ROOT_DIR / "build" / "t81"))
 
 
+def _sha3_512(data: bytes) -> str:
+    return "sha3-512:" + hashlib.sha3_512(data).hexdigest()
+
+
+def _rpc(proc: subprocess.Popen, payload: dict | bytes) -> dict:
+    if isinstance(payload, dict):
+        line = json.dumps(payload).encode() + b"\n"
+    else:
+        line = payload if payload.endswith(b"\n") else payload + b"\n"
+    assert proc.stdin is not None and proc.stdout is not None
+    proc.stdin.write(line)
+    proc.stdin.flush()
+    raw = proc.stdout.readline()
+    assert raw, "mcp serve closed stdout"
+    return json.loads(raw.decode())
+
+
+def _refuse_path(
+    proc: subprocess.Popen,
+    path: str | bytes,
+    secret_hash: str,
+    request_id: int,
+    *,
+    outside: bool = True,
+) -> None:
+    if isinstance(path, bytes):
+        # Raw JSON so unknown escapes and embedded NUL reach the server parser.
+        body = (
+            b'{"jsonrpc":"2.0","id":'
+            + str(request_id).encode()
+            + b',"method":"tools/call","params":{"name":"t81.determinism_hash","arguments":{"path":"'
+            + path
+            + b'"}}}'
+        )
+        response = _rpc(proc, body)
+    else:
+        response = _rpc(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "method": "tools/call",
+                "params": {"name": "t81.determinism_hash", "arguments": {"path": path}},
+            },
+        )
+    structured = response["result"]["structured"]
+    assert not structured["ok"], structured
+    assert structured.get("sha3_512") != secret_hash
+    error = structured.get("error", "")
+    if outside:
+        assert "outside the MCP filesystem root" in error, structured
+    else:
+        assert "outside the MCP filesystem root" in error or "could not" in error, structured
+
+
+def check_path_confinement() -> None:
+    """Refuse symlink, .., absolute, prefix, encoded, and NUL escapes."""
+    with tempfile.TemporaryDirectory() as td:
+        base = Path(td)
+        primary = base / "workspace"
+        secondary = base / "secondary"
+        sibling = base / "workspace-evil"
+        nested = primary / "nested"
+        for directory in (primary, secondary, sibling, nested):
+            directory.mkdir()
+        secret = sibling / "secret.bin"
+        secret_bytes = b"secret-outside-root"
+        secret.write_bytes(secret_bytes)
+        secret_hash = _sha3_512(secret_bytes)
+        inside = nested / "ok.txt"
+        inside_bytes = b"inside-root"
+        inside.write_bytes(inside_bytes)
+        literal_dotdot = primary / "%2e%2e"
+        literal_dotdot.write_bytes(b"literal-percent-name")
+        secondary_file = secondary / "only-secondary.txt"
+        secondary_file.write_bytes(b"second-root")
+        (sibling / "bucket").mkdir()
+
+        proc = subprocess.Popen(
+            [T81_BIN, "mcp", "serve", "--root", str(primary), "--root", str(secondary)],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+        )
+        try:
+            init = _rpc(proc, {"jsonrpc": "2.0", "id": 1, "method": "initialize"})
+            assert init["result"]["serverInfo"]["name"] == "t81-native-mcp"
+
+            allowed = _rpc(
+                proc,
+                {
+                    "jsonrpc": "2.0",
+                    "id": 2,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "t81.determinism_hash",
+                        "arguments": {"path": str(primary) + "/nested/../nested/ok.txt"},
+                    },
+                },
+            )["result"]["structured"]
+            assert allowed["ok"] and allowed["sha3_512"] == _sha3_512(inside_bytes)
+
+            absolute_inside = _rpc(
+                proc,
+                {
+                    "jsonrpc": "2.0",
+                    "id": 3,
+                    "method": "tools/call",
+                    "params": {"name": "t81.determinism_hash", "arguments": {"path": str(inside)}},
+                },
+            )["result"]["structured"]
+            assert absolute_inside["ok"] and absolute_inside["sha3_512"] == _sha3_512(inside_bytes)
+
+            literal = _rpc(
+                proc,
+                {
+                    "jsonrpc": "2.0",
+                    "id": 4,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "t81.determinism_hash",
+                        "arguments": {"path": "%2e%2e"},
+                    },
+                },
+            )["result"]["structured"]
+            assert literal["ok"] and literal["sha3_512"] == _sha3_512(b"literal-percent-name")
+
+            second = _rpc(
+                proc,
+                {
+                    "jsonrpc": "2.0",
+                    "id": 5,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "t81.determinism_hash",
+                        "arguments": {"path": str(secondary_file)},
+                    },
+                },
+            )["result"]["structured"]
+            assert second["ok"] and second["sha3_512"] == _sha3_512(b"second-root")
+
+            relative_second = _rpc(
+                proc,
+                {
+                    "jsonrpc": "2.0",
+                    "id": 6,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "t81.determinism_hash",
+                        "arguments": {"path": "only-secondary.txt"},
+                    },
+                },
+            )["result"]["structured"]
+            assert not relative_second["ok"]
+            assert relative_second.get("sha3_512") != _sha3_512(b"second-root")
+
+            request_id = 7
+            for escaped in (
+                str(secret),
+                "../workspace-evil/secret.bin",
+                "nested/../../workspace-evil/secret.bin",
+                str(primary) + "/../workspace-evil/secret.bin",
+                str(sibling / "secret.bin"),
+            ):
+                _refuse_path(proc, escaped, secret_hash, request_id)
+                request_id += 1
+            for encoded in (
+                "%2e%2e/workspace-evil/secret.bin",
+                "%2e%2e%2fworkspace-evil%2fsecret.bin",
+            ):
+                _refuse_path(proc, encoded, secret_hash, request_id, outside=False)
+                request_id += 1
+
+            link = primary / "escape.link"
+            link.symlink_to(secret)
+            _refuse_path(proc, str(link), secret_hash, request_id)
+            request_id += 1
+            dir_link = primary / "out-dir"
+            dir_link.symlink_to(sibling, target_is_directory=True)
+            _refuse_path(proc, str(dir_link / "secret.bin"), secret_hash, request_id)
+            request_id += 1
+            nested_link = nested / "loop"
+            nested_link.symlink_to(nested, target_is_directory=True)
+            _refuse_path(
+                proc,
+                str(primary) + "/nested/loop/../../workspace-evil/secret.bin",
+                secret_hash,
+                request_id,
+            )
+            request_id += 1
+
+            # Unknown JSON escapes collapse to the escaped character, so this is `..`.
+            _refuse_path(proc, b"\\..\\/workspace-evil/secret.bin", secret_hash, request_id)
+            request_id += 1
+            nul = _rpc(
+                proc,
+                b'{"jsonrpc":"2.0","id":'
+                + str(request_id).encode()
+                + b',"method":"tools/call","params":{"name":"t81.determinism_hash","arguments":{"path":"nested/ok.txt\x00/../../workspace-evil/secret.bin"}}}',
+            )["result"]["structured"]
+            assert not nul["ok"], nul
+            assert nul.get("sha3_512") != secret_hash
+            assert "could not resolve path" in nul.get("error", ""), nul
+            request_id += 1
+
+            bucket_link = primary / "bucket-link"
+            bucket_link.symlink_to(sibling / "bucket", target_is_directory=True)
+            kept = primary / "keep.txt"
+            kept.write_bytes(b"keep-me")
+            tx = _rpc(
+                proc,
+                {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "t81.tx_begin",
+                        "arguments": {
+                            "target_path": str(kept),
+                            "backup_dir": str(bucket_link),
+                        },
+                    },
+                },
+            )["result"]["structured"]
+            assert not tx["ok"], tx
+            assert list((sibling / "bucket").iterdir()) == []
+            request_id += 1
+            pwned = sibling / "pwned.txt"
+            missed = _rpc(
+                proc,
+                {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "t81.tx_begin",
+                        "arguments": {
+                            "target_path": "../workspace-evil/secret.bin",
+                            "backup_dir": "nested",
+                        },
+                    },
+                },
+            )["result"]["structured"]
+            assert not missed["ok"], missed
+            assert not pwned.exists()
+            assert secret.read_bytes() == secret_bytes
+        finally:
+            if proc.stdin:
+                proc.stdin.close()
+            proc.wait(timeout=5)
+
+
 def main() -> int:
     version_output = subprocess.check_output([T81_BIN, "--version"], text=True)
     version_line = version_output.partition("\n")[0]
@@ -23,6 +274,7 @@ def main() -> int:
     if not version_line.startswith(prefix) or not version_line[len(prefix):].strip():
         raise RuntimeError(f"Unexpected t81 --version output: {version_line!r}")
     cli_version = version_line[len(prefix):].strip()
+    check_path_confinement()
 
     with tempfile.TemporaryDirectory() as td:
         tmp = Path(td)

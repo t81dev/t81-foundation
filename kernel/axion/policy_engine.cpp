@@ -256,8 +256,11 @@ Verdict PolicyEngine::evaluate_internal(const SyscallContext& ctx) {
     return Verdict{VerdictKind::Allow, "Axion policy engine (no policy)"};
   }
   if (ctx.next_opcode == t81::tisc::Opcode::WeightsLoad) {
-    const bool allowlist_empty = policy_->allowed_tensor_hashes.empty() &&
-                                 policy_->allowed_ternary_model_hashes.empty();
+    // A model checksum admits this opcode only when it equals the tensor name.
+    // An empty payload is the pre-dispatch check, which does not know the name yet.
+    // The interpreter denies an empty name itself and repeats this check with the name.
+    const bool allowlist_empty =
+        policy_->allowed_tensor_hashes.empty() && policy_->allowed_ternary_model_hashes.empty();
     if (allowlist_empty) {
       return Verdict{VerdictKind::Deny, "WeightsLoad denied (allowed-tensor-hashes empty)"};
     }

@@ -307,6 +307,11 @@ struct PathJail {
       last_error = "empty path";
       return false;
     }
+    const auto native = input.native();
+    if (std::find(native.begin(), native.end(), fs::path::value_type{}) != native.end()) {
+      last_error = "could not resolve path";
+      return false;
+    }
     std::error_code ec;
     fs::path abs = input;
     if (abs.is_relative()) {
@@ -327,6 +332,14 @@ struct PathJail {
     }
     canonical = canon;
     return true;
+  }
+
+  bool resolve(const std::string& input, fs::path& canonical) const {
+    if (input.find('\0') != std::string::npos) {
+      last_error = "could not resolve path";
+      return false;
+    }
+    return resolve(fs::path(input), canonical);
   }
 };
 
@@ -405,7 +418,8 @@ bool read_file_bytes(const PathJail& jail, const fs::path& path, std::vector<uin
   return true;
 }
 
-bool write_file_bytes(const PathJail& jail, const fs::path& path, const std::vector<uint8_t>& data) {
+bool write_file_bytes(const PathJail& jail, const fs::path& path,
+                      const std::vector<uint8_t>& data) {
   fs::path canonical;
   if (!jail.resolve(path, canonical)) return false;
   std::ofstream ofs(canonical, std::ios::binary | std::ios::trunc);
@@ -422,6 +436,25 @@ bool write_file_bytes(const PathJail& jail, const fs::path& path, const std::vec
     return false;
   }
   return true;
+}
+
+bool path_text_has_nul(const std::string& path) { return path.find('\0') != std::string::npos; }
+
+bool read_file_bytes(const PathJail& jail, const std::string& path, std::vector<uint8_t>& out) {
+  if (path_text_has_nul(path)) {
+    jail.last_error = "could not resolve path";
+    return false;
+  }
+  return read_file_bytes(jail, fs::path(path), out);
+}
+
+bool write_file_bytes_atomic(const PathJail& jail, const std::string& path,
+                             const std::vector<uint8_t>& data) {
+  if (path_text_has_nul(path)) {
+    jail.last_error = "could not resolve path";
+    return false;
+  }
+  return write_file_bytes_atomic(jail, fs::path(path), data);
 }
 
 std::string io_failure_json(const PathJail& jail, std::string_view fallback) {
@@ -460,8 +493,7 @@ bool action_type_token(std::string_view text) {
 }
 
 void skip_policy_ws(std::string_view text, size_t& index) {
-  while (index < text.size() &&
-         std::isspace(static_cast<unsigned char>(text[index]))) {
+  while (index < text.size() && std::isspace(static_cast<unsigned char>(text[index]))) {
     ++index;
   }
 }
@@ -476,7 +508,8 @@ bool consume_literal(std::string_view text, size_t& index, std::string_view lite
 
 // First structured `(require-axion-event (reason "<prefix><mode>"))` clause wins.
 // A bare mention of `enforcement-mode:observe-only` in a comment or another string does not.
-std::optional<std::string> match_reason_mode(std::string_view text, std::string_view reason_prefix) {
+std::optional<std::string> match_reason_mode(std::string_view text,
+                                             std::string_view reason_prefix) {
   static constexpr std::string_view kHead = "(require-axion-event";
   static constexpr std::string_view kModes[] = {"observe-only", "fail-closed", "warn"};
   size_t search = 0;
@@ -500,8 +533,7 @@ std::optional<std::string> match_reason_mode(std::string_view text, std::string_
     }
     std::optional<std::string> mode;
     for (const std::string_view candidate : kModes) {
-      if (text.substr(index).starts_with(candidate) &&
-          index + candidate.size() < text.size() &&
+      if (text.substr(index).starts_with(candidate) && index + candidate.size() < text.size() &&
           text[index + candidate.size()] == '"') {
         mode = std::string(candidate);
         index += candidate.size();
@@ -545,7 +577,8 @@ std::string trim_ws(std::string s) {
   return s;
 }
 
-std::string read_git_head_sha(const PathJail& jail, const fs::path& repo_root, std::string& ref_out) {
+std::string read_git_head_sha(const PathJail& jail, const fs::path& repo_root,
+                              std::string& ref_out) {
   fs::path head_path;
   if (!jail.resolve(repo_root / ".git" / "HEAD", head_path)) return "unknown";
   std::ifstream ifs(head_path);
@@ -622,7 +655,8 @@ std::string build_tools_list_json() {
          "\"string\"}}}},"
 
          "{\"name\":\"t81.tx_commit\","
-         "\"description\":\"Commit an active file transaction after a required .apl policy check on "
+         "\"description\":\"Commit an active file transaction after a required .apl policy check "
+         "on "
          "the mutated artifact.\","
          "\"inputSchema\":{\"type\":\"object\",\"required\":[\"tx_id\",\"policy_path\"],"
          "\"properties\":{\"tx_id\":{\"type\":\"string\"},\"policy_path\":{\"type\":\"string\"}}}},"
@@ -1005,24 +1039,25 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         if (!jail.resolve(requested, root)) {
           structured = io_failure_json(jail, "path is outside the MCP filesystem root");
         } else {
-        std::string git_ref;
-        const std::string head_sha = read_git_head_sha(jail, root, git_ref);
-        const fs::path lock_path = root / "docs" / "governance" / "PUBLIC_API_LOCK.json";
-        const fs::path reg_path = root / "docs" / "governance" / "DETERMINISM_SURFACE_REGISTRY.md";
-        std::vector<uint8_t> lock_bytes;
-        const bool lock_ok = read_file_bytes(jail, lock_path, lock_bytes);
-        fs::path reg_canon;
-        std::error_code reg_ec;
-        const bool reg_ok =
-            jail.resolve(reg_path, reg_canon) && fs::is_regular_file(reg_canon, reg_ec);
-        structured =
-            std::string("{\"ok\":true,\"version\":\"") + T81_VERSION_STR + "\",\"repo_root\":\"" +
-            json_escape_mcp(root.string()) + "\",\"git_ref\":\"" + json_escape_mcp(git_ref) +
-            "\",\"git_head_sha\":\"" + json_escape_mcp(head_sha) +
-            "\",\"public_api_lock_present\":" + (lock_ok ? "true" : "false") +
-            ",\"public_api_lock_sha3_512\":\"" + (lock_ok ? sha3_512_hex(lock_bytes) : "") +
-            "\",\"determinism_registry_present\":" + (reg_ok ? "true" : "false") +
-            ",\"native_mcp_tools\":15,\"capabilities\":" + detect_host_capabilities_json() + "}";
+          std::string git_ref;
+          const std::string head_sha = read_git_head_sha(jail, root, git_ref);
+          const fs::path lock_path = root / "docs" / "governance" / "PUBLIC_API_LOCK.json";
+          const fs::path reg_path =
+              root / "docs" / "governance" / "DETERMINISM_SURFACE_REGISTRY.md";
+          std::vector<uint8_t> lock_bytes;
+          const bool lock_ok = read_file_bytes(jail, lock_path, lock_bytes);
+          fs::path reg_canon;
+          std::error_code reg_ec;
+          const bool reg_ok =
+              jail.resolve(reg_path, reg_canon) && fs::is_regular_file(reg_canon, reg_ec);
+          structured =
+              std::string("{\"ok\":true,\"version\":\"") + T81_VERSION_STR + "\",\"repo_root\":\"" +
+              json_escape_mcp(root.string()) + "\",\"git_ref\":\"" + json_escape_mcp(git_ref) +
+              "\",\"git_head_sha\":\"" + json_escape_mcp(head_sha) +
+              "\",\"public_api_lock_present\":" + (lock_ok ? "true" : "false") +
+              ",\"public_api_lock_sha3_512\":\"" + (lock_ok ? sha3_512_hex(lock_bytes) : "") +
+              "\",\"determinism_registry_present\":" + (reg_ok ? "true" : "false") +
+              ",\"native_mcp_tools\":15,\"capabilities\":" + detect_host_capabilities_json() + "}";
         }
       } else if (name == "t81.tx_begin") {
         const std::string tpath = arg_str(args, "target_path");
@@ -1039,19 +1074,19 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           if (!jail.resolve(tpath, target_canon) || !jail.resolve(bdir, backup_root)) {
             structured = io_failure_json(jail, "path is outside the MCP filesystem root");
           } else {
-          std::error_code ec;
-          fs::create_directories(backup_root, ec);
-          const std::string tx_id = "tx-" + std::to_string(++tx_counter);
-          const fs::path bpath = backup_root / (tx_id + ".bak");
-          if (ec || !write_file_bytes(jail, bpath, bytes)) {
-            structured = io_failure_json(jail, "could not write transaction backup");
-          } else {
-            const std::string before_sha = sha3_512_hex(bytes);
-            active_txs[tx_id] = ActiveTx{tx_id, target_canon, bpath, before_sha};
-            structured = "{\"ok\":true,\"tx_id\":\"" + tx_id + "\",\"before_sha3_512\":\"" +
-                         before_sha + "\",\"backup_path\":\"" + json_escape_mcp(bpath.string()) +
-                         "\"}";
-          }
+            std::error_code ec;
+            fs::create_directories(backup_root, ec);
+            const std::string tx_id = "tx-" + std::to_string(++tx_counter);
+            const fs::path bpath = backup_root / (tx_id + ".bak");
+            if (ec || !write_file_bytes(jail, bpath, bytes)) {
+              structured = io_failure_json(jail, "could not write transaction backup");
+            } else {
+              const std::string before_sha = sha3_512_hex(bytes);
+              active_txs[tx_id] = ActiveTx{tx_id, target_canon, bpath, before_sha};
+              structured = "{\"ok\":true,\"tx_id\":\"" + tx_id + "\",\"before_sha3_512\":\"" +
+                           before_sha + "\",\"backup_path\":\"" + json_escape_mcp(bpath.string()) +
+                           "\"}";
+            }
           }
         }
       } else if (name == "t81.tx_abort") {
@@ -1097,7 +1132,8 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
               std::vector<uint8_t> pbytes;
               if (!read_file_bytes(jail, ppath, pbytes)) {
                 policy_ok = false;
-                policy_err = jail.last_error.empty() ? "could not read policy_path" : jail.last_error;
+                policy_err =
+                    jail.last_error.empty() ? "could not read policy_path" : jail.last_error;
               } else {
                 std::string ptext(pbytes.begin(), pbytes.end());
                 auto pres = t81::axion::parse_policy(ptext);
@@ -1531,8 +1567,8 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
 
             bool wrote_ok = false;
             if (within_budget) {
-              wrote_ok =
-                  write_file_bytes_atomic(jail, op_path, op) && write_file_bytes_atomic(jail, on_path, on);
+              wrote_ok = write_file_bytes_atomic(jail, op_path, op) &&
+                         write_file_bytes_atomic(jail, on_path, on);
             }
             const bool ok = within_budget && wrote_ok;
             const std::string verdict =
