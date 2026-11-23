@@ -57,10 +57,11 @@ Do not expand subsystem count casually. Favor finishing existing lanes over star
 
 These areas have enough implementation and test weight to extend carefully:
 
-- CLI/runtime path
-- core deterministic VM/data surfaces
+- CLI/runtime path (including the standalone 15-tool native C++ MCP server `t81 mcp serve`)
+- core deterministic VM/data surfaces (including Dual-Rail `(P, N)` `TMatMul` and `SBDR1T2D` CanonFS weight caching)
 - Axion policy concepts
 - CanonFS interchange contracts and schemas
+- Python SDK under `ffi/python/t81/` (packaged via `pyproject.toml`, `CPython 3.9–3.14`)
 - accepted RFC surfaces already referenced by tests, docs, and CI
 
 ## Draft Or Design-Led Areas
