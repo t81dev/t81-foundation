@@ -1353,21 +1353,67 @@ def run_self_test() -> int:
         )["status"]
         == "REJECTED_FALLBACK_NONZERO"
     )
+    assert (
+        ledger.evaluate_candidate(
+            RoutingCandidate("SYNTH-ORACLE-ERR", "R1_ternary_act", "GPU_R1_BitmaskSkip_Pop", "err", 3.0, 1.5, 1, "none", "err"),
+            valid_receipts,
+        )["status"]
+        == "REJECTED_ORACLE_ERROR"
+    )
 
-    # 4. Verify live prior-backed route recommendations
+    # Phase 3: Minimal TernaryOS Boot-to-Receipt Contract verification (TERNARYOS-BOOT-RECEIPT-01)
+    boot_image_sha3 = "sha3-512:" + hashlib.sha3_512(b"ternaryos-aarch64-enclave-v0.1-deterministic").hexdigest()
+    policy_root_sha3 = "sha3-512:" + hashlib.sha3_512(
+        f'(policy\n  (tier 1)\n  (allowed-tensor-hashes ["{bitnet_weight_sha3}"]))\n'.encode("utf-8")
+    ).hexdigest()
+    def _boot_receipt(run_res: dict[str, Any]) -> str:
+        payload = (
+            f"{boot_image_sha3}|{policy_root_sha3}|{bitnet_weight_sha3}|"
+            f"{run_res['execution_receipt']}|{bitnet_route}|k_star_prepacked={k_star_prepacked}"
+        )
+        return "sha3-512:" + hashlib.sha3_512(payload.encode("utf-8")).hexdigest()
+
+    boot_rec_1 = _boot_receipt(bitnet_run1)
+    boot_rec_2 = _boot_receipt(bitnet_run2)
+    assert boot_rec_1 == boot_rec_2
+    r_boot_ok = ledger.evaluate_candidate(
+        RoutingCandidate(
+            experiment_id="TERNARYOS-BOOT-RECEIPT-01",
+            regime="R1_ternary_act",
+            kernel=bitnet_route,
+            scope="Minimal TernaryOS boot-to-receipt contract (boot -> Axion+CanonFS -> T81VM -> SHA3-512)",
+            measured_speedup=1.00,
+            min_speedup_threshold=1.00,
+            max_abs_err=max(bitnet_pack_err, bitnet_max_abs_err),
+            constraint_tag="none",
+            note=f"Deterministic boot-to-receipt chain verified across 2 fresh sessions: {boot_rec_1}",
+        ),
+        bitnet_receipts,
+    )
+    assert r_boot_ok["status"] == "ACCEPTED_CONFIRMED"
+
+    # 4. Verify live prior-backed route recommendations (incl. exact M=1 s=89/90 & s=74/75 thresholds)
     recommendations = {
         "R1_M1_s90": ledger.recommend_route("R1_ternary_act", batch_m=1, sparsity_pct=90),
+        "R1_M1_s89": ledger.recommend_route("R1_ternary_act", batch_m=1, sparsity_pct=89),
         "R1_M1_s75": ledger.recommend_route("R1_ternary_act", batch_m=1, sparsity_pct=75),
+        "R1_M1_s74": ledger.recommend_route("R1_ternary_act", batch_m=1, sparsity_pct=74),
         "R1_M1_s50": ledger.recommend_route("R1_ternary_act", batch_m=1, sparsity_pct=50),
         "R1_M4_s90": ledger.recommend_route("R1_ternary_act", batch_m=4, sparsity_pct=90),
+        "R1_M4_s75": ledger.recommend_route("R1_ternary_act", batch_m=4, sparsity_pct=75),
+        "R1_M4_s74": ledger.recommend_route("R1_ternary_act", batch_m=4, sparsity_pct=74),
         "R1_M4_s50": ledger.recommend_route("R1_ternary_act", batch_m=4, sparsity_pct=50),
         "R2_M1": ledger.recommend_route("R2_int8_act", batch_m=1, sparsity_pct=0),
         "R2_M16": ledger.recommend_route("R2_int8_act", batch_m=16, sparsity_pct=0),
     }
     assert recommendations["R1_M1_s90"] == "CPU_1T_SBDR128_SIMD"
+    assert recommendations["R1_M1_s89"] == "GPU_R1_BitmaskSkip_Pop"
     assert recommendations["R1_M1_s75"] == "GPU_R1_BitmaskSkip_Pop"
+    assert recommendations["R1_M1_s74"] == "SBDR128_SIMD"
     assert recommendations["R1_M1_s50"] == "GPU_R1_DualRail_Pop"
     assert recommendations["R1_M4_s90"] == "GPU_R1_BitmaskSkip_Pop"
+    assert recommendations["R1_M4_s75"] == "GPU_R1_BitmaskSkip_Pop"
+    assert recommendations["R1_M4_s74"] == "GPU_R1_DualRail_Pop"
     assert recommendations["R1_M4_s50"] == "GPU_R1_DualRail_Pop"
     assert recommendations["R2_M1"] == "CPU_4T_INT4W"
     assert recommendations["R2_M16"] == "CPU_4T_INT8W"
@@ -1557,6 +1603,17 @@ def run_self_test() -> int:
                         and gpu_r2_receipts.sha3_identical
                         and gpu_cross_chain_1 == gpu_cross_chain_2
                     ),
+                },
+                "ternaryos_boot_to_receipt": {
+                    "boot_image_sha3_512": boot_image_sha3,
+                    "policy_root_sha3_512": policy_root_sha3,
+                    "canonfs_weight_sha3_512": bitnet_weight_sha3,
+                    "selected_route": bitnet_route,
+                    "max_abs_err": max(bitnet_pack_err, bitnet_max_abs_err),
+                    "dualrail_fallback_count": bitnet_receipts.max_fallback_count,
+                    "execution_receipt": bitnet_run1["execution_receipt"],
+                    "boot_receipt_sha3_512": boot_rec_1,
+                    "repeat_sha3_identical": bitnet_receipts.sha3_identical and boot_rec_1 == boot_rec_2,
                 },
                 "valid_execution_receipt": ok_run1["execution_receipt"],
                 "ledger_sha3_512": summary["ledger_sha3_512"],
