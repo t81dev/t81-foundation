@@ -191,6 +191,7 @@ def check_routing_ledger_determinism(errors: list[str]) -> None:
         "adapter_sbdr1_composition",
         "cross_regime_r1_r2",
         "cross_regime_gpu_r1_r2",
+        "ternaryos_boot_to_receipt",
     )
     ledger_digests: list[str] = []
     for run_idx in range(1, 3):
@@ -226,11 +227,11 @@ def check_routing_ledger_determinism(errors: list[str]) -> None:
             return
         accepted = int(payload.get("accepted_count", -1))
         neg_count = int(payload.get("negative_constraints_count", -1))
-        if accepted < 9 or neg_count < 15:
+        if accepted < 10 or neg_count < 16:
             errors.append(
                 f"routing_ledger.py run {run_idx} counts regressed: "
-                f"accepted_count={accepted} (expected >=9), "
-                f"negative_constraints_count={neg_count} (expected >=15)"
+                f"accepted_count={accepted} (expected >=10), "
+                f"negative_constraints_count={neg_count} (expected >=16)"
             )
             return
         tamper = payload.get("chain_tamper_verification")
