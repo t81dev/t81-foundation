@@ -1,25 +1,26 @@
 # T81 SCG-05 — Generic Result Contract Feasibility Assessment
 
-**Document ID:** T81-SCG-05-FEASIBILITY-001-R2
+**Document ID:** T81-SCG-05-FEASIBILITY-001-R3
 **Baseline Git SHA:** `e45c5435aa47d4ccb8f343798214eb917352c871`
-**Governing Policy:** SCG-04-MDR-001, Decision D4=4B (Adopt True Generic `Result<T, E>` Sum Type)
+**Rechecked against:** `5a005b2dea5e1eb262d4af45698f8338d16b137c` (`origin/main` on 2026-11-23)
+**Governing record:** [`SCG04_MAINTAINER_DECISION_RECORD.md`](SCG04_MAINTAINER_DECISION_RECORD.md), Decision D4 option 4B (true generic `Result<T, E>`). The ballot in that record is unsigned.
 **Disposition:** READ-ONLY FEASIBILITY ASSESSMENT (NO PRODUCTION CODE CHANGES; NO SPECIFICATION CHANGES)
+
+**Revision R3 (2026-11-23):** Corrects the caller-inventory scope, the status of Decision D4, the C++20 `std::expected` fallback, the section 6 determinism quotation, and the unconditional heap-allocation claim for `T81String`. R2 remains the prior text of this pull request. This revision still changes no production code and no normative specification.
 
 ---
 
 ## 1. Executive Summary
 
-Maintainer Decision Record SCG-04-MDR-001 recorded the architectural policy choice for Decision D4:
-- **D4 = 4B:** Adopt a genuine generic `Result<T, E>` sum type where the error type `E` is semantically meaningful and domain-specific, rather than restricting all operations to a single-parameter `T81Result<T>` with fixed `T81Error`.
-- **Implementation Status:** NOT GRANTED. Implementation authorization was explicitly withheld pending an independent feasibility assessment.
+[`SCG04_MAINTAINER_DECISION_RECORD.md`](SCG04_MAINTAINER_DECISION_RECORD.md) is a proposed decision instrument. Its status line says it is pending maintainer review and signature, and the D4 checkboxes are blank. Option 4B on that ballot is: adopt a genuine generic `Result<T, E>` sum type whose error type `E` is domain-specific, with implementation authorization as a later step. Later continuity documents, including the SCG-07 receipts and `docs/architecture/visualization/research_programs.json`, refer to D4=4B as a non-normative direction and state that implementation remains unauthorized. Those later citations and the unsigned ballot are both in the tree. This assessment evaluates option 4B. It does not sign the ballot and does not authorize an implementation. The label `SCG-04-MDR-001` is not an identifier in the decision record.
 
-This report delivers the technical feasibility assessment mandated under SCG-05, revised under PR #732 to address seven technical findings. It determines the minimum compatible architecture for introducing a generic `Result<T, E>` container while strictly preserving the existing `T81Result<T>` concrete class unchanged, identifying ABI and compatibility risks, respecting determinism constraints (`spec/determinism-profile.md`), and preserving all historical evidence receipts.
+This report is the SCG-05 feasibility assessment, revised under PR #732. It describes a compatible shape for a generic `Result<T, E>` container that leaves the existing `T81Result<T>` class unchanged, records ABI and compatibility risks, and checks the constraints in `spec/determinism-profile.md`.
 
 ### Key Conclusions
 1. **Additive Container Strategy (Preserving Concrete `T81Result<T>`):** The recommended strategy introduces a distinct generic container under an illustrative separate name, `t81::GenericResult<T, E>` while **preserving the existing concrete `T81Result<T>` class in `include/t81/types/T81Result.hpp` completely unchanged**. Replacing the existing `T81Result<T>` class with a template alias would carry substantial risks of ABI breakage, compiler diagnostic shifts, deduction-guide disruption, and subtle overload resolution discrepancies across translation units. Keep the existing `t81::Result<T>` alias. Compatibility of legacy error conversions remains unresolved because `T81Error` copies can change metadata.
-2. **Toolchain Standard Distinction (`std::expected` vs C++20 `t81::expected`):** The repository toolchain supports C++20 as baseline and C++23 when `T81_USE_CXX23=ON` (enabled by default in `cmake/Options.cmake`). Standard `std::expected<T, E>` is only available in C++23 mode. The repository's C++20 fallback in `include/t81/support/expected.hpp` is a custom partial implementation; it does **not** provide full semantic equivalence to ISO C++23 `std::expected`, and its support for `constexpr` constant evaluation, move-only payloads, and monadic chaining cannot be assumed without explicit, target-specific compile-time validation.
-3. **`T81Error` Remediation vs Encapsulation:** Existing `T81Error` captures dynamic system state (`T81Time::now()` and `acquire_entropy()`), allocating heap memory and violating strict determinism (`spec/determinism-profile.md §6`). Generic `Result<T, E>` allows deterministic kernel and math libraries to use lightweight, deterministic error types (e.g. `enum class MathError : int8_t` or `enum class CodecError : uint8_t`) without modifying or destabilizing `T81Error`.
-4. **Architectural Fragmentation in Existing Subsystems:** Several existing subsystems (**CanonFS**, **Hanoi Kernel**, and **Cog Promotion**) declare their own local `Result<T>` aliases binding to `std::expected<T, SubsystemError>`. This represents observed architectural fragmentation across the codebase, demonstrating that different subsystems have evolved disparate error-handling contracts.
+2. **Toolchain Standard Distinction (`std::expected` vs C++20 `t81::expected`):** `cmake/Options.cmake` defaults `T81_USE_CXX23` to `ON`, which selects C++23 language mode, with C++20 as the fallback mode. `include/t81/support/expected.hpp` uses the ISO `std::expected` when `__cpp_lib_expected` is defined. Otherwise it defines `t81::expected` and publishes that type as `std::expected` with a `namespace std` alias. The fallback members are not declared `constexpr`. Its `value()` / `error()` behavior differs for `void` and non-`void` success types, and it does not throw `std::bad_expected_access`.
+3. **`T81Error` Remediation vs Encapsulation:** Existing `T81Error` captures dynamic system state (`T81Time::now()` and `acquire_entropy()`) and stores its message in a `T81String` backed by `std::string`. That conflicts with `spec/determinism-profile.md` section 6. Generic `Result<T, E>` would let deterministic kernel and math libraries use lightweight error types (for example a named `enum class MathError : int8_t` or `enum class CodecError : uint8_t`) while leaving `T81Error` in place.
+4. **Architectural Fragmentation in Existing Subsystems:** CanonFS, the experimental Hanoi kernel, and Cog promotion each declare a namespace-local `Result<T>` alias over `std::expected` and a subsystem error type. Those aliases are separate from `t81::Result`.
 5. **Qualified Compatibility Boundaries:** While defaulting `E = T81Error` enables potential source-level convergence for simple call sites, caller coverage and compatibility across diverse translation units cannot be claimed as zero-risk without empirical compilation evidence.
 
 ---
@@ -27,18 +28,19 @@ This report delivers the technical feasibility assessment mandated under SCG-05,
 ## 2. Source Inventory: Existing `Result` and `T81Result` Callers
 
 ### 2.1 Search Methodology and Search Scope
-To establish a verifiable caller baseline, an automated grep audit was executed across the repository at commit `e45c5435aa47d4ccb8f343798214eb917352c871`.
-- **Search roots:** `include/`, `src/`, `tools/`, `tests/`, and `spec/`.
-- **Patterns searched:** `Result<`, `T81Result<`, and `T81Error`.
-- **Scope qualification:** The inventory includes all tracked C++ header and source files in the primary codebase. It excludes build artifacts, vendored toolchains in ignored directories, and historical Git log archives. While exhaustive across the tracked repository trees, this inventory represents the current static baseline; dynamic macro expansions or external consumer code outside `t81-foundation` are not included in this static scope.
+The caller table below was prepared at commit `e45c5435aa47d4ccb8f343798214eb917352c871`. A fixed-string `git grep` of `Result<`, `T81Result<`, and `T81Error` was repeated on 2026-11-23 against that commit and against `5a005b2dea5e1eb262d4af45698f8338d16b137c`.
+- **Search roots declared for the table:** `include/`, `src/`, `tools/`, `tests/`, and `spec/`.
+- **Patterns searched:** `Result<`, `T81Result<`, and `T81Error`. A search for the substring `Result<` also matches `T81Result<`.
+- **What the 18-row table covers:** C++ headers under `include/` and two tests under `tests/cpp/`. Reference counts in that table match matching lines. For `include/t81/types/T81Result.hpp`, 27 is the number of lines containing `Result<` or `T81Error` (10 lines contain `Result<`, 18 lines contain `T81Error`, and those sets overlap; the same file has 30 occurrences).
+- **What that table omitted at the baseline:** `src/` and `tools/` had no matches. `spec/` had five additional files, listed in section 2.4. Tracked C++ sources outside the declared roots also match, including `codec/`, `fs/`, `experimental/hanoi/in_memory_kernel.cpp`, `experimental/tiers/cog/promotion.cpp`, `isa/base81_view.cpp`, `benchmarks/BM_DispatchOverhead.cpp`, and two `examples/` translation units. Dynamic macro expansion and code outside this repository were not searched.
 
 ### 2.2 Caller Taxonomy
 
-Across the surveyed files, **18 files** contain direct syntactic references to `Result<T>`, `T81Result<T>`, or `T81Error`:
+The following **18** headers and tests are the original caller table. They are a header-and-test inventory, and section 2.4 records the other matches inside the declared roots.
 
 | Subsystem / Layer | Header / Test File | References | Current Type Used | Methods Used | Error Handling Assumptions |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Surface Definition** | `include/t81/types/Result.hpp` | 2 | `Result<T> = T81Result<T>` | Single template parameter | Currently aliases concrete `T81Result<T>`. |
+| **Surface Definition** | `include/t81/types/Result.hpp` | 2 | `template <typename T> using Result = T81Result<T>` | Single template parameter | The alias name is `Result`, defined as `T81Result<T>`. |
 | **Core Container** | `include/t81/types/T81Result.hpp` | 27 | `T81Result<T>` | `success`, `failure`, `value`, `error`, `map`, `and_then`, `or_else`, `reflect`, `unwrap`, `expect` | Encapsulates `std::variant<T, T81Error>`. |
 | **SWAR Acceleration** | `include/t81/swar/swar.hpp` | 35 | `Result<T>` | `success`, `failure`, `is_err`, `error().code`, `error().message`, `error().source` | Accesses `T81Symbol` code, message, and source from `T81Error`. |
 | **Tritwise Logic** | `include/t81/tritwise/tritwise.hpp` | 12 | `Result<bool>`, `Result<ComputeTritVector>` | Implicit propagation | Relies on `ComputeTritVector` member methods. |
@@ -47,9 +49,9 @@ Across the surveyed files, **18 files** contain direct syntactic references to `
 | **Balanced Codec** | `include/t81/codec/base81_balanced.hpp` | 6 | `Result<size_t>`, `Result<vector<int8_t>>`, `Result<vector<Trit>>` | Function declarations | Returns success with value, or error on failure. |
 | **Trit Packing Codec** | `include/t81/codec/trit_packing.hpp` | 7 | `Result<vector<uint8_t>>`, `Result<vector<Trit>>` | Function declarations | Returns packed buffers or failure. |
 | **Metadata Codec** | `include/t81/codec/metadata.hpp` | 1 | `Result<pair<Header, vector<uint8_t>>>` | Function declarations | Returns unwrapped header/buffer or failure. |
-| **CanonFS Storage Driver** | `include/t81/canonfs/canon_driver.hpp` | 5 | `Result<T> = std::expected<T, Error>` | `std::expected` methods | **Local alias:** Shadows global `Result`; binds to local `Error` enum. |
-| **Experimental Hanoi Kernel** | `include/t81/experimental/hanoi/kernel.hpp` | 17 | `Result<T> = std::expected<T, Error>` | `std::expected` methods | **Local alias:** Shadows global `Result`; binds to local `hanoi::Error`. |
-| **Experimental Cog** | `include/t81/experimental/cog/promotion.hpp` | 1 | `Result<T> = std::expected<T, PromotionError>` | `std::expected` methods | **Local alias:** Shadows global `Result`; binds to local `PromotionError`. |
+| **CanonFS Storage Driver** | `include/t81/canonfs/canon_driver.hpp` | 5 | `Result<T> = std::expected<T, Error>` | `std::expected` methods | **Namespace-local alias** in `t81::canonfs`. It names `std::expected` and the local `Error` enum. It does not change `t81::Result`. |
+| **Experimental Hanoi Kernel** | `include/t81/experimental/hanoi/kernel.hpp` | 17 | `Result<T> = std::expected<T, Error>` | `std::expected` methods | **Namespace-local alias** in `t81::hanoi`. It names `std::expected` and `t81::hanoi::Error`. It does not change `t81::Result`. |
+| **Experimental Cog** | `include/t81/experimental/cog/promotion.hpp` | 1 | `Result<T> = std::expected<T, PromotionError>` | `std::expected` methods | **Namespace-local alias** in `t81::cog`. It names `std::expected` and `PromotionError`. It does not change `t81::Result`. |
 | **TISC Program View** | `include/t81/isa/base81_view.hpp` | 1 | `Result<Program>` | Function declarations | Returns parsed program or failure. |
 | **Async / Promises** | `include/t81/types/T81Promise.hpp` | 7 | `T81Result<T>` | `success`, `failure`, `error->code`, `error->message` | Directly accesses error fields via pointer. |
 | **Networking** | `include/t81/types/T81Network.hpp` | 13 | `T81Result<socket>`, `T81Result<bool>`, `T81Result<T81Bytes>` | `success`, `failure` | Constructs `failure` with `errors::OUT_OF_ENTROPY`. |
@@ -58,12 +60,28 @@ Across the surveyed files, **18 files** contain direct syntactic references to `
 | **Unit Test** | `tests/cpp/test_T81Result.cpp` | 5 | `T81Result<T81Int<27>>` | `is_ok`, `is_err`, `unwrap`, `unwrap_or`, `map`, `and_then`, `error().code` | Unit verification for legacy container. |
 
 ### 2.3 Observed Architectural Fragmentation
-In three independent subsystems (**CanonFS**, **Hanoi Kernel**, and **Cog Promotion**), developers introduced file-local aliases:
+Three headers declare namespace-local aliases:
 - In `t81::canonfs`: `template <typename T> using Result = std::expected<T, Error>;`
 - In `t81::hanoi`: `template <typename T> using Result = std::expected<T, Error>;`
 - In `t81::cog`: `template <typename T> using Result = std::expected<T, PromotionError>;`
 
-This represents **observed architectural fragmentation** across the repository. Rather than inferring the historical intent or motives of the authors, the technical observation is that these subsystems employ domain-specific enumeration error types bound to `std::expected`, contrasting with the general-purpose `T81Result<T>` that binds exclusively to `T81Error`.
+This is observed architectural fragmentation. The three aliases use domain-specific enumeration error types with the name `std::expected`. `T81Result<T>` binds its error type to `T81Error`. The source text does not state why the aliases were introduced. On the C++20 fallback path, `include/t81/support/expected.hpp` injects `template <typename T, typename E> using expected = ::t81::expected<T, E>;` into `namespace std`, so these aliases name the shim when `__cpp_lib_expected` is absent and the ISO type when that macro is set.
+
+### 2.4 Matches Omitted from the 18-Row Table
+
+At baseline `e45c5435`, the declared `spec/` root also contains:
+
+| File | `Result<` lines | What the match is |
+| :--- | ---: | :--- |
+| `spec/companion/t81-spec.md` | 1 | A composite-type listing `Result<O,E>`. |
+| `spec/rfcs/RFC-0040-swar-formalization.md` | 10 | SWAR signatures returning `Result<ComputeTritVector>` or `Result<bool>`. |
+| `spec/rfcs/RFC-0041-simd-formalization.md` | 11 | SIMD signatures of the same shape. |
+| `spec/rfcs/RFC-0042-deterministic-backend-equivalence-contract.md` | 1 | A bullet naming returned `Result<T>`. |
+| `spec/supplemental/hanoi-kernel-spec.md` | 18 | Syscall signatures written as two-parameter `Result<T, HanoiError>`. |
+
+The same baseline has C++ matches outside the declared roots: `codec/base81_balanced.cpp`, `codec/metadata.cpp`, `codec/trit_packing.cpp`, `fs/block_backed_driver.cpp`, `fs/in_memory_driver.cpp`, `fs/persistent_driver.cpp`, `experimental/hanoi/in_memory_kernel.cpp`, `experimental/tiers/cog/promotion.cpp`, `isa/base81_view.cpp`, `benchmarks/BM_DispatchOverhead.cpp`, `examples/ai-and-inference/ai-integration/complex_demo.cpp`, and `examples/compiler-and-ffi/complex_demo.cpp`.
+
+Rechecked at `5a005b2d`, the 18 header and test rows above still have the same pattern counts. `tests/cpp/canonfs_policy_boundary_test.cpp` is new inside `tests/` and contains one `Result<void>` after `using namespace t81::canonfs`, so it uses the CanonFS alias. `examples/research/deterministic-risk-triage/risk_triage_gate.cpp` is an additional out-of-root file containing `T81Result`.
 
 ---
 
@@ -98,12 +116,19 @@ struct T81Error {
 ```
 
 ### 3.1 Characteristics and Determinism Profile
-1. **Host Timestamp Acquisition:** The constructor calls `occurred_at(T81Time::now(src))`. `T81Time::now()` reads `std::chrono::steady_clock::now()` unless a static `deterministic_override_` is configured under a global mutex. This conflicts with `spec/determinism-profile.md §6`:
-   > *"Error constructors MUST NOT capture stack traces with host pointers, timestamps, or thread IDs."*
-2. **Entropy State Mutation:** The constructor calls `fuel_spent(acquire_entropy())`. `acquire_entropy()` fetches and increments a global atomic sequence counter and advances the PRNG (`seed_ ^= seed_ << 13...`). Constructing an error mutates global entropy pool state.
-3. **Copy Semantics Entropy Cost:** The copy constructor `T81Error(const T81Error& other)` re-invokes `T81Time::now()` and `acquire_entropy()`. Copying an error changes its timestamp and consumes fresh entropy.
-4. **Dynamic Memory Allocation:** `message` is a `T81String` managing a heap-allocated buffer. Constructing, copying, or explaining `T81Error` performs dynamic heap allocation, precluding use in allocation-free or freestanding environments (`ternaryos/`).
-5. **Exceptions and Constexpr:** Methods `value()`, `unwrap()`, and `error()` throw standard exceptions (`std::runtime_error` or `std::logic_error`). Although `T81Result<T>` constructors carry `constexpr`, instantiations involving `T81Error` cannot be evaluated at compile time due to heap allocations and dynamic system clock invocations.
+1. **Host Timestamp Acquisition:** The constructor calls `occurred_at(T81Time::now(src))`. `T81Time::now()` locks `override_mutex_` and returns `deterministic_override_` when it holds a value; otherwise it reads `std::chrono::steady_clock::now()`. This conflicts with `spec/determinism-profile.md` section 6:
+
+   > Errors (`Result::Err(E)`) must be value types.
+   >
+   > * **Constructors**: Error constructors MUST NOT capture:
+   >   * Stack traces with host pointers.
+   >   * Timestamps.
+   >   * Thread IDs.
+
+2. **Entropy State Mutation:** The constructor calls `fuel_spent(acquire_entropy())`. `acquire_entropy()` calls `EntropyPool::acquire()`, which `fetch_add`s a global atomic sequence counter and then advances `seed_` under `seed_mutex_` (`seed_ ^= seed_ << 13`, then shifts of 7 and 17). Constructing an error mutates global entropy-pool state.
+3. **Copy Semantics Entropy Cost:** The copy constructor `T81Error(const T81Error& other)` calls `T81Time::now(T81Symbol::intern("ERROR_COPY"))` and `acquire_entropy()`. Copying an error replaces its timestamp and consumes fresh entropy. `T81Error` declares that copy constructor and does not declare a move constructor, so an rvalue `T81Error` also uses the copy constructor.
+4. **String Storage:** `message` is a `T81String`, and `T81String` stores a `std::string`. Messages that exceed the implementation's small-string buffer allocate. The type also depends on the hosted `std::string` facility, so it is a poor fit for an allocation-free or freestanding error code in `ternaryos/`.
+5. **Exceptions and Constexpr:** `value()` and `unwrap()` throw `std::runtime_error` on the error state. `error()` throws `std::logic_error` on the success state. `T81Result<T>` constructors and `failure(code, msg, src)` are marked `constexpr` and `noexcept`, while `T81Error`'s constructor is neither `constexpr` nor `noexcept`. A constant-expression evaluation that constructs a `T81Error` is therefore unavailable, and a throw from that constructor during a `noexcept` `T81Result` operation would call `std::terminate`.
 
 ### 3.2 Preservation of `T81Error`
 `T81Error` encapsulates diagnostic and narrative error information relied upon by existing tests, reflection machinery, and logging utilities. It should not be altered in place or broken. Instead, enabling a generic error parameter `E` allows systems requiring deterministic, zero-allocation error reporting to use lightweight error types (e.g. enum classes) while leaving `T81Error` intact for high-level operations.
@@ -135,15 +160,15 @@ struct T81Error {
 
 ### 4.2 Standards Evaluation: C++23 `std::expected` vs C++20 `t81::expected`
 
-| Feature / Capability | ISO C++23 `std::expected<T, E>` | Repository C++20 `t81::expected<T, E>` |
+| Feature / Capability | ISO `std::expected<T, E>` when `__cpp_lib_expected` is defined | Repository fallback in `include/t81/support/expected.hpp` |
 | :--- | :--- | :--- |
-| **Availability** | Available only when `T81_USE_CXX23=ON` (`gcc >= 12`, `clang >= 16`). | Always available via `include/t81/support/expected.hpp`. |
-| **Semantic Completeness** | Full ISO specification, including full monadic operations, standard deduction guides, and complete reference handling. | Partial fallback shim. Missing certain monadic overloads and edge-case type deduction. |
-| **`constexpr` Support** | Fully `constexpr` across all operations for literal types. | Storage is backed by `std::variant<T, E>`. Constexpr support across monadic operations is not fully verified across all supported compilers. |
-| **Move-Only Support** | Fully supported per ISO standard. | Supported for basic constructions, but complex monadic chaining with move-only error types requires dedicated test verification. |
-| **Exception Guarantees** | ISO standard guarantees (`value()` throws `bad_expected_access<E>`). | Shim throws or accesses variant; behavior under uncaught error access varies. |
+| **Availability** | Selected by the feature-test macro. `T81_USE_CXX23=ON` selects C++23 language mode and does not itself test the library. Libstdc++ commonly provides the type from GCC 12 and libc++ from LLVM 16. | Used when `__cpp_lib_expected` is absent. The header defines `t81::expected` and also aliases that name into `namespace std`. |
+| **Semantic Completeness** | The ISO C++23 specification, including `bad_expected_access<E>`. | Partial shim. `and_then`, `transform`, `or_else`, and `transform_error` are declared for `&` and `const&` only. There are no `&&` overloads and no `value_or`. |
+| **`constexpr` Support** | The ISO operations that are specified `constexpr` apply to literal types. | `t81::expected` members are not declared `constexpr`. The non-`void` specialization stores a `std::variant<T, E>`. |
+| **Move-Only Support** | Required by the ISO wording for the operations that construct or move `T` and `E`. | Basic constructors accept rvalues. Move-only payloads through the monadic members still need a compile test. |
+| **Exception Guarantees** | `value()` throws `std::bad_expected_access<E>` when there is no value. | Non-`void` `value()` and `error()` return `std::get` without a prior state check, so the wrong alternative throws `std::bad_variant_access`. `expected<void, E>::value()` is `noexcept` and returns without inspecting `has_`. `expected<void, E>::error()` returns `error_` even when `has_` is true. |
 
-**Technical Finding:** The repository's C++20 fallback in `include/t81/support/expected.hpp` is a custom partial implementation; it must **not** be assumed to provide full semantic equivalence to ISO C++23 `std::expected`. If `Result<T, E>` is backed by `t81::expected<T, E>`, any claims of `constexpr` evaluation, move-only propagation, or monadic correctness under C++20 mode must be backed by explicit compile-time test suites rather than assumed a priori.
+**Technical Finding:** Call sites written as `std::expected` observe the ISO type only when `__cpp_lib_expected` is defined. On the fallback path the same name is `t81::expected`. Backing a future `Result<T, E>` with that fallback requires compile tests before any claim of `constexpr` evaluation, move-only propagation, or monadic behavior. The fallback is not a substitute for `std::bad_expected_access`.
 
 ---
 
@@ -267,7 +292,7 @@ Future implementation verification must adhere to the following test matrix:
 | Test ID | Test Category | Scenario | Portable Acceptance Criteria | Stop Condition |
 | :--- | :--- | :--- | :--- | :--- |
 | **TEST-RES-01** | Default Error Type | Instantiate `GenericResult<int>` | Compiles with `E = T81Error`. Value and error states correctly represented. | Compilation failure or incorrect default type. |
-| **TEST-RES-02** | Lightweight Error Types | Instantiate `GenericResult<int, enum class ErrorCode : uint8_t>` | Discriminates between success and error states. Preserves exact error code value. Zero dynamic heap allocations for qualifying trivial/literal types. | Any dynamic heap allocation or failure to discriminate states. |
+| **TEST-RES-02** | Lightweight Error Types | Declare `enum class ErrorCode : uint8_t { Overflow };` and instantiate `GenericResult<int, ErrorCode>` | Discriminates between success and error states. Preserves the exact error-code value. Makes no dynamic heap allocation for that trivial value/error pair. | Any dynamic heap allocation or failure to discriminate states. |
 | **TEST-RES-03** | Compile-Time Evaluation | `constexpr` evaluation of `GenericResult<int, int>` | Evaluates in `constexpr` and `static_assert` contexts under supported toolchains. | Compiler error during constant expression evaluation. |
 | **TEST-RES-04** | Disambiguated Construction | `GenericResult<int, int>` with identical value and error types | Successfully constructs ok state via `GenericResult::success(1)` and error state via `GenericResult::failure(2)` or the tagged constructor without ambiguity. | Ambiguous overload resolution or incorrect state. |
 | **TEST-RES-05** | Move-Only Types | `GenericResult<std::unique_ptr<int>, CustomError>` | Move construction and move assignment operate without copy operations. | Compilation error on move-only types. |
@@ -281,7 +306,7 @@ Future implementation verification must adhere to the following test matrix:
 ## 8. Unresolved Technical Questions & Implementation Pre-conditions
 
 ### 8.1 Open Technical Questions
-1. **Fallback Shim Monadic Support:** What exact subset of monadic combinators can be supported in `include/t81/support/expected.hpp` under C++20 without triggering compiler-specific template deduction issues on GCC 13 and Clang 18?
+1. **Fallback Shim Monadic Support:** The current fallback already declares `and_then`, `transform`, `or_else`, and `transform_error` for `&` and `const&`. Which of those declarations, plus any future `&&` overloads, compile on the supported GCC and Clang versions is still untested.
 2. **Exception-Free Mode (`-fno-exceptions`):** In environments built with `-fno-exceptions` (such as freestanding `ternaryos/`), what is the required abort mechanism for `.value()` and `.error()` when called on the wrong state (e.g. `std::abort()`, `__builtin_trap()`, or a configurable policy hook)?
 3. **Reflect API Integration:** Does `Result<T, E>` require a `.reflect()` method when `E` does not implement `T81Reflection`?
    - *Recommendation:* Gate `.reflect()` behind a concept or SFINAE trait requiring both `T` and `E` to support reflection.
@@ -298,5 +323,6 @@ Authorization to proceed with implementation must be granted by the maintainer v
 ## 9. Baseline Attestation and Sign-Off
 
 - **Baseline SHA:** `e45c5435aa47d4ccb8f343798214eb917352c871`
+- **Recheck SHA:** `5a005b2dea5e1eb262d4af45698f8338d16b137c`
 - **Assessment Scope:** Read-only feasibility investigation. Zero production files modified.
-- **Maintainer Policy Alignment:** SCG-04-MDR-001, Decision D4=4B.
+- **Policy record:** Option 4B in the unsigned ballot of `docs/research/continuity/SCG04_MAINTAINER_DECISION_RECORD.md`. Later SCG-07 text cites D4=4B as a non-normative direction with implementation still unauthorized.
