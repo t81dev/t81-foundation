@@ -5,8 +5,8 @@
 #include <vector>
 
 #include "t81/canonfs/interchange.hpp"
-#include "t81/canonfs/storage_key.hpp"
 #include "t81/canonfs/interchange_ops.hpp"
+#include "t81/canonfs/storage_key.hpp"
 
 namespace {
 
@@ -36,9 +36,8 @@ int main() {
   using namespace t81::canonfs::interchange;
   const std::filesystem::path cwd = std::filesystem::current_path();
   auto repo_root = cwd;
-  const auto golden_import_path =
-      std::filesystem::path("examples") / "storage-and-canonfs" / "canonfs-interchange" / "v1" /
-      "import-success.output.json";
+  const auto golden_import_path = std::filesystem::path("examples") / "storage-and-canonfs" /
+                                  "canonfs-interchange" / "v1" / "import-success.output.json";
   while (!repo_root.empty() && !std::filesystem::exists(repo_root / golden_import_path)) {
     const auto parent = repo_root.parent_path();
     if (parent == repo_root) {
@@ -48,9 +47,8 @@ int main() {
   }
 
   {
-    const auto permissive =
-        t81::canonfs::interchange_policy_profile_info(
-            t81::canonfs::InterchangePolicyProfile::Permissive);
+    const auto permissive = t81::canonfs::interchange_policy_profile_info(
+        t81::canonfs::InterchangePolicyProfile::Permissive);
     if (!expect(permissive.name == "permissive", "permissive profile name mismatch")) {
       return 1;
     }
@@ -59,9 +57,8 @@ int main() {
       return 1;
     }
 
-    const auto import_only =
-        t81::canonfs::interchange_policy_profile_info(
-            t81::canonfs::InterchangePolicyProfile::ImportOnly);
+    const auto import_only = t81::canonfs::interchange_policy_profile_info(
+        t81::canonfs::InterchangePolicyProfile::ImportOnly);
     if (!expect(import_only.name == "import-only", "import-only profile name mismatch")) {
       return 1;
     }
@@ -70,9 +67,8 @@ int main() {
       return 1;
     }
 
-    const auto export_only =
-        t81::canonfs::interchange_policy_profile_info(
-            t81::canonfs::InterchangePolicyProfile::ExportOnly);
+    const auto export_only = t81::canonfs::interchange_policy_profile_info(
+        t81::canonfs::InterchangePolicyProfile::ExportOnly);
     if (!expect(export_only.name == "export-only", "export-only profile name mismatch")) {
       return 1;
     }
@@ -81,9 +77,8 @@ int main() {
       return 1;
     }
 
-    const auto deny_all =
-        t81::canonfs::interchange_policy_profile_info(
-            t81::canonfs::InterchangePolicyProfile::DenyAll);
+    const auto deny_all = t81::canonfs::interchange_policy_profile_info(
+        t81::canonfs::InterchangePolicyProfile::DenyAll);
     if (!expect(deny_all.name == "deny-all", "deny-all profile name mismatch")) {
       return 1;
     }
@@ -103,8 +98,7 @@ int main() {
         {"policy_denied", "canonfs-policy-denied", "policy-failure"},
         {"missing_source", "canonfs-import-missing-source", "source-failure"},
         {"unsupported_source_kind", "canonfs-import-unsupported-source-kind", "source-failure"},
-        {"symlink_not_supported", "canonfs-import-symlink-not-supported",
-         "normalization-failure"},
+        {"symlink_not_supported", "canonfs-import-symlink-not-supported", "normalization-failure"},
         {"invalid_policy_profile", "canonfs-import-invalid-policy-profile", "source-failure"},
         {"invalid_policy_document", "canonfs-import-invalid-policy-document", "source-failure"},
         {"manifest_write_failed", "canonfs-import-manifest-write-failed", "source-failure"},
@@ -141,17 +135,15 @@ int main() {
     const std::vector<ExportReasonCase> export_reason_cases = {
         {"policy_denied", "canonfs-policy-denied", "policy-failure"},
         {"unsafe_target_path", "canonfs-export-unsafe-target-path", "target-failure"},
-        {"target_directory_create_failed",
-         "canonfs-export-target-directory-create-failed", "target-failure"},
+        {"target_directory_create_failed", "canonfs-export-target-directory-create-failed",
+         "target-failure"},
         {"target_open_failed", "canonfs-export-target-open-failed", "target-failure"},
         {"target_write_failed", "canonfs-export-target-write-failed", "target-failure"},
-        {"invalid_source_ref", "canonfs-export-invalid-source-ref",
-         "materialization-failure"},
+        {"invalid_source_ref", "canonfs-export-invalid-source-ref", "materialization-failure"},
         {"missing_object", "canonfs-export-missing-object", "materialization-failure"},
         {"hash_mismatch", "canonfs-export-hash-mismatch", "materialization-failure"},
         {"invalid_schema", "canonfs-export-invalid-schema", "materialization-failure"},
-        {"malformed_manifest", "canonfs-export-malformed-manifest",
-         "materialization-failure"},
+        {"malformed_manifest", "canonfs-export-malformed-manifest", "materialization-failure"},
         {"invalid_policy_profile", "canonfs-export-invalid-policy-profile",
          "materialization-failure"},
         {"invalid_policy_document", "canonfs-export-invalid-policy-document",
@@ -198,17 +190,17 @@ int main() {
       return 1;
     }
 
-    const auto golden_export = read_file(
-        repo_root / "examples" / "storage-and-canonfs" / "canonfs-interchange" / "v1" /
-        "export-success.output.json");
+    const auto golden_export =
+        read_file(repo_root / "examples" / "storage-and-canonfs" / "canonfs-interchange" / "v1" /
+                  "export-success.output.json");
     if (!expect(!golden_export.empty(), "golden export example should exist")) {
       return 1;
     }
-    const std::string rendered_export = render_export_result(
-        "ok", {"sha3-256:5AnZIω3JoaS7π≠5MG7K>cy3goOKHUEudxccikkcsX"}, "host-file",
-        "build/canonfs-v1-contract-export/model.t81w",
-        "sha3-256:2nFSqKW=σ3μlmgTU61cvgp÷≤WnG=×≥RAoHwI2IW≠X", "", {"model.t81w"}, {}, {},
-        "allowed", "permissive");
+    const std::string rendered_export =
+        render_export_result("ok", {"sha3-256:5AnZIω3JoaS7π≠5MG7K>cy3goOKHUEudxccikkcsX"},
+                             "host-file", "build/canonfs-v1-contract-export/model.t81w",
+                             "sha3-256:2nFSqKW=σ3μlmgTU61cvgp÷≤WnG=×≥RAoHwI2IW≠X", "",
+                             {"model.t81w"}, {}, {}, "allowed", "permissive");
     if (!expect(rendered_export == golden_export,
                 "rendered export example should match golden output byte-for-byte")) {
       return 1;
@@ -262,8 +254,8 @@ int main() {
   const std::string import_result = render_import_result(
       "partial", "host-directory", "/tmp/input-tree", {"sha3-256:abc123"}, "sha3-256:prov001",
       "sha3-256:manifest001", {"a.txt"}, {},
-      {issue("policy_denied", "policy denied import of nested/b.txt: hash not allowed")},
-      "partial", "permissive");
+      {issue("policy_denied", "policy denied import of nested/b.txt: hash not allowed")}, "partial",
+      "permissive");
   if (!expect(validate_import_result_document(import_result, error_message),
               "import result should validate")) {
     return 1;
@@ -281,11 +273,11 @@ int main() {
     return 1;
   }
 
-  const std::string import_normalization_failure = render_import_result(
-      "error", "host-directory", "/tmp/input-tree", {}, "", "", {}, {},
-      {issue("symlink_not_supported",
-             "symlinks are not supported by canonfs import v1: nested/link")},
-      "denied", "permissive");
+  const std::string import_normalization_failure =
+      render_import_result("error", "host-directory", "/tmp/input-tree", {}, "", "", {}, {},
+                           {issue("symlink_not_supported",
+                                  "symlinks are not supported by canonfs import v1: nested/link")},
+                           "denied", "permissive");
   if (!expect(validate_import_result_document(import_normalization_failure, error_message),
               "import normalization failure result should validate")) {
     return 1;
@@ -329,9 +321,9 @@ int main() {
   }
 
   const std::string export_target_failure = render_export_result(
-      "error", {"sha3-256:abc123"}, "host-file", "/tmp/output-tree", "sha3-256:prov003", "",
-      {}, {}, {issue("target_open_failed", "could not open output file: /tmp/output-tree")},
-      "allowed", "permissive");
+      "error", {"sha3-256:abc123"}, "host-file", "/tmp/output-tree", "sha3-256:prov003", "", {}, {},
+      {issue("target_open_failed", "could not open output file: /tmp/output-tree")}, "allowed",
+      "permissive");
   if (!expect(validate_export_result_document(export_target_failure, error_message),
               "export target failure result should validate")) {
     return 1;
@@ -372,9 +364,9 @@ int main() {
               "export missing object result should validate")) {
     return 1;
   }
-  if (!expect(export_missing_object.find("\"kind\": \"materialization-failure\"") !=
-                  std::string::npos,
-              "export result should classify missing object as materialization failure")) {
+  if (!expect(
+          export_missing_object.find("\"kind\": \"materialization-failure\"") != std::string::npos,
+          "export result should classify missing object as materialization failure")) {
     return 1;
   }
   if (!expect(export_missing_object.find("\"code\": \"canonfs-export-missing-object\"") !=
@@ -653,8 +645,9 @@ int main() {
     t81::canonfs::ExportOptions deny_all_export_options;
     deny_all_export_options.canonfs_root = import_options.canonfs_root;
     deny_all_export_options.policy_profile = t81::canonfs::InterchangePolicyProfile::DenyAll;
-    const auto deny_all_export = t81::canonfs::export_ref(
-        import_outcome.imported_objects.front(), root / "deny-all-denied.txt", deny_all_export_options);
+    const auto deny_all_export =
+        t81::canonfs::export_ref(import_outcome.imported_objects.front(),
+                                 root / "deny-all-denied.txt", deny_all_export_options);
     if (!expect(!deny_all_export.ok(), "deny-all profile should deny export")) return 1;
     if (!expect(deny_all_export.policy_result == "denied",
                 "deny-all profile export result mismatch")) {
@@ -693,17 +686,17 @@ int main() {
                 "missing object export should record explicit reason")) {
       return 1;
     }
-    if (!expect(missing_export.errors.front().message.find("object not found: sha3-256:missing") ==
-                    0,
-                "missing object export should identify the missing CanonFS object")) {
+    if (!expect(
+            missing_export.errors.front().message.find("object not found: sha3-256:missing") == 0,
+            "missing object export should identify the missing CanonFS object")) {
       return 1;
     }
 
     const fs::path object_path =
         import_options.canonfs_root / "objects" /
-        (t81::canonfs::storage_key_v1(t81::canonfs::CanonHash{
-            t81::hash::CanonHash81::from_string(
-                import_outcome.imported_objects.front().substr(std::string("sha3-256:").size()))}) + ".blk");
+        (t81::canonfs::storage_key_v1(t81::canonfs::CanonHash{t81::hash::CanonHash81::from_string(
+             import_outcome.imported_objects.front().substr(std::string("sha3-256:").size()))}) +
+         ".blk");
     const fs::path other_source = root / "other-payload.txt";
     {
       std::ofstream out(other_source);
@@ -713,14 +706,13 @@ int main() {
     if (!expect(other_import.ok(), "other CanonFS object import should succeed")) return 1;
     const fs::path other_object_path =
         import_options.canonfs_root / "objects" /
-        (t81::canonfs::storage_key_v1(t81::canonfs::CanonHash{
-            t81::hash::CanonHash81::from_string(
-                other_import.imported_objects.front().substr(std::string("sha3-256:").size()))}) + ".blk");
+        (t81::canonfs::storage_key_v1(t81::canonfs::CanonHash{t81::hash::CanonHash81::from_string(
+             other_import.imported_objects.front().substr(std::string("sha3-256:").size()))}) +
+         ".blk");
     fs::copy_file(other_object_path, object_path, fs::copy_options::overwrite_existing, ec);
     if (!expect(!ec, "tampered object copy should succeed")) return 1;
-    const auto tampered_export =
-        t81::canonfs::export_ref(import_outcome.imported_objects.front(), root / "tampered.txt",
-                                 export_options);
+    const auto tampered_export = t81::canonfs::export_ref(import_outcome.imported_objects.front(),
+                                                          root / "tampered.txt", export_options);
     if (!expect(!tampered_export.ok(), "tampered object export should fail")) return 1;
     if (!expect(!tampered_export.errors.empty(), "tampered export should record an error")) {
       return 1;
@@ -730,7 +722,8 @@ int main() {
       return 1;
     }
 
-    const fs::path example_root = fs::absolute(fs::path(__FILE__)).parent_path().parent_path().parent_path();
+    const fs::path example_root =
+        fs::absolute(fs::path(__FILE__)).parent_path().parent_path().parent_path();
     const fs::path golden_input =
         example_root / "examples" / "storage-and-canonfs" / "canonfs-interchange" / "input";
     const auto golden_import = t81::canonfs::import_path(golden_input, import_options);
@@ -771,10 +764,10 @@ int main() {
 
     const fs::path policy_denied_tree = root / "policy-denied-golden-export";
     t81::canonfs::ExportOptions policy_denied_tree_options = export_options;
-    policy_denied_tree_options.policy_evaluator =
-        [](std::string_view, std::string_view, std::string_view) {
-          return t81::canonfs::InterchangePolicyDecision{.allowed = false, .reason = "blocked"};
-        };
+    policy_denied_tree_options.policy_evaluator = [](std::string_view, std::string_view,
+                                                     std::string_view) {
+      return t81::canonfs::InterchangePolicyDecision{.allowed = false, .reason = "blocked"};
+    };
     const auto policy_denied_tree_export = t81::canonfs::export_ref(
         golden_import.manifest_ref, policy_denied_tree, policy_denied_tree_options);
     if (!expect(!policy_denied_tree_export.ok(), "policy-denied directory export should fail")) {
@@ -797,14 +790,13 @@ int main() {
       keep << "keep-beta";
     }
     t81::canonfs::ExportOptions partial_options = export_options;
-    partial_options.policy_evaluator =
-        [](std::string_view, std::string_view, std::string_view path) {
-          if (std::string(path).find("beta") != std::string::npos) {
-            return t81::canonfs::InterchangePolicyDecision{.allowed = false,
-                                                           .reason = "beta blocked"};
-          }
-          return t81::canonfs::InterchangePolicyDecision{.allowed = true, .reason = "allow"};
-        };
+    partial_options.policy_evaluator = [](std::string_view, std::string_view,
+                                          std::string_view path) {
+      if (std::string(path).find("beta") != std::string::npos) {
+        return t81::canonfs::InterchangePolicyDecision{.allowed = false, .reason = "beta blocked"};
+      }
+      return t81::canonfs::InterchangePolicyDecision{.allowed = true, .reason = "allow"};
+    };
     const auto partial_export =
         t81::canonfs::export_ref(golden_import.manifest_ref, partial_tree, partial_options);
     if (!expect(partial_export.policy_result == "partial",
