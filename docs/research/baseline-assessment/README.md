@@ -41,15 +41,16 @@ Every total below is computed under the explicit counting rubrics defined in [ME
 | **Engineering Capabilities** | **23** | Major architectural capabilities mapped | **21 Tested, 1 Implemented, 1 Specified** (18 Integrated, 4 Experimental, 1 Unintegrated) |
 | **Benchmark Families Audited** | **26** | 17 compiled Google Benchmark suites + 9 formal experiment harnesses | **16 Executed, 9 Source-Only, 1 Blocked (Physical Storage)** |
 | **Benchmark Quality Tiers** | **26** | Grounded six-tier evidence classification rubric | **9 Tier 1 (Source-Only), 6 Tier 2 (Insufficient Provenance), 8 Tier 3 (Attributable Evidence), 0 Tier 4 (Independently Reproduced), 2 Tier 5 (Invalid/Superseded), 1 Tier 6 (Blocked)** |
-| **Canonical Hypotheses (H01–H08)**| **8** | Canonical H01–H08 hypothesis register | **1 Operational/Comparative Untested (H07), 1 Methodological Framework Active/Comparative Untested (H08), 2 Refuted in tested scope (H04, H06 measured ARM64 kernels), 2 Conditional (H02, H03), 1 Blocked (H01), 1 Plausible/Unverified (H05)** |
+| **Canonical Hypotheses (H01–H08)**| **8** | Canonical H01–H08 hypothesis register | **1 Operational/Comparative Untested (H07), 1 Methodological Framework Active/Comparative Untested (H08), 1 Measured-kernel negative with accuracy and energy open (H06), 1 Historical-invalid / model-sufficient / hardware-parameters-unavailable (H04), 2 Conditional (H02, H03), 1 Blocked (H01), 1 Plausible/Unverified (H05)** |
 
 ---
 
 ## 3. Repository Baseline Coordinates
 
 - **Target Repository:** `t81dev/t81-foundation`
-- **Current `main` Commit:** `e108fdad078f4d6dfcc427f1fd419ecbe48b4e05`
+- **Pinned baseline commit:** `e108fdad078f4d6dfcc427f1fd419ecbe48b4e05`
 - **Tree SHA:** `68fa5529b9d8244ba31c0f543006dee9283b248f`
+- **Live `main` after this pin:** At the correction recorded in this pull request, `origin/main` was `5a005b2dea5e1eb262d4af45698f8338d16b137c`. That tree still carries the cited benchmark logs and experiment records used below. It also contains two RFC files absent from the pin, `RFC-00D6` and `RFC-00E1`, so the RFC census stays historical. `execution_reports/VERIFICATION_REPORT.md` now lives at `archive/execution_reports/VERIFICATION_REPORT.md`.
 - **Branch:** `main` (active assessment on working branch `jules-t81-baseline-001-3194268086121102263`)
 - **Historical Lineage:** Hanoi / CWEB prototypes (2024–2025) → T81 Foundation Architecture (early 2026) → Corrective Governance & Research Protocol Reconciliation (October 2026).
 - **Active Governance Validators:** 27 scripts (24 in `scripts/governance/`, 3 in `scripts/ci/`).

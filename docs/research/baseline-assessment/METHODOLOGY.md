@@ -17,7 +17,7 @@ This document defines the evidence-based methodology, taxonomy, counting rules, 
 To maintain strict epistemic integrity, the methodology makes the following explicit admissions:
 1. **Recountable Totals vs. Adjudicated Classifications:** Metric enumerations (file counts, catalog entries, registered CTest targets, benchmark family counts) are independently recountable via deterministic shell commands. However, capability maturities, evidence tiers, and RFC statuses require qualitative and manual adjudication against primary code, test definitions, and commits.
 2. **Declared vs. Registered vs. Executed vs. Passed Tests:** Enumerating 159 static `add_test()` declarations across CMakeLists.txt files establishes that test targets are declared in build manifests. It does NOT establish that all declared tests are registered in every CTest configuration, executed in CI, or passing. Furthermore, external PR #662 reports that up to 26 tests were omitted from dynamic CTest discovery at this exact baseline and that certain CI regex patterns returned success while executing zero tests. Claims regarding DPE, TernaryOS, and Axion coverage are strictly scoped to declared target definitions, with runtime-wide verification pending independent adversarial reproduction.
-3. **Oracle Correctness vs. Multi-Runner Reproduction:** Validating mathematical logic against an independent mathematical oracle script (such as Python scripts in EXP-S02 and EXP-DURABLE-WITNESS) verifies model consistency and arithmetic correctness; it does NOT constitute independent multi-runner execution reproduction across distinct physical machines, operating systems, and compilers. Benchmarks previously categorized as Tier 4 (EXP-CMP3-R1 and EXP-FLOAT-CONVERSION) have been reassessed and downgraded to Tier 2: EXP-CMP3-R1 collected compilation artifacts but PMU measurements were unauthorized and uncollected (`measurements_collected: false, linux: null`), while EXP-FLOAT-CONVERSION is explicitly documented as `conversion_status: UNRESOLVED: excluded from canonical evidence` with known platform divergence and unpersisted 10,000-vector claims. Similarly, EXP-DIRECT-API-SPEEDUP is downgraded to Tier 2 because its test harness simulates execution with hardcoded sleep loops rather than executing real model inference, and EXP-H04-R01 is categorized as Tier 1 because its 4-arm adaptive protocol was never implemented or benchmarked in tree. Consequently, 0 benchmark families meet Tier 4 independent reproduction criteria at baseline.
+3. **Oracle Correctness vs. Multi-Runner Reproduction:** Validating mathematical logic against an independent mathematical oracle script (such as Python scripts in EXP-S02 and EXP-DURABLE-WITNESS) verifies model consistency and arithmetic correctness; it does NOT constitute independent multi-runner execution reproduction across distinct physical machines, operating systems, and compilers. Benchmarks previously categorized as Tier 4 (EXP-CMP3-R1 and EXP-FLOAT-CONVERSION) have been reassessed and downgraded to Tier 2: EXP-CMP3-R1 collected mach-o arm64 assembly, but `RESULTS.json` records `measurements_collected: false`, `measurement_authorized: false`, `Linux.status: UNAVAILABLE`, and `Linux.PMU: PMU_UNAVAILABLE` (there is no `pmu_cycles` field), while EXP-FLOAT-CONVERSION is explicitly documented as `conversion_status: UNRESOLVED: excluded from canonical evidence` with known platform divergence and unpersisted 10,000-vector claims. Similarly, EXP-DIRECT-API-SPEEDUP is downgraded to Tier 2 because its test harness simulates execution with hardcoded sleep loops rather than executing real model inference, and EXP-H04-R01 is categorized as Tier 1 because its 4-arm adaptive protocol was never implemented or benchmarked in tree. Consequently, 0 benchmark families meet Tier 4 independent reproduction criteria at baseline.
 4. **Temporal Baseline:** All data, statuses, and metrics are evaluated **as of pinned historical baseline commit `e108fdad078f4d6dfcc427f1fd419ecbe48b4e05`**. Post-baseline events (e.g., PR #658 Phase B acceptance, PR #662 test discovery audits) are explicitly treated as dated post-baseline deltas.
 
 ---
@@ -66,7 +66,7 @@ To ensure full reproducibility and eliminate ambiguity, every quantitative metri
   - **BLOCKED:** 1 investigation (EXP-INV-10A physical storage data unavailable).
 - **Classification Rubric & Grounded Counts (Tiers 1–6):**
   - **Tier 1 (Source-Only / Proposed):** 9 families (7 Google Benchmark suites lacking raw execution logs in tree, EXP-H09-E1 CGR protocol proposal, and EXP-H04-R01 4-arm theoretical protocol).
-  - **Tier 2 (Executed, Insufficient Provenance):** 6 families (BM_PackedTritVector, BM_DispatchOverhead, BM_VMSimulation: candidate runs preserved, but binary comparators missing/below timer resolution; EXP-CMP3-R1: PMU measurements unauthorized and uncollected, linux=null; EXP-FLOAT-CONVERSION: conversion status UNRESOLVED, platform divergence, 10k claim unpersisted; EXP-DIRECT-API-SPEEDUP: test harness relies on simulated sleep loops rather than real inference/policy evaluation).
+  - **Tier 2 (Executed, Insufficient Provenance):** 6 families (BM_PackedTritVector, BM_DispatchOverhead, BM_VMSimulation: candidate runs preserved, but binary comparators missing/below timer resolution; EXP-CMP3-R1: PMU measurements unauthorized and uncollected; Linux.status and GNU_GCC.status are UNAVAILABLE; EXP-FLOAT-CONVERSION: conversion status UNRESOLVED, platform divergence, 10k claim unpersisted; EXP-DIRECT-API-SPEEDUP: test harness relies on simulated sleep loops rather than real inference/policy evaluation).
   - **Tier 3 (Executed with Attributable Evidence):** 8 families with attributed raw logs, machine metadata, or mathematical oracle evaluations (BM_CanonFS, BM_InferenceComparison, BM_Lexer, BM_LimbMul, BM_TensorMatMul, BM_TritwiseWorkloads, EXP-S02, EXP-DURABLE-WITNESS).
   - **Tier 4 (Independently Reproduced):** 0 families (no benchmark family possesses multi-runner independent reproduction across physical machines and compilers in baseline).
   - **Tier 5 (Methodologically Invalid / Superseded):** 2 families shown by adversarial audit to suffer from fatal methodology defects (BM_LlamaKernels, historical EXP-H04-R02).
@@ -78,9 +78,9 @@ To ensure full reproducibility and eliminate ambiguity, every quantitative metri
   - H01: PHYSICAL EVALUATION BLOCKED — MATCHED CHARACTERIZATION DATA UNAVAILABLE.
   - H02: CONDITIONAL MATHEMATICAL PROPERTY — REFUTED AS HARDWARE SPEEDUP ON BINARY SILICON.
   - H03: PARTIALLY SUPPORTED (CONVENIENCE ENCODING) — REFUTED AS OPTIMAL STORAGE DENSITY.
-  - H04: REFUTED WITHIN GENERAL SCOPE — CONDITIONAL ON RESTRICTED MATHEMATICAL DOMAINS WITH UNEQUAL CAPACITY.
+  - H04: HISTORICAL RUN INVALID. CORRECTED MODEL SUFFICIENT FOR THE SCOPED SYMBOLIC COMPARISON. HARDWARE PARAMETERS UNAVAILABLE FOR PHYSICAL CONCLUSIONS.
   - H05: THEORETICALLY PLAUSIBLE AT ABSTRACT LEVEL — UNVERIFIED ON PHYSICAL SILICON.
-  - H06: REFUTED ON BINARY SILICON — CONDITIONAL ON SPECIALIZED HARDWARE WITHOUT HARDWARE MULTIPLIERS.
+  - H06: NEGATIVE FOR THE MEASURED APPLE SILICON NEON DOT PRODUCT AT N=1,024 (INT8 72.20 Gops/s VERSUS T81 TERNARY 4.96 Gops/s). ACCURACY-CONSTRAINED INFERENCE AND ENERGY REMAIN OPEN.
   - H07: DEMONSTRATED IN OPERATIONAL TESTS — COMPARATIVE AUDITABILITY ADVANTAGE UNTESTED AGAINST COMPETITIVE BOUNDARY CONTROL.
   - H08: UNTESTED (METHODOLOGICAL FRAMEWORK ACTIVE; COMPARATIVE TRUSTWORTHINESS OPEN).
 
@@ -122,9 +122,11 @@ To ensure full transparency, every metric is verifiable using standard commands 
    import csv
    with open('docs/research/baseline-assessment/BENCHMARK_LEDGER.csv') as f:
        rows = list(csv.DictReader(f))
-   print('Benchmark families count:', len(rows)) # 26
+   print('Ledger rows:', len(rows)) # 27 = 26 families + 1 supplemental modeled row
    from collections import Counter
-   print('Tiers:', Counter(r['Classification_Tier'] for r in rows))
+   tier_rows = [r for r in rows if r['Executed_Status'] != 'MODELED']
+   print('Benchmark families count:', len(tier_rows)) # 26
+   print('Tiers:', Counter(r['Classification_Tier'] for r in tier_rows))
    print('Executed status:', Counter(r['Executed_Status'] for r in rows))
    "
    ```
