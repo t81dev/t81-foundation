@@ -115,7 +115,7 @@ Auxiliary note:
 | RFC-00D2 | DAIOS Target Architecture and Sequencing | draft | Informational planning RFC that defines the target DAIOS layers and sequencing rule while explicitly preserving the current runtime-first posture: architecture ahead, implementation behind proof. It does not promote new APIs or authorize broad subsystem expansion. |
 | RFC-00D5 | Checked Floating-Point Conversion | draft | [Proposed numerical contract](RFC-00D5-checked-floating-point-conversion.md): checked binary64 bridges, finite representation, exact/rounded/error outcomes and migration decisions. No production or ISA changes; maintainer approval pending. |
 | RFC-00D6 | Versioned TISC State-Transition Contract | draft | [Proposed state-transition contract and decision matrix](RFC-00D6-versioned-tisc-state-transition-contract.md): reconciles normative specs, runtime implementations, and CPA evidence across memory operands, branches, scalar TXor, opcode inventories, and artifact profile selection. No production or ISA changes; maintainer approval pending. |
-| RFC-00E9 | Proposed C++ SDK 2.0.0 Compatibility Transition | draft | [A.1 decision proposal](RFC-00E9-cpp-sdk-2-compatibility-transition.md); no approval, implementation, version/lock change or release authorization; preserves PR #649 frozen head. |
+| RFC-00E9 | Proposed C++ SDK 2.0.0 Compatibility Transition | draft | [A.1 decision proposal](RFC-00E9-cpp-sdk-2-compatibility-transition.md); status remains draft. The 2026-11-23 addendum records later 2.x tags and a non-normative migration note. No RFC acceptance, version/lock change, or release authorization. PR #649 stays at its frozen head. |
 
 ## Series Planning
 

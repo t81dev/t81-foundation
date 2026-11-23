@@ -6,7 +6,7 @@
 - **Type:** standards-track
 - **Applies-To:** C++ SDK under `include/t81/**`, package versioning, API baseline and release migration
 - **Created:** 2026-10-30
-- **Updated:** 2026-10-30
+- **Updated:** 2026-11-23
 - **Author:** Codex, at maintainer request; human review pending
 - **Supersedes:** None
 - **Superseded-By:** None
@@ -26,6 +26,11 @@ API-lock update, RFC acceptance or permission to merge. Proposed requirements
 below take effect only through explicit acceptance and separately authorized
 implementation. Merging a document whose status remains `draft` would not accept
 the transition.
+
+The proposal sections record the 2026-10-30 text and its pinned evidence. They
+describe that review base, not every later commit on main. The dated addendum
+and the additional open-question rows record the 2026-11-23 review. They do not
+accept this RFC, and the later 2.x tags were not produced by this draft.
 
 PR #649 must remain at `3a28eae9c11bbd18b09b71509fa7f74e0584bc24`.
 This draft changes no implementation, SDK metadata, lock, existing RFC status,
@@ -284,6 +289,12 @@ term, backport commitment or retrospective patch compatibility is implied.
 Maintainers may instead select Maintenance Mode only with an owner, scope and
 support term. Neither disposition activates through this draft.
 
+The checklist in this section is the 2026-10-30 proposal. It is not a
+re-execution against later tags. Published release wording and the checks
+recorded on 2026-11-23 are in the addendum and in
+[docs/migration/cpp-sdk-1x-to-2x.md](../../docs/migration/cpp-sdk-1x-to-2x.md).
+That note does not complete the freeze procedure's normative migration guide.
+
 ## Determinism / Safety Considerations
 
 Preserve existing TISC encodings and semantics, canonical serialization and
@@ -375,16 +386,86 @@ The proposed major transition minimizes implementation breadth while making
 consumer rebuilding and migration explicit. It does not recover a missing
 historical baseline or certify untested binary behavior.
 
+## Subsequent main movement (recorded 2026-11-23)
+
+This addendum was measured on a clean checkout of main
+`5a005b2dea5e1eb262d4af45698f8338d16b137c`, after merging that commit into this
+documentation branch. The measurement used Git objects plus the unchanged
+read-only validator `scripts/governance/check_public_api_semver.py`. Environment:
+Linux, Python 3.12.3. No compiler syntax probe, mixed-binary test, lock write,
+version edit, or header edit was run. The October string-sort figures for L,
+reviewed main, and the frozen head were reproduced unchanged, and both string
+order and path-component order still disagree with the preserved 1.9.0 lock.
+
+Path-component order is the order used here to compare a Git archive with the
+validator. On that main tip, the 253 tracked headers have the same paths and
+bytes as the working tree. Sorting those paths as raw strings produces
+`cf237808b242e77a2a4f7d4a6c70433b19f18a78a7e58eac5b71a8a4d872caee`. Sorting the
+same bytes by `/`-separated components produces the lock digest below. The
+read-only validator on the working tree passed. The string-sort difference is
+an ordering difference, not a second set of header bytes, and it is not a new
+lock failure.
+
+| Snapshot | Peeled commit | Headers | `config.hpp` | Lock version | Component-order digest vs lock |
+| --- | --- | ---: | --- | --- | --- |
+| `v1.9.4` | `295fc67245179f1b26e5284c70520019e72bb6c3` | 233 | 1.9.1 | 1.9.0 | mismatch under both orders |
+| `v2.0.0` | `7d4582ce5472bb78420940d35a3aa03b4487101f` | 253 | 2.0.0 | 2.0.0 | match `bf4b6017d31da3d2b08a4d8ea32eee9d7ce9f20d26da10a00b79dae5ed4488be` |
+| `v2.0.1` | `f3b41b5832bc2b2a897eda10d8cc26731e98ec3f` | 253 | 2.0.1 | 2.0.0 | mismatch; component-order `90e451bf4cafe90378032f6a6ad4bb6aa5a89754a4ae049a850551e7c08c0be8` |
+| `v2.1.0` | `9ddeeccda3170f1d12d262f757d56a0c8c903485` | 253 | 2.1.0 | 2.1.0 | match `81fa338f8ebe266718070df77a9360b0a2177dc4fbec6048bde911613b400315` |
+| `v2.2.0` and measured main | `7aa734ea48c8133f620398cdad1767b561ff69b2` is an ancestor; main tip above | 253 | 2.2.0 | 2.2.0 | match `06b7a31088bc85dd6efa4c8dff97c41777314204df124840594a720577b746e3` |
+
+`v2.0.0` through `v2.2.0` exist as tags. Their publication is not acceptance of
+RFC-00E9 and did not use this branch. `v2.0.1` changes only the patch macros in
+`include/t81/config.hpp` relative to `v2.0.0`, while the lock remains the 2.0.0
+record. `v2.1.0` and `v2.2.0` later put the config version and lock version on
+the same number again. A passing lock still does not prove source or binary
+compatibility.
+
+From the October reviewed main to the measured main tip, `include/t81` has one
+added header and eleven modified headers: `canonfs/storage_key.hpp`,
+`config.hpp`, `frontend/semantic_analyzer.hpp`, `ternary/arith.hpp`,
+`types/T81BigInt.hpp`, `types/T81Bytes.hpp`, `types/T81Fraction.hpp`,
+`types/T81IOStream.hpp`, `types/T81Int.hpp`, `types/T81Int128.hpp`,
+`types/T81Limb.hpp`, and `types/T81Map.hpp`. This is a path inventory. It is
+not a new classification of source or ABI breaks. The `v2.0.0` release notes
+already tell consumers to recompile bytecode and C++ code against matched
+headers, to migrate CanonFS persistent stores, and to treat `AxionVerdict` as
+deny-by-default. Those sentences remain release-note text. This addendum does
+not re-audit opcode assignments or `T81Fraction` layout.
+
+`v1.9.4` is not a verified SDK baseline in this record: its config macros say
+1.9.1 and its lock says 1.9.0. The release note's comparison with `v1.9.4` is
+left as published wording.
+
+PR #649 is closed and unmerged. Its head is still
+`3a28eae9c11bbd18b09b71509fa7f74e0584bc24`, and that commit is not an ancestor
+of the measured main tip. This branch does not move, modify, or merge it.
+
+`spec/rfcs/RFC-00E1-balanced-ternary-multi-precision-arithmetic-contract.md`
+exists with status `draft` and is not a catalog row. RFC-00E9 remains a
+proposed identifier. No catalog status other than the new RFC-00E9 row was
+changed.
+
+The non-normative migration note is
+[docs/migration/cpp-sdk-1x-to-2x.md](../../docs/migration/cpp-sdk-1x-to-2x.md).
+`docs/migration/` previously contained only a title line. Adding the note does
+not update `docs/status/IMPLEMENTATION_MATRIX.md`, does not add a changelog
+`BREAKING CHANGES` section, and does not mark SDK 1.x deprecated or in
+maintenance. Those freeze-procedure steps stay unapproved.
+
 ## Open Questions and Maintainer Approval Record
 
 All decisions are pending. A record must identify approver, date, exact revision,
 decision and conditions; a JSON field, AI summary or successful test is not
-authorization.
+authorization. The 2026-11-23 measurements do not close any row.
 
 | Decision | Proposed disposition | Required human decision |
 | --- | --- | --- |
-| RFC identity/status | RFC-00E9, draft | Confirm identifier; explicitly accept/reject through RFC process |
-| Retain current SDK breaks | SDK/package 2.0.0 | Approve breaking-change scope and version; no approval inferred |
+| RFC identity/status | RFC-00E9, draft | Confirm identifier beside the unindexed RFC-00E1 file; explicitly accept/reject through the RFC process |
+| Retain current SDK breaks | SDK/package 2.0.0 | Approve breaking-change scope and version; no approval inferred. Tags `v2.0.0`–`v2.2.0` already exist and do not supply that approval |
+| Shipped 2.x tags | Record only | Decide whether those tags close, supersede, or leave open this proposed transition |
+| v2.0.1 lock lag | Record only | Decide whether the patch-tag mismatch needs an erratum |
+| Migration-note status | Non-normative note only | Decide whether a normative guide, implementation-matrix update, and changelog section are still required |
 | Boundary | Preserve all `include/t81/**` | Confirm transitive exposure and no retroactive experimental exclusions |
 | Supported consumers/toolchains | Matched C++23 SDK builds; tested C++20 subset | Approve exact tested release matrix and declared limitations |
 | SDK 1.x | Deprecated at eventual release | Approve disposition, or fund owned Maintenance Mode |
