@@ -756,6 +756,154 @@ class TernaryOSV02SemanticsTest(unittest.TestCase):
                 self.assertEqual(target.read_bytes(), v1)
                 self.assertEqual(list(bak_dir.iterdir()), [])
 
+    def test_09_adversarial_self_audit_matrix_and_zero_orphan_cleanup(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="t81-v02-self-audit-") as td:
+            root = Path(td)
+            ws = self._prepare_governed_workspace(root)
+            bak_dir = root / "tx_bak"
+            bak_dir.mkdir()
+            target = root / "audit_target.json"
+            v0 = b'{"epoch":0,"trit":0}\n'
+            v1 = b'{"epoch":1,"agent":"auditor-1","trit":1}\n'
+            v2 = b'{"epoch":2,"agent":"auditor-2","trit":1}\n'
+            target.write_bytes(v0)
+
+            def sha3(data: bytes) -> str:
+                return "sha3-512:" + hashlib.sha3_512(data).hexdigest()
+
+            pol = root / "audit_policy.apl"
+            pol.write_text(
+                f'(policy\n  (tier 1)\n  (allowed-tensor-hashes ["{ws["weight_sha3"]}" "{sha3(v1)}" "{sha3(v2)}"]))\n',
+                encoding="utf-8",
+            )
+            bc_hex, _ = _build_dot_subgraph()
+
+            with _McpSession(root) as mcp:
+                # Commit v1 cleanly (+1) to establish a live committed parent receipt
+                tx1 = mcp.call(
+                    "t81.tx_begin",
+                    {
+                        "target_path": str(target),
+                        "backup_dir": str(bak_dir),
+                        "agent_id": "auditor-1",
+                        "isolated": True,
+                        "compact": True,
+                    },
+                )
+                Path(tx1["staging_path"]).write_bytes(v1)
+                c1 = mcp.call(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": tx1["tx_id"],
+                        "policy_path": str(pol),
+                        "agent_id": "auditor-1",
+                        "canonfs_root": str(ws["canonfs_root"]),
+                        "sbdr_path": str(ws["sbdr_path"]),
+                        "bytecode_hex": bc_hex,
+                        "compact": True,
+                    },
+                )
+                self.assertTrue(c1["ok"] and c1["committed"])
+                self.assertEqual(c1["trit"], TRIT_VERIFIED)
+                self.assertEqual(list(bak_dir.iterdir()), [])
+
+                # Adversarial fault-injection matrix: every case MUST fail closed (-1), auto_aborted=True, zero orphans
+                cases = [
+                    ("ERR_AGENT_MISMATCH", {"agent_id": "rogue-agent"}, v2),
+                    ("ERR_PARENT_RECEIPT_MISMATCH", {"agent_id": "auditor-2", "expected_parent_receipt": "sha3-512:" + ("0" * 128)}, v2),
+                    ("ERR_BUDGET_MAX_ABS_ERR", {"agent_id": "auditor-2", "max_abs_err": 1}, v2),
+                    ("ERR_BUDGET_DUALRAIL_FALLBACK", {"agent_id": "auditor-2", "dualrail_fallback_count": 2}, v2),
+                    ("ERR_BUDGET_REPEAT_DETERMINISM", {"agent_id": "auditor-2", "repeat_sha3_identical": False}, v2),
+                    ("ERR_POLICY_HASH_DENIED", {"agent_id": "auditor-2"}, b'{"epoch":999,"unlisted":true}\n'),
+                ]
+                for expected_code, extra_args, staged_payload in cases:
+                    tx = mcp.call(
+                        "t81.tx_begin",
+                        {
+                            "target_path": str(target),
+                            "backup_dir": str(bak_dir),
+                            "agent_id": "auditor-2",
+                            "isolated": True,
+                            "compact": True,
+                        },
+                    )
+                    Path(tx["staging_path"]).write_bytes(staged_payload)
+                    args = {
+                        "tx_id": tx["tx_id"],
+                        "policy_path": str(pol),
+                        "compact": True,
+                        **extra_args,
+                    }
+                    res = mcp.call("t81.tx_commit", args)
+                    self.assertFalse(res["ok"] or res["committed"], (expected_code, res))
+                    self.assertEqual(res["trit"], TRIT_REJECTED, (expected_code, res))
+                    self.assertEqual(res["code"], expected_code, (expected_code, res))
+                    self.assertTrue(res["auto_aborted"], (expected_code, res))
+                    self.assertEqual(target.read_bytes(), v1)
+                    self.assertEqual(list(bak_dir.iterdir()), [], f"Orphan left by {expected_code}")
+
+                # Attempted mutation of immutable axion_root.apl itself -> ERR_IMMUTABLE_POLICY_ROOT (-1), zero orphans
+                tx_pol = mcp.call(
+                    "t81.tx_begin",
+                    {
+                        "target_path": str(pol),
+                        "backup_dir": str(bak_dir),
+                        "agent_id": "auditor-2",
+                        "isolated": True,
+                        "compact": True,
+                    },
+                )
+                pol_orig = pol.read_bytes()
+                Path(tx_pol["staging_path"]).write_bytes(b"(policy (tier 0))\n")
+                deny_pol = mcp.call(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": tx_pol["tx_id"],
+                        "policy_path": str(pol),
+                        "agent_id": "auditor-2",
+                        "compact": True,
+                    },
+                )
+                self.assertEqual(deny_pol["trit"], TRIT_REJECTED)
+                self.assertEqual(deny_pol["code"], "ERR_IMMUTABLE_POLICY_ROOT")
+                self.assertTrue(deny_pol["auto_aborted"])
+                self.assertEqual(pol.read_bytes(), pol_orig)
+                self.assertEqual(list(bak_dir.iterdir()), [])
+
+                # Rebased commit onto c1["commit_receipt"] succeeds cleanly (+1)
+                tx2 = mcp.call(
+                    "t81.tx_begin",
+                    {
+                        "target_path": str(target),
+                        "backup_dir": str(bak_dir),
+                        "agent_id": "auditor-2",
+                        "isolated": True,
+                        "compact": True,
+                    },
+                )
+                Path(tx2["staging_path"]).write_bytes(v2)
+                c2 = mcp.call(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": tx2["tx_id"],
+                        "policy_path": str(pol),
+                        "agent_id": "auditor-2",
+                        "expected_parent_sha3_512": c1["after_sha3_512"],
+                        "expected_parent_receipt": c1["commit_receipt"],
+                        "canonfs_root": str(ws["canonfs_root"]),
+                        "sbdr_path": str(ws["sbdr_path"]),
+                        "bytecode_hex": bc_hex,
+                        "compact": True,
+                    },
+                )
+                self.assertTrue(c2["ok"] and c2["committed"], c2)
+                self.assertEqual(c2["trit"], TRIT_VERIFIED)
+                self.assertEqual(c2["dualrail_sparse128_blocks_skipped"], 3)
+                self.assertEqual(c2["dualrail_fallback_count"], 0)
+                self.assertTrue(c2["repeat_sha3_identical"])
+                self.assertEqual(target.read_bytes(), v2)
+                self.assertEqual(list(bak_dir.iterdir()), [])
+
 
 if __name__ == "__main__":
     unittest.main()

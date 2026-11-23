@@ -950,6 +950,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
   }
 
   std::unordered_map<std::string, ActiveTx> active_txs;
+  std::unordered_map<std::string, std::string> last_commit_receipts;
   uint64_t tx_counter = 0;
 
   std::string line;
@@ -1224,6 +1225,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         const std::string ppath = arg_str(args, "policy_path");
         const std::string req_agent = arg_str(args, "agent_id");
         const std::string expected_parent = arg_str(args, "expected_parent_sha3_512");
+        const std::string expected_parent_rec = arg_str(args, "expected_parent_receipt");
         const std::string canonfs_root_arg = arg_str(args, "canonfs_root");
         const std::string sbdr_path_arg = arg_str(args, "sbdr_path");
         const std::string bc_hex_arg = arg_str(args, "bytecode_hex");
@@ -1238,7 +1240,21 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           structured = "{\"ok\":false,\"trit\":-1,\"committed\":false,\"tx_id\":\"" + tx_id +
                        "\",\"error\":\"missing required argument: policy_path\"}";
         } else if (!req_agent.empty() && req_agent != it->second.agent_id) {
-          structured = "{\"ok\":false,\"trit\":-1,\"committed\":false,\"tx_id\":\"" + tx_id +
+          const ActiveTx tx = it->second;
+          const bool do_auto_abort = req_auto_abort || tx.isolated;
+          bool auto_aborted = false;
+          if (do_auto_abort) {
+            std::error_code ec;
+            fs::remove(tx.backup_path, ec);
+            if (tx.isolated && !tx.staging_path.empty()) {
+              fs::remove(tx.staging_path, ec);
+            }
+            active_txs.erase(it);
+            auto_aborted = true;
+          }
+          structured = "{\"ok\":false,\"trit\":-1,\"committed\":false,\"auto_aborted\":" +
+                       std::string(auto_aborted ? "true" : "false") + ",\"tx_id\":\"" + tx_id +
+                       "\",\"agent_id\":\"" + json_escape_mcp(tx.agent_id) +
                        "\",\"code\":\"ERR_AGENT_MISMATCH\",\"error\":\"agent_id does not own "
                        "transaction\"}";
         } else {
@@ -1271,6 +1287,13 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
               policy_ok = false;
               deny_code = "ERR_PARENT_RECEIPT_MISMATCH";
               policy_err = "expected_parent_sha3_512 does not match live target_path SHA3-512";
+            } else if (!expected_parent_rec.empty() &&
+                       (last_commit_receipts.find(tx.target_path.string()) ==
+                            last_commit_receipts.end() ||
+                        last_commit_receipts[tx.target_path.string()] != expected_parent_rec)) {
+              policy_ok = false;
+              deny_code = "ERR_PARENT_RECEIPT_MISMATCH";
+              policy_err = "expected_parent_receipt does not match latest committed receipt";
             } else if (max_abs_err != 0) {
               policy_ok = false;
               deny_code = "ERR_BUDGET_MAX_ABS_ERR";
@@ -1464,6 +1487,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                 if (!vm_exec_receipt.empty()) receipt_in += "|" + vm_exec_receipt;
                 const std::string commit_receipt =
                     sha3_512_hex(std::vector<uint8_t>(receipt_in.begin(), receipt_in.end()));
+                last_commit_receipts[tx.target_path.string()] = commit_receipt;
                 active_txs.erase(it);
                 structured = "{\"ok\":true,\"trit\":1,\"committed\":true,\"tx_id\":\"" + tx_id +
                              "\",\"agent_id\":\"" + json_escape_mcp(tx.agent_id) +
