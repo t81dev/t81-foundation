@@ -1,0 +1,334 @@
+Start testing: Nov 14 01:05 Coordinated Universal Time
+----------------------------------------------------------
+380/417 Testing: t81_exp_scg08_01_test
+380/417 Test: t81_exp_scg08_01_test
+Command: "D:/a/t81-foundation/t81-foundation/build/experiments/scg08_arithmetic_work/t81_exp_scg08_01_test.exe"
+Directory: D:/a/t81-foundation/t81-foundation/build/experiments/scg08_arithmetic_work
+"t81_exp_scg08_01_test" start time: Nov 14 01:05 Coordinated Universal Time
+Output:
+----------------------------------------------------------
+=====================================================================
+ SCG-08 Phase 1 Gate 1: Carry Propagation & Arithmetic Work Harness 
+ Specification: T81-SCG-08-PHASE1-PROP-001-R3-ADDENDUM-06           
+ Parent Charter: SCG08_PHASE0_RESEARCH_CHARTER.md                  
+=====================================================================
+[SCG-08 GATE 1] Verifying exact accumulator-width tables per Addendum 06...
+  Band B=64 bits: OpTrits=41, AddTrits=42 (2 limbs), MulTrits=81 (3 limbs)
+  Band B=128 bits: OpTrits=81, AddTrits=82 (4 limbs), MulTrits=161 (6 limbs)
+  Band B=256 bits: OpTrits=162, AddTrits=163 (7 limbs), MulTrits=323 (12 limbs)
+  Band B=512 bits: OpTrits=324, AddTrits=324 (12 limbs), MulTrits=646 (24 limbs)
+  Band B=1024 bits: OpTrits=647, AddTrits=647 (24 limbs), MulTrits=1292 (48 limbs)
+[SCG-08 GATE 1] Testing Tier 1 Markov carry dynamics (smoke test)...
+  Ternary f_gen|0: 0.243243, f_occ: 0.29, mean_run_len: 1.61111
+  Binary f_gen|0: 0.272727, f_occ: 0.47, mean_run_len: 3.13333
+[SCG-08 GATE 1] Testing Tier 2 multi-precision arithmetic across all 5 bands...
+  Verifying Band B=64 bits (TernaryLimbs: In=2, Add=2, Mul=3; BinaryLimbs: In=1, Add=2, Mul=2)...
+  Verifying Band B=128 bits (TernaryLimbs: In=3, Add=4, Mul=6; BinaryLimbs: In=2, Add=3, Mul=4)...
+  Verifying Band B=256 bits (TernaryLimbs: In=6, Add=7, Mul=12; BinaryLimbs: In=4, Add=5, Mul=8)...
+  Verifying Band B=512 bits (TernaryLimbs: In=12, Add=12, Mul=24; BinaryLimbs: In=8, Add=9, Mul=16)...
+  Verifying Band B=1024 bits (TernaryLimbs: In=24, Add=24, Mul=48; BinaryLimbs: In=16, Add=17, Mul=32)...
+[SCG-08 GATE 1] Verifying deterministic exact operation counts (zero, sparse, dense, carry-propagating)...
+  Deterministic exact-count verifications passed.
+[SCG-08 GATE 1] Verifying frozen weighted metric W_ops formula...
+[SCG-08 GATE 1] Verifying PRNG seed 0x5C608001ULL deterministic replay...
+[SCG-08 GATE 1] Checking deliberate 5-D oracle corruption fixtures...
+  Oracle rejection fixture assertions passed; process rejection checks are registered separately in CTest.
+[SCG-08 GATE 1] Verifying cumulative trial budget accounting...
+  Cumulative trials recorded so far: 179 / 1000
+=====================================================================
+ [GATE 1 RESULT] ALL SMOKE-TESTS AND VERIFICATIONS PASSED           
+ Cumulative Trials: 179 / 1000 (Budget Respected)
+ Gate 2 Status: STRICTLY WITHHELD                                    
+=====================================================================
+<end of output>
+Test time =   0.30 sec
+----------------------------------------------------------
+Test Passed.
+"t81_exp_scg08_01_test" end time: Nov 14 01:05 Coordinated Universal Time
+"t81_exp_scg08_01_test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+381/417 Testing: t81_exp_scg08_01_result_rejection
+381/417 Test: t81_exp_scg08_01_result_rejection
+Command: "C:/hostedtoolcache/windows/Python/3.12.10/x64/python.exe" "D:/a/t81-foundation/t81-foundation/source/experiments/scg08_arithmetic_work/test_result_rejection.py" "D:/a/t81-foundation/t81-foundation/build/experiments/scg08_arithmetic_work/t81_exp_scg08_01_test.exe"
+Directory: D:/a/t81-foundation/t81-foundation/build/experiments/scg08_arithmetic_work
+"t81_exp_scg08_01_result_rejection" start time: Nov 14 01:05 Coordinated Universal Time
+Output:
+----------------------------------------------------------
+numerical-equality: rejected with exit 1 and required diagnostic
+overflow-classification: rejected with exit 1 and required diagnostic
+negative-product-bound: rejected with exit 1 and required diagnostic
+canonical-trits: rejected with exit 1 and required diagnostic
+stored-tryte-validation: rejected with exit 1 and required diagnostic
+stored-tryte-decode: rejected with exit 1 and required diagnostic
+stored-tryte-add: rejected with exit 1 and required diagnostic
+stored-tryte-mul: rejected with exit 1 and required diagnostic
+sign-handling: rejected with exit 1 and required diagnostic
+binary-truncation: rejected with exit 1 and required diagnostic
+ternary-truncation: rejected with exit 1 and required diagnostic
+budget: rejected with exit 1 and required diagnostic
+<end of output>
+Test time =   0.12 sec
+----------------------------------------------------------
+Test Passed.
+"t81_exp_scg08_01_result_rejection" end time: Nov 14 01:05 Coordinated Universal Time
+"t81_exp_scg08_01_result_rejection" time elapsed: 00:00:00
+----------------------------------------------------------
+
+382/417 Testing: t81_exp_scg08_01_result_rejection_driver
+382/417 Test: t81_exp_scg08_01_result_rejection_driver
+Command: "C:/hostedtoolcache/windows/Python/3.12.10/x64/python.exe" "D:/a/t81-foundation/t81-foundation/source/experiments/scg08_arithmetic_work/test_result_rejection_driver.py"
+Directory: D:/a/t81-foundation/t81-foundation/build/experiments/scg08_arithmetic_work
+"t81_exp_scg08_01_result_rejection_driver" start time: Nov 14 01:05 Coordinated Universal Time
+Output:
+----------------------------------------------------------
+...
+----------------------------------------------------------------------
+Ran 3 tests in 0.001s
+
+OK
+numerical-equality: rejected with exit 1 and required diagnostic
+overflow-classification: rejected with exit 1 and required diagnostic
+negative-product-bound: rejected with exit 1 and required diagnostic
+canonical-trits: rejected with exit 1 and required diagnostic
+stored-tryte-validation: rejected with exit 1 and required diagnostic
+stored-tryte-decode: rejected with exit 1 and required diagnostic
+stored-tryte-add: rejected with exit 1 and required diagnostic
+stored-tryte-mul: rejected with exit 1 and required diagnostic
+sign-handling: rejected with exit 1 and required diagnostic
+binary-truncation: rejected with exit 1 and required diagnostic
+ternary-truncation: rejected with exit 1 and required diagnostic
+budget: rejected with exit 1 and required diagnostic
+<end of output>
+Test time =   0.39 sec
+----------------------------------------------------------
+Test Passed.
+"t81_exp_scg08_01_result_rejection_driver" end time: Nov 14 01:05 Coordinated Universal Time
+"t81_exp_scg08_01_result_rejection_driver" time elapsed: 00:00:00
+----------------------------------------------------------
+
+383/417 Testing: t81_exp_scg08_01_schema_validation
+383/417 Test: t81_exp_scg08_01_schema_validation
+Command: "C:/hostedtoolcache/windows/Python/3.12.10/x64/python.exe" "D:/a/t81-foundation/t81-foundation/source/scripts/ci/validate_scg08_gate1_evidence.py" "D:/a/t81-foundation/t81-foundation/source/experiments/scg08_arithmetic_work/gate1_evidence_record.json" "D:/a/t81-foundation/t81-foundation/source/experiments/scg08_arithmetic_work/evidence_schema.json"
+Directory: D:/a/t81-foundation/t81-foundation/build/experiments/scg08_arithmetic_work
+"t81_exp_scg08_01_schema_validation" start time: Nov 14 01:05 Coordinated Universal Time
+Output:
+----------------------------------------------------------
+[SCG-08 SCHEMA VALIDATION PASSED] Artifact gate1_evidence_record.json conforms to t81.scg08.carry-experiment.v1
+<end of output>
+Test time =   0.04 sec
+----------------------------------------------------------
+Test Passed.
+"t81_exp_scg08_01_schema_validation" end time: Nov 14 01:05 Coordinated Universal Time
+"t81_exp_scg08_01_schema_validation" time elapsed: 00:00:00
+----------------------------------------------------------
+
+384/417 Testing: t81_exp_scg08_01_schema_negative_validation
+384/417 Test: t81_exp_scg08_01_schema_negative_validation
+Command: "C:/hostedtoolcache/windows/Python/3.12.10/x64/python.exe" "D:/a/t81-foundation/t81-foundation/source/scripts/ci/validate_scg08_gate1_evidence.py" "--test-negative"
+Directory: D:/a/t81-foundation/t81-foundation/build/experiments/scg08_arithmetic_work
+"t81_exp_scg08_01_schema_negative_validation" start time: Nov 14 01:05 Coordinated Universal Time
+Output:
+----------------------------------------------------------
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid evaluated_implementation_sha: None (must be non-null 40-character hexadecimal SHA)
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid evaluated_implementation_sha: abc123 (must be non-null 40-character hexadecimal SHA)
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid evidence_publication_sha: None (must be a non-null 40-character hexadecimal SHA)
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid evidence_publication_sha: 12345 (must be a non-null 40-character hexadecimal SHA)
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid evidence_publication_sha: 'invalid-sha' (must be a non-null 40-character hexadecimal SHA)
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid timestamp_utc format: invalid-time (must be valid ISO-8601 UTC timestamp)
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid specification_version: v1.0 (expected T81-SCG-08-PHASE1-PROP-001-R3-ADDENDUM-06)
+[SCG-08 SCHEMA VALIDATION ERROR] Actual executed trials (1001) exceeded budget ceiling (1000)
+[SCG-08 SCHEMA VALIDATION ERROR] budget_enforced_fail_closed must be boolean true
+[SCG-08 SCHEMA VALIDATION ERROR] tier2_work.evaluated_bands must be a list of 5 evaluated bands
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 weighted total w_ops_add_ternary (999) does not match measured counters formula (80)
+[SCG-08 SCHEMA VALIDATION ERROR] Missing primitive counter op_alu_add_sub in counters_add_ternary
+[SCG-08 SCHEMA VALIDATION ERROR] Property f_occ in tier1_markov.ternary must be float/number
+[SCG-08 SCHEMA VALIDATION ERROR] all_dimensions_passed must be boolean true
+[SCG-08 SCHEMA VALIDATION ERROR] dimensions_verified must list all 5 dimensions
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property operand_trits must be a non-negative integer (found NoneType: None)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property ternary_limbs_op must be a non-negative integer (found str: 'not an integer')
+[SCG-08 SCHEMA VALIDATION ERROR] Band True property bit_width must be a non-negative integer (found bool: True)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property operand_trits must be a non-negative integer (found float: 41.5)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property operand_trits must be a non-negative integer (found int: -1)
+[SCG-08 SCHEMA VALIDATION ERROR] Band True property bit_width must be a non-negative integer (found bool: True)
+[SCG-08 SCHEMA VALIDATION ERROR] Band None property bit_width must be a non-negative integer (found NoneType: None)
+[SCG-08 SCHEMA VALIDATION ERROR] Band not an integer property bit_width must be a non-negative integer (found str: 'not an integer')
+[SCG-08 SCHEMA VALIDATION ERROR] Band 41.5 property bit_width must be a non-negative integer (found float: 41.5)
+[SCG-08 SCHEMA VALIDATION ERROR] Band -1 property bit_width must be a non-negative integer (found int: -1)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 41.0 property bit_width must be a non-negative integer (found float: 41.0)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property operand_trits must be a non-negative integer (found bool: True)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property operand_trits must be a non-negative integer (found NoneType: None)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property operand_trits must be a non-negative integer (found str: 'not an integer')
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property operand_trits must be a non-negative integer (found float: 41.5)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property operand_trits must be a non-negative integer (found int: -1)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property operand_trits must be a non-negative integer (found float: 41.0)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property add_trits_min must be a non-negative integer (found bool: True)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property add_trits_min must be a non-negative integer (found NoneType: None)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property add_trits_min must be a non-negative integer (found str: 'not an integer')
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property add_trits_min must be a non-negative integer (found float: 41.5)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property add_trits_min must be a non-negative integer (found int: -1)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property add_trits_min must be a non-negative integer (found float: 41.0)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property mul_trits_min must be a non-negative integer (found bool: True)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property mul_trits_min must be a non-negative integer (found NoneType: None)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property mul_trits_min must be a non-negative integer (found str: 'not an integer')
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property mul_trits_min must be a non-negative integer (found float: 41.5)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property mul_trits_min must be a non-negative integer (found int: -1)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property mul_trits_min must be a non-negative integer (found float: 41.0)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property ternary_limbs_op must be a non-negative integer (found bool: True)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property ternary_limbs_op must be a non-negative integer (found NoneType: None)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property ternary_limbs_op must be a non-negative integer (found str: 'not an integer')
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property ternary_limbs_op must be a non-negative integer (found float: 41.5)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property ternary_limbs_op must be a non-negative integer (found int: -1)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property ternary_limbs_op must be a non-negative integer (found float: 41.0)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property ternary_limbs_add must be a non-negative integer (found bool: True)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property ternary_limbs_add must be a non-negative integer (found NoneType: None)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property ternary_limbs_add must be a non-negative integer (found str: 'not an integer')
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property ternary_limbs_add must be a non-negative integer (found float: 41.5)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property ternary_limbs_add must be a non-negative integer (found int: -1)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property ternary_limbs_add must be a non-negative integer (found float: 41.0)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property ternary_limbs_mul must be a non-negative integer (found bool: True)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property ternary_limbs_mul must be a non-negative integer (found NoneType: None)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property ternary_limbs_mul must be a non-negative integer (found str: 'not an integer')
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property ternary_limbs_mul must be a non-negative integer (found float: 41.5)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property ternary_limbs_mul must be a non-negative integer (found int: -1)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property ternary_limbs_mul must be a non-negative integer (found float: 41.0)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_add_ternary must be a non-negative integer (found bool: True)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_add_ternary must be a non-negative integer (found NoneType: None)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_add_ternary must be a non-negative integer (found str: 'not an integer')
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_add_ternary must be a non-negative integer (found float: 41.5)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_add_ternary must be a non-negative integer (found int: -1)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_add_ternary must be a non-negative integer (found float: 41.0)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_mul_ternary must be a non-negative integer (found bool: True)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_mul_ternary must be a non-negative integer (found NoneType: None)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_mul_ternary must be a non-negative integer (found str: 'not an integer')
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_mul_ternary must be a non-negative integer (found float: 41.5)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_mul_ternary must be a non-negative integer (found int: -1)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_mul_ternary must be a non-negative integer (found float: 41.0)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_add_binary must be a non-negative integer (found bool: True)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_add_binary must be a non-negative integer (found NoneType: None)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_add_binary must be a non-negative integer (found str: 'not an integer')
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_add_binary must be a non-negative integer (found float: 41.5)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_add_binary must be a non-negative integer (found int: -1)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_add_binary must be a non-negative integer (found float: 41.0)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_mul_binary must be a non-negative integer (found bool: True)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_mul_binary must be a non-negative integer (found NoneType: None)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_mul_binary must be a non-negative integer (found str: 'not an integer')
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_mul_binary must be a non-negative integer (found float: 41.5)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_mul_binary must be a non-negative integer (found int: -1)
+[SCG-08 SCHEMA VALIDATION ERROR] Band 64 property w_ops_mul_binary must be a non-negative integer (found float: 41.0)
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid evidence_publication_sha: None (must be a non-null 40-character hexadecimal SHA)
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid evidence_publication_sha: True (must be a non-null 40-character hexadecimal SHA)
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid evidence_publication_sha: 12345 (must be a non-null 40-character hexadecimal SHA)
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid evidence_publication_sha: 1.5 (must be a non-null 40-character hexadecimal SHA)
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid evidence_publication_sha: 'abc123' (must be a non-null 40-character hexadecimal SHA)
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid evidence_publication_sha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n' (must be a non-null 40-character hexadecimal SHA)
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid git_context: missing required property evidence_generation_sha
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid evidence_generation_sha: must be null (unverified) or a 40-character hexadecimal SHA
+[SCG-08 NEGATIVE TEST SUITE] Running negative schema tests...
+  ✓ Case 'null evaluated_implementation_sha' properly rejected fail-closed
+  ✓ Case 'invalid short evaluated_implementation_sha' properly rejected fail-closed
+  ✓ Case 'null evidence_publication_sha' properly rejected fail-closed
+  ✓ Case 'non-string evidence_publication_sha' properly rejected fail-closed
+  ✓ Case 'invalid publication sha format' properly rejected fail-closed
+  ✓ Case 'malformed timestamp' properly rejected fail-closed
+  ✓ Case 'wrong specification version' properly rejected fail-closed
+  ✓ Case 'budget ceiling exceeded' properly rejected fail-closed
+  ✓ Case 'budget boolean False' properly rejected fail-closed
+  ✓ Case 'missing tier2 band' properly rejected fail-closed
+  ✓ Case 'mismatched weighted total W_ops' properly rejected fail-closed
+  ✓ Case 'missing primitive counter' properly rejected fail-closed
+  ✓ Case 'boolean instead of number' properly rejected fail-closed
+  ✓ Case 'oracle passed False' properly rejected fail-closed
+  ✓ Case 'oracle dimensions missing' properly rejected fail-closed
+  ✓ Case 'operand_trits is null' properly rejected fail-closed
+  ✓ Case 'ternary_limbs_op is not integer' properly rejected fail-closed
+  ✓ Case 'bit_width boolean True' properly rejected fail-closed
+  ✓ Case 'operand_trits float' properly rejected fail-closed
+  ✓ Case 'negative operand_trits' properly rejected fail-closed
+  ✓ Case 'scalar bit_width: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar bit_width: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar bit_width: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar bit_width: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar bit_width: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar bit_width: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'scalar operand_trits: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar operand_trits: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar operand_trits: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar operand_trits: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar operand_trits: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar operand_trits: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'scalar add_trits_min: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar add_trits_min: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar add_trits_min: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar add_trits_min: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar add_trits_min: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar add_trits_min: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'scalar mul_trits_min: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar mul_trits_min: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar mul_trits_min: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar mul_trits_min: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar mul_trits_min: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar mul_trits_min: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_op: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_op: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_op: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_op: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_op: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_op: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_add: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_add: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_add: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_add: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_add: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_add: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_mul: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_mul: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_mul: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_mul: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_mul: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar ternary_limbs_mul: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_ternary: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_ternary: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_ternary: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_ternary: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_ternary: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_ternary: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_ternary: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_ternary: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_ternary: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_ternary: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_ternary: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_ternary: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_binary: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_binary: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_binary: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_binary: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_binary: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_add_binary: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_binary: True (bool)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_binary: None (NoneType)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_binary: 'not an integer' (str)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_binary: 41.5 (float)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_binary: -1 (int)' properly rejected fail-closed
+  ✓ Case 'scalar w_ops_mul_binary: 41.0 (float)' properly rejected fail-closed
+  ✓ Case 'null publication' properly rejected fail-closed
+  ✓ Case 'boolean publication' properly rejected fail-closed
+  ✓ Case 'numeric publication' properly rejected fail-closed
+  ✓ Case 'float publication' properly rejected fail-closed
+  ✓ Case 'short publication' properly rejected fail-closed
+  ✓ Case 'newline publication' properly rejected fail-closed
+  ✓ Case 'missing generation revision' properly rejected fail-closed
+  ✓ Case 'invalid generation revision' properly rejected fail-closed
+[SCG-08 NEGATIVE TEST SUITE] 94 negative cases passed; publication omission and valid SHA accepted.
+[SCG-08 SCHEMA PARITY] 61 rejection cases and 2 positive records passed.
+[SCG-08 SCHEMA PARITY] Integral floats: Draft 7 accepts mathematical integers; stdlib validation intentionally rejects all Python floats.
+[SCG-08 NEGATIVE TEST SUITE] All negative test cases passed successfully.
+<end of output>
+Test time =   0.14 sec
+----------------------------------------------------------
+Test Passed.
+"t81_exp_scg08_01_schema_negative_validation" end time: Nov 14 01:05 Coordinated Universal Time
+"t81_exp_scg08_01_schema_negative_validation" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Nov 14 01:05 Coordinated Universal Time

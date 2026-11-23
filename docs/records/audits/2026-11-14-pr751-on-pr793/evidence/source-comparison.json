@@ -1,0 +1,27 @@
+{
+  "base_pr793": "15b6b2b63fe056d68f959d658a351eba603ce6ea",
+  "original_pr751": "b68853335264d0758124a359f705fb5fbb8dfdc3",
+  "original_parent_pr750": "1522f14aa1994d03af72441f2554718c9cfc11cb",
+  "candidate_code": "24596a28d5aebe75ebb86edc1f4a97b377953538",
+  "identical_to_original_pr751": [
+    "skills/policy-checker/SKILL.md",
+    "skills/policy-checker/validate-policy.sh",
+    "tests/python/test_skill_policy_boundary.py"
+  ],
+  "cmake_only_original_registration_added": true,
+  "all_cpp_vm_policy_arithmetic_capture_sources_unchanged_from_pr793": true,
+  "source_sha256": {
+    "CMakeLists.txt": "8dbef9cf044b56e66ba536d53b22cc8f303bba8521f03b23b47f96e4492d550e",
+    "skills/policy-checker/SKILL.md": "4f21a2880be6b19a726316178f6df82caac72dcc0a4a44d1cafebc273d77145d",
+    "skills/policy-checker/validate-policy.sh": "aabe5b1c2787c4566e6180c0a0cd3444f9737e3e8164f3f4d61047c77fda1c14",
+    "tests/python/test_skill_policy_boundary.py": "5dec5000e13cfadeabf89cc9759b07f0e9f611ca29f609c37205d9089d052745"
+  },
+  "baseline_wrapper_source_revision": "15b6b2b63fe056d68f959d658a351eba603ce6ea",
+  "baseline_dispatcher_source_revision": "15b6b2b63fe056d68f959d658a351eba603ce6ea",
+  "baseline_wrapper_sha256": "5f1a98ea61ff1e215762f6d6d3e12fb5a1a5c1aceff850c88acf1a00d9a56e6a",
+  "baseline_dispatcher_sha256": "6e739396d9da6a960105831e58bc512fd4c5d4e165f94cee9478bbff92f187c0",
+  "same_harness_before_after": "5dec5000e13cfadeabf89cc9759b07f0e9f611ca29f609c37205d9089d052745",
+  "same_fresh_release_binary_before_after": "f6ce6dc1802c961c7d6f4082ee25c62baa05b65df5d8cab6f195d7c131a87ea5",
+  "original_751_test_byte_identical": true,
+  "native_cpp_flags_include_NDEBUG": true
+}

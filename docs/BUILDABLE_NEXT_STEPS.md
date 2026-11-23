@@ -23,9 +23,10 @@ If those answers are unclear, narrow the work before starting it.
 ### Now
 
 - RFC-00D1 policy-profile depth:
-  build on the now-documented built-in profile surface by improving policy
-  documents, examples, and any remaining profile-shaped denial clarity without
-  broadening interchange format scope
+  keep built-in profile denial before host materialization. A fully denied
+  directory export must not create its destination, a denied file export must
+  leave existing bytes unchanged, and a partial export writes only admitted
+  entries. Do not add profile names or interchange formats.
 - CI and portability boringness:
   remove concrete toolchain/setup footguns, especially in build, demo, and
   smoke-test paths contributors are likely to try early
@@ -80,12 +81,12 @@ Work these in order unless an active regression or CI failure is blocking the
 repo.
 
 1. Tighten CanonFS import denial reasons and add matching negative tests.
-2. Tighten CanonFS export denial reasons and add matching negative tests.
-3. Add RFC-00D1 CLI contract coverage for failure cases and JSON error shapes.
+2. (DONE — v2.1.0+) Tighten CanonFS export denial reasons and add matching negative tests (`tests/cpp/canonfs_cli_contract_tests.cpp` now covers `ExportSuccessJSONStructure`, `ExportPolicyFailureJSONStructure`, and `ExportInvalidRefJSONStructure` — 7/7 passing).
+3. (IN PROGRESS) Expand RFC-00D1 contract coverage for failure cases beyond the original import/export JSON shapes. Directory export now defers destination creation until an admitted entry is written (`fs/canonfs_interchange_ops.cpp`, covered by `canonfs_interchange_test`). Keep going on remaining target-side failure cases without widening the seed contract.
 4. Keep interchange JSON payloads, schema IDs, and docs aligned.
 5. Add or refresh one golden CanonFS interchange example under `examples/`.
    Current seed example: `examples/storage-and-canonfs/canonfs-interchange/`.
-6. Move reusable interchange behavior out of CLI-only code where practical.
+6. (IN PROGRESS — major split landed) Move reusable behavior out of CLI/VM monoliths (`tools/cli/core/main.cpp` split `-63.1%` into `cmd_*.{hpp,cpp}` + `help_text.{hpp,cpp}`; `vm/vm.cpp` split `-59.6%` into `vm_support.{hpp,cpp}` + 6 `vm/internal/vm_*_opcodes.inc` groups).
 7. Add fail-fast checks for remaining QEMU/EFI toolchain and smoke-path footguns.
 8. Trim the highest-friction contributor-path docs so they stay short and current.
 9. Review workflow overlap and consolidate only where it lowers maintenance cost.

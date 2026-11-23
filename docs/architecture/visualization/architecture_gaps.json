@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0.0",
+  "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
+  "total_gaps": 4,
+  "gaps": [
+    {
+      "id": "gap.daios_full_kernel",
+      "name": "DAIOS Autonomous Operating System Kernel",
+      "gap_classification": "PROPOSED_INTEGRATION",
+      "affected_layer": "layer.5_os",
+      "description": "DAIOS (RFC-00D2) describes an autonomous decision substrate; implementation remains deferred behind experimental proof.",
+      "evidence": {
+        "source_file": "spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md",
+        "line": 23,
+        "notes": "Explicitly titled 'target architecture and sequencing note' with status: draft."
+      },
+      "unresolved_questions": "Will DAIOS supersede the existing TernaryOS C++ kernel or wrap it as an execution profile?"
+    },
+    {
+      "id": "gap.native_ternary_silicon",
+      "name": "Physical Native Ternary Semiconductor Hardware",
+      "gap_classification": "NOT_APPLICABLE",
+      "affected_layer": "layer.6_hw",
+      "description": "No physical native 3-state silicon exists in the repository. All execution runs on binary host CPUs or Verilog simulation.",
+      "evidence": {
+        "source_file": "docs/research/continuity/HYPOTHESIS_REGISTER_v1.json",
+        "line": 15,
+        "notes": "Hypothesis H01 notes current RTL uses two binary bits per trit and supplies no measured physical 3-state device advantage."
+      },
+      "unresolved_questions": "Physical device energy-delay metrics remain dependent on external third-party foundry fabrications."
+    },
+    {
+      "id": "gap.llvm_backend_maturity",
+      "name": "TISC to LLVM / MLIR Production Compiler Backend",
+      "gap_classification": "PARTIAL_INTEGRATION",
+      "affected_layer": "layer.1_lang",
+      "description": "LLVM and MLIR translation bridges exist in lang/llvm and lang/mlir but are not integrated into the standard CLI release build.",
+      "evidence": {
+        "source_file": "lang/llvm/tisc_to_llvm.cpp",
+        "line": 31,
+        "notes": "Code compiles under optional CMake flags but lacks comprehensive end-to-end JIT execution tests."
+      },
+      "unresolved_questions": "Should T81Lang prioritize direct bytecode emission or lower through MLIR dialects?"
+    },
+    {
+      "id": "gap.f3_historical_attribution",
+      "name": "SCG-07 Finding F3 Complete Historical Causal Attribution",
+      "gap_classification": "VERIFIED_GAP",
+      "affected_layer": "layer.7_assurance",
+      "description": "Finding F3 (T81Limb54::karatsuba) passes all current tests, but historical causal attribution for 299/300 SCG-06 failures remains incomplete.",
+      "evidence": {
+        "source_file": "docs/research/continuity/SCG07_PHASE5_EVIDENCE_RECEIPT.md",
+        "line": 18,
+        "notes": "Receipt explicitly dispositioned as 'F3 CORRECT ON CURRENT BASELINE \u2014 historical causal attribution incomplete'."
+      },
+      "unresolved_questions": "Did F1 Booth table scaling fully account for intermediate Karatsuba carry failures on historical baselines?"
+    }
+  ]
+}

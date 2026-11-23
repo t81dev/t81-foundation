@@ -5,9 +5,9 @@ endif()
 project(t81 LANGUAGES C CXX ASM)
 
 # ---------- Version ----------
-set(T81_VERSION_MAJOR 1)
-set(T81_VERSION_MINOR 9)
-set(T81_VERSION_PATCH 1)
+set(T81_VERSION_MAJOR 2)
+set(T81_VERSION_MINOR 2)
+set(T81_VERSION_PATCH 0)
 set(T81_VERSION "${T81_VERSION_MAJOR}.${T81_VERSION_MINOR}.${T81_VERSION_PATCH}")
 
 # Generate version header
@@ -22,6 +22,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Options.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Compiler.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Int128.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Sanitizers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Dependencies.cmake)
 add_subdirectory(src)
@@ -39,6 +40,9 @@ if(T81_BUILD_ARCHITECTURE_CHALLENGE)
   add_executable(t81_architecture_arm_a experiments/architecture_challenge/arm_a.cpp)
   target_link_libraries(t81_architecture_arm_a PRIVATE t81_vm t81_axion t81_core)
 endif()
+
+# Opt-in research experiment harness; no production arithmetic or decoder changes.
+option(T81_BUILD_EXPERIMENTS "Build isolated research experiments" OFF)
 
 if(T81_BUILD_PROVENANCE_EXPERIMENT)
   if(NOT T81_STRICT_DETERMINISTIC_FLOAT)
@@ -96,6 +100,22 @@ endif()
 # =============================================================================
 if(T81_ENABLE_TERNARYOS)
   add_subdirectory(ternaryos)
+endif()
+
+if(T81_BUILD_TESTS OR T81_BUILD_EXAMPLES)
+  include(FetchContent)
+  FetchContent_Declare(
+    asio
+    GIT_REPOSITORY https://github.com/chriskohlhoff/asio.git
+    GIT_TAG asio-1-30-2
+  )
+  FetchContent_MakeAvailable(asio)
+  # Asio does not provide a CMake target; expose a local interface target.
+  if(NOT TARGET asio)
+    add_library(asio INTERFACE)
+    target_include_directories(asio INTERFACE ${asio_SOURCE_DIR}/asio/include)
+    target_compile_definitions(asio INTERFACE ASIO_STANDALONE)
+  endif()
 endif()
 
 if(T81_BUILD_EXAMPLES)
@@ -204,20 +224,6 @@ if(T81_BUILD_TESTS)
         ${PROJECT_SOURCE_DIR}/tests/python/test_accountable_computation.py
         --runner $<TARGET_FILE:t81_accountable_experiment> --production-only)
   endif()
-  include(FetchContent)
-  FetchContent_Declare(
-    asio
-    GIT_REPOSITORY https://github.com/chriskohlhoff/asio.git
-    GIT_TAG asio-1-30-2
-  )
-  FetchContent_MakeAvailable(asio)
-  # Asio does not provide a CMake target; expose a local interface target.
-  if(NOT TARGET asio)
-    add_library(asio INTERFACE)
-    target_include_directories(asio INTERFACE ${asio_SOURCE_DIR}/asio/include)
-    target_compile_definitions(asio INTERFACE ASIO_STANDALONE)
-  endif()
-
   add_executable(t81_bigint_test tests/cpp/bigint_roundtrip.cpp)
   target_link_libraries(t81_bigint_test PRIVATE t81_core)
 
@@ -318,6 +324,10 @@ if(T81_BUILD_TESTS)
   add_executable(canonfs_integrity_matrix_test tests/cpp/canonfs_integrity_matrix_test.cpp)
   target_link_libraries(canonfs_integrity_matrix_test PRIVATE t81_core t81_axion)
 
+  add_executable(canonfs_storage_format_test tests/cpp/canonfs_storage_format_test.cpp)
+  target_link_libraries(canonfs_storage_format_test PRIVATE t81_core)
+  add_executable(t81_vm_metarefine_writecode_denial_test tests/cpp/vm_metarefine_writecode_denial_test.cpp)
+  target_link_libraries(t81_vm_metarefine_writecode_denial_test PRIVATE t81_vm t81_core)
   add_executable(canonfs_identity_contract_test tests/cpp/canonfs_identity_contract_test.cpp)
   target_link_libraries(canonfs_identity_contract_test PRIVATE t81_core t81_axion)
 
@@ -421,6 +431,10 @@ if(T81_BUILD_TESTS)
   add_executable(t81_vm_fault_test tests/cpp/vm_fault_test.cpp)
   target_link_libraries(t81_vm_fault_test PRIVATE t81_vm t81_core)
 
+  add_executable(t81_vm_value_ops_boundary_test tests/cpp/vm_value_ops_boundary_test.cpp)
+  target_link_libraries(t81_vm_value_ops_boundary_test PRIVATE t81_vm t81_core)
+  target_include_directories(t81_vm_value_ops_boundary_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
   add_executable(t81_vm_deterministic_fault_test tests/cpp/test_vm_deterministic_fault.cpp)
   target_link_libraries(t81_vm_deterministic_fault_test PRIVATE t81_vm t81_core)
 
@@ -465,6 +479,7 @@ if(T81_BUILD_TESTS)
   add_executable(t81_vm_decoder_test tests/cpp/vm_decoder_test.cpp)
   target_link_libraries(t81_vm_decoder_test PRIVATE t81_decode t81_vm t81_core t81_tool_model)
   add_test(NAME t81_vm_decoder_test COMMAND t81_vm_decoder_test)
+  set_tests_properties(t81_vm_decoder_test PROPERTIES TIMEOUT 300)
   add_executable(t81_safetensors_import_test tests/cpp/safetensors_import_test.cpp)
   target_link_libraries(t81_safetensors_import_test PRIVATE t81_tool_model t81_core)
   add_executable(t81_native_weights_metrics_test tests/cpp/native_weights_metrics_test.cpp)
@@ -717,6 +732,10 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
                  tests/cpp/vm_policy_parse_fail_closed_test.cpp)
   target_link_libraries(t81_vm_policy_parse_fail_closed_test PRIVATE t81_vm t81_core)
 
+  add_executable(t81_dualrail_sbdr_vm_test
+                 tests/cpp/dualrail_sbdr_vm_test.cpp)
+  target_link_libraries(t81_dualrail_sbdr_vm_test PRIVATE t81_vm t81_core)
+
   add_executable(t81_vm_axreport_policy_deny_fail_closed_test
                  tests/cpp/vm_axreport_policy_deny_fail_closed_test.cpp)
   target_link_libraries(t81_vm_axreport_policy_deny_fail_closed_test PRIVATE t81_vm t81_core)
@@ -853,6 +872,9 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
 
   add_executable(t81_semantic_analyzer_loop_test tests/cpp/semantic_analyzer_loop_test.cpp)
   target_link_libraries(t81_semantic_analyzer_loop_test PRIVATE t81_lang_frontend)
+
+  add_executable(t81_semantic_analyzer_scope_lifetime_test tests/cpp/semantic_analyzer_scope_lifetime_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_scope_lifetime_test PRIVATE t81_lang_frontend)
 
   add_executable(ir_inspector tools/ir_inspector.cpp)
   target_link_libraries(ir_inspector PRIVATE t81_lang_frontend)
@@ -1053,6 +1075,7 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   target_link_libraries(vm_ffi_bridge_test PRIVATE t81_vm t81_isa t81_core)
   target_compile_definitions(
     vm_ffi_bridge_test PRIVATE T81_VM_FFI_TESTLIB_PATH="$<TARGET_FILE:ffi_bridge_testlib>")
+  add_dependencies(vm_ffi_bridge_test ffi_bridge_testlib)
 
   # RFC-0037 — TNN stdlib (std.tnn.* builtins → RFC-0034 TISC opcodes)
   add_executable(tnn_stdlib_test tests/cpp/tnn_stdlib_test.cpp)
@@ -1177,6 +1200,24 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
 
   add_executable(t81_t81int_overflow_test tests/cpp/test_t81int_overflow.cpp)
   target_link_libraries(t81_t81int_overflow_test PRIVATE t81_core)
+
+  add_executable(t81_t81fraction_test tests/cpp/test_t81fraction.cpp)
+  target_link_libraries(t81_t81fraction_test PRIVATE t81_core)
+
+  add_executable(t81_bigint_sub_test tests/cpp/test_t81bigint_sub.cpp)
+  target_link_libraries(t81_bigint_sub_test PRIVATE t81_core)
+
+  add_executable(t81_limb27_mul_test tests/cpp/test_t81_limb27_mul.cpp)
+  target_link_libraries(t81_limb27_mul_test PRIVATE t81_core)
+
+  add_executable(t81_limb54_reference_mul_test tests/cpp/test_t81_limb54_reference_mul.cpp)
+  target_link_libraries(t81_limb54_reference_mul_test PRIVATE t81_core)
+
+  add_executable(t81_limb54_karatsuba_test tests/cpp/test_t81_limb54_karatsuba.cpp)
+  target_link_libraries(t81_limb54_karatsuba_test PRIVATE t81_core)
+
+  add_executable(t81_phase6_qualification_test tests/cpp/test_scg07_phase6_qualification.cpp)
+  target_link_libraries(t81_phase6_qualification_test PRIVATE t81_core)
 
   add_executable(t81_t81int_generic_div_test tests/cpp/test_t81int_generic_div.cpp)
   target_link_libraries(t81_t81int_generic_div_test PRIVATE t81_core)
@@ -1307,6 +1348,26 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
 
   add_executable(test_bigint_robust_features tests/cpp/test_bigint_robust_features.cpp)
   target_link_libraries(test_bigint_robust_features PRIVATE t81_core)
+  add_executable(t81_int128_test tests/cpp/t81_int128_test.cpp)
+  target_link_libraries(t81_int128_test PRIVATE t81_core)
+  add_executable(t81_process_capture_test
+    tests/cpp/process_capture_test.cpp
+    tools/cli/core/process_capture.cpp)
+  target_include_directories(t81_process_capture_test PRIVATE ${PROJECT_SOURCE_DIR})
+  target_compile_features(t81_process_capture_test PRIVATE ${T81_CXX_STD_FEATURE})
+  find_package(Threads REQUIRED)
+  target_link_libraries(t81_process_capture_test PRIVATE Threads::Threads)
+  if(WIN32)
+    target_link_libraries(t81_process_capture_test PRIVATE advapi32)
+  endif()
+  if(MINGW)
+    target_link_options(t81_process_capture_test PRIVATE -municode)
+  endif()
+  # Execute the fallback even on hosts with a native __int128 backend.
+  add_executable(t81_int128_portable_test tests/cpp/t81_int128_test.cpp)
+  target_include_directories(t81_int128_portable_test PRIVATE ${PROJECT_SOURCE_DIR}/include)
+  target_compile_features(t81_int128_portable_test PRIVATE ${T81_CXX_STD_FEATURE})
+  target_compile_definitions(t81_int128_portable_test PRIVATE T81_FORCE_PORTABLE_INT128=1)
 
   add_executable(test_bigint_multilimb_ext tests/cpp/test_bigint_multilimb_ext.cpp)
   target_link_libraries(test_bigint_multilimb_ext PRIVATE t81_core)
@@ -1362,6 +1423,27 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   target_link_libraries(direct_api_authorization_test PRIVATE t81_direct_api)
   add_test(NAME direct_api_authorization_test COMMAND direct_api_authorization_test)
   find_package(Python3 COMPONENTS Interpreter REQUIRED)
+  if(MSVC)
+    add_test(NAME t81_msvc_debug_configuration
+      COMMAND ${Python3_EXECUTABLE}
+        ${PROJECT_SOURCE_DIR}/tests/python/check_msvc_debug_configuration.py
+        --source ${PROJECT_SOURCE_DIR} --cmake ${CMAKE_COMMAND}
+        --compiler ${CMAKE_CXX_COMPILER} --generator ${CMAKE_GENERATOR})
+    set_tests_properties(t81_msvc_debug_configuration PROPERTIES TIMEOUT 120)
+  endif()
+  # Exercise real failure paths with NDEBUG defined, including in Debug builds.
+  foreach(guard sha3 float map)
+    string(TOUPPER "${guard}" guard_kind)
+    add_executable(t81_release_${guard}_guard tests/cpp/release_correctness_guard.cpp)
+    target_compile_definitions(t81_release_${guard}_guard PRIVATE
+      NDEBUG T81_RELEASE_GUARD_${guard_kind})
+    target_link_libraries(t81_release_${guard}_guard PRIVATE t81_core)
+    add_test(NAME t81_release_${guard}_guard
+      COMMAND ${Python3_EXECUTABLE}
+        ${PROJECT_SOURCE_DIR}/tests/python/check_release_correctness_guard.py
+        ${guard} $<TARGET_FILE:t81_release_${guard}_guard>)
+    set_tests_properties(t81_release_${guard}_guard PROPERTIES TIMEOUT 30)
+  endforeach()
   add_test(NAME controlled_ai_evidence_json_test
     COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tests/python/test_controlled_ai_evidence_json.py
       $<TARGET_FILE:controlled_ai_authorization_test>)
@@ -1379,6 +1461,11 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/experiments/s02_stochastic_topology/CMakeLists.txt")
     add_subdirectory(experiments/s02_stochastic_topology)
   endif()
+  if(T81_BUILD_EXPERIMENTS)
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/experiments/scg08_arithmetic_work/CMakeLists.txt")
+      add_subdirectory(experiments/scg08_arithmetic_work)
+    endif()
+  endif()
   set(T81_TEST_TARGETS
     t81_float_test
     t81_float_properties_test
@@ -1386,6 +1473,12 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_division_test
     t81_t81int_test
     t81_t81int_overflow_test
+    t81_t81fraction_test
+    t81_bigint_sub_test
+    t81_limb27_mul_test
+    t81_limb54_reference_mul_test
+    t81_limb54_karatsuba_test
+    t81_phase6_qualification_test
     t81_t81int_generic_div_test
     t81_int_sign_trit_test
     t81_bigint_test
@@ -1432,6 +1525,8 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     canonfs_persistent_driver_test
     canonfs_policy_boundary_test
     canonfs_identity_contract_test
+    canonfs_storage_format_test
+    t81_vm_metarefine_writecode_denial_test
     canonfs_read_verify_test
     canonfs_read_verify_env_contract_test
     canonfs_integrity_matrix_test
@@ -1503,6 +1598,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_vm_predispatch_policy_deny_logging_test
     t81_vm_ai_predispatch_deny_audit_test
     t81_vm_fault_test
+    t81_vm_value_ops_boundary_test
     t81_vm_deterministic_fault_test
     t81_vm_fault_family_determinism_matrix_test
     t81_vm_memory_test
@@ -1522,6 +1618,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_vm_workload_determinism_tiers_test
     t81_vm_mixed_workload_conformance_matrix_test
     t81_vm_policy_parse_fail_closed_test
+    t81_dualrail_sbdr_vm_test
     t81_vm_axreport_policy_deny_fail_closed_test
     t81_vm_system_registers_deterministic_test
     t81_vm_stubbed_opcode_fail_closed_test
@@ -1563,6 +1660,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_semantic_analyzer_vector_literal_test
     t81_semantic_analyzer_equality_test
     t81_semantic_analyzer_loop_test
+    t81_semantic_analyzer_scope_lifetime_test
     t81_semantic_analyzer_numeric_test
     t81_semantic_analyzer_diagnostic_location_test
     t81_semantic_analyzer_cascade_suppression_test
@@ -1628,6 +1726,9 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     axion_hybrid_mlp_policy_test
     test_bigint_multilimb_ext
     test_bigint_robust_features
+    t81_int128_test
+    t81_process_capture_test
+    t81_int128_portable_test
     t81_bigint_v1_perf
     bigint_perf_guardrail_test
     t81_bigint_allocation_pathology_test
@@ -1669,7 +1770,29 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   endforeach()
   # Golden interchange fixtures live in the source tree, including out-of-tree builds.
   set_tests_properties(canonfs_interchange_test PROPERTIES WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+  set_tests_properties(t81_process_capture_test PROPERTIES TIMEOUT 60)
+  set_tests_properties(jit_trace_equivalence_test PROPERTIES TIMEOUT 240)
+  add_test(NAME t81_cli_execution_policy_test
+    COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tests/python/test_cli_execution_policy.py
+      --t81-bin $<TARGET_FILE:t81>)
+  set_tests_properties(t81_cli_execution_policy_test PROPERTIES TIMEOUT 180)
+  if(UNIX)
+    find_program(T81_SKILL_TEST_BASH NAMES bash)
+    if(NOT T81_SKILL_TEST_BASH)
+      message(FATAL_ERROR "Bash is required for the skill policy boundary test")
+    endif()
+    add_test(NAME t81_skill_policy_boundary_test
+      COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tests/python/test_skill_policy_boundary.py
+        --bash ${T81_SKILL_TEST_BASH} --t81-bin $<TARGET_FILE:t81>)
+    set_tests_properties(t81_skill_policy_boundary_test PROPERTIES TIMEOUT 90)
+  endif()
   add_test(NAME t81_cli_repro_hash_test COMMAND $<TARGET_FILE:cli_repro_hash_test> $<TARGET_FILE:t81>)
+  set_tests_properties(t81_cli_repro_hash_test PROPERTIES WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+  add_test(NAME canonfs_cli_portable_storage_test
+    COMMAND ${Python3_EXECUTABLE}
+      ${PROJECT_SOURCE_DIR}/tests/python/test_canonfs_cli_portable_storage.py
+      --cli $<TARGET_FILE:t81>)
+  set_tests_properties(canonfs_cli_portable_storage_test PROPERTIES TIMEOUT 120)
   if(NOT WIN32)
     add_test(NAME t81_cli_contract_test_runner COMMAND $<TARGET_FILE:t81_cli_contract_test> $<TARGET_FILE:t81>)
     add_test(NAME t81_ai_task_answer_fixed_test_runner COMMAND $<TARGET_FILE:t81_ai_task_answer_fixed_test> $<TARGET_FILE:t81>)
@@ -1732,6 +1855,8 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   set_tests_properties(t81_root_structure_policy_test PROPERTIES
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   )
+  add_test(NAME t81_stable_baseline_checker_test
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/ci/test_stable_baseline_compliance.py)
 endif()
 
 # =============================================================================
@@ -1752,13 +1877,13 @@ endif()
 
 if(T81_BUILD_PYTHON_BINDINGS)
   set(PYBIND11_FINDPYTHON ON)
-  find_package(Python REQUIRED COMPONENTS Interpreter Development)
+  find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
   find_package(pybind11 REQUIRED)
   pybind11_add_module(_t81 lang/python/t81_python.cpp)
-  target_link_libraries(_t81 PRIVATE t81_core t81_lang_frontend t81_isa t81_vm)
+  target_link_libraries(_t81 PRIVATE t81_core t81_axion t81_lang_frontend t81_isa t81_vm)
   # Install the extension into the t81 package directory so scikit-build-core
-  # picks it up alongside ffi/python/__init__.py.
-  install(TARGETS _t81 LIBRARY DESTINATION t81)
+  # picks it up alongside ffi/python/t81/__init__.py.
+  install(TARGETS _t81 DESTINATION t81 COMPONENT python)
 endif()
 
 # =============================================================================
@@ -2034,7 +2159,11 @@ install(TARGETS ${T81_INSTALL_TARGETS}
 )
 
 # Install headers
-install(DIRECTORY include/t81 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY include/t81
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  PATTERN "config.hpp.in" EXCLUDE
+  PATTERN "config.hpp.backup" EXCLUDE
+)
 
 # Install export file
 install(EXPORT T81Targets

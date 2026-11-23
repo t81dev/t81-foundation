@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "git",
+    "diff",
+    "--cached",
+    "--check"
+  ],
+  "exit": 2,
+  "diagnostic_line_count": 1064,
+  "files": [
+    "docs/records/audits/2026-11-14-pr750-main-candidate/evidence/candidate-source.patch",
+    "docs/records/audits/2026-11-14-pr750-main-candidate/evidence/ctest-registration.log",
+    "docs/records/audits/2026-11-14-pr750-main-candidate/evidence/original-pr750.patch"
+  ],
+  "explanation": "Raw CTest JSON output and unified patch blank-context lines are retained byte-for-byte. Source-only staged diff check passed before the code commit. Packet-wide whitespace check is not reported as passing."
+}

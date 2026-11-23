@@ -1,0 +1,12 @@
+[1/2] Building CXX object CMakeFiles/base01_lane_a.dir/runner.cpp.o
+[2/2] Linking CXX executable base01_lane_a
+FAILED: [code=1] base01_lane_a 
+: && /usr/bin/c++ -O3 -DNDEBUG -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/base01_lane_a.dir/runner.cpp.o -o base01_lane_a  /private/tmp/t81-base01-source-build/libt81_core.a  /private/tmp/t81-base01-source-build/libt81_core.a  /private/tmp/t81-base01-source-build/libt81_core.a && :
+ld: warning: ignoring duplicate libraries: '/private/tmp/t81-base01-source-build/libt81_core.a'
+Undefined symbols for architecture arm64:
+  "t81::vm::make_interpreter_vm(std::__1::unique_ptr<t81::axion::Engine, std::__1::default_delete<t81::axion::Engine>>)", referenced from:
+      _main in runner.cpp.o
+      (anonymous namespace)::signature_for_program(t81::tisc::Program const&, bool*) in runner.cpp.o
+ld: symbol(s) not found for architecture arm64
+clang++: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.

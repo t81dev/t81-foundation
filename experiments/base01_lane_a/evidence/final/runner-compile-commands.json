@@ -1,0 +1,14 @@
+[
+{
+  "directory": "/private/tmp/t81-base01-native-build",
+  "command": "/usr/bin/c++ -I/private/tmp/t81-base01-audited/include -I/private/tmp/t81-base01-audited/tests/cpp -O3 -DNDEBUG -std=gnu++23 -o CMakeFiles/base01_lane_a.dir/runner.cpp.o -c /private/tmp/t81-base01-lane-a/experiments/base01_lane_a/runner.cpp",
+  "file": "/private/tmp/t81-base01-lane-a/experiments/base01_lane_a/runner.cpp",
+  "output": "/private/tmp/t81-base01-native-build/CMakeFiles/base01_lane_a.dir/runner.cpp.o"
+},
+{
+  "directory": "/private/tmp/t81-base01-native-build",
+  "command": "/usr/bin/c++ -I/private/tmp/t81-base01-audited/include -I/private/tmp/t81-base01-audited/tests/cpp -O3 -DNDEBUG -std=gnu++23 -o CMakeFiles/base01_lane_a.dir/kernels.cpp.o -c /private/tmp/t81-base01-lane-a/experiments/base01_lane_a/kernels.cpp",
+  "file": "/private/tmp/t81-base01-lane-a/experiments/base01_lane_a/kernels.cpp",
+  "output": "/private/tmp/t81-base01-native-build/CMakeFiles/base01_lane_a.dir/kernels.cpp.o"
+}
+]

@@ -4,6 +4,7 @@
 #include <vector>
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
+#include "t81/canonfs/storage_key.hpp"
 #include "t81/cli/driver.hpp"
 #include "t81/weights.hpp"
 #include "test_runtime_check.hpp"
@@ -73,16 +74,17 @@ int main() {
         found_any = true;
         // Ideally we read it and check the header
         std::string hash_str = entry.path().stem().string();
+        const auto parsed = t81::canonfs::parse_storage_key_v1(hash_str);
+        T81_TEST_CHECK(parsed.has_value());
         t81::canonfs::CanonHash ch;
-        ch.h = t81::hash::CanonHash81::from_string(hash_str);
+        ch.h = parsed->h;
         auto data_res = driver->read_object_bytes({ch});
         T81_TEST_CHECK(data_res.has_value());
         const auto& data = data_res.value();
         T81_TEST_CHECK(data.size() == 72 + (check_tensor.data.size() * sizeof(uint64_t)));
         T81_TEST_CHECK(static_cast<uint8_t>(data[0]) == 0x20);  // Type ID
         T81_TEST_CHECK(static_cast<uint8_t>(data[1]) == 1);     // Version
-        T81_TEST_CHECK(static_cast<uint8_t>(data[2]) ==
-                       static_cast<uint8_t>(check_tensor.format));
+        T81_TEST_CHECK(static_cast<uint8_t>(data[2]) == static_cast<uint8_t>(check_tensor.format));
         T81_TEST_CHECK(static_cast<uint8_t>(data[3]) == check_tensor.shape.size());
         uint64_t dim0 = 0;
         uint64_t dim1 = 0;

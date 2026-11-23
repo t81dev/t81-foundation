@@ -1,0 +1,455 @@
+{
+  "schema_version": "1.0.0",
+  "authoritative_baseline_commit": "6c9eaf1a2fc8368cd06f6dddbbdcd78e6606c0ce",
+  "generated_at": "2026-11-10T21:00:00Z",
+  "description": "Evidence-linked active and historical research programs across the T81 Foundation platform",
+  "programs": [
+    {
+      "id": "program.scg",
+      "name": "Scientific Continuity Governance (SCG-01 through SCG-08)",
+      "domain": "Numerical & Computational Foundations",
+      "lead_subsystems": [
+        "sub.layer.3_num.balanced_ternary_limbs",
+        "sub.layer.3_num.fixed_width_integers",
+        "sub.layer.3_num.multi_precision_bigint",
+        "sub.layer.3_num.rational_fractions",
+        "sub.layer.7_assurance.scg_continuity"
+      ],
+      "status": "ACTIVE_GOVERNED",
+      "summary": "Formal defect identification, mathematical isolation, multi-phase repair, and qualification of balanced ternary arithmetic primitives.",
+      "phases": [
+        {
+          "phase_id": "SCG-03",
+          "title": "T81Int Convolution Multiplication & Assert Hardening",
+          "disposition": "MERGED_AND_VERIFIED",
+          "receipt": "docs/research/continuity/SCG03_EVIDENCE_RECEIPT.md",
+          "pr": "#729",
+          "details": "Repairs C05 (2N-trit convolution with overflow trap) and C11 (fail-closed assert to require hardening active under NDEBUG)."
+        },
+        {
+          "phase_id": "SCG-04",
+          "title": "Maintainer Decision Record for Foundation Contracts",
+          "disposition": "ACCEPTED_NON_NORMATIVE_DIRECTION",
+          "receipt": "docs/research/continuity/SCG04_MAINTAINER_DECISION_RECORD.md",
+          "pr": "#732",
+          "details": "D1=1B (dual-surface arithmetic), D2=2B (RFC-00D5 checked conversion profile), D3=3B (versioned ISA profiles), D4=4B (generic Result<T,E>). Implementation strictly not authorized."
+        },
+        {
+          "phase_id": "SCG-05",
+          "title": "Generic Result<T,E> Feasibility Audit",
+          "disposition": "FEASIBILITY_ESTABLISHED",
+          "receipt": "docs/research/continuity/SCG04_MAINTAINER_DECISION_RECORD.md",
+          "pr": "#732",
+          "details": "Read-only feasibility study establishing Result<T,E> boundaries without modifying production code or normative specs."
+        },
+        {
+          "phase_id": "SCG-06",
+          "title": "Arithmetic Defect Reproduction Audit (F1-F7)",
+          "disposition": "REPRODUCTION_COMPLETE_REPAIR_NOT_AUTHORIZED",
+          "receipt": "docs/research/continuity/SCG06_ARITHMETIC_DEFECT_REPRODUCTION_REPORT.md",
+          "pr": "#733 / #735",
+          "details": "Independent reproduction of Issue #717 findings across pre/post-repair baselines: F1 confirmed unchanged, F2 confirmed unchanged, F3 confirmed unchanged, F4 confirmed fixed, F5 confirmed unchanged, F6 confirmed failure-mode change, F7 confirmed unchanged."
+        },
+        {
+          "phase_id": "SCG-07_P1",
+          "title": "Phase 1: T81Fraction Exception & Conversion Hardening (F6/F7)",
+          "disposition": "MERGED_AND_VERIFIED",
+          "receipt": "docs/research/continuity/SCG07_PHASE1_EVIDENCE_RECEIPT.md",
+          "pr": "#736",
+          "details": "Removes noexcept from throwing fraction operators; replaces to_int64 in to_double with safe accumulator."
+        },
+        {
+          "phase_id": "SCG-07_P2",
+          "title": "Phase 2: T81BigInt Borrow & Sign Invariant Repair (F5)",
+          "disposition": "MERGED_AND_VERIFIED",
+          "receipt": "docs/research/continuity/SCG07_PHASE2_EVIDENCE_RECEIPT.md",
+          "pr": "#736",
+          "details": "Repairs single-limb fallback in operator+ ensuring stored limbs remain non-negative in magnitude."
+        },
+        {
+          "phase_id": "SCG-07_P3",
+          "title": "Phase 3: T81Limb27 Booth Table Scaling Elimination (F1)",
+          "disposition": "MERGED_AND_VERIFIED",
+          "receipt": "docs/research/continuity/SCG07_PHASE3_EVIDENCE_RECEIPT.md",
+          "pr": "#737",
+          "details": "Replaces defective Booth27 table accumulation with direct balanced ternary multiply-accumulate and exact normalization."
+        },
+        {
+          "phase_id": "SCG-07_P4",
+          "title": "Phase 4: T81Limb54 Reference Multiplication Normalization (F2)",
+          "disposition": "MERGED_AND_VERIFIED",
+          "receipt": "docs/research/continuity/SCG07_PHASE4_EVIDENCE_RECEIPT.md",
+          "pr": "#738",
+          "details": "Replaces flawed single-step subtraction carry loop with exact balanced-ternary carry normalization across 54-trit domain."
+        },
+        {
+          "phase_id": "SCG-07_P5",
+          "title": "Phase 5: T81Limb54 Karatsuba Carry-Loss Invariance (F3)",
+          "disposition": "MERGED_AND_VERIFIED",
+          "receipt": "docs/research/continuity/SCG07_PHASE5_EVIDENCE_RECEIPT.md",
+          "pr": "#739 / #740",
+          "details": "Mathematical proof that intermediate 28th-trit carry discard scales by 3^27 and is congruent to 0 mod 3^54. Historical causal attribution incomplete."
+        },
+        {
+          "phase_id": "SCG-07_P6",
+          "title": "Phase 6: Consolidated Arithmetic Qualification",
+          "disposition": "QUALIFIED_WITH_LIMITATIONS",
+          "receipt": "docs/research/continuity/SCG07_PHASE6_CONSOLIDATED_QUALIFICATION.md",
+          "pr": "#741",
+          "details": "Executive disposition: QUALIFIED WITH LIMITATIONS. All F1-F7 reproducers pass unconditionally against ExactBigIntOracle. F3 qualified under modular residue contract."
+        },
+        {
+          "phase_id": "SCG-08_P0",
+          "title": "Phase 0: Architectural Advantage Research Charter",
+          "disposition": "MERGED_AND_INTEGRATED",
+          "receipt": "docs/research/continuity/SCG08_PHASE0_RESEARCH_CHARTER.md",
+          "pr": "#753 (commit 0bd0817e)",
+          "details": "Mathematical derivation of 3-state carry Markov chain; finite-N carry expectation formulas; preregistration of candidate experiment EXP-SCG08-01."
+        },
+        {
+          "phase_id": "SCG-08_P1",
+          "title": "Phase 1: Contract Reconciliation (Signed-Domain & Cost Metric)",
+          "disposition": "PROPOSAL_STAGE_AUTHORIZATION_WITHHELD",
+          "receipt": "docs/research/continuity/SCG08_PHASE0_RESEARCH_CHARTER.md",
+          "pr": "Unmerged proposal",
+          "details": "Addenda 01-05 standardize on signed B-bit operand domain [-2^(B-1), 2^(B-1)-1]; Gate 1 implementation authorization and Gate 2 execution remain strictly withheld."
+        }
+      ]
+    },
+    {
+      "id": "program.ternaryos_qemu",
+      "name": "TernaryOS Operating System & ARCH-ENG-002 Diagnostics",
+      "domain": "Operating-System Architecture & Hardware Emulation",
+      "lead_subsystems": [
+        "sub.layer.5_os.ternaryos_kernel",
+        "mod.ternaryos.scheduler",
+        "mod.ternaryos.mmu",
+        "sub.layer.6_hw.qemu_drivers"
+      ],
+      "status": "ACTIVE_DIAGNOSTIC",
+      "summary": "Freestanding AArch64 bare-metal kernel development, UEFI firmware payload investigation, and fail-closed QEMU verification harness repair.",
+      "phases": [
+        {
+          "phase_id": "ARCH-ENG-002_P1",
+          "title": "Phase 1: Architecture Drift & Harness Defect Audit",
+          "disposition": "MERGED_AND_VERIFIED",
+          "receipt": "docs/architecture/diagnostics/ARCH_ENG_002_DIAGNOSTIC_REPORT.md",
+          "pr": "#755 (commit ee0c7d90)",
+          "details": "Deterministic drift detection; mandatory component evidence index; documented ((COMPLETED_TESTS++)) defect under set -e."
+        },
+        {
+          "phase_id": "ARCH-ENG-002_P2",
+          "title": "Phase 2: Fail-Closed QEMU Verification Harness Repair",
+          "disposition": "MERGED_AND_VERIFIED",
+          "receipt": "docs/architecture/diagnostics/ARCH_ENG_002_PHASE2_REPAIR_REPORT.md",
+          "pr": "#756 (commit cd490f5b)",
+          "details": "Consolidated nonasserting shell orchestration into bounded Python QMP verifier; eliminates false positives; 11/11 mock tests pass; real QEMU halts and safely rejects failed boots."
+        },
+        {
+          "phase_id": "ARCH-ENG-002_P3",
+          "title": "Phase 3: UEFI Payload & Firmware Investigation",
+          "disposition": "MERGED_INVESTIGATION_ONLY",
+          "receipt": "docs/architecture/diagnostics/phase3/REPORT.md",
+          "pr": "#757 (commit 6c9eaf1a)",
+          "details": "Identified two distinct barriers: (1) verifier stops at firmware diagnostics before testing guest readiness; (2) tracked payload is a historical 5,120-byte probe WFI loop, while freshly compiled 75,264-byte EFI reaches real shell and replies to help. Native 5-check verification remains NOT QUALIFIED."
+        },
+        {
+          "phase_id": "ARCH-ENG-002_P4",
+          "title": "Phase 4: Native Firmware Compatibility & Diagnostic Continuity",
+          "disposition": "MERGED_INVESTIGATION_ONLY",
+          "receipt": "docs/architecture/diagnostics/phase4/REPORT.md",
+          "pr": "#758 (commit 4b550b4d)",
+          "details": "Evaluated 2-firmware / 2-launch matrix across original and matched configurations; fail-closed verifier confirmed rejecting 4/4 rows (exit status 1); stage-0 TRNG query unsupported. Matched debug launch reaches real shell but retains firmware errors. All four native configurations remain failed at 2/5; native 5-check verification remains NOT QUALIFIED."
+        }
+      ]
+    },
+    {
+      "id": "program.tisc_t81vm",
+      "name": "TISC Instruction Set Computer & T81VM Execution Profiles",
+      "domain": "Instruction and Execution",
+      "lead_subsystems": [
+        "sub.layer.2_exec.tisc_isa",
+        "sub.layer.2_exec.t81vm",
+        "mod.vm.interpreter_core",
+        "mod.vm.system_registers",
+        "sub.layer.2_exec.freestanding_runtime"
+      ],
+      "status": "ACTIVE_STABILIZING",
+      "summary": "TISC specification freeze integrity, hosted T81VM determinism, and freestanding bare-metal cross-profile execution.",
+      "phases": [
+        {
+          "phase_id": "TISC-1.1.0",
+          "title": "TISC v1.1.0 Capability Freeze Integrity",
+          "disposition": "FROZEN_SPECIFICATION",
+          "receipt": "scripts/ci/check_tisc_freeze_integrity.py",
+          "pr": "Merged baseline",
+          "details": "Enforces 209 opcodes, reserved range cleanliness (174..255), and bitwise operation invariants."
+        },
+        {
+          "phase_id": "CPA-004",
+          "title": "Freestanding AArch64 Cross-Profile Execution",
+          "disposition": "QUALIFIED_WITH_LIMITATIONS",
+          "receipt": "docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md",
+          "pr": "#709 (branch origin/experiment/cpa004-freestanding)",
+          "details": "Demonstrated bounded execution of canonical 351-byte program across hosted T81VM and freestanding AArch64 QEMU matching mathematical oracle across 25 observation boundaries."
+        },
+        {
+          "phase_id": "CPA-006",
+          "title": "Bounded Cross-Profile Conformance Suite",
+          "disposition": "CONFIRMED_ON_INTEGRATION_BRANCH",
+          "receipt": "docs/ai-context/CURRENT_STATE.json",
+          "pr": "#710 (integrated into origin/experiment/cpa005-integration-base)",
+          "details": "19/19 frozen-oracle cases across 57 hosted and 57 fresh AArch64 QEMU executions."
+        },
+        {
+          "phase_id": "T81-ISA-002",
+          "title": "Versioned TISC State Transition Contract (RFC-00D6)",
+          "disposition": "DRAFT_RFC_MAINTAINER_DECISION_PENDING",
+          "receipt": "spec/rfcs/RFC-00D6-versioned-tisc-state-transition-contract.md",
+          "pr": "Draft RFC",
+          "details": "Decision matrix addressing memory operands, branch semantics, TXor truth table, and atomic trap progression."
+        }
+      ]
+    },
+    {
+      "id": "program.canonfs_storage",
+      "name": "CanonFS Content-Addressed Storage & Governance",
+      "domain": "System Services & Governance",
+      "lead_subsystems": [
+        "sub.layer.4_services.canonfs",
+        "sub.layer.4_services.axion_kernel",
+        "sub.layer.4_services.crypto"
+      ],
+      "status": "ACTIVE_PORTABILITY_AND_AUTHORIZATION",
+      "summary": "Deterministic content-addressed storage, portable snapshot persistence, and Axion governance policy enforcement.",
+      "phases": [
+        {
+          "phase_id": "T81-SIA-001",
+          "title": "CanonFS System Integration Audit & Portability",
+          "disposition": "AUDIT_PUBLISHED",
+          "receipt": "docs/ai-context/CURRENT_STATE.json",
+          "pr": "#701 (merged) / #702 / #703 / #705 (open)",
+          "details": "Snapshot directory portability, portable key formatting, and fail-closed legacy rejection."
+        },
+        {
+          "phase_id": "PR-748",
+          "title": "CanonFS Block Metadata Authorization",
+          "disposition": "OPEN_STACKED_PR",
+          "receipt": "docs/ai-context/T81_RESEARCH_STATUS_2026-11-10.md",
+          "pr": "#748 (stacked on #747)",
+          "details": "Explicit policy authorization boundary for CanonFS block metadata; awaiting #747 base integration."
+        }
+      ]
+    },
+    {
+      "id": "program.hardware_rtl",
+      "name": "Hardware Feasibility & Ternary RTL Models",
+      "domain": "Hardware and Acceleration",
+      "lead_subsystems": [
+        "sub.layer.6_hw.rtl_feasibility",
+        "sub.layer.6_hw.simd_primitives"
+      ],
+      "status": "FEASIBILITY_EXPLORATION",
+      "summary": "Verilog/SystemVerilog RTL modeling of ternary dot products, multi-trit addition, and comparative Boolean synthesis.",
+      "phases": [
+        {
+          "phase_id": "BASE-01",
+          "title": "Physical Ternary Hardware Qualification Inquiry",
+          "disposition": "PHYSICAL_HOST_UNAVAILABLE",
+          "receipt": "docs/ai-context/BASE01_2026-11-03.md",
+          "pr": "#698 / #699 (open)",
+          "details": "Exploratory physical hardware qualification. Physical host/silicon unavailable; remains simulated RTL and emulation."
+        },
+        {
+          "phase_id": "RTL-DOTPROD",
+          "title": "Ternary RTL Dot-Product Feasibility Model",
+          "disposition": "SIMULATION_SUPPORTED",
+          "receipt": "docs/architecture/visualization/ARCHITECTURE_VISUALIZATION_REPORT.md",
+          "pr": "Tracked in hardware/",
+          "details": "8 signed two-bit trit operations modeled in Verilog; comparative physical gate synthesis remains unperformed."
+        }
+      ]
+    },
+    {
+      "id": "program.exp_h04_r03",
+      "name": "EXP-H04-R03 Candidate A Codec & Weak-Reference Retention",
+      "domain": "System Services & Research Hypotheses",
+      "lead_subsystems": [
+        "sub.layer.4_services.codecs",
+        "sub.layer.7_assurance.hypothesis_register"
+      ],
+      "status": "CORRECTNESS_VERIFIED_PERFORMANCE_FROZEN",
+      "summary": "Matched codec Candidate A with weak-reference container tracking and mandatory native C11 ordering fences.",
+      "phases": [
+        {
+          "phase_id": "H04-R03-FC1",
+          "title": "Correctness & Retention Boundary Enforcement",
+          "disposition": "VERIFIED_BOUNDARY_ENFORCED",
+          "receipt": "docs/research/continuity/H04_R03_FC1_EVIDENCE_RECEIPT.md",
+          "pr": "#724 / #726 / #727 (merged)",
+          "details": "Weak references track only registered Python-owned objects (not C heap arenas or OS physical pages). Phase C performance measurement remains strictly frozen."
+        }
+      ]
+    }
+  ],
+  "hypothesis_mappings": [
+    {
+      "hypothesis_id": "H01",
+      "formal_claim": "Equal-information ternary storage can have lower total physical cost than binary storage under stated device and overhead assumptions.",
+      "evidence_tiers": [
+        "B",
+        "D"
+      ],
+      "canonical_result": "D: ideal threshold derived; M=256 and C3/C2=1.5 gives ternary cost 9 vs binary 8. B: current RTL uses two binary bits per trit and supplies no measured three-state-device advantage.",
+      "confidence": "High for exact arithmetic/source facts; physical advantage open.",
+      "baseline": "Optimally packed binary representation of the same M states; same reliability, access and I/O requirements.",
+      "unresolved_limitations": "Use storage_boundary.py and selected factorial model; require independent device data before physical claims.",
+      "linked_studies": [
+        {
+          "study_id": "SCG-08",
+          "scope": "Phase 0 charter derived 3-state carry Markov chain; candidate experiment EXP-SCG08-01 preregistered; Gate 1/2 authorization withheld."
+        },
+        {
+          "study_id": "T81-SCALAR-ADD",
+          "scope": "Historical exploratory software scalar tryte addition incurred 10.6x instruction overhead compared to native 64-bit Boolean addition; closed for scalar software."
+        }
+      ]
+    },
+    {
+      "hypothesis_id": "H02",
+      "formal_claim": "Balanced ternary can improve a specified signed arithmetic or rounding task at equal semantics and cost accounting.",
+      "evidence_tiers": [
+        "A",
+        "B"
+      ],
+      "canonical_result": "A: isolated current CWEB routines fail balanced positional semantics: addition 422/547; multiplication 140/201; negation 0/27 failures. This rejects these routines as evidence, not balanced ternary mathematics. Multiplication is documented as componentwise; the oracle failure rules it out for positional-integer claims, not for a separately specified vector algebra.",
+      "confidence": "High for isolated reproduction; complete Hanoi integration untested.",
+      "baseline": "Exact integer oracle, competitive binary signed arithmetic and a correct ternary candidate.",
+      "unresolved_limitations": "Preserve failures; specify domain and correct oracle before any performance comparison; do not rewrite Hanoi.",
+      "linked_studies": [
+        {
+          "study_id": "SCG-07",
+          "scope": "Phases 1-6 arithmetic qualification; reproducers F1-F7 pass unconditionally against ExactBigIntOracle; executive disposition QUALIFIED WITH LIMITATIONS."
+        },
+        {
+          "study_id": "SCG-08",
+          "scope": "Markov carry propagation analysis proves 1/4 stationary non-zero occurrence vs 1/2 in binary; Tier 2 multi-precision software work benchmark preregistered."
+        }
+      ]
+    },
+    {
+      "hypothesis_id": "H03",
+      "formal_claim": "Grouping four trits as base-81 can provide a workload-specific interface or execution benefit beyond equivalent binary packing.",
+      "evidence_tiers": [
+        "B",
+        "D"
+      ],
+      "canonical_result": "D: four-trit grouping established. B: grouped numeric/data surfaces exist; no grouping-specific performance advantage reproduced in this session.",
+      "confidence": "High for identity; benefit open.",
+      "baseline": "Ungrouped ternary, binary bit-packed and binary limb representations with equal value domains.",
+      "unresolved_limitations": "Keep mathematical grouping distinct from kernel speed and physical storage; isolate grouping in a later ablation.",
+      "linked_studies": [
+        {
+          "study_id": "TISC-SPEC",
+          "scope": "Grouping four trits as base-81 digit established in TISC specification and limb encodings; execution advantage unverified."
+        }
+      ]
+    },
+    {
+      "hypothesis_id": "H04",
+      "formal_claim": "An explicitly defined adaptive ternary representation policy can beat fixed ternary and an equally capable adaptive binary policy on a specified workload.",
+      "evidence_tiers": [
+        "B"
+      ],
+      "canonical_result": "B: scheduler thresholds >40/>100 and AI substring; promotion uses enum 0/1/2 with depth>10/tensor trigger. No verified mapping from tier_mode to mode or equivalent semantic domains; original H04 remains under-specified.",
+      "confidence": "High for source facts; optimization/integration unproven.",
+      "baseline": "Fixed binary, adaptive binary, fixed ternary, adaptive ternary; identical domains, predictor information and conversion accounting.",
+      "unresolved_limitations": "Select H04-R01 capacity-trace discriminator as a declared refinement, not a reconstruction of working Hanoi semantics.",
+      "linked_studies": [
+        {
+          "study_id": "H04-R01",
+          "scope": "Declared capacity-trace discriminator refinement specification; separated radix from adaptive precision without assuming historical VM scheduler semantics."
+        },
+        {
+          "study_id": "EXP-H04-R03",
+          "scope": "Candidate A codec correctness and Phase 4 weak-reference wire-frame retention verified (PR #727); Phase C performance measurement remains strictly frozen."
+        }
+      ]
+    },
+    {
+      "hypothesis_id": "H05",
+      "formal_claim": "A specified three-state primitive can reduce circuit or system cost against an equivalent Boolean implementation.",
+      "evidence_tiers": [
+        "B"
+      ],
+      "canonical_result": "B: hardware repo implements eight operations over signed two-bit trit signals; CMP3 handler in the Hanoi table is null. No physical or synthesis comparison reproduced.",
+      "confidence": "Source inspection only; architectural benefit open.",
+      "baseline": "Boolean synthesis for exactly the same function, I/O states, throughput and reliability.",
+      "unresolved_limitations": "Formalize one operation truth table before any new ISA or hardware extension.",
+      "linked_studies": [
+        {
+          "study_id": "RTL-FEASIBILITY",
+          "scope": "Verilog simulation models ternary dot product using 2 bits per trit (design_c_ht1_ternary.v); comparative physical gate synthesis unperformed."
+        },
+        {
+          "study_id": "EXP-T81-COMP3-01",
+          "scope": "Candidate comparator benchmarking unapproved; blocked pending maintainer signature, protocol repairs R01-R11, and Ed25519 signing key custody."
+        }
+      ]
+    },
+    {
+      "hypothesis_id": "H06",
+      "formal_claim": "Ternary weights or activations can improve accuracy-constrained inference versus equally optimized binary low-bit alternatives.",
+      "evidence_tiers": [
+        "B",
+        "C"
+      ],
+      "canonical_result": "B: implementations and C: prior reports exist. No inference benchmark, model accuracy or device energy independently reproduced here.",
+      "confidence": "No new performance confidence assigned.",
+      "baseline": "Matched INT8/low-bit kernels and models at equal task accuracy, bandwidth and batching.",
+      "unresolved_limitations": "Audit existing artifact/model provenance before designing a bounded kernel/model experiment.",
+      "linked_studies": [
+        {
+          "study_id": "MATVEC-REPORT",
+          "scope": "Historical report documented packed ternary MatVec; independent accuracy-constrained benchmarks comparing against optimized INT8 remain unexecuted."
+        }
+      ]
+    },
+    {
+      "hypothesis_id": "H07",
+      "formal_claim": "Representation-independent governed execution can improve a defined auditability property.",
+      "evidence_tiers": [
+        "B",
+        "C"
+      ],
+      "canonical_result": "Separate engineering track. PRs #565/#566 remain open/draft: both CodeQL pass, required quality gate fails. Existing source/test reports are not a new independent security certification here.",
+      "confidence": "Current PR metadata checked; prior security tests not rerun in this session.",
+      "baseline": "Conventional runtime plus explicit authorization/evidence boundary; equal threat model and host trust.",
+      "unresolved_limitations": "Maintain the bounded CI/security investigation separately; Protocol 001 remains NOT READY.",
+      "linked_studies": [
+        {
+          "study_id": "AXION-POLICIES",
+          "scope": "Axion PolicyEngine implements Theta-1..Theta-9 ethics principles and user policy bytecode checks; standalone formal verification pending."
+        }
+      ]
+    },
+    {
+      "hypothesis_id": "H08",
+      "formal_claim": "AI-assisted iteration improves research trustworthiness or discovery under an independently auditable process.",
+      "evidence_tiers": [
+        "C",
+        "E"
+      ],
+      "canonical_result": "This session records source claims, independent extraction probes and mathematical derivation separately; it is not a controlled study of AI productivity.",
+      "confidence": "Researcher intent authoritative; comparative benefit untested.",
+      "baseline": "Human-only or alternative-assisted work under matched tasks and independent verification.",
+      "unresolved_limitations": "Append session handoffs and preserve failed claims rather than rewriting the narrative.",
+      "linked_studies": [
+        {
+          "study_id": "CONTINUITY-GOVERNANCE",
+          "scope": "Formal continuity receipts, fail-closed diagnostic gates, and ExactBigIntOracle verification enforced across SCG-03 through SCG-08."
+        }
+      ]
+    }
+  ]
+}

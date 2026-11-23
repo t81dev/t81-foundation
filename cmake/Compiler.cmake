@@ -16,13 +16,14 @@ endif()
 
 # Global compiler flags (ANSI warnings for GCC/Clang; use /W4 for MSVC)
 if(MSVC)
-  add_compile_options(/W4 /O2 /DNDEBUG /WX)
+  # MSVC Debug enables /RTC1, which rejects /O2 with command-line error D8016.
+  add_compile_options(/W4 "$<$<NOT:$<CONFIG:Debug>>:/O2>" /DNDEBUG /WX)
 else()
   add_compile_options(-Wall -Wextra -Wpedantic -O3 -DNDEBUG)
 endif()
 
 if(MSVC)
-  add_compile_options(/wd4244 /wd4307 /wd4018 /wd4101 /wd4189 /wd4996 /wd4456)
+  add_compile_options(/wd4244 /wd4307 /wd4018 /wd4101 /wd4189 /wd4996 /wd4456 /wd4702)
 endif()
 
 # warn-strict mode: suppress -Wextra subwarnings that are not Windows CI issues.

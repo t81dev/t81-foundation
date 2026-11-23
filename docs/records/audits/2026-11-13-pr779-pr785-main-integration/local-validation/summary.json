@@ -1,0 +1,113 @@
+{
+  "tested_candidate_sha": "4018646b3c229083780afb82d1f7e815af921d7c",
+  "base_sha": "fbfe4f5a2d4439f5ff479014301560764de39c99",
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "commands": [
+    {
+      "label": "compiler-version",
+      "argv": [
+        "clang++",
+        "--version"
+      ],
+      "cwd": "/Users/t81dev/Code/t81-foundation/.cache/pr779-pr785-main-integration",
+      "exit_code": 0
+    },
+    {
+      "label": "python-packages",
+      "argv": [
+        "/private/tmp/t81-continuity-venv/bin/python",
+        "-m",
+        "pip",
+        "freeze"
+      ],
+      "cwd": "/Users/t81dev/Code/t81-foundation/.cache/pr779-pr785-main-integration",
+      "exit_code": 0
+    },
+    {
+      "label": "configure",
+      "argv": [
+        "cmake",
+        "-S",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr779-pr785-main-integration",
+        "-B",
+        "/private/tmp/t81-pr779-pr785-main-build",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "-DT81_BUILD_EXPERIMENTS=ON",
+        "-DT81_BUILD_TESTS=ON",
+        "-DT81_BUILD_BENCHMARKS=OFF",
+        "-DT81_BUILD_FUZZ_TESTS=OFF",
+        "-DT81_BUILD_TUI=OFF",
+        "-DT81_BUILD_EXAMPLES=OFF",
+        "-DT81_ENABLE_TERNARYOS=OFF",
+        "-DPython3_EXECUTABLE=/private/tmp/t81-continuity-venv/bin/python",
+        "-DFETCHCONTENT_SOURCE_DIR_ASIO=/Users/t81dev/Code/t81-foundation/build/_deps/asio-src"
+      ],
+      "cwd": "/Users/t81dev/Code/t81-foundation/.cache/pr779-pr785-main-integration",
+      "exit_code": 0
+    },
+    {
+      "label": "build",
+      "argv": [
+        "cmake",
+        "--build",
+        "/private/tmp/t81-pr779-pr785-main-build",
+        "--target",
+        "t81_exp_scg08_01_test",
+        "--parallel",
+        "2"
+      ],
+      "cwd": "/Users/t81dev/Code/t81-foundation/.cache/pr779-pr785-main-integration",
+      "exit_code": 0
+    },
+    {
+      "label": "ctest-inventory",
+      "argv": [
+        "ctest",
+        "--test-dir",
+        "/private/tmp/t81-pr779-pr785-main-build",
+        "-C",
+        "Release",
+        "-R",
+        "^t81_exp_scg08_01",
+        "--show-only=json-v1"
+      ],
+      "cwd": "/Users/t81dev/Code/t81-foundation/.cache/pr779-pr785-main-integration",
+      "exit_code": 0
+    },
+    {
+      "label": "ctest",
+      "argv": [
+        "ctest",
+        "--test-dir",
+        "/private/tmp/t81-pr779-pr785-main-build",
+        "-C",
+        "Release",
+        "-R",
+        "^t81_exp_scg08_01",
+        "--no-tests=error",
+        "--verbose",
+        "--output-on-failure",
+        "--output-junit",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr779-pr785-main-integration/docs/records/audits/2026-11-13-pr779-pr785-main-integration/local-validation/junit.xml"
+      ],
+      "cwd": "/Users/t81dev/Code/t81-foundation/.cache/pr779-pr785-main-integration",
+      "exit_code": 0
+    }
+  ],
+  "status": "passed",
+  "limits": [
+    "Fresh local macOS ARM64 correctness verification only",
+    "Retained Linux and Windows results apply to prior source 300cdea8896d56c025f7099c0cdf0c41d7bd6237, not this main-based candidate",
+    "No new sanitizer or performance claim; no gate advancement"
+  ],
+  "selected_tests": [
+    "t81_exp_scg08_01_test",
+    "t81_exp_scg08_01_result_rejection",
+    "t81_exp_scg08_01_result_rejection_driver",
+    "t81_exp_scg08_01_schema_validation",
+    "t81_exp_scg08_01_schema_negative_validation"
+  ],
+  "experiment_compile_command": "/usr/bin/c++ -DT81_DETERMINISTIC -I/Users/t81dev/Code/t81-foundation/.cache/pr779-pr785-main-integration/experiments/scg08_arithmetic_work -I/Users/t81dev/Code/t81-foundation/.cache/pr779-pr785-main-integration/include -O3 -DNDEBUG -std=gnu++23 -fPIE -Wall -Wextra -Wpedantic -O3 -DNDEBUG -o CMakeFiles/t81_exp_scg08_01_test.dir/test_exp_scg08_01.cpp.o -c /Users/t81dev/Code/t81-foundation/.cache/pr779-pr785-main-integration/experiments/scg08_arithmetic_work/test_exp_scg08_01.cpp",
+  "tests_passed": 5
+}

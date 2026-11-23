@@ -1,0 +1,17 @@
+/private/tmp/t81-base01-native-build/base01_lane_a  :
+section                size         addr
+__text               765616   4294971120
+__stubs                1440   4295736736
+__init_offsets         2348   4295738176
+__const                9594   4295740528
+__gcc_except_tab      43092   4295750124
+__cstring             20375   4295793216
+__unwind_info          8144   4295813592
+__eh_frame               80   4295821736
+__got                  2536   4295835648
+__const                4416   4295838184
+__data               265344   4295852032
+__bss                   336   4296117376
+Total               1123321
+
+

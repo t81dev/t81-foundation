@@ -1,0 +1,9215 @@
+{
+  "backtraceGraph" : 
+  {
+    "commands" : 
+    [
+      "add_test"
+    ],
+    "files" : 
+    [
+      "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/CMakeLists.txt",
+      "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/experiments/radix_comparison/CMakeLists.txt",
+      "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/experiments/packed_ternary_matvec/CMakeLists.txt",
+      "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/experiments/h04_r02_adaptive_representation/CMakeLists.txt",
+      "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/experiments/s02_stochastic_topology/CMakeLists.txt",
+      "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/CMakeLists.txt"
+    ],
+    "nodes" : 
+    [
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 444,
+        "parent" : 0
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 448,
+        "parent" : 2
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 452,
+        "parent" : 4
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 456,
+        "parent" : 6
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 463,
+        "parent" : 8
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 475,
+        "parent" : 10
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 517,
+        "parent" : 12
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 566,
+        "parent" : 14
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 573,
+        "parent" : 16
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 615,
+        "parent" : 18
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 619,
+        "parent" : 20
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 623,
+        "parent" : 22
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 627,
+        "parent" : 24
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 678,
+        "parent" : 26
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 771,
+        "parent" : 28
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 791,
+        "parent" : 30
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 808,
+        "parent" : 32
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 840,
+        "parent" : 34
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1031,
+        "parent" : 36
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1034,
+        "parent" : 38
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1122,
+        "parent" : 40
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1127,
+        "parent" : 42
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1133,
+        "parent" : 44
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1227,
+        "parent" : 46
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1231,
+        "parent" : 48
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1280,
+        "parent" : 50
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1411,
+        "parent" : 52
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1414,
+        "parent" : 54
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1431,
+        "parent" : 56
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1431,
+        "parent" : 58
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1431,
+        "parent" : 60
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1437,
+        "parent" : 62
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 64
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 66
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 68
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 70
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 72
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 74
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 76
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 78
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 80
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 82
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 84
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 86
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 88
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 90
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 92
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 94
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 96
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 98
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 100
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 102
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 104
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 106
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 108
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 110
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 112
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 114
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 116
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 118
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 120
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 122
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 124
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 126
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 128
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 130
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 132
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 134
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 136
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 138
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 140
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 142
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 144
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 146
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 148
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 150
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 152
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 154
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 156
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 158
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 160
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 162
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 164
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 166
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 168
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 170
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 172
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 174
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 176
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 178
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 180
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 182
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 184
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 186
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 188
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 190
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 192
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 194
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 196
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 198
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 200
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 202
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 204
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 206
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 208
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 210
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 212
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 214
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 216
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 218
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 220
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 222
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 224
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 226
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 228
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 230
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 232
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 234
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 236
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 238
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 240
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 242
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 244
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 246
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 248
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 250
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 252
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 254
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 256
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 258
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 260
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 262
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 264
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 266
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 268
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 270
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 272
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 274
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 276
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 278
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 280
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 282
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 284
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 286
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 288
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 290
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 292
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 294
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 296
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 298
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 300
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 302
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 304
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 306
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 308
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 310
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 312
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 314
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 316
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 318
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 320
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 322
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 324
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 326
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 328
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 330
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 332
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 334
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 336
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 338
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 340
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 342
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 344
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 346
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 348
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 350
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 352
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 354
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 356
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 358
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 360
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 362
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 364
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 366
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 368
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 370
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 372
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 374
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 376
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 378
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 380
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 382
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 384
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 386
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 388
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 390
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 392
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 394
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 396
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 398
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 400
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 402
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 404
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 406
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 408
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 410
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 412
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 414
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 416
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 418
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 420
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 422
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 424
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 426
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 428
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 430
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 432
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 434
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 436
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 438
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 440
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 442
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 444
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 446
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 448
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 450
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 452
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 454
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 456
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 458
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 460
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 462
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 464
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 466
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 468
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 470
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 472
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 474
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 476
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 478
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 480
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 482
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 484
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 486
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 488
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 490
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 492
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 494
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 496
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 498
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 500
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 502
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 504
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 506
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 508
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 510
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 512
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 514
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 516
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 518
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 520
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 522
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 524
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 526
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 528
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 530
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 532
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 534
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 536
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 538
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 540
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 542
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 544
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 546
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 548
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 550
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 552
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 554
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 556
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 558
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 560
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 562
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 564
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 566
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 568
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 570
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 572
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 574
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 576
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 578
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 580
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 582
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 584
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 586
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 588
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 590
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 592
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 594
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 596
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 598
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 600
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 602
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 604
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 606
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 608
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1757,
+        "parent" : 610
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1763,
+        "parent" : 612
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1767,
+        "parent" : 614
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1769,
+        "parent" : 616
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1775,
+        "parent" : 618
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1776,
+        "parent" : 620
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1777,
+        "parent" : 622
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1778,
+        "parent" : 624
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1779,
+        "parent" : 626
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1780,
+        "parent" : 628
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1781,
+        "parent" : 630
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1782,
+        "parent" : 632
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1783,
+        "parent" : 634
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1784,
+        "parent" : 636
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1785,
+        "parent" : 638
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1786,
+        "parent" : 640
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1789,
+        "parent" : 642
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1792,
+        "parent" : 644
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1793,
+        "parent" : 646
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1794,
+        "parent" : 648
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1801,
+        "parent" : 650
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1808,
+        "parent" : 652
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1815,
+        "parent" : 654
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1822,
+        "parent" : 656
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1829,
+        "parent" : 658
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1836,
+        "parent" : 660
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1902,
+        "parent" : 662
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1906,
+        "parent" : 664
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1910,
+        "parent" : 666
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1914,
+        "parent" : 668
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1918,
+        "parent" : 670
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1922,
+        "parent" : 672
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1926,
+        "parent" : 674
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1930,
+        "parent" : 676
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1934,
+        "parent" : 678
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1938,
+        "parent" : 680
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1942,
+        "parent" : 682
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1949,
+        "parent" : 684
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1956,
+        "parent" : 686
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1960,
+        "parent" : 688
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1964,
+        "parent" : 690
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1968,
+        "parent" : 692
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1972,
+        "parent" : 694
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1976,
+        "parent" : 696
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1980,
+        "parent" : 698
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1984,
+        "parent" : 700
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1988,
+        "parent" : 702
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1992,
+        "parent" : 704
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 1996,
+        "parent" : 706
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2000,
+        "parent" : 708
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2004,
+        "parent" : 710
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2008,
+        "parent" : 712
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2012,
+        "parent" : 714
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2016,
+        "parent" : 716
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2020,
+        "parent" : 718
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2024,
+        "parent" : 720
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2028,
+        "parent" : 722
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2033,
+        "parent" : 724
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2038,
+        "parent" : 726
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2042,
+        "parent" : 728
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2046,
+        "parent" : 730
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2050,
+        "parent" : 732
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2054,
+        "parent" : 734
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2197,
+        "parent" : 736
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2201,
+        "parent" : 738
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2207,
+        "parent" : 740
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2211,
+        "parent" : 742
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2215,
+        "parent" : 744
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2219,
+        "parent" : 746
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2223,
+        "parent" : 748
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2227,
+        "parent" : 750
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2231,
+        "parent" : 752
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2243,
+        "parent" : 754
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2248,
+        "parent" : 756
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2252,
+        "parent" : 758
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2256,
+        "parent" : 760
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2260,
+        "parent" : 762
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 2264,
+        "parent" : 764
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 11,
+        "parent" : 766
+      },
+      {
+        "file" : 2
+      },
+      {
+        "command" : 0,
+        "file" : 2,
+        "line" : 19,
+        "parent" : 768
+      },
+      {
+        "file" : 3
+      },
+      {
+        "command" : 0,
+        "file" : 3,
+        "line" : 13,
+        "parent" : 770
+      },
+      {
+        "file" : 3
+      },
+      {
+        "command" : 0,
+        "file" : 3,
+        "line" : 18,
+        "parent" : 772
+      },
+      {
+        "file" : 3
+      },
+      {
+        "command" : 0,
+        "file" : 3,
+        "line" : 21,
+        "parent" : 774
+      },
+      {
+        "file" : 4
+      },
+      {
+        "command" : 0,
+        "file" : 4,
+        "line" : 17,
+        "parent" : 776
+      },
+      {
+        "file" : 4
+      },
+      {
+        "command" : 0,
+        "file" : 4,
+        "line" : 18,
+        "parent" : 778
+      },
+      {
+        "file" : 4
+      },
+      {
+        "command" : 0,
+        "file" : 4,
+        "line" : 21,
+        "parent" : 780
+      },
+      {
+        "file" : 4
+      },
+      {
+        "command" : 0,
+        "file" : 4,
+        "line" : 23,
+        "parent" : 782
+      },
+      {
+        "file" : 4
+      },
+      {
+        "command" : 0,
+        "file" : 4,
+        "line" : 26,
+        "parent" : 784
+      },
+      {
+        "file" : 4
+      },
+      {
+        "command" : 0,
+        "file" : 4,
+        "line" : 28,
+        "parent" : 786
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 788
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 790
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 792
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 794
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 796
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 798
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 800
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 802
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 804
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 806
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 808
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 810
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 812
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 814
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 816
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 818
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 820
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 822
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 824
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 826
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 828
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 830
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 832
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 834
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 836
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 838
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 840
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 842
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 844
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 846
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 848
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 850
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 12,
+        "parent" : 852
+      }
+    ]
+  },
+  "kind" : "ctestInfo",
+  "tests" : 
+  [
+    {
+      "backtrace" : 1,
+      "name" : "t81_test_axion_opcodes",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 3,
+      "name" : "t81_test_axion_m6_canonical_reason",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 5,
+      "name" : "t81_vm_neural_opcodes_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 7,
+      "name" : "test_bitwise",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 9,
+      "name" : "t81_vm_resource_monitoring_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 11,
+      "name" : "t81_vm_decoder_test",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 300.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 13,
+      "name" : "t81_tritwise_backend_equivalence_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 15,
+      "name" : "t81lang_surface_gate_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 17,
+      "name" : "t81lang_conformance_edge_semantics_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 19,
+      "name" : "t81_ethics_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 21,
+      "name" : "t81_ethics_invariants_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 23,
+      "name" : "test_resource_monitoring",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 25,
+      "name" : "test_tier3_opcodes",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 27,
+      "name" : "vm_bounds_trace_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 29,
+      "name" : "t81_parser_regression_audit_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 31,
+      "name" : "t81_frontend_parser_appendix_coverage_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 33,
+      "name" : "t81_ir_snapshot_audit_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 35,
+      "name" : "t81_semantic_analyzer_stage3_rules_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 37,
+      "name" : "vm_reflection_tier2_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 39,
+      "name" : "reflective_evidence_replay_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 41,
+      "name" : "axion_ai_hooks_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 43,
+      "name" : "backend_adapter_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 45,
+      "name" : "t81_determinism_evidence_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 47,
+      "name" : "t81_float_deterministic_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 49,
+      "name" : "t81_bigint_float_conversion_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 51,
+      "name" : "debug_matrix_crash",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 53,
+      "name" : "controlled_ai_authorization_test",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 30.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 55,
+      "name" : "direct_api_authorization_test",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 30.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 57,
+      "command" : 
+      [
+        "/opt/homebrew/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/tests/python/check_release_correctness_guard.py",
+        "sha3",
+        "/private/tmp/t81-pr750-main-release/t81_release_sha3_guard"
+      ],
+      "name" : "t81_release_sha3_guard",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 30.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 59,
+      "command" : 
+      [
+        "/opt/homebrew/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/tests/python/check_release_correctness_guard.py",
+        "float",
+        "/private/tmp/t81-pr750-main-release/t81_release_float_guard"
+      ],
+      "name" : "t81_release_float_guard",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 30.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 61,
+      "command" : 
+      [
+        "/opt/homebrew/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/tests/python/check_release_correctness_guard.py",
+        "map",
+        "/private/tmp/t81-pr750-main-release/t81_release_map_guard"
+      ],
+      "name" : "t81_release_map_guard",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 30.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 63,
+      "command" : 
+      [
+        "/opt/homebrew/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/tests/python/test_controlled_ai_evidence_json.py",
+        "/private/tmp/t81-pr750-main-release/controlled_ai_authorization_test"
+      ],
+      "name" : "controlled_ai_evidence_json_test",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 30.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 65,
+      "name" : "t81_float_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 67,
+      "name" : "t81_float_properties_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 69,
+      "name" : "t81_t81int_to_binary_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 71,
+      "name" : "t81_division_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 73,
+      "name" : "t81_t81int_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 75,
+      "name" : "t81_t81int_overflow_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 77,
+      "name" : "t81_t81fraction_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 79,
+      "name" : "t81_bigint_sub_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 81,
+      "name" : "t81_limb27_mul_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 83,
+      "name" : "t81_limb54_reference_mul_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 85,
+      "name" : "t81_limb54_karatsuba_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 87,
+      "name" : "t81_phase6_qualification_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 89,
+      "name" : "t81_t81int_generic_div_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 91,
+      "name" : "t81_int_sign_trit_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 93,
+      "name" : "t81_bigint_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 95,
+      "name" : "t81_fraction_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 97,
+      "name" : "t81_bigint_properties_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 99,
+      "name" : "t81_prob_properties_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 101,
+      "name" : "t81_t81int_properties_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 103,
+      "name" : "t81_bigint_division_edge_properties_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 105,
+      "name" : "t81_bigint_division_semantics_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 107,
+      "name" : "t81_bigint_gcd_divmod_property_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 109,
+      "name" : "t81_bigint_modular_inverse_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 111,
+      "name" : "fuzz_bigint_libfuzzer",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 113,
+      "name" : "t81_fraction_properties_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 115,
+      "name" : "t81_core_numeric_compat_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 117,
+      "name" : "t81_core_bigint_compat_properties_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 119,
+      "name" : "t81_core_fraction_compat_properties_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 121,
+      "name" : "t81_v1_canonical_numeric_contract_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 123,
+      "name" : "t81_complex_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 125,
+      "name" : "t81_prob_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 127,
+      "name" : "t81_symbol_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 129,
+      "name" : "t81_string_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 131,
+      "name" : "t81_qutrit_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 133,
+      "name" : "t81_fixed_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 135,
+      "name" : "t81_uint_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 137,
+      "name" : "t81_list_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 139,
+      "name" : "t81_map_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 141,
+      "name" : "t81_set_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 143,
+      "name" : "t81_vector_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 145,
+      "name" : "t81_matrix_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 147,
+      "name" : "t81_matrix_singular_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 149,
+      "name" : "t81_maybe_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 151,
+      "name" : "t81_result_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 153,
+      "name" : "t81_quaternion_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 155,
+      "name" : "t81_time_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 157,
+      "name" : "t81_bytes_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 159,
+      "name" : "t81_tree_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 161,
+      "name" : "t81_tensor_transpose_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 163,
+      "name" : "t81_core_improvements_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 165,
+      "name" : "t81_core_features_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 167,
+      "name" : "t81_tensor_slice_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 169,
+      "name" : "t81_tensor_reshape_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 171,
+      "name" : "t81_tensor_loader_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 173,
+      "name" : "t81_canonfs_io_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 175,
+      "name" : "canonfs_persistent_driver_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 177,
+      "name" : "canonfs_policy_boundary_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 179,
+      "name" : "canonfs_identity_contract_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 181,
+      "name" : "canonfs_storage_format_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 183,
+      "name" : "t81_vm_metarefine_writecode_denial_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 185,
+      "name" : "canonfs_read_verify_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 187,
+      "name" : "canonfs_read_verify_env_contract_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 189,
+      "name" : "canonfs_integrity_matrix_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 191,
+      "name" : "t81_vm_canonfs_root_env_contract_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 193,
+      "name" : "t81_ir_encoding_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 195,
+      "name" : "t81_isa_encoding_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 197,
+      "name" : "t81_hash_stub_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 199,
+      "name" : "t81_sha3_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 201,
+      "name" : "t81_axion_stub_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 203,
+      "name" : "t81_codec_base243_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 205,
+      "name" : "t81_codec_base81_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 207,
+      "name" : "t81_trit_packing_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 209,
+      "name" : "t81_packed_trit_vector_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 211,
+      "name" : "t81_phase2c_truth_table_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 213,
+      "name" : "t81_packed_trit_vector_stress_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 215,
+      "name" : "t81_base81_balanced_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 217,
+      "name" : "t81_base81_packed_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 219,
+      "name" : "t81_metadata_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 221,
+      "name" : "t81_isa_base81_view_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 223,
+      "name" : "setun_bridge_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 225,
+      "name" : "tisc_opcode_matrix_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 227,
+      "name" : "t81lang_conformance_baseline_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 229,
+      "name" : "t81_numeric_format_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 231,
+      "name" : "axion_recursion_guardrails_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 233,
+      "name" : "t81_tensor_shape_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 235,
+      "name" : "t81_tensor_serialization_canonical_fixed_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 237,
+      "name" : "t81_tensor_native_decode_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 239,
+      "name" : "t81_ternary_arith_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 241,
+      "name" : "t81_tensor_matmul_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 243,
+      "name" : "t81_tensor_reduce_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 245,
+      "name" : "t81_tensor_broadcast_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 247,
+      "name" : "t81_entropy_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 249,
+      "name" : "t81_expected_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 251,
+      "name" : "t81_tensor_elementwise_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 253,
+      "name" : "t81_tensor_ternary_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 255,
+      "name" : "t81_t729_tensor_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 257,
+      "name" : "t81_symbolic_algebra_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 259,
+      "name" : "t81_semantic_graph_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 261,
+      "name" : "t81_neural_primitives_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 263,
+      "name" : "t81_frontend_neural_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 265,
+      "name" : "t81_c_api_bigint_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 267,
+      "name" : "t81_tensor_unary_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 269,
+      "name" : "t81_hanoi_integration_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 271,
+      "name" : "t81_hanoi_command_surface_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 273,
+      "name" : "t81_vm_load_store_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 275,
+      "name" : "t81_vm_illegal_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 277,
+      "name" : "t81_vm_bounds_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 279,
+      "name" : "t81_vm_tensor_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 281,
+      "name" : "t81_vm_tloadhash_conformance_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 283,
+      "name" : "t81_vm_tloadhash_custom_driver_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 285,
+      "name" : "t81_vm_tloadhash_canonical_fixed_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 287,
+      "name" : "t81_vm_tloadhash_decodefault_determinism_matrix_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 289,
+      "name" : "t81_vm_ai_phase1_attention_conformance_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 291,
+      "name" : "t81_vm_ai_phase1_embed_conformance_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 293,
+      "name" : "t81_vm_ai_phase1_qmatmul_conformance_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 295,
+      "name" : "t81_vm_ai_phase1_shared_helper_parity_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 297,
+      "name" : "t81_vm_ai_phase1_wload_conformance_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 299,
+      "name" : "t81_vm_ai_phase1_gather_conformance_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 301,
+      "name" : "t81_vm_ai_phase1_scatter_conformance_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 303,
+      "name" : "t81_vm_ai_phase1_wload_canonfs_audit_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 305,
+      "name" : "t81_vm_ai_phase1_scatter_aliasing_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 307,
+      "name" : "t81_vm_ai_phase1_gather_axis1_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 309,
+      "name" : "t81_lang_ai_m6_annotation_lowering_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 311,
+      "name" : "t81_vm_tensor_shape_faults_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 313,
+      "name" : "t81_vm_tisc_v04_extensions_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 315,
+      "name" : "t81_vm_tensor_get_set_conformance_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 317,
+      "name" : "t81_vm_tensor_helper_predicates_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 319,
+      "name" : "t81_vm_tensor_provenance_trace_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 321,
+      "name" : "t81_vm_predispatch_policy_deny_logging_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 323,
+      "name" : "t81_vm_ai_predispatch_deny_audit_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 325,
+      "name" : "t81_vm_fault_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 327,
+      "name" : "t81_vm_deterministic_fault_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 329,
+      "name" : "t81_vm_fault_family_determinism_matrix_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 331,
+      "name" : "t81_vm_memory_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 333,
+      "name" : "t81_axion_log_determinism_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 335,
+      "name" : "t81_reflection_non_interference_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 337,
+      "name" : "t81_canonfs_driver_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 339,
+      "name" : "canonfs_interchange_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy"
+        }
+      ]
+    },
+    {
+      "backtrace" : 341,
+      "name" : "t81_canonfs_rs_repair_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 343,
+      "name" : "t81_canonhash81_reference_vectors_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 345,
+      "name" : "t81_weights_load_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 347,
+      "name" : "t81_safetensors_import_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 349,
+      "name" : "t81_native_weights_metrics_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 351,
+      "name" : "t81_vm_trace_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 353,
+      "name" : "t81_vm_determinism_property_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 355,
+      "name" : "t81_vm_state_transition_invariants_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 357,
+      "name" : "t81_vm_state_transition_conformance_matrix_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 359,
+      "name" : "t81_vm_workload_determinism_tiers_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 361,
+      "name" : "t81_vm_mixed_workload_conformance_matrix_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 363,
+      "name" : "t81_vm_policy_parse_fail_closed_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 365,
+      "name" : "t81_vm_axreport_policy_deny_fail_closed_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 367,
+      "name" : "t81_vm_system_registers_deterministic_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 369,
+      "name" : "t81_vm_stubbed_opcode_fail_closed_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 371,
+      "name" : "vm_extended_ops_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 373,
+      "name" : "llama_kernels_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 375,
+      "name" : "t81_vm_jump_flags_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 377,
+      "name" : "t81_vm_float_fraction_ops_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 379,
+      "name" : "t81_vm_literal_pool_extension_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 381,
+      "name" : "t81_vm_neg_jumps_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 383,
+      "name" : "t81_vm_print_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 385,
+      "name" : "t81_limb_bohemian_add_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 387,
+      "name" : "t81_limb_bohemian_mul_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 389,
+      "name" : "t81_limb_booth_mul_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 391,
+      "name" : "t81_limb_mul_wide_high_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 393,
+      "name" : "t81_limb_add_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 395,
+      "name" : "t81_native_arith_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 397,
+      "name" : "t81_native_conversion_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 399,
+      "name" : "t81_simd_add_helpers_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 401,
+      "name" : "t81_native_property_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 403,
+      "name" : "t81_bigint_v1_baseline_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 405,
+      "name" : "t81_limb54_add_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 407,
+      "name" : "t81_limb54_booth_mul_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 409,
+      "name" : "t81_frontend_lexer_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 411,
+      "name" : "t81_frontend_parser_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 413,
+      "name" : "t81_spec_compliance_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 415,
+      "name" : "tisc_semantic_equivalence_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 417,
+      "name" : "tisc_opcode_family_semantics_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 419,
+      "name" : "t81_frontend_expression_features_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 421,
+      "name" : "t81_frontend_parser_generics_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 423,
+      "name" : "t81_frontend_parser_recovery_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 425,
+      "name" : "t81_frontend_parser_legacy_rejection_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 427,
+      "name" : "t81_frontend_ir_generator_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 429,
+      "name" : "t81_frontend_logical_lowering_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 431,
+      "name" : "t81_semantic_analyzer_option_result_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 433,
+      "name" : "test_std_option_result",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 435,
+      "name" : "t81_semantic_analyzer_match_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 437,
+      "name" : "t81_semantic_analyzer_generic_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 439,
+      "name" : "t81_semantic_analyzer_indexing_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 441,
+      "name" : "t81_semantic_analyzer_vector_literal_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 443,
+      "name" : "t81_semantic_analyzer_equality_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 445,
+      "name" : "t81_semantic_analyzer_loop_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 447,
+      "name" : "t81_semantic_analyzer_scope_lifetime_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 449,
+      "name" : "t81_semantic_analyzer_numeric_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 451,
+      "name" : "t81_semantic_analyzer_diagnostic_location_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 453,
+      "name" : "t81_semantic_analyzer_cascade_suppression_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 455,
+      "name" : "t81_semantic_analyzer_diagnostic_precision_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 457,
+      "name" : "t81_isa_binary_emitter_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 459,
+      "name" : "t81_isa_type_alias_io_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 461,
+      "name" : "t81_isa_binary_io_determinism_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 463,
+      "name" : "t81_isa_binary_metadata_roundtrip_property_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 465,
+      "name" : "e2e_option_result_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 467,
+      "name" : "e2e_option_result_function_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 469,
+      "name" : "e2e_option_type_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 471,
+      "name" : "e2e_match_expression_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 473,
+      "name" : "e2e_loop_statement_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 475,
+      "name" : "e2e_advanced_features_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 477,
+      "name" : "e2e_print_runtime_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 479,
+      "name" : "e2e_compile_determinism_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 481,
+      "name" : "e2e_match_metadata_determinism_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 483,
+      "name" : "e2e_ast_ir_canonical_determinism_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 485,
+      "name" : "e2e_enum_metadata_determinism_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 487,
+      "name" : "cli_e2e_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 489,
+      "name" : "t81_cli_check_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 491,
+      "name" : "t81_cli_pipeline_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 493,
+      "name" : "t81_cli_disasm_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 495,
+      "name" : "t81_cli_debugger_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 497,
+      "name" : "t81_cli_option_result_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 499,
+      "name" : "t81_cli_diagnostic_context_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 501,
+      "name" : "t81_cli_trace_export_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 503,
+      "name" : "cli_canonize_tensor_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 505,
+      "name" : "axion_heap_compaction_trace_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 507,
+      "name" : "axion_policy_gc_trace_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 509,
+      "name" : "axion_policy_match_guard_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 511,
+      "name" : "axion_policy_segment_event_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 513,
+      "name" : "axion_policy_invariants_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 515,
+      "name" : "axion_policy_allow_deny_determinism_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 517,
+      "name" : "axion_policy_conformance_matrix_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 519,
+      "name" : "axion_loop_metadata_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 521,
+      "name" : "axion_match_metadata_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 523,
+      "name" : "axion_enum_guard_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 525,
+      "name" : "axion_nested_guard_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 527,
+      "name" : "axion_instruction_counter_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 529,
+      "name" : "canonfs_axion_trace_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 531,
+      "name" : "t81_tier4_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 533,
+      "name" : "t81_tier5_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 535,
+      "name" : "t81_infinite_opcodes_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 537,
+      "name" : "t81_tier4_vm_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 539,
+      "name" : "t81_tier4_distributed_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 541,
+      "name" : "t81_jit_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 543,
+      "name" : "jit_trace_equivalence_test",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 240.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 545,
+      "name" : "jit_repro_oracle_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 547,
+      "name" : "jit_canonfs_cache_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 549,
+      "name" : "vm_gc_safepoint_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 551,
+      "name" : "agent_constructs_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 553,
+      "name" : "axion_agent_invoke_policy_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 555,
+      "name" : "t81lang_foreign_ffi_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 557,
+      "name" : "vm_ffi_bridge_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 559,
+      "name" : "tnn_stdlib_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 561,
+      "name" : "lattice_crypto_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 563,
+      "name" : "ntru_kem_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 565,
+      "name" : "jit_tensor_trace_equivalence_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 567,
+      "name" : "vm_jit_per_instruction_policy_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 569,
+      "name" : "e2e_axion_trace_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 571,
+      "name" : "axion_policy_bytecode_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 573,
+      "name" : "axion_hybrid_mlp_policy_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 575,
+      "name" : "test_bigint_multilimb_ext",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 577,
+      "name" : "test_bigint_robust_features",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 579,
+      "name" : "t81_int128_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 581,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81_process_capture_test"
+      ],
+      "name" : "t81_process_capture_test",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 60.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 583,
+      "name" : "t81_int128_portable_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 585,
+      "name" : "t81_bigint_v1_perf",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 587,
+      "name" : "bigint_perf_guardrail_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 589,
+      "name" : "t81_bigint_allocation_pathology_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 591,
+      "name" : "t81_bigint_allocation_guardrail_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 593,
+      "name" : "t81_vm_tier_promotion_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 595,
+      "name" : "test_T81Tensor_transpose",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 597,
+      "name" : "performance_advancements_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 599,
+      "name" : "t81_distributed_tensor_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 601,
+      "name" : "tensor_backend_parity_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 603,
+      "name" : "t81_cli_model_resolution_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 605,
+      "name" : "t81_vm_rfc0034_ternary_native_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 607,
+      "name" : "t81_vm_rfc0040_swar_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 609,
+      "name" : "t81_simd_api_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 611,
+      "name" : "t81_arithmetic_backend_equivalence_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 613,
+      "command" : 
+      [
+        "/opt/homebrew/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/tests/python/test_cli_execution_policy.py",
+        "--t81-bin",
+        "/private/tmp/t81-pr750-main-release/t81"
+      ],
+      "name" : "t81_cli_execution_policy_test",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 180.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 615,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/cli_repro_hash_test",
+        "/private/tmp/t81-pr750-main-release/t81"
+      ],
+      "name" : "t81_cli_repro_hash_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy"
+        }
+      ]
+    },
+    {
+      "backtrace" : 617,
+      "command" : 
+      [
+        "/opt/homebrew/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/tests/python/test_canonfs_cli_portable_storage.py",
+        "--cli",
+        "/private/tmp/t81-pr750-main-release/t81"
+      ],
+      "name" : "canonfs_cli_portable_storage_test",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 120.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 619,
+      "name" : "t81_cli_contract_test_runner",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 621,
+      "name" : "t81_ai_task_answer_fixed_test_runner",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 623,
+      "name" : "t81_ai_task_classify_fixed_test_runner",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 625,
+      "name" : "t81_ai_task_route_fixed_test_runner",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 627,
+      "name" : "t81_ai_task_assess_fixed_test_runner",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 629,
+      "name" : "t81_ai_task_framework_test_runner",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 631,
+      "name" : "t81_ai_task_assess_fixed_composition_test_runner",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 633,
+      "name" : "t81_ai_task_route_fixed_composition_test_runner",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 635,
+      "name" : "t81_ai_task_classify_fixed_composition_test_runner",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 637,
+      "name" : "t81_ai_task_read_field_test_runner",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 639,
+      "name" : "artifact_validate_record_test_runner",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 641,
+      "name" : "artifact_family_test_runner",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 643,
+      "name" : "t81_cli_stress_test_runner",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 300.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 645,
+      "name" : "t81_cli_stdlib_fixtures_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 647,
+      "name" : "cli_std_collections_determinism_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 649,
+      "command" : 
+      [
+        "/opt/homebrew/bin/python3",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/tests/ci/check_legacy_core_numeric_includes_test.py"
+      ],
+      "name" : "t81_legacy_core_numeric_include_policy_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy"
+        }
+      ]
+    },
+    {
+      "backtrace" : 651,
+      "command" : 
+      [
+        "/opt/homebrew/bin/python3",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/tests/ci/check_legacy_core_numeric_type_usage_test.py"
+      ],
+      "name" : "t81_legacy_core_numeric_type_usage_policy_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy"
+        }
+      ]
+    },
+    {
+      "backtrace" : 653,
+      "command" : 
+      [
+        "/opt/homebrew/bin/python3",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/tests/ci/check_legacy_v1_numeric_includes_test.py"
+      ],
+      "name" : "t81_legacy_v1_numeric_include_policy_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy"
+        }
+      ]
+    },
+    {
+      "backtrace" : 655,
+      "command" : 
+      [
+        "/opt/homebrew/bin/python3",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/tests/ci/check_core_numeric_wrapper_thinness_test.py"
+      ],
+      "name" : "t81_core_numeric_wrapper_thinness_policy_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy"
+        }
+      ]
+    },
+    {
+      "backtrace" : 657,
+      "command" : 
+      [
+        "/opt/homebrew/bin/python3",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/tests/ci/check_v1_canonical_numeric_alias_usage_test.py"
+      ],
+      "name" : "t81_v1_canonical_numeric_alias_usage_policy_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy"
+        }
+      ]
+    },
+    {
+      "backtrace" : 659,
+      "command" : 
+      [
+        "/opt/homebrew/bin/python3",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/tests/ci/check_root_structure_test.py"
+      ],
+      "name" : "t81_root_structure_policy_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy"
+        }
+      ]
+    },
+    {
+      "backtrace" : 661,
+      "command" : 
+      [
+        "/opt/homebrew/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/tests/ci/test_stable_baseline_compliance.py"
+      ],
+      "name" : "t81_stable_baseline_checker_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 663,
+      "name" : "t81_graph_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 665,
+      "name" : "t81_graph_components_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 667,
+      "name" : "t81_graph_shortest_path_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 669,
+      "name" : "t81_graph_large_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 671,
+      "name" : "t81_map_regression_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 673,
+      "name" : "t81_polynomial_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 675,
+      "name" : "t81_agent_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 677,
+      "name" : "t81_agent_neural_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 679,
+      "name" : "t81_stream_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 681,
+      "name" : "t81_promise_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 683,
+      "name" : "t81_thread_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 685,
+      "name" : "t81_network_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 687,
+      "name" : "t81_discovery_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 689,
+      "name" : "t81_category_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 691,
+      "name" : "t81_proof_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 693,
+      "name" : "t81_tensor_slice_static_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 695,
+      "name" : "t81_tensor_concat_static_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 697,
+      "name" : "t81_tensor_permute_static_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 699,
+      "name" : "t81_tensor_pad_static_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 701,
+      "name" : "t81_tensor_activations_static_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 703,
+      "name" : "t81_tensor_softmax_static_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 705,
+      "name" : "t81_graph_pagerank_convergence_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 707,
+      "name" : "t81_graph_bfs_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 709,
+      "name" : "t81_float_rounding_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 711,
+      "name" : "t81_float_clamp_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 713,
+      "name" : "t81_int_pow_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 715,
+      "name" : "t81_int_gcd_lcm_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 717,
+      "name" : "t81_int_shift_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 719,
+      "name" : "t81_std_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 721,
+      "name" : "t81_symbolic_vm_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 723,
+      "name" : "tier1_rewrite_confluence_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 725,
+      "name" : "t81_cog_symbolic_graph_include_surface_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 727,
+      "name" : "test_t81float_scientific",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 729,
+      "name" : "test_symbol_type",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 731,
+      "name" : "test_dynamic_vector",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 733,
+      "name" : "test_concurrency",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 735,
+      "name" : "test_collections_scaffold",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 737,
+      "name" : "test_bigint_demotion",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 739,
+      "name" : "t81_graph_algorithms_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 741,
+      "name" : "t81_determinism_codec_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 743,
+      "name" : "t81_determinism_primitives_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 745,
+      "name" : "t81_determinism_float_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 747,
+      "name" : "t81_determinism_containers_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 749,
+      "name" : "t81_determinism_math_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 751,
+      "name" : "t81_determinism_vector_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 753,
+      "name" : "t81_determinism_new_types_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 755,
+      "name" : "test_deterministic_float_boundaries",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 757,
+      "name" : "test_t81float_soft_math",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 759,
+      "name" : "test_map_determinism",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 761,
+      "name" : "test_t81lang_traceability_enforcement",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 763,
+      "name" : "test_axion_evidence_loop_closure_corrected",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 765,
+      "name" : "test_swar",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release"
+        }
+      ]
+    },
+    {
+      "backtrace" : 767,
+      "name" : "t81_radix_comparison_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/experiments/radix_comparison"
+        }
+      ]
+    },
+    {
+      "backtrace" : 769,
+      "name" : "t81_packed_ternary_matvec_oracle_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/experiments/packed_ternary_matvec"
+        }
+      ]
+    },
+    {
+      "backtrace" : 771,
+      "name" : "t81_h04_r02_adaptive_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/experiments/h04_r02_adaptive_representation"
+        }
+      ]
+    },
+    {
+      "backtrace" : 773,
+      "command" : 
+      [
+        "/opt/homebrew/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/experiments/h04_r02_adaptive_representation/oracle.py"
+      ],
+      "name" : "t81_h04_r02_oracle_test",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/experiments/h04_r02_adaptive_representation"
+        }
+      ]
+    },
+    {
+      "backtrace" : 775,
+      "command" : 
+      [
+        "/opt/homebrew/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/tests/ci/h04_r02_audit_regression_test.py",
+        "--bin-path",
+        "/private/tmp/t81-pr750-main-release/experiments/h04_r02_adaptive_representation/t81_h04_r02_adaptive"
+      ],
+      "name" : "t81_h04_r02_audit_regression_test",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 120.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/experiments/h04_r02_adaptive_representation"
+        }
+      ]
+    },
+    {
+      "backtrace" : 777,
+      "name" : "t81_s02_integrity_controls",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/experiments/s02_stochastic_topology"
+        }
+      ]
+    },
+    {
+      "backtrace" : 779,
+      "command" : 
+      [
+        "/opt/homebrew/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/experiments/s02_stochastic_topology/test_oracle.py",
+        "--runner",
+        "/private/tmp/t81-pr750-main-release/experiments/s02_stochastic_topology/t81_s02_stochastic_topology"
+      ],
+      "name" : "t81_s02_stochastic_topology_test",
+      "properties" : 
+      [
+        {
+          "name" : "TIMEOUT",
+          "value" : 120.0
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/experiments/s02_stochastic_topology"
+        }
+      ]
+    },
+    {
+      "backtrace" : 781,
+      "command" : 
+      [
+        "/opt/homebrew/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/experiments/s02_stochastic_topology/test_sampling.py"
+      ],
+      "name" : "t81_s02_sampling_controls",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/experiments/s02_stochastic_topology"
+        }
+      ]
+    },
+    {
+      "backtrace" : 783,
+      "command" : 
+      [
+        "/opt/homebrew/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/experiments/s02_stochastic_topology/test_integrity.py",
+        "--probe",
+        "/private/tmp/t81-pr750-main-release/experiments/s02_stochastic_topology/t81_s02_regression_probe"
+      ],
+      "name" : "t81_s02_five_findings",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/experiments/s02_stochastic_topology"
+        }
+      ]
+    },
+    {
+      "backtrace" : 785,
+      "command" : 
+      [
+        "/opt/homebrew/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/experiments/s02_stochastic_topology/test_reporting.py"
+      ],
+      "name" : "t81_s02_reporting_controls",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/experiments/s02_stochastic_topology"
+        }
+      ]
+    },
+    {
+      "backtrace" : 787,
+      "command" : 
+      [
+        "/opt/homebrew/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/experiments/s02_stochastic_topology/analyze_results.py",
+        "--check"
+      ],
+      "name" : "t81_s02_report_reproducibility",
+      "properties" : 
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/experiments/s02_stochastic_topology"
+        }
+      ]
+    },
+    {
+      "backtrace" : 789,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/ai/attn-determinism.t81"
+      ],
+      "name" : "spec_conformance_ai_attn-determinism",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 791,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/ai/embed-bounds-check.t81"
+      ],
+      "name" : "spec_conformance_ai_embed-bounds-check",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 793,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/ai/qmatmul-scale-order.t81"
+      ],
+      "name" : "spec_conformance_ai_qmatmul-scale-order",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 795,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/ai/tact-quarantine-gate.t81"
+      ],
+      "name" : "spec_conformance_ai_tact-quarantine-gate",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 797,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/ai/tact-step-determinism.t81"
+      ],
+      "name" : "spec_conformance_ai_tact-step-determinism",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 799,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/ai/tattn-ternary-qk.t81"
+      ],
+      "name" : "spec_conformance_ai_tattn-ternary-qk",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 801,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/ai/tquant-determinism.t81"
+      ],
+      "name" : "spec_conformance_ai_tquant-determinism",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 803,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/ai/twembed-bounds.t81"
+      ],
+      "name" : "spec_conformance_ai_twembed-bounds",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 805,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/ai/twmatmul-exact.t81"
+      ],
+      "name" : "spec_conformance_ai_twmatmul-exact",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 807,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/axion-kernel/metadata-determinism.t81"
+      ],
+      "name" : "spec_conformance_axion-kernel_metadata-determinism",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 809,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/axion-kernel/policy-deny-requires-reason.t81"
+      ],
+      "name" : "spec_conformance_axion-kernel_policy-deny-requires-reason",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 811,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/axion-kernel/policy-enforcement-allow-deny.t81"
+      ],
+      "name" : "spec_conformance_axion-kernel_policy-enforcement-allow-deny",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 813,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/axion-kernel/segment-trace-strings.t81"
+      ],
+      "name" : "spec_conformance_axion-kernel_segment-trace-strings",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 815,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/axion-kernel/tier-supervision-invariant.t81"
+      ],
+      "name" : "spec_conformance_axion-kernel_tier-supervision-invariant",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 817,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/cognitive-tiers/tier-annotation-enforcement.t81"
+      ],
+      "name" : "spec_conformance_cognitive-tiers_tier-annotation-enforcement",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 819,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/t81-data-types/canonical-encoding.t81"
+      ],
+      "name" : "spec_conformance_t81-data-types_canonical-encoding",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 821,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/t81-data-types/canonical-ordering.t81"
+      ],
+      "name" : "spec_conformance_t81-data-types_canonical-ordering",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 823,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/t81-data-types/type-kind-completeness.t81"
+      ],
+      "name" : "spec_conformance_t81-data-types_type-kind-completeness",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 825,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/t81-data-types/widening-binary-interop.t81"
+      ],
+      "name" : "spec_conformance_t81-data-types_widening-binary-interop",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 827,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/t81-data-types/widening-order.t81"
+      ],
+      "name" : "spec_conformance_t81-data-types_widening-order",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 829,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/t81-data-types/widening-upper-chain.t81"
+      ],
+      "name" : "spec_conformance_t81-data-types_widening-upper-chain",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 831,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/t81vm/axion-log-completeness.t81"
+      ],
+      "name" : "spec_conformance_t81vm_axion-log-completeness",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 833,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/t81vm/determinism-profile.t81"
+      ],
+      "name" : "spec_conformance_t81vm_determinism-profile",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 835,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/tisc/arithmetic-determinism.t81"
+      ],
+      "name" : "spec_conformance_tisc_arithmetic-determinism",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 837,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/tisc/bitwise-determinism.t81"
+      ],
+      "name" : "spec_conformance_tisc_bitwise-determinism",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 839,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/tisc/bitwise-shift-masking.t81"
+      ],
+      "name" : "spec_conformance_tisc_bitwise-shift-masking",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 841,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/tisc/bounds-fault-contract.t81"
+      ],
+      "name" : "spec_conformance_tisc_bounds-fault-contract",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 843,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/tisc/comparison-total-order.t81"
+      ],
+      "name" : "spec_conformance_tisc_comparison-total-order",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 845,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/tisc/conversion-determinism.t81"
+      ],
+      "name" : "spec_conformance_tisc_conversion-determinism",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 847,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/tisc/division-truncation.t81"
+      ],
+      "name" : "spec_conformance_tisc_division-truncation",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 849,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/tisc/fraction-normalization.t81"
+      ],
+      "name" : "spec_conformance_tisc_fraction-normalization",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 851,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/tisc/ternary-logic-canonical.t81"
+      ],
+      "name" : "spec_conformance_tisc_ternary-logic-canonical",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    },
+    {
+      "backtrace" : 853,
+      "command" : 
+      [
+        "/private/tmp/t81-pr750-main-release/t81",
+        "code",
+        "run",
+        "/Users/t81dev/Code/t81-foundation/.cache/pr750-main-explicit-policy/spec/conformance/tisc/tier-restriction.t81"
+      ],
+      "name" : "spec_conformance_tisc_tier-restriction",
+      "properties" : 
+      [
+        {
+          "name" : "LABELS",
+          "value" : 
+          [
+            "spec_conformance"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/private/tmp/t81-pr750-main-release/spec/conformance"
+        }
+      ]
+    }
+  ],
+  "version" : 
+  {
+    "major" : 1,
+    "minor" : 0
+  }
+}

@@ -488,6 +488,7 @@ struct Options {
   std::string field;
   int max_tokens = static_cast<int>(kBoundedDecodeTraceSteps);
   bool verbose = false;
+  bool checkpoint_canonfs = false;
 };
 
 bool parse_named_args(const std::vector<std::string_view>& argv, std::size_t start, Options& opts,
@@ -518,6 +519,8 @@ bool parse_named_args(const std::vector<std::string_view>& argv, std::size_t sta
         return false;
       }
       opts.canonfs_root = fs::absolute(fs::path(std::string(argv[++i])));
+    } else if (arg == "--checkpoint-canonfs") {
+      opts.checkpoint_canonfs = true;
     } else if (arg == "--model") {
       if (i + 1 >= argv.size()) {
         error = "missing value for --model";
@@ -823,6 +826,193 @@ int cmd_task_read_field(const Options& opts, const std::vector<std::string>& pos
   }
 
   std::cout << *value << "\n";
+  return 0;
+}
+
+int cmd_checkpoint_verify(const Options& opts, const std::vector<std::string>& positional) {
+  if (positional.size() != 1) {
+    std::cerr << "error: checkpoint-verify requires exactly one <artifact.json|sha3-256:head-ref>\n";
+    return 1;
+  }
+
+  const fs::path canon_root = resolve_canonfs_root(opts.canonfs_root);
+  const std::string selector = positional.front();
+  std::vector<std::string> expected_refs;
+  std::string head_ref;
+
+  if (selector.rfind("sha3-256:", 0) == 0) {
+    head_ref = selector;
+  } else {
+    std::string read_error;
+    const std::string text = read_text_file_binary(fs::absolute(fs::path(selector)), read_error);
+    if (!read_error.empty()) {
+      std::cout << "{\n"
+                << "  \"schema\": \"t81.ai.checkpoint-verify.v1\",\n"
+                << "  \"ok\": false,\n"
+                << "  \"error\": \"" << json_escape(read_error) << "\"\n"
+                << "}\n";
+      return 1;
+    }
+    const std::string key = "\"checkpoint_canonfs_refs\"";
+    const std::size_t kpos = text.find(key);
+    if (kpos != std::string::npos) {
+      const std::size_t lbr = text.find('[', kpos + key.size());
+      const std::size_t rbr = (lbr != std::string::npos) ? text.find(']', lbr) : std::string::npos;
+      if (lbr != std::string::npos && rbr != std::string::npos) {
+        std::size_t pos = lbr + 1;
+        while (pos < rbr) {
+          const std::size_t q1 = text.find('"', pos);
+          if (q1 == std::string::npos || q1 >= rbr) {
+            break;
+          }
+          const std::size_t q2 = text.find('"', q1 + 1);
+          if (q2 == std::string::npos || q2 >= rbr) {
+            break;
+          }
+          expected_refs.push_back(text.substr(q1 + 1, q2 - q1 - 1));
+          pos = q2 + 1;
+        }
+      }
+    }
+    if (expected_refs.empty()) {
+      std::cout << "{\n"
+                << "  \"schema\": \"t81.ai.checkpoint-verify.v1\",\n"
+                << "  \"ok\": false,\n"
+                << "  \"error\": \"no checkpoint_canonfs_refs found in artifact\"\n"
+                << "}\n";
+      return 1;
+    }
+    head_ref = expected_refs.back();
+  }
+
+  std::vector<std::string> walked_reversed;
+  std::set<std::string> seen;
+  std::string curr_ref = head_ref;
+  std::optional<int> expected_step;
+
+  auto parse_step_int = [](std::string_view text) -> std::optional<int> {
+    const std::size_t kpos = text.find("\"step\"");
+    if (kpos == std::string_view::npos) {
+      return std::nullopt;
+    }
+    const std::size_t colon = text.find(':', kpos + 6);
+    if (colon == std::string_view::npos) {
+      return std::nullopt;
+    }
+    std::size_t i = colon + 1;
+    while (i < text.size() && (text[i] == ' ' || text[i] == '\t' || text[i] == '\n' ||
+                               text[i] == '\r')) {
+      ++i;
+    }
+    if (i >= text.size() || text[i] < '0' || text[i] > '9') {
+      return std::nullopt;
+    }
+    int val = 0;
+    while (i < text.size() && text[i] >= '0' && text[i] <= '9') {
+      val = val * 10 + (text[i] - '0');
+      ++i;
+    }
+    return val;
+  };
+
+  while (!curr_ref.empty()) {
+    if (!seen.insert(curr_ref).second) {
+      std::cout << "{\n"
+                << "  \"schema\": \"t81.ai.checkpoint-verify.v1\",\n"
+                << "  \"ok\": false,\n"
+                << "  \"head_ref\": \"" << json_escape(head_ref) << "\",\n"
+                << "  \"error\": \"cycle detected in checkpoint chain at "
+                << json_escape(curr_ref) << "\"\n"
+                << "}\n";
+      return 1;
+    }
+    std::string block_text;
+    std::string read_error;
+    if (!load_canonfs_raw_block_text(canon_root, curr_ref, block_text, read_error)) {
+      std::cout << "{\n"
+                << "  \"schema\": \"t81.ai.checkpoint-verify.v1\",\n"
+                << "  \"ok\": false,\n"
+                << "  \"head_ref\": \"" << json_escape(head_ref) << "\",\n"
+                << "  \"error\": \"" << json_escape(read_error) << "\"\n"
+                << "}\n";
+      return 1;
+    }
+    const auto schema = extract_json_string_field(block_text, "schema");
+    if (!schema || *schema != "t81.ai.inference-checkpoint.v1") {
+      std::cout << "{\n"
+                << "  \"schema\": \"t81.ai.checkpoint-verify.v1\",\n"
+                << "  \"ok\": false,\n"
+                << "  \"head_ref\": \"" << json_escape(head_ref) << "\",\n"
+                << "  \"error\": \"unexpected checkpoint schema at " << json_escape(curr_ref)
+                << "\"\n"
+                << "}\n";
+      return 1;
+    }
+    const auto step_val = parse_step_int(block_text);
+    if (!step_val || *step_val < 0) {
+      std::cout << "{\n"
+                << "  \"schema\": \"t81.ai.checkpoint-verify.v1\",\n"
+                << "  \"ok\": false,\n"
+                << "  \"head_ref\": \"" << json_escape(head_ref) << "\",\n"
+                << "  \"error\": \"missing or invalid step field at " << json_escape(curr_ref)
+                << "\"\n"
+                << "}\n";
+      return 1;
+    }
+    if (expected_step && *step_val != *expected_step) {
+      std::cout << "{\n"
+                << "  \"schema\": \"t81.ai.checkpoint-verify.v1\",\n"
+                << "  \"ok\": false,\n"
+                << "  \"head_ref\": \"" << json_escape(head_ref) << "\",\n"
+                << "  \"error\": \"step discontinuity at " << json_escape(curr_ref) << "\"\n"
+                << "}\n";
+      return 1;
+    }
+    walked_reversed.push_back(curr_ref);
+    const auto prev_ref = extract_json_string_field(block_text, "prev_checkpoint_ref");
+    if (!prev_ref) {
+      if (*step_val != 0) {
+        std::cout << "{\n"
+                  << "  \"schema\": \"t81.ai.checkpoint-verify.v1\",\n"
+                  << "  \"ok\": false,\n"
+                  << "  \"head_ref\": \"" << json_escape(head_ref) << "\",\n"
+                  << "  \"error\": \"non-zero step " << *step_val
+                  << " has null prev_checkpoint_ref\"\n"
+                  << "}\n";
+        return 1;
+      }
+      break;
+    }
+    if (*step_val == 0) {
+      std::cout << "{\n"
+                << "  \"schema\": \"t81.ai.checkpoint-verify.v1\",\n"
+                << "  \"ok\": false,\n"
+                << "  \"head_ref\": \"" << json_escape(head_ref) << "\",\n"
+                << "  \"error\": \"step 0 must have null prev_checkpoint_ref\"\n"
+                << "}\n";
+      return 1;
+    }
+    expected_step = *step_val - 1;
+    curr_ref = *prev_ref;
+  }
+
+  std::reverse(walked_reversed.begin(), walked_reversed.end());
+  if (!expected_refs.empty() && walked_reversed != expected_refs) {
+    std::cout << "{\n"
+              << "  \"schema\": \"t81.ai.checkpoint-verify.v1\",\n"
+              << "  \"ok\": false,\n"
+              << "  \"head_ref\": \"" << json_escape(head_ref) << "\",\n"
+              << "  \"error\": \"walked checkpoint chain does not match checkpoint_canonfs_refs\"\n"
+              << "}\n";
+    return 1;
+  }
+
+  std::cout << "{\n"
+            << "  \"schema\": \"t81.ai.checkpoint-verify.v1\",\n"
+            << "  \"ok\": true,\n"
+            << "  \"head_ref\": \"" << json_escape(head_ref) << "\",\n"
+            << "  \"verified_steps\": " << walked_reversed.size() << "\n"
+            << "}\n";
   return 0;
 }
 
@@ -2011,6 +2201,46 @@ int cmd_inference_run(const Options& opts) {
                 ? "summary_only_on_degraded.v1"
                 : guarded_artifact_caution ? "full_evidence_with_guarded_caution.v1"
                                            : "full_evidence.v1";
+        std::vector<std::string> checkpoint_canonfs_refs;
+        if (opts.checkpoint_canonfs && !decode_steps.empty()) {
+          const fs::path canon_root = resolve_canonfs_root(opts.canonfs_root);
+          std::string prev_ref;
+          for (const auto& step : decode_steps) {
+            std::ostringstream ckpt;
+            ckpt << "{\n"
+                 << "  \"schema\": \"t81.ai.inference-checkpoint.v1\",\n"
+                 << "  \"step\": " << step.step << ",\n"
+                 << "  \"selected_token_id\": " << step.selected_token_id << ",\n"
+                 << "  \"hidden_tensor_signature_sha256\": \""
+                 << json_escape(step.hidden_tensor_signature_sha256) << "\",\n"
+                 << "  \"forward_state_signature_sha256\": \""
+                 << json_escape(step.forward_state_signature_sha256) << "\",\n"
+                 << "  \"architecture_state_signature_sha256\": \""
+                 << json_escape(step.architecture_state_signature_sha256) << "\",\n"
+                 << "  \"prev_checkpoint_ref\": "
+                 << (prev_ref.empty() ? "null" : ("\"" + json_escape(prev_ref) + "\"")) << "\n"
+                 << "}\n";
+            std::string ref;
+            std::string ckpt_error;
+            if (!write_canonfs_raw_block(canon_root, ckpt.str(), ref, ckpt_error)) {
+              std::cerr << "error: failed to checkpoint inference step to CanonFS: "
+                        << ckpt_error << "\n";
+              return 1;
+            }
+            checkpoint_canonfs_refs.push_back(ref);
+            prev_ref = ref;
+          }
+          extra << "  \"checkpoint_canonfs_enabled\": true,\n"
+                << "  \"checkpoint_canonfs_refs\": [\n";
+          for (std::size_t idx = 0; idx < checkpoint_canonfs_refs.size(); ++idx) {
+            extra << "    \"" << json_escape(checkpoint_canonfs_refs[idx]) << "\"";
+            if (idx + 1 < checkpoint_canonfs_refs.size()) {
+              extra << ",";
+            }
+            extra << "\n";
+          }
+          extra << "  ],\n";
+        }
         extra << "  \"stateful_decode_supported\": false,\n"
               << "  \"true_state_carry_supported\": "
               << (intermediate_tensor_import_used ? "true" : "false") << ",\n"
@@ -3371,7 +3601,8 @@ void print_usage(std::string_view prog) {
       << "  backend select --format <fmt> --mode <mode> [--out <file>]\n"
       << "  model inspect <model-file>\n"
       << "  verify determinism <model-file>\n"
-      << "  inference run --model <id> --model-file <path> [--format <fmt>] [--mode <mode>] [--max-tokens <n>] --prompt <text> [--out <file>]\n"
+      << "  inference run --model <id> --model-file <path> [--format <fmt>] [--mode <mode>] [--max-tokens <n>] --prompt <text> [--checkpoint-canonfs] [--canonfs-root <path>] [--out <file>]\n"
+      << "  checkpoint-verify <artifact.json|sha3-256:head-ref> [--canonfs-root <path>]\n"
       << "  task answer-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n"
       << "  task classify-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n"
       << "  task route-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n"
@@ -3534,6 +3765,12 @@ int run(std::string_view prog, const std::vector<std::string_view>& args) {
     if (args.size() >= 3 && args[1] == "trace") {
       return cmd_observability_trace(fs::absolute(fs::path(std::string(args[2]))));
     }
+  } else if (command == "checkpoint-verify") {
+    if (!parse_named_args(args, 1, opts, positional, error)) {
+      std::cerr << "error: " << error << "\n";
+      return 1;
+    }
+    return cmd_checkpoint_verify(opts, positional);
   } else if (command == "quantize") {
     if (!parse_named_args(args, 1, opts, positional, error)) {
       std::cerr << "error: " << error << "\n";

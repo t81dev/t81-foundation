@@ -1,0 +1,40 @@
+{
+  "run_id": 43538262449,
+  "run_url": "https://github.com/t81dev/t81-foundation/actions/runs/43538262449",
+  "event": "pull_request",
+  "workflow_head_sha": "b24cd1b1595f0e9c2c55a94a3cc0df89b57e83c1",
+  "conclusion": "success",
+  "packet_manifests_verified": true,
+  "jobs": [
+    {
+      "toolchain": "linux-gcc",
+      "source_sha": "300cdea8896d56c025f7099c0cdf0c41d7bd6237",
+      "harness_sha": "b24cd1b1595f0e9c2c55a94a3cc0df89b57e83c1",
+      "status": "passed",
+      "passed": 5,
+      "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+      "asio_sha": "12e0ce9e0500bf0f247dbd1ae894272656456079",
+      "summary_path": "remote/scg08-correctness-linux-gcc-43538262449-1/summary.json"
+    },
+    {
+      "toolchain": "windows-msvc",
+      "source_sha": "300cdea8896d56c025f7099c0cdf0c41d7bd6237",
+      "harness_sha": "b24cd1b1595f0e9c2c55a94a3cc0df89b57e83c1",
+      "status": "passed",
+      "passed": 5,
+      "platform": "Windows-2025Server-10.0.26100-SP0",
+      "asio_sha": "12e0ce9e0500bf0f247dbd1ae894272656456079",
+      "summary_path": "remote/scg08-correctness-windows-msvc-43538262449-1/summary.json"
+    },
+    {
+      "toolchain": "windows-clang-cl",
+      "source_sha": "300cdea8896d56c025f7099c0cdf0c41d7bd6237",
+      "harness_sha": "b24cd1b1595f0e9c2c55a94a3cc0df89b57e83c1",
+      "status": "passed",
+      "passed": 5,
+      "platform": "Windows-2025Server-10.0.26100-SP0",
+      "asio_sha": "12e0ce9e0500bf0f247dbd1ae894272656456079",
+      "summary_path": "remote/scg08-correctness-windows-clang-cl-43538262449-1/summary.json"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "artifact-sections.txt": "8508fff8313e53aadbb47df7bdac0e88e61822e254dabf69660d9b5e2f413386",
+  "artifacts/vm_workload_determinism_signatures.log": "c48bf3a260d6fefa700d8ff107c068662ebb7cc6b975b9f7411ef6f8b44ed954",
+  "correctness.json": "113495ee40039782edb7fcd3d3e6d6620ef48c842bfbbcd437c4741f51bb18ac",
+  "native-validation.json": "0b9649ade609175242b599940eba5245e0c48947d09cfbb1d1108d4e0d32345c",
+  "receipt.json": "3e7c9cd3b1887468cda90f7c7915dacfaf359cd837aafd2e713199ccaaf40bb2",
+  "runner-cmake-cache.txt": "50e24bc193c1d8d221df47aff8eef284a1164760ab926217858284bcc17f910e",
+  "runner-compile-commands.json": "6daf7b456cda8e258e0dede2aa74cb62ec565a5371e791e9dde8c0e0ebf80195",
+  "source-cmake-cache.txt": "7eafbb8078cd085cb846d5993d4cee1118becf423d05913eec8e67f1122e701e",
+  "source-compile-commands.json": "9dcda0bdb8c2fe19597e0f75fb7bfc53b94a2820ca0cf2211fb6ef5be5a571fd"
+}

@@ -1,5 +1,6 @@
 add_library(t81_vm STATIC
   ${PROJECT_SOURCE_DIR}/vm/vm.cpp
+  ${PROJECT_SOURCE_DIR}/vm/vm_support.cpp
   ${PROJECT_SOURCE_DIR}/vm/tier_limits.cpp
   ${PROJECT_SOURCE_DIR}/vm/value_ops.cpp
   ${PROJECT_SOURCE_DIR}/vm/memory_segments.cpp

@@ -1,0 +1,11 @@
+{
+  "dataset_sha256": "1188f12cb887f8ad044d970ca92e7e2f0125e57a5fda012606407da857cc2879",
+  "derivation": "untimed source-separated equations; same author, no independent reproduction claimed",
+  "n": 1048576,
+  "output_serialization": "signed-int64-little-endian-dataset-order",
+  "output_sha256": "603c0634f39ac12e6951d1d2365f123be73b71a3551f7dfaab7e7de8c1b20090",
+  "schema": "t81.h04-r03.checksum-witness.v1",
+  "seed": 0,
+  "witness_source_sha256": "3bda4f641289fe0e448c14c11772fe4d782b835b36d0271b80bceeadd8bbd757",
+  "xxh64": "cb66754878debc38"
+}

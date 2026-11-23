@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "python3",
+    "docs/records/audits/2026-11-14-pr751-on-pr793/evidence/original-matrix.py",
+    "--bash",
+    "/bin/bash",
+    "--wrapper",
+    "/Users/t81dev/Code/t81-foundation/.cache/pr751-on-pr793-wrapper/docs/records/audits/2026-11-14-pr751-on-pr793/evidence/baseline-wrapper/validate-policy.sh",
+    "--t81-bin",
+    "/private/tmp/t81-pr750-main-release/t81",
+    "--receipt",
+    "docs/records/audits/2026-11-14-pr751-on-pr793/evidence/baseline-receipt.json"
+  ],
+  "exit": 1,
+  "expected_exit": 1
+}

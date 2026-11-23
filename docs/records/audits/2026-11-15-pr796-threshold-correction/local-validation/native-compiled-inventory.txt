@@ -1,0 +1,14 @@
+BM_Kernel_TAnd_SWAR/16
+BM_Kernel_TAnd_SWAR/64
+BM_Kernel_TAnd_SWAR/256
+BM_Kernel_TAnd_SWAR/1024
+BM_Kernel_TAnd_SWAR/4096
+BM_Kernel_TAnd_SWAR/16384
+BM_Kernel_TAnd_SWAR/65536
+BM_Kernel_TAnd_NEON/16
+BM_Kernel_TAnd_NEON/64
+BM_Kernel_TAnd_NEON/256
+BM_Kernel_TAnd_NEON/1024
+BM_Kernel_TAnd_NEON/4096
+BM_Kernel_TAnd_NEON/16384
+BM_Kernel_TAnd_NEON/65536

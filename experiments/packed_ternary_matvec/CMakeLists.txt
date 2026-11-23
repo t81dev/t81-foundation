@@ -7,6 +7,7 @@ add_executable(t81_packed_ternary_matvec
   matvec_experiment.hpp
 )
 
+target_compile_features(t81_packed_ternary_matvec PRIVATE cxx_std_17)
 target_include_directories(t81_packed_ternary_matvec PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 check_cxx_compiler_flag("-mavx2" COMPILER_HAS_AVX2)

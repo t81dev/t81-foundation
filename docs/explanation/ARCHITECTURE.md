@@ -35,7 +35,7 @@ The authoritative build graph is `../../CMakeLists.txt`. It includes static libr
 | `t81_llvm` | INTERFACE | LLVM-facing facade target (placeholder/adapter layer) | `t81_core` |
 | `t81_tool_cli` | STATIC | CLI orchestration (compile/run/trace/repro/tools) | `t81_lang_frontend`, `t81_isa`, `t81_vm` |
 | `t81` | EXECUTABLE | Main CLI entry point | `t81_lang_frontend`, `t81_isa`, `t81_vm`, `t81_tool_cli` |
-| `t81_python` | MODULE (optional) | `pybind11` Python bindings | `t81_core`, `t81_lang_frontend`, `t81_isa`, `t81_vm` |
+| `_t81` | MODULE (optional) | `pybind11` Python bindings | `t81_core`, `t81_lang_frontend`, `t81_isa`, `t81_vm` |
 | `benchmark_runner` (subdir) | EXECUTABLE (optional) | Benchmark suite and docs benchmark generation pipeline | `t81_core`, `t81_lang_frontend`, `t81_isa`, `t81_vm`, Google Benchmark |
 
 Notes:

@@ -1,0 +1,12 @@
+test_codec_oracle_rejects_tampering (test_lane_a.Contract.test_codec_oracle_rejects_tampering) ... ok
+test_frozen_and_unknown_flags_rejected (test_lane_a.Contract.test_frozen_and_unknown_flags_rejected) ... ok
+test_linux_macos_rss_units (test_lane_a.Contract.test_linux_macos_rss_units) ... ok
+test_measure_gate_precedes_all_work (test_lane_a.Contract.test_measure_gate_precedes_all_work) ... ok
+test_no_environment_override (test_lane_a.Contract.test_no_environment_override) ... ok
+test_source_identity_fails_wrong_revision_and_dirty_bytes (test_lane_a.Contract.test_source_identity_fails_wrong_revision_and_dirty_bytes) ... ok
+test_statistics_definitions (test_lane_a.Contract.test_statistics_definitions) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.751s
+
+OK

@@ -2,6 +2,20 @@
 
 Welcome to the `examples/` directory for the **T81 Project** — a deterministic, ternary-native, policy-gated runtime for governed AI cognition.
 
+## ⚡ Top 5 Verified Runnable Examples (`v2.1.0`)
+
+Start here if you want runnable, end-to-end proofs verified on `main`:
+
+| Example | What it proves | Command |
+|---|---|---|
+| **Native C++ MCP Server (`15` tools)** | `~0.12 ms` fail-closed policy gating, `SHA3-512` tx rollback, Dual-Rail diff/RAG/adapter, halting `TISC` subgraph | `python3 examples/research/agent-receipt-sidecar/test_native_mcp.py` |
+| **Full-Stack VM Pipeline** | `CanonFS (SBDR1T2D) → Axion → TISC → T81VM → Dual-Rail TMatMul` + `SecurityFault` test | `./examples/research/full-stack-t81-pipeline/run_pipeline.sh` |
+| **Ternary AI Primitives** | Dual-Rail RAG, flip-budget diffs, block-zero skip, Kleene policy (`5.9×` vs `int8`), `SBDR1` vs `Base-243` | `./examples/research/ternary-ai-primitives/run_primitives.sh` |
+| **BitNet Safetensors Ingester** | Zero-dependency `BF16`/`F16`/`F32`/`I8` `.safetensors` → Dual-Rail + `SBDR1`/`SBDR1T2D` + `SHA3-512` manifest | `python3 examples/research/bitnet-verifiable-token/load_safetensors_bitnet.py --self-test` |
+| **Heterogeneous CPU ↔ Metal GPU** | Zero-copy Apple Silicon Metal fused 32-layer Dual-Rail decode (`89.1 GB/s` on M2, bit-exact `CPU == GPU` `SHA3-512`) | `./examples/research/heterogeneous-dualrail/run_demo.sh --layers=8` |
+
+---
+
 This directory is not just a collection of disconnected demos; it is a **living map of progress**. It traces the evolution of T81 from foundational language primitives and strict determinism checks, through the Axion Governance Kernel's policy enforcement, all the way up to complex tensor inference and aspirational agentic systems. Whether you are validating bit-exact ternary arithmetic or exploring self-reflective, policy-gated AI models, these examples demonstrate how T81 enforces safety and determinism at the lowest levels of execution.
 
 ## 📊 Status Legend

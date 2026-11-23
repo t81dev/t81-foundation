@@ -1,0 +1,47 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Action completed."
+    }
+  ],
+  "structuredContent": {
+    "url": "https://github.com/t81dev/t81-foundation/pull/795",
+    "number": 795,
+    "state": "open",
+    "merged": false,
+    "mergeable": true,
+    "draft": true,
+    "body": "Current main still admits impossible dates, nonzero UTC offsets, nonfinite JSON values, and supplied-schema constraints that its domain checks do not interpret. This draft carries the surviving validator checks from #767 onto refreshed main while retaining newer provenance rules.\n\nHead: `43747b60675444ab58f693713577d6cd42e3f234`.\nRefreshed main/base: `c2ab68e582c9f773ce94a9e13bcb805016f07dd4`.\n\nThis is a replacement candidate for the surviving scope of #767. Original #767 remains open/draft and unchanged at `bd77c00122ff9cc63097d0ee2cd88895266878cc`; its branch, base, description, and historical evidence are preserved.\n\nChanges:\n- Validate calendar values and UTC offset; reject NaN/Infinity and float overflow in files, including extra properties.\n- Apply bounded recursive schema checks, patterns, enums, minima, string lengths, nullable types, and boolean additionalProperties; fail explicitly on unsupported/malformed constraints.\n- Preserve main's existing SHA, scalar/counter, weighted-total, and unexpected-exception handling. Exclude obsolete inherited report/schema/evidence changes from #766/#767.\n- Preserve required `evidence_generation_sha`: null remains UNVERIFIED; publication SHA remains optional but non-null when supplied. The canonical evidence, schema, and implementation report are unchanged from main.\n- Register file-based and optimized Python negative tests that remain active in Release.\n\nExecuted validation: macOS 26.5.2 ARM64, Python 3.14.3 only.\n- Release configure and targeted `t81_exp_scg08_01_test` build passed; arithmetic executable was not run.\n- Registered validator CTests: 5/5 passed.\n- Inherited suite: 94 negative cases, normal and `-O`.\n- File/CLI suite: 57 cases (49 negative, 8 positive), normal and `-O`.\n- 20 paired main/candidate probes distinguish missing checks from protections already present on main.\n- Deliberately removing strict JSON parsing causes the suite to fail normally and under `-O`; unexpected implementation exceptions propagate.\n- tabnanny and diff whitespace checks passed. Optional jsonschema parity was not run because that dependency was unavailable.\n\n[Assessment and retained receipts](https://github.com/t81dev/t81-foundation/tree/43747b60675444ab58f693713577d6cd42e3f234/docs/records/audits/2026-11-15-pr767-main-validator) include paired payloads/results, normal/`-O` raw outputs, source hashes, preservation checks, and test-harness checks. Their checksums were verified before publication. The assessment's local-only/no-push wording records its preparation state; this draft publishes that unchanged snapshot.\n\nLimits: macOS ARM64 execution only; Linux/Windows, other Python versions, and hosted CI results are not established here. This is bounded schema/domain validation, not universal Draft 7 or ECMAScript regex compliance, independent scientific acceptance, or authenticated generating-run provenance. No benchmark, arithmetic campaign, Gate 2, or authorization change.\n\n**Draft for review. No merge authorized.**",
+    "title": "fix(scg08): reconcile surviving #767 validator checks on main",
+    "base": "main",
+    "base_sha": "c2ab68e582c9f773ce94a9e13bcb805016f07dd4",
+    "head": "candidate/pr767-main-validator",
+    "head_sha": "43747b60675444ab58f693713577d6cd42e3f234",
+    "head_repo_id": 1101585698,
+    "head_repo_full_name": "t81dev/t81-foundation",
+    "merge_commit_sha": "4062a3da52e590569bd072d79ac3e80d44622e4b",
+    "user": {
+      "login": "t81dev",
+      "name": "t81dev",
+      "email": null,
+      "avatar_url": "https://avatars.githubusercontent.com/u/207451414?v=4",
+      "id": 207451414
+    },
+    "requested_reviewers": null,
+    "requested_team_reviewers": null,
+    "diff": null,
+    "comments": null,
+    "created_at": "2026-11-15T12:29:58Z",
+    "updated_at": "2026-11-15T12:29:58Z",
+    "closed_at": null,
+    "merged_at": null,
+    "commits": 1,
+    "changed_files": 8,
+    "additions": 1276,
+    "deletions": 5,
+    "display_url": "https://github.com/t81dev/t81-foundation/pull/795",
+    "display_title": "fix(scg08): reconcile surviving #767 validator checks on main"
+  },
+  "isError": false
+}

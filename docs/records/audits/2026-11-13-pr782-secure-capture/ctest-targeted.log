@@ -1,0 +1,44 @@
+UpdateCTestConfiguration  from :/private/tmp/t81-pr782-secure-capture.OZo2l7/build-review/DartConfiguration.tcl
+Test project /private/tmp/t81-pr782-secure-capture.OZo2l7/build-review
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 279
+    Start 279: vm_ffi_bridge_test
+
+279: Test command: /private/tmp/t81-pr782-secure-capture.OZo2l7/build-review/vm_ffi_bridge_test
+279: Working Directory: /private/tmp/t81-pr782-secure-capture.OZo2l7/build-review
+279: Test timeout computed to be: 10000000
+279: === VM FFI bridge tests ===
+279: VM FFI bridge tests passed.
+1/3 Test #279: vm_ffi_bridge_test ...............   Passed    0.64 sec
+test 291
+    Start 291: t81_process_capture_test
+
+291: Test command: /private/tmp/t81-pr782-secure-capture.OZo2l7/build-review/t81_process_capture_test
+291: Working Directory: /private/tmp/t81-pr782-secure-capture.OZo2l7/build-review
+291: Test timeout computed to be: 60
+291: symlink/reparse rejection: executed
+291: exclusive creation, private permissions, retained-object read and partial cleanup: passed
+291: argument fidelity, shell literals, cwd/env, zero/nonzero exits and concurrent 2 MiB streams: passed
+2/3 Test #291: t81_process_capture_test .........   Passed    0.54 sec
+test 307
+    Start 307: t81_cli_repro_hash_test
+
+307: Test command: /private/tmp/t81-pr782-secure-capture.OZo2l7/build-review/cli_repro_hash_test "/private/tmp/t81-pr782-secure-capture.OZo2l7/build-review/t81"
+307: Working Directory: /private/tmp/t81-pr782-secure-capture.OZo2l7
+307: Test timeout computed to be: 10000000
+307: cli repro hash test passed!
+3/3 Test #307: t81_cli_repro_hash_test ..........   Passed    1.10 sec
+
+The following tests passed:
+	vm_ffi_bridge_test
+	t81_process_capture_test
+	t81_cli_repro_hash_test
+
+100% tests passed, 0 tests failed out of 3
+
+Total Test time (real) =   2.30 sec

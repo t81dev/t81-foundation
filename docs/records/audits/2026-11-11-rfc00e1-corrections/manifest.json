@@ -1,0 +1,26 @@
+{
+  "baseline_sha": "d3a6cf55517a3098d7bae91b07c72694bc3472da",
+  "source_sha256": {
+    "experiments/scg08_arithmetic_work/CMakeLists.txt": "90e040efdddd3c6a4adcda8cc7866f218715445efc9967ecfa4c4e90663d2857",
+    "experiments/scg08_arithmetic_work/exact_oracle_adapter.hpp": "46cd272481f8ca6a9b98e0f631e361aad599c56a53c69ee980c1ad591495cc5e",
+    "experiments/scg08_arithmetic_work/gate1_evidence_record.json": "da027863a69ee39f80161175b9328645ac43672de6d25a350388057a48a9aff0",
+    "experiments/scg08_arithmetic_work/test_exp_scg08_01.cpp": "3481dd8c4d12937b8f4fa64df297951b2677c55647fd2ed3f9b42b8ce8579564",
+    "experiments/scg08_arithmetic_work/test_result_rejection.py": "a3c75c9b859fce4947c0fea251c183fa4a5deca151b494bb3baba413d041217a",
+    "experiments/scg08_arithmetic_work/tier1_markov_harness.hpp": "b772b6a3f2f45607db4fdfbd7fc782fd5ff4a9092f6762c7dfcc17b05033a380",
+    "experiments/scg08_arithmetic_work/tier2_work_harness.hpp": "5eaf81141e9fd4b731155d611b86a34993e4c2c812af0a402a36690ff05baa79"
+  },
+  "raw_log_sha256": {
+    "configure-default-interrupted.log": "083cd5adac98ba98197232316b3141a6ab426f6714d9ceaa231de3224ab2c3f8",
+    "configure-dns-failure.log": "6b6d16a81dd555491d89f4b17b82f11a963234a6253b0430e90f7263e0698f55",
+    "configure-cached.log": "4fb70fea9f2bfc73600afe126a77579ae5bceceba365692d8619854ba2a4cf4a",
+    "build.log": "f6ddbf3f2b8d6d64f34113f8c215c393fc961c5da0acb8bab3efa95221e9ba3a",
+    "ctest.log": "3efe6383c32055d440a7722a02252d827ebae9f9eef5222ab9bf8af5210ebfc6",
+    "LastTest.log": "1a709fb2dbdbdca1c903ec8212151b57c09df0b59e69f52a897c38b5dc26bcc1",
+    "development-183-trials.log": "79c5730ade8f931cc746f4a34bc90d1e52c3181718c6e19eac31f233fc389eb2"
+  },
+  "historical_evidence_byte_identical": true,
+  "historical_report_body_preserved": true,
+  "final_parent_trials": 184,
+  "session_parent_trials": 730,
+  "independent_scientific_validation": false
+}

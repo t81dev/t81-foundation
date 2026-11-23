@@ -1,0 +1,9 @@
+[1/6] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/block_backed_driver.cpp.o
+[2/6] Linking CXX static library libt81_core.a
+[3/6] Linking CXX executable canonfs_axion_trace_test
+ld: warning: ignoring duplicate libraries: 'libt81_core.a'
+[4/6] Linking CXX executable canonfs_persistent_driver_test
+ld: warning: ignoring duplicate libraries: 'libt81_core.a'
+[5/6] Building CXX object CMakeFiles/canonfs_policy_boundary_test.dir/tests/cpp/canonfs_policy_boundary_test.cpp.o
+[6/6] Linking CXX executable canonfs_policy_boundary_test
+ld: warning: ignoring duplicate libraries: 'libt81_core.a'

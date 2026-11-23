@@ -25,8 +25,14 @@ Both drivers enforce content addressing on write and perform hash re-verificatio
 
 ## Components
 
--   `in_memory_driver.cpp`: `Driver` implementation backed by process memory.
+### Core CanonFS Storage Drivers & RFC-00D1 Interchange (Stable / Active Lane)
 
--   `persistent_driver.cpp`: `Driver` implementation backed by filesystem blocks.
+- `in_memory_driver.cpp`: `Driver` implementation backed by process memory.
+- `persistent_driver.cpp`: `Driver` implementation backed by filesystem blocks under `objects/`, `caps/`, and `parity/`.
+- `block_backed_driver.cpp`: Block-device-backed `Driver` adapter.
+- `canonfs_interchange.cpp`, `canonfs_interchange_engine.cpp`, `canonfs_interchange_ops.cpp`, `canonfs_json_renderer.cpp`, `canonfs_enhanced_errors.cpp`: Draft RFC-00D1 foreign filesystem import/export interchange, provenance/result JSON rendering, and structured error diagnostics.
+- `canon_types.hpp` (in `include/t81/canonfs`): Core CanonFS data structures and operation tags.
 
--   `canon_types.hpp` (in `include/t81/canonfs`): Core CanonFS data structures and operation tags.
+### Experimental Storage Optimizers (Non-Core / Research-Only)
+
+- `auto_optimizer.cpp`, `auto_optimization_cli.cpp`, `canonical_optimization_decision.cpp`, `deep_learning_optimizer.cpp`, `ml_optimizer.cpp`, `ml_optimization_cli.cpp`, `ternary_optimization.cpp`, `performance_analyzer.cpp`, `performance_cli.cpp`, `canonfs_performance_monitor.cpp`: Experimental storage-layout and telemetry prototypes; not part of the accepted RFC-00D1 interchange contract.
