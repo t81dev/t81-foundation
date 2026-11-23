@@ -106,16 +106,40 @@ fi
 
 mkdir -p "$source_dir"
 
+# curl --retry does not retry CURLE_RECV_ERROR (56). A Hugging Face 502 has
+# surfaced as "curl: (56) The requested URL returned error: 502", which fails
+# the build job before fixture verification. Retry the whole download, then
+# keep the size and SHA-256 checks.
+download_source_fixture() {
+  local attempt max_attempts=4 status
+  local tmp_download="${source_file}.tmp.$$"
+  for ((attempt = 1; attempt <= max_attempts; attempt++)); do
+    echo "Downloading pinned source fixture from Hugging Face ($hf_url), attempt ${attempt}/${max_attempts}..."
+    rm -f "$tmp_download"
+    if curl -fsSL --retry 3 --retry-delay 5 "$hf_url" -o "$tmp_download"; then
+      mv "$tmp_download" "$source_file"
+      if verify_file "$source_file" "$expected_source_size" "$expected_source_sha256" "source fixture"; then
+        return 0
+      fi
+      echo "warning: source fixture failed verification on attempt ${attempt}" >&2
+      rm -f "$source_file"
+    else
+      status=$?
+      echo "warning: source fixture download failed on attempt ${attempt} with curl status ${status}" >&2
+      rm -f "$tmp_download"
+    fi
+    if [[ "$attempt" -lt "$max_attempts" ]]; then
+      sleep $((attempt * 5))
+    fi
+  done
+  return 1
+}
+
 # Download and verify source fixture if needed
 if ! verify_file "$source_file" "$expected_source_size" "$expected_source_sha256" "source fixture"; then
-  echo "Downloading pinned source fixture from Hugging Face ($hf_url)..."
   rm -f "$source_file"
-  tmp_download="${source_file}.tmp.$$"
-  curl -fsSL --retry 3 --retry-delay 5 "$hf_url" -o "$tmp_download"
-  mv "$tmp_download" "$source_file"
-
-  if ! verify_file "$source_file" "$expected_source_size" "$expected_source_sha256" "source fixture"; then
-    echo "error: failed to verify source fixture at $source_file" >&2
+  if ! download_source_fixture; then
+    echo "error: failed to download and verify source fixture at $source_file" >&2
     rm -f "$source_file"
     exit 1
   fi
