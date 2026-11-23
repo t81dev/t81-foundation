@@ -42,8 +42,8 @@ namespace {
 constexpr size_t kM_Layers = 16;
 constexpr size_t kK = 4096;
 constexpr size_t kN = 1024;
-constexpr size_t kW64 = kK / 64;             // 64 words per column
-constexpr size_t kTotalWords = kN * kW64;    // 65,536 64-trit blocks per layer
+constexpr size_t kW64 = kK / 64;           // 64 words per column
+constexpr size_t kTotalWords = kN * kW64;  // 65,536 64-trit blocks per layer
 constexpr size_t kMaskWords = kTotalWords / 64;
 
 struct LayerSet {
@@ -303,7 +303,8 @@ void matvec_int4_dense(const int8_t* act, const uint8_t* W4, int32_t* out) {
       auto dot32 = [&](const uint8_t* wp, int32x4_t& acc) {
         const uint8x16_t packed = vld1q_u8(wp + (k >> 1));
         // Sign-extend 4-bit two's complement to int8: (x << 4) >> 4
-        const int8x16_t lo = vshrq_n_s8(vreinterpretq_s8_u8(vshlq_n_u8(vandq_u8(packed, low_mask), 4)), 4);
+        const int8x16_t lo =
+            vshrq_n_s8(vreinterpretq_s8_u8(vshlq_n_u8(vandq_u8(packed, low_mask), 4)), 4);
         const int8x16_t hi = vshrq_n_s8(vreinterpretq_s8_u8(packed), 4);
         acc = vdotq_s32(acc, av.val[0], lo);
         acc = vdotq_s32(acc, av.val[1], hi);
@@ -414,8 +415,8 @@ void matvec_sbdr_sparse(const uint64_t* ap, const uint64_t* an,
       const uint16_t w = layer.word_idx[idx];
       const uint64_t bp = layer.bp[idx];
       const uint64_t bn = layer.bn[idx];
-      acc += std::popcount((ap[w] & bp) | (an[w] & bn)) -
-             std::popcount((ap[w] & bn) | (an[w] & bp));
+      acc +=
+          std::popcount((ap[w] & bp) | (an[w] & bn)) - std::popcount((ap[w] & bn) | (an[w] & bp));
     }
     out[n] = acc;
   }
@@ -475,7 +476,8 @@ static void BM_MemBound_INT8_Dense(benchmark::State& state) {
       benchmark::DoNotOptimize(out.data());
     }
   }
-  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(total_bytes));
+  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) *
+                          static_cast<int64_t>(total_bytes));
   state.counters["weight_MB"] = static_cast<double>(total_bytes) / (1024.0 * 1024.0);
 }
 BENCHMARK(BM_MemBound_INT8_Dense)->Arg(0)->Arg(75);
@@ -495,7 +497,8 @@ static void BM_MemBound_INT4_Dense(benchmark::State& state) {
       benchmark::DoNotOptimize(out.data());
     }
   }
-  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(total_bytes));
+  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) *
+                          static_cast<int64_t>(total_bytes));
   state.counters["weight_MB"] = static_cast<double>(total_bytes) / (1024.0 * 1024.0);
 }
 BENCHMARK(BM_MemBound_INT4_Dense)->Arg(0)->Arg(75);
@@ -516,7 +519,8 @@ static void BM_MemBound_INT8_Sparse(benchmark::State& state) {
       benchmark::DoNotOptimize(out.data());
     }
   }
-  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(total_bytes));
+  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) *
+                          static_cast<int64_t>(total_bytes));
   state.counters["weight_MB"] = static_cast<double>(total_bytes) / (1024.0 * 1024.0);
 }
 BENCHMARK(BM_MemBound_INT8_Sparse)->Arg(0)->Arg(50)->Arg(75)->Arg(90);
@@ -538,7 +542,8 @@ static void BM_MemBound_DualRail_Dense(benchmark::State& state) {
       benchmark::DoNotOptimize(out.data());
     }
   }
-  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(total_bytes));
+  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) *
+                          static_cast<int64_t>(total_bytes));
   state.counters["weight_MB"] = static_cast<double>(total_bytes) / (1024.0 * 1024.0);
 }
 BENCHMARK(BM_MemBound_DualRail_Dense)->Arg(0)->Arg(75);
@@ -559,7 +564,8 @@ static void BM_MemBound_SBDR1T2D_Sparse(benchmark::State& state) {
       benchmark::DoNotOptimize(out.data());
     }
   }
-  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(total_bytes));
+  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) *
+                          static_cast<int64_t>(total_bytes));
   state.counters["weight_MB"] = static_cast<double>(total_bytes) / (1024.0 * 1024.0);
 }
 BENCHMARK(BM_MemBound_SBDR1T2D_Sparse)->Arg(0)->Arg(50)->Arg(75)->Arg(90);
@@ -590,7 +596,8 @@ static void BM_MemBound_SBDR1T2D_Decode(benchmark::State& state) {
       benchmark::DoNotOptimize(tmp.bp.data());
     }
   }
-  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(wire_bytes));
+  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) *
+                          static_cast<int64_t>(wire_bytes));
   state.counters["wire_MB"] = static_cast<double>(wire_bytes) / (1024.0 * 1024.0);
 }
 BENCHMARK(BM_MemBound_SBDR1T2D_Decode)->Arg(0)->Arg(50)->Arg(75)->Arg(90);
@@ -675,14 +682,18 @@ const LayerSet64& get_layer_set_64(int sparsity_pct) {
         for (size_t i = 0; i < 64; ++i) {
           const int8_t t = static_cast<int8_t>(trit_dist(rng));
           blk[i] = t;
-          if (t > 0) p0 |= (1ULL << i);
-          else if (t < 0) n0 |= (1ULL << i);
+          if (t > 0)
+            p0 |= (1ULL << i);
+          else if (t < 0)
+            n0 |= (1ULL << i);
         }
         for (size_t i = 0; i < 64; ++i) {
           const int8_t t = static_cast<int8_t>(trit_dist(rng));
           blk[64 + i] = t;
-          if (t > 0) p1 |= (1ULL << i);
-          else if (t < 0) n1 |= (1ULL << i);
+          if (t > 0)
+            p1 |= (1ULL << i);
+          else if (t < 0)
+            n1 |= (1ULL << i);
         }
         if ((p0 | n0 | p1 | n1) == 0ULL) continue;
         const size_t w0 = n * kW64 + b128 * 2;
@@ -734,8 +745,10 @@ void matvec_sbdr128_simd(const uint64_t* ap, const uint64_t* an,
       const size_t w = static_cast<size_t>(layer.blk_idx[idx]) * 2;
       const uint8x16_t avp = vreinterpretq_u8_u64(vld1q_u64(ap + w));
       const uint8x16_t avn = vreinterpretq_u8_u64(vld1q_u64(an + w));
-      const uint8x16_t bvp = vreinterpretq_u8_u64(vld1q_u64(layer.bp.data() + static_cast<size_t>(idx) * 2));
-      const uint8x16_t bvn = vreinterpretq_u8_u64(vld1q_u64(layer.bn.data() + static_cast<size_t>(idx) * 2));
+      const uint8x16_t bvp =
+          vreinterpretq_u8_u64(vld1q_u64(layer.bp.data() + static_cast<size_t>(idx) * 2));
+      const uint8x16_t bvn =
+          vreinterpretq_u8_u64(vld1q_u64(layer.bn.data() + static_cast<size_t>(idx) * 2));
       p_acc = vpadalq_u8(p_acc, vcntq_u8(vorrq_u8(vandq_u8(avp, bvp), vandq_u8(avn, bvn))));
       n_acc = vpadalq_u8(n_acc, vcntq_u8(vorrq_u8(vandq_u8(avp, bvn), vandq_u8(avn, bvp))));
     }
@@ -805,7 +818,8 @@ static void BM_MemBound64_DualRail_Dense(benchmark::State& state) {
       benchmark::DoNotOptimize(out.data());
     }
   }
-  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(total_bytes));
+  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) *
+                          static_cast<int64_t>(total_bytes));
   state.counters["weight_MB"] = static_cast<double>(total_bytes) / (1024.0 * 1024.0);
 }
 BENCHMARK(BM_MemBound64_DualRail_Dense)->Arg(50)->Arg(75)->Arg(90);
@@ -826,7 +840,8 @@ static void BM_MemBound64_SBDR128_SIMD(benchmark::State& state) {
       benchmark::DoNotOptimize(out.data());
     }
   }
-  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(total_bytes));
+  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) *
+                          static_cast<int64_t>(total_bytes));
   state.counters["weight_MB"] = static_cast<double>(total_bytes) / (1024.0 * 1024.0);
 }
 BENCHMARK(BM_MemBound64_SBDR128_SIMD)->Arg(50)->Arg(75)->Arg(90);
@@ -847,7 +862,8 @@ static void BM_MemBound64_INT8_Sparse128(benchmark::State& state) {
       benchmark::DoNotOptimize(out.data());
     }
   }
-  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(total_bytes));
+  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) *
+                          static_cast<int64_t>(total_bytes));
   state.counters["weight_MB"] = static_cast<double>(total_bytes) / (1024.0 * 1024.0);
 }
 BENCHMARK(BM_MemBound64_INT8_Sparse128)->Arg(50)->Arg(75)->Arg(90);
@@ -937,7 +953,8 @@ void matvec_r2_int8act_dualrailw(const int8_t* act, const uint64_t* Bp, const ui
     for (size_t w = 0; w < kW64; ++w) {
       const uint64_t pw = bp[w], nw = bn[w];
       for (size_t b = 0; b < 64; ++b) {
-        const int32_t t = static_cast<int32_t>((pw >> b) & 1ULL) - static_cast<int32_t>((nw >> b) & 1ULL);
+        const int32_t t =
+            static_cast<int32_t>((pw >> b) & 1ULL) - static_cast<int32_t>((nw >> b) & 1ULL);
         acc += static_cast<int32_t>(act[w * 64 + b]) * t;
       }
     }
@@ -962,7 +979,8 @@ static void BM_MemBound_R2_INT8Act_INT8W(benchmark::State& state) {
       benchmark::DoNotOptimize(out.data());
     }
   }
-  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(total_bytes));
+  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) *
+                          static_cast<int64_t>(total_bytes));
   state.counters["weight_MB"] = static_cast<double>(total_bytes) / (1024.0 * 1024.0);
 }
 BENCHMARK(BM_MemBound_R2_INT8Act_INT8W);
@@ -984,7 +1002,8 @@ static void BM_MemBound_R2_INT8Act_INT4W(benchmark::State& state) {
       benchmark::DoNotOptimize(out.data());
     }
   }
-  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(total_bytes));
+  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) *
+                          static_cast<int64_t>(total_bytes));
   state.counters["weight_MB"] = static_cast<double>(total_bytes) / (1024.0 * 1024.0);
 }
 BENCHMARK(BM_MemBound_R2_INT8Act_INT4W);
@@ -1006,7 +1025,8 @@ static void BM_MemBound_R2_INT8Act_DualRailW(benchmark::State& state) {
       benchmark::DoNotOptimize(out.data());
     }
   }
-  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(total_bytes));
+  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) *
+                          static_cast<int64_t>(total_bytes));
   state.counters["weight_MB"] = static_cast<double>(total_bytes) / (1024.0 * 1024.0);
 }
 BENCHMARK(BM_MemBound_R2_INT8Act_DualRailW);

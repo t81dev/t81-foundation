@@ -1735,16 +1735,15 @@ bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
           const std::size_t w = static_cast<std::size_t>(cached_rhs->sp_blk_idx[idx]) * 2;
           const uint8x16_t avp = vreinterpretq_u8_u64(vld1q_u64(ap + w));
           const uint8x16_t avn = vreinterpretq_u8_u64(vld1q_u64(an + w));
-          const uint8x16_t bvp =
-              vreinterpretq_u8_u64(vld1q_u64(cached_rhs->sp_bp.data() + static_cast<std::size_t>(idx) * 2));
-          const uint8x16_t bvn =
-              vreinterpretq_u8_u64(vld1q_u64(cached_rhs->sp_bn.data() + static_cast<std::size_t>(idx) * 2));
+          const uint8x16_t bvp = vreinterpretq_u8_u64(
+              vld1q_u64(cached_rhs->sp_bp.data() + static_cast<std::size_t>(idx) * 2));
+          const uint8x16_t bvn = vreinterpretq_u8_u64(
+              vld1q_u64(cached_rhs->sp_bn.data() + static_cast<std::size_t>(idx) * 2));
           p_acc = vpadalq_u8(p_acc, vcntq_u8(vorrq_u8(vandq_u8(avp, bvp), vandq_u8(avn, bvn))));
           n_acc = vpadalq_u8(n_acc, vcntq_u8(vorrq_u8(vandq_u8(avp, bvn), vandq_u8(avn, bvp))));
         }
-        c_data[m * N + n] = static_cast<float>(
-            static_cast<std::int32_t>(vaddlvq_u16(p_acc)) -
-            static_cast<std::int32_t>(vaddlvq_u16(n_acc)));
+        c_data[m * N + n] = static_cast<float>(static_cast<std::int32_t>(vaddlvq_u16(p_acc)) -
+                                               static_cast<std::int32_t>(vaddlvq_u16(n_acc)));
 #else
         std::int32_t acc = 0;
         for (std::uint32_t idx = begin; idx < end; ++idx) {
@@ -1769,143 +1768,144 @@ bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
     active_words.reserve(W64);
 
     for (std::size_t m = 0; m < M; ++m) {
-    const std::uint64_t* ap = Ap.data() + m * W64;
-    const std::uint64_t* an = An.data() + m * W64;
+      const std::uint64_t* ap = Ap.data() + m * W64;
+      const std::uint64_t* an = An.data() + m * W64;
 
-    // Primitive #3: Pre-collect active non-zero 128-trit blocks once per row (O(W64)).
-    // Zero branch mispredictions in the N loop; skips empty MoE/ReLU2 activation blocks.
-    active_pairs.clear();
-    active_words.clear();
-    std::size_t w_scan = 0;
-    for (; w_scan + 2 <= W64; w_scan += 2) {
-      if ((ap[w_scan] | an[w_scan] | ap[w_scan + 1] | an[w_scan + 1]) != 0ULL) {
-        active_pairs.push_back(w_scan);
-        if ((ap[w_scan] | an[w_scan]) != 0ULL) active_words.push_back(w_scan);
-        if ((ap[w_scan + 1] | an[w_scan + 1]) != 0ULL) active_words.push_back(w_scan + 1);
-      }
-    }
-    const bool has_tail = (w_scan < W64) && ((ap[w_scan] | an[w_scan]) != 0ULL);
-    if (has_tail) active_words.push_back(w_scan);
-
-    if (active_words.empty()) {
-      std::fill(c_data + m * N, c_data + (m + 1) * N, 0.0f);
-      continue;
-    }
-
-    std::size_t n = 0;
-#if defined(__aarch64__) && defined(__ARM_NEON)
-    for (; n + 4 <= N; n += 4) {
-      const std::uint64_t* bp0 = Bp.data() + (n + 0) * W64;
-      const std::uint64_t* bn0 = Bn.data() + (n + 0) * W64;
-      const std::uint64_t* bp1 = Bp.data() + (n + 1) * W64;
-      const std::uint64_t* bn1 = Bn.data() + (n + 1) * W64;
-      const std::uint64_t* bp2 = Bp.data() + (n + 2) * W64;
-      const std::uint64_t* bn2 = Bn.data() + (n + 2) * W64;
-      const std::uint64_t* bp3 = Bp.data() + (n + 3) * W64;
-      const std::uint64_t* bn3 = Bn.data() + (n + 3) * W64;
-
-      uint16x8_t p0 = vdupq_n_u16(0), n0 = vdupq_n_u16(0);
-      uint16x8_t p1 = vdupq_n_u16(0), n1 = vdupq_n_u16(0);
-      uint16x8_t p2 = vdupq_n_u16(0), n2 = vdupq_n_u16(0);
-      uint16x8_t p3 = vdupq_n_u16(0), n3 = vdupq_n_u16(0);
-
-      for (const std::size_t w : active_pairs) {
-        const uint8x16_t avp = vreinterpretq_u8_u64(vld1q_u64(ap + w));
-        const uint8x16_t avn = vreinterpretq_u8_u64(vld1q_u64(an + w));
-        auto acc = [&](const std::uint64_t* bp, const std::uint64_t* bn, uint16x8_t& pa,
-                       uint16x8_t& na) {
-          const uint8x16_t bvp = vreinterpretq_u8_u64(vld1q_u64(bp + w));
-          const uint8x16_t bvn = vreinterpretq_u8_u64(vld1q_u64(bn + w));
-          pa = vpadalq_u8(pa, vcntq_u8(vorrq_u8(vandq_u8(avp, bvp), vandq_u8(avn, bvn))));
-          na = vpadalq_u8(na, vcntq_u8(vorrq_u8(vandq_u8(avp, bvn), vandq_u8(avn, bvp))));
-        };
-        acc(bp0, bn0, p0, n0);
-        acc(bp1, bn1, p1, n1);
-        acc(bp2, bn2, p2, n2);
-        acc(bp3, bn3, p3, n3);
-      }
-
-      std::int32_t s0 =
-          static_cast<std::int32_t>(vaddlvq_u16(p0)) - static_cast<std::int32_t>(vaddlvq_u16(n0));
-      std::int32_t s1 =
-          static_cast<std::int32_t>(vaddlvq_u16(p1)) - static_cast<std::int32_t>(vaddlvq_u16(n1));
-      std::int32_t s2 =
-          static_cast<std::int32_t>(vaddlvq_u16(p2)) - static_cast<std::int32_t>(vaddlvq_u16(n2));
-      std::int32_t s3 =
-          static_cast<std::int32_t>(vaddlvq_u16(p3)) - static_cast<std::int32_t>(vaddlvq_u16(n3));
-      if (has_tail) {
-        const std::size_t w = w_scan;
-        s0 += std::popcount((ap[w] & bp0[w]) | (an[w] & bn0[w])) -
-              std::popcount((ap[w] & bn0[w]) | (an[w] & bp0[w]));
-        s1 += std::popcount((ap[w] & bp1[w]) | (an[w] & bn1[w])) -
-              std::popcount((ap[w] & bn1[w]) | (an[w] & bp1[w]));
-        s2 += std::popcount((ap[w] & bp2[w]) | (an[w] & bn2[w])) -
-              std::popcount((ap[w] & bn2[w]) | (an[w] & bp2[w]));
-        s3 += std::popcount((ap[w] & bp3[w]) | (an[w] & bn3[w])) -
-              std::popcount((ap[w] & bn3[w]) | (an[w] & bp3[w]));
-      }
-      c_data[m * N + n + 0] = static_cast<float>(s0);
-      c_data[m * N + n + 1] = static_cast<float>(s1);
-      c_data[m * N + n + 2] = static_cast<float>(s2);
-      c_data[m * N + n + 3] = static_cast<float>(s3);
-    }
-#elif defined(__AVX2__)
-    const __m256i low_mask = _mm256_set1_epi8(0x0F);
-    const __m256i pop_lut = _mm256_setr_epi8(0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4, 0, 1,
-                                             1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4);
-    const __m256i vzero = _mm256_setzero_si256();
-    auto avx2_popcnt_u8 = [&](__m256i v) -> __m256i {
-      const __m256i lo = _mm256_shuffle_epi8(pop_lut, _mm256_and_si256(v, low_mask));
-      const __m256i hi =
-          _mm256_shuffle_epi8(pop_lut, _mm256_and_si256(_mm256_srli_epi16(v, 4), low_mask));
-      return _mm256_sad_epu8(_mm256_add_epi8(lo, hi), vzero);
-    };
-    auto hsum_epi64 = [](__m256i v) -> std::int32_t {
-      alignas(32) std::uint64_t tmp[4];
-      _mm256_store_si256(reinterpret_cast<__m256i*>(tmp), v);
-      return static_cast<std::int32_t>(tmp[0] + tmp[1] + tmp[2] + tmp[3]);
-    };
-    for (; n < N; ++n) {
-      const std::uint64_t* bp = Bp.data() + n * W64;
-      const std::uint64_t* bn = Bn.data() + n * W64;
-      __m256i p_acc = vzero;
-      __m256i n_acc = vzero;
-      std::size_t w = 0;
-      for (; w + 4 <= W64; w += 4) {
-        if ((ap[w] | an[w] | ap[w + 1] | an[w + 1] | ap[w + 2] | an[w + 2] | ap[w + 3] |
-             an[w + 3]) == 0ULL) {
-          continue;
+      // Primitive #3: Pre-collect active non-zero 128-trit blocks once per row (O(W64)).
+      // Zero branch mispredictions in the N loop; skips empty MoE/ReLU2 activation blocks.
+      active_pairs.clear();
+      active_words.clear();
+      std::size_t w_scan = 0;
+      for (; w_scan + 2 <= W64; w_scan += 2) {
+        if ((ap[w_scan] | an[w_scan] | ap[w_scan + 1] | an[w_scan + 1]) != 0ULL) {
+          active_pairs.push_back(w_scan);
+          if ((ap[w_scan] | an[w_scan]) != 0ULL) active_words.push_back(w_scan);
+          if ((ap[w_scan + 1] | an[w_scan + 1]) != 0ULL) active_words.push_back(w_scan + 1);
         }
-        const __m256i avp = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(ap + w));
-        const __m256i avn = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(an + w));
-        const __m256i bvp = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(bp + w));
-        const __m256i bvn = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(bn + w));
-        const __m256i agree =
-            _mm256_or_si256(_mm256_and_si256(avp, bvp), _mm256_and_si256(avn, bvn));
-        const __m256i dis = _mm256_or_si256(_mm256_and_si256(avp, bvn), _mm256_and_si256(avn, bvp));
-        p_acc = _mm256_add_epi64(p_acc, avx2_popcnt_u8(agree));
-        n_acc = _mm256_add_epi64(n_acc, avx2_popcnt_u8(dis));
       }
-      std::int32_t acc = hsum_epi64(p_acc) - hsum_epi64(n_acc);
-      for (; w < W64; ++w) {
-        if ((ap[w] | an[w]) == 0ULL) continue;
-        acc += std::popcount((ap[w] & bp[w]) | (an[w] & bn[w])) -
-               std::popcount((ap[w] & bn[w]) | (an[w] & bp[w]));
+      const bool has_tail = (w_scan < W64) && ((ap[w_scan] | an[w_scan]) != 0ULL);
+      if (has_tail) active_words.push_back(w_scan);
+
+      if (active_words.empty()) {
+        std::fill(c_data + m * N, c_data + (m + 1) * N, 0.0f);
+        continue;
       }
-      c_data[m * N + n] = static_cast<float>(acc);
-    }
+
+      std::size_t n = 0;
+#if defined(__aarch64__) && defined(__ARM_NEON)
+      for (; n + 4 <= N; n += 4) {
+        const std::uint64_t* bp0 = Bp.data() + (n + 0) * W64;
+        const std::uint64_t* bn0 = Bn.data() + (n + 0) * W64;
+        const std::uint64_t* bp1 = Bp.data() + (n + 1) * W64;
+        const std::uint64_t* bn1 = Bn.data() + (n + 1) * W64;
+        const std::uint64_t* bp2 = Bp.data() + (n + 2) * W64;
+        const std::uint64_t* bn2 = Bn.data() + (n + 2) * W64;
+        const std::uint64_t* bp3 = Bp.data() + (n + 3) * W64;
+        const std::uint64_t* bn3 = Bn.data() + (n + 3) * W64;
+
+        uint16x8_t p0 = vdupq_n_u16(0), n0 = vdupq_n_u16(0);
+        uint16x8_t p1 = vdupq_n_u16(0), n1 = vdupq_n_u16(0);
+        uint16x8_t p2 = vdupq_n_u16(0), n2 = vdupq_n_u16(0);
+        uint16x8_t p3 = vdupq_n_u16(0), n3 = vdupq_n_u16(0);
+
+        for (const std::size_t w : active_pairs) {
+          const uint8x16_t avp = vreinterpretq_u8_u64(vld1q_u64(ap + w));
+          const uint8x16_t avn = vreinterpretq_u8_u64(vld1q_u64(an + w));
+          auto acc = [&](const std::uint64_t* bp, const std::uint64_t* bn, uint16x8_t& pa,
+                         uint16x8_t& na) {
+            const uint8x16_t bvp = vreinterpretq_u8_u64(vld1q_u64(bp + w));
+            const uint8x16_t bvn = vreinterpretq_u8_u64(vld1q_u64(bn + w));
+            pa = vpadalq_u8(pa, vcntq_u8(vorrq_u8(vandq_u8(avp, bvp), vandq_u8(avn, bvn))));
+            na = vpadalq_u8(na, vcntq_u8(vorrq_u8(vandq_u8(avp, bvn), vandq_u8(avn, bvp))));
+          };
+          acc(bp0, bn0, p0, n0);
+          acc(bp1, bn1, p1, n1);
+          acc(bp2, bn2, p2, n2);
+          acc(bp3, bn3, p3, n3);
+        }
+
+        std::int32_t s0 =
+            static_cast<std::int32_t>(vaddlvq_u16(p0)) - static_cast<std::int32_t>(vaddlvq_u16(n0));
+        std::int32_t s1 =
+            static_cast<std::int32_t>(vaddlvq_u16(p1)) - static_cast<std::int32_t>(vaddlvq_u16(n1));
+        std::int32_t s2 =
+            static_cast<std::int32_t>(vaddlvq_u16(p2)) - static_cast<std::int32_t>(vaddlvq_u16(n2));
+        std::int32_t s3 =
+            static_cast<std::int32_t>(vaddlvq_u16(p3)) - static_cast<std::int32_t>(vaddlvq_u16(n3));
+        if (has_tail) {
+          const std::size_t w = w_scan;
+          s0 += std::popcount((ap[w] & bp0[w]) | (an[w] & bn0[w])) -
+                std::popcount((ap[w] & bn0[w]) | (an[w] & bp0[w]));
+          s1 += std::popcount((ap[w] & bp1[w]) | (an[w] & bn1[w])) -
+                std::popcount((ap[w] & bn1[w]) | (an[w] & bp1[w]));
+          s2 += std::popcount((ap[w] & bp2[w]) | (an[w] & bn2[w])) -
+                std::popcount((ap[w] & bn2[w]) | (an[w] & bp2[w]));
+          s3 += std::popcount((ap[w] & bp3[w]) | (an[w] & bn3[w])) -
+                std::popcount((ap[w] & bn3[w]) | (an[w] & bp3[w]));
+        }
+        c_data[m * N + n + 0] = static_cast<float>(s0);
+        c_data[m * N + n + 1] = static_cast<float>(s1);
+        c_data[m * N + n + 2] = static_cast<float>(s2);
+        c_data[m * N + n + 3] = static_cast<float>(s3);
+      }
+#elif defined(__AVX2__)
+      const __m256i low_mask = _mm256_set1_epi8(0x0F);
+      const __m256i pop_lut = _mm256_setr_epi8(0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4, 0, 1,
+                                               1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4);
+      const __m256i vzero = _mm256_setzero_si256();
+      auto avx2_popcnt_u8 = [&](__m256i v) -> __m256i {
+        const __m256i lo = _mm256_shuffle_epi8(pop_lut, _mm256_and_si256(v, low_mask));
+        const __m256i hi =
+            _mm256_shuffle_epi8(pop_lut, _mm256_and_si256(_mm256_srli_epi16(v, 4), low_mask));
+        return _mm256_sad_epu8(_mm256_add_epi8(lo, hi), vzero);
+      };
+      auto hsum_epi64 = [](__m256i v) -> std::int32_t {
+        alignas(32) std::uint64_t tmp[4];
+        _mm256_store_si256(reinterpret_cast<__m256i*>(tmp), v);
+        return static_cast<std::int32_t>(tmp[0] + tmp[1] + tmp[2] + tmp[3]);
+      };
+      for (; n < N; ++n) {
+        const std::uint64_t* bp = Bp.data() + n * W64;
+        const std::uint64_t* bn = Bn.data() + n * W64;
+        __m256i p_acc = vzero;
+        __m256i n_acc = vzero;
+        std::size_t w = 0;
+        for (; w + 4 <= W64; w += 4) {
+          if ((ap[w] | an[w] | ap[w + 1] | an[w + 1] | ap[w + 2] | an[w + 2] | ap[w + 3] |
+               an[w + 3]) == 0ULL) {
+            continue;
+          }
+          const __m256i avp = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(ap + w));
+          const __m256i avn = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(an + w));
+          const __m256i bvp = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(bp + w));
+          const __m256i bvn = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(bn + w));
+          const __m256i agree =
+              _mm256_or_si256(_mm256_and_si256(avp, bvp), _mm256_and_si256(avn, bvn));
+          const __m256i dis =
+              _mm256_or_si256(_mm256_and_si256(avp, bvn), _mm256_and_si256(avn, bvp));
+          p_acc = _mm256_add_epi64(p_acc, avx2_popcnt_u8(agree));
+          n_acc = _mm256_add_epi64(n_acc, avx2_popcnt_u8(dis));
+        }
+        std::int32_t acc = hsum_epi64(p_acc) - hsum_epi64(n_acc);
+        for (; w < W64; ++w) {
+          if ((ap[w] | an[w]) == 0ULL) continue;
+          acc += std::popcount((ap[w] & bp[w]) | (an[w] & bn[w])) -
+                 std::popcount((ap[w] & bn[w]) | (an[w] & bp[w]));
+        }
+        c_data[m * N + n] = static_cast<float>(acc);
+      }
 #endif
-    for (; n < N; ++n) {
-      const std::uint64_t* bp = Bp.data() + n * W64;
-      const std::uint64_t* bn = Bn.data() + n * W64;
-      std::int32_t acc = 0;
-      for (const std::size_t w : active_words) {
-        acc += std::popcount((ap[w] & bp[w]) | (an[w] & bn[w])) -
-               std::popcount((ap[w] & bn[w]) | (an[w] & bp[w]));
+      for (; n < N; ++n) {
+        const std::uint64_t* bp = Bp.data() + n * W64;
+        const std::uint64_t* bn = Bn.data() + n * W64;
+        std::int32_t acc = 0;
+        for (const std::size_t w : active_words) {
+          acc += std::popcount((ap[w] & bp[w]) | (an[w] & bn[w])) -
+                 std::popcount((ap[w] & bn[w]) | (an[w] & bp[w]));
+        }
+        c_data[m * N + n] = static_cast<float>(acc);
       }
-      c_data[m * N + n] = static_cast<float>(acc);
     }
-  }
   }
   t81::TensorNumericClass out_class = t81::TensorNumericClass::HostFloat;
   if (lhs.numeric_class() != t81::TensorNumericClass::HostFloat &&

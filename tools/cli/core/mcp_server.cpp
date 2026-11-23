@@ -258,23 +258,40 @@ bool env_compact_mode() {
 const char* trap_name_str(t81::vm::Trap t) {
   using t81::vm::Trap;
   switch (t) {
-    case Trap::None: return "None";
-    case Trap::DecodeFault: return "DecodeFault";
-    case Trap::TypeFault: return "TypeFault";
-    case Trap::BoundsFault: return "BoundsFault";
-    case Trap::StackFault: return "StackFault";
-    case Trap::DivisionFault: return "DivisionFault";
-    case Trap::SecurityFault: return "SecurityFault";
-    case Trap::TierFault: return "TierFault";
-    case Trap::ShapeFault: return "ShapeFault";
-    case Trap::TrapInstruction: return "TrapInstruction";
-    case Trap::Unimplemented: return "Unimplemented";
-    case Trap::AssertionFailed: return "AssertionFailed";
-    case Trap::EthicsViolation: return "EthicsViolation";
-    case Trap::CapabilityDenied: return "CapabilityDenied";
-    case Trap::ActivationFault: return "ActivationFault";
-    case Trap::FFIPolicyDenied: return "FFIPolicyDenied";
-    default: return "UnknownTrap";
+    case Trap::None:
+      return "None";
+    case Trap::DecodeFault:
+      return "DecodeFault";
+    case Trap::TypeFault:
+      return "TypeFault";
+    case Trap::BoundsFault:
+      return "BoundsFault";
+    case Trap::StackFault:
+      return "StackFault";
+    case Trap::DivisionFault:
+      return "DivisionFault";
+    case Trap::SecurityFault:
+      return "SecurityFault";
+    case Trap::TierFault:
+      return "TierFault";
+    case Trap::ShapeFault:
+      return "ShapeFault";
+    case Trap::TrapInstruction:
+      return "TrapInstruction";
+    case Trap::Unimplemented:
+      return "Unimplemented";
+    case Trap::AssertionFailed:
+      return "AssertionFailed";
+    case Trap::EthicsViolation:
+      return "EthicsViolation";
+    case Trap::CapabilityDenied:
+      return "CapabilityDenied";
+    case Trap::ActivationFault:
+      return "ActivationFault";
+    case Trap::FFIPolicyDenied:
+      return "FFIPolicyDenied";
+    default:
+      return "UnknownTrap";
   }
 }
 
@@ -1320,31 +1337,27 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                 const size_t ax_events = vm->state().axion_log.size();
                 const std::string last_ax_reason =
                     ax_events == 0 ? "" : vm->state().axion_log.back().verdict.reason;
-                const std::string rec_in = prog_sha + "|" + (halted ? "HALT" : "TRAP") + "|" +
-                                           std::to_string(trap_code) + "|" +
-                                           std::to_string(ax_events) + "|" +
-                                           std::to_string(dr_tel.fastpath_hits) + "|" +
-                                           std::to_string(dr_tel.fallback_count);
+                const std::string rec_in =
+                    prog_sha + "|" + (halted ? "HALT" : "TRAP") + "|" + std::to_string(trap_code) +
+                    "|" + std::to_string(ax_events) + "|" + std::to_string(dr_tel.fastpath_hits) +
+                    "|" + std::to_string(dr_tel.fallback_count);
                 const std::vector<uint8_t> rec_bytes(rec_in.begin(), rec_in.end());
                 const std::string exec_rec = sha3_512_hex(rec_bytes);
-                structured = std::string("{\"ok\":") + (halted ? "true" : "false") +
-                             ",\"verdict\":\"" + (halted ? "VERIFIED_AND_EXECUTED" : "VM_TRAP") +
-                             "\",\"executed\":true,\"halted\":" + (halted ? "true" : "false") +
-                             ",\"trap_code\":" + std::to_string(trap_code) + ",\"trap_name\":\"" +
-                             trap_name + "\",\"fault_pc\":" + std::to_string(fault_pc) +
-                             ",\"last_axion_reason\":\"" + json_escape_mcp(last_ax_reason) +
-                             "\",\"dualrail_fastpath_hits\":" +
-                             std::to_string(dr_tel.fastpath_hits) +
-                             ",\"dualrail_dense_hits\":" + std::to_string(dr_tel.dense_hits) +
-                             ",\"dualrail_sparse128_hits\":" +
-                             std::to_string(dr_tel.sparse128_hits) +
-                             ",\"dualrail_fallback_count\":" +
-                             std::to_string(dr_tel.fallback_count) +
-                             ",\"instruction_count\":" + std::to_string(dec.value().insns.size()) +
-                             ",\"matmul_count\":" + std::to_string(vr.matmul_count) +
-                             ",\"axion_events\":" + std::to_string(ax_events) +
-                             ",\"program_sha3_512\":\"" + prog_sha + "\",\"execution_receipt\":\"" +
-                             exec_rec + "\"}";
+                structured =
+                    std::string("{\"ok\":") + (halted ? "true" : "false") + ",\"verdict\":\"" +
+                    (halted ? "VERIFIED_AND_EXECUTED" : "VM_TRAP") +
+                    "\",\"executed\":true,\"halted\":" + (halted ? "true" : "false") +
+                    ",\"trap_code\":" + std::to_string(trap_code) + ",\"trap_name\":\"" +
+                    trap_name + "\",\"fault_pc\":" + std::to_string(fault_pc) +
+                    ",\"last_axion_reason\":\"" + json_escape_mcp(last_ax_reason) +
+                    "\",\"dualrail_fastpath_hits\":" + std::to_string(dr_tel.fastpath_hits) +
+                    ",\"dualrail_dense_hits\":" + std::to_string(dr_tel.dense_hits) +
+                    ",\"dualrail_sparse128_hits\":" + std::to_string(dr_tel.sparse128_hits) +
+                    ",\"dualrail_fallback_count\":" + std::to_string(dr_tel.fallback_count) +
+                    ",\"instruction_count\":" + std::to_string(dec.value().insns.size()) +
+                    ",\"matmul_count\":" + std::to_string(vr.matmul_count) +
+                    ",\"axion_events\":" + std::to_string(ax_events) + ",\"program_sha3_512\":\"" +
+                    prog_sha + "\",\"execution_receipt\":\"" + exec_rec + "\"}";
               }
             }
           }
@@ -1675,8 +1688,10 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           }
           const std::string c = arg_str(parsed_out, "code");
           const std::string v = arg_str(parsed_out, "verdict");
-          if (!c.empty()) err_tag = c;
-          else if (!v.empty()) err_tag = v;
+          if (!c.empty())
+            err_tag = c;
+          else if (!v.empty())
+            err_tag = v;
         }
       }
       const bool compact_mode = arg_bool(args, "compact", env_compact_mode());
@@ -1684,8 +1699,9 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           compact_mode ? (is_err ? ("err:" + err_tag) : "ok") : structured;
       std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id
                 << ",\"result\":{\"content\":[{\"type\":\"text\",\"text\":\""
-                << json_escape_mcp(text_payload) << "\"}],\"isError\":"
-                << (is_err ? "true" : "false") << ",\"structured\":" << structured << "}}\n"
+                << json_escape_mcp(text_payload)
+                << "\"}],\"isError\":" << (is_err ? "true" : "false")
+                << ",\"structured\":" << structured << "}}\n"
                 << std::flush;
     } else {
       std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id

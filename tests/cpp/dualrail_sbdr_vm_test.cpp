@@ -1,6 +1,7 @@
 // Unit & Regression Tests for Dual-Rail TMatMul, Block-Zero Skip, SBDR1T2D CanonFS Load,
 // TensorNumericClass propagation, and tensor_canon_hashes_ invalidation on TSet.
 
+#include "../../vm/internal/tensor_helpers.hpp"
 #include "t81/axion/ai_hooks.hpp"
 #include "t81/axion/policy.hpp"
 #include "t81/axion/policy_engine.hpp"
@@ -12,7 +13,6 @@
 #include "t81/types/detail/dmath.hpp"
 #include "t81/vm/vm.hpp"
 #include "t81/weights.hpp"
-#include "../../vm/internal/tensor_helpers.hpp"
 
 #include <cstddef>
 #include <cstdint>
@@ -359,8 +359,8 @@ void test_mixed_dense_and_sparse128_regime_routing_and_repeat_sha3() {
       std::shared_ptr<t81::canonfs::Driver>(t81::canonfs::make_in_memory_driver().release());
   auto ref_a =
       driver->write_object(t81::canonfs::ObjectType::CanonTensor, serialize_sbdr1t2d(A, M, K));
-  auto ref_bd =
-      driver->write_object(t81::canonfs::ObjectType::CanonTensor, serialize_sbdr1t2d(B_dense, K, N));
+  auto ref_bd = driver->write_object(t81::canonfs::ObjectType::CanonTensor,
+                                     serialize_sbdr1t2d(B_dense, K, N));
   auto ref_bs = driver->write_object(t81::canonfs::ObjectType::CanonTensor,
                                      serialize_sbdr1t2d(B_sparse, K, N));
   check(ref_a.has_value() && ref_bd.has_value() && ref_bs.has_value(),
@@ -392,8 +392,8 @@ void test_mixed_dense_and_sparse128_regime_routing_and_repeat_sha3() {
 
   auto run_once = [&]() {
     t81::vm::internal::reset_dualrail_telemetry();
-    auto vm = t81::vm::make_interpreter_vm(
-        std::make_unique<t81::axion::AIHookEngine>(std::make_unique<t81::axion::PolicyEngine>(pol)));
+    auto vm = t81::vm::make_interpreter_vm(std::make_unique<t81::axion::AIHookEngine>(
+        std::make_unique<t81::axion::PolicyEngine>(pol)));
     vm->set_canonfs_driver(driver);
     vm->load_program(prog);
     auto res = vm->run_to_halt();

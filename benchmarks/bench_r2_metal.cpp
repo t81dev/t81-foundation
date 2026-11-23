@@ -105,8 +105,10 @@ void pack_row_simd(const int8_t* src, uint64_t* dst_p, uint64_t* dst_n, size_t l
     uint64_t p = 0, n = 0;
     for (size_t i = 0; i < 64; ++i) {
       const int8_t t = src[w * 64 + i];
-      if (t > 0) p |= (1ULL << i);
-      else if (t < 0) n |= (1ULL << i);
+      if (t > 0)
+        p |= (1ULL << i);
+      else if (t < 0)
+        n |= (1ULL << i);
     }
     dst_p[w] = p;
     dst_n[w] = n;
@@ -268,6 +270,42 @@ kernel void r1_dualrail_pop_gemm(
   acc = simd_sum(acc);
   if (simd_lane == 0) C[m * d.N + n] = acc;
 }
+
+kernel void r1_sbdr128_pop_gemm(
+    device const uint4* Ap      [[buffer(0)]],
+    device const uint4* An      [[buffer(1)]],
+    device const uint* Offsets  [[buffer(2)]],
+    device const ushort* Idx    [[buffer(3)]],
+    device const uint4* Bp      [[buffer(4)]],
+    device const uint4* Bn      [[buffer(5)]],
+    device int* C               [[buffer(6)]],
+    constant R2Dims& d          [[buffer(7)]],
+    uint2 tg_id                 [[threadgroup_position_in_grid]],
+    uint simd_lane              [[thread_index_in_simdgroup]],
+    uint simd_id                [[simdgroup_index_in_threadgroup]],
+    uint simds_per_tg           [[simdgroups_per_threadgroup]]) {
+  uint n = tg_id.x * simds_per_tg + simd_id;
+  uint m = tg_id.y;
+  if (n >= d.N || m >= d.M) return;
+
+  uint w4 = d.W32 >> 2;
+  device const uint4* ap_row = Ap + m * w4;
+  device const uint4* an_row = An + m * w4;
+  uint start = Offsets[n];
+  uint end = Offsets[n + 1];
+
+  int acc = 0;
+  for (uint j = start + simd_lane; j < end; j += 32) {
+    uint w = uint(Idx[j]);
+    uint4 ap = ap_row[w], an = an_row[w];
+    uint4 bp = Bp[j], bn = Bn[j];
+    uint4 ps = popcount((ap & bp) | (an & bn));
+    uint4 pd = popcount((ap & bn) | (an & bp));
+    acc += int((ps.x + ps.y) + (ps.z + ps.w)) - int((pd.x + pd.y) + (pd.z + pd.w));
+  }
+  acc = simd_sum(acc);
+  if (simd_lane == 0) C[m * d.N + n] = acc;
+}
 )";
 
 struct R2Dims {
@@ -282,14 +320,18 @@ struct R2Dims {
 
 int main(int argc, char** argv) {
   size_t num_layers = kL;
+  bool run_sparse = false;
   for (int i = 1; i < argc; ++i) {
     if (std::strncmp(argv[i], "--layers=", 9) == 0) {
       const long v = std::strtol(argv[i] + 9, nullptr, 10);
       if (v > 0 && v <= 128) num_layers = static_cast<size_t>(v);
+    } else if (std::strcmp(argv[i], "--sparse") == 0) {
+      run_sparse = true;
     }
   }
 #if !T81_HAS_METAL
   (void)num_layers;
+  (void)run_sparse;
   std::cout << "{\"metal_available\":false}\n";
   return 0;
 #else
@@ -314,6 +356,7 @@ int main(int argc, char** argv) {
     id<MTLComputePipelineState> pso_i4 = make_pso(@"r2_int4_gemm");
     id<MTLComputePipelineState> pso_lut = make_pso(@"r2_dualrail_lut_gemm");
     id<MTLComputePipelineState> pso_r1 = make_pso(@"r1_dualrail_pop_gemm");
+    id<MTLComputePipelineState> pso_sbdr = make_pso(@"r1_sbdr128_pop_gemm");
     id<MTLCommandQueue> queue = [dev newCommandQueue];
 
     std::mt19937_64 rng(0x48303636ULL);
@@ -334,8 +377,7 @@ int main(int argc, char** argv) {
       uint8_t* w4 = static_cast<uint8_t*>([buf_i4[l] contents]);
       for (size_t i = 0; i < kN * kK; ++i) w8[i] = static_cast<int8_t>(trit_dist(rng));
       for (size_t n = 0; n < kN; ++n) {
-        pack_row_simd(w8 + n * kK,
-                      static_cast<uint64_t*>([buf_bp[l] contents]) + n * kW64,
+        pack_row_simd(w8 + n * kK, static_cast<uint64_t*>([buf_bp[l] contents]) + n * kW64,
                       static_cast<uint64_t*>([buf_bn[l] contents]) + n * kW64, kK);
         for (size_t k = 0; k < kK; k += 2) {
           const uint8_t lo = static_cast<uint8_t>(w8[n * kK + k]) & 0x0Fu;
@@ -372,8 +414,8 @@ int main(int argc, char** argv) {
     const double simd_pack_4t_ms =
         std::chrono::duration<double, std::milli>(Clock::now() - t_s4).count();
 
-    std::cout << "Metal Device: " << [[dev name] UTF8String]
-              << " | Layers=" << L << " (4096x1024)\n"
+    std::cout << "Metal Device: " << [[dev name] UTF8String] << " | Layers=" << L
+              << " (4096x1024)\n"
               << "HostPack" << L << "L: SIMD_1T=" << std::fixed << std::setprecision(2)
               << simd_pack_1t_ms << "ms | SIMD_4T=" << simd_pack_4t_ms << "ms\n";
 
@@ -383,10 +425,10 @@ int main(int argc, char** argv) {
     for (uint32_t M : {1u, 4u, 16u}) {
       id<MTLBuffer> buf_a_r2 =
           [dev newBufferWithLength:M * kK options:MTLResourceStorageModeShared];
-      id<MTLBuffer> buf_ap_r1 =
-          [dev newBufferWithLength:M * kW32 * sizeof(uint32_t) options:MTLResourceStorageModeShared];
-      id<MTLBuffer> buf_an_r1 =
-          [dev newBufferWithLength:M * kW32 * sizeof(uint32_t) options:MTLResourceStorageModeShared];
+      id<MTLBuffer> buf_ap_r1 = [dev newBufferWithLength:M * kW32 * sizeof(uint32_t)
+                                                 options:MTLResourceStorageModeShared];
+      id<MTLBuffer> buf_an_r1 = [dev newBufferWithLength:M * kW32 * sizeof(uint32_t)
+                                                 options:MTLResourceStorageModeShared];
       id<MTLBuffer> buf_c =
           [dev newBufferWithLength:M * kN * sizeof(int32_t) options:MTLResourceStorageModeShared];
 
@@ -492,14 +534,132 @@ int main(int argc, char** argv) {
             (t_i4 > t_r1) ? std::ceil(simd_pack_4t_ms / (t_i4 - t_r1)) : -1.0;
         const double kstar_r1_vs_cpu_i4 =
             (cpu_i4_ms > t_r1) ? std::ceil(simd_pack_4t_ms / (cpu_i4_ms - t_r1)) : -1.0;
-        std::cout << "  -> M=1 Break-Even (SIMD_4T pack=" << std::setprecision(2)
-                  << simd_pack_4t_ms << "ms): K*(R2_LUT vs GPU_INT4)=" << std::setprecision(0)
-                  << kstar_r2_vs_i4 << " | K*(R1_Pop vs GPU_INT4)=" << kstar_r1_vs_i4
+        std::cout << "  -> M=1 Break-Even (SIMD_4T pack=" << std::setprecision(2) << simd_pack_4t_ms
+                  << "ms): K*(R2_LUT vs GPU_INT4)=" << std::setprecision(0) << kstar_r2_vs_i4
+                  << " | K*(R1_Pop vs GPU_INT4)=" << kstar_r1_vs_i4
                   << " | K*(R1_Pop vs 4T_CPU_INT4)=" << kstar_r1_vs_cpu_i4
-                  << " | R2_LUT vs 4T_CPU_INT4=" << std::setprecision(2)
-                  << (cpu_i4_ms / t_lut) << "x | R1_Pop vs 4T_CPU_INT4=" << (cpu_i4_ms / t_r1) << "x\n";
+                  << " | R2_LUT vs 4T_CPU_INT4=" << std::setprecision(2) << (cpu_i4_ms / t_lut)
+                  << "x | R1_Pop vs 4T_CPU_INT4=" << (cpu_i4_ms / t_r1) << "x\n";
       }
       (void)t_i8;
+    }
+
+    if (run_sparse) {
+      std::cout << "\n--- H06-MEM-10: Metal GPU_R1_SBDR128_Pop (L=" << L << ", 4096x1024) ---\n";
+      const size_t kBlocksPerCol = kK / 128;  // 32 128-trit blocks per column
+      for (int sp_pct : {50, 75, 90}) {
+        std::vector<id<MTLBuffer>> s_off(L), s_idx(L), s_bp(L), s_bn(L);
+        std::vector<std::vector<int8_t>> sparse_w_last(kN, std::vector<int8_t>(kK, 0));
+        size_t total_bytes = 0;
+        for (size_t l = 0; l < L; ++l) {
+          std::vector<uint32_t> offs(kN + 1, 0);
+          std::vector<uint16_t> idxs;
+          std::vector<uint64_t> bp_v, bn_v;
+          idxs.reserve((kN * kBlocksPerCol * (100 - sp_pct)) / 100 + kN);
+          bp_v.reserve(idxs.capacity() * 2);
+          bn_v.reserve(idxs.capacity() * 2);
+          std::uniform_int_distribution<int> pct(0, 99);
+          for (size_t n = 0; n < kN; ++n) {
+            offs[n] = static_cast<uint32_t>(idxs.size());
+            for (size_t b = 0; b < kBlocksPerCol; ++b) {
+              if (pct(rng) < sp_pct) continue;
+              int8_t blk[128];
+              for (int i = 0; i < 128; ++i) {
+                blk[i] = static_cast<int8_t>(trit_dist(rng));
+                if (l == L - 1) sparse_w_last[n][b * 128 + i] = blk[i];
+              }
+              uint64_t p[2], q[2];
+              pack_row_simd(blk, p, q, 128);
+              idxs.push_back(static_cast<uint16_t>(b));
+              bp_v.push_back(p[0]);
+              bp_v.push_back(p[1]);
+              bn_v.push_back(q[0]);
+              bn_v.push_back(q[1]);
+            }
+          }
+          offs[kN] = static_cast<uint32_t>(idxs.size());
+          const size_t nnz = std::max<size_t>(1, idxs.size());
+          s_off[l] = [dev newBufferWithBytes:offs.data()
+                                      length:offs.size() * sizeof(uint32_t)
+                                     options:MTLResourceStorageModeShared];
+          s_idx[l] = [dev newBufferWithBytes:(idxs.empty() ? nullptr : idxs.data())
+                                      length:nnz * sizeof(uint16_t)
+                                     options:MTLResourceStorageModeShared];
+          s_bp[l] = [dev newBufferWithBytes:(bp_v.empty() ? nullptr : bp_v.data())
+                                     length:nnz * 2 * sizeof(uint64_t)
+                                    options:MTLResourceStorageModeShared];
+          s_bn[l] = [dev newBufferWithBytes:(bn_v.empty() ? nullptr : bn_v.data())
+                                     length:nnz * 2 * sizeof(uint64_t)
+                                    options:MTLResourceStorageModeShared];
+          total_bytes += offs.size() * sizeof(uint32_t) + idxs.size() * sizeof(uint16_t) +
+                         idxs.size() * 4 * sizeof(uint64_t);
+        }
+        for (uint32_t M : {1u, 4u, 16u}) {
+          id<MTLBuffer> buf_ap = [dev newBufferWithLength:M * kW32 * sizeof(uint32_t)
+                                                  options:MTLResourceStorageModeShared];
+          id<MTLBuffer> buf_an = [dev newBufferWithLength:M * kW32 * sizeof(uint32_t)
+                                                  options:MTLResourceStorageModeShared];
+          id<MTLBuffer> buf_c = [dev newBufferWithLength:M * kN * sizeof(int32_t)
+                                                 options:MTLResourceStorageModeShared];
+          std::vector<int8_t> a_r1(M * kK);
+          for (size_t i = 0; i < M * kK; ++i) a_r1[i] = static_cast<int8_t>(trit_dist(rng));
+          pack_row_simd(a_r1.data(), static_cast<uint64_t*>([buf_ap contents]),
+                        static_cast<uint64_t*>([buf_an contents]), M * kK);
+          std::vector<int32_t> oracle(M * kN, 0);
+          for (uint32_t m = 0; m < M; ++m) {
+            for (size_t n = 0; n < kN; ++n) {
+              int64_t acc = 0;
+              for (size_t k = 0; k < kK; ++k) {
+                acc += static_cast<int64_t>(a_r1[m * kK + k]) * sparse_w_last[n][k];
+              }
+              oracle[m * kN + n] = static_cast<int32_t>(acc);
+            }
+          }
+          const std::string exp_sha = sha3_512_hex(oracle.data(), oracle.size());
+          const R2Dims dims{static_cast<uint32_t>(kK), static_cast<uint32_t>(kN), M,
+                            static_cast<uint32_t>(kW32)};
+          const MTLSize grid = MTLSizeMake((kN + kSimdsPerTg - 1) / kSimdsPerTg, M, 1);
+          auto run_once = [&]() {
+            id<MTLCommandBuffer> cb = [queue commandBuffer];
+            id<MTLComputeCommandEncoder> enc = [cb computeCommandEncoder];
+            [enc setComputePipelineState:pso_sbdr];
+            for (size_t l = 0; l < L; ++l) {
+              [enc setBuffer:buf_ap offset:0 atIndex:0];
+              [enc setBuffer:buf_an offset:0 atIndex:1];
+              [enc setBuffer:s_off[l] offset:0 atIndex:2];
+              [enc setBuffer:s_idx[l] offset:0 atIndex:3];
+              [enc setBuffer:s_bp[l] offset:0 atIndex:4];
+              [enc setBuffer:s_bn[l] offset:0 atIndex:5];
+              [enc setBuffer:buf_c offset:0 atIndex:6];
+              [enc setBytes:&dims length:sizeof(dims) atIndex:7];
+              [enc dispatchThreadgroups:grid threadsPerThreadgroup:tg_size];
+            }
+            [enc endEncoding];
+            [cb commit];
+            [cb waitUntilCompleted];
+          };
+          run_once();
+          const std::string got_sha =
+              sha3_512_hex(static_cast<const int32_t*>([buf_c contents]), M * kN);
+          if (got_sha != exp_sha) {
+            std::cerr << "ORACLE MISMATCH on GPU_R1_SBDR128_Pop sp=" << sp_pct << " M=" << M
+                      << "\n";
+            std::exit(2);
+          }
+          constexpr int kIters = 10;
+          const auto t0 = Clock::now();
+          for (int it = 0; it < kIters; ++it) run_once();
+          const double ms =
+              std::chrono::duration<double, std::milli>(Clock::now() - t0).count() / kIters;
+          const double gbs = (static_cast<double>(total_bytes) / 1e9) / (ms / 1e3);
+          std::cout << "s=" << sp_pct << "% | M=" << std::setw(2) << M
+                    << " | GPU_R1_SBDR128_Pop | size=" << std::setw(5) << std::setprecision(2)
+                    << (static_cast<double>(total_bytes) / (1024.0 * 1024.0))
+                    << " MB | real=" << std::setw(7) << std::setprecision(3) << ms
+                    << " ms | per_tok=" << std::setw(7) << (ms / M) << " ms | bw=" << std::setw(6)
+                    << std::setprecision(2) << gbs << " GB/s | sha3=OK\n";
+        }
+      }
     }
   }
   return 0;
