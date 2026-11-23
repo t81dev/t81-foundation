@@ -1,11 +1,17 @@
-# Independent Scientific & Mathematical Review: T81-AIOPT-001 (Fixed-Catalog Ternary Pattern Filtering)
+# Scientific & Mathematical Review: T81-AIOPT-001 (Fixed-Catalog Ternary Pattern Filtering)
 
 **Document ID:** `docs/research/aiopt/T81-AIOPT-001-SCIENTIFIC-REVIEW.md`
 **Date:** November 2026
-**Status:** Independent Peer Review & Scientific Assessment
-**Review Target:** T81-AIOPT-001 Milestone M1 (PR #665; branch `research/aiopt-001-m1-protocol`)
-**Investigator:** Jules (Independent Scientific Reviewer)
+**Status:** AI-assisted mathematical source assessment; independent experimental replication not established
+**Review Target:** T81-AIOPT-001 Milestone M1, unmerged PR #665 head `e113e75f9bbbcc3ed0cc75f1ed15ff188ee062db` (branch `research/aiopt-001-m1-protocol`; that head was unchanged on 2026-11-23). Protocol: `docs/research/aiopt/T81-AIOPT-001-M1-PROTOCOL.md`. Implementation: `experiments/aiopt_001_fixed_catalog/m1.py`. Neither file is on `main`.
+**Investigator:** Jules (AI-assisted scientific analyst; not an authenticated independent human reviewer)
 **Scientific Disposition:** `M2_REDESIGN_REQUIRED`
+
+**Review provenance:** The initial Jules assessment did not pin an inspected M1 SHA, preserve an execution log, or establish that Jules executed M1. Independent experimental reproduction and independent-person peer review are **not claimed**. This review and the M1 commits are both recorded under the repository owner login; shared Git attribution is not independence. A correction pass on 2026-11-23 read the M1 protocol, `m1.py`, and `experiments/aiopt_001_fixed_catalog/M1_VERIFICATION_REPORT.md` at the SHA above and checked the mathematical claims against that source. It did not execute `m1.py`. That verification report recommends `READY_FOR_INDEPENDENT_ACCEPTANCE` for local checks of source commit `32d7f9a885d527772227d0d13d108f5de3483497`, and it states that independent-person replication is not claimed. `m1.py` emits `LOCAL_TESTS_PASS` only when its own assertions pass. The mathematical critique of the stated $C_{40}$ semantics does not depend on executing M1.
+
+The operational index on `main` pins an earlier revision of this file at `b2b9d3c73df96d6b4227ee0061c56bc2ee04a8fe` (`docs/ai-context/CURRENT_STATE.json`, observation `AIOPT-001-M1`). Commit `a14cf48a9ec8494f876819ec457be5478dfc08d5` restored the uncorrected text and dropped those bounds. This revision restores them and corrects additional mismatches against current `main`. It does not rewrite the pinned historical receipt.
+
+**Later record:** `docs/research/aiopt/T81-AIOPT-001-M2-ADVERSARIAL-DESIGN-ASSESSMENT.md`, already on `main`, critiques wildcard pattern matching as a premise for a ternary-specific advantage and leaves M2 execution blocked. Section 6 remains this review's 2026-11-01 proposal. It does not override that later assessment. Choosing between them is a maintainer decision.
 
 ---
 
@@ -16,15 +22,15 @@ Milestone M1 of T81-AIOPT-001 proposes an isolated, correctness-only verificatio
 ### Core Review Findings
 
 1. **Exact Representation Equivalence Only (Correctness Is Not Optimization):**
-   M1 establishes that three distinct binary memory representations of ternary vectors can compute identical predicate outputs across the finite domain of 81 inputs. It does not—and mathematically cannot—demonstrate computational speedup, representation superiority, hardware efficiency, or AI-guided optimization.
+   M1 defines a finite correctness contract for equivalent representations. The M1 harness reports matching predicate outputs, and this review did not independently execute or reproduce those tests. The contract does not, and a finite equality check cannot, demonstrate computational speedup, representation superiority, hardware efficiency, or AI-guided optimization.
 
 2. **Severe Degeneracy of the Proposed Workload:**
    Because all patterns in $C_{40}$ are fully specified without wildcards, the 40 patterns are mutually exclusive singletons. Consequently, for any valid input $x \in X$, the output set of matching indices has cardinality $|M(x)| \le 1$. Specifically, $|M(x)| = 1$ for exactly 40 inputs and $|M(x)| = 0$ for 41 inputs. Furthermore, because $C_{40}$ is defined as the prefix of the lexicographical enumeration of $X$, the match function collapses mathematically to:
    $$\text{filter}(x, C_{40}) = \begin{cases} [\text{lex\_index}(x)] & \text{if } \text{lex\_index}(x) < 40 \\ [] & \text{otherwise} \end{cases}$$
-   Evaluating this problem via an $O(|C|)$ linear scan over 40 patterns in a loop (whether scalar, byte, or SWAR) evaluates an algorithm that is asymptotically and practically obsolete compared to a 1-cycle $O(1)$ scalar integer comparison or direct array lookup.
+   Evaluating this problem via an $O(|C|)$ linear scan over 40 patterns in a loop (whether scalar, byte, or SWAR) evaluates an algorithm that is asymptotically obsolete compared with a constant-time scalar integer comparison or direct array lookup. No cycle count was measured.
 
 3. **Absence of SWAR Vectorization Advantage:**
-   In M1, the SWAR adapter serializes pattern matching across 40 iterations. The SWAR predicate `((payload ^ target) & 0xFF) == 0` evaluates an exact 8-bit integer equality `payload == target`. The SWAR encoding performs zero parallel lane filtering; it merely functions as an 8-bit integer hash code.
+   In M1, the SWAR adapter serializes pattern matching across 40 iterations. The SWAR predicate `((payload ^ target) & 0xFF) == 0` evaluates an exact 8-bit integer equality `payload == target`. The SWAR encoding performs no parallel lane filtering in this predicate. It is an injective 8-bit packed code for the 81 valid vectors, with the least-significant pair holding coordinate 0, matching `encode_swar` / `filter_swar` in `m1.py`.
 
 4. **Severe Selection Bias in $C_{40}$:**
    Truncating the lexicographical enumeration at 40 patterns introduces extreme structural asymmetry. In $C_{40}$, position 0 contains 27 $-1$ trits, 13 $0$ trits, and exactly 0 $+1$ trits. The $+1$ state is completely absent from the leading lane, invalidating any claim that $C_{40}$ represents balanced ternary behavior.
@@ -34,7 +40,7 @@ Milestone M1 of T81-AIOPT-001 proposes an isolated, correctness-only verificatio
 
 ### Disposition
 
-**`M2_REDESIGN_REQUIRED`**: Milestone M1 successfully demonstrates fail-closed correctness and mutual consistency among its three adapters. However, the protocol cannot proceed to M2 as currently conceived. Measuring execution time or training a selection agent on this workload would benchmark loop overhead and compiler register allocation rather than representation efficiency. Milestone M2 requires complete redesign around meaningful vector lengths, wildcard/don't-care predicates, conventional lookup-table/bitset comparators, and a realistic search space.
+**`M2_REDESIGN_REQUIRED`**: Milestone M1 specifies fail-closed correctness and mutual consistency among its three adapters. Those properties were not independently reproduced by this review. The protocol cannot proceed to an optimization milestone on this workload. Measuring execution time or training a selection agent on it would time loop overhead and compiler register allocation rather than representation efficiency. A later milestone needs a different workload: longer vectors, a predicate that is not a lexicographic range test, and conventional lookup-table or bitset comparators. Wildcard filtering, proposed in Section 6, was later challenged by the adversarial assessment already on `main`.
 
 ---
 
@@ -57,7 +63,7 @@ While SWAR compresses the memory footprint from 4 bytes to 1 byte (a $4\times$ m
 
 ### 2.2 Workload Degeneracy: Mutual Exclusivity and Structural Collapse
 
-The catalog $C_{40} = (p_0, p_1, \dots, p_{39})$ is defined as the first 40 elements of $X$ ordered lexicographically under $-1 < 0 < +1$.
+The catalog $C_{40} = (p_0, p_1, \dots, p_{39})$ is defined as the first 40 elements of $X$ ordered lexicographically under $-1 < 0 < +1$. In `m1.py` that order is `itertools.product((-1, 0, 1), repeat=4)`, which varies coordinate 3 fastest and coordinate 0 slowest. Position 0 in the bias table below is that first coordinate.
 
 **Theorem 1 (Mutual Exclusivity):**
 *For any input $x \in X$, $|\{i \mid p_i = x, p_i \in C_{40}\}| \le 1$.*
@@ -117,34 +123,34 @@ To understand what is being computed, we separate intrinsic costs from represent
 
 | Dimension | Intrinsic Problem Cost | Representation Artifact (M1) |
 | :--- | :--- | :--- |
-| **Information Bound** | Determining membership in a 40-element subset of an 81-element domain requires $\log_2(81) \approx 6.34$ bits of information. | Byte adapter allocates 32 bits; SWAR allocates 8 bits. |
-| **Decision Complexity** | Testing membership in a static 40-element set requires exactly 1 set membership test or binary search ($\lceil \log_2 40 \rceil = 6$ comparisons, or $O(1)$ table lookup). | M1 evaluates 40 linear iterations containing per-trit comparisons or 40 sequential integer XOR comparisons. |
-| **Validation Cost** | Zero (if input is trusted or guaranteed by construction). | SWAR requires checking all four 2-bit lanes for code $11_2$ ($3$), requiring bit masking and range checks that exceed the cost of the comparison itself. |
-| **Loop Overhead** | Absent in optimal algorithms. | Dominates M1 execution time (loop counter increments, array indexing, conditional branches across 40 iterations). |
+| **Information Bound** | Distinguishing the 81 inputs requires $\log_2(81) \approx 6.33985$ bits. Membership in this prefix is then a comparison of that index with 40. | Byte adapter allocates 32 bits; SWAR allocates 8 bits. |
+| **Decision Complexity** | Membership in this static 40-element prefix is one index comparison, a binary search of $\lceil \log_2 40 \rceil = 6$ comparisons, or an $O(1)$ table lookup. | M1 evaluates 40 linear iterations of per-trit comparisons or 40 sequential integer XOR comparisons. |
+| **Validation Cost** | Zero if the input is trusted or guaranteed by construction. | `decode_swar` rejects any 2-bit lane equal to $11_2$ before matching. Whether that check costs more than the comparison was not measured. |
+| **Loop Overhead** | Absent from the index comparison. | M1 recorded no timings. Any later timing of the 40-iteration loop would include counter increments, indexing, and branches. |
 
 ---
 
 ## 3. Relationship to the H01–H08 Hypothesis Program
 
-The T81 Foundation maintains a formal hypothesis register (`docs/research/continuity/HYPOTHESIS_REGISTER_v1.json`) and research charter. The proposed T81-AIOPT-001 experiment interacts directly with several active and closed hypotheses:
+The T81 Foundation maintains a formal hypothesis register (`docs/research/continuity/HYPOTHESIS_REGISTER_v1.json`) and research charter. The proposed T81-AIOPT-001 experiment interacts with these canonical hypotheses:
 
 ### 3.1 Interaction with H03 (Base-81 Interfacing & Grouping)
-- **Claim:** Grouping four trits as base-81 can provide a workload-specific interface or execution benefit beyond trivial 4-trit concatenation.
+- **Claim:** Grouping four trits as base-81 can provide a workload-specific interface or execution benefit beyond equivalent binary packing (`docs/research/continuity/HYPOTHESIS_REGISTER_v1.json`, H03).
 - **M1 Relationship:** The input domain $X = \mathbb{T}^4$ has exactly 81 states. Base-81 represents each 4-trit vector as a single digit $d \in [0, 80]$.
-- **Finding:** If base-81 representation were used, the pattern filter for $C_{40}$ would be a single scalar range check: `return (d < 40) ? [d] : []`. M1 avoids base-81 integer conversion and instead uses SWAR 2-bit packing (which spans 256 states). This demonstrates that grouping 4 trits into base-81 trivializes the filtering task, whereas 2-bit SWAR packing creates an artificially sparse 8-bit domain.
+- **Finding:** If the base-81 digit is the lexicographic index $\phi(x)$, the pattern filter for this prefix catalog is a scalar range check: `return (d < 40) ? [d] : []`. M1 does not use that conversion. It uses SWAR 2-bit packing, whose code space has 256 states. For this prefix catalog, the base-81 index makes the filter a range test. That is a property of $C_{40}$, not a measured H03 result, and it does not show a benefit beyond equivalent binary packing.
 
 ### 3.2 Interaction with H04 (Adaptive Representation) & H04-R02 Findings
-- **Claim:** An explicitly defined adaptive representation policy can outperform fixed representations when evaluated against equally optimized baselines.
-- **Historical Evidence:** Experiment H04-R02 (`experiments/h04_r02_adaptive_representation/`) established under adversarial audit that apparent ternary compression gains disappeared when compared against an Adaptive Binary (AB) control with symmetric metadata. Over 96% of observed variance was driven by tier adaptation rather than ternary radix.
-- **M1 Relationship:** T81-AIOPT-001 purports to study representation selection (byte vs. SWAR). However, M1 does not adapt dynamically. Encoding is fixed a priori. If an adaptive switching policy were introduced, the switching overhead (encoding, validation, branch dispatch) would dwarf the computation cost by orders of magnitude for a 4-trit vector.
+- **Claim:** An explicitly defined adaptive ternary representation policy can beat fixed ternary and an equally capable adaptive binary policy on a specified workload (`docs/research/continuity/HYPOTHESIS_REGISTER_v1.json`, H04).
+- **Historical Evidence:** Corrected H04-R02 (`experiments/h04_r02_adaptive_representation/RESULTS.md`) invalidates the original inference and retains conditional symbolic-model results. For the matched 10-bit control, the AT window narrows to $r < 5/3$, which includes $r = 1.60$. `experiments/h04_r02_adaptive_representation/H04_MODEL_GAP_ASSESSMENT.md` records AT = 1210 U and AB = 1250 U at that point. Modeled winners depend on metadata, mode boundaries, and transition and conversion assumptions. The historical 96% figure applies to one ratio-1 trace, not general observed variance. Actual encoded byte lengths were measured. No new CPU performance, bandwidth, area, or energy advantage or loss was established. H04 remains unresolved.
+- **M1 Relationship:** The AIOPT-001 name suggests representation selection. The M1 protocol fixes the encoding in advance and forbids adaptive selection. Conversion and dispatch costs of a switching policy were not measured.
 
 ### 3.3 Prior CPU Ternary Arithmetic Closure (PRs #544–#549)
-- **Established Finding:** In PR #549 (`docs/research/TERNARY_RESEARCH_CLOSURE_AND_NEXT_HYPOTHESIS.md`), CPU-based ternary kernel optimization was formally **frozen**. That comprehensive investigation proved that software-emulated ternary bitwise operations (scalar, SWAR, LUT, AVX2 VPSHUFB) cannot match native binary SIMD instructions on general-purpose CPUs.
-- **M1 Hazard:** T81-AIOPT-001 risks reopening this frozen line of inquiry under the guise of "AI optimization" without introducing any new architectural mechanism to circumvent the fundamental limits established in PR #549.
+- **Recorded finding:** In PR #549 (`docs/research/TERNARY_RESEARCH_CLOSURE_AND_NEXT_HYPOTHESIS.md`), CPU-based ternary kernel optimization was formally **frozen**. That synthesis reports specific measured CPU-kernel comparisons and records a program-level freeze on further custom ternary CPU-kernel optimization. Its negative comparisons are bounded by the tested kernels, workloads, architectures, and execution conditions. They do not prove that no future packed-ternary algorithm can outperform a binary alternative on any CPU workload.
+- **M1 relationship:** T81-AIOPT-001 risks reopening that frozen optimization program under an "AI optimization" label. The closure record does not supply a universal proof that would make every later packed-ternary experiment futile.
 
 ### 3.4 Interaction with H08 (AI-Assisted Research Trustworthiness)
-- **Claim:** AI-assisted exploration improves research velocity and trustworthiness under verifiable human-auditable constraints.
-- **M1 Relationship:** AIOPT-001 is marketed as "AI optimization." If AIOPT merely uses machine learning to select between three hand-coded loops on an 81-state problem where an $O(1)$ direct lookup table exists, it violates H08 by introducing artificial complexity and unprovable machine learning components where elementary discrete mathematics provides the closed-form optimal solution.
+- **Claim:** AI-assisted iteration improves research trustworthiness or discovery under an independently auditable process (`docs/research/continuity/HYPOTHESIS_REGISTER_v1.json`, H08).
+- **M1 Relationship:** The AIOPT-001 title refers to AI optimization. M1 contains no learned selector. Using a model to choose among three hand-coded loops on an 81-state problem, where an $O(1)$ lookup answers the same predicate, would not meet H08's stated measurement: a controlled comparison of trustworthiness or discovery. That conditional mismatch is not a recorded H08 result.
 
 ---
 
@@ -197,22 +203,23 @@ comparison       indexing O(1)    test O(1)        40 iterations    40 iteration
   }
   return 0;
   ```
-- **Cost:** 1 memory load (L1 cache resident), 1 comparison. Completely eliminates the 40-iteration loop.
+- **Cost:** One memory load and one comparison, in place of the 40-iteration loop. L1 residency was not measured.
 
 #### Comparator 3: Bitset / 64-Bit Word Mask
-- **Data Structure:** Since $|C_{40}| = 40 \le 64$, the catalog can be encoded as a 64-bit bitmask or two 64-bit integers representing valid inputs in the 81-state domain.
+- **Data Structure:** Membership of indices 0 through 39 fits in one `uint64_t`. A bitset of all 81 domain states needs two `uint64_t` words because 81 is greater than 64.
 - **Execution:**
   ```c
-  // For domain index k in [0, 80]:
-  // Mask indicates whether index k is present in the catalog
-  uint64_t catalog_mask = 0x000000FFFFFFFFFFULL; // bits 0..39 set
-  if (k < 40) { // or (catalog_mask & (1ULL << k))
-      out[0] = k;
+  // k is the lexicographic index in [0, 80].
+  // 0xFFFFFFFFFFULL is bits 0..39. Shifting a uint64_t by k is
+  // defined only for k < 64, which holds for every catalog hit.
+  uint64_t catalog_mask = 0xFFFFFFFFFFULL;
+  if ((k < 64) && (catalog_mask & (1ULL << k)) != 0) {
+      out[0] = (int)k;
       return 1;
   }
   return 0;
   ```
-- **Cost:** 1 bit-test instruction (`BT` on x86, or shift + AND).
+- **Cost:** One shift and one bitwise AND, or one comparison `k < 40`, which is equivalent for this prefix. Instruction selection was not measured.
 
 #### Comparator 4: Packed SWAR Adapter (M1 Reconstructed)
 - **Data Structure:** 8-bit packed unsigned integer; 2 bits per trit.
@@ -229,9 +236,9 @@ comparison       indexing O(1)    test O(1)        40 iterations    40 iteration
 Any empirical comparison must strictly account for the full execution pipeline:
 $$\text{Cost}_{\text{total}} = \text{Cost}_{\text{encode}} + \text{Cost}_{\text{validate}} + \text{Cost}_{\text{filter}} + \text{Cost}_{\text{decode}}$$
 
-1. **Validation Costs:** In M1, SWAR requires verifying that no 2-bit field contains $11_2$. In Python or C++, this validation requires multiple shift and bitwise operations. If the validation is omitted during benchmarking, the adapter violates memory safety. If included, validation costs dominate the filtering cost.
+1. **Validation Costs:** In M1, SWAR rejects any 2-bit field equal to $11_2$ before matching. Omitting that check violates the fail-closed contract. Whether the check dominates filtering cost was not measured.
 2. **Metadata & Memory Alignment:** Allocating small arrays or tuples introduces substantial allocation and heap/stack alignment overhead.
-3. **Cold vs. Warm State:** Table lookup (LUT) baselines must account for cache footprint (81 bytes vs. 256 bytes), although both fit comfortably within a single 64-byte or two 64-byte L1 cache lines.
+3. **Cold vs. Warm State:** Table lookup baselines must account for cache footprint. An 81-byte table spans two 64-byte lines, and a 256-byte table spans four. Both are small relative to a typical L1 data cache. That residency was not measured here.
 
 ---
 
@@ -284,7 +291,9 @@ To claim that an AI-guided selector provides scientific value, an experiment mus
 
 ## 6. Preregistered Design for Milestone M2 (Specification Only)
 
-*In strict accordance with repository restrictions, Milestone M2 is specified here as a preregistered experimental protocol. It is not implemented or executed.*
+*Milestone M2 is specified here as a proposed experimental protocol. It is not implemented, executed, or authorized.*
+
+`docs/research/aiopt/T81-AIOPT-001-M2-ADVERSARIAL-DESIGN-ASSESSMENT.md`, already merged on `main`, argues that wildcard linear filtering cannot establish a ternary-specific computational advantage and leaves M2 execution blocked. The grid below is this review's proposal. It is not a decision to run that grid, and it does not replace the later assessment.
 
 ### 6.1 Primary Research Question
 *Under what combination of vector length ($L$), catalog size ($M$), and wildcard/don't-care density ($D$) does a packed ternary representation (SWAR or SIMD) exhibit measurable execution latency advantage over conventional binary scalar and direct lookup-table comparators on general-purpose binary CPUs?*
@@ -301,10 +310,10 @@ To eliminate the degeneracy of M1, M2 must evaluate a parameterized workload spa
 1. **Vector Length ($L$):** $L \in \{4, 16, 64, 256\}$ trits.
    - $L = 4$ ($3^4 = 81$ states): Tests the small-domain boundary.
    - $L = 16$ ($3^{16} \approx 4.3 \times 10^7$ states): Domain exceeds direct LUT capacity; requires algorithmic filtering.
-   - $L = 64, 256$: Representative of embedding quantization and neural network weight lanes.
+   - $L = 64, 256$: Longer vectors. These lengths are not evidence that the workload matches a deployed network.
 2. **Catalog Size ($M$):** $M \in \{10, 100, 1000, 10000\}$ patterns.
 3. **Wildcard Density ($D$):** $D \in \{0.0, 0.1, 0.25, 0.5\}$.
-   - Patterns include ternary wildcards $*$ (matches any trit $\in \{-1, 0, +1\}$), creating non-trivial subset matching where $|M(x)| \ge 0$.
+   - Patterns include ternary wildcards $*$ (matches any trit $\in \{-1, 0, +1\}$), so a single input can match more than one pattern ($|M(x)|$ may exceed 1).
 4. **Pattern Generation:** Uniform random sampling over $\mathbb{T}^L$ with independent wildcard insertion, completely replacing the biased lexicographical prefix $C_{40}$.
 
 ### 6.4 Comparator Implementations
@@ -327,26 +336,29 @@ To eliminate the degeneracy of M1, M2 must evaluate a parameterized workload spa
 - **Metric:** Execution latency per batch (nanoseconds), reported as median and 99th percentile (tail latency). Secondary metrics: CPU cycles via PMU (`perf_event_open`), L1 data cache misses, and instructions per cycle (IPC).
 - **Statistical Significance:** Mann-Whitney $U$ test with Bonferroni correction for multiple hypothesis testing; significance threshold $\alpha = 0.01$. Confidence intervals computed via 10,000 bootstrap resamples.
 
-### 6.7 Stopping & Falsification Criteria
-- **Early Stopping:** If at $L = 16$ and $L = 64$ conventional binary bitset/SIMD outperforms packed SWAR by $>2.0\times$ across all catalog sizes $M$, testing on larger grids must be halted immediately.
-- **Definitive Falsification:** If $H_0$ cannot be rejected on any tested configuration, the hypothesis that packed ternary SWAR provides software performance advantages on general-purpose CPUs must be formally declared falsified for pattern filtering workloads.
+### 6.7 Stopping, Negative Evidence, and Inconclusive Outcomes
+- **Early stopping (proposal only):** A sustained conventional-baseline advantage at $L = 16$ and $L = 64$ may prompt a documented resource review. It must not automatically close untested larger configurations. Record stopped configurations as not tested.
+- **Positive evidence:** A predeclared workload shows a practically meaningful advantage against the strongest fair conventional comparator, with appropriate confidence bounds and multiplicity-adjusted inference.
+- **Bounded negative evidence:** For configurations that were actually tested, an adequately powered confidence interval excludes the preregistered practically meaningful improvement threshold. Report uncertainty, sample size, conditions, and scope.
+- **Inconclusive:** When uncertainty spans both negligible and meaningful improvement, or power is insufficient, record the result inconclusive. Failure to reject a null hypothesis is not proof of equivalence or of no advantage.
+- **Preregistration required:** Effect-size thresholds, the confidence procedure, power, the workload grid, and stopping rules need independent review before any M2 execution. The 15% and $p < 0.01$ figures in Section 6.2 are illustrative proposal text, not an accepted analysis plan.
 
 ---
 
 ## 7. Threats to Validity
 
 ### 7.1 Internal Validity
-- **Loop Overhead Dominance:** In M1, evaluating 40 patterns takes only tens of nanoseconds. Measured time will be dominated by loop branch prediction, call overhead, and test framework harness mechanics rather than representation differences.
+- **Loop Overhead Dominance:** M1 recorded no timings. A later timing of 40 pattern iterations could be dominated by branch prediction, call overhead, and harness mechanics rather than representation differences. That dominance was not measured.
 - **Compiler Optimizations:** A modern compiler (GCC/Clang `-O3`) may auto-vectorize the byte comparison loop or unroll it entirely, while the SWAR bitwise shift loop may encounter register pressure or suboptimal code generation, confounding representation efficiency with compiler heuristics.
-- **Validation Asymmetry:** If the SWAR adapter performs 2-bit range checks while the scalar oracle assumes validated input, SWAR is penalized for safety. Conversely, if SWAR omits validation, it receives an unfair speed advantage while introducing undefined behavior.
+- **Validation Asymmetry:** If the SWAR adapter checks 2-bit codes while the scalar oracle assumes validated input, the adapters are not doing the same work. Omitting the SWAR check accepts payloads the M1 contract rejects. Neither effect was timed.
 
 ### 7.2 External Validity
-- **Non-Generalizability of 4-Trit Domain:** Findings on $L = 4$ ($3^4 = 81$) have zero predictive power for real-world ternary applications (e.g., ternary neural networks where $L \in [10^3, 10^7]$ or ternary content-addressable memory where $L \ge 64$).
+- **Non-Generalizability of 4-Trit Domain:** Findings on $L = 4$ ($3^4 = 81$) do not by themselves predict behavior at the lengths discussed for ternary neural networks or content-addressable memory. No such workload was tested.
 - **Absence of Hardware Ternary Storage:** Emulating ternary logic on binary hardware inevitably incurs bit-manipulation overheads that would not exist on hypothetical ternary silicon (e.g., memristor crossbars). Results obtained on x86_64 CPUs cannot be generalized to claim hardware infeasibility.
 
 ### 7.3 Construct Validity
 - **Mislabeling Linear Search as "Filtering":** In computer science, pattern filtering on static catalogs is implemented via tries, Aho-Corasick automata, hash tables, or inverted indices. Evaluating linear scans over 40 elements conflates "representation quality" with "naive algorithm selection."
-- **Equating Packaging with Adaptation:** Switching between byte and SWAR encodings is a static data layout choice, not "adaptive representation." Calling this study an adaptive representation experiment misrepresents the construct.
+- **Equating Packaging with Adaptation:** Byte and SWAR encodings in M1 are fixed data layouts. The M1 protocol forbids adaptive selection. Reading M1 as an adaptive-representation experiment misreads that protocol.
 
 ### 7.4 Conclusion Validity
 - **Microbenchmarking Noise:** On modern superscalar CPUs, measuring operations that complete in $<100 \text{ ns}$ is highly vulnerable to cacheline alignment, branch target buffers (BTB), and thermal throttling. Without cycle-level PMU counters and kernel isolation, conclusions drawn from wall-clock timers are statistically invalid.
@@ -361,7 +373,7 @@ To eliminate the degeneracy of M1, M2 must evaluate a parameterized workload spa
    **No, not in its current form.** While Milestone M1 is technically competent as an isolated exercise in multi-representation functional testing, the underlying problem (filtering 4-trit inputs against 40 exact patterns) is mathematically degenerate. It reduces to testing whether an 81-state index is $<40$.
 
 2. **What can M1 actually establish?**
-   M1 can establish exactly one fact: that 4-trit vectors can be reversibly mapped into 4-byte arrays and 8-bit integers, and that exhaustive evaluations across all 81 inputs produce identical predicate outputs across the three hand-coded implementations. It proves functional correctness of equivalent binary encodings.
+   M1 can support one bounded claim if its harness checks pass: 4-trit vectors round-trip through 4-byte arrays and 8-bit integers, and the three hand-coded filters agree on all 81 inputs. This review did not execute that harness. The verification report at the pinned SHA records local checks and withholds independent-person acceptance.
 
 3. **What cannot be inferred from M1?**
    M1 cannot infer:
@@ -372,14 +384,14 @@ To eliminate the degeneracy of M1, M2 must evaluate a parameterized workload spa
    - Generalization to vectors of length $L > 4$.
 
 4. **Is the proposed workload suitable for an optimization study?**
-   **No.** The workload space ($3^4 = 81$ states) is so small that the optimal solution is an 81-byte lookup table or a 1-cycle integer comparison. Optimizing a 40-iteration loop over this domain is optimizing an algorithm that should not exist in production code.
+   **No.** The workload space ($3^4 = 81$ states) is small enough that a correct solution is an 81-byte lookup table or a scalar comparison of the lexicographic index with 40. No cycle count was measured. Optimizing a 40-iteration loop over this domain studies an algorithm the index comparison replaces.
 
 5. **What is the smallest scientifically useful next experiment?**
-   The smallest useful experiment is **not** to benchmark M1, but to implement a **Parameterized Wildcard Matching Experiment** with vector lengths $L \in \{16, 64\}$, catalog size $M = 100$, and wildcard density $D = 0.2$, comparing packed 2-bit SWAR against a 64-bit binary bitmask baseline. This introduces non-trivial filtering while remaining small enough for rigorous manual and statistical control.
+   This review's proposal is not to benchmark M1. It is a parameterized wildcard-matching comparison at $L \in \{16, 64\}$, $M = 100$, and $D = 0.2$, with packed 2-bit SWAR against a binary bitmask baseline. The adversarial assessment already on `main` challenges wildcard linear filtering as a way to establish a ternary-specific advantage. Which proposal, if either, becomes the next experiment is a maintainer decision. Neither is authorized by this document.
 
 6. **Should M2 proceed, be redesigned, or be abandoned?**
    **M2 must be REDESIGNED (`M2_REDESIGN_REQUIRED`).**
-   Proceeding directly from M1 to an M2 benchmarking run or AI-selector milestone on the current 4-trit catalog $C_{40}$ would generate misleading results, waste research capacity, and directly conflict with prior findings in PR #549. M2 should only proceed after adopting the parameterized protocol specified in Section 6.
+   Proceeding from M1 to a timing run or an AI selector on $C_{40}$ would time the degenerate index test and would reopen the frozen CPU-kernel program recorded in PR #549 without a new workload. Section 6 is this review's proposed redesign. The later assessment on `main` challenges that design and leaves execution blocked. Adopting either proposal, or abandoning M2, is a maintainer decision.
 
 ---
 
@@ -387,12 +399,12 @@ To eliminate the degeneracy of M1, M2 must evaluate a parameterized workload spa
 
 | Review Dimension | Determination / Finding |
 | :--- | :--- |
-| **Review Target** | PR #665 (`T81-AIOPT-001-M1-PROTOCOL.md`, `m1.py`) |
+| **Review Target** | Unmerged PR #665 head `e113e75f9bbbcc3ed0cc75f1ed15ff188ee062db` (`docs/research/aiopt/T81-AIOPT-001-M1-PROTOCOL.md`, `experiments/aiopt_001_fixed_catalog/m1.py`; not on `main`) |
 | **Scientific Disposition** | **`M2_REDESIGN_REQUIRED`** |
-| **Domain Cardinality** | $3^4 = 81$ states ($H \approx 6.34 \text{ bits}$); fits in 7 bits; SWAR uses 8 bits (68.4% unused). |
+| **Domain Cardinality** | $3^4 = 81$ states ($H \approx 6.33985 \text{ bits}$); fits in 7 bits; SWAR uses 8 bits (175/256 = 68.36% unused). |
 | **Catalog Structure ($C_{40}$)** | Severely skewed prefix: Lane 0 contains 0 positive trits; all patterns are mutually exclusive singletons. |
 | **Algorithmic Collapse** | Problem is isomorphic to $\text{index}(x) < 40$; solvable in $O(1)$ scalar time vs $O(M)$ loop. |
 | **SWAR Nature** | 8-bit integer comparison (`payload == target`); no SIMD sub-lane parallel arithmetic. |
 | **Key Comparator** | Conventional binary scalar range check (`k < 40`) and 81-entry Direct LUT (`lut[k]`). |
 | **Most Serious Threat** | Conflating naive $O(M)$ linear scan loop overhead with representation efficiency. |
-| **Actionable Next Step** | Do not benchmark M1. Preregister parameterized M2 with wildcards and $L \ge 16$. |
+| **Actionable Next Step** | Do not benchmark M1. Section 6 proposes a wildcard redesign; the merged M2 assessment challenges it. Maintainer decision required before any execution. |
