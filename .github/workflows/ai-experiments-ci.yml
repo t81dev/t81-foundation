@@ -199,7 +199,9 @@ jobs:
 
     - name: Run RFC-0025 TLOADHASH conformance tests
       if: steps.build_ai.outputs.has_target == 'true'
+      shell: bash
       run: |
+        set -euo pipefail
         ctest --test-dir build --output-on-failure --verbose \
           -R 't81_vm_tloadhash_conformance_test|t81_vm_tloadhash_decodefault_determinism_matrix_test' \
           2>&1 | tee build/ai-rfc0025/tloadhash-ctest.log
@@ -413,6 +415,9 @@ jobs:
         if cmake --build build --target help | grep -qE '(^| )t81_vm_trace_test$' && \
            cmake --build build --target help | grep -qE '(^| )canonfs_axion_trace_test$'; then
           cmake --build build --target t81_vm_trace_test canonfs_axion_trace_test
+          # pipefail only around the log pipe. `shell: bash` would also apply it to
+          # the `cmake | grep -q` probe above, which exits 141 when grep -q closes early.
+          set -euo pipefail
           ctest --test-dir build --output-on-failure --verbose \
             -R 't81_vm_trace_test|canonfs_axion_trace_test' \
             2>&1 | tee build/ai-vm-trace/ai_vm_trace_ctest.log
@@ -433,6 +438,9 @@ jobs:
           cmake --build build --target t81_vm_ai_phase1_embed_conformance_test
           cmake --build build --target t81_vm_ai_phase1_qmatmul_conformance_test
           cmake --build build --target t81_vm_ai_phase1_shared_helper_parity_test
+          # pipefail only around the log pipe. `shell: bash` would also apply it to
+          # the `cmake | grep -q` probe above, which exits 141 when grep -q closes early.
+          set -euo pipefail
           ctest --test-dir build --output-on-failure --verbose \
             -R 't81_vm_ai_phase1_attention_conformance_test|t81_vm_ai_phase1_embed_conformance_test|t81_vm_ai_phase1_qmatmul_conformance_test|t81_vm_ai_phase1_shared_helper_parity_test' \
             2>&1 | tee build/ai-opcodes/ai_phase1_opcode_ctest.log
