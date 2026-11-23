@@ -1,0 +1,232 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SCG-08 Carry Propagation and Arithmetic Work Evidence Schema",
+  "$id": "t81.scg08.carry-experiment.v1",
+  "type": "object",
+  "required": [
+    "schema_id",
+    "experiment_id",
+    "specification_version",
+    "status",
+    "timestamp_utc",
+    "git_context",
+    "trial_budget",
+    "tier1_markov",
+    "tier2_work",
+    "oracle_verification"
+  ],
+  "properties": {
+    "schema_id": {
+      "type": "string",
+      "enum": ["t81.scg08.carry-experiment.v1"]
+    },
+    "experiment_id": {
+      "type": "string",
+      "enum": ["EXP-SCG08-01"]
+    },
+    "specification_version": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "READY_FOR_INDEPENDENT_GATE1_IMPLEMENTATION_REVIEW",
+        "CORRECTIONS_REQUIRED",
+        "BLOCKED"
+      ]
+    },
+    "timestamp_utc": {
+      "type": "string"
+    },
+    "git_context": {
+      "type": "object",
+      "required": ["baseline_sha", "evaluated_implementation_sha", "evidence_generation_sha"],
+      "properties": {
+        "baseline_sha": {
+          "type": "string",
+          "minLength": 40,
+          "maxLength": 40,
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "evaluated_implementation_sha": {
+          "type": "string",
+          "minLength": 40,
+          "maxLength": 40,
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "evidence_generation_sha": {
+          "description": "Actual historical execution revision; null means UNVERIFIED, without an independently traceable execution receipt. The evaluated implementation identifies source reviewed, not a generating execution.",
+          "type": ["string", "null"],
+          "minLength": 40,
+          "maxLength": 40,
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "evidence_publication_sha": {
+          "type": "string",
+          "minLength": 40,
+          "maxLength": 40,
+          "pattern": "^[0-9a-f]{40}$"
+        }
+      }
+    },
+    "trial_budget": {
+      "type": "object",
+      "required": [
+        "max_cumulative_trials_ceiling",
+        "actual_cumulative_trials_executed",
+        "budget_enforced_fail_closed"
+      ],
+      "properties": {
+        "max_cumulative_trials_ceiling": {"type": "integer", "minimum": 1},
+        "actual_cumulative_trials_executed": {"type": "integer", "minimum": 0},
+        "budget_enforced_fail_closed": {"type": "boolean"}
+      }
+    },
+    "tier1_markov": {
+      "type": "object",
+      "required": ["ternary", "binary"],
+      "properties": {
+        "ternary": {
+          "type": "object",
+          "required": [
+            "total_digits",
+            "f_gen_given_0",
+            "f_trans",
+            "f_occ",
+            "f_cont_given_act",
+            "mean_run_length"
+          ],
+          "properties": {
+            "total_digits": {"type": "integer", "minimum": 1},
+            "f_gen_given_0": {"type": "number"},
+            "f_trans": {"type": "number"},
+            "f_occ": {"type": "number"},
+            "f_cont_given_act": {"type": "number"},
+            "mean_run_length": {"type": "number"}
+          }
+        },
+        "binary": {
+          "type": "object",
+          "required": [
+            "total_digits",
+            "f_gen_given_0",
+            "f_trans",
+            "f_occ",
+            "f_cont_given_act",
+            "mean_run_length"
+          ],
+          "properties": {
+            "total_digits": {"type": "integer", "minimum": 1},
+            "f_gen_given_0": {"type": "number"},
+            "f_trans": {"type": "number"},
+            "f_occ": {"type": "number"},
+            "f_cont_given_act": {"type": "number"},
+            "mean_run_length": {"type": "number"}
+          }
+        }
+      }
+    },
+    "tier2_work": {
+      "type": "object",
+      "required": ["evaluated_bands"],
+      "properties": {
+        "evaluated_bands": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "bit_width",
+              "operand_trits",
+              "add_trits_min",
+              "mul_trits_min",
+              "ternary_limbs_op",
+              "ternary_limbs_add",
+              "ternary_limbs_mul",
+              "counters_add_ternary",
+              "counters_mul_ternary",
+              "counters_add_binary",
+              "counters_mul_binary",
+              "w_ops_add_ternary",
+              "w_ops_mul_ternary",
+              "w_ops_add_binary",
+              "w_ops_mul_binary"
+            ],
+            "properties": {
+              "bit_width": {"type": "integer", "minimum": 0},
+              "operand_trits": {"type": "integer", "minimum": 0},
+              "add_trits_min": {"type": "integer", "minimum": 0},
+              "mul_trits_min": {"type": "integer", "minimum": 0},
+              "ternary_limbs_op": {"type": "integer", "minimum": 0},
+              "ternary_limbs_add": {"type": "integer", "minimum": 0},
+              "ternary_limbs_mul": {"type": "integer", "minimum": 0},
+              "counters_add_ternary": {
+                "type": "object",
+                "required": ["op_alu_add_sub", "op_alu_mul", "op_table_lookup", "op_branch_cond", "op_norm_pass"],
+                "properties": {
+                  "op_alu_add_sub": {"type": "integer", "minimum": 0},
+                  "op_alu_mul": {"type": "integer", "minimum": 0},
+                  "op_table_lookup": {"type": "integer", "minimum": 0},
+                  "op_branch_cond": {"type": "integer", "minimum": 0},
+                  "op_norm_pass": {"type": "integer", "minimum": 0}
+                }
+              },
+              "counters_mul_ternary": {
+                "type": "object",
+                "required": ["op_alu_add_sub", "op_alu_mul", "op_table_lookup", "op_branch_cond", "op_norm_pass"],
+                "properties": {
+                  "op_alu_add_sub": {"type": "integer", "minimum": 0},
+                  "op_alu_mul": {"type": "integer", "minimum": 0},
+                  "op_table_lookup": {"type": "integer", "minimum": 0},
+                  "op_branch_cond": {"type": "integer", "minimum": 0},
+                  "op_norm_pass": {"type": "integer", "minimum": 0}
+                }
+              },
+              "counters_add_binary": {
+                "type": "object",
+                "required": ["op_alu_add_sub", "op_alu_mul", "op_table_lookup", "op_branch_cond", "op_norm_pass"],
+                "properties": {
+                  "op_alu_add_sub": {"type": "integer", "minimum": 0},
+                  "op_alu_mul": {"type": "integer", "minimum": 0},
+                  "op_table_lookup": {"type": "integer", "minimum": 0},
+                  "op_branch_cond": {"type": "integer", "minimum": 0},
+                  "op_norm_pass": {"type": "integer", "minimum": 0}
+                }
+              },
+              "counters_mul_binary": {
+                "type": "object",
+                "required": ["op_alu_add_sub", "op_alu_mul", "op_table_lookup", "op_branch_cond", "op_norm_pass"],
+                "properties": {
+                  "op_alu_add_sub": {"type": "integer", "minimum": 0},
+                  "op_alu_mul": {"type": "integer", "minimum": 0},
+                  "op_table_lookup": {"type": "integer", "minimum": 0},
+                  "op_branch_cond": {"type": "integer", "minimum": 0},
+                  "op_norm_pass": {"type": "integer", "minimum": 0}
+                }
+              },
+              "w_ops_add_ternary": {"type": "integer", "minimum": 0},
+              "w_ops_mul_ternary": {"type": "integer", "minimum": 0},
+              "w_ops_add_binary": {"type": "integer", "minimum": 0},
+              "w_ops_mul_binary": {"type": "integer", "minimum": 0}
+            }
+          }
+        }
+      }
+    },
+    "oracle_verification": {
+      "type": "object",
+      "required": [
+        "oracle_type",
+        "dimensions_verified",
+        "all_dimensions_passed"
+      ],
+      "properties": {
+        "oracle_type": {"type": "string"},
+        "dimensions_verified": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "all_dimensions_passed": {"type": "boolean"}
+      }
+    }
+  }
+}

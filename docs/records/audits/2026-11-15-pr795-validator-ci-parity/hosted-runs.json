@@ -1,0 +1,53 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Action completed."
+    }
+  ],
+  "structuredContent": {
+    "workflow_runs": [
+      {
+        "id": 43714148417,
+        "name": "CodeQL",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_number": 3281,
+        "jobs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/43714148417/jobs",
+        "logs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/43714148417/logs",
+        "workflow_id": 210339906
+      },
+      {
+        "id": 43714148467,
+        "name": "T81 Foundation CI",
+        "status": "queued",
+        "conclusion": null,
+        "run_number": 4478,
+        "jobs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/43714148467/jobs",
+        "logs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/43714148467/logs",
+        "workflow_id": 209271454
+      },
+      {
+        "id": 43714148507,
+        "name": "Format Check",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 2959,
+        "jobs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/43714148507/jobs",
+        "logs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/43714148507/logs",
+        "workflow_id": 233473975
+      },
+      {
+        "id": 43714148517,
+        "name": "Cross-Platform Determinism Verification",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_number": 1442,
+        "jobs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/43714148517/jobs",
+        "logs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/43714148517/logs",
+        "workflow_id": 247014897
+      }
+    ]
+  },
+  "isError": false
+}

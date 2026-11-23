@@ -1,0 +1,3 @@
+symlink/reparse rejection: executed
+exclusive creation, private permissions, retained-object read and partial cleanup: passed
+argument fidelity, shell literals, cwd/env, zero/nonzero exits and concurrent 2 MiB streams: passed

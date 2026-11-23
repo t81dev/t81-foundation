@@ -1,0 +1,82 @@
+[
+  {
+    "name": "configure",
+    "argv": [
+      "cmake",
+      "-S",
+      ".",
+      "-B",
+      "/private/tmp/t81-pr751-on-pr793-release",
+      "-G",
+      "Ninja",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DT81_BUILD_TESTS=ON",
+      "-DT81_BUILD_TUI=OFF",
+      "-DT81_BUILD_BENCHMARKS=OFF",
+      "-DT81_BUILD_EXAMPLES=OFF",
+      "-DT81_BUILD_FUZZ_TESTS=OFF",
+      "-DT81_ENABLE_TERNARYOS=OFF",
+      "-DT81_STRICT_DETERMINISTIC_FLOAT=ON",
+      "-DT81_USE_CXX23=ON",
+      "-DFETCHCONTENT_SOURCE_DIR_ASIO=/Users/t81dev/Code/t81-foundation/build/_deps/asio-src",
+      "-DGTest_DIR=/opt/homebrew/lib/cmake/GTest"
+    ],
+    "cwd": "/Users/t81dev/Code/t81-foundation/.cache/pr751-on-pr793-wrapper",
+    "exit": 0
+  },
+  {
+    "name": "build",
+    "argv": [
+      "cmake",
+      "--build",
+      "/private/tmp/t81-pr751-on-pr793-release",
+      "--target",
+      "t81",
+      "cli_repro_hash_test",
+      "t81_process_capture_test",
+      "-j",
+      "4"
+    ],
+    "cwd": "/Users/t81dev/Code/t81-foundation/.cache/pr751-on-pr793-wrapper",
+    "exit": 0
+  },
+  {
+    "name": "candidate-matrix",
+    "argv": [
+      "python3",
+      "tests/python/test_skill_policy_boundary.py",
+      "--bash",
+      "/bin/bash",
+      "--t81-bin",
+      "/private/tmp/t81-pr751-on-pr793-release/t81",
+      "--receipt",
+      "docs/records/audits/2026-11-14-pr751-on-pr793/evidence/candidate-receipt.json"
+    ],
+    "cwd": "/Users/t81dev/Code/t81-foundation/.cache/pr751-on-pr793-wrapper",
+    "exit": 0
+  },
+  {
+    "name": "ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "/private/tmp/t81-pr751-on-pr793-release",
+      "--output-on-failure",
+      "-V",
+      "-R",
+      "^(t81_skill_policy_boundary_test|t81_cli_execution_policy_test|t81_cli_repro_hash_test|t81_process_capture_test)$"
+    ],
+    "cwd": "/Users/t81dev/Code/t81-foundation/.cache/pr751-on-pr793-wrapper",
+    "exit": 0
+  },
+  {
+    "name": "bash-syntax",
+    "argv": [
+      "/bin/bash",
+      "-n",
+      "skills/policy-checker/validate-policy.sh"
+    ],
+    "cwd": "/Users/t81dev/Code/t81-foundation/.cache/pr751-on-pr793-wrapper",
+    "exit": 0
+  }
+]

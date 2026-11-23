@@ -1,0 +1,39 @@
+{
+  "tools/cli/core/main.cpp": {
+    "unchanged_outside": [
+      "int run_vm_command("
+    ],
+    "private_helper_include_added": true,
+    "782_entry_capture_repro_lifetimes_preserved": true
+  },
+  "tools/cli/core/driver.cpp": {
+    "unchanged_outside": [
+      "int run_tisc(",
+      "int debug_tisc("
+    ],
+    "private_helper_include_added": true,
+    "782_entry_capture_repro_lifetimes_preserved": true
+  },
+  "CMakeLists.txt": {
+    "only_new_policy_test_registration": true,
+    "782_repro_working_directory_and_Windows_links_preserved": true
+  },
+  "tools/cli/core/process_capture.cpp": {
+    "byte_identical_to_main": true
+  },
+  "tools/cli/core/process_capture.hpp": {
+    "byte_identical_to_main": true
+  },
+  "tools/cli/core/process_capture_detail.hpp": {
+    "byte_identical_to_main": true
+  },
+  "tests/cpp/process_capture_test.cpp": {
+    "byte_identical_to_main": true
+  },
+  "tests/cpp/cli_repro_hash_test.cpp": {
+    "byte_identical_to_main": true
+  },
+  "tests/fixtures/t81lang_determinism/t81lang_repro_hash.txt": {
+    "byte_identical_to_main": true
+  }
+}

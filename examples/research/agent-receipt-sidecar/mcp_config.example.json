@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "t81-receipt-sidecar": {
+      "command": "python3",
+      "args": [
+        "examples/research/agent-receipt-sidecar/t81_receipt_sidecar.py"
+      ],
+      "env": {
+        "T81_BIN": "./build/t81"
+      }
+    }
+  }
+}

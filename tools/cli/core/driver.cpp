@@ -1,4 +1,5 @@
 #include "t81/cli/driver.hpp"
+#include "tools/cli/core/execution_policy.hpp"
 #ifdef T81_HAS_LLVM
 #include "t81/llvm/tisc_to_llvm.hpp"
 #endif
@@ -1096,7 +1097,7 @@ int compile(const fs::path& input, const fs::path& output, const std::string& so
             std::shared_ptr<t81::weights::ModelFile> weights_model, bool announce_success) {
   verbose("Compiling " + input.string() + " → " + output.string());
 
-  std::string diag_name = source_name.empty() ? input.string() : source_name;
+  std::string diag_name = source_name.empty() ? input.generic_string() : source_name;
   std::string source;
   if (source_override.empty()) {
     if (!fs::exists(input)) {
@@ -1418,18 +1419,20 @@ int run_tisc(const fs::path& path, const std::optional<fs::path>& policy_path, b
   }
 
   if (policy_path) {
-    std::ifstream ifs(*policy_path);
-    if (ifs) {
-      std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-      program.axion_policy_text = content;
-      verbose("Axion policy loaded from " + policy_path->string());
-    } else {
-      error("Could not open policy file: " + policy_path->string());
+    std::string diagnostic;
+    if (!detail::read_execution_policy(*policy_path, program.axion_policy_text, diagnostic)) {
+      error(diagnostic);
+      return 1;
     }
+    verbose("Axion policy loaded from " + policy_path->string());
   }
 
   auto vm = t81::vm::make_interpreter_vm();
   vm->load_program(program);
+  if (policy_path && !vm->state().policy.has_value()) {
+    error("Could not apply requested policy: " + policy_path->string());
+    return 1;
+  }
 
   verbose("Executing...");
   auto result = vm->run_to_halt();
@@ -1545,17 +1548,19 @@ int debug_tisc(const fs::path& path, const std::optional<fs::path>& policy_path,
 
   if (policy_path) {
     verbose("Loading Axion policy for debugging: " + policy_path->string());
-    std::ifstream ifs(*policy_path);
-    if (!ifs) {
-      error("Could not open policy file: " + policy_path->string());
+    std::string diagnostic;
+    if (!detail::read_execution_policy(*policy_path, program.axion_policy_text, diagnostic)) {
+      error(diagnostic);
       return 1;
     }
-    std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-    program.axion_policy_text = content;
   }
 
   auto vm = t81::vm::make_interpreter_vm();
   vm->load_program(program);
+  if (policy_path && !vm->state().policy.has_value()) {
+    error("Could not apply requested policy: " + policy_path->string());
+    return 1;
+  }
 
   Debugger dbg(std::move(vm), program);
   dbg.run();

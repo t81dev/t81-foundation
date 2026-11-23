@@ -1,0 +1,6 @@
+Temporary deliberate expectation mismatch, compiled with -O2 -DNDEBUG -DT81_FORCE_PORTABLE_INT128=1.
+Expected exit: 1
+Actual exit: 1
+int128 backend=portable; Release-active checks; failures=1
+FAIL: neg_zero
+1 t81_int128_test check(s) failed.

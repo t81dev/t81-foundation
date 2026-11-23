@@ -1,0 +1,29 @@
+[
+  {
+    "argv": [
+      "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "-c",
+      "import importlib.util, pathlib\nspec=importlib.util.spec_from_file_location(\"mutant\", '/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/scg08-mutant-8oavjyd9/validator.py')\nm=importlib.util.module_from_spec(spec)\nspec.loader.exec_module(m)\nm.run_json_file_tests(pathlib.Path('/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/gate1_evidence_record.json'), pathlib.Path('/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/evidence_schema.json'))\n"
+    ],
+    "exit_code": 1,
+    "stdout": "  JSON-file case 'valid' passed (exit 0)\n  JSON-file case 'truncated' passed (exit 1)\n  JSON-file case 'trailing data' passed (exit 1)\n  JSON-file case 'invalid UTF-8' passed (exit 1)\n  JSON-file case 'top-level null' passed (exit 1)\n  JSON-file case 'top-level array' passed (exit 1)\n  JSON-file case 'missing properties' passed (exit 1)\n  JSON-file case 'nested scalar object' passed (exit 1)\n  JSON-file case 'NaN declared field' passed (exit 1)\n",
+    "stderr": "[SCG-08 SCHEMA VALIDATION ERROR] JSON-file case nonfinite extra field NaN: exit 0, expected 1: \n",
+    "expected": "File test suite must fail when strict JSON parsing is removed, including under -O."
+  },
+  {
+    "argv": [
+      "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "-O",
+      "-c",
+      "import importlib.util, pathlib\nspec=importlib.util.spec_from_file_location(\"mutant\", '/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/scg08-mutant-8oavjyd9/validator.py')\nm=importlib.util.module_from_spec(spec)\nspec.loader.exec_module(m)\nm.run_json_file_tests(pathlib.Path('/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/gate1_evidence_record.json'), pathlib.Path('/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/evidence_schema.json'))\n"
+    ],
+    "exit_code": 1,
+    "stdout": "  JSON-file case 'valid' passed (exit 0)\n  JSON-file case 'truncated' passed (exit 1)\n  JSON-file case 'trailing data' passed (exit 1)\n  JSON-file case 'invalid UTF-8' passed (exit 1)\n  JSON-file case 'top-level null' passed (exit 1)\n  JSON-file case 'top-level array' passed (exit 1)\n  JSON-file case 'missing properties' passed (exit 1)\n  JSON-file case 'nested scalar object' passed (exit 1)\n  JSON-file case 'NaN declared field' passed (exit 1)\n",
+    "stderr": "[SCG-08 SCHEMA VALIDATION ERROR] JSON-file case nonfinite extra field NaN: exit 0, expected 1: \n",
+    "expected": "File test suite must fail when strict JSON parsing is removed, including under -O."
+  },
+  {
+    "check": "Unexpected implementation exception propagated from inherited negative runner",
+    "result": "PASS"
+  }
+]

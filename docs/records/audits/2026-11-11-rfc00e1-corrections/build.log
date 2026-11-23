@@ -1,0 +1,5 @@
+[  0%] Built target t81_tracing
+[ 75%] Built target t81_core
+[100%] Building CXX object experiments/scg08_arithmetic_work/CMakeFiles/t81_exp_scg08_01_test.dir/test_exp_scg08_01.cpp.o
+[100%] Linking CXX executable t81_exp_scg08_01_test
+[100%] Built target t81_exp_scg08_01_test

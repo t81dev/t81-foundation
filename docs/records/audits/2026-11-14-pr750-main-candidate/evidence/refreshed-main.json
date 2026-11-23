@@ -1,0 +1,116 @@
+{
+  "name": "main",
+  "commit": {
+    "sha": "a3ae3b16b5afebff4a7ba3c0d2cffe8a69c11b1d",
+    "node_id": "C_kwDOQajdItoAKGEzYWUzYjE2YjVhZmViZmY0YTdiYTNjMGQyY2ZmZThhNjljMTFiMWQ",
+    "commit": {
+      "author": {
+        "name": "t81dev",
+        "email": "copyleft7212@gmail.com",
+        "date": "2026-11-15T01:35:07Z"
+      },
+      "committer": {
+        "name": "GitHub",
+        "email": "noreply@github.com",
+        "date": "2026-11-15T01:35:07Z"
+      },
+      "message": "Merge pull request #792 from t81dev/candidate/pr748-main-policy-metadata\n\nfix(canonfs): reconcile block metadata authorization on current main",
+      "tree": {
+        "sha": "31198cb7f3f80f9fea640a8f0d8bb19d52fed2ff",
+        "url": "https://api.github.com/repos/t81dev/t81-foundation/git/trees/31198cb7f3f80f9fea640a8f0d8bb19d52fed2ff"
+      },
+      "url": "https://api.github.com/repos/t81dev/t81-foundation/git/commits/a3ae3b16b5afebff4a7ba3c0d2cffe8a69c11b1d",
+      "comment_count": 0,
+      "verification": {
+        "verified": true,
+        "reason": "valid",
+        "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJq+QxLCRC1aQ7uu5UhlAAAvbMQAFvv6hsjhrCQ2Ovs4/w/P+8i\njMYMoVk7/mEHw0kiE3XWhta6vxoAyjfeoWvLRPOwQEiO+bev0in4U9nbXNMJKyCe\nmfrIGytzlWvNvP9XXxogF3MlhzmZZs9aQVU4Dzb9dUBIQcDj9SuRIpM0aBoSv6gb\nnkS0vZjGws2J/72Taf3sZ9MdZFUUUUeLW2LkWx/LB8yqH98O942oUHjs8exf64Pk\nkHrm89Vqg93F3knAzSaI8QAMeepgp8O7cN9Rblkn7CAzzQdZYrD6hX6uUCRvIEXh\n4ruB9Z1hVH6739+ybcqJaTZTJQVFsbUCYp/fSx0x3NIZfUzUb8zTjTqpjVcEVY+f\nf6LQDFuLuzzcJNxzw3qSN748ntMtILM7Pluq53F92KjRZwRwkgVh+GMQUiUw3HHj\n1u1qmkA8Cwq1GQQ9UsBFVn8FXIJ/paZ/Ls/EWrHlBiZgZv6A38RasD7JzR7uxpPj\nZdLPkBbdiBNjMHiI+NmqN1+6lHhMtdT2pB5iuAUjNZgBbsgek40VqlyPazgGjq6P\nVVsCKYERN9j0CX2gPGrQbo0bDu+5FSzYfVte5PdtAvZqiE2JzNPaSD1743gSiFnb\nZQsnjxmfdRHiFI9s3SdSOo2lFftO3Z74re2MxrmMswKKPdnAhDjDQqpjawo6C0wl\ng1FNaU59oGh4eeeOjO4v\n=FmiL\n-----END PGP SIGNATURE-----\n",
+        "payload": "tree 31198cb7f3f80f9fea640a8f0d8bb19d52fed2ff\nparent 9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2\nparent e2e3630cf9975458f99b048398c8d9c046467cd5\nauthor t81dev <copyleft7212@gmail.com> 1794706507 -0500\ncommitter GitHub <noreply@github.com> 1794706507 -0500\n\nMerge pull request #792 from t81dev/candidate/pr748-main-policy-metadata\n\nfix(canonfs): reconcile block metadata authorization on current main",
+        "verified_at": "2026-11-15T01:35:07Z"
+      }
+    },
+    "url": "https://api.github.com/repos/t81dev/t81-foundation/commits/a3ae3b16b5afebff4a7ba3c0d2cffe8a69c11b1d",
+    "html_url": "https://github.com/t81dev/t81-foundation/commit/a3ae3b16b5afebff4a7ba3c0d2cffe8a69c11b1d",
+    "comments_url": "https://api.github.com/repos/t81dev/t81-foundation/commits/a3ae3b16b5afebff4a7ba3c0d2cffe8a69c11b1d/comments",
+    "author": {
+      "login": "t81dev",
+      "id": 207451414,
+      "node_id": "U_kgDODF11Fg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/207451414?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/t81dev",
+      "html_url": "https://github.com/t81dev",
+      "followers_url": "https://api.github.com/users/t81dev/followers",
+      "following_url": "https://api.github.com/users/t81dev/following{/other_user}",
+      "gists_url": "https://api.github.com/users/t81dev/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/t81dev/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/t81dev/subscriptions",
+      "organizations_url": "https://api.github.com/users/t81dev/orgs",
+      "repos_url": "https://api.github.com/users/t81dev/repos",
+      "events_url": "https://api.github.com/users/t81dev/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/t81dev/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "web-flow",
+      "id": 19864447,
+      "node_id": "MDQ6VXNlcjE5ODY0NDQ3",
+      "avatar_url": "https://avatars.githubusercontent.com/u/19864447?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/web-flow",
+      "html_url": "https://github.com/web-flow",
+      "followers_url": "https://api.github.com/users/web-flow/followers",
+      "following_url": "https://api.github.com/users/web-flow/following{/other_user}",
+      "gists_url": "https://api.github.com/users/web-flow/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/web-flow/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/web-flow/subscriptions",
+      "organizations_url": "https://api.github.com/users/web-flow/orgs",
+      "repos_url": "https://api.github.com/users/web-flow/repos",
+      "events_url": "https://api.github.com/users/web-flow/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/web-flow/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+        "url": "https://api.github.com/repos/t81dev/t81-foundation/commits/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+        "html_url": "https://github.com/t81dev/t81-foundation/commit/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2"
+      },
+      {
+        "sha": "e2e3630cf9975458f99b048398c8d9c046467cd5",
+        "url": "https://api.github.com/repos/t81dev/t81-foundation/commits/e2e3630cf9975458f99b048398c8d9c046467cd5",
+        "html_url": "https://github.com/t81dev/t81-foundation/commit/e2e3630cf9975458f99b048398c8d9c046467cd5"
+      }
+    ]
+  },
+  "_links": {
+    "self": "https://api.github.com/repos/t81dev/t81-foundation/branches/main",
+    "html": "https://github.com/t81dev/t81-foundation/tree/main"
+  },
+  "protected": true,
+  "protection": {
+    "enabled": true,
+    "required_status_checks": {
+      "enforcement_level": "non_admins",
+      "contexts": [
+        "quality gate / required",
+        "Analyze (cpp)"
+      ],
+      "checks": [
+        {
+          "context": "quality gate / required",
+          "app_id": null
+        },
+        {
+          "context": "Analyze (cpp)",
+          "app_id": 15368
+        }
+      ]
+    }
+  },
+  "protection_url": "https://api.github.com/repos/t81dev/t81-foundation/branches/main/protection"
+}

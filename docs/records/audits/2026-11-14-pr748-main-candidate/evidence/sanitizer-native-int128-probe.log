@@ -1,0 +1,13 @@
+Compiler: /usr/bin/c++
+Compiler ID/version: AppleClang 21.0.0.21000101
+Target: 
+Configuration: RelWithDebInfo
+C++ standard: 23
+Native signed int128 compile/link: TRUE
+Change Dir: '/private/tmp/t81-pr748-main-sanitizers/native-int128-probe/CMakeFiles/CMakeTmp'
+
+Run Build Command(s): /opt/homebrew/bin/ninja -v cmTC_76df5
+[1/2] /usr/bin/c++ -DNDEBUG  -O2 -g -DNDEBUG -std=gnu++23 -fPIE   -Wall -Wextra -Wpedantic -MD -MT CMakeFiles/cmTC_76df5.dir/native_int128.cpp.o -MF CMakeFiles/cmTC_76df5.dir/native_int128.cpp.o.d -o CMakeFiles/cmTC_76df5.dir/native_int128.cpp.o -c /Users/t81dev/Code/t81-foundation/.cache/pr748-main-policy-metadata/cmake/probes/native_int128.cpp
+[2/2] : && /usr/bin/c++ -O2 -g -DNDEBUG  CMakeFiles/cmTC_76df5.dir/native_int128.cpp.o -o cmTC_76df5   && :
+
+

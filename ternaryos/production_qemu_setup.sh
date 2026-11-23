@@ -122,36 +122,14 @@ build_production() {
 create_production_scripts() {
     print_header "Creating Production Scripts"
     
-    # Production verification script
+    # Delegate verification to the checked-in harness; never read stale reports.
     cat > "$SCRIPTS_DIR/verify_production.sh" << 'EOF'
-#!/bin/bash
-# Production verification script
-
-set -e
-
-PRODUCTION_DIR="/opt/ternaryos-qemu"
-BUILD_DIR="$PRODUCTION_DIR/build"
-
-echo "=== Production Verification ==="
-
-# Check build artifacts
-if [ ! -f "$BUILD_DIR/ternaryos/qemu_slice6/BOOTAA64.EFI" ]; then
-    echo "ERROR: BOOTAA64.EFI not found"
-    exit 1
-fi
-
-# Run verification suite
-cd "$PRODUCTION_DIR/t81-foundation"
-./experimental/ternaryos/automated_verification.sh
-
-# Check results
-if grep -q "VERIFICATION SUCCESSFUL" /tmp/ternaryos_verification/verification_summary.txt; then
-    echo "✅ Production verification PASSED"
-    exit 0
-else
-    echo "❌ Production verification FAILED"
-    exit 1
-fi
+#!/usr/bin/env bash
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PRODUCTION_DIR="$(dirname "$SCRIPT_DIR")"
+export QEMU_IMG="${QEMU_IMG:-$PRODUCTION_DIR/production_image/qemu_slice6_guest.img}"
+exec bash "$PRODUCTION_DIR/t81-foundation/drivers/qemu/scripts/verify_production.sh" "$@"
 EOF
 
     # Production launch script
@@ -339,7 +317,7 @@ done
 # Test 3: Automated verification
 echo "Test 3: Automated verification" | tee -a "$TEST_LOG"
 cd "$PRODUCTION_DIR/t81-foundation"
-if ./experimental/ternaryos/automated_verification.sh > /dev/null 2>&1; then
+if bash "$PRODUCTION_DIR/scripts/verify_production.sh"; then
     echo "✅ Automated verification passed" | tee -a "$TEST_LOG"
 else
     echo "❌ Automated verification failed" | tee -a "$TEST_LOG"

@@ -30,16 +30,17 @@ endif()
 
 add_library(t81_tool_cli STATIC
   ${PROJECT_SOURCE_DIR}/tools/cli/ai/ai_cli_shared.cpp
-  ${PROJECT_SOURCE_DIR}/tools/cli/ai/t81_ai_cli.cpp
   # ${PROJECT_SOURCE_DIR}/tools/cli/ai/t81_ai_controlled.cpp  # Skip problematic file
   ${PROJECT_SOURCE_DIR}/tools/cli/core/artifact_family.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/core/canonize_tensor.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/cli_docs_gen.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/help_text.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/core/debugger.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/core/driver.cpp
   # ${PROJECT_SOURCE_DIR}/tools/cli/core/driver_refactored.cpp  # Skip problematic file
-  ${PROJECT_SOURCE_DIR}/tools/cli/core/main.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/mcp_server.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/process_capture.cpp
   # ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_tools/canonfs_performance.cpp  # Skip problematic file
-  ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_tools/canonfs_performance_standalone.cpp
   # ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_tools/canonfs_auto_optimizer.cpp  # Skip problematic file
   ${PROJECT_SOURCE_DIR}/tools/diagnostics/ternary_codec_metrics.cpp)
 
@@ -61,6 +62,9 @@ t81_preserve_root_output(t81_tool_cli)
 target_link_libraries(t81_tool_cli PUBLIC t81_lang_frontend t81_isa t81_vm t81_tool_model)
 target_link_libraries(t81_tool_cli PRIVATE t81_math_quantization t81_decode)
 target_link_libraries(t81_tool_cli PUBLIC t81_llvm t81_mlir t81_c_frontend t81_rust_frontend t81_python_frontend)
+if(WIN32)
+  target_link_libraries(t81_tool_cli PUBLIC shell32 advapi32)
+endif()
 target_include_directories(t81_tool_cli PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -109,10 +113,18 @@ endif()
 
 add_executable(t81
   ${PROJECT_SOURCE_DIR}/tools/cli/core/main.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/cmd_axion_canonfs.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/cmd_determinism.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/cmd_policy.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/cmd_vm_tisc_ir.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/cmd_weights_model.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/ai/ai_cli_shared.cpp
 )
 t81_preserve_root_output(t81)
 target_link_libraries(t81 PRIVATE t81_decode t81_lang_frontend t81_isa t81_vm t81_tool_cli t81_axion t81_math_quantization t81_core)
+if(WIN32)
+  target_link_libraries(t81 PRIVATE shell32)
+endif()
 target_include_directories(t81 PRIVATE
   ${PROJECT_SOURCE_DIR}
 )

@@ -5,6 +5,7 @@ add_executable(t81_radix_comparison
   radix_comparison.hpp
 )
 
+target_compile_features(t81_radix_comparison PRIVATE cxx_std_17)
 target_include_directories(t81_radix_comparison PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(T81_BUILD_TESTS)

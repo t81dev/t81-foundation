@@ -28,10 +28,14 @@ static inline void gicd_write64(uint64_t base, uint64_t off,
   *reinterpret_cast<volatile uint64_t*>(base + off) = val;
 }
 
+static inline void gic_instruction_barrier() noexcept {
+  __asm__ volatile("isb");
+}
+
 // Spin until GICD_CTLR.RWP clears (register write pending).
 static inline void gicd_wait_rwp(uint64_t dist_base) noexcept {
   while (gicd_read32(dist_base, kGicdCtlr) & kGicdCtlrRwp) {
-    __asm__ volatile("isb");
+    gic_instruction_barrier();
   }
 }
 
@@ -70,6 +74,7 @@ static inline void icc_eoir1_el1_write(uint64_t val) noexcept {
 static inline void gicd_write32(uint64_t, uint64_t, uint32_t) noexcept {}
 static inline uint32_t gicd_read32(uint64_t, uint64_t) noexcept { return 0; }
 static inline void gicd_write64(uint64_t, uint64_t, uint64_t) noexcept {}
+static inline void gic_instruction_barrier() noexcept {}
 static inline void gicd_wait_rwp(uint64_t) noexcept {}
 
 static inline void icc_sre_el1_write(uint64_t) noexcept {}
@@ -133,7 +138,7 @@ void gicv3_init(uint64_t dist_base, uint64_t redist_base) noexcept {
     if (!(gicd_read32(redist_base, kGicrWaker) & kGicrWakerChildrenAsleep)) {
       break;
     }
-    __asm__ volatile("isb");
+    gic_instruction_barrier();
   }
 
   // 3. Set all SGIs (0..15) and PPIs (16..31) in the SGI frame to Group 1 NS.
