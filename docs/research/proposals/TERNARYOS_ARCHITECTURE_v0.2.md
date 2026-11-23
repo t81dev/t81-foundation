@@ -96,3 +96,49 @@ Control-plane `TERNARYOS-BOOT-RECEIPT-01` digest:
    - `python3 examples/research/agent-receipt-sidecar/test_native_mcp.py`
    - `python3 -W error -m unittest -v tests/qemu/test_boot_to_receipt_contract.py`
    - 6-target CTest suite (`canonfs_policy_boundary_test`, `t81_vm_tensor_get_set_conformance_test`, `t81_vm_fault_test`, `canonfs_interchange_test`, `t81_dualrail_sbdr_vm_test`, `t81_determinism_codec_test`)
+
+---
+
+## 4. By-AI-for-AI Execution Contracts
+
+Traditional OS interfaces assume human operators scraping unstructured stdout/stderr. `TernaryOS v0.2` replaces prose log scraping with **typed, machine-verifiable JSON-RPC contracts** over the 15-tool native C++ MCP control plane (`./build/t81 mcp serve`, `RFC-00D8` compact mode):
+
+- **Typed Request Envelope:** Every autonomous agent call declares explicit preconditions, capability scope (`--root` filesystem jail), immutable `policy_path` (`axion_root.apl`), content-addressed artifact digest (`model_hash` / `canonfs_root`), and regime parameters (`M`, block sparsity `s`, `R1`/`R2` activation precision).
+- **Structured Machine-Verifiable Outcomes:** Tools return canonical structured fields (`ok`, `admitted`, `verdict`, `trap_code`, `trap_name`, `halted`, `committed`, `aborted`, `dualrail_fallback_count`, `dualrail_sparse128_blocks_skipped`, `execution_receipt`, `sha3_512`) so downstream agents branch deterministically without regex log parsing.
+- **Explicit `R1`/`R2` Regime Routing Contract (`t81.session_bootstrap` + `routing_ledger.py`):**
+  - `R1` (`M == 1`, `s >= 90%`) → `CPU_1T_SBDR128_SIMD`
+  - `R1` (`s >= 75%` for `M >= 4`, or `75% <= s < 90%` at `M == 1`) → `GPU_R1_BitmaskSkip_Pop` (`gpu_sparse_min_pct: 75`)
+  - `R1` (dense / moderate sparsity) → `GPU_R1_DualRail_Pop`
+  - `R2` (`int8` activations × ternary weights) → `CPU_4T_INT4W` (`M = 1..4`) / `CPU_4T_INT8W` (`M >= 16`)
+- **Hard Authority Separation:** Agent write scope is strictly bounded to speculative workspace artifacts inside jailed `--root` paths. Immutable `axion_root.apl` policy roots, negative falsification constraints in `routing_ledger.py`, frozen `PUBLIC_API_LOCK.json` (`v2.2.0`) / `TISC v1.9.0`, and branch merges remain exclusively under human governance.
+
+---
+
+## 5. Three-State `{-1, 0, +1}` Semantics Across Control, Sparsity, and Falsification
+
+`TernaryOS v0.2` maps balanced ternary `{-1, 0, +1}` consistently across execution control, compute sparsity, and scientific ledger governance so "inert/unmeasured" (`0`) is never conflated with "falsified/forbidden" (`-1`) or "verified/active" (`+1`):
+
+| State | Control & Policy (`Axion` / MCP) | Sparsity & Compute (`SBDR1T2D` / `T81VM`) | Scientific Ledger (`routing_ledger.py`) |
+| :---: | :--- | :--- | :--- |
+| **`-1`** | **Rejected / Forbidden:** Fail-closed `SecurityFault` (`trap_code: 6`), denied `tx_commit`, tampered hash, or `AXION_DENY:POLICY_ROOT_IMMUTABLE` over QEMU UART0. | **Negative Weight / Inhibitory Rail:** Negated contribution (`w = -1`, negative rail bitmask set) in bit-exact Dual-Rail popcount/accumulation. | **Falsified / Locked Negative (`16` constraints):** Confirmed losses permanently blocked fail-closed (`cpu_dualrail_unpack`, `2block_unroll_sbdr128`, `per_layer_cpu_thread_barrier`, `gpu_csr_sbdr128_sparse`). |
+| **`0`** | **Inert / Unactivated / Pending:** Zero side effects performed; unmeasured or hardware-gated paths (e.g., native `x86_64` AVX2 timings not yet measured on `arm64` host — never substituted by `arm64`, Rosetta, or `X86_64_AVX2_SYNTAX_CHECK=OK`). | **Zero-Skip / Inert Block:** `w = 0` or all-zero `128`-trit block skipped without compute/memory traffic, accounted explicitly via `dualrail_sparse128_blocks_skipped`. | **Inconclusive / Unmeasured:** Preserved honestly as unverified until native hardware measurement + oracle check complete; cannot be promoted to `+1`. |
+| **`+1`** | **Verified / Admitted:** Policy admitted (`admitted: true`), `VERIFIED_AND_EXECUTED`, `max_abs_err == 0`, `dualrail_fallback_count == 0`, `AXION_OK:<cmd>` over QEMU UART0. | **Positive Weight / Active Rail:** Positive contribution (`w = +1`, positive rail bitmask set) executed on the selected fast-path kernel. | **Accepted / Measured (`10` entries):** Empirically verified wins with bit-exact oracle parity and deterministic `SHA3-512` receipts. |
+
+---
+
+## 6. Transactional Isolation (`tx_begin` / `tx_commit` / `tx_abort`)
+
+Autonomous agent mutations execute inside **speculative transacted workspaces** layered over read-only `CanonFS` `SBDR1T2D` (`K* = 0`) stores and governed `TISC v1.9.0` / `T81VM` execution:
+
+1. **`t81.tx_begin` (Isolated Speculative Snapshot):** Opens a scoped transaction (`tx_id`) backed by an immutable backup snapshot (`backup_dir`) of target workspace paths while `CanonFS` objects (`SBDR1T2D`, `K* = 0`) and `axion_root.apl` remain read-only/integrity-pinned.
+2. **Speculative Verification & Governed Execution:** Candidate bytecode/artifacts are validated via `t81.canonfs_fsck`, `t81.policy_test`, `t81.verify_subgraph`, and `t81.run_subgraph` under `Axion` fail-closed hooks.
+3. **Atomic `t81.tx_abort` (Zero Side Effects on Any Failure):** Any of the following conditions forces fail-closed rejection (`tx_commit` returns `ok: false, committed: false`) and atomic `t81.tx_abort` restoration of exact pre-transaction bytes:
+   - `Axion` policy violation or attempted mutation of `axion_root.apl` (`SecurityFault`, `trap_code: 6`, verified in `test_01_immutable_policy_root_rejects_agent_mutation` and `test_02_fail_closed_security_fault_blocks_unauthorized_guest_run`),
+   - Numerical drift (`max_abs_err != 0`, verified by `SYNTH-ORACLE-ERR`),
+   - Any silent runtime fallback (`dualrail_fallback_count != 0`),
+   - Reproducibility mismatch (`repeat_sha3_identical != true`).
+4. **Receipt-Gated `t81.tx_commit`:** Commits only when policy validation passes, execution invariants hold (`max_abs_err == 0`, `dualrail_fallback_count == 0`), and deterministic `SHA3-512` receipts satisfy `repeat_sha3_identical: true` across independent fresh runs:
+   - `boot_receipt_sha3_512` (`TERNARYOS-BOOT-RECEIPT-01`)
+   - `ledger_sha3_512` (`routing_ledger.py`, bound to `HEAD`)
+   - `boot_image_sha3_512` and `serial_transcript_sha3_512` (real `qemu-system-aarch64` PL011 UART0 round-trips in `test_04_real_qemu_aarch64_serial_roundtrip_and_repeat_receipt`)
+
