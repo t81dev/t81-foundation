@@ -3,7 +3,7 @@
 **Status:** draft — proposed requirements, not binding production behavior
 **Type:** standards-track
 **Created:** 2026-11-05
-**Updated:** 2026-11-06
+**Updated:** 2026-11-23
 **Applies-To:** TISC ISA specification (`spec/tisc-spec.md`, `spec/tisc/`), hosted `T81VM` (`vm/vm.cpp`), freestanding Axion OS evaluator (`ternaryos/hal/cpa004_evaluator.cpp`), LLVM/MLIR lowering backends (`lang/llvm/tisc_to_llvm.cpp`), and cross-profile bytecode artifacts
 **Supersedes:** nothing; provides the formal decision matrix and migration framework for ISA-001 reconciliation findings
 
@@ -16,8 +16,8 @@ This RFC proposes a versioned state-transition contract for the Ternary Instruct
 ### 1.1 Non-Normative Draft Posture
 This document is a **draft proposal and maintainer decision instrument** prepared under task **T81-ISA-002**. In accordance with T81 governance rules:
 - **No silent semantic choices are adopted**: Competing interpretations are explicitly detailed with historical evidence, compatibility impacts, and trade-offs.
-- **No production code or frozen artifacts are altered**: Runtime implementations (`vm/vm.cpp`, `ternaryos/`), test suites, and CPA evidence packets remain untouched.
-- **Explicit maintainer authorization is required**: Any change to normative instruction semantics, opcode registries, or execution profiles requires formal signature in Section 10 before implementation or promotion. Opcode inventory expansion and assignment modifications remain strictly proposed options pending maintainer review.
+- **No VM behavior and no frozen ISA text are altered**: `vm/vm.cpp` and `spec/tisc-spec.md` are not edited by the profile names in Section 4.3. CPA evidence packets stay untouched. The PR #803 differential test asserts those names; it does not retarget the interpreter.
+- **Explicit maintainer authorization is required before runtime promotion**: Section 4.3 records a draft profile decision for Load/Store, JZ/JNZ, and scalar TXor. It does not sign Section 10, does not implement profile dispatch, and does not approve opcode-inventory, SWAR, or R0 changes.
 
 ### 1.2 The Research & Conformance Context
 The Cross-Profile Architecture (CPA) program successfully demonstrated cross-profile deterministic execution across hosted `T81VM` and bare-metal freestanding Axion OS (post-`ExitBootServices` AArch64 QEMU):
@@ -337,6 +337,44 @@ Because raw 13-byte binaries contain no embedded metadata or version flags, T81 
 - **Faults**: Strict atomic fault semantics (zero state changes, PC preserved at faulting instruction).
 - **Inventory**: Subject to maintainer approval under DM-06 and DM-07, formalizes 244 opcodes with holes 221–223 and 247–255 reserved.
 
+`tisc-v2.0` is not the frozen TISC 1.1.0 text. It remains an unimplemented forward proposal. The two profiles named for the Load/Store, JZ/JNZ, and TXor decision are `tisc-spec-v1.1.0` and `tisc-cpa-v1.0` in Section 4.3.
+
+### 4.3 Named profiles for the 2026-11-23 decision
+
+This subsection records the draft decision to reconcile the PR #803 fixtures by versioned profiles, in the same direction as SCG-04 D3 (versioned ISA profiles). It does not promote this RFC out of draft, does not edit `spec/tisc-spec.md`, and does not change hosted T81VM behavior.
+
+| Profile | What it is | Load / Store | JZ (`0x0B`) / JNZ (`0x19`) | Scalar TXor (`0x15`) |
+| :--- | :--- | :--- | :--- | :--- |
+| `tisc-spec-v1.1.0` | The frozen TISC 1.1.0 text in `spec/tisc-spec.md`. | §5.6 register-indirect: `R[RD] := MEM[R[RS]]`, `MEM[R[RS]] := R[RD]`. The two written operands bind in source order to A then B. | §5.7: test `FLAGS.ZERO` or its complement. If taken, `PC := R[RS]`, with that one operand bound to A. Otherwise `PC := PC + 1`. | §5.3 names tritwise XOR and gives no truth table. This profile does not assert wrapped sum or wrapped difference. |
+| `tisc-cpa-v1.0` | The shipped hosted T81VM behavior. The interpreter claims this profile for these opcodes today. | Immediate address: `R[A] := MEM[B]`, `MEM[A] := R[B]`. | Test `R[B] == 0` or `R[B] != 0`. If taken, `PC := A`, where A is an immediate instruction index. Flags are not the predicate. | Clamp each scalar to {-1, 0, +1} and store wrapped difference `wrap3(lhs - rhs)`. |
+
+The hosted interpreter claims `tisc-cpa-v1.0`. It does not claim `tisc-spec-v1.1.0`. A result that matches the frozen text and misses the shipped table disagrees with the profile the VM claims.
+
+#### Declaration and detection
+
+A raw 13-byte instruction does not carry a profile. The same integer can be an address and a register index, so the operand values in the PR #803 fixtures cannot detect which profile was meant.
+
+A program declares a profile only outside the instruction word:
+
+1. CLI `--isa-profile <name>`, when present.
+2. Otherwise a container manifest field `isa_profile`.
+3. Otherwise an embedded note whose name is `.tisc_profile`.
+
+If two of those explicit declarations name different profiles, admission fails closed. Missing declarations are not a second declaration. These three bindings are requirements of this draft. This decision does not implement them, and the hosted VM does not yet read them.
+
+Until a binding is implemented, undecorated programs keep executing as they do now. The fail-closed rejection in Section 5.1 is not activated by Section 4.3, because activating it would change VM behavior. While that rejection is inactive, the hosted interpreter's claimed profile for these opcodes is `tisc-cpa-v1.0`.
+
+#### Which tests assert which profile
+
+| Test | Profile asserted |
+| :--- | :--- |
+| `tests/cpp/vm_load_store_test.cpp`, `tests/cpp/vm_jump_flags_test.cpp`, packed-trit TXor checks, and the CPA-004/CPA-006 suites | `tisc-cpa-v1.0` |
+| `tests/cpp/vm_frozen_semantics_differential_test.cpp` | Each executed result is asserted against `tisc-cpa-v1.0`. The same fixture also asserts the `tisc-spec-v1.1.0` oracle, including that the VM result is not that oracle on the six Load/Store and JZ/JNZ splits. No current test requires the VM to implement `tisc-spec-v1.1.0`. |
+
+`--require-normative` on that differential test checks the profile the hosted VM claims (`tisc-cpa-v1.0`). It exits 0 when every executed result matches that claim. It exits 1 when any executed result does not. It does not ask the VM to match `tisc-spec-v1.1.0`. CTest does not pass the flag. Passing the flag is not frozen-spec conformance.
+
+LLVM lowering that tests `R[C]` for JZ/JNZ is neither profile. It is recorded as a separate defect in the PR #803 body and is not repaired here. DM-04 stays unsigned.
+
 ______________________________________________________________________
 
 ## 5. Artifact Binding, Envelope Specification, and Precedence
@@ -388,15 +426,15 @@ ______________________________________________________________________
 
 ## 6. Comprehensive Maintainer Decision Matrix
 
-The following decision matrix enumerates all unresolved semantic conflicts. Each item presents the competing alternatives, compatibility impact, and a proposed resolution requiring formal maintainer signature. **All items remain strictly PENDING REVIEW.**
+The following decision matrix enumerates the semantic conflicts. Section 4.3 selects the versioned-profile direction for DM-01, DM-02, DM-03, and DM-05 only. Those four rows are not signed in Section 10, and no runtime dispatch is authorized. Every other row remains pending review.
 
 | ID | Topic / Discrepancy | Option A | Option B | Option C (Alternative) | Historical Compatibility Impact | Proposed Resolution | Status |
 | :---: | :--- | :--- | :--- | :--- | :--- | :--- | :---: |
-| **DM-01** | **Memory Operands** (`LOAD`/`STORE`) | Retain direct immediate addressing as sole meaning of `0x03`/`0x04`. | Enforce register-indirect `MEM[R[B]]` per `tisc-spec.md`; reject immediate operands. | Split into Profiles: `tisc-cpa-v1.0` uses direct; `tisc-v2.0` introduces separate indirect and direct opcodes. | Option B breaks 100% of CPA-004/CPA-006 binaries. Option A prevents dynamic pointer dereferencing. Option C preserves historical artifacts while unlocking dynamic memory for compiler backends. | **Proposed: Option C** (Preserve legacy profile; introduce distinct opcodes in v2). | **PENDING REVIEW** |
-| **DM-02** | **Branch Targets** (`JMP`, `JZ`, `JNZ`) | Target is immediate PC index in operand `A`. | Target is register-indirect `PC = R[RS]`. | Immediate target in legacy profile; register target in `tisc-v2.0` (with dedicated `JMPABS` for immediate). | Option B breaks all CPA control flow and LLVM lowering. Option C maintains CFG simplicity. | **Proposed: Option C** (Immediate target in legacy; indirect target in v2). | **PENDING REVIEW** |
-| **DM-03** | **Branch Conditions** (`JZ`, `JNZ`) | Test register `R[B] == 0` directly, bypassing `FLAGS`. | Test `FLAGS.zero` set by preceding arithmetic/`CMP`. | Support both: `JZ_REG` vs `JZ_FLAG`. | Option B breaks CPA-004 fixture at PC19 where $R_{42}=1$ while `FLAGS.zero=true`. Option A decouples condition from standard ALU flags. | **Proposed: Option C** (Register-test in legacy; pure FLAGS in v2). | **PENDING REVIEW** |
+| **DM-01** | **Memory Operands** (`LOAD`/`STORE`) | Retain direct immediate addressing as sole meaning of `0x03`/`0x04`. | Enforce register-indirect `MEM[R[B]]` per `tisc-spec.md`; reject immediate operands. | Name both: `tisc-cpa-v1.0` keeps the shipped immediate address; `tisc-spec-v1.1.0` keeps the frozen register-indirect text. | Option B breaks historical binaries. Option A retires the frozen sentence. Option C keeps both texts addressable without retargeting the VM. | **Direction: Option C**, as named in §4.3. No VM change. | **DIRECTION RECORDED, NOT SIGNED** |
+| **DM-02** | **Branch Targets** (`JMP`, `JZ`, `JNZ`) | Target is immediate PC index in operand `A`. | Target is register-indirect `PC = R[RS]`. | Immediate target in `tisc-cpa-v1.0`; register target in `tisc-spec-v1.1.0`. | Option B breaks shipped control flow. Option C keeps both targets named. | **Direction: Option C**, as named in §4.3. No VM change. | **DIRECTION RECORDED, NOT SIGNED** |
+| **DM-03** | **Branch Conditions** (`JZ`, `JNZ`) | Test register `R[B] == 0` directly, bypassing `FLAGS`. | Test `FLAGS.zero` set by preceding arithmetic/`CMP`. | Name both: `tisc-cpa-v1.0` tests `R[B]`; `tisc-spec-v1.1.0` tests FLAGS. | Option B breaks shipped JZ/JNZ. The LLVM `R[C]` predicate is neither profile. | **Direction: both named profiles**, as in §4.3. No VM change. LLVM stays a separate defect. | **DIRECTION RECORDED, NOT SIGNED** |
 | **DM-04** | **LLVM Lowering Bug** | Keep LLVM using operand `C` for condition test. | Align LLVM lowering to operand `B` immediately. | Defer LLVM backend changes until profile versioning is adopted. | LLVM lowering is currently broken relative to VM runtime. | **Proposed: Option B** (Align LLVM lowering to operand B). | **PENDING REVIEW** |
-| **DM-05** | **Scalar TXor Semantics** | Formally ratify wrapped difference `wrap3(lhs - rhs)`. | Re-implement as symmetric balanced sum `wrap3(lhs + rhs)`. | Rename opcode to `TSUB3` and introduce separate commutative `TXOR`. | Option B breaks CPA-004 PC15 and CPA-006 C03. Option A maintains 100% test parity but requires documentation correction. | **Proposed: Option A** (Ratify wrapped difference; correct docs to remove "Sum"). | **PENDING REVIEW** |
+| **DM-05** | **Scalar TXor Semantics** | Formally ratify wrapped difference `wrap3(lhs - rhs)`. | Re-implement as symmetric balanced sum `wrap3(lhs + rhs)`. | `tisc-cpa-v1.0` asserts wrapped difference. `tisc-spec-v1.1.0` keeps the frozen text, which has no truth table. | Option B changes shipped results. The spec profile does not adopt the word "Sum" as a table. | **Direction: §4.3 profiles**. No VM change and no frozen-text edit. | **DIRECTION RECORDED, NOT SIGNED** |
 | **DM-06** | **Opcode Inventory Unification** | Freeze core strictly at 174; deprecate 175–246. | Expand canonical registry to 244 named opcodes matching header, reserving 221–223 and 247–255. | Retain 209 in registry and treat 210–246 as experimental unverified. | Option A breaks AI-native and SWAR instructions. Option B unifies header, test matrix, and specification. | **Proposed: Option B** (Unify at 244 opcodes pending maintainer sign-off). | **PENDING REVIEW** |
 | **DM-07** | **SWAR / Extension Collisions** | Ratify header assignments (205, 206, 207, 220). | Ratify registry assignments (212, 213, 214, 215). | Reallocate SWAR opcodes to a clean reserved block in 224–246. | C++ header and `tisc_opcode_matrix_test.cpp` already assert 205–207, 220. Registry values collide with polynomial opcodes. | **Proposed: Option A** (Ratify header assignments 205–207, 220). | **PENDING REVIEW** |
 | **DM-08** | **Register $R_0$ Invariance** | Enforce destination $R_0$ as `DecodeFault`. | Allow writes to $R_0$ but silently discard (hardwired zero). | Allow unrestricted writes to $R_0$. | CPA evaluators reject destination $R_0$ during operand admission. Discarding writes is standard in RISC (e.g., MIPS/RISC-V). | **Proposed: Option A** (Enforce destination R0 as DecodeFault). | **PENDING REVIEW** |

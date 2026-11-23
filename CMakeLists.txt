@@ -435,9 +435,10 @@ if(T81_BUILD_TESTS)
   target_link_libraries(t81_vm_value_ops_boundary_test PRIVATE t81_vm t81_core)
   target_include_directories(t81_vm_value_ops_boundary_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
-  # Evidence only. The registered command must not pass --require-normative:
-  # that audit mode exits 1 while Load/Store and JZ/JNZ still disagree with
-  # spec/tisc-spec.md. A zero exit here means the disagreement is unchanged.
+  # Asserts the hosted VM against tisc-cpa-v1.0 (RFC-00D6 §4.3).
+  # Do not pass --require-normative here. That flag repeats the claim check
+  # and exits 1 when the VM misses the profile it claims. A zero exit from
+  # this registration is that claim, not frozen-spec conformance.
   add_executable(t81_vm_frozen_semantics_differential_test
                  tests/cpp/vm_frozen_semantics_differential_test.cpp)
   target_link_libraries(t81_vm_frozen_semantics_differential_test PRIVATE t81_vm t81_isa)

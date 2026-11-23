@@ -1,15 +1,20 @@
 # Frozen TISC semantics: differential evidence
 
-This directory records a disagreement between the frozen ISA and the hosted
-interpreter. It does not resolve that disagreement. No VM, compiler, encoding,
-normative text, or golden trace is changed by the test that produces the
-evidence.
+This directory records the Load/Store, JZ/JNZ, and TXor split between the
+frozen ISA text and the hosted interpreter. The draft decision is the two
+named profiles in
+[RFC-00D6 §4.3](../../../spec/rfcs/RFC-00D6-versioned-tisc-state-transition-contract.md).
+`tisc-spec-v1.1.0` is the frozen `spec/tisc-spec.md` text. `tisc-cpa-v1.0` is
+the shipped T81VM behavior, and it is the profile the hosted interpreter
+claims. No VM behavior and no frozen spec text changed.
 
-**Disposition: blocked on an explicit normative decision.** Ordinary CTest
-runs `t81_vm_frozen_semantics_differential_test` with no arguments and expects
-exit 0. Exit 0 means the six Load/Store/JZ/JNZ disagreements are still present.
-`--require-normative` is not registered with CTest. It exits 1 while those
-disagreements remain. A green characterization is not conformance.
+**Disposition: draft profiles, not a VM or spec edit.** Ordinary CTest runs
+`t81_vm_frozen_semantics_differential_test` with no arguments. Exit 0 means
+every executed result matches `tisc-cpa-v1.0`, and the six Load/Store and
+JZ/JNZ fixtures still miss `tisc-spec-v1.1.0`. `--require-normative` is not
+registered with CTest. It exits 0 when the VM matches the profile it claims
+and exits 1 when any executed result does not. A green run is not conformance
+to `tisc-spec-v1.1.0`.
 
 `spec/tisc-spec.md` is the frozen ISA named by `spec/README.md` and
 `docs/governance/SPEC_AUTHORITY_MODEL.md`. `spec/tisc/opcode-semantics.md` and
@@ -65,7 +70,12 @@ Executed fixture, with both addresses in range. `R[5]=6`, `R[1]=555`,
 frontend emits `Load` and `Store` with an immediate address. Changing the
 interpreter to §5.6 would reinterpret those bytes.
 
-### Options
+### Options considered
+
+The selected direction is the pair of profiles in RFC-00D6 §4.3, not option 1
+or option 2. `tisc-cpa-v1.0` keeps the hosted immediate address.
+`tisc-spec-v1.1.0` keeps the frozen register-indirect sentence. The VM was
+not switched.
 
 1. Amend §5.6 to immediate addressing. Existing bytes, the C frontend, and
    `vm_load_store_test` keep their current meaning. The register-indirect
@@ -121,7 +131,11 @@ was not executed. JumpIfNegative and JumpIfPositive already test flags and
 jump to immediate A, which is a third shape. This evidence does not cover
 them.
 
-### Options
+### Options considered
+
+The selected direction is RFC-00D6 §4.3. `tisc-cpa-v1.0` tests `R[B]` and
+branches to immediate A. `tisc-spec-v1.1.0` tests FLAGS and writes PC from the
+register. LLVM's `R[C]` predicate is neither profile and is not fixed here.
 
 1. Amend §5.7 so JZ/JNZ test `R[B]` and branch to immediate A. The
    interpreter, JIT, C frontend, and opcode tables already do this. Existing
@@ -158,7 +172,11 @@ All nine scalar pairs were executed. The VM matches wrapped difference. Six
 pairs disagree with wrapped sum. Wrapped sum is only a candidate reading of
 the word "Sum", not a requirement found in §5.3.
 
-### Options
+### Options considered
+
+The selected direction is RFC-00D6 §4.3. `tisc-cpa-v1.0` asserts wrapped
+difference. `tisc-spec-v1.1.0` keeps the frozen text, which has no truth
+table. Wrapped sum is not a profile.
 
 1. Authorize the implemented wrapped difference as the scalar table, and
    replace the undefined word "Sum" with that table. Say whether vectors are
@@ -183,16 +201,25 @@ ctest --test-dir /tmp/t81-tisc-build --output-on-failure \
 /tmp/t81-tisc-build/t81_vm_frozen_semantics_differential_test --require-normative
 ```
 
-The last command exits 1 until a normative decision changes the disagreement
-and this test together. An unknown argument exits 2.
+With the profiles in RFC-00D6 §4.3, the last command exits 0 when the VM
+matches `tisc-cpa-v1.0` and exits 1 when it does not. An unknown argument
+exits 2. The 2026-11-23 log below is the earlier run, from before the test
+asserted named profiles, and its audit exit of 1 is not the current contract.
 
 ## 2026-11-23 revalidation
 
-Linux x86_64, Ubuntu clang 18.1.3, CMake 3.28.3, Ninja, Release. The
-differential test exited 0 with no arguments and 1 with `--require-normative`.
-Its CTest registration passed. `t81_vm_load_store_test` and
-`t81_vm_jump_flags_test` exited 0. `clang-format-18 --dry-run --Werror` passed
-on the differential test. Raw output is `revalidation-2026-11-23.txt`.
+Linux x86_64, Ubuntu clang 18.1.3, CMake 3.28.3, Ninja, Release.
+
+`revalidation-2026-11-23.txt` is the run from before named-profile assertions.
+In that run the differential test exited 0 with no arguments and 1 with
+`--require-normative`. That audit exit is not the current contract.
+
+`revalidation-2026-11-23-profiles.txt` is the run after RFC-00D6 §4.3.
+Characterization exited 0, `--require-normative` exited 0 because the VM
+matched `tisc-cpa-v1.0`, an unknown argument exited 2, and the registered
+CTest passed. `clang-format-18 --dry-run --Werror` passed on the differential
+test. `t81_vm_load_store_test` and `t81_vm_jump_flags_test` were not rerun
+for the profile revision; their earlier exits in the first log were 0.
 
 Not run in this refresh: the full CTest suite, sanitizers, macOS, Windows,
 ARM64, golden trace replay, the freeze checker, and the conformance `.t81`
