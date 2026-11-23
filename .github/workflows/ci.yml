@@ -83,6 +83,7 @@ jobs:
           fail: true
           args: >-
             --verbose --no-progress
+            --max-retries 3 --retry-wait-time 5
             --root-dir ${{ github.workspace }}
             --exclude "http://localhost*"
             --exclude "https://github.com/t81dev/t81-foundation/edit*"
