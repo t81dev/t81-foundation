@@ -35,4 +35,4 @@ Both drivers enforce content addressing on write and perform hash re-verificatio
 
 ### Experimental Storage Optimizers (Non-Core / Research-Only)
 
-- `auto_optimizer.cpp`, `auto_optimization_cli.cpp`, `canonical_optimization_decision.cpp`, `deep_learning_optimizer.cpp`, `ml_optimizer.cpp`, `ml_optimization_cli.cpp`, `ternary_optimization.cpp`, `performance_analyzer.cpp`, `performance_cli.cpp`, `canonfs_performance_monitor.cpp`: Experimental storage-layout and telemetry prototypes; not part of the accepted RFC-00D1 interchange contract.
+- `auto_optimizer.cpp`, `canonical_optimization_decision.cpp`, `deep_learning_optimizer.cpp`, `ternary_optimization.cpp`: Experimental storage-layout prototypes; not part of the accepted RFC-00D1 interchange contract. (Unreferenced CLI/monitor/optimizer prototypes `auto_optimization_cli.cpp`, `canonfs_performance_monitor.cpp`, `ml_optimization_cli.cpp`, `ml_optimizer.cpp`, `performance_analyzer.cpp`, and `performance_cli.cpp` were archived under `archive/legacy_orphans/fs/`.)

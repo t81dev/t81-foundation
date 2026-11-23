@@ -8,6 +8,7 @@
 #include "t81/isa/encoding.hpp"
 #include "t81/isa/opcodes.hpp"
 #include "t81/vm/vm.hpp"
+#include "vm/internal/tensor_helpers.hpp"
 
 #include <algorithm>
 #include <bit>
@@ -74,6 +75,7 @@ struct JsonNode {
   std::string str;  // decoded string for String; raw token for Number/Bool/Null
   std::string raw;  // exact raw JSON slice (useful for preserving JSON-RPC id)
   std::unordered_map<std::string, JsonNode> obj;
+  std::vector<JsonNode> arr;
 };
 
 class ScopedJsonParser {
@@ -198,6 +200,7 @@ private:
       while (true) {
         JsonNode elem;
         if (!parse_val(elem, depth + 1)) return false;
+        out.arr.push_back(std::move(elem));
         skip_ws();
         if (i_ < s_.size() && s_[i_] == ',') {
           ++i_;
@@ -238,6 +241,41 @@ std::string arg_str(const JsonNode& obj, const std::string& key) {
   auto it = obj.obj.find(key);
   if (it == obj.obj.end() || it->second.kind != JsonNode::Kind::String) return {};
   return it->second.str;
+}
+
+bool arg_bool(const JsonNode& obj, const std::string& key, bool default_val = false) {
+  if (obj.kind != JsonNode::Kind::Object) return default_val;
+  auto it = obj.obj.find(key);
+  if (it == obj.obj.end() || it->second.kind != JsonNode::Kind::Bool) return default_val;
+  return it->second.str == "true";
+}
+
+bool env_compact_mode() {
+  const char* v = std::getenv("T81_MCP_COMPACT");
+  return v != nullptr && (std::strcmp(v, "1") == 0 || std::strcmp(v, "true") == 0);
+}
+
+const char* trap_name_str(t81::vm::Trap t) {
+  using t81::vm::Trap;
+  switch (t) {
+    case Trap::None: return "None";
+    case Trap::DecodeFault: return "DecodeFault";
+    case Trap::TypeFault: return "TypeFault";
+    case Trap::BoundsFault: return "BoundsFault";
+    case Trap::StackFault: return "StackFault";
+    case Trap::DivisionFault: return "DivisionFault";
+    case Trap::SecurityFault: return "SecurityFault";
+    case Trap::TierFault: return "TierFault";
+    case Trap::ShapeFault: return "ShapeFault";
+    case Trap::TrapInstruction: return "TrapInstruction";
+    case Trap::Unimplemented: return "Unimplemented";
+    case Trap::AssertionFailed: return "AssertionFailed";
+    case Trap::EthicsViolation: return "EthicsViolation";
+    case Trap::CapabilityDenied: return "CapabilityDenied";
+    case Trap::ActivationFault: return "ActivationFault";
+    case Trap::FFIPolicyDenied: return "FFIPolicyDenied";
+    default: return "UnknownTrap";
+  }
 }
 
 bool arg_double(const JsonNode& obj, const std::string& key, double default_val, double& out) {
@@ -732,8 +770,17 @@ std::string detect_host_capabilities_json() {
   return std::string("{\"cpu_simd\":\"") + cpu_simd + "\",\"gpu_backend\":\"" + gpu_backend +
          "\",\"dualrail_layout\":\"DualRail_PN_64\",\"bytes_per_trit\":0.25,"
          "\"bit_exact_cross_device_sha3_512\":true,"
-         "\"dualrail_crossover\":{\"min_k\":64,\"min_mn\":64,\"reuse_k_star\":6,"
-         "\"gpu_fused_min_matmuls\":4}}";
+         "\"dualrail_crossover\":{\"min_k\":64,\"min_mn\":64,\"reuse_k_star\":4,"
+         "\"gpu_fused_min_matmuls\":4},"
+         "\"regime_routing\":{"
+         "\"R1_ternary_act\":{\"dense\":\"DualRail_PN_64\",\"sparse_min_pct\":50,"
+         "\"sparse_kernel\":\"SBDR128_SIMD\",\"gpu_kernel\":\"GPU_R1_DualRail_Pop\","
+         "\"m1_high_sparsity_min_pct\":75,\"m1_high_sparsity_kernel\":\"CPU_1T_SBDR128_SIMD\","
+         "\"m1_low_sparsity_max_pct\":50,\"gpu_min_batch\":4,"
+         "\"k_star_prepacked\":0,\"k_star_simd4t_vs_gpu_int4\":2,"
+         "\"k_star_simd4t_vs_cpu_int4\":3,\"avoid_per_layer_cpu_thread_barrier\":true},"
+         "\"R2_int8_act\":{\"m1_to_4\":\"CPU_4T_INT4W\",\"m16_plus\":\"CPU_4T_INT8W\","
+         "\"avoid_cpu_dualrail_unpack\":true}}}";
 }
 
 bool decode_hex_bytes(std::string_view hex, std::vector<uint8_t>& out) {
@@ -896,7 +943,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                 << ",\"result\":{\"tools\":" << build_tools_list_json() << "}}\n"
                 << std::flush;
     } else if (method == "tools/call") {
-      static const JsonNode kEmptyObj{JsonNode::Kind::Object, {}, "{}", {}};
+      static const JsonNode kEmptyObj{JsonNode::Kind::Object, {}, "{}", {}, {}};
       const auto params_it = req.obj.find("params");
       const JsonNode& params =
           (params_it != req.obj.end() && params_it->second.kind == JsonNode::Kind::Object)
@@ -959,8 +1006,13 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         const std::string req_mode = arg_str(args, "mode");
         std::vector<uint8_t> abytes, pbytes;
         if (apath.empty() || ppath.empty()) {
-          structured = "{\"ok\":false,\"decision\":\"DENY\",\"blocked\":true,\"error\":\"missing "
-                       "required arguments\",\"expected\":[\"artifact_path\",\"policy_path\"]}";
+          structured = "{\"ok\":false,\"code\":\"ERR_MISSING_ARG\",\"decision\":\"DENY\","
+                       "\"blocked\":true,\"error\":\"missing required arguments\","
+                       "\"expected\":[\"artifact_path\",\"policy_path\"]}";
+        } else if (!req_mode.empty() && mode_rank(req_mode) < 0) {
+          structured = "{\"ok\":false,\"code\":\"ERR_INVALID_ARG\",\"decision\":\"DENY\","
+                       "\"blocked\":true,\"error\":\"invalid mode: expected observe-only, warn, "
+                       "or fail-closed\"}";
         } else if (!read_file_bytes(jail, apath, abytes) || !read_file_bytes(jail, ppath, pbytes)) {
           structured = "{\"ok\":false,\"decision\":\"DENY\",\"blocked\":true,\"error\":\"missing "
                        "artifact or policy file\"}";
@@ -1254,22 +1306,40 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                              "\"executed\":false,\"program_sha3_512\":\"" +
                              prog_sha + "\"}";
               } else {
+                t81::vm::internal::reset_dualrail_telemetry();
                 auto vm = t81::vm::make_interpreter_vm(std::make_unique<t81::axion::AIHookEngine>(
                     std::make_unique<t81::axion::PolicyEngine>(pol)));
                 vm->load_program(dec.value());
                 const auto run_res = vm->run_to_halt();
+                const auto dr_tel = t81::vm::internal::dualrail_telemetry();
                 const bool halted = run_res.has_value();
                 const int trap_code = halted ? 0 : static_cast<int>(run_res.error());
+                const std::string trap_name = halted ? "" : trap_name_str(run_res.error());
+                const uint64_t fault_pc =
+                    vm->state().contexts.empty() ? 0ULL : vm->state().contexts[0].pc;
                 const size_t ax_events = vm->state().axion_log.size();
+                const std::string last_ax_reason =
+                    ax_events == 0 ? "" : vm->state().axion_log.back().verdict.reason;
                 const std::string rec_in = prog_sha + "|" + (halted ? "HALT" : "TRAP") + "|" +
                                            std::to_string(trap_code) + "|" +
-                                           std::to_string(ax_events);
+                                           std::to_string(ax_events) + "|" +
+                                           std::to_string(dr_tel.fastpath_hits) + "|" +
+                                           std::to_string(dr_tel.fallback_count);
                 const std::vector<uint8_t> rec_bytes(rec_in.begin(), rec_in.end());
                 const std::string exec_rec = sha3_512_hex(rec_bytes);
                 structured = std::string("{\"ok\":") + (halted ? "true" : "false") +
                              ",\"verdict\":\"" + (halted ? "VERIFIED_AND_EXECUTED" : "VM_TRAP") +
                              "\",\"executed\":true,\"halted\":" + (halted ? "true" : "false") +
-                             ",\"trap_code\":" + std::to_string(trap_code) +
+                             ",\"trap_code\":" + std::to_string(trap_code) + ",\"trap_name\":\"" +
+                             trap_name + "\",\"fault_pc\":" + std::to_string(fault_pc) +
+                             ",\"last_axion_reason\":\"" + json_escape_mcp(last_ax_reason) +
+                             "\",\"dualrail_fastpath_hits\":" +
+                             std::to_string(dr_tel.fastpath_hits) +
+                             ",\"dualrail_dense_hits\":" + std::to_string(dr_tel.dense_hits) +
+                             ",\"dualrail_sparse128_hits\":" +
+                             std::to_string(dr_tel.sparse128_hits) +
+                             ",\"dualrail_fallback_count\":" +
+                             std::to_string(dr_tel.fallback_count) +
                              ",\"instruction_count\":" + std::to_string(dec.value().insns.size()) +
                              ",\"matmul_count\":" + std::to_string(vr.matmul_count) +
                              ",\"axion_events\":" + std::to_string(ax_events) +
@@ -1591,12 +1661,31 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           }
         }
       }
-      const bool is_err = (structured.find("\"ok\":false") != std::string::npos) ||
-                          (structured.find("\"ok\": false") != std::string::npos);
+      bool is_err = true;
+      std::string err_tag = "ERR";
+      {
+        JsonNode parsed_out;
+        ScopedJsonParser out_parser(structured);
+        if (out_parser.parse(parsed_out) && parsed_out.kind == JsonNode::Kind::Object) {
+          const auto ok_it = parsed_out.obj.find("ok");
+          if (ok_it != parsed_out.obj.end() && ok_it->second.kind == JsonNode::Kind::Bool) {
+            is_err = (ok_it->second.str != "true");
+          } else {
+            is_err = false;
+          }
+          const std::string c = arg_str(parsed_out, "code");
+          const std::string v = arg_str(parsed_out, "verdict");
+          if (!c.empty()) err_tag = c;
+          else if (!v.empty()) err_tag = v;
+        }
+      }
+      const bool compact_mode = arg_bool(args, "compact", env_compact_mode());
+      const std::string text_payload =
+          compact_mode ? (is_err ? ("err:" + err_tag) : "ok") : structured;
       std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id
                 << ",\"result\":{\"content\":[{\"type\":\"text\",\"text\":\""
-                << json_escape_mcp(structured) << "\"}],\"isError\":" << (is_err ? "true" : "false")
-                << ",\"structured\":" << structured << "}}\n"
+                << json_escape_mcp(text_payload) << "\"}],\"isError\":"
+                << (is_err ? "true" : "false") << ",\"structured\":" << structured << "}}\n"
                 << std::flush;
     } else {
       std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id

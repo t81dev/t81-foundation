@@ -6,11 +6,13 @@
 #include "t81/axion/policy_engine.hpp"
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
+#include "t81/crypto/sha3.hpp"
 #include "t81/isa/opcodes.hpp"
 #include "t81/isa/program.hpp"
 #include "t81/types/detail/dmath.hpp"
 #include "t81/vm/vm.hpp"
 #include "t81/weights.hpp"
+#include "../../vm/internal/tensor_helpers.hpp"
 
 #include <cstddef>
 #include <cstdint>
@@ -194,6 +196,7 @@ void test_sbdr1t2d_and_block_zero_skip_and_tset_invalidation() {
   pol.tier = 2;
   pol.allowed_tensor_hashes.push_back(prog.symbol_pool[0]);
   pol.allowed_tensor_hashes.push_back(prog.symbol_pool[1]);
+  t81::vm::internal::reset_dualrail_telemetry();
   auto vm = t81::vm::make_interpreter_vm(
       std::make_unique<t81::axion::AIHookEngine>(std::make_unique<t81::axion::PolicyEngine>(pol)));
   vm->set_canonfs_driver(driver);
@@ -205,6 +208,10 @@ void test_sbdr1t2d_and_block_zero_skip_and_tset_invalidation() {
   }
   check(res.has_value(), "VM failed to halt on SBDR1T2D + TSet invalidation test");
   if (!res.has_value()) return;
+
+  const auto tel = t81::vm::internal::dualrail_telemetry();
+  check(tel.fastpath_hits == 2 && tel.fallback_count == 0,
+        "Expected 2 Dual-Rail fastpath hits and 0 silent fallbacks on ternary TMatMul");
 
   const auto& ctx = vm->state().contexts[0];
   const auto& c1 = vm->state().tensors[static_cast<size_t>(ctx.registers[5] - 1)].value();
@@ -251,11 +258,174 @@ void test_sbdr1t2d_rejects_malformed_planes() {
         "Malformed non-disjoint SBDR1T2D must trap with Trap::DecodeFault");
 }
 
+void test_sbdr1t2d_regime_aware_sparse128_routing() {
+  constexpr size_t M = 8, K = 256, N = 16;
+  std::mt19937 rng(9001);
+  std::uniform_int_distribution<int> dist(-1, 1);
+
+  std::vector<int8_t> A(M * K, 0), B(K * N, 0);
+  for (auto& v : A) v = static_cast<int8_t>(dist(rng));
+  // 75% 128-trit block sparsity in B: only first 128-trit block populated on even cols.
+  for (size_t n = 0; n < N; n += 2) {
+    for (size_t k = 0; k < 128; ++k) B[k * N + n] = static_cast<int8_t>(dist(rng));
+  }
+
+  std::vector<float> expected(M * N, 0.0f);
+  for (size_t m = 0; m < M; ++m) {
+    for (size_t n = 0; n < N; ++n) {
+      int32_t acc = 0;
+      for (size_t k = 0; k < K; ++k) {
+        acc += static_cast<int32_t>(A[m * K + k]) * static_cast<int32_t>(B[k * N + n]);
+      }
+      expected[m * N + n] = static_cast<float>(acc);
+    }
+  }
+
+  auto driver =
+      std::shared_ptr<t81::canonfs::Driver>(t81::canonfs::make_in_memory_driver().release());
+  auto ref_a =
+      driver->write_object(t81::canonfs::ObjectType::CanonTensor, serialize_sbdr1t2d(A, M, K));
+  auto ref_b =
+      driver->write_object(t81::canonfs::ObjectType::CanonTensor, serialize_sbdr1t2d(B, K, N));
+  check(ref_a.has_value() && ref_b.has_value(), "CanonFS write_object failed (sparse128 test)");
+  if (!ref_a.has_value() || !ref_b.has_value()) return;
+
+  t81::tisc::Program prog;
+  prog.symbol_pool.push_back("sha3-256:" + ref_a->hash.h.to_string());
+  prog.symbol_pool.push_back("sha3-256:" + ref_b->hash.h.to_string());
+  t81::tisc::Insn ld_a{t81::tisc::Opcode::LoadImm, 1, 1, 0};
+  ld_a.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
+  t81::tisc::Insn ld_b{t81::tisc::Opcode::LoadImm, 3, 2, 0};
+  ld_b.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
+  prog.insns.push_back(ld_a);
+  prog.insns.push_back({t81::tisc::Opcode::TLoadHash, 2, 1, 0});
+  prog.insns.push_back(ld_b);
+  prog.insns.push_back({t81::tisc::Opcode::TLoadHash, 4, 3, 0});
+  prog.insns.push_back({t81::tisc::Opcode::TMatMul, 5, 2, 4});
+  prog.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
+
+  t81::axion::Policy pol;
+  pol.tier = 2;
+  pol.allowed_tensor_hashes.push_back(prog.symbol_pool[0]);
+  pol.allowed_tensor_hashes.push_back(prog.symbol_pool[1]);
+
+  t81::vm::internal::reset_dualrail_telemetry();
+  auto vm = t81::vm::make_interpreter_vm(
+      std::make_unique<t81::axion::AIHookEngine>(std::make_unique<t81::axion::PolicyEngine>(pol)));
+  vm->set_canonfs_driver(driver);
+  vm->load_program(prog);
+  auto res = vm->run_to_halt();
+  check(res.has_value(), "VM failed to halt on sparse128 routing test");
+  if (!res.has_value()) return;
+
+  const auto tel = t81::vm::internal::dualrail_telemetry();
+  check(tel.sparse128_hits == 1 && tel.fallback_count == 0,
+        "Expected 1 sparse128 hit and 0 fallbacks on 75%-sparse SBDR1T2D weight matrix");
+  const auto& ctx = vm->state().contexts[0];
+  const auto& c = vm->state().tensors[static_cast<size_t>(ctx.registers[5] - 1)].value();
+  check(c.data() == expected, "sparse128 TMatMul output mismatch vs exact oracle");
+}
+
+void test_mixed_dense_and_sparse128_regime_routing_and_repeat_sha3() {
+  constexpr size_t M = 8, K = 256, N = 16;
+  std::mt19937 rng(20261123);
+  std::uniform_int_distribution<int> dist(-1, 1);
+
+  std::vector<int8_t> A(M * K, 0), B_dense(K * N, 0), B_sparse(K * N, 0);
+  for (auto& v : A) v = static_cast<int8_t>(dist(rng));
+  for (auto& v : B_dense) v = static_cast<int8_t>(dist(rng));
+  // 75% 128-trit block sparsity in B_sparse
+  for (size_t n = 0; n < N; n += 2) {
+    for (size_t k = 0; k < 128; ++k) B_sparse[k * N + n] = static_cast<int8_t>(dist(rng));
+  }
+
+  auto oracle = [&](const std::vector<int8_t>& rhs) {
+    std::vector<float> out(M * N, 0.0f);
+    for (size_t m = 0; m < M; ++m) {
+      for (size_t n = 0; n < N; ++n) {
+        int32_t acc = 0;
+        for (size_t k = 0; k < K; ++k) {
+          acc += static_cast<int32_t>(A[m * K + k]) * static_cast<int32_t>(rhs[k * N + n]);
+        }
+        out[m * N + n] = static_cast<float>(acc);
+      }
+    }
+    return out;
+  };
+  const auto exp_dense = oracle(B_dense);
+  const auto exp_sparse = oracle(B_sparse);
+
+  auto driver =
+      std::shared_ptr<t81::canonfs::Driver>(t81::canonfs::make_in_memory_driver().release());
+  auto ref_a =
+      driver->write_object(t81::canonfs::ObjectType::CanonTensor, serialize_sbdr1t2d(A, M, K));
+  auto ref_bd =
+      driver->write_object(t81::canonfs::ObjectType::CanonTensor, serialize_sbdr1t2d(B_dense, K, N));
+  auto ref_bs = driver->write_object(t81::canonfs::ObjectType::CanonTensor,
+                                     serialize_sbdr1t2d(B_sparse, K, N));
+  check(ref_a.has_value() && ref_bd.has_value() && ref_bs.has_value(),
+        "CanonFS write_object failed (mixed regime test)");
+  if (!ref_a.has_value() || !ref_bd.has_value() || !ref_bs.has_value()) return;
+
+  t81::tisc::Program prog;
+  prog.symbol_pool.push_back("sha3-256:" + ref_a->hash.h.to_string());
+  prog.symbol_pool.push_back("sha3-256:" + ref_bd->hash.h.to_string());
+  prog.symbol_pool.push_back("sha3-256:" + ref_bs->hash.h.to_string());
+  auto load_sym = [](int reg, int sym_id) {
+    t81::tisc::Insn insn{t81::tisc::Opcode::LoadImm, reg, sym_id, 0};
+    insn.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
+    return insn;
+  };
+  prog.insns.push_back(load_sym(1, 1));
+  prog.insns.push_back({t81::tisc::Opcode::TLoadHash, 2, 1, 0});
+  prog.insns.push_back(load_sym(3, 2));
+  prog.insns.push_back({t81::tisc::Opcode::TLoadHash, 4, 3, 0});
+  prog.insns.push_back(load_sym(5, 3));
+  prog.insns.push_back({t81::tisc::Opcode::TLoadHash, 6, 5, 0});
+  prog.insns.push_back({t81::tisc::Opcode::TMatMul, 7, 2, 4});
+  prog.insns.push_back({t81::tisc::Opcode::TMatMul, 8, 2, 6});
+  prog.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
+
+  t81::axion::Policy pol;
+  pol.tier = 2;
+  pol.allowed_tensor_hashes = prog.symbol_pool;
+
+  auto run_once = [&]() {
+    t81::vm::internal::reset_dualrail_telemetry();
+    auto vm = t81::vm::make_interpreter_vm(
+        std::make_unique<t81::axion::AIHookEngine>(std::make_unique<t81::axion::PolicyEngine>(pol)));
+    vm->set_canonfs_driver(driver);
+    vm->load_program(prog);
+    auto res = vm->run_to_halt();
+    check(res.has_value(), "Mixed dense+sparse128 VM run failed to halt");
+    const auto tel = t81::vm::internal::dualrail_telemetry();
+    check(tel.fastpath_hits == 2 && tel.dense_hits == 1 && tel.sparse128_hits == 1 &&
+              tel.fallback_count == 0,
+          "Expected 1 dense_hit + 1 sparse128_hit + 0 fallbacks in mixed-regime VM run");
+    const auto& ctx = vm->state().contexts[0];
+    const auto& cd = vm->state().tensors[static_cast<size_t>(ctx.registers[7] - 1)].value();
+    const auto& cs = vm->state().tensors[static_cast<size_t>(ctx.registers[8] - 1)].value();
+    check(cd.data() == exp_dense, "Mixed-regime dense output mismatch vs oracle");
+    check(cs.data() == exp_sparse, "Mixed-regime sparse128 output mismatch vs oracle");
+    std::vector<uint8_t> raw((cd.data().size() + cs.data().size()) * sizeof(float));
+    std::memcpy(raw.data(), cd.data().data(), cd.data().size() * sizeof(float));
+    std::memcpy(raw.data() + cd.data().size() * sizeof(float), cs.data().data(),
+                cs.data().size() * sizeof(float));
+    return t81::crypto::sha3_512(raw);
+  };
+
+  const auto h1 = run_once();
+  const auto h2 = run_once();
+  check(h1 == h2, "Repeat-run SHA3-512 mismatch on mixed dense+sparse128 VM program");
+}
+
 }  // namespace
 
 int main() {
   test_sbdr1t2d_and_block_zero_skip_and_tset_invalidation();
   test_sbdr1t2d_rejects_malformed_planes();
+  test_sbdr1t2d_regime_aware_sparse128_routing();
+  test_mixed_dense_and_sparse128_regime_routing_and_repeat_sha3();
   if (g_failures != 0) {
     std::cerr << "t81_dualrail_sbdr_vm_test: " << g_failures << " failure(s)\n";
     return 1;
