@@ -1,0 +1,101 @@
+{
+  "schema": "t81.research-commons.reproducibility-report.v1",
+  "id": "scg08-gate1-ai-assisted-reproduction-2026-11-23",
+  "status": "proposed",
+  "hypothesis_id": "H02",
+  "attribution": {
+    "name": "Cursor Grok 4.7 cloud agent",
+    "kind": "agent",
+    "model": "Grok 4.7",
+    "role": "AI-assisted reproduction — not an independent review"
+  },
+  "repository_revision": "5a005b2dea5e1eb262d4af45698f8338d16b137c",
+  "evidence": [
+    {
+      "source_ref": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/logs/smoke.stdout",
+      "relationship": "supporting",
+      "scope": "Parent Gate 1 smoke process exited 0 at 179/1000 trials and printed Gate 2 withheld"
+    },
+    {
+      "source_ref": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/logs/schema-positive.stdout",
+      "relationship": "supporting",
+      "scope": "Committed evidence record passed current schema and domain checks"
+    },
+    {
+      "source_ref": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/logs/schema-negative.stdout",
+      "relationship": "supporting",
+      "scope": "94 negative cases and 61/2 Draft 7 parity checks passed with jsonschema 4.26.0"
+    },
+    {
+      "source_ref": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/README.md",
+      "relationship": "contradictory",
+      "scope": "Claims C17, C23, C29, C34, and C35 disagree with the current tree or current validator text"
+    },
+    {
+      "source_ref": "experiments/scg08_arithmetic_work/gate1_evidence_record.json",
+      "relationship": "unresolved",
+      "scope": "Historical counters retained; evidence_generation_sha is null and was not authenticated"
+    }
+  ],
+  "uncertainty": "AI-assisted reproduction of Gate 1 schema validations and smoke tests on one Linux GCC host. It does not independently review the harness, authenticate the null evidence-generation revision, measure performance, or authorize Gate 2. H02 advantage thresholds were not tested. Five report claims were not reproduced: C++20 versus the observed gnu++23 flag, the old in-process negative-test sentence, the 10-plus-15 trial split, the old schema success sentence, and a three-test CTest inventory. Wider-band reconciled absolute W_ops integers and the macOS reconciliation logs were not tested.",
+  "human_authorization": {
+    "status": "authorized",
+    "human": "t81dev",
+    "record": "Session instruction to run Gate 1 schema validations and smoke tests and to write this record. The instruction does not accept Gate 1 and does not authorize Gate 2."
+  },
+  "target": "experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md",
+  "environment": "Ubuntu 24.04.5 LTS, Linux 6.12.113+ x86_64, GCC 13.3.0, CMake 3.28.3, Release flags -O3 -DNDEBUG -std=gnu++23, Python 3.12.3, jsonschema 4.26.0",
+  "commands": [
+    "cmake -B $BUILD -S . -DT81_BUILD_EXPERIMENTS=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DPython3_EXECUTABLE=$PY",
+    "cmake --build $BUILD --target t81_exp_scg08_01_test -j 4",
+    "$PY scripts/ci/validate_scg08_gate1_evidence.py experiments/scg08_arithmetic_work/gate1_evidence_record.json experiments/scg08_arithmetic_work/evidence_schema.json",
+    "$PY -O scripts/ci/validate_scg08_gate1_evidence.py experiments/scg08_arithmetic_work/gate1_evidence_record.json experiments/scg08_arithmetic_work/evidence_schema.json",
+    "$PY scripts/ci/validate_scg08_gate1_evidence.py --test-negative",
+    "$PY -O scripts/ci/validate_scg08_gate1_evidence.py --test-negative",
+    "$PY scripts/ci/validate_scg08_gate1_evidence.py --test-json-files",
+    "$PY -O scripts/ci/validate_scg08_gate1_evidence.py --test-json-files",
+    "$BUILD/experiments/scg08_arithmetic_work/t81_exp_scg08_01_test",
+    "$PY experiments/scg08_arithmetic_work/test_result_rejection.py $BUILD/experiments/scg08_arithmetic_work/t81_exp_scg08_01_test",
+    "$PY experiments/scg08_arithmetic_work/test_result_rejection_driver.py",
+    "ctest --test-dir $BUILD --output-on-failure --no-tests=error -R ^t81_exp_scg08_01"
+  ],
+  "artifact_identities": [
+    {
+      "path": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/README.md",
+      "sha256": "091c52ec43a52c9536b07981c5c2c4c83eaf7573002c83a34e7924880efbdf0f"
+    },
+    {
+      "path": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/logs/smoke.stdout",
+      "sha256": "267190293c04e83469a2a65297d6f880ad5abae2ab130234ce0209be4cc205be"
+    },
+    {
+      "path": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/logs/schema-positive.stdout",
+      "sha256": "67cbdaecf414683699db9abc1de1ce4383b6655ecee1b6838945a344d6b34c4d"
+    },
+    {
+      "path": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/logs/schema-negative.stdout",
+      "sha256": "453ea7d1f777b956fe804e9cc28691c240413d0f70d7ae9c538d45699d10ea8a"
+    },
+    {
+      "path": "docs/records/audits/2026-11-23-scg08-gate1-reproduction/logs/ctest.stdout",
+      "sha256": "46355716418474685bca6a1bc4fe4096f82aa3b28aa189ab8e4c219f773c59db"
+    },
+    {
+      "path": "experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md",
+      "sha256": "97d53fba8be955a394777546366a9ab05cda3fc13537625a1516656c3443628f"
+    },
+    {
+      "path": "experiments/scg08_arithmetic_work/gate1_evidence_record.json",
+      "sha256": "da027863a69ee39f80161175b9328645ac43672de6d25a350388057a48a9aff0"
+    }
+  ],
+  "outcome": "reproduced_in_scope",
+  "failures": [
+    "C17: documented Release configure on this tree compiles with -std=gnu++23, not the report prose GNU C++20",
+    "C23: parent smoke no longer prints the section 7 sentence that both oracle mismatch and budget overflow fail closed inside that process",
+    "C29: current trial call sites are 15 + 10 + 140 + 14, not the report split 10 + 15 + 140 + 14",
+    "C34: validator success text is 'passes supported schema checks and domain rules', not 'conforms to'",
+    "C35: current CTest selection is 8 tests, not the quoted 3-test inventory"
+  ],
+  "scope": "Gate 1 schema validation and smoke tests of experiments/scg08_arithmetic_work at 5a005b2dea5e1eb262d4af45698f8338d16b137c. AI-assisted reproduction, not an independent review. Gate 2 was not run. No timing measurement was retained."
+}

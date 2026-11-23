@@ -1,0 +1,31 @@
+label: AI-assisted reproduction — not an independent review
+date: 2026-11-23
+roadmap_order: 2
+os: Ubuntu 24.04.5 LTS
+kernel: Linux 6.12.113+ x86_64
+compiler: g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+compiler_path: /usr/bin/g++
+target_triple: x86_64-linux-gnu
+cmake: 3.28.3
+build_type: Release
+cxx_flags_observed: -O3 -DNDEBUG -std=gnu++23 -fPIE -Wall -Wextra -Wpedantic
+cxx_defines: -DT81_DETERMINISTIC -DT81_HAS_NATIVE_INT128=1
+system_python: Python 3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]
+system_python_jsonschema: not installed
+validator_python: Python 3.12.3 in an out-of-tree virtual environment
+validator_requirements: scripts/ci/scg08-validator-requirements.txt
+jsonschema: 4.26.0
+pip_freeze:
+  attrs==26.1.0
+  jsonschema==4.26.0
+  jsonschema-specifications==2025.9.1
+  referencing==0.37.0
+  rpds-py==2026.9.1
+  typing_extensions==4.16.0
+tested_harness_sha: 5a005b2dea5e1eb262d4af45698f8338d16b137c
+base_branch: main
+base_sha: 5a005b2dea5e1eb262d4af45698f8338d16b137c
+build_directory: out-of-tree directory referred to as $BUILD
+virtualenv: out-of-tree directory; interpreter referred to as $PY
+timing: no benchmark binary was executed; CTest and unittest durations were discarded and are not results
+gate_2: not executed
