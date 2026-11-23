@@ -2,24 +2,40 @@
 
 **Document Status:** PROPOSED / REVIEW DRAFT (Non-Authoritative Proposal)
 **Proposed Identifier:** T81-ARCH-003-R2
-**Baseline Accepted R1 Protocol:** Git commit `1454bd63426d21686cfb5ef22dbaebc3c9cae94b` (`docs/research/arch002/PROTOCOL.md`)
-**Accepted I2 Implementation Reference:** Git commit `f408f6fb27bd7516fb0b32f3645f9d53fbbd4b15` (`experiments/arch003/`)
-**Triggering Host Qualification Record:** H5 — `HOST_CLOCK_ENFORCEMENT_BLOCKED`
-**Parent Hypotheses:** Canonical H03 (ternary representation / packing / access costs) and H05 (three-state decision logic / Boolean equivalence)
+**Baseline Proposed R1 Protocol:** Git commit `1454bd63426d21686cfb5ef22dbaebc3c9cae94b` (`docs/research/arch002/PROTOCOL.md`). That file's own status is proposed. PR #714 is an open draft.
+**Proposed I2 Implementation Reference:** Git commit `f408f6fb27bd7516fb0b32f3645f9d53fbbd4b15` (`experiments/arch003/`). PR #716 is an open draft. I2 is proposed, not accepted.
+**Triggering host qualification under canonical H05:** `HOST_CLOCK_ENFORCEMENT_BLOCKED`. This is not a separate hypothesis number. Canonical H05 remains the three-state decision hypothesis named below.
+**Parent Hypotheses:** Canonical H03 (ternary representation / packing / access costs) and canonical H05 (three-state decision logic / Boolean equivalence)
+
+**Identifiers:** `T81-ARCH-002-R1` is the proposed protocol in `PROTOCOL.md`. `ARCH-003` is the proposed implementation line (`experiments/arch003`, I2, and a future I3). `T81-ARCH-003-R2` names this amendment proposal and the new host-receipt schemas. It does not rename the protocol to ARCH-003. Campaign manifests keep schema `t81.arch002.correctness-evidence.v1` and `protocol_revision` `T81-ARCH-002-R1` until an accepted revision changes them.
 
 ---
 
 ## Executive Summary and Non-Activation Statement
 
-This document constitutes a prospective protocol amendment proposal (T81-ARCH-003-R2) for independent review. It amends Section 6 (Host Qualification) and Section 8 (Resource Feasibility, Risks and Process Hierarchy) of the accepted ARCH-002-R1 protocol (`1454bd63426d21686cfb5ef22dbaebc3c9cae94b`). It specifies an independently enforced host-side deadline authority (Role H watchdog) capable of terminating overrun, frozen, or suspended campaigns from outside the guest VM or container.
+This document constitutes a prospective protocol amendment proposal (T81-ARCH-003-R2) for independent review. It proposes amendments to Section 6 (Host Qualification) and Section 8 (Resource Feasibility, Risks and Process Hierarchy) of the proposed T81-ARCH-002-R1 protocol (`1454bd63426d21686cfb5ef22dbaebc3c9cae94b`). R2 cannot take effect until that R1 protocol and the I2 implementation are accepted. It specifies an independently enforced host-side deadline authority (Role H watchdog) capable of terminating overrun, frozen, or suspended campaigns from outside the guest VM or container.
 
 **Governance Notice:**
-- This proposal does **not** modify or overwrite the accepted R1 protocol or I2 implementation in place.
+- R1 and I2 are proposed. `PROTOCOL.md` at `1454bd63` says status proposed, and PR #714 and PR #716 are open drafts. This R2 text takes effect only after R1 and I2 are accepted by the applicable human decision. Accepting this proposal would not accept R1 or I2.
+- This proposal does **not** modify or overwrite the proposed R1 protocol or I2 implementation in place.
 - This proposal does **not** execute any scientific campaign, benchmark, or pilot.
 - This proposal does **not** modify or rewrite historical evidence or qualifications.
-- This proposal does **not** merge PR #716 or activate the proposed R2 revision automatically.
-- The accepted I2 implementation is **not** claimed to be R2-compliant.
+- This proposal does **not** merge PR #714 or PR #716, and it does not activate the proposed R2 revision automatically.
+- The proposed I2 implementation is **not** claimed to be R2-compliant.
 - Operational activation remains strictly blocked pending formal maintainer review and commit-scoped authorization.
+
+## Proposal-level choices
+
+These closures belong to this unaccepted proposal. They are not adopted protocol rules. They become operative only if R1, I2, and this R2 proposal are later accepted.
+
+1. **`host_sealed_boot_ns`.** Role H samples the suspend-inclusive clock when it accepts a well-formed sealing-complete IPC, and before it sends `READY_TO_REAP`. The field is not the guest's `guest_elapsed_ns`.
+2. **1,800-second boundary.** Every deadline comparison uses `<= 1,800 × 10^9` ns. The abort timer is armed one nanosecond after that inclusive bound. A publication at exactly 1,800.000000000 s is inside the bound.
+3. **Status 70 versus 71.** A missing `host-publication-attestation.json`, including one never written because Role H was killed or stalled, is `BLOCKED_RESOURCE_ACCOUNTING` (70). An attestation that exists and records elapsed publication time greater than `1,800 × 10^9` ns is `INCONCLUSIVE_RESOURCE` (71).
+4. **Verifier process exits.** The host acceptance verifier uses the proposed R1 owner exits: 0 for a complete pass, 1 for statuses 65–68, 2 for blocking statuses 69, 70, and 72, and 3 for status 71.
+5. **Timestamp encoding.** Nanosecond fields are JSON strings of exactly 16 lowercase hexadecimal digits, the uint64 encoding in the proposed R1 `campaign.json` rules. Counts, booleans, and RSS keep the types defined below.
+6. **Linux AC power.** AC is present only when a `/sys/class/power_supply` entry whose `type` is `Mains` has `online` equal to `1`. Battery `status` values `Charging` and `Full` do not prove AC power.
+7. **macOS deadline timer.** Darwin has no `timer_create(CLOCK_BOOTTIME)`. Role H polls `mach_continuous_time` on its monitoring loop and does not publish after the inclusive bound. A stalled Role H publishes nothing, so the missing attestation fails closed as status 70. macOS has no kernel SIGKILL of Role H.
+8. **Hypothesis label.** The bare label H5 is renamed to canonical H05. `HOST_CLOCK_ENFORCEMENT_BLOCKED` is a qualification under that hypothesis, not a new H-number.
 
 ---
 
@@ -40,9 +56,9 @@ This revision directly resolves all six established review findings in one bound
 
 ## 2. Required Technical Analysis and Specification
 
-### 2.1 Item 1: Exact §8 Process Restrictions Prohibiting the H5 Watchdog
+### 2.1 Item 1: Exact §8 Process Restrictions Prohibiting the H05 Watchdog
 
-Section 8 ("Resource feasibility, risks and next gate") of accepted protocol ARCH-002-R1 defines the runtime process tree with strict exclusivity:
+Section 8 ("Resource feasibility, risks and next gate") of the proposed T81-ARCH-002-R1 protocol defines the runtime process tree with strict exclusivity:
 
 1. **Exhaustive Role Enumeration:**
    > "Permitted runtime tree is exactly:
@@ -53,8 +69,8 @@ Section 8 ("Resource feasibility, risks and next gate") of accepted protocol ARC
 2. **Prohibition of Extra Monitoring Processes:**
    > "External metadata utilities run only with V/W absent, within the same tree/caps; live monitoring uses L's in-process OS interfaces. No extra monitoring process or unaccounted helper is permitted while the runtime tree is populated."
 
-3. **In-Process Clock Monopoly and the H5 Qualification Block:**
-   Under R1 §8, L alone holds the campaign's monotonic deadline. The I2 implementation at `f408f6fb27bd7516fb0b32f3645f9d53fbbd4b15` samples that deadline with `time.monotonic_ns()` in `experiments/arch003/accounting.py`. §8 does not name that Python API. When L executes within a container or virtualized guest, guest monotonic clocks are vulnerable to host scheduling pauses, vCPU descheduling, VM suspension, or hypervisor time dilation. During a guest pause or freeze, L cannot sample its clock or observe deadline expiration. However, running a watchdog process outside L on the host system directly violates the literal R1 prohibition: *"No extra monitoring process or unaccounted helper is permitted while the runtime tree is populated."* Qualification H5 correctly found: `HOST_CLOCK_ENFORCEMENT_BLOCKED`.
+3. **In-Process Clock Monopoly and the H05 Qualification Block:**
+   Under R1 §8, L alone holds the campaign's monotonic deadline. The I2 implementation at `f408f6fb27bd7516fb0b32f3645f9d53fbbd4b15` samples that deadline with `time.monotonic_ns()` in `experiments/arch003/accounting.py`. §8 does not name that Python API. When L executes within a container or virtualized guest, guest monotonic clocks are vulnerable to host scheduling pauses, vCPU descheduling, VM suspension, or hypervisor time dilation. During a guest pause or freeze, L cannot sample its clock or observe deadline expiration. However, running a watchdog process outside L on the host system directly violates the literal R1 prohibition: *"No extra monitoring process or unaccounted helper is permitted while the runtime tree is populated."* The qualification recorded under canonical H05 is `HOST_CLOCK_ENFORCEMENT_BLOCKED`.
 
 ---
 
@@ -127,25 +143,28 @@ Circularity between guest evidence sealing and host deadline certification is re
 4. **Sealing Notification:** Guest transmits sealing-complete signal to Host via IPC pipe:
    `{"campaign_uuid": "<uuid>", "guest_sealed_root_sha256": "<hex>", "guest_elapsed_ns": <ns>}`.
 5. **Pre-Exit Invariant Check:** Role H verifies intermediate host-side invariants:
-   - Current suspend-inclusive elapsed time $T_{inclusive}(t) - T_{start\_boot\_ns} < 1,800 \times 10^9\text{ ns}$.
+   - Current suspend-inclusive elapsed time $T_{inclusive}(t) - T_{start\_boot\_ns} \le 1,800 \times 10^9\text{ ns}$. This inclusive bound is a proposal-level choice.
+   - **Sealed timestamp (proposal-level choice):** On acceptance of that IPC, and before `READY_TO_REAP`, Role H samples $T_{host\_sealed\_boot\_ns}$ with the same suspend-inclusive clock. Required order is $T_{host\_start\_boot\_ns} \le T_{host\_sealed\_boot\_ns}$.
    - Baseline-adjusted sleep divergence $\Delta_{sleep}(t) < 100,000,000\text{ ns}$ ($< 100\text{ ms}$).
    - Continuous AC mains power retained throughout.
    - Heartbeat sequence continuous and intact.
 6. **Pre-Exit Acknowledgment:** Role H sends pre-exit ACK `{"status": "READY_TO_REAP"}` to Guest over IPC.
 7. **Guest Process Termination:** Upon receiving the pre-exit ACK, Guest L terminates all child processes, closes file descriptors, and cleanly exits (exit code 0).
 8. **Authoritative Process Reaping & Post-Reap Host Timestamp:** Role H reaps the guest process group (`waitpid`), ensures no lingering guest processes remain, and immediately samples the **post-reap host completion timestamp**:
-   $$T_{host\_complete\_boot\_ns} = \text{clock\_gettime}(\text{CLOCK\_BOOTTIME})$$
+   $$T_{host\_complete\_boot\_ns} = T_{inclusive}(\text{after reap})$$
+   On Linux $T_{inclusive}$ is `clock_gettime(CLOCK_BOOTTIME)`. On Darwin it is `mach_continuous_time`.
 9. **Receipt Construction, Signing, and Durable Sealing (Stage 1 Record):** Role H constructs the canonical signing dictionary $D_{sign}$ incorporating $T_{host\_complete\_boot\_ns}$ and the elapsed time through reaping $\Delta T_{host\_total} \equiv T_{host\_complete\_boot\_ns} - T_{start\_boot\_ns}$, signs $D_{sign}$ with $SK_{host}$, writes `host-terminal-receipt.json` atomically via a temporary file, and performs durable fsync to persistent host storage.
 10. **Post-Publication Timestamp Sampling & Attestation (Stage 2 Record):** Immediately following the completed `fsync` of `host-terminal-receipt.json`, Role H samples the definitive **authoritative terminal publication timestamp**:
-    $$T_{host\_published\_boot\_ns} = \text{clock\_gettime}(\text{CLOCK\_BOOTTIME})$$
+    $$T_{host\_published\_boot\_ns} = T_{inclusive}(\text{after receipt fsync})$$
     Role H reads the raw bytes of the durably written `host-terminal-receipt.json` from disk, computes its cryptographic digest:
     $$H_{receipt} \equiv \text{SHA256}(\text{read\_bytes}(host\text{-}terminal\text{-}receipt.json))$$
-    Role H verifies that the total campaign elapsed time through publication remains strictly within budget:
+    Role H verifies that the total campaign elapsed time through publication remains inside the inclusive bound:
     $$\Delta T_{host\_published} \equiv T_{host\_published\_boot\_ns} - T_{start\_boot\_ns} \le 1,800 \times 10^9\text{ ns}\quad (1,800.0\text{ seconds})$$
     Role H constructs the canonical signing dictionary for `host-publication-attestation.json` binding $H_{receipt}$, `campaign_uuid`, $T_{host\_published\_boot\_ns}$, $\Delta T_{host\_published}$, and host public key, signs it with $SK_{host}$, writes `host-publication-attestation.json` atomically via temporary file, and executes a final durable `fsync`.
-11. **Hard Watchdog Abort & Noncircular Deadline Enforcement:**
-    - To eliminate circularity where signing an attestation could itself experience an unobserved delay, Role H arms an asynchronous POSIX kernel timer (`timer_create(CLOCK_BOOTTIME)` or `SIGALRM`) configured to deliver an uncatchable `SIGKILL` to Role H at exactly $T_{start\_boot\_ns} + 1,800 \times 10^9\text{ ns}$.
-    - If durable publication of `host-publication-attestation.json` does not complete before 1,800.0s, Role H is abruptly terminated by the kernel prior to attestation publication. The absence of `host-publication-attestation.json` ensures deterministic, fail-closed campaign rejection by the offline verifier.
+11. **Hard Watchdog Abort & Noncircular Deadline Enforcement (proposal-level choice):**
+    - On Linux, Role H arms `timer_create(CLOCK_BOOTTIME)` to deliver `SIGKILL` to Role H at $T_{start\_boot\_ns} + 1,800 \times 10^9 + 1\text{ ns}$, one nanosecond after the inclusive bound. `SIGALRM` is not this timer: it is catchable and is not `CLOCK_BOOTTIME`.
+    - If durable publication of `host-publication-attestation.json` has not finished when that timer fires, the kernel kills Role H before a late attestation can be published. A missing attestation is status 70, not status 71.
+    - On Darwin there is no `timer_create(CLOCK_BOOTTIME)`. Role H compares `mach_continuous_time` with the inclusive bound on its monitoring loop and does not publish after the bound. A stalled Role H leaves the attestation missing (status 70). macOS has no kernel SIGKILL of Role H.
     - If publication completes, Role H disarms the timer, flushes remaining file descriptors, and cleanly exits (exit code 0).
     - **A timestamp signed prior to an event cannot certify that the event completed within budget; acceptance strictly requires both the sealed receipt and the host publication attestation proving post-fsync completion $\le 1,800\text{ seconds}$.**
 
@@ -161,7 +180,7 @@ Guest (L / V / W)                                             Host Watchdog (Rol
     |     { campaign_uuid, root_sha256, guest_elapsed_ns }             |
     |------------------------------------------------------------------>|
     |                                                                   |  [Host validates:
-    |                                                                   |   - T_inclusive < 1,800s,
+    |                                                                   |   - T_inclusive <= 1,800s,
     |                                                                   |   - Delta_sleep < 100 ms,
     |                                                                   |   - AC power maintained,
     |                                                                   |   - heartbeats unbroken]
@@ -190,11 +209,11 @@ Guest (L / V / W)                                             Host Watchdog (Rol
   "schema": "t81.arch003.host-terminal-receipt.v1",
   "protocol": "T81-ARCH-003-R2",
   "campaign_uuid": "...",
-  "host_start_boot_ns": 1234567890000000,
-  "host_sealed_boot_ns": 1234747800000000,
-  "host_complete_boot_ns": 1234747890000000,
-  "host_elapsed_ns": 180000000000,
-  "max_sleep_divergence_ns": 1420000,
+  "host_start_boot_ns": "000462d53c88d880",
+  "host_sealed_boot_ns": "000462ff20019600",
+  "host_complete_boot_ns": "000462ff255ee080",
+  "host_elapsed_ns": "00000029e8d60800",
+  "max_sleep_divergence_ns": "000000000015aae0",
   "power_source": "AC_MAINS",
   "guest_sealed_root_sha256": "...",
   "heartbeats_received": 180,
@@ -211,9 +230,9 @@ Guest (L / V / W)                                             Host Watchdog (Rol
   "schema": "t81.arch003.host-publication-attestation.v1",
   "protocol": "T81-ARCH-003-R2",
   "campaign_uuid": "...",
-  "host_start_boot_ns": 1234567890000000,
-  "host_published_boot_ns": 1234747895000000,
-  "host_elapsed_published_ns": 180005000000,
+  "host_start_boot_ns": "000462d53c88d880",
+  "host_published_boot_ns": "000462ff25ab2bc0",
+  "host_elapsed_published_ns": "00000029e9225340",
   "terminal_receipt_sha256": "...",
   "watchdog_peak_rss_kib": 4120,
   "host_public_key_hex": "...",
@@ -231,11 +250,11 @@ To ensure non-repudiation and prevent signature-wrapping or mutation attacks, re
    - `schema` (string: `"t81.arch003.host-terminal-receipt.v1"`)
    - `protocol` (string: `"T81-ARCH-003-R2"`)
    - `campaign_uuid` (string: 36-char canonical RFC 4122 UUID)
-   - `host_start_boot_ns` (integer: $0 \le n \le 2^{63}-1$)
-   - `host_sealed_boot_ns` (integer: $0 \le n \le 2^{63}-1$)
-   - `host_complete_boot_ns` (integer: $0 \le n \le 2^{63}-1$)
-   - `host_elapsed_ns` (integer: $0 \le n \le 2^{63}-1$)
-   - `max_sleep_divergence_ns` (integer: $0 \le n \le 2^{63}-1$)
+   - `host_start_boot_ns` (string: exactly 16 lowercase hex digits, value $0 \le n \le 2^{63}-1$)
+   - `host_sealed_boot_ns` (string: exactly 16 lowercase hex digits; sampled at sealing-IPC acceptance, before `READY_TO_REAP`)
+   - `host_complete_boot_ns` (string: exactly 16 lowercase hex digits, value $0 \le n \le 2^{63}-1$)
+   - `host_elapsed_ns` (string: exactly 16 lowercase hex digits; numeric value equals `host_complete_boot_ns - host_start_boot_ns`)
+   - `max_sleep_divergence_ns` (string: exactly 16 lowercase hex digits, value $0 \le n \le 2^{63}-1$)
    - `power_source` (string: `"AC_MAINS"`)
    - `guest_sealed_root_sha256` (string: 64 lowercase hexadecimal digits)
    - `heartbeats_received` (integer: $n \ge 0$)
@@ -249,7 +268,8 @@ The complete receipt file `host-terminal-receipt.json` consists of exactly 15 fi
    - All dictionary keys are sorted in strict lexicographical ASCII code-point order.
    - Separators are compact: colon `:` between key and value, comma `,` between items, with **zero** whitespace (`separators=(',', ':')`).
    - String values are enclosed in double quotes `"` and must not contain unescaped control characters.
-   - Integer values are formatted as standard base-10 ASCII digits without leading zeros, signs (`+`), or floating-point decimals/exponents (`.0`, `e+00`).
+   - Integer values that remain integers are formatted as standard base-10 ASCII digits without leading zeros, signs (`+`), or floating-point decimals/exponents (`.0`, `e+00`).
+   - Nanosecond fields are not integers in the file. Each is a JSON string of exactly 16 lowercase hexadecimal digits, including leading zeros, with no `0x` prefix. That is the proposal-level choice matching the proposed R1 uint64 JSON encoding. A decimal integer in one of those fields fails validation.
    - Boolean values are literal `true` or `false`.
    - The signing payload $M$ contains **no trailing newline**.
    - **On-disk framing:** $M$ is only the canonical 14-field signing object. The file `host-terminal-receipt.json` is the canonical 15-field object, including `host_signature_hex`, encoded as UTF-8 and followed by exactly one LF. That matches the R1 rule that each JSON file is canonical JSON followed by one LF. $H_{receipt}$ is the SHA-256 of those exact file bytes, including the LF. The same split applies to `host-publication-attestation.json`: sign the 9-field payload with no trailing newline, then write the canonical 10-field object plus one LF. The JSON examples in this section omit that required trailing LF.
@@ -268,9 +288,9 @@ The complete receipt file `host-terminal-receipt.json` consists of exactly 15 fi
      - `schema` (string: `"t81.arch003.host-publication-attestation.v1"`)
      - `protocol` (string: `"T81-ARCH-003-R2"`)
      - `campaign_uuid` (string: 36-char canonical RFC 4122 UUID matching `host-terminal-receipt.json`)
-     - `host_start_boot_ns` (integer: $0 \le n \le 2^{63}-1$ matching receipt)
-     - `host_published_boot_ns` (integer: $0 \le n \le 2^{63}-1$)
-     - `host_elapsed_published_ns` (integer: $0 \le n \le 2^{63}-1$, where $host\_elapsed\_published\_ns \equiv host\_published\_boot\_ns - host\_start\_boot\_ns$)
+     - `host_start_boot_ns` (string: 16 lowercase hex digits matching the receipt)
+     - `host_published_boot_ns` (string: 16 lowercase hex digits, value $0 \le n \le 2^{63}-1$)
+     - `host_elapsed_published_ns` (string: 16 lowercase hex digits whose integer value equals `host_published_boot_ns - host_start_boot_ns`)
      - `terminal_receipt_sha256` (string: 64 lowercase hexadecimal digits matching $H_{receipt}$)
      - `watchdog_peak_rss_kib` (integer: $0 \le n \le 16,384$)
      - `host_public_key_hex` (string: 64 lowercase hexadecimal digits matching receipt and $PK_{host}$)
@@ -345,7 +365,7 @@ $$\sum T = T_{host\_setup} + T_{guest\_launch} + T_{configure} + T_{compile} + T
 - **Strict Ordering of Finalization:**
   1. Guest seals evidence and computes `evidence.sha256` ($H_{root}$).
   2. Guest transmits sealing notification with sealed root digest to Role H.
-  3. Role H verifies intermediate suspend divergence and power invariants.
+  3. Role H verifies intermediate suspend divergence and power invariants and samples $T_{host\_sealed\_boot\_ns}$ before the ACK.
   4. Role H transmits pre-exit ACK (`READY_TO_REAP`) to Guest.
   5. Guest exits cleanly (exit code 0).
   6. Role H reaps the guest process tree (`waitpid`).
@@ -358,7 +378,7 @@ $$\sum T = T_{host\_setup} + T_{guest\_launch} + T_{configure} + T_{compile} + T
   13. Role H disarms its watchdog abort timer and cleanly exits 0.
 - **Authoritative Host Publication Timestamp and Final Publication Ceiling:**
   The authoritative publication timestamp $T_{host\_published\_boot\_ns}$ is sampled strictly after the durable `fsync` of `host-terminal-receipt.json`. Furthermore, the complete campaign deadline encompasses durable publication on disk: both `host-terminal-receipt.json` and `host-publication-attestation.json` must be durably written and fsynced within the 1,800-second envelope. Under no circumstances may an earlier intermediate timestamp (such as guest-side timer or post-reap timestamp) certify compliance if subsequent receipt signing, durable storage sync, or publication attestation exceeds the 1,800-second mark.
-- If $T_{host\_published\_boot\_ns} - T_{host\_start\_boot\_ns} > 1,800 \times 10^9\text{ ns}$, or if publication attestation is missing or completes after 1,800 seconds, the campaign is rejected fail-closed with Status 71 (`INCONCLUSIVE_RESOURCE`); no valid passing certificate or success root may be formed.
+- Proposal-level status split: if $T_{host\_published\_boot\_ns} - T_{host\_start\_boot\_ns} > 1,800 \times 10^9\text{ ns}$ and the attestation was written, the campaign is `INCONCLUSIVE_RESOURCE` (Status 71). If `host-publication-attestation.json` is missing, including because the abort timer or a Darwin stall prevented publication, the campaign is `BLOCKED_RESOURCE_ACCOUNTING` (Status 70). Equality with $1,800 \times 10^9\text{ ns}$ remains inside the bound. No valid passing certificate or success root may be formed in either rejection.
 
 ---
 
@@ -371,6 +391,8 @@ $$\sum T = T_{host\_setup} + T_{guest\_launch} + T_{configure} + T_{compile} + T
    - **Pre-Flight Power Check:** Role H must verify AC connection via `pmset -g batt` before launching guest L. If output contains `Battery Power` or lacks `'AC Power'`, Role H must fail closed immediately: `BLOCK_HOST_POWER_QUALIFICATION`.
    - **Assertion Type:** On macOS, the host must use `caffeinate -d -i -m -s` (display, idle, system, and disk assertion) wrapped in a hardware AC power gate.
    - **Continuous Power Sampling:** Role H polls `IOPMPowerSource` every 5 seconds. Any transition to battery power immediately aborts the campaign with `INCONCLUSIVE_RESOURCE`.
+   - **Linux AC predicate (proposal-level choice):** Before launch, and on the same monitoring loop, Role H reads `/sys/class/power_supply`. AC is present only when at least one entry has `type` equal to `Mains` and `online` equal to `1`. Battery `status` of `Charging` or `Full` is not AC power. No visible Mains supply, or every Mains supply `online` equal to `0`, fails closed: `BLOCK_HOST_POWER_QUALIFICATION` before launch, and `INCONCLUSIVE_RESOURCE` (Status 71) after launch.
+   - **Darwin hard deadline (proposal-level choice):** macOS has no `timer_create(CLOCK_BOOTTIME)`. The 5-second monitoring loop compares `mach_continuous_time` with the inclusive 1,800-second bound and skips publication after that bound. A missing attestation is status 70. There is no kernel timer that SIGKILLs Role H on Darwin.
 
 ---
 
@@ -380,7 +402,7 @@ To validate the Role H watchdog mechanism before scientific authorization, five 
 
 1. **Test N1 — Injected Guest Deadlock / Overrun:**
    - Guest W enters an infinite sleep loop.
-   - *Expected Result:* Role H fires at exactly $T_{start} + 1,800\text{ s}$ (or fixture timeout $\tau = 5\text{ s}$), sends SIGKILL to guest tree, writes signed `host-watchdog-termination.json`. Campaign fails closed with Status 71 (`INCONCLUSIVE_RESOURCE`); no success root created.
+   - *Expected Result:* Role H fires at $T_{start} + 1,800\text{ s} + 1\text{ ns}$ (or fixture timeout $\tau = 5\text{ s}$), sends SIGKILL to the guest tree, and does not publish a success attestation. Campaign fails closed with Status 71 (`INCONCLUSIVE_RESOURCE`) when the overrun is recorded; a missing success attestation from a killed watchdog is Status 70. No success root is created.
 2. **Test N2 — Heartbeat Silence (Guest Pause / Hypervisor Deschedule):**
    - Guest artificially suspends heartbeat pulse emission for $>15\text{ s}$.
    - *Expected Result:* Role H detects heartbeat timeout, reaps guest, logs timeout. Campaign fails closed with Status 70 (`BLOCKED_RESOURCE_ACCOUNTING`).
@@ -390,7 +412,7 @@ To validate the Role H watchdog mechanism before scientific authorization, five 
    - *Expected Result:* Upon wake, Role H detects $\Delta_{sleep} \ge 3,000,000,000\text{ ns} > 100,000,000\text{ ns}$, immediately aborts the campaign, and logs `HOST_SUSPENSION_DETECTED`. Campaign fails closed with Status 71 (`INCONCLUSIVE_RESOURCE`).
 4. **Test N4 — Tampered Terminal Receipt and Signature:**
    - Guest finishes correctly, but `host-terminal-receipt.json` has a tampered byte or an invalid Ed25519 signature.
-   - *Expected Result:* Host acceptance verifier fails signature verification, exits with code 1; acceptance is rejected with Status 70.
+   - *Expected Result:* Host acceptance verifier fails signature verification and exits 2. Acceptance is rejected with Status 70.
 5. **Test N5 — DC Battery Disconnect:**
    - Power state simulates disconnection of AC adapter mid-run.
    - *Expected Result:* Role H detects power drop, terminates run, records `BATTERY_POWER_DETECTED`.
@@ -399,13 +421,13 @@ To validate the Role H watchdog mechanism before scientific authorization, five 
 
 ### 2.9 Item 9: Preservation of Scientific Workloads, Verification Contract, and 100 MiB Evidence Envelope
 
-The R2 amendment is strictly an operational governance and host-authority amendment. It preserves 100% of the accepted R1/I2 scientific workload, controls, and verification contract:
+The R2 amendment is strictly an operational governance and host-authority amendment. It preserves the proposed R1/I2 scientific workload, controls, and verification contract:
 
 - **Mathematical API Contract:** Inputs are immutable $\{-1, 0, +1\}$ arrays; operation is $C = \sum [a_i = b_i]$; operand-local format tags and strict error precedence unchanged (§2).
 - **Candidate Representations:** Exact five representations (BYTE, C2, PLANES, PT5, NATIVE) preserved (§3).
 - **Frozen Schedule and Cardinality:** Exactly 12 families, 408,034 expected requests, 483,553 calls per profile, 1,450,659 total calls across D, R, and S profiles (§4).
 - **Oracle Independence:** Dual independent oracles (Scalar Oracle and Histogram Oracle) compile in separate translation units with zero candidate linkage; both streams must agree before candidate execution (§4).
-- **Full Accepted Verification Contract Preserved (§4, §8):**
+- **Proposed R1 Verification Contract Preserved (§4, §8):**
   - Verification is never delegated or skipped. The independent verifier cannot rely on `manifest.status` or `campaign.json` declaration alone.
   - Acceptance strictly requires full offline re-verification of all 1,450,659 calls across Debug, Release, and Sanitizer profiles against `expected.bin` (header count, sequential case IDs, eligibility masks, rolling digests).
   - All 6 final rolling digests per profile must match the mathematical expectations exactly.
@@ -425,7 +447,7 @@ The R2 amendment is strictly an operational governance and host-authority amendm
 
 ### 2.10 Item 10: Revision Lineage, Verifier Revision, and Separate Acceptance Gate
 
-- **Implementation Revision (ARCH-003-I3):** The accepted I2 implementation (`f408f6f`) only supports L-internal Linux tracing and lacks Role H watchdog handshake hooks. A new implementation revision **ARCH-003-I3** is required to support R2.
+- **Implementation Revision (ARCH-003-I3):** The proposed I2 implementation (`f408f6f`) only supports L-internal Linux tracing and lacks Role H watchdog handshake hooks. A new implementation revision **ARCH-003-I3** is required to support R2. I3 cannot be authorized before R1, I2, and R2 are accepted.
 - **Verifier Revision:** `verifier.py` (Supervisor V) is updated to support the sealing handshake.
 - **Separate Acceptance Gate:** Protocol R2 adoption is a prerequisite for, but does **not** grant, implementation authorization. A separate maintainer gate must approve R2, followed by a separate commit-scoped authorization for I3 implementation, host qualification, and finally campaign execution.
 
@@ -500,9 +522,10 @@ The guest supervisor `verifier.py` cannot be the sole acceptance judge of extern
    - Ingest the on-disk campaign manifest file `campaign.json` from the guest directory.
    - Validate schema `t81.arch002.correctness-evidence.v1`, asserting `manifest.status == "PASS_CORRECTNESS_CORE"` (Status 64).
    - Note: While `campaign.json` status must be PASS, this status check is strictly necessary but **not sufficient** on its own; full independent call re-verification against `expected.bin` is mandatory.
-8. **Acceptance Verdict:**
+8. **Acceptance Verdict (proposal-level exit mapping):**
+   - Parse each 16-digit hexadecimal nanosecond field as an integer before range and identity checks. A decimal integer in a nanosecond field is a schema failure.
    - If all checks pass: Emit `ACCEPTANCE_CONFIRMED: ARCH-003-R2 CAMPAIGN VALID`. Exit 0.
-   - If any check fails, receipt or attestation is missing/malformed, or digests disagree: Emit `ACCEPTANCE_REJECTED: <REASON>`. Exit 1.
+   - Otherwise emit `ACCEPTANCE_REJECTED: <REASON>` and exit with the proposed R1 owner code for that status: 1 for statuses 65–68, 2 for statuses 69, 70, and 72, and 3 for status 71.
 
 ---
 
@@ -515,21 +538,21 @@ To eliminate specification ambiguity, the protocol mandates four explicit counte
    - *Deterministic Outcome:* Rejected immediately with exit code 1 as `FAIL_EVIDENCE` (Status 67). Verification of the complete artifact inventory explicitly mandates that `observed-D.bin`, `observed-R.bin`, and `observed-S.bin` must all be present on disk, match their exact indexed byte lengths, and match their SHA-256 digests. No subset of profile evidence can ever be accepted.
 2. **Counterexample 2: Publication Completing at 1,801 Seconds (Post-Deadline Publication Overrun)**
    - *Scenario:* Guest execution and reaping complete cleanly at 1,795 seconds, and Role H signs `host-terminal-receipt.json` bearing post-reap timestamp $T_{host\_complete\_boot\_ns} = T_{start} + 1,795\text{ s}$. However, host disk I/O, storage fsync, or publication attestation experiences a 6-second host stall, completing durable publication at $T_{host\_published\_boot\_ns} = T_{start} + 1,801.0\text{ seconds}$ ($1,801 \times 10^9\text{ ns}$).
-   - *Deterministic Outcome:* Rejected immediately fail-closed as `INCONCLUSIVE_RESOURCE` (Status 71). A pre-publication timestamp cannot certify that publication completed within the 1,800s envelope.
-     - *Watchdog Behavior:* The host watchdog's asynchronous 1,800s kernel timer fires at 1,800.0s, delivering SIGKILL to Role H before it can publish `host-publication-attestation.json`. Even if the attestation file were somehow written before termination, its recorded field `host_elapsed_published_ns` would equal $1,801,000,000,000\text{ ns} > 1,800 \times 10^9\text{ ns}$.
-     - *Verifier Behavior:* The offline host acceptance verifier (`host_acceptance_verifier.py`) inspects `host-publication-attestation.json`. If missing, it rejects with code 1 (`BLOCKED_RESOURCE_ACCOUNTING`, Status 70). If present with `host_elapsed_published_ns > 1,800 * 10^9`, it rejects with code 1 (`INCONCLUSIVE_RESOURCE`, Status 71). No valid passing certificate can be formed.
+   - *Deterministic Outcome:* A pre-publication timestamp cannot certify that publication completed within the inclusive 1,800s envelope.
+     - *Watchdog Behavior (proposal-level choice):* The Linux timer fires at $T_{start} + 1,800\text{ s} + 1\text{ ns}$ and SIGKILLs Role H before a 1,801s attestation can be published. The attestation is then missing.
+     - *Verifier Behavior:* If `host-publication-attestation.json` is missing, reject with exit 2 (`BLOCKED_RESOURCE_ACCOUNTING`, Status 70). If an attestation is present and its parsed `host_elapsed_published_ns` is $1,801,000,000,000\text{ ns} > 1,800 \times 10^9\text{ ns}$, reject with exit 3 (`INCONCLUSIVE_RESOURCE`, Status 71). No valid passing certificate can be formed.
 3. **Counterexample 3: Missing, Malformed, Forged, Duplicate, or Conflicting Receipts**
    - *Scenario A (Missing Receipt):* Guest evidence is sealed, but `host-terminal-receipt.json` was not generated or was deleted.
-     - *Outcome:* Rejection with exit code 1 (`BLOCKED_RESOURCE_ACCOUNTING`, Status 70).
+     - *Outcome:* Rejection with exit 2 (`BLOCKED_RESOURCE_ACCOUNTING`, Status 70).
    - *Scenario B (Malformed Schema / Duplicate Keys):* `host-terminal-receipt.json` contains duplicate keys, floats (`180.0`), unquoted numbers, or missing schema fields.
-     - *Outcome:* Rejection with exit code 1 (`BLOCKED_RESOURCE_ACCOUNTING`, Status 70).
+     - *Outcome:* Rejection with exit 2 (`BLOCKED_RESOURCE_ACCOUNTING`, Status 70).
    - *Scenario C (Forged / Invalid Signature):* A single bit in the receipt payload or signature $\sigma$ is flipped, or signed with an untrusted private key.
-     - *Outcome:* Ed25519 verification fails; rejection with exit code 1 (`BLOCKED_RESOURCE_ACCOUNTING`, Status 70).
+     - *Outcome:* Ed25519 verification fails; rejection with exit 2 (`BLOCKED_RESOURCE_ACCOUNTING`, Status 70).
    - *Scenario D (Conflicting Records):* Both `host-terminal-receipt.json` and `host-watchdog-termination.json` exist simultaneously in the evidence path.
-     - *Outcome:* Rejection with exit code 1 (`BLOCKED_RESOURCE_ACCOUNTING`, Status 70).
+     - *Outcome:* Rejection with exit 2 (`BLOCKED_RESOURCE_ACCOUNTING`, Status 70).
 4. **Counterexample 4: Replaced Public Key or Mismatched Authorization Identity**
    - *Scenario:* A modified runner replaces the host public key in a guest directory file or transmits a self-signed key in an attempt to authenticate an untrusted receipt.
-   - *Deterministic Outcome:* Rejected immediately with exit code 1 as `BLOCKED_AUTHORIZATION` (Status 72). The host acceptance verifier loads $PK_{host}$ exclusively from the immutable pre-launch `host-authorization.json` on the host. Any mismatch against `host_public_key_hex` or any attempt to read keys from the guest directory causes immediate fatal rejection.
+   - *Deterministic Outcome:* Rejected immediately with exit 2 as `BLOCKED_AUTHORIZATION` (Status 72). The host acceptance verifier loads $PK_{host}$ exclusively from the immutable pre-launch `host-authorization.json` on the host. Any mismatch against `host_public_key_hex` or any attempt to read keys from the guest directory causes immediate fatal rejection.
 
 ---
 
@@ -543,11 +566,15 @@ The following text is proposed to amend Sections 6 and 8 of `docs/research/arch0
 Add the following normative power and timer requirements:
 - "AC mains power is mandatory. Execution on DC battery power is prohibited. On macOS
   and Linux hosts, an automated pre-flight probe must verify connection to AC
-  power prior to campaign launch (e.g. `pmset -g batt` confirming 'AC Power'
-  or `/sys/class/power_supply/` status 'Charging'/'Full'). Disabling sleep via
-  `caffeinate -s` on macOS is insufficient on battery power due to hard-coded
-  kernel thermal and battery sleep assertions. Any mid-campaign transition to
-  battery power aborts the run as INCONCLUSIVE_RESOURCE.
+  power prior to campaign launch (macOS: `pmset -g batt` contains 'AC Power';
+  Linux: a `/sys/class/power_supply` entry with type `Mains` and `online`
+  equal to `1`. Battery status `Charging` or `Full` is not sufficient).
+  Disabling sleep via `caffeinate -s` on macOS is insufficient on battery power
+  due to hard-coded kernel thermal and battery sleep assertions. Any mid-campaign
+  transition to battery power aborts the run as INCONCLUSIVE_RESOURCE.
+  Linux arms the host abort timer one nanosecond after the inclusive 1,800s
+  bound. macOS has no `timer_create(CLOCK_BOOTTIME)`; the monitoring loop
+  refuses publication after that bound, and a missing attestation is status 70.
 - Host timer must record dual monotonic matching-rate clocks: one suspend-inclusive
   (`CLOCK_BOOTTIME` on Linux, `mach_continuous_time` on Darwin) and one
   suspend-exclusive (`CLOCK_MONOTONIC` on Linux, `mach_absolute_time` on Darwin).
@@ -600,9 +627,9 @@ post-fsync completion <= 1,800 seconds."
 
 ## 4. R1-to-R2 Change Matrix
 
-| Section / Topic | Accepted R1 Protocol (`1454bd6`) | Proposed R2 Amendment | Scientific & Governance Rationale |
+| Section / Topic | Proposed R1 Protocol (`1454bd6`) | Proposed R2 Amendment | Scientific & Governance Rationale |
 |---|---|---|---|
-| **Process Roles (§8)** | Exactly L, V, W. "No extra monitoring process or unaccounted helper is permitted." | Adds external **Role H** on the host. Bounded exception to permit independent watchdog. | Resolves H5 qualification block; prevents unobserved guest freeze from masking deadline breach. |
+| **Process Roles (§8)** | Exactly L, V, W. "No extra monitoring process or unaccounted helper is permitted." | Adds external **Role H** on the host. Bounded exception to permit independent watchdog. | Resolves the canonical H05 qualification `HOST_CLOCK_ENFORCEMENT_BLOCKED`; prevents unobserved guest freeze from masking deadline breach. |
 | **Deadline Authority (§8)** | Solely inside guest L via `time.monotonic_ns()`. | Dual authority: guest L checks internally; host H enforces externally via suspend-aware timer. | Guarantees fail-closed termination even if guest kernel or hypervisor hangs. |
 | **Clock Source (§6, §8)** | Monotonic userspace clock. | Dual matching-rate suspend-aware clocks (`CLOCK_BOOTTIME` vs `CLOCK_MONOTONIC` on Linux; `mach_continuous_time` vs `mach_absolute_time` on Darwin) and sleep detection ($\Delta_{sleep} \ge 100\text{ ms}$). | Prevents host S3/S4 sleep from hiding campaign elapsed time overruns while eliminating uncoupled clock drift. |
 | **Receipt Authentication (§8)** | Internal JSON files; no signature or trust root. | Ephemeral Ed25519 host keypair; host signs terminal receipt; host verifier checks against pre-authorized key. | Real cryptographic authentication prevents forged or retrofitted watchdog receipts. |
@@ -631,11 +658,11 @@ Before R2 can be declared accepted and ready for implementation authorization:
 ## 6. Compatibility and Provenance Analysis
 
 - **Backward Compatibility with R1:**
-  R2 adds Role H to the §8 monitoring rule. A historical R1 bundle remains R1 evidence. It is not an R2-accepted campaign: §2.11 rejects a bundle that lacks `host-terminal-receipt.json` or `host-publication-attestation.json`. The scientific matrix in R1 §§1–5 and §7 is unchanged.
+  R2 adds Role H to the §8 monitoring rule. A historical R1 bundle remains proposed-R1 evidence. It is not an R2-valid campaign: §2.11 rejects a bundle that lacks `host-terminal-receipt.json` or `host-publication-attestation.json`. The scientific matrix in the proposed R1 §§1–5 and §7 is unchanged. R2 still cannot take effect until R1 and I2 are accepted.
 - **Provenance and Lineage:**
   - Base protocol: PR #714 commit `1454bd63426d21686cfb5ef22dbaebc3c9cae94b`.
   - Baseline implementation: PR #716 commit `f408f6fb27bd7516fb0b32f3645f9d53fbbd4b15`.
-  - Triggering qualification finding: H5 — `HOST_CLOCK_ENFORCEMENT_BLOCKED`.
+  - Triggering qualification under canonical H05: `HOST_CLOCK_ENFORCEMENT_BLOCKED`.
   - The amendment maintains unbroken audit provenance, citing exact commits and preserving historical failure records in `experiments/arch003/validation/`.
 
 ---
