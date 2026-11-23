@@ -1702,6 +1702,13 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   set_tests_properties(t81_architecture_coherence_dispatch_test PROPERTIES
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   )
+  add_test(
+    NAME t81_rfc_lifecycle_hygiene_test
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/ci/check_rfc_lifecycle_hygiene_test.py
+  )
+  set_tests_properties(t81_rfc_lifecycle_hygiene_test PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  )
   add_test(NAME t81_stable_baseline_checker_test
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/ci/test_stable_baseline_compliance.py)
 

@@ -10,7 +10,7 @@ This document defines the strict enforcement rules for "Frozen" subsystems withi
 
 *   `spec/supplemental/deterministic-core-profile-v1.md` (What is frozen)
 *   `docs/governance/SPEC_DRIFT_POLICY.md` (Code/Spec divergence)
-*   `docs/status/VERIFIED_SURFACE_AUDIT.md` (Verification status)
+*   `docs/records/audits/VERIFIED_SURFACE_AUDIT.md` (Verification status)
 
 ---
 
