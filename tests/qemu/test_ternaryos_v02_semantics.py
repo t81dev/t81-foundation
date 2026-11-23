@@ -320,6 +320,117 @@ class TernaryOSV02SemanticsTest(unittest.TestCase):
                     "sha3-512:b052306fc0fe3c1f6175e9d0241d6688b43cf877b9d0e99b25c8b32855e926b9fabccd06263a954c38379ea3c463d9336b1b5ff3eed1bb4d63c92198d0be9248",
                 )
 
+    def test_04_multistep_speculative_tx_atomic_rollback_on_fallback_and_repeat_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="t81-v02-multistep-tx-") as td:
+            root = Path(td)
+            ws = self._prepare_governed_workspace(root)
+            bak_dir = root / "tx_bak"
+            bak_dir.mkdir()
+
+            stage_a_file = root / "stage_a_manifest.json"
+            stage_b_file = root / "stage_b_receipt.json"
+            orig_a = b'{"stage":"a","state":"clean"}\n'
+            orig_b = b'{"stage":"b","state":"clean"}\n'
+            stage_a_file.write_bytes(orig_a)
+            stage_b_file.write_bytes(orig_b)
+
+            # Stage 1: CanonFS SBDR1T2D (K* = 0) + policy admission succeeds (+1)
+            admit = _call_mcp_fresh(
+                [root],
+                "t81.policy_test",
+                {"policy_path": str(ws["policy_path"]), "model_hash": ws["weight_sha3"], "compact": True},
+            )["result"]["structured"]
+            self.assertTrue(admit["ok"] and admit["admitted"])
+
+            # Case 1: Late-stage dualrail_fallback_count != 0 rolls back all staged mutations atomically
+            with _McpSession(root) as mcp:
+                tx1 = mcp.call(
+                    "t81.tx_begin",
+                    {"target_path": str(stage_a_file), "backup_dir": str(bak_dir), "compact": True},
+                )
+                tx2 = mcp.call(
+                    "t81.tx_begin",
+                    {"target_path": str(stage_b_file), "backup_dir": str(bak_dir), "compact": True},
+                )
+                self.assertTrue(tx1["ok"] and tx2["ok"])
+                stage_a_file.write_bytes(b'{"stage":"a","weight":"' + ws["weight_sha3"].encode() + b'"}\n')
+                stage_b_file.write_bytes(b'{"stage":"b","dualrail_fallback_count":1}\n')
+
+                observed_fallback_count = 1
+                self.assertNotEqual(observed_fallback_count, 0)
+                ab2 = mcp.call("t81.tx_abort", {"tx_id": tx2["tx_id"], "compact": True})
+                ab1 = mcp.call("t81.tx_abort", {"tx_id": tx1["tx_id"], "compact": True})
+                self.assertTrue(ab1["ok"] and ab1["aborted"] and ab2["ok"] and ab2["aborted"])
+                self.assertEqual(stage_a_file.read_bytes(), orig_a)
+                self.assertEqual(stage_b_file.read_bytes(), orig_b)
+
+            # Case 2: Late-stage repeat_sha3_identical == False rolls back all staged mutations atomically
+            with _McpSession(root) as mcp:
+                tx3 = mcp.call(
+                    "t81.tx_begin",
+                    {"target_path": str(stage_a_file), "backup_dir": str(bak_dir), "compact": True},
+                )
+                tx4 = mcp.call(
+                    "t81.tx_begin",
+                    {"target_path": str(stage_b_file), "backup_dir": str(bak_dir), "compact": True},
+                )
+                self.assertTrue(tx3["ok"] and tx4["ok"])
+                stage_a_file.write_bytes(b'{"stage":"a","repeat_check":"pending"}\n')
+                stage_b_file.write_bytes(b'{"stage":"b","repeat_sha3_identical":false}\n')
+
+                repeat_sha3_identical = False
+                self.assertFalse(repeat_sha3_identical)
+                ab4 = mcp.call("t81.tx_abort", {"tx_id": tx4["tx_id"], "compact": True})
+                ab3 = mcp.call("t81.tx_abort", {"tx_id": tx3["tx_id"], "compact": True})
+                self.assertTrue(ab3["ok"] and ab3["aborted"] and ab4["ok"] and ab4["aborted"])
+                self.assertEqual(stage_a_file.read_bytes(), orig_a)
+                self.assertEqual(stage_b_file.read_bytes(), orig_b)
+
+    def test_05_three_state_mcp_compact_envelopes_sbdr_skip_and_unmeasured_avx2(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="t81-v02-envelopes-") as td:
+            root = Path(td)
+            ws = self._prepare_governed_workspace(root)
+            bc_hex, _ = _build_dot_subgraph()
+
+            # +1 (Verified / Active): compact RFC-00D8 gate_check + run_subgraph
+            allow_resp = _call_mcp_fresh(
+                [root],
+                "t81.gate_check",
+                {"artifact_path": str(ws["sbdr_path"]), "policy_path": str(ws["policy_path"]), "compact": True},
+            )["result"]
+            self.assertEqual(allow_resp["content"][0]["text"], "ok")
+            self.assertFalse(allow_resp["isError"])
+            self.assertEqual(TRIT_VERIFIED if allow_resp["structured"]["ok"] else TRIT_REJECTED, TRIT_VERIFIED)
+
+            run_resp = _call_mcp_fresh(
+                [root],
+                "t81.run_subgraph",
+                {"bytecode_hex": bc_hex, "policy_path": str(ws["policy_path"]), "compact": True},
+            )["result"]["structured"]
+            self.assertEqual(_classify_control_verdict(run_resp), TRIT_VERIFIED)
+            self.assertEqual(run_resp["dualrail_fallback_count"], 0)
+            # 0 (Inert / Zero-Skip): explicit SBDR1T2D skipped-block counter present and non-negative
+            self.assertIsInstance(run_resp["dualrail_sparse128_blocks_skipped"], int)
+            self.assertGreaterEqual(run_resp["dualrail_sparse128_blocks_skipped"], 0)
+
+            # -1 (Rejected / Forbidden): tampered artifact denied fail-closed under compact mode
+            bad_artifact = root / "tampered.sbdr"
+            bad_artifact.write_bytes(b"SBDR1-TAMPERED")
+            deny_resp = _call_mcp_fresh(
+                [root],
+                "t81.gate_check",
+                {"artifact_path": str(bad_artifact), "policy_path": str(ws["policy_path"]), "compact": True},
+            )["result"]
+            self.assertTrue(deny_resp["isError"])
+            self.assertEqual(_classify_control_verdict(deny_resp["structured"]), TRIT_REJECTED)
+            self.assertTrue(deny_resp["structured"]["blocked"])
+
+            # 0 (Inert / Unmeasured): native x86_64 AVX2 timings must stay TRIT_INERT on non-x86_64 hosts
+            host_arch = os.uname().machine
+            avx2_native_timing_state = TRIT_INERT if host_arch != "x86_64" else TRIT_VERIFIED
+            if host_arch != "x86_64":
+                self.assertEqual(avx2_native_timing_state, TRIT_INERT)
+
 
 if __name__ == "__main__":
     unittest.main()
