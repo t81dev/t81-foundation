@@ -8,6 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### BREAKING CHANGES
+
+- **MCP filesystem confinement.** `t81 mcp serve` file tools resolve `..` and symlinks and refuse paths outside `--root` (the working directory when `--root` is omitted), including absolute paths and symlinks that leave the root. Percent-encoded dots and slashes stay literal name characters. An embedded NUL is rejected. Reads stop at 64 MiB. Migration: [mcp-serve-weightsload-fail-closed.md](../migration/mcp-serve-weightsload-fail-closed.md).
+- **MCP policy required.** `t81.run_subgraph` and `t81.tx_commit` require `policy_path`. A commit without a policy leaves the backup in place.
+- **Governed `WeightsLoad` fails closed.** With a `PolicyEngine` attached, `WeightsLoad` is a `SecurityFault` unless the tensor name is an exact entry of `allowed-tensor-hashes` or `allowed-ternary-model-hashes`. An empty allowlist, an empty name, or a model checksum that is not the tensor name does not admit the load. A VM with no policy still uses `AllowAllEngine`, and that ungoverned path is unchanged. Later model-backed ops still check `allowed-ternary-model-hashes` against the model checksum.
+
+### Security
+
+- Confined `t81 mcp serve` file reads and writes to the configured roots and closed the empty-name `WeightsLoad` allow when some other allowlist entry was present.
+
 ## [1.5.0] - 2026-03-14
 
 ### Added

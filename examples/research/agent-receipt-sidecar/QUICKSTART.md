@@ -17,7 +17,7 @@ Run the built-in zero-dependency stdio MCP server test:
 python3 examples/research/agent-receipt-sidecar/test_native_mcp.py
 ```
 
-This starts `./build/t81 mcp serve` and verifies all 15 in-process C++ MCP tools (governance/policy gating, CanonFS fsck, atomic SHA3-512 transactions, TISC subgraph verify/run, and Dual-Rail `t81.diff_check` / `t81.memory_search` / `t81.adapter_apply`), including anti-downgrade clamping and 1-byte CanonFS tamper detection.
+This starts `./build/t81 mcp serve` and verifies all 15 in-process C++ MCP tools (governance/policy gating, CanonFS fsck, atomic SHA3-512 transactions, TISC subgraph verify/run, and Dual-Rail `t81.diff_check` / `t81.memory_search` / `t81.adapter_apply`), including anti-downgrade clamping and 1-byte CanonFS tamper detection. File paths are confined to the working directory unless you pass `--root`.
 
 ## 3. Run the 11-Scenario Compromised-Agent Gauntlet + Signed `RFC-00D4` Receipts
 
@@ -51,7 +51,7 @@ For zero-dependency native C++ gating (`110 µs`):
   "mcpServers": {
     "t81-native-mcp": {
       "command": "./build/t81",
-      "args": ["mcp", "serve"]
+      "args": ["mcp", "serve", "--root", "."]
     }
   }
 }

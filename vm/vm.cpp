@@ -315,8 +315,20 @@ public:
           state_,
           [this, base_instruction_count](std::size_t pc, const t81::tisc::Insn& insn,
                                          std::size_t executed_so_far) -> bool {
-            const auto verdict = eval_axion_call(t81::axion::reasons::kStep, pc, insn.opcode, {},
-                                                 base_instruction_count + executed_so_far + 1);
+            std::string_view payload;
+            if (insn.opcode == t81::tisc::Opcode::WeightsLoad && insn.b > 0 &&
+                static_cast<std::size_t>(insn.b) <= state_.symbols.size()) {
+              payload = state_.symbols[static_cast<std::size_t>(insn.b - 1)];
+              if (payload.empty() && state_.policy.has_value()) {
+                t81::axion::Verdict denied{t81::axion::VerdictKind::Deny,
+                                           "WeightsLoad policy_violation name="};
+                record_axion_event(insn.opcode, insn.b, 0, denied);
+                return false;
+              }
+            }
+            const auto verdict =
+                eval_axion_call(t81::axion::reasons::kStep, pc, insn.opcode, payload,
+                                base_instruction_count + executed_so_far + 1);
             if (verdict.kind == t81::axion::VerdictKind::Warn) {
               record_axion_event(insn.opcode, 0, 0, verdict);
             }
@@ -1645,15 +1657,25 @@ public:
             break;
           }
           const std::string& name = state_.symbols[static_cast<std::size_t>(insn.b - 1)];
+          if (state_.policy.has_value() && name.empty()) {
+            t81::axion::Verdict denied{t81::axion::VerdictKind::Deny,
+                                       "WeightsLoad policy_violation name="};
+            record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), 0, denied);
+            trap = Trap::SecurityFault;
+            break;
+          }
+          auto verdict = eval_axion_call(t81::axion::reasons::kStep, current_pc, insn.opcode, name);
+          if (verdict.kind == t81::axion::VerdictKind::Deny) {
+            record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), 0, verdict);
+            trap = Trap::SecurityFault;
+            break;
+          }
           auto handle = intern_weights_tensor(name);
           ctx.registers[insn.a] = handle;
           ctx.register_tags[insn.a] = ValueTag::WeightsTensorHandle;
-          {
-            t81::axion::Verdict verdict;
-            verdict.kind = t81::axion::VerdictKind::Allow;
-            verdict.reason = "weights.load \"" + name + "\"";
-            record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), handle, verdict);
-          }
+          verdict.kind = t81::axion::VerdictKind::Allow;
+          verdict.reason = "weights.load \"" + name + "\"";
+          record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), handle, verdict);
           break;
         }
         // Tensor hash loading, metadata reflection, and LLM math opcodes (TLoadHash..TRoPE)
