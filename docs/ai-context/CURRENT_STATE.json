@@ -1,8 +1,8 @@
 {
   "schema_version": "2.0.0",
-  "generated_at": "2026-11-05",
+  "generated_at": "2026-11-17",
   "purpose": "Non-normative operational index; never grants authorization",
-  "selected_view": "2026-11-02-reconciled",
+  "selected_view": "2026-11-17-pr824-reconciled",
   "operational_views": {
     "2026-11-02": {
       "view_date": "2026-11-02",
@@ -475,6 +475,161 @@
           "next": "Preserve negative M1 findings and distinguish S/A/T; no M2 candidate or execution is authorized by this index."
         }
       ]
+    },
+    "2026-11-17-pr824-reconciled": {
+      "view_date": "2026-11-17",
+      "freshness": "Dated selected-PR reconciliation only; refresh before action. The four scientific observations are exact historical carry-forwards with their original timestamps, collectors, pins and limitations; none was re-executed. Other program lanes and CI are not refreshed.",
+      "coverage": {
+        "inventory_scope": "selected_prs_823_824_only",
+        "coverage_state": "partial_not_a_global_backlog_count; open_pr_count=1 counts only draft #823 in this two-PR selection",
+        "open_pr_count": 1
+      },
+      "repository_observation": {
+        "envelope": {
+          "subject": "Fetched origin/main after PR #824 squash integration",
+          "observed_at": "2026-11-17T15:15:29Z",
+          "source_revision": {
+            "commit_sha": "ab15820a2dd8ebcadde0efecf1fbb0d43b57d3f9"
+          },
+          "collector": "Codex_Git_GitHub_metadata_and_pinned_source_inspection_not_independent_scientific_replication",
+          "retained_receipt": "docs/ai-context/receipts/2026-11-17-pr824-reconciliation.json"
+        },
+        "name": "t81dev/t81-foundation",
+        "base_branch": "main",
+        "observed_head": "ab15820a2dd8ebcadde0efecf1fbb0d43b57d3f9"
+      },
+      "scientific_observations": [
+        {
+          "envelope": {
+            "subject": "Investigation 10A physical solid-state ternary storage",
+            "observed_at": "2026-11-02T00:00:00Z",
+            "source_revision": {
+              "commit_sha": "1a6d5a36473004961248f0a85b2e06361ea2a38f"
+            },
+            "collector": "scientific_assessment_auditor",
+            "retained_receipt": "docs/research/INVESTIGATION_10A_PHYSICAL_STORAGE_EVIDENCE_ASSESSMENT.md"
+          },
+          "id": "H01",
+          "status": "physical_evaluation_blocked",
+          "verification": "blocked",
+          "claims_boundary": "Inconclusive / literature attributions unverified; physical ternary silicon is not experimentally falsified and hardware superiority is not demonstrated."
+        },
+        {
+          "envelope": {
+            "subject": "H04-R02 adaptive balanced ternary vs adaptive binary",
+            "observed_at": "2026-11-02T00:00:00Z",
+            "source_revision": {
+              "commit_sha": "1a6d5a36473004961248f0a85b2e06361ea2a38f"
+            },
+            "collector": "scientific_assessment_auditor",
+            "retained_receipt": "experiments/h04_r02_adaptive_representation/CORRECTED_RESULTS.md"
+          },
+          "id": "H04-R02",
+          "status": "conditional_model_counterexample_not_hardware_proof",
+          "verification": "source_reported",
+          "claims_boundary": "Conditional model outcome under 10-bit Tier-0 control (AT=1210 < AB=1250 at r=1.60); native capacity is unequal and does not demonstrate universal advantage or hardware superiority."
+        },
+        {
+          "envelope": {
+            "subject": "T81-AIOPT-001 M1 fixed-catalog pattern filtering",
+            "observed_at": "2026-11-02T00:00:00Z",
+            "source_revision": {
+              "commit_sha": "b2b9d3c73df96d6b4227ee0061c56bc2ee04a8fe"
+            },
+            "collector": "Jules_AI_assisted_source_assessment_not_independent_experimental_replication",
+            "retained_receipt": "docs/research/aiopt/T81-AIOPT-001-SCIENTIFIC-REVIEW.md"
+          },
+          "id": "AIOPT-001-M1",
+          "status": "redesign_required",
+          "verification": "falsified",
+          "claims_boundary": "Preserved negative mathematical critique of C40 equality filtering: scalar lookup/index controls invalidate an optimization claim. The pinned review does not establish independent experimental replication or authenticated independent-person review; no ternary speedup is accepted."
+        },
+        {
+          "envelope": {
+            "subject": "T81-AIOPT-001 M2 adversarial design and workload critique",
+            "observed_at": "2026-11-02T00:00:00Z",
+            "source_revision": {
+              "commit_sha": "1a6d5a36473004961248f0a85b2e06361ea2a38f"
+            },
+            "collector": "adversarial_design_reviewer",
+            "retained_receipt": "docs/research/aiopt/T81-AIOPT-001-M2-ADVERSARIAL-DESIGN-ASSESSMENT.md"
+          },
+          "id": "AIOPT-001-M2",
+          "status": "design_only_execution_blocked",
+          "verification": "unverified",
+          "claims_boundary": "In T81-AIOPT-001-M2-ADVERSARIAL-DESIGN-ASSESSMENT.md, adversarial evaluation critiques M2 pattern filtering, evaluates three bounded design options (Candidate A: Wildcard Filtering, Candidate B: Adaptive Representation Selection, Candidate C: Ternary MatVec with Zero-Skipping), and advises Candidate C as an unaccepted successor design candidate; execution freeze remains active across all M2 candidates."
+        }
+      ],
+      "pr_observations": [
+        {
+          "envelope": {
+            "subject": "PR #823 selected integration observation",
+            "observed_at": "2026-11-17T15:15:29Z",
+            "source_revision": {
+              "commit_sha": "52604ee1d4b7d90f69b19651a942f68dd5653183"
+            },
+            "collector": "Codex_Git_GitHub_metadata_and_pinned_source_inspection_not_independent_scientific_replication",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-17-pr824-reconciliation.json"
+          },
+          "pr_number": 823,
+          "title": "docs(ai-context): Nov 17 morning status and F01 BOLQ governance handoff",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/823",
+          "state": "draft",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "40695b0ba5cea3e43563b6ed2443c987d2738089",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "52604ee1d4b7d90f69b19651a942f68dd5653183",
+          "merge_sha": {
+            "value": null,
+            "reason": "Draft unmerged; GitHub synthetic test-merge identity is not integration."
+          },
+          "scientific_acceptance": "No new scientific finding, model adoption or residual-risk acceptance.",
+          "integration_readiness": "Independent draft morning-report branch remains unmerged; no review entries returned, external review not verified.",
+          "authorization_status": "Separate review/merge decision pending; this reconciliation supplies none."
+        },
+        {
+          "envelope": {
+            "subject": "PR #824 selected integration observation",
+            "observed_at": "2026-11-17T15:15:29Z",
+            "source_revision": {
+              "commit_sha": "f803e15ebcf4896fc70608cb11d69505134e5578"
+            },
+            "collector": "Codex_Git_GitHub_metadata_and_pinned_source_inspection_not_independent_scientific_replication",
+            "retained_receipt": "docs/ai-context/receipts/2026-11-17-pr824-reconciliation.json"
+          },
+          "pr_number": 824,
+          "title": "docs(f01): non-normative BOLQ contract migration review plan",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/824",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "40695b0ba5cea3e43563b6ed2443c987d2738089",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "f803e15ebcf4896fc70608cb11d69505134e5578",
+          "merge_sha": {
+            "commit_sha": "ab15820a2dd8ebcadde0efecf1fbb0d43b57d3f9"
+          },
+          "scientific_acceptance": "No new scientific finding, model adoption or residual-risk acceptance.",
+          "integration_readiness": "Documentation-only plan integrated; Gemini review user-reported, original artifact unverified.",
+          "authorization_status": "Human documentation-only merge authorization user-reported; no operational permission inferred."
+        }
+      ],
+      "ci_observations": [],
+      "workstreams": [
+        {
+          "id": "F01-HOST-BOLQ-v1",
+          "priority": "P0",
+          "state": "NOT ADOPTED; residual risks NOT ACCEPTED; M1-M6 STOP; linux_relock_required=true",
+          "source": "docs/research/proposals/RFC-00D7-F01-BOLQ-MIGRATION/REVIEW_PLAN.md",
+          "next": "Read-only independent review of this reconciliation. No implementation, host/provider work, provisioning, qualification, A-F, active gate/schema/lock change, model adoption or risk acceptance is authorized."
+        },
+        {
+          "id": "F01_protocol_and_qualification",
+          "priority": "P0",
+          "state": "Operative protocol SHA-256 d48aeedc924cf505cab8a7fed316fc84d8f2c259dd502fd1d0a7fe8432f05de3 preserved; legacy limits_demonstrated:true unchanged; original PR #812 UNSUPPORTED finding retained.",
+          "source": "docs/ai-context/receipts/2026-11-17-pr824-reconciliation.json",
+          "next": "Any future M5 requires separate authorization after M1 and reviewed/reconciled/co-pinned M2-M4; changes require renewed reconciliation. H0-H5 remain separate, preliminary H5 needs separate approval, H6 remains outside M5."
+        }
+      ]
     }
   },
   "historical_snapshots": {
@@ -563,5 +718,5 @@
     "performance_measurement": false,
     "production_activation": false
   },
-  "next_gate": "2026-11-05 research gate: ISA-001 read-only semantic audit is READY FOR MAINTAINER DECISION. Draft T81-ISA-002 versioned TISC state-transition RFC and decision matrix only; do not change implementation, frozen CPA artifacts, or authorize performance measurement. CPA-006 reports 19/19 frozen-oracle cases with 57 hosted and 57 AArch64 QEMU executions and 1,190 validated state records; PR #710 merged to experimental integration branch, not main. selected_view intentionally remains 2026-11-02-reconciled as a dated partial operational inventory; read START_HERE.md section 13 and ACTIVE_RESEARCH_HANDOFF.md latest addendum for the 2026-11-05 research gate. Refresh all live PR/branch states."
+  "next_gate": "2026-11-17 selected-PR overlay: read T81_RESEARCH_STATUS_2026-11-17_PR824.md and operational_views.2026-11-17-pr824-reconciled with receipts/2026-11-17-pr824-reconciliation.json. PR #824 integrated at ab15820a2dd8ebcadde0efecf1fbb0d43b57d3f9; PR #823 remains independent draft/unmerged. F01-HOST-BOLQ-v1 NOT ADOPTED; residual risks NOT ACCEPTED; M1-M6 STOP; linux_relock_required=true. selected_view intentionally retains historical 2026-11-02-reconciled for existing contract-test compatibility; it is not a live inventory. No new scientific, merge, implementation, host or execution authority; unrelated historical holds remain unchanged. Prior next_gate retained in the new receipt."
 }

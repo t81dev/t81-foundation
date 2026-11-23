@@ -1,0 +1,557 @@
+UpdateCTestConfiguration  from :/private/tmp/t81-pr795-parity-release/DartConfiguration.tcl
+Test project /private/tmp/t81-pr795-parity-release
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 398
+    Start 398: t81_exp_scg08_01_schema_validation
+
+398: Test command: /private/tmp/t81-pr795-parity-venv/bin/python "/private/tmp/t81-pr767-main-validator/scripts/ci/validate_scg08_gate1_evidence.py" "/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/gate1_evidence_record.json" "/private/tmp/t81-pr767-main-validator/experiments/scg08_arithmetic_work/evidence_schema.json"
+398: Working Directory: /private/tmp/t81-pr795-parity-release/experiments/scg08_arithmetic_work
+398: Test timeout computed to be: 30
+398: [SCG-08 SCHEMA VALIDATION PASSED] Artifact gate1_evidence_record.json passes supported schema checks and domain rules for t81.scg08.carry-experiment.v1
+1/5 Test #398: t81_exp_scg08_01_schema_validation .............   Passed    0.07 sec
+test 399
+    Start 399: t81_exp_scg08_01_schema_negative_validation
+
+399: Test command: /private/tmp/t81-pr795-parity-venv/bin/python "/private/tmp/t81-pr767-main-validator/scripts/ci/validate_scg08_gate1_evidence.py" "--test-negative"
+399: Working Directory: /private/tmp/t81-pr795-parity-release/experiments/scg08_arithmetic_work
+399: Test timeout computed to be: 30
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evaluated_implementation_sha must be string
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evaluated_implementation_sha is shorter than minLength
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha is shorter than minLength
+399: [SCG-08 SCHEMA VALIDATION ERROR] Invalid timestamp_utc format: invalid-time (must be valid ISO-8601 UTC timestamp)
+399: [SCG-08 SCHEMA VALIDATION ERROR] Invalid specification_version: v1.0 (expected T81-SCG-08-PHASE1-PROP-001-R3-ADDENDUM-06)
+399: [SCG-08 SCHEMA VALIDATION ERROR] Actual executed trials (1001) exceeded budget ceiling (1000)
+399: [SCG-08 SCHEMA VALIDATION ERROR] budget_enforced_fail_closed must be boolean true
+399: [SCG-08 SCHEMA VALIDATION ERROR] tier2_work.evaluated_bands must be a list of 5 evaluated bands
+399: [SCG-08 SCHEMA VALIDATION ERROR] Band 64 weighted total w_ops_add_ternary (999) does not match measured counters formula (80)
+399: [SCG-08 SCHEMA VALIDATION ERROR] Missing required property: evidence.tier2_work.evaluated_bands[0].counters_add_ternary.op_alu_add_sub
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier1_markov.ternary.f_occ must be number
+399: [SCG-08 SCHEMA VALIDATION ERROR] all_dimensions_passed must be boolean true
+399: [SCG-08 SCHEMA VALIDATION ERROR] dimensions_verified must list all 5 dimensions
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_op must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].bit_width must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits is below the schema minimum
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].bit_width must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].bit_width must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].bit_width must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].bit_width must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].bit_width is below the schema minimum
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].bit_width must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits is below the schema minimum
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].add_trits_min must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].add_trits_min must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].add_trits_min must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].add_trits_min must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].add_trits_min is below the schema minimum
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].add_trits_min must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].mul_trits_min must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].mul_trits_min must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].mul_trits_min must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].mul_trits_min must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].mul_trits_min is below the schema minimum
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].mul_trits_min must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_op must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_op must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_op must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_op must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_op is below the schema minimum
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_op must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_add must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_add must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_add must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_add must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_add is below the schema minimum
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_add must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_mul must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_mul must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_mul must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_mul must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_mul is below the schema minimum
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_mul must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_ternary must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_ternary must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_ternary must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_ternary must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_ternary is below the schema minimum
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_ternary must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_ternary must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_ternary must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_ternary must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_ternary must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_ternary is below the schema minimum
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_ternary must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_binary must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_binary must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_binary must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_binary must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_binary is below the schema minimum
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_binary must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_binary must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_binary must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_binary must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_binary must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_binary is below the schema minimum
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_binary must be integer
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha is shorter than minLength
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha is longer than maxLength
+399: [SCG-08 SCHEMA VALIDATION ERROR] Missing required property: evidence.git_context.evidence_generation_sha
+399: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_generation_sha is shorter than minLength
+399: [SCG-08 NEGATIVE TEST SUITE] Running negative schema tests...
+399:   ✓ Case 'null evaluated_implementation_sha' properly rejected fail-closed
+399:   ✓ Case 'invalid short evaluated_implementation_sha' properly rejected fail-closed
+399:   ✓ Case 'null evidence_publication_sha' properly rejected fail-closed
+399:   ✓ Case 'non-string evidence_publication_sha' properly rejected fail-closed
+399:   ✓ Case 'invalid publication sha format' properly rejected fail-closed
+399:   ✓ Case 'malformed timestamp' properly rejected fail-closed
+399:   ✓ Case 'wrong specification version' properly rejected fail-closed
+399:   ✓ Case 'budget ceiling exceeded' properly rejected fail-closed
+399:   ✓ Case 'budget boolean False' properly rejected fail-closed
+399:   ✓ Case 'missing tier2 band' properly rejected fail-closed
+399:   ✓ Case 'mismatched weighted total W_ops' properly rejected fail-closed
+399:   ✓ Case 'missing primitive counter' properly rejected fail-closed
+399:   ✓ Case 'boolean instead of number' properly rejected fail-closed
+399:   ✓ Case 'oracle passed False' properly rejected fail-closed
+399:   ✓ Case 'oracle dimensions missing' properly rejected fail-closed
+399:   ✓ Case 'operand_trits is null' properly rejected fail-closed
+399:   ✓ Case 'ternary_limbs_op is not integer' properly rejected fail-closed
+399:   ✓ Case 'bit_width boolean True' properly rejected fail-closed
+399:   ✓ Case 'operand_trits float' properly rejected fail-closed
+399:   ✓ Case 'negative operand_trits' properly rejected fail-closed
+399:   ✓ Case 'scalar bit_width: True (bool)' properly rejected fail-closed
+399:   ✓ Case 'scalar bit_width: None (NoneType)' properly rejected fail-closed
+399:   ✓ Case 'scalar bit_width: 'not an integer' (str)' properly rejected fail-closed
+399:   ✓ Case 'scalar bit_width: 41.5 (float)' properly rejected fail-closed
+399:   ✓ Case 'scalar bit_width: -1 (int)' properly rejected fail-closed
+399:   ✓ Case 'scalar bit_width: 41.0 (float)' properly rejected fail-closed
+399:   ✓ Case 'scalar operand_trits: True (bool)' properly rejected fail-closed
+399:   ✓ Case 'scalar operand_trits: None (NoneType)' properly rejected fail-closed
+399:   ✓ Case 'scalar operand_trits: 'not an integer' (str)' properly rejected fail-closed
+399:   ✓ Case 'scalar operand_trits: 41.5 (float)' properly rejected fail-closed
+399:   ✓ Case 'scalar operand_trits: -1 (int)' properly rejected fail-closed
+399:   ✓ Case 'scalar operand_trits: 41.0 (float)' properly rejected fail-closed
+399:   ✓ Case 'scalar add_trits_min: True (bool)' properly rejected fail-closed
+399:   ✓ Case 'scalar add_trits_min: None (NoneType)' properly rejected fail-closed
+399:   ✓ Case 'scalar add_trits_min: 'not an integer' (str)' properly rejected fail-closed
+399:   ✓ Case 'scalar add_trits_min: 41.5 (float)' properly rejected fail-closed
+399:   ✓ Case 'scalar add_trits_min: -1 (int)' properly rejected fail-closed
+399:   ✓ Case 'scalar add_trits_min: 41.0 (float)' properly rejected fail-closed
+399:   ✓ Case 'scalar mul_trits_min: True (bool)' properly rejected fail-closed
+399:   ✓ Case 'scalar mul_trits_min: None (NoneType)' properly rejected fail-closed
+399:   ✓ Case 'scalar mul_trits_min: 'not an integer' (str)' properly rejected fail-closed
+399:   ✓ Case 'scalar mul_trits_min: 41.5 (float)' properly rejected fail-closed
+399:   ✓ Case 'scalar mul_trits_min: -1 (int)' properly rejected fail-closed
+399:   ✓ Case 'scalar mul_trits_min: 41.0 (float)' properly rejected fail-closed
+399:   ✓ Case 'scalar ternary_limbs_op: True (bool)' properly rejected fail-closed
+399:   ✓ Case 'scalar ternary_limbs_op: None (NoneType)' properly rejected fail-closed
+399:   ✓ Case 'scalar ternary_limbs_op: 'not an integer' (str)' properly rejected fail-closed
+399:   ✓ Case 'scalar ternary_limbs_op: 41.5 (float)' properly rejected fail-closed
+399:   ✓ Case 'scalar ternary_limbs_op: -1 (int)' properly rejected fail-closed
+399:   ✓ Case 'scalar ternary_limbs_op: 41.0 (float)' properly rejected fail-closed
+399:   ✓ Case 'scalar ternary_limbs_add: True (bool)' properly rejected fail-closed
+399:   ✓ Case 'scalar ternary_limbs_add: None (NoneType)' properly rejected fail-closed
+399:   ✓ Case 'scalar ternary_limbs_add: 'not an integer' (str)' properly rejected fail-closed
+399:   ✓ Case 'scalar ternary_limbs_add: 41.5 (float)' properly rejected fail-closed
+399:   ✓ Case 'scalar ternary_limbs_add: -1 (int)' properly rejected fail-closed
+399:   ✓ Case 'scalar ternary_limbs_add: 41.0 (float)' properly rejected fail-closed
+399:   ✓ Case 'scalar ternary_limbs_mul: True (bool)' properly rejected fail-closed
+399:   ✓ Case 'scalar ternary_limbs_mul: None (NoneType)' properly rejected fail-closed
+399:   ✓ Case 'scalar ternary_limbs_mul: 'not an integer' (str)' properly rejected fail-closed
+399:   ✓ Case 'scalar ternary_limbs_mul: 41.5 (float)' properly rejected fail-closed
+399:   ✓ Case 'scalar ternary_limbs_mul: -1 (int)' properly rejected fail-closed
+399:   ✓ Case 'scalar ternary_limbs_mul: 41.0 (float)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_add_ternary: True (bool)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_add_ternary: None (NoneType)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_add_ternary: 'not an integer' (str)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_add_ternary: 41.5 (float)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_add_ternary: -1 (int)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_add_ternary: 41.0 (float)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_mul_ternary: True (bool)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_mul_ternary: None (NoneType)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_mul_ternary: 'not an integer' (str)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_mul_ternary: 41.5 (float)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_mul_ternary: -1 (int)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_mul_ternary: 41.0 (float)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_add_binary: True (bool)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_add_binary: None (NoneType)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_add_binary: 'not an integer' (str)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_add_binary: 41.5 (float)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_add_binary: -1 (int)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_add_binary: 41.0 (float)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_mul_binary: True (bool)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_mul_binary: None (NoneType)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_mul_binary: 'not an integer' (str)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_mul_binary: 41.5 (float)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_mul_binary: -1 (int)' properly rejected fail-closed
+399:   ✓ Case 'scalar w_ops_mul_binary: 41.0 (float)' properly rejected fail-closed
+399:   ✓ Case 'null publication' properly rejected fail-closed
+399:   ✓ Case 'boolean publication' properly rejected fail-closed
+399:   ✓ Case 'numeric publication' properly rejected fail-closed
+399:   ✓ Case 'float publication' properly rejected fail-closed
+399:   ✓ Case 'short publication' properly rejected fail-closed
+399:   ✓ Case 'newline publication' properly rejected fail-closed
+399:   ✓ Case 'missing generation revision' properly rejected fail-closed
+399:   ✓ Case 'invalid generation revision' properly rejected fail-closed
+399: [SCG-08 NEGATIVE TEST SUITE] 94 negative cases passed; publication omission and valid SHA accepted.
+399: [SCG-08 SCHEMA PARITY] 61 rejection cases and 2 positive records passed.
+399: [SCG-08 SCHEMA PARITY] Integral floats: Draft 7 accepts mathematical integers; stdlib validation intentionally rejects all Python floats.
+399: [SCG-08 NEGATIVE TEST SUITE] All negative test cases passed successfully.
+2/5 Test #399: t81_exp_scg08_01_schema_negative_validation ....   Passed    0.19 sec
+test 400
+    Start 400: t81_exp_scg08_01_schema_json_files
+
+400: Test command: /private/tmp/t81-pr795-parity-venv/bin/python "/private/tmp/t81-pr767-main-validator/scripts/ci/validate_scg08_gate1_evidence.py" "--test-json-files"
+400: Working Directory: /private/tmp/t81-pr795-parity-release/experiments/scg08_arithmetic_work
+400: Test timeout computed to be: 60
+400:   JSON-file case 'valid' passed (exit 0)
+400:   JSON-file case 'truncated' passed (exit 1)
+400:   JSON-file case 'trailing data' passed (exit 1)
+400:   JSON-file case 'invalid UTF-8' passed (exit 1)
+400:   JSON-file case 'top-level null' passed (exit 1)
+400:   JSON-file case 'top-level array' passed (exit 1)
+400:   JSON-file case 'missing properties' passed (exit 1)
+400:   JSON-file case 'nested scalar object' passed (exit 1)
+400:   JSON-file case 'NaN declared field' passed (exit 1)
+400:   JSON-file case 'nonfinite extra field NaN' passed (exit 1)
+400:   JSON-file case 'nonfinite extra field Infinity' passed (exit 1)
+400:   JSON-file case 'nonfinite extra field -Infinity' passed (exit 1)
+400:   JSON-file case 'nonfinite extra field 1e999' passed (exit 1)
+400:   JSON-file case 'permitted finite extras' passed (exit 0)
+400:   JSON-file case 'generation SHA null' passed (exit 0)
+400:   JSON-file case 'generation SHA valid' passed (exit 0)
+400:   JSON-file case 'generation SHA boolean' passed (exit 1)
+400:   JSON-file case 'generation SHA invalid' passed (exit 1)
+400:   JSON-file case 'generation SHA newline' passed (exit 1)
+400:   JSON-file case 'publication SHA valid' passed (exit 0)
+400:   JSON-file case 'publication SHA null' passed (exit 1)
+400:   JSON-file case 'baseline SHA null' passed (exit 1)
+400:   JSON-file case 'implementation SHA newline' passed (exit 1)
+400:   JSON-file case 'impossible calendar date' passed (exit 1)
+400:   JSON-file case 'invalid hour' passed (exit 1)
+400:   JSON-file case 'nonzero UTC offset' passed (exit 1)
+400:   JSON-file case 'timestamp newline' passed (exit 1)
+400:   JSON-file case 'valid leap day' passed (exit 0)
+400:   JSON-file case 'explicit zero offset' passed (exit 0)
+400:   JSON-file case 'nested array item' passed (exit 1)
+400:   JSON-file case 'negative counter' passed (exit 1)
+400:   JSON-file case 'boolean counter' passed (exit 1)
+400:   JSON-file case 'missing generation SHA' passed (exit 1)
+400:   JSON-file case 'truncated schema' passed (exit 1)
+400:   JSON-file case 'invalid UTF-8 schema' passed (exit 1)
+400:   JSON-file case 'null schema' passed (exit 1)
+400:   JSON-file case 'array schema' passed (exit 1)
+400:   JSON-file case 'unsupported schema constraint' passed (exit 1)
+400:   JSON-file case 'schema pattern' passed (exit 1)
+400:   JSON-file case 'schema minimum' passed (exit 1)
+400:   JSON-file case 'schema minLength' passed (exit 1)
+400:   JSON-file case 'schema maxLength' passed (exit 1)
+400:   JSON-file case 'schema nested type' passed (exit 1)
+400:   JSON-file case 'schema false extras' passed (exit 1)
+400:   JSON-file case 'schema malformed type' passed (exit 1)
+400:   JSON-file case 'schema empty type union' passed (exit 1)
+400:   JSON-file case 'schema malformed properties' passed (exit 1)
+400:   JSON-file case 'schema malformed required' passed (exit 1)
+400:   JSON-file case 'schema malformed enum' passed (exit 1)
+400:   JSON-file case 'schema malformed minimum' passed (exit 1)
+400:   JSON-file case 'schema malformed length' passed (exit 1)
+400:   JSON-file case 'schema invalid pattern' passed (exit 1)
+400:   JSON-file case 'schema non-string pattern' passed (exit 1)
+400:   JSON-file case 'schema unsupported optional constraint' passed (exit 1)
+400:   JSON-file case 'schema malformed optional items' passed (exit 1)
+400:   JSON-file case 'schema nonboolean extras' passed (exit 1)
+400:   JSON-file case 'schema explicit true extras' passed (exit 0)
+400: [SCG-08 JSON FILE TEST SUITE] All 57 cases passed.
+3/5 Test #400: t81_exp_scg08_01_schema_json_files .............   Passed    4.00 sec
+test 401
+    Start 401: t81_exp_scg08_01_schema_negative_optimized
+
+401: Test command: /private/tmp/t81-pr795-parity-venv/bin/python "-O" "/private/tmp/t81-pr767-main-validator/scripts/ci/validate_scg08_gate1_evidence.py" "--test-negative"
+401: Working Directory: /private/tmp/t81-pr795-parity-release/experiments/scg08_arithmetic_work
+401: Test timeout computed to be: 60
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evaluated_implementation_sha must be string
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evaluated_implementation_sha is shorter than minLength
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha is shorter than minLength
+401: [SCG-08 SCHEMA VALIDATION ERROR] Invalid timestamp_utc format: invalid-time (must be valid ISO-8601 UTC timestamp)
+401: [SCG-08 SCHEMA VALIDATION ERROR] Invalid specification_version: v1.0 (expected T81-SCG-08-PHASE1-PROP-001-R3-ADDENDUM-06)
+401: [SCG-08 SCHEMA VALIDATION ERROR] Actual executed trials (1001) exceeded budget ceiling (1000)
+401: [SCG-08 SCHEMA VALIDATION ERROR] budget_enforced_fail_closed must be boolean true
+401: [SCG-08 SCHEMA VALIDATION ERROR] tier2_work.evaluated_bands must be a list of 5 evaluated bands
+401: [SCG-08 SCHEMA VALIDATION ERROR] Band 64 weighted total w_ops_add_ternary (999) does not match measured counters formula (80)
+401: [SCG-08 SCHEMA VALIDATION ERROR] Missing required property: evidence.tier2_work.evaluated_bands[0].counters_add_ternary.op_alu_add_sub
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier1_markov.ternary.f_occ must be number
+401: [SCG-08 SCHEMA VALIDATION ERROR] all_dimensions_passed must be boolean true
+401: [SCG-08 SCHEMA VALIDATION ERROR] dimensions_verified must list all 5 dimensions
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_op must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].bit_width must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits is below the schema minimum
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].bit_width must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].bit_width must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].bit_width must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].bit_width must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].bit_width is below the schema minimum
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].bit_width must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits is below the schema minimum
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].operand_trits must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].add_trits_min must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].add_trits_min must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].add_trits_min must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].add_trits_min must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].add_trits_min is below the schema minimum
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].add_trits_min must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].mul_trits_min must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].mul_trits_min must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].mul_trits_min must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].mul_trits_min must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].mul_trits_min is below the schema minimum
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].mul_trits_min must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_op must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_op must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_op must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_op must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_op is below the schema minimum
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_op must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_add must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_add must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_add must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_add must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_add is below the schema minimum
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_add must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_mul must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_mul must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_mul must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_mul must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_mul is below the schema minimum
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].ternary_limbs_mul must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_ternary must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_ternary must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_ternary must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_ternary must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_ternary is below the schema minimum
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_ternary must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_ternary must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_ternary must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_ternary must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_ternary must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_ternary is below the schema minimum
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_ternary must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_binary must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_binary must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_binary must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_binary must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_binary is below the schema minimum
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_add_binary must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_binary must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_binary must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_binary must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_binary must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_binary is below the schema minimum
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.tier2_work.evaluated_bands[0].w_ops_mul_binary must be integer
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha is shorter than minLength
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha is longer than maxLength
+401: [SCG-08 SCHEMA VALIDATION ERROR] Missing required property: evidence.git_context.evidence_generation_sha
+401: [SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_generation_sha is shorter than minLength
+401: [SCG-08 NEGATIVE TEST SUITE] Running negative schema tests...
+401:   ✓ Case 'null evaluated_implementation_sha' properly rejected fail-closed
+401:   ✓ Case 'invalid short evaluated_implementation_sha' properly rejected fail-closed
+401:   ✓ Case 'null evidence_publication_sha' properly rejected fail-closed
+401:   ✓ Case 'non-string evidence_publication_sha' properly rejected fail-closed
+401:   ✓ Case 'invalid publication sha format' properly rejected fail-closed
+401:   ✓ Case 'malformed timestamp' properly rejected fail-closed
+401:   ✓ Case 'wrong specification version' properly rejected fail-closed
+401:   ✓ Case 'budget ceiling exceeded' properly rejected fail-closed
+401:   ✓ Case 'budget boolean False' properly rejected fail-closed
+401:   ✓ Case 'missing tier2 band' properly rejected fail-closed
+401:   ✓ Case 'mismatched weighted total W_ops' properly rejected fail-closed
+401:   ✓ Case 'missing primitive counter' properly rejected fail-closed
+401:   ✓ Case 'boolean instead of number' properly rejected fail-closed
+401:   ✓ Case 'oracle passed False' properly rejected fail-closed
+401:   ✓ Case 'oracle dimensions missing' properly rejected fail-closed
+401:   ✓ Case 'operand_trits is null' properly rejected fail-closed
+401:   ✓ Case 'ternary_limbs_op is not integer' properly rejected fail-closed
+401:   ✓ Case 'bit_width boolean True' properly rejected fail-closed
+401:   ✓ Case 'operand_trits float' properly rejected fail-closed
+401:   ✓ Case 'negative operand_trits' properly rejected fail-closed
+401:   ✓ Case 'scalar bit_width: True (bool)' properly rejected fail-closed
+401:   ✓ Case 'scalar bit_width: None (NoneType)' properly rejected fail-closed
+401:   ✓ Case 'scalar bit_width: 'not an integer' (str)' properly rejected fail-closed
+401:   ✓ Case 'scalar bit_width: 41.5 (float)' properly rejected fail-closed
+401:   ✓ Case 'scalar bit_width: -1 (int)' properly rejected fail-closed
+401:   ✓ Case 'scalar bit_width: 41.0 (float)' properly rejected fail-closed
+401:   ✓ Case 'scalar operand_trits: True (bool)' properly rejected fail-closed
+401:   ✓ Case 'scalar operand_trits: None (NoneType)' properly rejected fail-closed
+401:   ✓ Case 'scalar operand_trits: 'not an integer' (str)' properly rejected fail-closed
+401:   ✓ Case 'scalar operand_trits: 41.5 (float)' properly rejected fail-closed
+401:   ✓ Case 'scalar operand_trits: -1 (int)' properly rejected fail-closed
+401:   ✓ Case 'scalar operand_trits: 41.0 (float)' properly rejected fail-closed
+401:   ✓ Case 'scalar add_trits_min: True (bool)' properly rejected fail-closed
+401:   ✓ Case 'scalar add_trits_min: None (NoneType)' properly rejected fail-closed
+401:   ✓ Case 'scalar add_trits_min: 'not an integer' (str)' properly rejected fail-closed
+401:   ✓ Case 'scalar add_trits_min: 41.5 (float)' properly rejected fail-closed
+401:   ✓ Case 'scalar add_trits_min: -1 (int)' properly rejected fail-closed
+401:   ✓ Case 'scalar add_trits_min: 41.0 (float)' properly rejected fail-closed
+401:   ✓ Case 'scalar mul_trits_min: True (bool)' properly rejected fail-closed
+401:   ✓ Case 'scalar mul_trits_min: None (NoneType)' properly rejected fail-closed
+401:   ✓ Case 'scalar mul_trits_min: 'not an integer' (str)' properly rejected fail-closed
+401:   ✓ Case 'scalar mul_trits_min: 41.5 (float)' properly rejected fail-closed
+401:   ✓ Case 'scalar mul_trits_min: -1 (int)' properly rejected fail-closed
+401:   ✓ Case 'scalar mul_trits_min: 41.0 (float)' properly rejected fail-closed
+401:   ✓ Case 'scalar ternary_limbs_op: True (bool)' properly rejected fail-closed
+401:   ✓ Case 'scalar ternary_limbs_op: None (NoneType)' properly rejected fail-closed
+401:   ✓ Case 'scalar ternary_limbs_op: 'not an integer' (str)' properly rejected fail-closed
+401:   ✓ Case 'scalar ternary_limbs_op: 41.5 (float)' properly rejected fail-closed
+401:   ✓ Case 'scalar ternary_limbs_op: -1 (int)' properly rejected fail-closed
+401:   ✓ Case 'scalar ternary_limbs_op: 41.0 (float)' properly rejected fail-closed
+401:   ✓ Case 'scalar ternary_limbs_add: True (bool)' properly rejected fail-closed
+401:   ✓ Case 'scalar ternary_limbs_add: None (NoneType)' properly rejected fail-closed
+401:   ✓ Case 'scalar ternary_limbs_add: 'not an integer' (str)' properly rejected fail-closed
+401:   ✓ Case 'scalar ternary_limbs_add: 41.5 (float)' properly rejected fail-closed
+401:   ✓ Case 'scalar ternary_limbs_add: -1 (int)' properly rejected fail-closed
+401:   ✓ Case 'scalar ternary_limbs_add: 41.0 (float)' properly rejected fail-closed
+401:   ✓ Case 'scalar ternary_limbs_mul: True (bool)' properly rejected fail-closed
+401:   ✓ Case 'scalar ternary_limbs_mul: None (NoneType)' properly rejected fail-closed
+401:   ✓ Case 'scalar ternary_limbs_mul: 'not an integer' (str)' properly rejected fail-closed
+401:   ✓ Case 'scalar ternary_limbs_mul: 41.5 (float)' properly rejected fail-closed
+401:   ✓ Case 'scalar ternary_limbs_mul: -1 (int)' properly rejected fail-closed
+401:   ✓ Case 'scalar ternary_limbs_mul: 41.0 (float)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_add_ternary: True (bool)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_add_ternary: None (NoneType)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_add_ternary: 'not an integer' (str)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_add_ternary: 41.5 (float)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_add_ternary: -1 (int)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_add_ternary: 41.0 (float)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_mul_ternary: True (bool)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_mul_ternary: None (NoneType)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_mul_ternary: 'not an integer' (str)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_mul_ternary: 41.5 (float)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_mul_ternary: -1 (int)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_mul_ternary: 41.0 (float)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_add_binary: True (bool)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_add_binary: None (NoneType)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_add_binary: 'not an integer' (str)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_add_binary: 41.5 (float)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_add_binary: -1 (int)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_add_binary: 41.0 (float)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_mul_binary: True (bool)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_mul_binary: None (NoneType)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_mul_binary: 'not an integer' (str)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_mul_binary: 41.5 (float)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_mul_binary: -1 (int)' properly rejected fail-closed
+401:   ✓ Case 'scalar w_ops_mul_binary: 41.0 (float)' properly rejected fail-closed
+401:   ✓ Case 'null publication' properly rejected fail-closed
+401:   ✓ Case 'boolean publication' properly rejected fail-closed
+401:   ✓ Case 'numeric publication' properly rejected fail-closed
+401:   ✓ Case 'float publication' properly rejected fail-closed
+401:   ✓ Case 'short publication' properly rejected fail-closed
+401:   ✓ Case 'newline publication' properly rejected fail-closed
+401:   ✓ Case 'missing generation revision' properly rejected fail-closed
+401:   ✓ Case 'invalid generation revision' properly rejected fail-closed
+401: [SCG-08 NEGATIVE TEST SUITE] 94 negative cases passed; publication omission and valid SHA accepted.
+401: [SCG-08 SCHEMA PARITY] 61 rejection cases and 2 positive records passed.
+401: [SCG-08 SCHEMA PARITY] Integral floats: Draft 7 accepts mathematical integers; stdlib validation intentionally rejects all Python floats.
+401: [SCG-08 NEGATIVE TEST SUITE] All negative test cases passed successfully.
+4/5 Test #401: t81_exp_scg08_01_schema_negative_optimized .....   Passed    0.35 sec
+test 402
+    Start 402: t81_exp_scg08_01_schema_json_files_optimized
+
+402: Test command: /private/tmp/t81-pr795-parity-venv/bin/python "-O" "/private/tmp/t81-pr767-main-validator/scripts/ci/validate_scg08_gate1_evidence.py" "--test-json-files"
+402: Working Directory: /private/tmp/t81-pr795-parity-release/experiments/scg08_arithmetic_work
+402: Test timeout computed to be: 60
+402:   JSON-file case 'valid' passed (exit 0)
+402:   JSON-file case 'truncated' passed (exit 1)
+402:   JSON-file case 'trailing data' passed (exit 1)
+402:   JSON-file case 'invalid UTF-8' passed (exit 1)
+402:   JSON-file case 'top-level null' passed (exit 1)
+402:   JSON-file case 'top-level array' passed (exit 1)
+402:   JSON-file case 'missing properties' passed (exit 1)
+402:   JSON-file case 'nested scalar object' passed (exit 1)
+402:   JSON-file case 'NaN declared field' passed (exit 1)
+402:   JSON-file case 'nonfinite extra field NaN' passed (exit 1)
+402:   JSON-file case 'nonfinite extra field Infinity' passed (exit 1)
+402:   JSON-file case 'nonfinite extra field -Infinity' passed (exit 1)
+402:   JSON-file case 'nonfinite extra field 1e999' passed (exit 1)
+402:   JSON-file case 'permitted finite extras' passed (exit 0)
+402:   JSON-file case 'generation SHA null' passed (exit 0)
+402:   JSON-file case 'generation SHA valid' passed (exit 0)
+402:   JSON-file case 'generation SHA boolean' passed (exit 1)
+402:   JSON-file case 'generation SHA invalid' passed (exit 1)
+402:   JSON-file case 'generation SHA newline' passed (exit 1)
+402:   JSON-file case 'publication SHA valid' passed (exit 0)
+402:   JSON-file case 'publication SHA null' passed (exit 1)
+402:   JSON-file case 'baseline SHA null' passed (exit 1)
+402:   JSON-file case 'implementation SHA newline' passed (exit 1)
+402:   JSON-file case 'impossible calendar date' passed (exit 1)
+402:   JSON-file case 'invalid hour' passed (exit 1)
+402:   JSON-file case 'nonzero UTC offset' passed (exit 1)
+402:   JSON-file case 'timestamp newline' passed (exit 1)
+402:   JSON-file case 'valid leap day' passed (exit 0)
+402:   JSON-file case 'explicit zero offset' passed (exit 0)
+402:   JSON-file case 'nested array item' passed (exit 1)
+402:   JSON-file case 'negative counter' passed (exit 1)
+402:   JSON-file case 'boolean counter' passed (exit 1)
+402:   JSON-file case 'missing generation SHA' passed (exit 1)
+402:   JSON-file case 'truncated schema' passed (exit 1)
+402:   JSON-file case 'invalid UTF-8 schema' passed (exit 1)
+402:   JSON-file case 'null schema' passed (exit 1)
+402:   JSON-file case 'array schema' passed (exit 1)
+402:   JSON-file case 'unsupported schema constraint' passed (exit 1)
+402:   JSON-file case 'schema pattern' passed (exit 1)
+402:   JSON-file case 'schema minimum' passed (exit 1)
+402:   JSON-file case 'schema minLength' passed (exit 1)
+402:   JSON-file case 'schema maxLength' passed (exit 1)
+402:   JSON-file case 'schema nested type' passed (exit 1)
+402:   JSON-file case 'schema false extras' passed (exit 1)
+402:   JSON-file case 'schema malformed type' passed (exit 1)
+402:   JSON-file case 'schema empty type union' passed (exit 1)
+402:   JSON-file case 'schema malformed properties' passed (exit 1)
+402:   JSON-file case 'schema malformed required' passed (exit 1)
+402:   JSON-file case 'schema malformed enum' passed (exit 1)
+402:   JSON-file case 'schema malformed minimum' passed (exit 1)
+402:   JSON-file case 'schema malformed length' passed (exit 1)
+402:   JSON-file case 'schema invalid pattern' passed (exit 1)
+402:   JSON-file case 'schema non-string pattern' passed (exit 1)
+402:   JSON-file case 'schema unsupported optional constraint' passed (exit 1)
+402:   JSON-file case 'schema malformed optional items' passed (exit 1)
+402:   JSON-file case 'schema nonboolean extras' passed (exit 1)
+402:   JSON-file case 'schema explicit true extras' passed (exit 0)
+402: [SCG-08 JSON FILE TEST SUITE] All 57 cases passed.
+5/5 Test #402: t81_exp_scg08_01_schema_json_files_optimized ...   Passed    3.77 sec
+
+The following tests passed:
+	t81_exp_scg08_01_schema_validation
+	t81_exp_scg08_01_schema_negative_validation
+	t81_exp_scg08_01_schema_json_files
+	t81_exp_scg08_01_schema_negative_optimized
+	t81_exp_scg08_01_schema_json_files_optimized
+
+100% tests passed, 0 tests failed out of 5
+
+Total Test time (real) =   8.39 sec

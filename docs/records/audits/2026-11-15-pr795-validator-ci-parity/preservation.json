@@ -1,0 +1,23 @@
+{
+  "accepted_head": "43747b60675444ab58f693713577d6cd42e3f234",
+  "source_clean": true,
+  "observed_utc": "2026-11-15T12:40:38.047669+00:00",
+  "source_checks": {
+    "scripts/ci/validate_scg08_gate1_evidence.py": {
+      "sha256": "d69226caf93e4005ab11c08051df93aa8990fd39a0e22c3810771648d95f4565",
+      "matches_accepted_receipt": true
+    },
+    "experiments/scg08_arithmetic_work/CMakeLists.txt": {
+      "sha256": "96c02817a3932ca106dc863804eab21776e472c44eaa48f207e217944f59452f",
+      "matches_accepted_receipt": true
+    },
+    "experiments/scg08_arithmetic_work/evidence_schema.json": {
+      "sha256": "46874e8caad8a971c9fb7e5d6d5087a1d73c812c439e221c39ab5fee2fe5814a",
+      "matches_accepted_receipt": true
+    },
+    "experiments/scg08_arithmetic_work/gate1_evidence_record.json": {
+      "sha256": "da027863a69ee39f80161175b9328645ac43672de6d25a350388057a48a9aff0",
+      "matches_accepted_receipt": true
+    }
+  }
+}

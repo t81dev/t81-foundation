@@ -1,0 +1,156 @@
+{
+  "baseline": "ee0c7d90537eaa2dc4b522c1624fcabebf6e999b",
+  "records": [
+    {
+      "label": "bash version",
+      "command": "bash --version",
+      "args": [],
+      "exit": 0,
+      "stdout": "GNU bash, version 3.2.57(1)-release (arm64-apple-darwin25)\nCopyright (C) 2007 Free Software Foundation, Inc.\n",
+      "stderr": ""
+    },
+    {
+      "label": "D1 isolated unsafe increment",
+      "command": "set -e; n=0; ((n++)); echo REACHED",
+      "args": [],
+      "exit": 0,
+      "stdout": "REACHED\n",
+      "stderr": ""
+    },
+    {
+      "label": "D2 masked nonzero child",
+      "command": "set -e; bash -c 'exit 37' & QEMU_PID=$!; wait $QEMU_PID 2>/dev/null || true; echo COMPLETED",
+      "args": [],
+      "exit": 0,
+      "stdout": "COMPLETED\n",
+      "stderr": ""
+    },
+    {
+      "label": "D2 masked interrupted child",
+      "command": "set -e; bash -c 'kill -TERM $$' & QEMU_PID=$!; wait $QEMU_PID 2>/dev/null || true; echo COMPLETED",
+      "args": [],
+      "exit": 0,
+      "stdout": "COMPLETED\n",
+      "stderr": ""
+    },
+    {
+      "label": "D1 isolated safe increment",
+      "command": "set -e; n=0; n=$((n + 1)); echo \"REACHED: $n\"",
+      "args": [],
+      "exit": 0,
+      "stdout": "REACHED: 1\n",
+      "stderr": ""
+    },
+    {
+      "label": "drivers/qemu/scripts/automated_verification.sh: D1/D2 summary missing",
+      "command": "set -e; OUTPUT_DIR=\"$1\"; TOTAL_TESTS=5\nCOMPLETED_TESTS=0\n\n[ -f \"$OUTPUT_DIR/monitor_test.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/memory_analysis.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/boot_debug.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/hardware_test.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/integration_monitor.log\" ] && ((COMPLETED_TESTS++))\n\necho \"Tests Completed: $COMPLETED_TESTS/$TOTAL_TESTS\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n\nif [ $COMPLETED_TESTS -eq $TOTAL_TESTS ]; then\n    echo \"\u2705 ALL TESTS PASSED\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n    echo \"Status: VERIFICATION SUCCESSFUL\" >> \"$OUTPUT_DIR/verification_summary.txt\"\nelse\n    echo \"\u26a0\ufe0f SOME TESTS FAILED\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n    echo \"Status: VERIFICATION PARTIAL\" >> \"$OUTPUT_DIR/verification_summary.txt\"\nfi\n\n\necho REACHED",
+      "args": [
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-baseline-7q5a6440/0/missing"
+      ],
+      "exit": 0,
+      "stdout": "REACHED\n",
+      "stderr": "",
+      "summary": "Tests Completed: 0/5\n\u26a0\ufe0f SOME TESTS FAILED\nStatus: VERIFICATION PARTIAL\n"
+    },
+    {
+      "label": "drivers/qemu/scripts/automated_verification.sh: D1/D2 summary empty",
+      "command": "set -e; OUTPUT_DIR=\"$1\"; TOTAL_TESTS=5\nCOMPLETED_TESTS=0\n\n[ -f \"$OUTPUT_DIR/monitor_test.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/memory_analysis.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/boot_debug.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/hardware_test.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/integration_monitor.log\" ] && ((COMPLETED_TESTS++))\n\necho \"Tests Completed: $COMPLETED_TESTS/$TOTAL_TESTS\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n\nif [ $COMPLETED_TESTS -eq $TOTAL_TESTS ]; then\n    echo \"\u2705 ALL TESTS PASSED\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n    echo \"Status: VERIFICATION SUCCESSFUL\" >> \"$OUTPUT_DIR/verification_summary.txt\"\nelse\n    echo \"\u26a0\ufe0f SOME TESTS FAILED\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n    echo \"Status: VERIFICATION PARTIAL\" >> \"$OUTPUT_DIR/verification_summary.txt\"\nfi\n\n\necho REACHED",
+      "args": [
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-baseline-7q5a6440/0/empty"
+      ],
+      "exit": 0,
+      "stdout": "REACHED\n",
+      "stderr": "",
+      "summary": "Tests Completed: 5/5\n\u2705 ALL TESTS PASSED\nStatus: VERIFICATION SUCCESSFUL\n"
+    },
+    {
+      "label": "drivers/qemu/scripts/automated_verification.sh: D1/D2 summary failure",
+      "command": "set -e; OUTPUT_DIR=\"$1\"; TOTAL_TESTS=5\nCOMPLETED_TESTS=0\n\n[ -f \"$OUTPUT_DIR/monitor_test.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/memory_analysis.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/boot_debug.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/hardware_test.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/integration_monitor.log\" ] && ((COMPLETED_TESTS++))\n\necho \"Tests Completed: $COMPLETED_TESTS/$TOTAL_TESTS\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n\nif [ $COMPLETED_TESTS -eq $TOTAL_TESTS ]; then\n    echo \"\u2705 ALL TESTS PASSED\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n    echo \"Status: VERIFICATION SUCCESSFUL\" >> \"$OUTPUT_DIR/verification_summary.txt\"\nelse\n    echo \"\u26a0\ufe0f SOME TESTS FAILED\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n    echo \"Status: VERIFICATION PARTIAL\" >> \"$OUTPUT_DIR/verification_summary.txt\"\nfi\n\n\necho REACHED",
+      "args": [
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-baseline-7q5a6440/0/failure"
+      ],
+      "exit": 0,
+      "stdout": "REACHED\n",
+      "stderr": "",
+      "summary": "Tests Completed: 5/5\n\u2705 ALL TESTS PASSED\nStatus: VERIFICATION SUCCESSFUL\n"
+    },
+    {
+      "label": "drivers/qemu/scripts/automated_verification.sh: D1/D2 summary stale",
+      "command": "set -e; OUTPUT_DIR=\"$1\"; TOTAL_TESTS=5\nCOMPLETED_TESTS=0\n\n[ -f \"$OUTPUT_DIR/monitor_test.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/memory_analysis.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/boot_debug.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/hardware_test.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/integration_monitor.log\" ] && ((COMPLETED_TESTS++))\n\necho \"Tests Completed: $COMPLETED_TESTS/$TOTAL_TESTS\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n\nif [ $COMPLETED_TESTS -eq $TOTAL_TESTS ]; then\n    echo \"\u2705 ALL TESTS PASSED\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n    echo \"Status: VERIFICATION SUCCESSFUL\" >> \"$OUTPUT_DIR/verification_summary.txt\"\nelse\n    echo \"\u26a0\ufe0f SOME TESTS FAILED\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n    echo \"Status: VERIFICATION PARTIAL\" >> \"$OUTPUT_DIR/verification_summary.txt\"\nfi\n\n\necho REACHED",
+      "args": [
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-baseline-7q5a6440/0/stale"
+      ],
+      "exit": 0,
+      "stdout": "REACHED\n",
+      "stderr": "",
+      "summary": "Tests Completed: 5/5\n\u2705 ALL TESTS PASSED\nStatus: VERIFICATION SUCCESSFUL\n"
+    },
+    {
+      "label": "ternaryos/automated_verification.sh: D1/D2 summary missing",
+      "command": "set -e; OUTPUT_DIR=\"$1\"; TOTAL_TESTS=5\nCOMPLETED_TESTS=0\n\n[ -f \"$OUTPUT_DIR/monitor_test.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/memory_analysis.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/boot_debug.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/hardware_test.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/integration_monitor.log\" ] && ((COMPLETED_TESTS++))\n\necho \"Tests Completed: $COMPLETED_TESTS/$TOTAL_TESTS\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n\nif [ $COMPLETED_TESTS -eq $TOTAL_TESTS ]; then\n    echo \"\u2705 ALL TESTS PASSED\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n    echo \"Status: VERIFICATION SUCCESSFUL\" >> \"$OUTPUT_DIR/verification_summary.txt\"\nelse\n    echo \"\u26a0\ufe0f SOME TESTS FAILED\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n    echo \"Status: VERIFICATION PARTIAL\" >> \"$OUTPUT_DIR/verification_summary.txt\"\nfi\n\n\necho REACHED",
+      "args": [
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-baseline-7q5a6440/1/missing"
+      ],
+      "exit": 0,
+      "stdout": "REACHED\n",
+      "stderr": "",
+      "summary": "Tests Completed: 0/5\n\u26a0\ufe0f SOME TESTS FAILED\nStatus: VERIFICATION PARTIAL\n"
+    },
+    {
+      "label": "ternaryos/automated_verification.sh: D1/D2 summary empty",
+      "command": "set -e; OUTPUT_DIR=\"$1\"; TOTAL_TESTS=5\nCOMPLETED_TESTS=0\n\n[ -f \"$OUTPUT_DIR/monitor_test.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/memory_analysis.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/boot_debug.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/hardware_test.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/integration_monitor.log\" ] && ((COMPLETED_TESTS++))\n\necho \"Tests Completed: $COMPLETED_TESTS/$TOTAL_TESTS\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n\nif [ $COMPLETED_TESTS -eq $TOTAL_TESTS ]; then\n    echo \"\u2705 ALL TESTS PASSED\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n    echo \"Status: VERIFICATION SUCCESSFUL\" >> \"$OUTPUT_DIR/verification_summary.txt\"\nelse\n    echo \"\u26a0\ufe0f SOME TESTS FAILED\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n    echo \"Status: VERIFICATION PARTIAL\" >> \"$OUTPUT_DIR/verification_summary.txt\"\nfi\n\n\necho REACHED",
+      "args": [
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-baseline-7q5a6440/1/empty"
+      ],
+      "exit": 0,
+      "stdout": "REACHED\n",
+      "stderr": "",
+      "summary": "Tests Completed: 5/5\n\u2705 ALL TESTS PASSED\nStatus: VERIFICATION SUCCESSFUL\n"
+    },
+    {
+      "label": "ternaryos/automated_verification.sh: D1/D2 summary failure",
+      "command": "set -e; OUTPUT_DIR=\"$1\"; TOTAL_TESTS=5\nCOMPLETED_TESTS=0\n\n[ -f \"$OUTPUT_DIR/monitor_test.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/memory_analysis.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/boot_debug.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/hardware_test.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/integration_monitor.log\" ] && ((COMPLETED_TESTS++))\n\necho \"Tests Completed: $COMPLETED_TESTS/$TOTAL_TESTS\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n\nif [ $COMPLETED_TESTS -eq $TOTAL_TESTS ]; then\n    echo \"\u2705 ALL TESTS PASSED\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n    echo \"Status: VERIFICATION SUCCESSFUL\" >> \"$OUTPUT_DIR/verification_summary.txt\"\nelse\n    echo \"\u26a0\ufe0f SOME TESTS FAILED\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n    echo \"Status: VERIFICATION PARTIAL\" >> \"$OUTPUT_DIR/verification_summary.txt\"\nfi\n\n\necho REACHED",
+      "args": [
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-baseline-7q5a6440/1/failure"
+      ],
+      "exit": 0,
+      "stdout": "REACHED\n",
+      "stderr": "",
+      "summary": "Tests Completed: 5/5\n\u2705 ALL TESTS PASSED\nStatus: VERIFICATION SUCCESSFUL\n"
+    },
+    {
+      "label": "ternaryos/automated_verification.sh: D1/D2 summary stale",
+      "command": "set -e; OUTPUT_DIR=\"$1\"; TOTAL_TESTS=5\nCOMPLETED_TESTS=0\n\n[ -f \"$OUTPUT_DIR/monitor_test.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/memory_analysis.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/boot_debug.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/hardware_test.log\" ] && ((COMPLETED_TESTS++))\n[ -f \"$OUTPUT_DIR/integration_monitor.log\" ] && ((COMPLETED_TESTS++))\n\necho \"Tests Completed: $COMPLETED_TESTS/$TOTAL_TESTS\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n\nif [ $COMPLETED_TESTS -eq $TOTAL_TESTS ]; then\n    echo \"\u2705 ALL TESTS PASSED\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n    echo \"Status: VERIFICATION SUCCESSFUL\" >> \"$OUTPUT_DIR/verification_summary.txt\"\nelse\n    echo \"\u26a0\ufe0f SOME TESTS FAILED\" >> \"$OUTPUT_DIR/verification_summary.txt\"\n    echo \"Status: VERIFICATION PARTIAL\" >> \"$OUTPUT_DIR/verification_summary.txt\"\nfi\n\n\necho REACHED",
+      "args": [
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-baseline-7q5a6440/1/stale"
+      ],
+      "exit": 0,
+      "stdout": "REACHED\n",
+      "stderr": "",
+      "summary": "Tests Completed: 5/5\n\u2705 ALL TESTS PASSED\nStatus: VERIFICATION SUCCESSFUL\n"
+    },
+    {
+      "label": "D3 unexported caller/callee assignments",
+      "command": "OUTPUT_DIR=\"${OUTPUT_DIR:-${TMPDIR:-/tmp}/ternaryos_verification}\"\nprintf \"caller=%s\\n\" \"$OUTPUT_DIR\"\nbash -c ' OUTPUT_DIR=\"${OUTPUT_DIR:-$(mktemp -d \"${TMPDIR:-/tmp}/ternaryos_verification.XXXXXX\")}\"; printf \"callee=%s\\n\" \"$OUTPUT_DIR\"'",
+      "args": [],
+      "exit": 0,
+      "stdout": "caller=/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-baseline-7q5a6440/ternaryos_verification\ncallee=/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-baseline-7q5a6440/ternaryos_verification.yitgEi\n",
+      "stderr": ""
+    },
+    {
+      "label": "D4 path existence: experimental/ternaryos/qemu_monitor_test.sh",
+      "exit": 128,
+      "stderr": "fatal: path 'experimental/ternaryos/qemu_monitor_test.sh' does not exist in 'ee0c7d90537eaa2dc4b522c1624fcabebf6e999b'\n"
+    },
+    {
+      "label": "D4 path existence: experimental/ternaryos/memory_analyzer.sh",
+      "exit": 128,
+      "stderr": "fatal: path 'experimental/ternaryos/memory_analyzer.sh' does not exist in 'ee0c7d90537eaa2dc4b522c1624fcabebf6e999b'\n"
+    },
+    {
+      "label": "D4 path existence: experimental/ternaryos/automated_verification.sh",
+      "exit": 128,
+      "stderr": "fatal: path 'experimental/ternaryos/automated_verification.sh' does not exist in 'ee0c7d90537eaa2dc4b522c1624fcabebf6e999b'\n"
+    }
+  ]
+}

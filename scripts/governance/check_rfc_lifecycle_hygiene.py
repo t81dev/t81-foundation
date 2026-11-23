@@ -32,6 +32,7 @@ def read_status_from_rfc(text: str) -> str | None:
         re.compile(r"^\s*(?:[-*]\s+)?\*\*Status\*\*:\s*([A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
         re.compile(r"^\s*(?:[-*]\s+)?Status:\s*([A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
         re.compile(r"^\s*(?:[-*]\s+)?status:\s*([A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
+        re.compile(r"^\|\s*(?:\*\*)?Status(?:\*\*)?\s*\|\s*(?:\*\*)?([A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
     ]
     for pat in patterns:
         m = pat.search(top)
@@ -73,7 +74,11 @@ def main() -> int:
             issues.append(f"missing RFC file for index entry: {rfc_id}")
             continue
 
-        path = matches[0]
+        primary = [
+            p for p in matches
+            if not p.name.endswith("-template.md") and not p.name.endswith("-hardware-profile.md")
+        ]
+        path = primary[0] if primary else matches[0]
         text = path.read_text(encoding="utf-8", errors="ignore")
 
         file_status = read_status_from_rfc(text)

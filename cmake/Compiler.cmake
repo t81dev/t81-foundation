@@ -23,7 +23,7 @@ else()
 endif()
 
 if(MSVC)
-  add_compile_options(/wd4244 /wd4307 /wd4018 /wd4101 /wd4189 /wd4996 /wd4456)
+  add_compile_options(/wd4244 /wd4307 /wd4018 /wd4101 /wd4189 /wd4996 /wd4456 /wd4702)
 endif()
 
 # warn-strict mode: suppress -Wextra subwarnings that are not Windows CI issues.

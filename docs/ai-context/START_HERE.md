@@ -1,24 +1,20 @@
+> **Latest post-`v2.1.0` modularization & CI status (2026-11-20):** Read [T81_RESEARCH_STATUS_2026-11-20_MONOLITH_SPLIT.md](T81_RESEARCH_STATUS_2026-11-20_MONOLITH_SPLIT.md) first. `main` at `217cc0698` completes the `main.cpp` (`11,135 → 4,107` lines, `-63.1%`) and `vm.cpp` (`7,762 → 3,133` lines, `-59.6%`) monolith splits (`-11,657` lines total, zero locked-header or behavioral changes), adds Python SDK `v2.1.0` Dual-Rail/Axion/SHA3 bindings + RFC-00D1 export negative tests (`7/7`), and fixes Windows MSVC/clang-cl CI + Intel oneAPI GPG key URL. All platform builds (Linux/macOS/Windows) and core gates are green; all `F01`, `SCG-08` Gate 2, `H01`/10A, and `AXION-AI-001` holds remain intact.
+
+> **Latest `v2.1.0` status (2026-11-19):** Read [T81_RESEARCH_STATUS_2026-11-19_V210_CONSOLIDATION.md](T81_RESEARCH_STATUS_2026-11-19_V210_CONSOLIDATION.md) first. Tagged `v2.1.0` at `9ddeeccda` (`main` at `f25387cb7`, `PUBLIC_API_LOCK.json` synced to `2.1.0`, 18/18 governance scripts passing under `set -euo pipefail`, `AI Experiments CI` green). Adds 15-tool hardened native C++ MCP server (`ScopedJsonParser`, `t81.diff_check`, `t81.memory_search`, `t81.adapter_apply` dense/`SBDR1`, halting `t81.run_subgraph`), NEON + AVX2 `T81VM` Dual-Rail `TMatMul` with block-zero skip & `SBDR1T2D` direct `CanonDualRailRhsCache` load (`t81_dualrail_sbdr_vm_test` in CTest), `BF16`/`SBDR1T2D` Safetensors ingest verified on `models/tiny-random-llama-exported.safetensors`, grouped `t81 --help` / `t81 help mcp` + CLI manual parity, and preserved negative findings (1-stage ternary KV-cache tie collisions, dense VSA vs fair 1-bit binary, `INT4×Ternary` 4-plane compute crossover). All `F01`, `SCG-08` Gate 2, `H01`/10A, and `AXION-AI-001` holds remain intact.
+
+> **Latest `v2.0.1` + Dual-Rail & Full-Stack VM Integration status (2026-11-19):** Read [T81_RESEARCH_STATUS_2026-11-19_V201_DUALRAIL_FULLSTACK.md](T81_RESEARCH_STATUS_2026-11-19_V201_DUALRAIL_FULLSTACK.md) first. `v2.0.1` is tagged at `f3b41b583` (`v2.0.0` remains frozen at `7d4582ce5`), `Python Wheels` passed 6/6 platforms, and `main` (`16d083136`) lands `BM_DualRailTrit` (`14.4×` NEON pack, `K*=5.4`), `+47%` lexer speedup, zero-copy Apple M2 Metal fused decode (`89.1 GB/s`, `3.32 TOPS`, bit-exact `CPU == GPU` `SHA3-512`), `t81.verify_subgraph` (11th MCP tool), Seam 1–3 `CanonFS → Axion → TISC → T81VM → DualRail` integration (`24k×–35k×` VM `TMatMul` speedup), and preserved negative results (MCP AST cache, manual Keccak-f unrolling, ARM64 CSA-3, `T81Prob<27>` vs `int64_t`). All `F01`, `SCG-08` Gate 2, `H01`/10A, and `AXION-AI-001` holds remain intact.
+
+> **Latest `v2.0.0` + Agent Airlock status (2026-11-18):** Read [T81_RESEARCH_STATUS_2026-11-18_V2_MCP_AIRLOCK.md](T81_RESEARCH_STATUS_2026-11-18_V2_MCP_AIRLOCK.md) first. `v2.0.0` is tagged and frozen at `7d4582ce5`; `main` (`47fa1c399`) adds native C++ `t81 mcp serve` (`~109 µs` warm `gate_check`), `t81 ai checkpoint-verify`, `RFC-00D4` signed receipts + multi-agent `verify_dag` (`11/11` gauntlet scenarios, `0.0%` unauthorized side effects), `deterministic-risk-triage`, and Linux/wheel CMake fixes. All `F01` (`M1–M6 STOP`), `SCG-08` Gate 2 (`NO-GO`), `H01`/10A (`BLOCKED`), and `AXION-AI-001` (`HD01–HD06` open) holds remain intact.
+
+> **Latest PM operational status (2026-11-17):** Read [T81_PM_STATUS_2026-11-17.md](T81_PM_STATUS_2026-11-17.md) first. `#801` is merged (`0c89cec6a`), `#802`/`#823` are closed as superseded, `#790`/`#791` are flagged for `ADR-0008` renumbering, and `#798` + `#829` (Batch 1) are in CI. All `F01` (`M1–M6 STOP`), `SCG-08` Gate 2 (`NO-GO`), `H01`/10A (`BLOCKED`), and `AXION-AI-001` (`HD01–HD06` open) holds remain intact.
+
+> **Selected-PR reconciliation (2026-11-17):** Read [T81_RESEARCH_STATUS_2026-11-17_PR824.md](T81_RESEARCH_STATUS_2026-11-17_PR824.md) and the new dated view in [CURRENT_STATE.json](CURRENT_STATE.json). PR #824 is squash-merged at `ab15820a2dd8ebcadde0efecf1fbb0d43b57d3f9`; PR #823 is closed as superseded. **F01-HOST-BOLQ-v1 NOT ADOPTED; residual risks NOT ACCEPTED; M1–M6 STOP; `linux_relock_required=true`.** Earlier dated status overlays are indexed in Section 14 below.
+
 # T81 Research Continuity — START_HERE
 
-**Latest Cross-Profile Architecture & Identity View (2026-11-05):** T81 has demonstrated a functioning bounded computational architecture. Bounded cross-profile TISC execution is verified across hosted T81VM and freestanding Axion OS (AArch64 QEMU) against an independent mathematical oracle across all 25 observation boundaries (CPA-004/CPA-005). Incoming research agents should **not** re-verify whether the bounded cross-profile implementation works; focus on open research hypotheses, remaining ISA discrepancies, and disciplined comparative advantage benchmarks.
-
-**Latest BASE-01 integration and readiness view (2026-11-03):** Read [BASE01_2026-11-03.md](BASE01_2026-11-03.md) first. PRs #694 and #695 are merged; integration acceptance does not authorize B1 measurement. Older dated operational views below remain historical.
-
-**Latest operational view (2026-11-02):** Read the selected view in
-[`CURRENT_STATE.json`](CURRENT_STATE.json), backed by the bounded
-[PR/source receipt](receipts/2026-11-02-pr678-observations.json), before older status tables.
-Observed main is `8e44c0f667c62e0d4143bb93169fc3235d5ebd66`: #675 is merged with
-arithmetic validation accepted within its declared scope; #676 is merged historical
-backlog-audit evidence; #677 is merged H04-R03 Candidate A preregistration, with
-**Phase C still unauthorized**. #656 remains open pending integration and #678
-remains open with corrections pending acceptance. Local cleanup's audit is reported
-completed; its execution outcome is **not independently verified** by this index.
-The earlier views and snapshots below remain dated history. This update grants no
-merge, measurement, M2 execution or governance authority.
-
 **Document ID:** `docs/ai-context/START_HERE.md`
-**Version:** 1.0.1 · **Last Reviewed:** 2026-10-29
-**Source Snapshot:** `main` at `f8ac77159ded2c4b93f4cc83abd48f6f35655468` (checked 2026-10-29; refresh before use)
+**Version:** 1.0.1 · **Last Reviewed:** 2026-11-17
+**Source Snapshot:** `main` at `0c89cec6ab87fe7aad16666b2bd75bbc6722ebe9` (refresh before use)
 **Status:** Non-normative navigation and research handoff index; not an accepted contract or independent verification
 
 ---
@@ -94,7 +90,7 @@ Before taking any operational or research action:
 
 Research agents are strictly forbidden from repeating or generating the following invalid claims:
 
-1. **PROHIBITED:** Claiming software CPU ternary arithmetic or SWAR tryte packing provides an execution speedup on general-purpose binary CPUs (Falsified: software tryte addition is $10.6\times$ slower than 64-bit binary ALU addition; 2-bit packed MatVec is limited to $75.3\%$ of INT8 AVX2 speed in cache due to SIMD decode tax).
+1. **PROHIBITED:** Claiming software CPU ternary arithmetic or SWAR tryte packing provides an execution speedup on general-purpose binary CPUs (Falsified in the tested workloads: software tryte addition was $10.6\times$ slower than 64-bit binary ALU addition; historical cache-resident packed 2-bit ternary AVX2 matrix-vector multiplication measured **12.91 GFLOP/s** versus **17.15 GFLOP/s** for native INT8 AVX2, or **75.3%** of the binary baseline throughput, consistent with a SIMD decode tax). These are workload-specific negatives, not universal radix claims.
 2. **PROHIBITED:** Claiming T81 is a commercial operating system running on physical ternary microprocessors (Falsified: no physical ternary silicon exists in the repository; all execution uses binary hardware emulation).
 3. **PROHIBITED:** Claiming that a custom VM is strictly necessary **or** that Wasmtime + OPA has already demonstrated equivalent safety in the complete Baseline-X protocol. The [bounded precursor report](../../examples/governance/accountable-computation/REPORT.md) did not deploy Wasmtime/OPA; the [claim register](../../experiments/research_001/CLAIM_REGISTER.md) leaves that comparison under active test.
 4. **PROHIBITED:** Redefining, renumbering, or silently closing canonical hypotheses H01–H08.
@@ -210,3 +206,18 @@ The Cross-Profile Architecture (CPA) program achieved a major milestone:
 **Next authorized action:** Draft/review the precise versioned TISC transition-contract RFC and maintainer decision matrix **without changing implementation or historical CPA artifacts**. After approval, separately authorize discriminating tests and one cumulative integration candidate; then preregister an H02 signed-rounding comparison against optimized binary and encoding-cost controls. Do not restart CPA execution-feasibility research.
 
 **Evidence hierarchy:** Normative specification and governance controls decide required semantics; pinned executed artifacts decide observed historical behavior; this non-normative continuity index cannot confer acceptance, merge, or performance authority.
+
+---
+
+## 14. Historical Status Overlays
+
+Preserved for audit traceability (superseded as live operational guidance by the 2026-11-17 overlays above):
+
+- 2026-11-15: [T81_RESEARCH_STATUS_2026-11-15.md](T81_RESEARCH_STATUS_2026-11-15.md) · [Architecture Assessment](../records/audits/2026-11-15-architecture-assessment/README.md)
+- 2026-11-13: [T81_RESEARCH_STATUS_2026-11-13.md](T81_RESEARCH_STATUS_2026-11-13.md)
+- 2026-11-12: [T81_RESEARCH_STATUS_2026-11-12.md](T81_RESEARCH_STATUS_2026-11-12.md)
+- 2026-11-10: [T81_RESEARCH_STATUS_2026-11-10.md](T81_RESEARCH_STATUS_2026-11-10.md)
+- 2026-11-09: [T81_RESEARCH_STATUS_2026-11-09.md](T81_RESEARCH_STATUS_2026-11-09.md)
+- 2026-11-08: [T81_COMPLETE_STATUS_2026-11-08.md](T81_COMPLETE_STATUS_2026-11-08.md)
+- 2026-11-03: [BASE01_2026-11-03.md](BASE01_2026-11-03.md)
+- 2026-11-02: [PR/source receipt](receipts/2026-11-02-pr678-observations.json)

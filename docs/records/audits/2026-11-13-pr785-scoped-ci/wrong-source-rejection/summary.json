@@ -1,0 +1,45 @@
+{
+  "expected_source_sha": "300cdea8896d56c025f7099c0cdf0c41d7bd6237",
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]",
+  "toolchain": "local",
+  "harness_sha": "b24cd1b1595f0e9c2c55a94a3cc0df89b57e83c1",
+  "harness_script_sha256": "b47b4f6df9ffd87e194530d0bc271b249fd6f7508259db3354aa394219120fce",
+  "workflow_sha": null,
+  "run_id": null,
+  "run_attempt": null,
+  "commands": [
+    {
+      "label": "harness-sha",
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/Users/t81dev/Code/t81-foundation/.cache/pr785-scg08-ci",
+      "timeout_seconds": 600,
+      "exit_code": 0
+    },
+    {
+      "label": "source-sha",
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/Users/t81dev/Code/t81-foundation/.cache/pr785-scg08-ci",
+      "timeout_seconds": 600,
+      "exit_code": 0
+    }
+  ],
+  "status": "failed",
+  "scope": "Correctness only; no benchmarks, Gate 2, or scientific acceptance",
+  "limits": [
+    "Hosted runner results apply only to this pinned source and toolchain",
+    "Codex-authored harness; not independent scientific validation",
+    "Original historical execution/provenance is not authenticated",
+    "Artifact retention is 90 days; archive the downloaded packet for longer retention"
+  ],
+  "source_sha": "b24cd1b1595f0e9c2c55a94a3cc0df89b57e83c1",
+  "failure": "RuntimeError: Wrong source revision: b24cd1b1595f0e9c2c55a94a3cc0df89b57e83c1"
+}

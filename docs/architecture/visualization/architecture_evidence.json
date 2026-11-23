@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0.0",
+  "baseline_commit": "4f96cb24358bfd260e67387b2c4db2797b01236f",
+  "verification_timestamp": "2026-11-06",
+  "authoritative_references": [
+    {
+      "id": "ref.master_continuity_charter",
+      "path": "docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md",
+      "description": "Master charter governing empirical research integrity, protocol enforcement, and hypothesis preservation."
+    },
+    {
+      "id": "ref.hypothesis_register",
+      "path": "docs/research/continuity/HYPOTHESIS_REGISTER_v1.json",
+      "description": "Canonical definitions of scientific claims H01 through H08, baselines, and falsifiers."
+    },
+    {
+      "id": "ref.scg07_phase6_qualification",
+      "path": "docs/research/continuity/SCG07_PHASE6_CONSOLIDATED_QUALIFICATION.md",
+      "description": "Consolidated qualification report certifying balanced ternary arithmetic repair under limitations."
+    },
+    {
+      "id": "ref.tisc_opcode_registry",
+      "path": "spec/tisc/opcode-registry.md",
+      "description": "Normative register of 209 frozen opcodes and undefined opcode ranges."
+    }
+  ],
+  "unresolved_architectural_questions": [
+    "UQ-01: Scope and execution profile of DAIOS (RFC-00D2) relative to TernaryOS guest microkernel.",
+    "UQ-02: Historical multi-component failure causal attribution for Karatsuba F3 prior to F1 Booth table repair.",
+    "UQ-03: Viability and energy-delay scaling of native 3-state devices beyond binary-emulated bitplanes."
+  ]
+}

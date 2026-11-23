@@ -101,34 +101,6 @@ static constexpr std::array<int32_t, 27> build_carry_from_zero_table() {
 }
 static const auto CARRY_FROM_ZERO = build_carry_from_zero_table();
 
-struct Booth27Decision {
-  int8_t mul;
-  int8_t shift_trytes;
-};
-static constexpr std::array<Booth27Decision, 27 * 27> build_booth27_table() {
-  std::array<Booth27Decision, 27 * 27> table{};
-  for (int b0 = -13; b0 <= 13; ++b0) {
-    for (int b1 = -13; b1 <= 13; ++b1) {
-      int8_t mul = 0;
-      int8_t shift = 0;
-      int pattern = b0 + 3 * b1;
-      if (pattern == 1 || pattern == 3) {
-        mul = 1;
-      } else if (pattern == 2 || pattern == 4) {
-        mul = 1;
-        shift = 1;
-      } else if (pattern == -1 || pattern == -3) {
-        mul = -1;
-      } else if (pattern == -2 || pattern == -4) {
-        mul = -1;
-        shift = 1;
-      }
-      table[(b0 + 13) * 27 + (b1 + 13)] = {mul, shift};
-    }
-  }
-  return table;
-}
-static const auto BOOTH27_TABLE = build_booth27_table();
 static std::array<std::array<int8_t, 3>, 27> build_tryte_to_trits_table() {
   std::array<std::array<int8_t, 3>, 27> table{};
   for (int i = -13; i <= 13; ++i) {
@@ -532,33 +504,14 @@ inline T81Limb54 T81Limb54::reference_mul(const T81Limb54& a, const T81Limb54& b
     }
   }
   int carry = 0;
-  for (int i = 0; i < TRITS; ++i) {
-    int sum = accum[i] + carry;
-    if (sum >= 2) {
-      accum[i] = sum - 3;
-      carry = 1;
-    } else if (sum <= -2) {
-      accum[i] = sum + 3;
-      carry = -1;
-    } else {
-      accum[i] = sum;
-      carry = 0;
-    }
-  }
-  carry = 0;
   std::array<int8_t, TRITS> result{};
   for (int i = 0; i < TRITS; ++i) {
     int sum = accum[i] + carry;
-    if (sum == 2) {
-      result[i] = -1;
-      carry = 1;
-    } else if (sum == -2) {
-      result[i] = 1;
-      carry = -1;
-    } else {
-      result[i] = static_cast<int8_t>(sum);
-      carry = 0;
-    }
+    int rem = (sum + 1) % 3;
+    if (rem < 0) rem += 3;
+    rem -= 1;
+    carry = (sum - rem) / 3;
+    result[i] = static_cast<int8_t>(rem);
   }
   return from_trits(result);
 }
@@ -771,56 +724,36 @@ public:
   [[nodiscard]] T81Limb54 operator*(const T81Limb27& rhs) const noexcept {
     std::array<int, T81Limb54::TRITS> accum{};
     std::array<std::array<int8_t, 3>, TRYTES> a_trits{};
+    std::array<std::array<int8_t, 3>, TRYTES> b_trits{};
     for (int j = 0; j < TRYTES; ++j) {
-      int idx = trytes_[j] + 13;
-      a_trits[j] = detail::TRYTE_TO_TRITS[idx];
+      a_trits[j] = detail::TRYTE_TO_TRITS[trytes_[j] + 13];
+      b_trits[j] = detail::TRYTE_TO_TRITS[rhs.trytes_[j] + 13];
     }
 
     for (int i = 0; i < TRYTES; ++i) {
-      int8_t b0 = rhs.trytes_[i];
-      int8_t b1 = (i + 1 < TRYTES) ? rhs.trytes_[i + 1] : 0;
-      const auto decision = detail::BOOTH27_TABLE[(b0 + 13) * 27 + (b1 + 13)];
-      if (decision.mul == 0) continue;
-      int shift_trits = decision.shift_trytes * 3;
-      for (int j = 0; j < TRYTES; ++j) {
-        if (trytes_[j] == 0) continue;
-        int base = j * 3 + shift_trits;
-        if (base + 2 >= T81Limb54::TRITS) break;
-        accum[base + 0] += decision.mul * a_trits[j][0];
-        accum[base + 1] += decision.mul * a_trits[j][1];
-        accum[base + 2] += decision.mul * a_trits[j][2];
+      for (int ti = 0; ti < 3; ++ti) {
+        int8_t b_val = b_trits[i][ti];
+        if (b_val == 0) continue;
+        int bit = i * 3 + ti;
+        for (int j = 0; j < TRYTES; ++j) {
+          for (int tj = 0; tj < 3; ++tj) {
+            int8_t a_val = a_trits[j][tj];
+            if (a_val == 0) continue;
+            accum[bit + j * 3 + tj] += b_val * a_val;
+          }
+        }
       }
     }
 
     int carry = 0;
-    for (int i = 0; i < T81Limb54::TRITS; ++i) {
-      int sum = accum[i] + carry;
-      if (sum >= 2) {
-        accum[i] = sum - 3;
-        carry = 1;
-      } else if (sum <= -2) {
-        accum[i] = sum + 3;
-        carry = -1;
-      } else {
-        accum[i] = sum;
-        carry = 0;
-      }
-    }
-
     std::array<int8_t, T81Limb54::TRITS> result{};
-    carry = 0;
     for (int i = 0; i < T81Limb54::TRITS; ++i) {
       int sum = accum[i] + carry;
-      if (sum == 2) {
-        result[i] = -1;
-        carry = 1;
-      } else if (sum == -2) {
-        result[i] = 1;
-        carry = -1;
-      } else {
-        result[i] = static_cast<int8_t>(sum);
-        carry = 0;
-      }
+      int rem = (sum + 1) % 3;
+      if (rem < 0) rem += 3;
+      rem -= 1;
+      carry = (sum - rem) / 3;
+      result[i] = static_cast<int8_t>(rem);
     }
     return T81Limb54::from_trits(result);
   }
@@ -885,12 +818,20 @@ inline std::pair<T81Limb, T81Limb> T81Limb::mul_wide(const T81Limb& a, const T81
 }
 
 inline T81Limb54 T81Limb54::karatsuba(const T81Limb54& x, const T81Limb54& y) noexcept {
-  constexpr int SPLIT = 9;
+  constexpr int SPLIT = 9;  // 9 trytes = 27 trits
   auto x0 = T81Limb27::from_low_27(x);
   auto x1 = T81Limb27::from_high_27(x);
   auto y0 = T81Limb27::from_low_27(y);
   auto y1 = T81Limb27::from_high_27(y);
 
+  // Karatsuba components:
+  // z0 = x0 * y0
+  // z2 = x1 * y1
+  // mid = (x0 + x1) * (y0 + y1)
+  // z1 = mid - z0 - z2 = x0 * y1 + x1 * y0
+  // Note: (x0 + x1) intermediate carry at trit 27 scales by 3^27 in z1, which when
+  // shifted by 3^27 (SHIFT=9 trytes) has weight >= 3^54 = 0 (mod 3^54). Hence 27-trit
+  // modular addition for (x0 + x1) introduces zero error in the 54-trit modular product.
   auto z0 = T81Limb54(x0 * y0);
   auto z2 = T81Limb54(x1 * y1);
   auto mid = T81Limb54((x0 + x1) * (y0 + y1));
@@ -899,7 +840,8 @@ inline T81Limb54 T81Limb54::karatsuba(const T81Limb54& x, const T81Limb54& y) no
   T81Limb54 result = z0;
   constexpr int SHIFT = SPLIT;
   result = result + z1.shift_left_trytes(SHIFT);
-  result = result + z2.shift_left_trytes(SHIFT * 2);
+  result =
+      result + z2.shift_left_trytes(SHIFT * 2);  // shifts >= 18 trytes (54 trits) evaluate to 0
   return result;
 }
 

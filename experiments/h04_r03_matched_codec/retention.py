@@ -1,8 +1,10 @@
 """Owned-reference and ordering barriers; physical reclamation is not inferred."""
+from array import array
 import ctypes
 import gc
 import hashlib
 from pathlib import Path
+from typing import Sequence
 import weakref
 
 from .measurement_engine import ProtocolError
@@ -12,8 +14,25 @@ class OwnedBuffer(bytearray):
     """Weak-referenceable raw input buffer for independently observing release."""
 
 
+class OwnedSymbols(list):
+    """Weak-referenceable symbol container for independently observing release."""
+
+
+class OwnedArray(array):
+    """Weak-referenceable array container for independently observing release."""
+
+
 class RetentionBarrier:
-    def __init__(self, owners, fence_path, fence_sha256):
+    """Enforces retention verification on owned references and invokes native ordering fence.
+
+    IMPORTANT RETENTION LIMITATIONS:
+    Weak references track only registered Python-owned objects, not arbitrary undiscovered
+    aliases, C allocator heap arenas, or OS physical memory reclamation.
+    The native ordering fence enforces CPU memory ordering; it does not flush CPU caches
+    or force resident page reclamation.
+    """
+
+    def __init__(self, owners: Sequence[object], fence_path: str, fence_sha256: str):
         self.references = [weakref.ref(owner) for owner in owners]
         binary = Path(fence_path)
         if hashlib.sha256(binary.read_bytes()).hexdigest() != fence_sha256:
@@ -27,12 +46,17 @@ class RetentionBarrier:
         gc.collect()
         self.fence()
         aliases = sum(reference() is not None for reference in self.references)
-        evidence = {"live_owned_buffers": aliases, "ordering_fence_sha256": self.binary_sha256,
-                    "ordering_fence_called": True, "allocator_pages_reclaimed": None,
-                    "physical_bytes_erased": False, "cache_flushed": False,
-                    "exact_RSS_enforcement": False}
+        evidence = {
+            "live_owned_buffers": aliases,
+            "ordering_fence_sha256": self.binary_sha256,
+            "ordering_fence_called": True,
+            "allocator_pages_reclaimed": None,
+            "physical_bytes_erased": False,
+            "cache_flushed": False,
+            "exact_RSS_enforcement": False,
+        }
         if aliases:
-            raise ProtocolError("raw/mapped input aliases remain live")
+            raise ProtocolError(f"raw/mapped input aliases remain live ({aliases} aliases)")
         return evidence
 
 

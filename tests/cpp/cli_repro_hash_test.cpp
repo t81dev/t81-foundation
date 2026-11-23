@@ -7,7 +7,13 @@
 #include <vector>
 
 #if defined(_WIN32)
-#include <process.h>
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
 #else
 #include <sys/wait.h>
 #include <unistd.h>
@@ -47,18 +53,45 @@ int main(int argc, char* argv[]) {
   int rc = -1;
 
 #if defined(_WIN32)
-  // On Windows, use _spawnv instead of system to avoid command injection.
-  // We can't redirect stdout easily with _spawnv, so we will construct a clean system call
-  // but strictly validate the binary name to appease the static analyzer.
-  if (t81_bin.filename().string().find("t81") == std::string::npos) {
-    std::cerr << "Invalid binary provided for test.\n";
+  SECURITY_ATTRIBUTES sa{};
+  sa.nLength = sizeof(sa);
+  sa.bInheritHandle = TRUE;
+
+  HANDLE hOut = CreateFileW(out_path.c_str(), GENERIC_WRITE, FILE_SHARE_READ, &sa, CREATE_ALWAYS,
+                            FILE_ATTRIBUTE_NORMAL, nullptr);
+  if (hOut == INVALID_HANDLE_VALUE) {
+    std::cerr << "CreateFileW failed for stdout redirection: " << GetLastError() << "\n";
     return 1;
   }
-  std::string cmd = "\"" + t81_bin.string() +
-                    "\" internal repro-hash tests/fixtures/t81lang_determinism > \"" +
-                    out_path.string() + "\"";
-  cmd = "\"" + cmd + "\"";
-  rc = std::system(cmd.c_str());
+
+  STARTUPINFOW si{};
+  si.cb = sizeof(si);
+  si.dwFlags = STARTF_USESTDHANDLES;
+  si.hStdOutput = hOut;
+  si.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+  si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+
+  std::wstring cmdline =
+      L"\"" + t81_bin.wstring() + L"\" internal repro-hash tests/fixtures/t81lang_determinism";
+  PROCESS_INFORMATION pi{};
+  const BOOL ok = CreateProcessW(t81_bin.c_str(), cmdline.data(), nullptr, nullptr, TRUE, 0,
+                                 nullptr, nullptr, &si, &pi);
+  CloseHandle(hOut);
+  if (!ok) {
+    std::cerr << "CreateProcessW failed: " << GetLastError() << "\n";
+    return 1;
+  }
+
+  const DWORD wait_rc = WaitForSingleObject(pi.hProcess, INFINITE);
+  DWORD exit_code = 1;
+  const BOOL got_exit = GetExitCodeProcess(pi.hProcess, &exit_code);
+  CloseHandle(pi.hThread);
+  CloseHandle(pi.hProcess);
+  if (wait_rc == WAIT_FAILED || !got_exit) {
+    std::cerr << "Failed waiting for child process: " << GetLastError() << "\n";
+    return 1;
+  }
+  rc = static_cast<int>(exit_code);
 #else
   pid_t pid = fork();
   if (pid < 0) {

@@ -1,21 +1,45 @@
 #include "t81/axion/nondeterminism_detector.hpp"
 
 #include <algorithm>
-#include <functional>
+#include <cstdint>
+
+#include "t81/crypto/sha3.hpp"
 
 namespace t81::axion {
 
+namespace {
+
+void append_le32(std::vector<std::uint8_t>& out, std::uint32_t v) {
+  for (int i = 0; i < 4; ++i) {
+    out.push_back(static_cast<std::uint8_t>((v >> (i * 8)) & 0xffu));
+  }
+}
+
+void append_le64(std::vector<std::uint8_t>& out, std::uint64_t v) {
+  for (int i = 0; i < 8; ++i) {
+    out.push_back(static_cast<std::uint8_t>((v >> (i * 8)) & 0xffu));
+  }
+}
+
+}  // namespace
+
 // static
 std::size_t DeterminismDetector::hash_event(const t81::vm::AxionEvent& ev, std::size_t seed) {
-  // Avalanche mix: each contributor flips roughly half the seed bits.
-  auto mix = [&](std::size_t v) {
-    seed ^= v + 0x9e3779b9u + (seed << 6) + (seed >> 2);
-  };
-  mix(std::hash<int>{}(static_cast<int>(ev.opcode)));
-  mix(std::hash<std::int32_t>{}(ev.tag));
-  mix(std::hash<int>{}(static_cast<int>(ev.verdict.kind)));
-  mix(std::hash<std::string>{}(ev.verdict.reason));
-  return seed;
+  // Canonical little-endian framing -> SHA3-512 -> truncated 64-bit state.
+  std::vector<std::uint8_t> buf;
+  buf.reserve(24 + ev.verdict.reason.size());
+  append_le64(buf, static_cast<std::uint64_t>(seed));
+  append_le32(buf, static_cast<std::uint32_t>(ev.opcode));
+  append_le32(buf, static_cast<std::uint32_t>(ev.tag));
+  append_le32(buf, static_cast<std::uint32_t>(ev.verdict.kind));
+  append_le32(buf, static_cast<std::uint32_t>(ev.verdict.reason.size()));
+  buf.insert(buf.end(), ev.verdict.reason.begin(), ev.verdict.reason.end());
+  const auto digest = t81::crypto::sha3_512(buf);
+  std::uint64_t out = 0;
+  for (int i = 0; i < 8; ++i) {
+    out |= static_cast<std::uint64_t>(digest[static_cast<std::size_t>(i)]) << (i * 8);
+  }
+  return static_cast<std::size_t>(out);
 }
 
 void DeterminismDetector::record_run(const std::vector<t81::vm::AxionEvent>& log) {

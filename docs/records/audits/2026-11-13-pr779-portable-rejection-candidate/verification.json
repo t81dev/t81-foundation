@@ -1,0 +1,42 @@
+{
+  "code_revision": "ceb1560af3a386050c1a611270aaf03a72b405a1",
+  "commands": {
+    "configure.log": "cmake -S . -B /private/tmp/t81-pr779-portable-build -DT81_BUILD_EXPERIMENTS=ON -DT81_BUILD_TESTS=ON -DT81_BUILD_TUI=OFF -DT81_BUILD_BENCHMARKS=OFF -DT81_BUILD_FUZZ_TESTS=OFF -DT81_BUILD_EXAMPLES=OFF -DT81_ENABLE_TERNARYOS=OFF -DFETCHCONTENT_SOURCE_DIR_ASIO=/Users/t81dev/Code/t81-foundation/build/_deps/asio-src -DCMAKE_BUILD_TYPE=Release",
+    "build-final.log": "cmake --build /private/tmp/t81-pr779-portable-build --target t81_exp_scg08_01_test -j 2",
+    "ctest-final.log": "ctest --test-dir /private/tmp/t81-pr779-portable-build -R scg08 --output-on-failure",
+    "asan-final-rejections.log": "ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=halt_on_error=1 python3 -B experiments/scg08_arithmetic_work/test_result_rejection.py /private/tmp/t81-pr779-portable-asan-final",
+    "asan-final-parent.log": "ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=halt_on_error=1 /private/tmp/t81-pr779-portable-asan-final",
+    "invariants.json": "python3 -B docs/records/audits/2026-11-13-pr779-portable-rejection-candidate/verify_preservation.py"
+  },
+  "source_sha256": {
+    "experiments/scg08_arithmetic_work/CMakeLists.txt": "77d2885492b096324dc5e30177caecc5845cafdaa2e32f9b5be9f619c5a43386",
+    "experiments/scg08_arithmetic_work/test_exp_scg08_01.cpp": "af14faef06980f412f095c91335022e71d21cd870c53ddf64a377685a5ef30ed",
+    "experiments/scg08_arithmetic_work/test_result_rejection.py": "4777fe004fd6f5a4049d3ec25222b50205e092bad7957573de03eaca584685f3",
+    "experiments/scg08_arithmetic_work/test_result_rejection_driver.py": "5f301c739a075cf0c7d9f08ea6945eb4322646fe30b7dc980397b102e811ac93"
+  },
+  "binary_sha256": {
+    "/private/tmp/t81-pr779-portable-build/experiments/scg08_arithmetic_work/t81_exp_scg08_01_test": "79ba629dc6859d39c2da959243c45c24747786522f5b258735a6f08cbed0ae3d",
+    "/private/tmp/t81-pr779-portable-asan-final": "b0745f10d5bcc734f2c407554dfbf0b299bdee8ebab43c0fc43aa9db06c5bc63"
+  },
+  "cmake_release_ctests": {
+    "passed": 5,
+    "failed": 0,
+    "ndebug": true
+  },
+  "subprocess_cases": 12,
+  "driver_unittest_methods": 3,
+  "asan_ubsan": "pass with detect_leaks=0; leak detection unsupported and failed attempts retained",
+  "compile_asan": "clang++ -std=c++20 -O1 -g -DNDEBUG -fsanitize=address,undefined -fno-omit-frame-pointer -I include experiments/scg08_arithmetic_work/test_exp_scg08_01.cpp -o /private/tmp/t81-pr779-portable-asan-final",
+  "parent_runs": {
+    "intermediate_ctest": 179,
+    "intermediate_sanitizer": 179,
+    "final_ctest": 179,
+    "final_sanitizer": 179,
+    "session_sum": 716
+  },
+  "independent_review": false,
+  "original_run_authentication": false,
+  "windows_execution": "not available",
+  "linux_execution": "not performed",
+  "ci": "not run; local candidate not pushed"
+}

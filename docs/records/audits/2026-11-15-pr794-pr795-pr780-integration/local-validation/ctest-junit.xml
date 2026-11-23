@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="(empty)"
+	tests="10"
+	failures="0"
+	disabled="0"
+	skipped="0"
+	hostname=""
+	time="14"
+	timestamp="2026-11-15T08:03:40"
+	>
+	<testcase name="t81_process_capture_test" classname="t81_process_capture_test" time="0.490238" status="run">
+		<properties/>
+		<system-out>symlink/reparse rejection: executed
+exclusive creation, private permissions, retained-object read and partial cleanup: passed
+argument fidelity, shell literals, cwd/env, zero/nonzero exits and concurrent 2 MiB streams: passed
+</system-out>
+	</testcase>
+	<testcase name="t81_cli_execution_policy_test" classname="t81_cli_execution_policy_test" time="2.5761" status="run">
+		<properties/>
+		<system-out>PASS: 249 CLI processes; 0 failed checks
+</system-out>
+	</testcase>
+	<testcase name="t81_skill_policy_boundary_test" classname="t81_skill_policy_boundary_test" time="1.70631" status="run">
+		<properties/>
+		<system-out>PASS: 86 process receipts; 0 failed checks; real CLI included
+</system-out>
+	</testcase>
+	<testcase name="t81_cli_repro_hash_test" classname="t81_cli_repro_hash_test" time="0.688704" status="run">
+		<properties/>
+		<system-out>cli repro hash test passed!
+</system-out>
+	</testcase>
+	<testcase name="t81_determinism_primitives_test" classname="t81_determinism_primitives_test" time="0.887472" status="run">
+		<properties/>
+		<system-out>Testing Cell determinism...
+Testing Cell exhaustive host-integer oracle validation...
+  Cell oracle summary: conv=243/243, add_ok=44287 (ovf=14762), sub_ok=44287 (ovf=14762), mul_bench_ok=441/441 (full_ok=2553, true_ovf=56144, shift_ovf=352), div_ok=58806 (div0=243)
+Testing T81Int determinism...
+Testing T81BigInt determinism...
+All primitive determinism tests passed.
+</system-out>
+	</testcase>
+	<testcase name="t81_exp_scg08_01_schema_validation" classname="t81_exp_scg08_01_schema_validation" time="0.0748529" status="run">
+		<properties/>
+		<system-out>[SCG-08 SCHEMA VALIDATION PASSED] Artifact gate1_evidence_record.json passes supported schema checks and domain rules for t81.scg08.carry-experiment.v1
+</system-out>
+	</testcase>
+	<testcase name="t81_exp_scg08_01_schema_negative_validation" classname="t81_exp_scg08_01_schema_negative_validation" time="0.207373" status="run">
+		<properties/>
+		<system-out>[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evaluated_implementation_sha must be string
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evaluated_implementation_sha is shorter than minLength
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha is shorter than minLength
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid timestamp_utc format: invalid-time (must be valid ISO-8601 UTC timestamp)
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid specification_version: v1.0 (expected T81-SCG-08-PHASE1-PROP-001-R3-ADDENDUM-06)
+[SCG-08 SCHEMA VALIDATION ERROR] Actual executed trials (1001) exceeded budget ceiling (1000)
+[SCG-08 SCHEMA VALIDATION ERROR] budget_enforced_fail_closed must be boolean true
+[SCG-08 SCHEMA VALIDATION ERROR] tier2_work.evaluated_bands must be a list of 5 evaluated bands
+[SCG-08 SCHEMA ...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="t81_exp_scg08_01_schema_json_files" classname="t81_exp_scg08_01_schema_json_files" time="3.78024" status="run">
+		<properties/>
+		<system-out>  JSON-file case 'valid' passed (exit 0)
+  JSON-file case 'truncated' passed (exit 1)
+  JSON-file case 'trailing data' passed (exit 1)
+  JSON-file case 'invalid UTF-8' passed (exit 1)
+  JSON-file case 'top-level null' passed (exit 1)
+  JSON-file case 'top-level array' passed (exit 1)
+  JSON-file case 'missing properties' passed (exit 1)
+  JSON-file case 'nested scalar object' passed (exit 1)
+  JSON-file case 'NaN declared field' passed (exit 1)
+  JSON-file case 'nonfinite extra field NaN' passed (exit 1)
+  JSON-file case 'nonfinite extra field Infinity' passed (exit 1)
+  JSON-file case 'nonfinite extra field -Infinity' passed (exit 1)
+  JSON-file case 'nonfinite extra field 1e999' passed (exit 1)
+  JSON-file case 'permitted finite extras' passed (exit 0)
+  JSON-file case 'generation SHA null' passed (exit 0)
+  JSON-file case 'generation SHA valid' passed (exit 0)
+  JSON-file case 'generation SHA boolean' passed (exit 1)
+  JSON-file case 'generation SHA invalid' passed (exit 1)
+  JSON-file case 'generation SHA...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="t81_exp_scg08_01_schema_negative_optimized" classname="t81_exp_scg08_01_schema_negative_optimized" time="0.338773" status="run">
+		<properties/>
+		<system-out>[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evaluated_implementation_sha must be string
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evaluated_implementation_sha is shorter than minLength
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha must be string
+[SCG-08 SCHEMA VALIDATION ERROR] evidence.git_context.evidence_publication_sha is shorter than minLength
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid timestamp_utc format: invalid-time (must be valid ISO-8601 UTC timestamp)
+[SCG-08 SCHEMA VALIDATION ERROR] Invalid specification_version: v1.0 (expected T81-SCG-08-PHASE1-PROP-001-R3-ADDENDUM-06)
+[SCG-08 SCHEMA VALIDATION ERROR] Actual executed trials (1001) exceeded budget ceiling (1000)
+[SCG-08 SCHEMA VALIDATION ERROR] budget_enforced_fail_closed must be boolean true
+[SCG-08 SCHEMA VALIDATION ERROR] tier2_work.evaluated_bands must be a list of 5 evaluated bands
+[SCG-08 SCHEMA ...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="t81_exp_scg08_01_schema_json_files_optimized" classname="t81_exp_scg08_01_schema_json_files_optimized" time="3.8122" status="run">
+		<properties/>
+		<system-out>  JSON-file case 'valid' passed (exit 0)
+  JSON-file case 'truncated' passed (exit 1)
+  JSON-file case 'trailing data' passed (exit 1)
+  JSON-file case 'invalid UTF-8' passed (exit 1)
+  JSON-file case 'top-level null' passed (exit 1)
+  JSON-file case 'top-level array' passed (exit 1)
+  JSON-file case 'missing properties' passed (exit 1)
+  JSON-file case 'nested scalar object' passed (exit 1)
+  JSON-file case 'NaN declared field' passed (exit 1)
+  JSON-file case 'nonfinite extra field NaN' passed (exit 1)
+  JSON-file case 'nonfinite extra field Infinity' passed (exit 1)
+  JSON-file case 'nonfinite extra field -Infinity' passed (exit 1)
+  JSON-file case 'nonfinite extra field 1e999' passed (exit 1)
+  JSON-file case 'permitted finite extras' passed (exit 0)
+  JSON-file case 'generation SHA null' passed (exit 0)
+  JSON-file case 'generation SHA valid' passed (exit 0)
+  JSON-file case 'generation SHA boolean' passed (exit 1)
+  JSON-file case 'generation SHA invalid' passed (exit 1)
+  JSON-file case 'generation SHA...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+</testsuite>

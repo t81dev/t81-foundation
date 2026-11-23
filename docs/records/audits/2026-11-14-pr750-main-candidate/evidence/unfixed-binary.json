@@ -1,0 +1,6 @@
+{
+  "source_revision": "a3ae3b16b5afebff4a7ba3c0d2cffe8a69c11b1d",
+  "binary": "/private/tmp/t81-pr750-unfixed-main-t81",
+  "sha256": "6336cba27f2e70f3e88cf1de286dd76a980c0bcc7160693f2ce67589ee58e12b",
+  "scope": "fresh built real CLI; production sources unchanged; candidate test source only added"
+}

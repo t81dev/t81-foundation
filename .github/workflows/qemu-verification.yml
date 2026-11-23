@@ -1,0 +1,96 @@
+name: QEMU verification control flow
+on:
+  pull_request:
+    paths:
+      - 'drivers/qemu/scripts/**'
+      - 'ternaryos/automated_verification.sh'
+      - 'ternaryos/production_qemu_setup.sh'
+      - 'tests/qemu/**'
+      - '.github/workflows/qemu-verification.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'drivers/qemu/scripts/**'
+      - 'ternaryos/automated_verification.sh'
+      - 'ternaryos/production_qemu_setup.sh'
+      - 'tests/qemu/**'
+      - '.github/workflows/qemu-verification.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  mock-execution:
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, macos-15]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
+      - name: Bash syntax
+        run: |
+          for script in drivers/qemu/scripts/{automated_verification,boot_demo,verify_production}.sh \
+            ternaryos/{automated_verification,production_qemu_setup}.sh; do
+            bash -n "$script"
+          done
+      - name: Isolated mock QMP and serial checks (no QEMU execution)
+        run: python3 -m unittest discover -s tests/qemu -p 'test_*.py'
+
+  boot-demo:
+    name: AArch64 boot demo (Ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      BUILD_DIR: ${{ github.workspace }}/build-qemu-demo
+      TIMEOUT: "120"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
+      - name: Install QEMU, firmware, and image tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            clang-18 lld-18 qemu-system-arm qemu-efi-aarch64 ipxe-qemu \
+            mtools parted ninja-build cmake python3 expect
+      - name: Set the EFI toolchain in the build cache
+        run: |
+          cmake -S . -B "$BUILD_DIR" -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DT81_ENABLE_TERNARYOS=ON \
+            -DT81_BUILD_TESTS=OFF \
+            -DT81_BUILD_EXAMPLES=OFF \
+            -DT81_BUILD_BENCHMARKS=OFF \
+            -DT81_BUILD_FUZZ_TESTS=OFF \
+            -DT81_BUILD_TUI=OFF \
+            -DT81_LLVM_CLANG="$(command -v clang-18)" \
+            -DT81_LLD_LINK="$(command -v lld-link-18)"
+      - name: Run the launcher and exit QEMU from the Axion prompt
+        run: |
+          expect <<'EXPECT'
+          set timeout 600
+          spawn bash drivers/qemu/scripts/boot_demo.sh
+          expect {
+              -re {\[axion@T81 tier=[0-9]+\]\$ } {
+                  send -- "\x01x"
+                  exp_continue
+              }
+              eof {}
+              timeout {
+                  puts stderr "Timed out waiting for the boot demo"
+                  exit 1
+              }
+          }
+          set result [wait]
+          if {[llength $result] != 4 || [lindex $result 2] != 0} {
+              puts stderr "Abnormal launcher exit: $result"
+              exit 1
+          }
+          exit [lindex $result 3]
+          EXPECT
+          grep -Fq 'canonfs: I/O probe OK (LBA0 magic=CST1, LBA1 round-trip pass)' \
+            "$BUILD_DIR/boot-demo.serial.log"
+      - name: Retain serial log
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: qemu-boot-demo-serial
+          path: ${{ env.BUILD_DIR }}/boot-demo.serial.log

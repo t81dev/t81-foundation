@@ -1,0 +1,92 @@
+[
+  {
+    "name": "format-before",
+    "argv": [
+      "/private/tmp/t81-format18/bin/clang-format",
+      "--dry-run",
+      "--Werror",
+      "fs/block_backed_driver.cpp",
+      "tests/cpp/canonfs_policy_boundary_test.cpp"
+    ],
+    "exit": 1,
+    "expected": 1
+  },
+  {
+    "name": "format-test",
+    "argv": [
+      "/private/tmp/t81-format18/bin/clang-format",
+      "-i",
+      "tests/cpp/canonfs_policy_boundary_test.cpp"
+    ],
+    "exit": 0,
+    "expected": 0
+  },
+  {
+    "name": "format-after",
+    "argv": [
+      "/private/tmp/t81-format18/bin/clang-format",
+      "--dry-run",
+      "--Werror",
+      "fs/block_backed_driver.cpp",
+      "tests/cpp/canonfs_policy_boundary_test.cpp"
+    ],
+    "exit": 0,
+    "expected": 0
+  },
+  {
+    "name": "release-final-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "/private/tmp/t81-pr748-main-release",
+      "--target",
+      "canonfs_policy_boundary_test",
+      "canonfs_persistent_driver_test",
+      "canonfs_axion_trace_test",
+      "-j",
+      "4"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "release-final-ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "/private/tmp/t81-pr748-main-release",
+      "--output-on-failure",
+      "-V",
+      "-R",
+      "^(canonfs_policy_boundary_test|canonfs_persistent_driver_test|canonfs_axion_trace_test)$"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "sanitizer-final-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "/private/tmp/t81-pr748-main-sanitizers",
+      "--target",
+      "canonfs_policy_boundary_test",
+      "canonfs_persistent_driver_test",
+      "canonfs_axion_trace_test",
+      "-j",
+      "4"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "sanitizer-final-ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "/private/tmp/t81-pr748-main-sanitizers",
+      "--output-on-failure",
+      "-V",
+      "-R",
+      "^(canonfs_policy_boundary_test|canonfs_persistent_driver_test|canonfs_axion_trace_test)$"
+    ],
+    "exit": 0
+  }
+]
