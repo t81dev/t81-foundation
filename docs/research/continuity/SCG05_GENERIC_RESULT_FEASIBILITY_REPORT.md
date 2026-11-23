@@ -1,23 +1,26 @@
 # T81 SCG-05 — Generic Result Contract Feasibility Assessment
 
-**Document ID:** T81-SCG-05-FEASIBILITY-001-R3
+**Document ID:** T81-SCG-05-FEASIBILITY-001-R4
 **Baseline Git SHA:** `e45c5435aa47d4ccb8f343798214eb917352c871`
-**Rechecked against:** `5a005b2dea5e1eb262d4af45698f8338d16b137c` (`origin/main` on 2026-11-23)
-**Governing record:** [`SCG04_MAINTAINER_DECISION_RECORD.md`](SCG04_MAINTAINER_DECISION_RECORD.md), Decision D4 option 4B (true generic `Result<T, E>`). The ballot in that record is unsigned.
+**Rechecked against:** `2e6e78056e2b80855f06cd9a3690c4a65cb33d2a` (`origin/main` on 2026-11-23)
+**Governing direction:** D4 option 4B, accepted as a non-normative direction by PM decision on 2026-11-23. The ballot in [`SCG04_MAINTAINER_DECISION_RECORD.md`](SCG04_MAINTAINER_DECISION_RECORD.md) remains unsigned. Implementation is unauthorized.
+**Provisional name:** `t81::GenericResult<T, E>`, until implementation is authorized.
 **Disposition:** READ-ONLY FEASIBILITY ASSESSMENT (NO PRODUCTION CODE CHANGES; NO SPECIFICATION CHANGES)
 
-**Revision R3 (2026-11-23):** Corrects the caller-inventory scope, the status of Decision D4, the C++20 `std::expected` fallback, the section 6 determinism quotation, and the unconditional heap-allocation claim for `T81String`. R2 remains the prior text of this pull request. This revision still changes no production code and no normative specification.
+**Revision R3 (2026-11-23):** Corrects the caller-inventory scope, the status of Decision D4 as it stood before the PM decision, the C++20 `std::expected` fallback, the section 6 determinism quotation, and the unconditional heap-allocation claim for `T81String`.
+
+**Revision R4 (2026-11-23):** Records the PM decision that D4 option 4B is the accepted non-normative direction, names `t81::GenericResult<T, E>` as provisional, and lists the deferred implementation questions. The SCG-04 decision record is unchanged. This revision still changes no production code and no normative specification.
 
 ---
 
 ## 1. Executive Summary
 
-[`SCG04_MAINTAINER_DECISION_RECORD.md`](SCG04_MAINTAINER_DECISION_RECORD.md) is a proposed decision instrument. Its status line says it is pending maintainer review and signature, and the D4 checkboxes are blank. Option 4B on that ballot is: adopt a genuine generic `Result<T, E>` sum type whose error type `E` is domain-specific, with implementation authorization as a later step. Later continuity documents, including the SCG-07 receipts and `docs/architecture/visualization/research_programs.json`, refer to D4=4B as a non-normative direction and state that implementation remains unauthorized. Those later citations and the unsigned ballot are both in the tree. This assessment evaluates option 4B. It does not sign the ballot and does not authorize an implementation. The label `SCG-04-MDR-001` is not an identifier in the decision record.
+On 2026-11-23 the acting PM accepted Decision D4 option 4B as a **non-normative** direction: a genuine generic `Result<T, E>` sum type whose error type `E` is domain-specific. That acceptance matches the later SCG-07 receipts and `docs/architecture/visualization/research_programs.json`, which already cite D4=4B and state that implementation remains unauthorized. The original ballot in [`SCG04_MAINTAINER_DECISION_RECORD.md`](SCG04_MAINTAINER_DECISION_RECORD.md) is unsigned; its checkboxes are blank and its status line still says the instrument is pending maintainer signature. This report records the PM acceptance. It does not edit that historical ballot, it does not sign it, and it does not authorize an implementation. The label `SCG-04-MDR-001` is not an identifier in the decision record. The provisional public name, until implementation is authorized, is `t81::GenericResult<T, E>`.
 
 This report is the SCG-05 feasibility assessment, revised under PR #732. It describes a compatible shape for a generic `Result<T, E>` container that leaves the existing `T81Result<T>` class unchanged, records ABI and compatibility risks, and checks the constraints in `spec/determinism-profile.md`.
 
 ### Key Conclusions
-1. **Additive Container Strategy (Preserving Concrete `T81Result<T>`):** The recommended strategy introduces a distinct generic container under an illustrative separate name, `t81::GenericResult<T, E>` while **preserving the existing concrete `T81Result<T>` class in `include/t81/types/T81Result.hpp` completely unchanged**. Replacing the existing `T81Result<T>` class with a template alias would carry substantial risks of ABI breakage, compiler diagnostic shifts, deduction-guide disruption, and subtle overload resolution discrepancies across translation units. Keep the existing `t81::Result<T>` alias. Compatibility of legacy error conversions remains unresolved because `T81Error` copies can change metadata.
+1. **Additive Container Strategy (Preserving Concrete `T81Result<T>`):** The accepted non-normative direction uses a distinct generic container under the provisional name `t81::GenericResult<T, E>` while **preserving the existing concrete `T81Result<T>` class in `include/t81/types/T81Result.hpp` completely unchanged**. That name stays provisional until implementation is authorized. Replacing the existing `T81Result<T>` class with a template alias would carry substantial risks of ABI breakage, compiler diagnostic shifts, deduction-guide disruption, and subtle overload resolution discrepancies across translation units. Keep the existing `t81::Result<T>` alias. Conversion of `T81Error` metadata is deferred; see the Deferred list in section 8.
 2. **Toolchain Standard Distinction (`std::expected` vs C++20 `t81::expected`):** `cmake/Options.cmake` defaults `T81_USE_CXX23` to `ON`, which selects C++23 language mode, with C++20 as the fallback mode. `include/t81/support/expected.hpp` uses the ISO `std::expected` when `__cpp_lib_expected` is defined. Otherwise it defines `t81::expected` and publishes that type as `std::expected` with a `namespace std` alias. The fallback members are not declared `constexpr`. Its `value()` / `error()` behavior differs for `void` and non-`void` success types, and it does not throw `std::bad_expected_access`.
 3. **`T81Error` Remediation vs Encapsulation:** Existing `T81Error` captures dynamic system state (`T81Time::now()` and `acquire_entropy()`) and stores its message in a `T81String` backed by `std::string`. That conflicts with `spec/determinism-profile.md` section 6. Generic `Result<T, E>` would let deterministic kernel and math libraries use lightweight error types (for example a named `enum class MathError : int8_t` or `enum class CodecError : uint8_t`) while leaving `T81Error` in place.
 4. **Architectural Fragmentation in Existing Subsystems:** CanonFS, the experimental Hanoi kernel, and Cog promotion each declare a namespace-local `Result<T>` alias over `std::expected` and a subsystem error type. Those aliases are separate from `t81::Result`.
@@ -81,7 +84,7 @@ At baseline `e45c5435`, the declared `spec/` root also contains:
 
 The same baseline has C++ matches outside the declared roots: `codec/base81_balanced.cpp`, `codec/metadata.cpp`, `codec/trit_packing.cpp`, `fs/block_backed_driver.cpp`, `fs/in_memory_driver.cpp`, `fs/persistent_driver.cpp`, `experimental/hanoi/in_memory_kernel.cpp`, `experimental/tiers/cog/promotion.cpp`, `isa/base81_view.cpp`, `benchmarks/BM_DispatchOverhead.cpp`, `examples/ai-and-inference/ai-integration/complex_demo.cpp`, and `examples/compiler-and-ffi/complex_demo.cpp`.
 
-Rechecked at `5a005b2d`, the 18 header and test rows above still have the same pattern counts. `tests/cpp/canonfs_policy_boundary_test.cpp` is new inside `tests/` and contains one `Result<void>` after `using namespace t81::canonfs`, so it uses the CanonFS alias. `examples/research/deterministic-risk-triage/risk_triage_gate.cpp` is an additional out-of-root file containing `T81Result`.
+Rechecked at `5a005b2d`, the 18 header and test rows above still have the same pattern counts. `tests/cpp/canonfs_policy_boundary_test.cpp` is new inside `tests/` and contains one `Result<void>` after `using namespace t81::canonfs`, so it uses the CanonFS alias. `examples/research/deterministic-risk-triage/risk_triage_gate.cpp` is an additional out-of-root file containing `T81Result`. The later `origin/main` commit `2e6e7805` does not modify those counted files and adds no `Result<`, `T81Result<`, or `T81Error` matches in its new CanonFS test or benchmark records.
 
 ---
 
@@ -148,7 +151,7 @@ struct T81Error {
 
 #### Architecture B: Additive Generic `Result<T, E>` while Preserving Concrete `T81Result<T>` (Recommended)
 - **Description:**
-  - Introduce an additive generic container under an illustrative separate name, `t81::GenericResult<T, E>`.
+  - Introduce an additive generic container under the provisional name `t81::GenericResult<T, E>`. The name stays provisional until implementation is authorized.
   - **Retain the existing concrete `T81Result<T>` class in `include/t81/types/T81Result.hpp` completely unchanged.**
   - Preserve `t81::Result<T>` as the existing alias. Defer legacy conversions until the error metadata contract is decided.
 - **Advantages:**
@@ -174,7 +177,7 @@ struct T81Error {
 
 ## 5. Proposed API Contract for Generic `Result<T, E>`
 
-The sketch uses the working name `t81::GenericResult<T, E = T81Error>`. The existing alias `t81::Result<T>` and a class template with the same qualified name cannot coexist. Giving the new class a default second template parameter would still change the identity of existing `t81::Result<T>` instantiations if the alias were replaced. Exception specifications and conditional `noexcept` clauses are defined conservatively to reflect the possibility that constructing, copying, moving, or transforming `T` or `E` may throw.
+The sketch uses the provisional name `t81::GenericResult<T, E = T81Error>`. That name is provisional until implementation is authorized. The existing alias `t81::Result<T>` and a class template with the same qualified name cannot coexist. Giving the new class a default second template parameter would still change the identity of existing `t81::Result<T>` instantiations if the alias were replaced. Exception specifications and conditional `noexcept` clauses are defined conservatively to reflect the possibility that constructing, copying, moving, or transforming `T` or `E` may throw.
 
 ### 5.1 Class Template Definition
 
@@ -276,10 +279,10 @@ Replacing `T81Result<T>` with a template alias was evaluated and rejected due to
 - **Template Deduction Guides:** Existing deduction guides for `T81Result` (e.g. `T81Result(T) -> T81Result<T>`) do not automatically transfer to aliased templates in all C++20 compilers without explicit alias deduction guides (P0608 / C++20 feature set variations).
 - **Forward Declarations:** Any code forward-declaring `template <typename T> class T81Result;` fails compilation if `T81Result` is transformed into an alias `using T81Result = Result<T, T81Error>;`.
 
-**Recommendation:** Retain `class T81Result<T>` as a distinct, unchanged concrete class in `include/t81/types/T81Result.hpp`. Retain the `t81::Result<T>` alias and choose a distinct public name or namespace for the generic container. The current `T81Error` copy constructor obtains a new timestamp and fresh entropy. Both legacy error construction overloads can invoke that constructor, including the overload that accepts an rvalue. An owned error round trip through those paths therefore cannot promise preservation of `occurred_at` or `fuel_spent`. A future conversion proposal must define how it handles all five fields, then verify the chosen behavior in each direction.
+**Recommendation:** Retain `class T81Result<T>` as a distinct, unchanged concrete class in `include/t81/types/T81Result.hpp`. Retain the `t81::Result<T>` alias. The provisional name for the generic container is `t81::GenericResult<T, E>`. The current `T81Error` copy constructor obtains a new timestamp and fresh entropy. Both legacy error construction overloads can invoke that constructor, including the overload that accepts an rvalue. An owned error round trip through those paths therefore cannot promise preservation of `occurred_at` or `fuel_spent`. How a conversion handles all five fields is deferred; see section 8.
 
 ### 6.2 Phased Migration Strategy
-1. **Phase 1 (Additive Specification & Container):** After naming and scope approval, implement the additive container and test it independently. Retain the legacy alias and concrete class.
+1. **Phase 1 (Additive Specification & Container):** After implementation authorization confirms or replaces the provisional name `t81::GenericResult<T, E>`, implement the additive container and test it independently. Retain the legacy alias and concrete class.
 2. **Phase 2 (Subsystem Evaluation):** Independently evaluate whether subsystems using local aliases (**CanonFS**, **Hanoi Kernel**, **Cog**) benefit from migrating to `t81::GenericResult<T, SubsystemError>`. Each migration is scoped and verified in an isolated PR.
 3. **Phase 3 (Checked Arithmetic Integration):** When authorized under D1/D2, introduce checked arithmetic functions returning `GenericResult<T81Int<N>, ArithmeticError>` and `GenericResult<T81Float<M, E>, ConversionError>`, achieving zero-allocation arithmetic error handling.
 
@@ -297,23 +300,29 @@ Future implementation verification must adhere to the following test matrix:
 | **TEST-RES-04** | Disambiguated Construction | `GenericResult<int, int>` with identical value and error types | Successfully constructs ok state via `GenericResult::success(1)` and error state via `GenericResult::failure(2)` or the tagged constructor without ambiguity. | Ambiguous overload resolution or incorrect state. |
 | **TEST-RES-05** | Move-Only Types | `GenericResult<std::unique_ptr<int>, CustomError>` | Move construction and move assignment operate without copy operations. | Compilation error on move-only types. |
 | **TEST-RES-06** | Monadic Transformations | Chained invocations of `map`, `and_then`, `transform_error` | State and payload types transform correctly across the chain. Short-circuits on failure. | Type deduction failure or incorrect propagation. |
-| **TEST-RES-07** | Legacy Interoperability | Candidate conversions between `GenericResult<T, T81Error>` and `T81Result<T>` | Deferred until a metadata policy is approved. Compare `code`, `message`, `source`, `occurred_at`, and `fuel_spent` in both directions on any path advertised as lossless. | A path advertised as lossless changes any field, or conversion proceeds without a decided metadata policy. |
+| **TEST-RES-07** | Legacy Interoperability | Candidate conversions between `GenericResult<T, T81Error>` and `T81Result<T>` | Deferred to implementation authorization (section 8). Compare `code`, `message`, `source`, `occurred_at`, and `fuel_spent` in both directions on any path advertised as lossless. | A path advertised as lossless changes any field, or conversion proceeds before that authorization. |
 | **TEST-RES-08** | Legacy Regression Gate | Execute full existing test suite (`test_T81Result`, `comprehensive_test`) | 100% of existing tests continue to compile and pass against unchanged `T81Result<T>`. | Any regression or compilation failure in existing tests. |
 | **TEST-RES-09** | Legacy Alias Identity | Include the proposed header alongside `t81/types/Result.hpp` | `std::is_same_v<t81::Result<int>, t81::T81Result<int>>` remains true, and the generic type can be named independently. | Conflicting declaration or changed legacy alias identity. |
 
 ---
 
-## 8. Unresolved Technical Questions & Implementation Pre-conditions
+## 8. Deferred Items and Implementation Pre-conditions
 
-### 8.1 Open Technical Questions
-1. **Fallback Shim Monadic Support:** The current fallback already declares `and_then`, `transform`, `or_else`, and `transform_error` for `&` and `const&`. Which of those declarations, plus any future `&&` overloads, compile on the supported GCC and Clang versions is still untested.
-2. **Exception-Free Mode (`-fno-exceptions`):** In environments built with `-fno-exceptions` (such as freestanding `ternaryos/`), what is the required abort mechanism for `.value()` and `.error()` when called on the wrong state (e.g. `std::abort()`, `__builtin_trap()`, or a configurable policy hook)?
-3. **Reflect API Integration:** Does `Result<T, E>` require a `.reflect()` method when `E` does not implement `T81Reflection`?
-   - *Recommendation:* Gate `.reflect()` behind a concept or SFINAE trait requiring both `T` and `E` to support reflection.
+### Deferred
+
+These three items stay deferred to the implementation-authorization step. This assessment does not decide them:
+
+1. **`T81Error` conversion.** Whether `t81::GenericResult<T, T81Error>` and `T81Result<T>` convert, and how that conversion treats `occurred_at` and `fuel_spent`. The copy constructor replaces both fields.
+2. **`-fno-exceptions` abort policy.** Which abort mechanism `.value()` and `.error()` use on the wrong state in freestanding or `-fno-exceptions` builds, including `ternaryos/`.
+3. **`.reflect()`.** Whether `t81::GenericResult<T, E>` provides `.reflect()` when `E` does not implement `T81Reflection`.
+
+### 8.1 Open Technical Question
+**Fallback shim monadic support:** The current fallback already declares `and_then`, `transform`, `or_else`, and `transform_error` for `&` and `const&`. Which of those declarations, plus any future `&&` overloads, compile on the supported GCC and Clang versions is still untested.
 
 ### 8.2 Explicit Scope Limits for Future Implementation Authorization
-Authorization to proceed with implementation must be granted by the maintainer via an explicit authorization directive specifying:
-- **Strictly Scoped Files:** Approve the generic container header and focused tests after selecting the public name or namespace. Preserve the existing `Result<T>` alias.
+Implementation remains unauthorized. A later authorization directive has to specify:
+- **Provisional name:** `t81::GenericResult<T, E>` is the name recorded here. Authorization confirms that name or replaces it before any header is added. Preserve the existing `Result<T>` alias.
+- **Deferred list:** Resolve the three deferred items above in that same authorization, before code that depends on them is written.
 - **Zero Modifications to Concrete Classes:** `include/t81/types/T81Result.hpp` MUST remain unchanged.
 - **Zero Modifications to Existing Subsystems:** No changes to `canonfs`, `hanoi`, `cog`, `swar`, or `codec` call sites in the initial PR.
 - **Validation Gates:** Full passage of `clang-format-18`, C++20 and C++23 build targets, and existing CTest regression gates.
@@ -323,6 +332,8 @@ Authorization to proceed with implementation must be granted by the maintainer v
 ## 9. Baseline Attestation and Sign-Off
 
 - **Baseline SHA:** `e45c5435aa47d4ccb8f343798214eb917352c871`
-- **Recheck SHA:** `5a005b2dea5e1eb262d4af45698f8338d16b137c`
-- **Assessment Scope:** Read-only feasibility investigation. Zero production files modified.
-- **Policy record:** Option 4B in the unsigned ballot of `docs/research/continuity/SCG04_MAINTAINER_DECISION_RECORD.md`. Later SCG-07 text cites D4=4B as a non-normative direction with implementation still unauthorized.
+- **Recheck SHA:** `2e6e78056e2b80855f06cd9a3690c4a65cb33d2a`
+- **Assessment Scope:** Read-only feasibility investigation. Zero production files modified. The SCG-04 decision record is unchanged.
+- **Policy:** D4 option 4B is the accepted non-normative direction by PM decision on 2026-11-23. The ballot in `docs/research/continuity/SCG04_MAINTAINER_DECISION_RECORD.md` remains unsigned. Implementation is unauthorized.
+- **Provisional name:** `t81::GenericResult<T, E>`.
+- **Deferred:** `T81Error` conversion of `occurred_at` and `fuel_spent`; the `-fno-exceptions` abort policy; `.reflect()`.
