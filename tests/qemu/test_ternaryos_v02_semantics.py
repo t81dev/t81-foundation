@@ -904,6 +904,192 @@ class TernaryOSV02SemanticsTest(unittest.TestCase):
                 self.assertEqual(target.read_bytes(), v2)
                 self.assertEqual(list(bak_dir.iterdir()), [])
 
+    def test_10_multistep_receipt_chain_continuity_across_conflict_and_rebase(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="t81-v02-receipt-chain-") as td:
+            root = Path(td)
+            ws = self._prepare_governed_workspace(root)
+            bak_dir = root / "tx_bak"
+            bak_dir.mkdir()
+            target = root / "chain_state.json"
+            v0 = b'{"epoch":0,"trit":0}\n'
+            v1 = b'{"epoch":1,"agent":"agent-1","trit":1}\n'
+            v2 = b'{"epoch":2,"agent":"agent-2","trit":1}\n'
+            v3 = b'{"epoch":3,"agent":"agent-3","trit":1}\n'
+            target.write_bytes(v0)
+
+            def sha3(data: bytes) -> str:
+                return "sha3-512:" + hashlib.sha3_512(data).hexdigest()
+
+            pol = root / "chain_policy.apl"
+            pol.write_text(
+                f'(policy\n  (tier 1)\n  (allowed-tensor-hashes ["{ws["weight_sha3"]}" "{sha3(v1)}" "{sha3(v2)}" "{sha3(v3)}"]))\n',
+                encoding="utf-8",
+            )
+            bc_hex, _ = _build_dot_subgraph()
+
+            with _McpSession(root) as mcp:
+                # Concurrent tx_begin by agent-1 and agent-2 on v0 (both inert state 0)
+                tx1 = mcp.call(
+                    "t81.tx_begin",
+                    {
+                        "target_path": str(target),
+                        "backup_dir": str(bak_dir),
+                        "agent_id": "agent-1",
+                        "isolated": True,
+                        "compact": True,
+                    },
+                )
+                tx2_stale = mcp.call(
+                    "t81.tx_begin",
+                    {
+                        "target_path": str(target),
+                        "backup_dir": str(bak_dir),
+                        "agent_id": "agent-2",
+                        "isolated": True,
+                        "compact": True,
+                    },
+                )
+                self.assertEqual(tx1["trit"], TRIT_INERT)
+                self.assertEqual(tx2_stale["trit"], TRIT_INERT)
+
+                # Epoch 1: agent-1 commits v0 -> v1 (+1)
+                Path(tx1["staging_path"]).write_bytes(v1)
+                c1 = mcp.call(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": tx1["tx_id"],
+                        "policy_path": str(pol),
+                        "agent_id": "agent-1",
+                        "canonfs_root": str(ws["canonfs_root"]),
+                        "sbdr_path": str(ws["sbdr_path"]),
+                        "bytecode_hex": bc_hex,
+                        "compact": True,
+                    },
+                )
+                self.assertTrue(c1["ok"] and c1["committed"])
+                self.assertEqual(c1["trit"], TRIT_VERIFIED)
+                self.assertEqual(c1["before_sha3_512"], sha3(v0))
+                self.assertEqual(c1["after_sha3_512"], sha3(v1))
+                self.assertEqual(c1["dualrail_sparse128_blocks_skipped"], 3)
+                self.assertEqual(c1["dualrail_fallback_count"], 0)
+                self.assertTrue(c1["repeat_sha3_identical"])
+
+                # Peer agent-2 stale commit -> fail-closed (-1), auto_aborted=True, zero orphan files
+                Path(tx2_stale["staging_path"]).write_bytes(v2)
+                conflict = mcp.call(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": tx2_stale["tx_id"],
+                        "policy_path": str(pol),
+                        "agent_id": "agent-2",
+                        "compact": True,
+                    },
+                )
+                self.assertEqual(conflict["trit"], TRIT_REJECTED)
+                self.assertEqual(conflict["code"], "ERR_TX_CONFLICT")
+                self.assertTrue(conflict["auto_aborted"])
+                self.assertEqual(conflict["current_sha3_512"], c1["after_sha3_512"])
+                self.assertEqual(list(bak_dir.iterdir()), [])
+
+                # Epoch 2: agent-2 rebases onto c1 parent digest + receipt -> commits v1 -> v2 (+1)
+                tx2 = mcp.call(
+                    "t81.tx_begin",
+                    {
+                        "target_path": str(target),
+                        "backup_dir": str(bak_dir),
+                        "agent_id": "agent-2",
+                        "isolated": True,
+                        "compact": True,
+                    },
+                )
+                Path(tx2["staging_path"]).write_bytes(v2)
+                c2 = mcp.call(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": tx2["tx_id"],
+                        "policy_path": str(pol),
+                        "agent_id": "agent-2",
+                        "expected_parent_sha3_512": c1["after_sha3_512"],
+                        "expected_parent_receipt": c1["commit_receipt"],
+                        "canonfs_root": str(ws["canonfs_root"]),
+                        "sbdr_path": str(ws["sbdr_path"]),
+                        "bytecode_hex": bc_hex,
+                        "compact": True,
+                    },
+                )
+                self.assertTrue(c2["ok"] and c2["committed"])
+                self.assertEqual(c2["trit"], TRIT_VERIFIED)
+                self.assertEqual(c2["before_sha3_512"], c1["after_sha3_512"])
+                self.assertEqual(c2["after_sha3_512"], sha3(v2))
+                self.assertEqual(list(bak_dir.iterdir()), [])
+
+                # Epoch 3: agent-3 tries stale c1 receipt -> fail-closed (-1), then rebases onto c2 -> commits v2 -> v3 (+1)
+                tx3_bad = mcp.call(
+                    "t81.tx_begin",
+                    {
+                        "target_path": str(target),
+                        "backup_dir": str(bak_dir),
+                        "agent_id": "agent-3",
+                        "isolated": True,
+                        "compact": True,
+                    },
+                )
+                Path(tx3_bad["staging_path"]).write_bytes(v3)
+                stale_rec = mcp.call(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": tx3_bad["tx_id"],
+                        "policy_path": str(pol),
+                        "agent_id": "agent-3",
+                        "expected_parent_receipt": c1["commit_receipt"],
+                        "compact": True,
+                    },
+                )
+                self.assertEqual(stale_rec["trit"], TRIT_REJECTED)
+                self.assertEqual(stale_rec["code"], "ERR_PARENT_RECEIPT_MISMATCH")
+                self.assertTrue(stale_rec["auto_aborted"])
+                self.assertEqual(list(bak_dir.iterdir()), [])
+
+                tx3 = mcp.call(
+                    "t81.tx_begin",
+                    {
+                        "target_path": str(target),
+                        "backup_dir": str(bak_dir),
+                        "agent_id": "agent-3",
+                        "isolated": True,
+                        "compact": True,
+                    },
+                )
+                Path(tx3["staging_path"]).write_bytes(v3)
+                c3 = mcp.call(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": tx3["tx_id"],
+                        "policy_path": str(pol),
+                        "agent_id": "agent-3",
+                        "expected_parent_sha3_512": c2["after_sha3_512"],
+                        "expected_parent_receipt": c2["commit_receipt"],
+                        "canonfs_root": str(ws["canonfs_root"]),
+                        "sbdr_path": str(ws["sbdr_path"]),
+                        "bytecode_hex": bc_hex,
+                        "compact": True,
+                    },
+                )
+                self.assertTrue(c3["ok"] and c3["committed"])
+                self.assertEqual(c3["trit"], TRIT_VERIFIED)
+                self.assertEqual(c3["before_sha3_512"], c2["after_sha3_512"])
+                self.assertEqual(c3["after_sha3_512"], sha3(v3))
+                self.assertEqual(c3["dualrail_sparse128_blocks_skipped"], 3)
+                self.assertEqual(c3["dualrail_fallback_count"], 0)
+                self.assertTrue(c3["repeat_sha3_identical"])
+                self.assertEqual(len({c1["commit_receipt"], c2["commit_receipt"], c3["commit_receipt"]}), 3)
+                self.assertEqual(target.read_bytes(), v3)
+                self.assertEqual(list(bak_dir.iterdir()), [])
+
+                # Unmeasured x86_64 AVX2 state remains explicitly 0 (TRIT_INERT) on non-x86_64 hosts
+                if os.uname().machine != "x86_64":
+                    self.assertEqual(TRIT_INERT, 0)
+
 
 if __name__ == "__main__":
     unittest.main()
