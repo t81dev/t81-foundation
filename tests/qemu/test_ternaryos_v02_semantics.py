@@ -431,6 +431,209 @@ class TernaryOSV02SemanticsTest(unittest.TestCase):
             if host_arch != "x86_64":
                 self.assertEqual(avx2_native_timing_state, TRIT_INERT)
 
+    def test_06_concurrent_multi_agent_tx_isolation_and_receipt_chaining(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="t81-v02-multiagent-tx-") as td:
+            root = Path(td)
+            bak_dir = root / "tx_bak"
+            bak_dir.mkdir()
+            shared_target = root / "shared_artifact.json"
+            v0_bytes = b'{"version":0,"trit":0}\n'
+            v1_bytes = b'{"version":1,"agent":"agent-a","trit":1}\n'
+            v2_stale_bytes = b'{"version":2,"agent":"agent-b-stale","trit":1}\n'
+            v2_rebased_bytes = b'{"version":2,"agent":"agent-b-rebased","parent":"v1","trit":1}\n'
+            shared_target.write_bytes(v0_bytes)
+
+            def sha3(data: bytes) -> str:
+                return "sha3-512:" + hashlib.sha3_512(data).hexdigest()
+
+            pol_path = root / "multiagent_policy.apl"
+            pol_path.write_text(
+                f'(policy\n  (tier 1)\n  (allowed-tensor-hashes ["{sha3(v1_bytes)}" "{sha3(v2_stale_bytes)}" "{sha3(v2_rebased_bytes)}"]))\n',
+                encoding="utf-8",
+            )
+
+            with _McpSession(root) as mcp:
+                # Two peer agents open independent isolated tx_begin workspaces on the same target
+                tx_a = mcp.call(
+                    "t81.tx_begin",
+                    {
+                        "target_path": str(shared_target),
+                        "backup_dir": str(bak_dir),
+                        "agent_id": "agent-a",
+                        "isolated": True,
+                        "compact": True,
+                    },
+                )
+                tx_b = mcp.call(
+                    "t81.tx_begin",
+                    {
+                        "target_path": str(shared_target),
+                        "backup_dir": str(bak_dir),
+                        "agent_id": "agent-b",
+                        "isolated": True,
+                        "compact": True,
+                    },
+                )
+                self.assertTrue(tx_a["ok"] and tx_b["ok"])
+                self.assertEqual(tx_a["trit"], TRIT_INERT)
+                self.assertEqual(tx_b["trit"], TRIT_INERT)
+                self.assertNotEqual(tx_a["staging_path"], tx_b["staging_path"])
+
+                # Uncommitted mutations in agent-a's staging path are invisible to target and agent-b
+                Path(tx_a["staging_path"]).write_bytes(v1_bytes)
+                self.assertEqual(shared_target.read_bytes(), v0_bytes)
+                self.assertEqual(Path(tx_b["staging_path"]).read_bytes(), v0_bytes)
+
+                # Agent-a commits first (+1) with SHA3-512 commit_receipt binding
+                commit_a = mcp.call(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": tx_a["tx_id"],
+                        "policy_path": str(pol_path),
+                        "agent_id": "agent-a",
+                        "max_abs_err": 0,
+                        "dualrail_fallback_count": 0,
+                        "repeat_sha3_identical": True,
+                        "compact": True,
+                    },
+                )
+                self.assertTrue(commit_a["ok"] and commit_a["committed"])
+                self.assertEqual(commit_a["trit"], TRIT_VERIFIED)
+                self.assertEqual(commit_a["after_sha3_512"], sha3(v1_bytes))
+                self.assertTrue(commit_a["commit_receipt"].startswith("sha3-512:"))
+                self.assertEqual(shared_target.read_bytes(), v1_bytes)
+
+                # Agent-b tries to commit stale workspace -> fail-closed (-1), auto-aborted, zero partial side effects
+                Path(tx_b["staging_path"]).write_bytes(v2_stale_bytes)
+                commit_b_stale = mcp.call(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": tx_b["tx_id"],
+                        "policy_path": str(pol_path),
+                        "agent_id": "agent-b",
+                        "compact": True,
+                    },
+                )
+                self.assertFalse(commit_b_stale["ok"] or commit_b_stale["committed"])
+                self.assertEqual(commit_b_stale["trit"], TRIT_REJECTED)
+                self.assertEqual(commit_b_stale["code"], "ERR_TX_CONFLICT")
+                self.assertTrue(commit_b_stale["auto_aborted"])
+                self.assertEqual(commit_b_stale["current_sha3_512"], sha3(v1_bytes))
+                self.assertEqual(shared_target.read_bytes(), v1_bytes)
+                self.assertFalse(Path(tx_b["staging_path"]).exists())
+
+                # Native C++ capability-budget enforcement rejects max_abs_err != 0 or fallback != 0 with auto-abort (-1)
+                tx_bad_budget = mcp.call(
+                    "t81.tx_begin",
+                    {
+                        "target_path": str(shared_target),
+                        "backup_dir": str(bak_dir),
+                        "agent_id": "agent-b",
+                        "isolated": True,
+                        "compact": True,
+                    },
+                )
+                Path(tx_bad_budget["staging_path"]).write_bytes(v2_rebased_bytes)
+                budget_deny = mcp.call(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": tx_bad_budget["tx_id"],
+                        "policy_path": str(pol_path),
+                        "agent_id": "agent-b",
+                        "dualrail_fallback_count": 1,
+                        "compact": True,
+                    },
+                )
+                self.assertFalse(budget_deny["ok"] or budget_deny["committed"])
+                self.assertEqual(budget_deny["trit"], TRIT_REJECTED)
+                self.assertEqual(budget_deny["code"], "ERR_BUDGET_DUALRAIL_FALLBACK")
+                self.assertTrue(budget_deny["auto_aborted"])
+                self.assertEqual(shared_target.read_bytes(), v1_bytes)
+
+                # Agent-b rebases onto v1 parent digest -> commits cleanly (+1) with chained receipt
+                tx_b2 = mcp.call(
+                    "t81.tx_begin",
+                    {
+                        "target_path": str(shared_target),
+                        "backup_dir": str(bak_dir),
+                        "agent_id": "agent-b",
+                        "isolated": True,
+                        "compact": True,
+                    },
+                )
+                self.assertEqual(tx_b2["before_sha3_512"], commit_a["after_sha3_512"])
+                Path(tx_b2["staging_path"]).write_bytes(v2_rebased_bytes)
+                commit_b2 = mcp.call(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": tx_b2["tx_id"],
+                        "policy_path": str(pol_path),
+                        "agent_id": "agent-b",
+                        "expected_parent_sha3_512": commit_a["after_sha3_512"],
+                        "max_abs_err": 0,
+                        "dualrail_fallback_count": 0,
+                        "repeat_sha3_identical": True,
+                        "compact": True,
+                    },
+                )
+                self.assertTrue(commit_b2["ok"] and commit_b2["committed"])
+                self.assertEqual(commit_b2["trit"], TRIT_VERIFIED)
+                self.assertEqual(commit_b2["before_sha3_512"], commit_a["after_sha3_512"])
+                self.assertEqual(commit_b2["after_sha3_512"], sha3(v2_rebased_bytes))
+                self.assertEqual(shared_target.read_bytes(), v2_rebased_bytes)
+
+    def test_07_canonfs_sbdr1t2d_tamper_fail_closed_and_zero_skip_telemetry(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="t81-v02-sbdr-tamper-") as td:
+            root = Path(td)
+            ws = self._prepare_governed_workspace(root)
+
+            # Tamper CanonFS stored SBDR1T2D block payload -> canonfs_fsck fails closed (-1) before VM execution
+            blk_file = next((ws["canonfs_root"] / "objects").rglob("*.blk"))
+            orig_blk = blk_file.read_bytes()
+            blk_file.write_bytes(orig_blk + b"\xff")
+            fsck_tampered = _call_mcp_fresh(
+                [root],
+                "t81.canonfs_fsck",
+                {"canonfs_root": str(ws["canonfs_root"]), "compact": True},
+            )["result"]["structured"]
+            self.assertEqual(_classify_control_verdict(fsck_tampered), TRIT_REJECTED)
+            self.assertFalse(fsck_tampered["ok"])
+
+            # Restore clean CanonFS block -> fsck recovers (+1)
+            blk_file.write_bytes(orig_blk)
+            fsck_clean = _call_mcp_fresh(
+                [root],
+                "t81.canonfs_fsck",
+                {"canonfs_root": str(ws["canonfs_root"]), "compact": True},
+            )["result"]["structured"]
+            self.assertTrue(fsck_clean["ok"])
+
+            # Non-zero K* / malformed SBDR header fails policy admission (-1) before TWMATMUL / TATTN / TQUANT
+            bad_kstar = root / "bad_kstar.sbdr"
+            bad_kstar.write_bytes(b"SBDRX\x01\x00\x00" + struct.pack("<QQQQ", 4, 1, 0b0101, 0b1010))
+            gate_bad = _call_mcp_fresh(
+                [root],
+                "t81.gate_check",
+                {
+                    "artifact_path": str(bad_kstar),
+                    "policy_path": str(ws["policy_path"]),
+                    "compact": True,
+                },
+            )["result"]["structured"]
+            self.assertEqual(_classify_control_verdict(gate_bad), TRIT_REJECTED)
+            self.assertTrue(gate_bad["blocked"])
+
+            # Valid zero-block SBDR1T2D path reports inert skip counter (0) with dualrail_fallback_count == 0
+            bc_hex, _ = _build_dot_subgraph()
+            run_ok = _call_mcp_fresh(
+                [root],
+                "t81.run_subgraph",
+                {"bytecode_hex": bc_hex, "policy_path": str(ws["policy_path"]), "compact": True},
+            )["result"]["structured"]
+            self.assertEqual(_classify_control_verdict(run_ok), TRIT_VERIFIED)
+            self.assertEqual(run_ok["dualrail_fallback_count"], 0)
+            self.assertGreaterEqual(run_ok["dualrail_sparse128_blocks_skipped"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()

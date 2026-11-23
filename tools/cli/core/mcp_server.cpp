@@ -37,9 +37,12 @@ namespace fs = std::filesystem;
 
 struct ActiveTx {
   std::string tx_id;
+  std::string agent_id;
   fs::path target_path;
   fs::path backup_path;
+  fs::path staging_path;
   std::string before_sha3_512;
+  bool isolated = false;
 };
 
 std::string json_escape_mcp(std::string_view input) {
@@ -248,6 +251,17 @@ bool arg_bool(const JsonNode& obj, const std::string& key, bool default_val = fa
   auto it = obj.obj.find(key);
   if (it == obj.obj.end() || it->second.kind != JsonNode::Kind::Bool) return default_val;
   return it->second.str == "true";
+}
+
+int64_t arg_int64(const JsonNode& obj, const std::string& key, int64_t default_val = 0) {
+  if (obj.kind != JsonNode::Kind::Object) return default_val;
+  auto it = obj.obj.find(key);
+  if (it == obj.obj.end() || it->second.kind != JsonNode::Kind::Number) return default_val;
+  try {
+    return std::stoll(it->second.raw);
+  } catch (...) {
+    return default_val;
+  }
 }
 
 bool env_compact_mode() {
@@ -704,17 +718,21 @@ std::string build_tools_list_json() {
 
          "{\"name\":\"t81.tx_begin\","
          "\"description\":\"Begin an atomic file transaction by sealing a SHA3-512 verified backup "
-         "before mutation.\","
+         "before mutation (with optional per-agent isolated staging).\","
          "\"inputSchema\":{\"type\":\"object\",\"required\":[\"target_path\",\"backup_dir\"],"
          "\"properties\":{\"target_path\":{\"type\":\"string\"},\"backup_dir\":{\"type\":"
-         "\"string\"}}}},"
+         "\"string\"},\"agent_id\":{\"type\":\"string\"},\"isolated\":{\"type\":\"boolean\"}}}},"
 
          "{\"name\":\"t81.tx_commit\","
-         "\"description\":\"Commit an active file transaction after a required .apl policy check "
-         "on "
-         "the mutated artifact.\","
+         "\"description\":\"Commit an active file transaction after required .apl policy, "
+         "concurrency, and capability-budget checks on the mutated artifact.\","
          "\"inputSchema\":{\"type\":\"object\",\"required\":[\"tx_id\",\"policy_path\"],"
-         "\"properties\":{\"tx_id\":{\"type\":\"string\"},\"policy_path\":{\"type\":\"string\"}}}},"
+         "\"properties\":{\"tx_id\":{\"type\":\"string\"},\"policy_path\":{\"type\":\"string\"},"
+         "\"agent_id\":{\"type\":\"string\"},\"expected_parent_sha3_512\":{\"type\":\"string\"},"
+         "\"max_abs_err\":{\"type\":\"integer\"},\"dualrail_fallback_count\":{\"type\":\"integer\"}"
+         ","
+         "\"repeat_sha3_identical\":{\"type\":\"boolean\"},"
+         "\"auto_abort_on_deny\":{\"type\":\"boolean\"}}}},"
 
          "{\"name\":\"t81.tx_abort\","
          "\"description\":\"Abort an active file transaction and restore the exact pre-mutation "
@@ -1132,9 +1150,12 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
       } else if (name == "t81.tx_begin") {
         const std::string tpath = arg_str(args, "target_path");
         const std::string bdir = arg_str(args, "backup_dir");
+        const std::string req_agent = arg_str(args, "agent_id");
+        const std::string agent_id = req_agent.empty() ? "default" : req_agent;
+        const bool isolated = arg_bool(args, "isolated", false);
         std::vector<uint8_t> bytes;
         if (tpath.empty() || bdir.empty()) {
-          structured = "{\"ok\":false,\"error\":\"missing required "
+          structured = "{\"ok\":false,\"trit\":-1,\"error\":\"missing required "
                        "arguments\",\"expected\":[\"target_path\",\"backup_dir\"]}";
         } else if (!read_file_bytes(jail, tpath, bytes)) {
           structured = io_failure_json(jail, "could not read target_path");
@@ -1148,14 +1169,23 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
             fs::create_directories(backup_root, ec);
             const std::string tx_id = "tx-" + std::to_string(++tx_counter);
             const fs::path bpath = backup_root / (tx_id + ".bak");
-            if (ec || !write_file_bytes(jail, bpath, bytes)) {
+            const fs::path spath = isolated ? (backup_root / (tx_id + ".stage")) : fs::path{};
+            if (ec || !write_file_bytes(jail, bpath, bytes) ||
+                (isolated && !write_file_bytes(jail, spath, bytes))) {
               structured = io_failure_json(jail, "could not write transaction backup");
             } else {
               const std::string before_sha = sha3_512_hex(bytes);
-              active_txs[tx_id] = ActiveTx{tx_id, target_canon, bpath, before_sha};
-              structured = "{\"ok\":true,\"tx_id\":\"" + tx_id + "\",\"before_sha3_512\":\"" +
-                           before_sha + "\",\"backup_path\":\"" + json_escape_mcp(bpath.string()) +
-                           "\"}";
+              active_txs[tx_id] =
+                  ActiveTx{tx_id, agent_id, target_canon, bpath, spath, before_sha, isolated};
+              structured = "{\"ok\":true,\"trit\":0,\"tx_id\":\"" + tx_id + "\",\"agent_id\":\"" +
+                           json_escape_mcp(agent_id) +
+                           "\",\"isolated\":" + (isolated ? "true" : "false") +
+                           ",\"before_sha3_512\":\"" + before_sha + "\",\"backup_path\":\"" +
+                           json_escape_mcp(bpath.string()) + "\"";
+              if (isolated) {
+                structured += ",\"staging_path\":\"" + json_escape_mcp(spath.string()) + "\"";
+              }
+              structured += "}";
             }
           }
         }
@@ -1163,74 +1193,160 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         const std::string tx_id = arg_str(args, "tx_id");
         auto it = active_txs.find(tx_id);
         if (it == active_txs.end()) {
-          structured = "{\"ok\":false,\"error\":\"unknown or closed tx_id\"}";
+          structured = "{\"ok\":false,\"trit\":-1,\"error\":\"unknown or closed tx_id\"}";
         } else {
           std::vector<uint8_t> bbytes;
           if (!read_file_bytes(jail, it->second.backup_path, bbytes) ||
               sha3_512_hex(bbytes) != it->second.before_sha3_512) {
-            structured = "{\"ok\":false,\"error\":\"backup integrity verification failed (SHA3-512 "
-                         "mismatch)\"}";
-          } else if (!write_file_bytes(jail, it->second.target_path, bbytes)) {
-            structured = "{\"ok\":false,\"error\":\"failed restoring target_path\"}";
+            structured = "{\"ok\":false,\"trit\":-1,\"error\":\"backup integrity verification "
+                         "failed (SHA3-512 mismatch)\"}";
+          } else if (!it->second.isolated &&
+                     !write_file_bytes(jail, it->second.target_path, bbytes)) {
+            structured = "{\"ok\":false,\"trit\":-1,\"error\":\"failed restoring target_path\"}";
           } else {
             std::error_code ec;
             fs::remove(it->second.backup_path, ec);
+            if (it->second.isolated && !it->second.staging_path.empty()) {
+              fs::remove(it->second.staging_path, ec);
+            }
             const std::string restored_sha = it->second.before_sha3_512;
+            const std::string aid = it->second.agent_id;
             active_txs.erase(it);
-            structured = "{\"ok\":true,\"tx_id\":\"" + tx_id +
-                         "\",\"aborted\":true,\"restored_sha3_512\":\"" + restored_sha + "\"}";
+            structured = "{\"ok\":true,\"trit\":-1,\"tx_id\":\"" + tx_id + "\",\"agent_id\":\"" +
+                         json_escape_mcp(aid) + "\",\"aborted\":true,\"restored_sha3_512\":\"" +
+                         restored_sha + "\"}";
           }
         }
       } else if (name == "t81.tx_commit") {
         const std::string tx_id = arg_str(args, "tx_id");
         const std::string ppath = arg_str(args, "policy_path");
+        const std::string req_agent = arg_str(args, "agent_id");
+        const std::string expected_parent = arg_str(args, "expected_parent_sha3_512");
+        const int64_t max_abs_err = arg_int64(args, "max_abs_err", 0);
+        const int64_t fallback_cnt = arg_int64(args, "dualrail_fallback_count", 0);
+        const bool repeat_ok = arg_bool(args, "repeat_sha3_identical", true);
+        const bool req_auto_abort = arg_bool(args, "auto_abort_on_deny", false);
         auto it = active_txs.find(tx_id);
         if (it == active_txs.end()) {
-          structured = "{\"ok\":false,\"error\":\"unknown or closed tx_id\"}";
+          structured = "{\"ok\":false,\"trit\":-1,\"error\":\"unknown or closed tx_id\"}";
         } else if (ppath.empty()) {
-          structured = "{\"ok\":false,\"committed\":false,\"tx_id\":\"" + tx_id +
+          structured = "{\"ok\":false,\"trit\":-1,\"committed\":false,\"tx_id\":\"" + tx_id +
                        "\",\"error\":\"missing required argument: policy_path\"}";
+        } else if (!req_agent.empty() && req_agent != it->second.agent_id) {
+          structured = "{\"ok\":false,\"trit\":-1,\"committed\":false,\"tx_id\":\"" + tx_id +
+                       "\",\"code\":\"ERR_AGENT_MISMATCH\",\"error\":\"agent_id does not own "
+                       "transaction\"}";
         } else {
+          const ActiveTx tx = it->second;
+          const bool do_auto_abort = req_auto_abort || tx.isolated;
+          const fs::path candidate_path = tx.isolated ? tx.staging_path : tx.target_path;
           std::vector<uint8_t> after_bytes;
-          if (!read_file_bytes(jail, it->second.target_path, after_bytes)) {
-            structured = "{\"ok\":false,\"error\":\"could not read mutated target_path\"}";
+          std::vector<uint8_t> live_bytes;
+          if (!read_file_bytes(jail, candidate_path, after_bytes)) {
+            structured =
+                "{\"ok\":false,\"trit\":-1,\"error\":\"could not read mutated target_path\"}";
+          } else if (!read_file_bytes(jail, tx.target_path, live_bytes)) {
+            structured = "{\"ok\":false,\"trit\":-1,\"error\":\"could not read live target_path\"}";
           } else {
             const std::string after_sha = sha3_512_hex(after_bytes);
+            const std::string live_sha = sha3_512_hex(live_bytes);
             bool policy_ok = true;
+            std::string deny_code;
             std::string policy_err;
-            {
+
+            if (tx.isolated && live_sha != tx.before_sha3_512) {
+              policy_ok = false;
+              deny_code = "ERR_TX_CONFLICT";
+              policy_err = "stale transaction: target_path was committed by a peer; rebase on "
+                           "current_sha3_512";
+            } else if (!expected_parent.empty() && live_sha != expected_parent) {
+              policy_ok = false;
+              deny_code = "ERR_PARENT_RECEIPT_MISMATCH";
+              policy_err = "expected_parent_sha3_512 does not match live target_path SHA3-512";
+            } else if (max_abs_err != 0) {
+              policy_ok = false;
+              deny_code = "ERR_BUDGET_MAX_ABS_ERR";
+              policy_err = "capability budget violated: max_abs_err != 0";
+            } else if (fallback_cnt != 0) {
+              policy_ok = false;
+              deny_code = "ERR_BUDGET_DUALRAIL_FALLBACK";
+              policy_err = "capability budget violated: dualrail_fallback_count != 0";
+            } else if (!repeat_ok) {
+              policy_ok = false;
+              deny_code = "ERR_BUDGET_REPEAT_DETERMINISM";
+              policy_err = "capability budget violated: repeat_sha3_identical != true";
+            } else {
+              fs::path policy_canon;
               std::vector<uint8_t> pbytes;
-              if (!read_file_bytes(jail, ppath, pbytes)) {
+              if (!jail.resolve(ppath, policy_canon) || !read_file_bytes(jail, ppath, pbytes)) {
                 policy_ok = false;
+                deny_code = "ERR_POLICY_READ";
                 policy_err =
                     jail.last_error.empty() ? "could not read policy_path" : jail.last_error;
+              } else if (policy_canon == tx.target_path) {
+                policy_ok = false;
+                deny_code = "ERR_IMMUTABLE_POLICY_ROOT";
+                policy_err = "policy_path is immutable and outside agent tx_commit write authority";
               } else {
                 std::string ptext(pbytes.begin(), pbytes.end());
                 auto pres = t81::axion::parse_policy(ptext);
                 if (!pres) {
                   policy_ok = false;
+                  deny_code = "ERR_POLICY_PARSE";
                   policy_err = pres.error();
-                } else {
-                  if (!policy_admits_hash(pres.value(), after_sha)) {
-                    policy_ok = false;
-                    policy_err = "mutated target_path SHA3-512 denied by policy; call t81.tx_abort "
-                                 "to restore";
-                  }
+                } else if (!policy_admits_hash(pres.value(), after_sha)) {
+                  policy_ok = false;
+                  deny_code = "ERR_POLICY_HASH_DENIED";
+                  policy_err =
+                      "mutated target_path SHA3-512 denied by policy; call t81.tx_abort to restore";
                 }
               }
             }
+
             if (!policy_ok) {
-              structured = "{\"ok\":false,\"committed\":false,\"tx_id\":\"" + tx_id +
-                           "\",\"error\":\"" + json_escape_mcp(policy_err) + "\"}";
+              bool auto_aborted = false;
+              if (do_auto_abort) {
+                std::vector<uint8_t> bbytes;
+                if (!tx.isolated && read_file_bytes(jail, tx.backup_path, bbytes) &&
+                    sha3_512_hex(bbytes) == tx.before_sha3_512) {
+                  (void)write_file_bytes(jail, tx.target_path, bbytes);
+                }
+                std::error_code ec;
+                fs::remove(tx.backup_path, ec);
+                if (tx.isolated && !tx.staging_path.empty()) {
+                  fs::remove(tx.staging_path, ec);
+                }
+                active_txs.erase(it);
+                auto_aborted = true;
+              }
+              structured = "{\"ok\":false,\"trit\":-1,\"committed\":false,\"auto_aborted\":" +
+                           std::string(auto_aborted ? "true" : "false") + ",\"tx_id\":\"" + tx_id +
+                           "\",\"agent_id\":\"" + json_escape_mcp(tx.agent_id) + "\",\"code\":\"" +
+                           deny_code + "\",\"current_sha3_512\":\"" + live_sha + "\",\"error\":\"" +
+                           json_escape_mcp(policy_err) + "\"}";
             } else {
-              std::error_code ec;
-              fs::remove(it->second.backup_path, ec);
-              const std::string before_sha = it->second.before_sha3_512;
-              const bool changed = (before_sha != after_sha);
-              active_txs.erase(it);
-              structured = "{\"ok\":true,\"committed\":true,\"tx_id\":\"" + tx_id +
-                           "\",\"before_sha3_512\":\"" + before_sha + "\",\"after_sha3_512\":\"" +
-                           after_sha + "\",\"changed\":" + (changed ? "true" : "false") + "}";
+              if (tx.isolated && !write_file_bytes(jail, tx.target_path, after_bytes)) {
+                structured =
+                    "{\"ok\":false,\"trit\":-1,\"committed\":false,\"error\":\"failed publishing "
+                    "staged artifact to target_path\"}";
+              } else {
+                std::error_code ec;
+                fs::remove(tx.backup_path, ec);
+                if (tx.isolated && !tx.staging_path.empty()) {
+                  fs::remove(tx.staging_path, ec);
+                }
+                const std::string before_sha = tx.before_sha3_512;
+                const bool changed = (before_sha != after_sha);
+                const std::string receipt_in = before_sha + "|" + after_sha + "|" + tx.agent_id;
+                const std::string commit_receipt =
+                    sha3_512_hex(std::vector<uint8_t>(receipt_in.begin(), receipt_in.end()));
+                active_txs.erase(it);
+                structured = "{\"ok\":true,\"trit\":1,\"committed\":true,\"tx_id\":\"" + tx_id +
+                             "\",\"agent_id\":\"" + json_escape_mcp(tx.agent_id) +
+                             "\",\"before_sha3_512\":\"" + before_sha + "\",\"after_sha3_512\":\"" +
+                             after_sha + "\",\"commit_receipt\":\"" + commit_receipt +
+                             "\",\"changed\":" + (changed ? "true" : "false") + "}";
+              }
             }
           }
         }
