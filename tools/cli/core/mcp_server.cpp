@@ -1353,6 +1353,8 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                     "\",\"dualrail_fastpath_hits\":" + std::to_string(dr_tel.fastpath_hits) +
                     ",\"dualrail_dense_hits\":" + std::to_string(dr_tel.dense_hits) +
                     ",\"dualrail_sparse128_hits\":" + std::to_string(dr_tel.sparse128_hits) +
+                    ",\"dualrail_sparse128_blocks_skipped\":" +
+                    std::to_string(dr_tel.sparse128_blocks_skipped) +
                     ",\"dualrail_fallback_count\":" + std::to_string(dr_tel.fallback_count) +
                     ",\"instruction_count\":" + std::to_string(dec.value().insns.size()) +
                     ",\"matmul_count\":" + std::to_string(vr.matmul_count) +

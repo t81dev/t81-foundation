@@ -1419,6 +1419,7 @@ struct CachedDualRailRhs {
   std::vector<std::uint64_t> Bn;
   // Regime-aware 128-trit SIMD sparse stream (populated when K%128==0 and sparsity >= 50%).
   bool use_sparse128 = false;
+  std::uint64_t sp_blocks_skipped = 0;
   std::vector<std::uint32_t> sp_col_offsets;
   std::vector<std::uint16_t> sp_blk_idx;
   std::vector<std::uint64_t> sp_bp;
@@ -1440,6 +1441,7 @@ void build_sparse128_if_beneficial(CachedDualRailRhs& rhs) {
   // H06-MEM-02 threshold: route to 128-trit SIMD sparse when block sparsity >= 50%.
   if (active * 2 > total_blocks) return;
   rhs.use_sparse128 = true;
+  rhs.sp_blocks_skipped = static_cast<std::uint64_t>(total_blocks - active);
   rhs.sp_col_offsets.resize(rhs.N + 1, 0);
   rhs.sp_blk_idx.reserve(active);
   rhs.sp_bp.reserve(active * 2);
@@ -1720,6 +1722,7 @@ bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
 
   std::atomic<std::uint64_t>& dualrail_dense_counter();
   std::atomic<std::uint64_t>& dualrail_sparse128_counter();
+  std::atomic<std::uint64_t>& dualrail_sparse128_blocks_skipped_counter();
 
   if (cached_rhs->use_sparse128) {
     for (std::size_t m = 0; m < M; ++m) {
@@ -1760,6 +1763,8 @@ bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
       }
     }
     dualrail_sparse128_counter().fetch_add(1, std::memory_order_relaxed);
+    dualrail_sparse128_blocks_skipped_counter().fetch_add(
+        static_cast<std::uint64_t>(M) * cached_rhs->sp_blocks_skipped, std::memory_order_relaxed);
   } else {
     dualrail_dense_counter().fetch_add(1, std::memory_order_relaxed);
     std::vector<std::size_t> active_pairs;
@@ -1939,13 +1944,19 @@ std::atomic<std::uint64_t>& dualrail_sparse128_counter() {
   return c;
 }
 
+std::atomic<std::uint64_t>& dualrail_sparse128_blocks_skipped_counter() {
+  static std::atomic<std::uint64_t> c{0};
+  return c;
+}
+
 }  // namespace
 
 DualRailTelemetry dualrail_telemetry() noexcept {
   return {g_dualrail_fastpath_hits.load(std::memory_order_relaxed),
           g_dualrail_fallback_count.load(std::memory_order_relaxed),
           dualrail_dense_counter().load(std::memory_order_relaxed),
-          dualrail_sparse128_counter().load(std::memory_order_relaxed)};
+          dualrail_sparse128_counter().load(std::memory_order_relaxed),
+          dualrail_sparse128_blocks_skipped_counter().load(std::memory_order_relaxed)};
 }
 
 void reset_dualrail_telemetry() noexcept {
@@ -1953,6 +1964,7 @@ void reset_dualrail_telemetry() noexcept {
   g_dualrail_fallback_count.store(0, std::memory_order_relaxed);
   dualrail_dense_counter().store(0, std::memory_order_relaxed);
   dualrail_sparse128_counter().store(0, std::memory_order_relaxed);
+  dualrail_sparse128_blocks_skipped_counter().store(0, std::memory_order_relaxed);
 }
 
 t81::T729DynamicTensor tensor_matmul_2d(const t81::T729DynamicTensor& lhs,

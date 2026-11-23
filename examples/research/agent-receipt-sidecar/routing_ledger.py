@@ -1294,6 +1294,22 @@ def run_self_test() -> int:
     )
     assert r_gpu_cross_ok["status"] == "ACCEPTED_CONFIRMED"
 
+    r_mem10_falsified = ledger.evaluate_candidate(
+        RoutingCandidate(
+            experiment_id="H06-MEM-10",
+            regime="R1_ternary_act",
+            kernel="GPU_R1_SBDR128_Pop",
+            scope="L=64, 4096x1024, M=1..4 CSR Metal sparse vs dense GPU (0.67x-1.06x) & 1T CPU (0.77x @ 90%)",
+            measured_speedup=0.77,
+            min_speedup_threshold=1.25,
+            max_abs_err=0,
+            constraint_tag="gpu_csr_sbdr128_sparse",
+            note="Falsified on M2: 64L dispatch floor + <32-block SIMD under-utilization + gather overhead.",
+        ),
+        gpu_r1_receipts,
+    )
+    assert r_mem10_falsified["status"] == "REJECTED_FALSIFIED"
+
     # Synthetic fail-closed checks for receipt drift and nonzero fallback
     drifted = ReceiptPair(ok_run1, {**ok_run2, "execution_receipt": "sha3-512:" + ("f" * 128)})
     assert (

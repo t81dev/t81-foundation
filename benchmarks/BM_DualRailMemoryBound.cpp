@@ -392,6 +392,38 @@ void matvec_dualrail_dense(const uint64_t* ap, const uint64_t* an, const uint64_
     out[n + 2] = static_cast<int32_t>(vaddlvq_u16(p2)) - static_cast<int32_t>(vaddlvq_u16(n2));
     out[n + 3] = static_cast<int32_t>(vaddlvq_u16(p3)) - static_cast<int32_t>(vaddlvq_u16(n3));
   }
+#elif defined(__x86_64__) && defined(__AVX2__)
+  const __m256i low_mask = _mm256_set1_epi8(0x0F);
+  const __m256i popcnt_lut = _mm256_setr_epi8(0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4, 0, 1,
+                                              1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4);
+  const __m256i zero256 = _mm256_setzero_si256();
+  auto popcnt256_u8 = [&](__m256i v) -> __m256i {
+    const __m256i lo = _mm256_shuffle_epi8(popcnt_lut, _mm256_and_si256(v, low_mask));
+    const __m256i hi =
+        _mm256_shuffle_epi8(popcnt_lut, _mm256_and_si256(_mm256_srli_epi16(v, 4), low_mask));
+    return _mm256_sad_epu8(_mm256_add_epi8(lo, hi), zero256);
+  };
+  auto hsum_u64x4 = [](__m256i v) -> int32_t {
+    alignas(32) uint64_t tmp[4];
+    _mm256_store_si256(reinterpret_cast<__m256i*>(tmp), v);
+    return static_cast<int32_t>(tmp[0] + tmp[1] + tmp[2] + tmp[3]);
+  };
+  for (; n < kN; ++n) {
+    const uint64_t* bp = Bp + n * kW64;
+    const uint64_t* bn = Bn + n * kW64;
+    __m256i p_acc = zero256, n_acc = zero256;
+    for (size_t w = 0; w < kW64; w += 4) {
+      const __m256i avp = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(ap + w));
+      const __m256i avn = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(an + w));
+      const __m256i bvp = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(bp + w));
+      const __m256i bvn = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(bn + w));
+      const __m256i ps = _mm256_or_si256(_mm256_and_si256(avp, bvp), _mm256_and_si256(avn, bvn));
+      const __m256i pd = _mm256_or_si256(_mm256_and_si256(avp, bvn), _mm256_and_si256(avn, bvp));
+      p_acc = _mm256_add_epi64(p_acc, popcnt256_u8(ps));
+      n_acc = _mm256_add_epi64(n_acc, popcnt256_u8(pd));
+    }
+    out[n] = hsum_u64x4(p_acc) - hsum_u64x4(n_acc);
+  }
 #endif
   for (; n < kN; ++n) {
     int32_t acc = 0;
@@ -753,6 +785,34 @@ void matvec_sbdr128_simd(const uint64_t* ap, const uint64_t* an,
       n_acc = vpadalq_u8(n_acc, vcntq_u8(vorrq_u8(vandq_u8(avp, bvn), vandq_u8(avn, bvp))));
     }
     out[n] = static_cast<int32_t>(vaddlvq_u16(p_acc)) - static_cast<int32_t>(vaddlvq_u16(n_acc));
+#elif defined(__x86_64__) && defined(__AVX2__)
+    const __m128i low_mask = _mm_set1_epi8(0x0F);
+    const __m128i popcnt_lut = _mm_setr_epi8(0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4);
+    const __m128i zero128 = _mm_setzero_si128();
+    __m128i p_acc = zero128, n_acc = zero128;
+    for (uint32_t idx = begin; idx < end; ++idx) {
+      const size_t w = static_cast<size_t>(layer.blk_idx[idx]) * 2;
+      const __m128i avp = _mm_loadu_si128(reinterpret_cast<const __m128i*>(ap + w));
+      const __m128i avn = _mm_loadu_si128(reinterpret_cast<const __m128i*>(an + w));
+      const __m128i bvp = _mm_loadu_si128(
+          reinterpret_cast<const __m128i*>(layer.bp.data() + static_cast<size_t>(idx) * 2));
+      const __m128i bvn = _mm_loadu_si128(
+          reinterpret_cast<const __m128i*>(layer.bn.data() + static_cast<size_t>(idx) * 2));
+      const __m128i ps = _mm_or_si128(_mm_and_si128(avp, bvp), _mm_and_si128(avn, bvn));
+      const __m128i pd = _mm_or_si128(_mm_and_si128(avp, bvn), _mm_and_si128(avn, bvp));
+      const __m128i ps_c = _mm_add_epi8(
+          _mm_shuffle_epi8(popcnt_lut, _mm_and_si128(ps, low_mask)),
+          _mm_shuffle_epi8(popcnt_lut, _mm_and_si128(_mm_srli_epi16(ps, 4), low_mask)));
+      const __m128i pd_c = _mm_add_epi8(
+          _mm_shuffle_epi8(popcnt_lut, _mm_and_si128(pd, low_mask)),
+          _mm_shuffle_epi8(popcnt_lut, _mm_and_si128(_mm_srli_epi16(pd, 4), low_mask)));
+      p_acc = _mm_add_epi64(p_acc, _mm_sad_epu8(ps_c, zero128));
+      n_acc = _mm_add_epi64(n_acc, _mm_sad_epu8(pd_c, zero128));
+    }
+    alignas(16) uint64_t pt[2], nt[2];
+    _mm_store_si128(reinterpret_cast<__m128i*>(pt), p_acc);
+    _mm_store_si128(reinterpret_cast<__m128i*>(nt), n_acc);
+    out[n] = static_cast<int32_t>((pt[0] + pt[1]) - (nt[0] + nt[1]));
 #else
     int32_t acc = 0;
     for (uint32_t idx = begin; idx < end; ++idx) {
@@ -789,6 +849,22 @@ void matvec_int8_sparse128(const int8_t* act, const LayerSet64::Sparse128Int8& l
       acc1 = vdotq_s32(acc1, vld1q_s8(ap + 112), vld1q_s8(wp + 112));
     }
     out[n] = vaddvq_s32(vaddq_s32(acc0, acc1));
+#elif defined(__x86_64__) && defined(__AVX2__)
+    __m256i acc256 = _mm256_setzero_si256();
+    for (uint32_t idx = begin; idx < end; ++idx) {
+      const int8_t* ap = act + static_cast<size_t>(layer.blk_idx[idx]) * 128;
+      const int8_t* wp = layer.blocks.data() + static_cast<size_t>(idx) * 128;
+      for (size_t off = 0; off < 128; off += 16) {
+        const __m256i a16 =
+            _mm256_cvtepi8_epi16(_mm_loadu_si128(reinterpret_cast<const __m128i*>(ap + off)));
+        const __m256i w16 =
+            _mm256_cvtepi8_epi16(_mm_loadu_si128(reinterpret_cast<const __m128i*>(wp + off)));
+        acc256 = _mm256_add_epi32(acc256, _mm256_madd_epi16(a16, w16));
+      }
+    }
+    alignas(32) int32_t tmp[8];
+    _mm256_store_si256(reinterpret_cast<__m256i*>(tmp), acc256);
+    out[n] = tmp[0] + tmp[1] + tmp[2] + tmp[3] + tmp[4] + tmp[5] + tmp[6] + tmp[7];
 #else
     int32_t acc = 0;
     for (uint32_t idx = begin; idx < end; ++idx) {

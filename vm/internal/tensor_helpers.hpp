@@ -177,6 +177,7 @@ struct DualRailTelemetry {
   std::uint64_t fallback_count{0};
   std::uint64_t dense_hits{0};
   std::uint64_t sparse128_hits{0};
+  std::uint64_t sparse128_blocks_skipped{0};
 };
 
 DualRailTelemetry dualrail_telemetry() noexcept;
