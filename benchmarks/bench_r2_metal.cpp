@@ -306,6 +306,43 @@ kernel void r1_sbdr128_pop_gemm(
   acc = simd_sum(acc);
   if (simd_lane == 0) C[m * d.N + n] = acc;
 }
+
+kernel void r1_bitmask_skip_pop_gemm(
+    device const uint4* Ap      [[buffer(0)]],
+    device const uint4* An      [[buffer(1)]],
+    device const uint* ColMask  [[buffer(2)]],
+    device const uint4* Bp      [[buffer(3)]],
+    device const uint4* Bn      [[buffer(4)]],
+    device int* C               [[buffer(5)]],
+    constant R2Dims& d          [[buffer(6)]],
+    uint2 tg_id                 [[threadgroup_position_in_grid]],
+    uint simd_lane              [[thread_index_in_simdgroup]],
+    uint simd_id                [[simdgroup_index_in_threadgroup]],
+    uint simds_per_tg           [[simdgroups_per_threadgroup]]) {
+  uint n = tg_id.x * simds_per_tg + simd_id;
+  uint m = tg_id.y;
+  if (n >= d.N || m >= d.M) return;
+
+  uint mask = ColMask[n];
+  if (mask == 0u) {
+    if (simd_lane == 0) C[m * d.N + n] = 0;
+    return;
+  }
+
+  uint w4 = d.W32 >> 2;  // 32 128-trit blocks for K=4096 (1 lane per block)
+  int acc = 0;
+  if (simd_lane < w4 && ((mask >> simd_lane) & 1u) != 0u) {
+    uint4 ap = Ap[m * w4 + simd_lane];
+    uint4 an = An[m * w4 + simd_lane];
+    uint4 bp = Bp[n * w4 + simd_lane];
+    uint4 bn = Bn[n * w4 + simd_lane];
+    uint4 ps = popcount((ap & bp) | (an & bn));
+    uint4 pd = popcount((ap & bn) | (an & bp));
+    acc = int((ps.x + ps.y) + (ps.z + ps.w)) - int((pd.x + pd.y) + (pd.z + pd.w));
+  }
+  acc = simd_sum(acc);
+  if (simd_lane == 0) C[m * d.N + n] = acc;
+}
 )";
 
 struct R2Dims {
@@ -357,6 +394,7 @@ int main(int argc, char** argv) {
     id<MTLComputePipelineState> pso_lut = make_pso(@"r2_dualrail_lut_gemm");
     id<MTLComputePipelineState> pso_r1 = make_pso(@"r1_dualrail_pop_gemm");
     id<MTLComputePipelineState> pso_sbdr = make_pso(@"r1_sbdr128_pop_gemm");
+    id<MTLComputePipelineState> pso_bmask = make_pso(@"r1_bitmask_skip_pop_gemm");
     id<MTLCommandQueue> queue = [dev newCommandQueue];
 
     std::mt19937_64 rng(0x48303636ULL);
@@ -549,10 +587,14 @@ int main(int argc, char** argv) {
       const size_t kBlocksPerCol = kK / 128;  // 32 128-trit blocks per column
       for (int sp_pct : {50, 75, 90}) {
         std::vector<id<MTLBuffer>> s_off(L), s_idx(L), s_bp(L), s_bn(L);
+        std::vector<id<MTLBuffer>> m_mask(L), m_bp(L), m_bn(L);
         std::vector<std::vector<int8_t>> sparse_w_last(kN, std::vector<int8_t>(kK, 0));
         size_t total_bytes = 0;
+        size_t active_blocks_total = 0;
         for (size_t l = 0; l < L; ++l) {
           std::vector<uint32_t> offs(kN + 1, 0);
+          std::vector<uint32_t> col_masks(kN, 0);
+          std::vector<uint64_t> dense_bp(kN * kW64, 0), dense_bn(kN * kW64, 0);
           std::vector<uint16_t> idxs;
           std::vector<uint64_t> bp_v, bn_v;
           idxs.reserve((kN * kBlocksPerCol * (100 - sp_pct)) / 100 + kN);
@@ -570,6 +612,11 @@ int main(int argc, char** argv) {
               }
               uint64_t p[2], q[2];
               pack_row_simd(blk, p, q, 128);
+              col_masks[n] |= (1u << b);
+              dense_bp[n * kW64 + b * 2 + 0] = p[0];
+              dense_bp[n * kW64 + b * 2 + 1] = p[1];
+              dense_bn[n * kW64 + b * 2 + 0] = q[0];
+              dense_bn[n * kW64 + b * 2 + 1] = q[1];
               idxs.push_back(static_cast<uint16_t>(b));
               bp_v.push_back(p[0]);
               bp_v.push_back(p[1]);
@@ -578,6 +625,7 @@ int main(int argc, char** argv) {
             }
           }
           offs[kN] = static_cast<uint32_t>(idxs.size());
+          active_blocks_total += idxs.size();
           const size_t nnz = std::max<size_t>(1, idxs.size());
           s_off[l] = [dev newBufferWithBytes:offs.data()
                                       length:offs.size() * sizeof(uint32_t)
@@ -591,9 +639,22 @@ int main(int argc, char** argv) {
           s_bn[l] = [dev newBufferWithBytes:(bn_v.empty() ? nullptr : bn_v.data())
                                      length:nnz * 2 * sizeof(uint64_t)
                                     options:MTLResourceStorageModeShared];
+          m_mask[l] = [dev newBufferWithBytes:col_masks.data()
+                                       length:col_masks.size() * sizeof(uint32_t)
+                                      options:MTLResourceStorageModeShared];
+          m_bp[l] = [dev newBufferWithBytes:dense_bp.data()
+                                     length:dense_bp.size() * sizeof(uint64_t)
+                                    options:MTLResourceStorageModeShared];
+          m_bn[l] = [dev newBufferWithBytes:dense_bn.data()
+                                     length:dense_bn.size() * sizeof(uint64_t)
+                                    options:MTLResourceStorageModeShared];
           total_bytes += offs.size() * sizeof(uint32_t) + idxs.size() * sizeof(uint16_t) +
                          idxs.size() * 4 * sizeof(uint64_t);
         }
+        const size_t total_blocks_all = L * kN * kBlocksPerCol;
+        const size_t skipped_blocks = total_blocks_all - active_blocks_total;
+        const size_t bitmask_active_bytes =
+            L * kN * sizeof(uint32_t) + active_blocks_total * 4 * sizeof(uint64_t);
         for (uint32_t M : {1u, 4u, 16u}) {
           id<MTLBuffer> buf_ap = [dev newBufferWithLength:M * kW32 * sizeof(uint32_t)
                                                   options:MTLResourceStorageModeShared];
@@ -658,6 +719,45 @@ int main(int argc, char** argv) {
                     << " MB | real=" << std::setw(7) << std::setprecision(3) << ms
                     << " ms | per_tok=" << std::setw(7) << (ms / M) << " ms | bw=" << std::setw(6)
                     << std::setprecision(2) << gbs << " GB/s | sha3=OK\n";
+
+          // H06-MEM-11: Zero-indirection Bitmask-Skip Dense Metal (1 bit / 128-trit block)
+          auto run_bmask = [&]() {
+            id<MTLCommandBuffer> cb = [queue commandBuffer];
+            id<MTLComputeCommandEncoder> enc = [cb computeCommandEncoder];
+            [enc setComputePipelineState:pso_bmask];
+            for (size_t l = 0; l < L; ++l) {
+              [enc setBuffer:buf_ap offset:0 atIndex:0];
+              [enc setBuffer:buf_an offset:0 atIndex:1];
+              [enc setBuffer:m_mask[l] offset:0 atIndex:2];
+              [enc setBuffer:m_bp[l] offset:0 atIndex:3];
+              [enc setBuffer:m_bn[l] offset:0 atIndex:4];
+              [enc setBuffer:buf_c offset:0 atIndex:5];
+              [enc setBytes:&dims length:sizeof(dims) atIndex:6];
+              [enc dispatchThreadgroups:grid threadsPerThreadgroup:tg_size];
+            }
+            [enc endEncoding];
+            [cb commit];
+            [cb waitUntilCompleted];
+          };
+          run_bmask();
+          const std::string got_bm_sha =
+              sha3_512_hex(static_cast<const int32_t*>([buf_c contents]), M * kN);
+          if (got_bm_sha != exp_sha) {
+            std::cerr << "ORACLE MISMATCH on GPU_R1_BitmaskSkip_Pop sp=" << sp_pct << " M=" << M
+                      << "\n";
+            std::exit(2);
+          }
+          const auto t_bm0 = Clock::now();
+          for (int it = 0; it < kIters; ++it) run_bmask();
+          const double bm_ms =
+              std::chrono::duration<double, std::milli>(Clock::now() - t_bm0).count() / kIters;
+          const double bm_gbs = (static_cast<double>(bitmask_active_bytes) / 1e9) / (bm_ms / 1e3);
+          std::cout << "s=" << sp_pct << "% | M=" << std::setw(2) << M
+                    << " | GPU_R1_BitmaskSkip | skip=" << skipped_blocks << "/" << total_blocks_all
+                    << " | real=" << std::setw(7) << std::setprecision(3) << bm_ms
+                    << " ms | per_tok=" << std::setw(7) << (bm_ms / M)
+                    << " ms | bw=" << std::setw(6) << std::setprecision(2) << bm_gbs
+                    << " GB/s | sha3=OK\n";
         }
       }
     }
