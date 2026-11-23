@@ -6,6 +6,8 @@ Cadence: Weekly refresh
 
 No prose. If a risk needs an essay, escalate it.
 
+Index observation added 2026-11-23 (the tables below are unchanged): [Observation (2026-11-23)](#observation-2026-11-23).
+
 ## Open Risks
 
 | ID | Risk | Severity | Owner | Mitigation | Status |
@@ -36,3 +38,18 @@ No prose. If a risk needs an essay, escalate it.
 | **R-12** | **Semantic analyzer type safety gaps** — Narrowing conversions allowed when they should fail | **Semantic analyzer enhanced with numeric rank checking; proper narrowing prevention** | **2026-03-03** |
 | **R-13** | **CI build failures blocking development** — Lychee link checking and documentation reference failures | **All CI issues resolved; 100% test success rate achieved; CI now green** | **2026-03-04** |
 | **R-15** | **CI workflow instability** — lychee v0.23.0 panic, non-absolute `--root-dir`, missing job timeouts, CLI manual path mismatch, `CanonHash<T81String>` non-determinism | **All fixed in `bda2f089` + PR #448; 325/325 tests; canonical ci.yml restored** | **2026-03-07** |
+
+## Observation (2026-11-23)
+
+The open and closed tables above stay as recorded on 2026-04-01. R-05 through R-09 remain Monitoring at those severities. This note does not close, reopen, or re-rate any risk, and it does not weaken a gate.
+
+GitHub facts checked the same day, against `main` `5a005b2dea5e1eb262d4af45698f8338d16b137c`. The control-page table with the same links is [Observed GitHub state (2026-11-23)](PROJECT_CONTROL_CENTER.md#observed-github-state-2026-11-23).
+
+- R-06 (documentation drift) is why this note exists. The 2026-04-01 control pages were behind GitHub. Adding this note does not retire R-06.
+- R-07 (portability churn) has no new Windows or ARM64 closure in this note.
+- R-08 (RFC-00D1 stall) is not closed by [#842](https://github.com/t81dev/t81-foundation/pull/842) or [#848](https://github.com/t81dev/t81-foundation/pull/848). Those merges record bounded CanonFS export-denial checks only.
+- R-09 (benchmark variability) is untouched.
+- [#698](https://github.com/t81dev/t81-foundation/pull/698) closed unmerged on 2026-11-22. That does not replace the physical-host-unavailable finding and is not a risk closure.
+- [#699](https://github.com/t81dev/t81-foundation/pull/699) remains an open draft. This note does not approve it.
+- [#748](https://github.com/t81dev/t81-foundation/pull/748) closed unmerged on 2026-11-15. It is not an open blocker in this register.
+- [#707](https://github.com/t81dev/t81-foundation/pull/707), [#752](https://github.com/t81dev/t81-foundation/pull/752), and [#845](https://github.com/t81dev/t81-foundation/pull/845) merged on 2026-11-22. None of them changes an open-risk row above. Phase C performance measurement remains frozen ([#752](https://github.com/t81dev/t81-foundation/pull/752)). Native 5-check verification is not newly qualified ([#845](https://github.com/t81dev/t81-foundation/pull/845)).

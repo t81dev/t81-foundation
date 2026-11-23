@@ -7,6 +7,8 @@ Version: 1.10.0
 
 This is the dashboard. One page. If you need detail, follow a cross-reference.
 
+Index observation added 2026-11-23 (the 2026-04-01 entries below are unchanged): [Observed GitHub state (2026-11-23)](#observed-github-state-2026-11-23).
+
 ---
 
 ## Phase
@@ -137,3 +139,30 @@ Full boundary: `EXTENSION_PROFILE.md`
 | What does the spec-to-impl matrix say? | `IMPLEMENTATION_MATRIX.md` |
 | What is the audit history? | `DETERMINISM_AUDIT_LOG.md` |
 | What are the dependency versions? | `DEPENDENCY_HEALTH.md` |
+
+---
+
+## Observed GitHub state (2026-11-23)
+
+Non-normative index observation against `main` `5a005b2dea5e1eb262d4af45698f8338d16b137c` (merge of [#848](https://github.com/t81dev/t81-foundation/pull/848) on 2026-11-23). The phase, health, gate, drift, risk, hardening, and decision sections above are the retained 2026-04-01 record. This section does not open, close, weaken, or restate any gate in that table, and it does not change a risk id, severity, or status.
+
+Checked with the GitHub API on 2026-11-23. Each merge commit below is an ancestor of the observed `main` SHA. Closed-unmerged rows have `merged_at` null.
+
+| PR | GitHub state | When | Merge commit on main | Recorded scope |
+| :--- | :--- | :--- | :--- | :--- |
+| [#698](https://github.com/t81dev/t81-foundation/pull/698) | Closed, not merged | 2026-11-22 | — | BASE-01 physical Linux correctness report. `PHYSICAL_HOST_UNAVAILABLE` is unchanged. |
+| [#699](https://github.com/t81dev/t81-foundation/pull/699) | Open draft | still open | — | BASE-01 B1 CanonFS retained-output budget amendment. No protocol approval is recorded by this observation. |
+| [#701](https://github.com/t81dev/t81-foundation/pull/701) | Merged | 2026-11-04 | `9bbc4453ca136251448201cf9166c2bd167e1f67` | Portable CanonFS filenames and Windows VM Debug correctness. Already recorded as merged; rechecked. |
+| [#702](https://github.com/t81dev/t81-foundation/pull/702) | Closed draft, not merged | 2026-11-10 | — | CanonFS CLI object-listing canonical references. The 2026-11-10 index grouped this with open work. |
+| [#703](https://github.com/t81dev/t81-foundation/pull/703) | Closed draft, not merged | 2026-11-10 | — | Portable snapshot directory names, stacked on #702. Closed without merge. |
+| [#705](https://github.com/t81dev/t81-foundation/pull/705) | Merged | 2026-11-05 | `d999f58f92080afe4c8c246147bf51bad9e7c88b` | CanonFS portable snapshot path resolution and CLI regression suite. The 2026-11-10 index grouped this as open. |
+| [#707](https://github.com/t81dev/t81-foundation/pull/707) | Merged | 2026-11-22 | `a958b6e5a6a8c8b754887b8fb4c259a33d94dc1f` | T81-CPA-002 opcode matrix test repair. Opcode assignments and frozen specifications are unchanged. |
+| [#747](https://github.com/t81dev/t81-foundation/pull/747) | Closed draft, not merged | 2026-11-13 | — | CI runner/portability parent of #748. Closed without merge. |
+| [#748](https://github.com/t81dev/t81-foundation/pull/748) | Closed draft, not merged | 2026-11-15 | — | CanonFS block metadata authorization, stacked on #747. Not an open PR. |
+| [#752](https://github.com/t81dev/t81-foundation/pull/752) | Merged | 2026-11-22 | `c9bc4d75f239f10a7bf43f0bd63843190b0a2aff` | H04-R03 status overlay. Phase C performance measurement remains frozen. |
+| [#792](https://github.com/t81dev/t81-foundation/pull/792) | Merged | 2026-11-15 | `a3ae3b16b5afebff4a7ba3c0d2cffe8a69c11b1d` | Recorded successor of closed #748 in `docs/ai-context/T81_RESEARCH_STATUS_2026-11-15.md`. This observation does not restate that PR's authorization verdict. |
+| [#842](https://github.com/t81dev/t81-foundation/pull/842) | Merged | 2026-11-22 | `78e66dd52d6f43d91ba8dfef4bfdcfef24078448` | Test: denied CanonFS export preserves existing destination bytes. |
+| [#845](https://github.com/t81dev/t81-foundation/pull/845) | Merged | 2026-11-22 | `120b8dc90478fb25b82b11138fcc8101b3cffb37` | AArch64 QEMU boot demo setup and success reporting. Native 5-check verification is not newly qualified. |
+| [#848](https://github.com/t81dev/t81-foundation/pull/848) | Merged | 2026-11-23 | `5a005b2dea5e1eb262d4af45698f8338d16b137c` | Denied CanonFS directory export is not materialized on the host before admission. SCG-08 Gate 2, H01/10A, and F01 M1–M6 stay as previously recorded. |
+
+`docs/architecture/visualization/research_programs.json` carries the same GitHub index lines. Its `authoritative_baseline_commit` remains `6c9eaf1a2fc8368cd06f6dddbbdcd78e6606c0ce`, the 2026-11-10 visualization anchor. Hypothesis mappings in that file were not edited. `docs/ai-context/CURRENT_STATE.json` was not edited.

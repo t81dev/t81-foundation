@@ -1,8 +1,13 @@
 {
   "schema_version": "1.0.0",
   "authoritative_baseline_commit": "6c9eaf1a2fc8368cd06f6dddbbdcd78e6606c0ce",
-  "generated_at": "2026-11-10T21:00:00Z",
-  "description": "Evidence-linked active and historical research programs across the T81 Foundation platform",
+  "generated_at": "2026-11-23T13:50:00Z",
+  "github_index_refresh": {
+    "observed_at": "2026-11-23T13:50:00Z",
+    "observed_main": "5a005b2dea5e1eb262d4af45698f8338d16b137c",
+    "note": "GitHub pull-request index lines were checked against the GitHub API on this date. authoritative_baseline_commit remains the 2026-11-10 visualization anchor shared with the other dashboard datasets. It is not a claim that later merged commits were present at that anchor. Hypothesis mappings, scientific dispositions, verdicts, and gates in this file were not revised."
+  },
+  "description": "Evidence-linked active and historical research programs across the T81 Foundation platform. GitHub open/closed/merged index lines were refreshed on 2026-11-23; hypothesis mappings and recorded scientific dispositions were not.",
   "programs": [
     {
       "id": "program.scg",
@@ -160,6 +165,14 @@
           "receipt": "docs/architecture/diagnostics/phase4/REPORT.md",
           "pr": "#758 (commit 4b550b4d)",
           "details": "Evaluated 2-firmware / 2-launch matrix across original and matched configurations; fail-closed verifier confirmed rejecting 4/4 rows (exit status 1); stage-0 TRNG query unsupported. Matched debug launch reaches real shell but retains firmware errors. All four native configurations remain failed at 2/5; native 5-check verification remains NOT QUALIFIED."
+        },
+        {
+          "phase_id": "QEMU-BOOT-DEMO-845",
+          "title": "AArch64 QEMU boot demo setup and success reporting",
+          "disposition": "MERGED",
+          "receipt": "tests/qemu/test_boot_demo.py",
+          "pr": "#845 (merged 2026-11-22, https://github.com/t81dev/t81-foundation/pull/845, 120b8dc90478fb25b82b11138fcc8101b3cffb37)",
+          "details": "Merged launcher, workflow, and demo-test repair for the AArch64 QEMU boot demo (fixes #844). It passes the CanonFS image path explicitly, checks mformat/mmd/mcopy separately, and requires both a clean QEMU exit and the Axion shell prompt before reporting success. This entry does not change the Phase 3 or Phase 4 finding that native 5-check verification remains NOT QUALIFIED."
         }
       ]
     },
@@ -208,6 +221,14 @@
           "receipt": "spec/rfcs/RFC-00D6-versioned-tisc-state-transition-contract.md",
           "pr": "Draft RFC",
           "details": "Decision matrix addressing memory operands, branch semantics, TXor truth table, and atomic trap progression."
+        },
+        {
+          "phase_id": "T81-CPA-002",
+          "title": "Opcode matrix conformance test repair",
+          "disposition": "MERGED",
+          "receipt": "docs/records/audits/T81_CPA_002_OPCODE_CONFORMANCE.md",
+          "pr": "#707 (merged 2026-11-22, https://github.com/t81dev/t81-foundation/pull/707, a958b6e5a6a8c8b754887b8fb4c259a33d94dc1f)",
+          "details": "Merged test and validation-record change. The PR selects defined opcodes, checks 244 opcode/A/B/C roundtrips, and rejects 12 undefined encodings, using T81_TEST_CHECK. Opcode assignments, instruction encoding, the decoder, and frozen specifications are unchanged. The audit records agent-executed engineering validation, not an independent scientific acceptance. This entry does not change TISC-1.1.0, CPA-004, CPA-006, or RFC-00D6 dispositions."
         }
       ]
     },
@@ -228,16 +249,32 @@
           "title": "CanonFS System Integration Audit & Portability",
           "disposition": "AUDIT_PUBLISHED",
           "receipt": "docs/ai-context/CURRENT_STATE.json",
-          "pr": "#701 (merged) / #702 / #703 / #705 (open)",
-          "details": "Snapshot directory portability, portable key formatting, and fail-closed legacy rejection."
+          "pr": "#701 (merged 2026-11-04, https://github.com/t81dev/t81-foundation/pull/701, 9bbc4453ca136251448201cf9166c2bd167e1f67) / #705 (merged 2026-11-05, https://github.com/t81dev/t81-foundation/pull/705, d999f58f92080afe4c8c246147bf51bad9e7c88b) / #702 (closed unmerged 2026-11-10, https://github.com/t81dev/t81-foundation/pull/702) / #703 (closed unmerged 2026-11-10, https://github.com/t81dev/t81-foundation/pull/703)",
+          "details": "Snapshot directory portability, portable key formatting, and fail-closed legacy rejection. GitHub on 2026-11-23: #701 and #705 are merged on main; #702 and #703 are closed drafts and were not merged (#703 was stacked on #702). The 2026-11-10 index grouped #702, #703, and #705 as open. AUDIT_PUBLISHED is unchanged."
         },
         {
           "phase_id": "PR-748",
           "title": "CanonFS Block Metadata Authorization",
-          "disposition": "OPEN_STACKED_PR",
-          "receipt": "docs/ai-context/T81_RESEARCH_STATUS_2026-11-10.md",
-          "pr": "#748 (stacked on #747)",
-          "details": "Explicit policy authorization boundary for CanonFS block metadata; awaiting #747 base integration."
+          "disposition": "CLOSED_UNMERGED",
+          "receipt": "docs/ai-context/T81_RESEARCH_STATUS_2026-11-15.md",
+          "pr": "#748 (closed unmerged 2026-11-15, https://github.com/t81dev/t81-foundation/pull/748; stacked on #747, https://github.com/t81dev/t81-foundation/pull/747)",
+          "details": "GitHub closed this draft on 2026-11-15 without merge. Its base, #747, was closed unmerged on 2026-11-13. It is not an open stacked PR. docs/ai-context/T81_RESEARCH_STATUS_2026-11-15.md records #748 as superseded by merged #792 (https://github.com/t81dev/t81-foundation/pull/792, a3ae3b16b5afebff4a7ba3c0d2cffe8a69c11b1d), which is an ancestor of observed main 5a005b2dea5e1eb262d4af45698f8338d16b137c. This line does not restate or raise the authorization verdict attached to #792."
+        },
+        {
+          "phase_id": "CANONFS-EXPORT-842",
+          "title": "Denied CanonFS export preserves existing destination bytes",
+          "disposition": "MERGED",
+          "receipt": "tests/cpp/cli_contract_test.cpp",
+          "pr": "#842 (merged 2026-11-22, https://github.com/t81dev/t81-foundation/pull/842, 78e66dd52d6f43d91ba8dfef4bfdcfef24078448)",
+          "details": "Merged test-only change. The PR extends the CLI contract test so a denied export leaves an existing destination byte-for-byte intact for a policy document, import-only, and deny-all. The PR body records a targeted macOS ARM64 CLI contract pass and says hosted validation was still pending. This entry does not close RFC-00D1 or change an authorization verdict."
+        },
+        {
+          "phase_id": "CANONFS-EXPORT-848",
+          "title": "Denied directory export stays off the host",
+          "disposition": "MERGED",
+          "receipt": "tests/cpp/canonfs_interchange_test.cpp",
+          "pr": "#848 (merged 2026-11-23, https://github.com/t81dev/t81-foundation/pull/848, 5a005b2dea5e1eb262d4af45698f8338d16b137c)",
+          "details": "Merged on main. export_ref creates a directory destination only when an admitted entry is about to be written. A fully denied directory export does not create a missing destination. A partial directory export writes only admitted entries and leaves an existing denied file unchanged. Provenance may still be written into CanonFS on denial. The PR states that SCG-08 Gate 2, H01/10A, and F01 M1–M6 are unchanged. This entry does not close those gates or change RFC acceptance."
         }
       ]
     },
@@ -257,8 +294,8 @@
           "title": "Physical Ternary Hardware Qualification Inquiry",
           "disposition": "PHYSICAL_HOST_UNAVAILABLE",
           "receipt": "docs/ai-context/BASE01_2026-11-03.md",
-          "pr": "#698 / #699 (open)",
-          "details": "Exploratory physical hardware qualification. Physical host/silicon unavailable; remains simulated RTL and emulation."
+          "pr": "#698 (closed unmerged 2026-11-22, https://github.com/t81dev/t81-foundation/pull/698) / #699 (open draft, https://github.com/t81dev/t81-foundation/pull/699)",
+          "details": "Exploratory physical hardware qualification. Physical host/silicon unavailable; remains simulated RTL and emulation. #698 closed without merge on 2026-11-22 and does not replace PHYSICAL_HOST_UNAVAILABLE. #699 remains an open draft proposing a CanonFS retained-output budget amendment and records no protocol approval."
         },
         {
           "phase_id": "RTL-DOTPROD",
@@ -288,6 +325,14 @@
           "receipt": "docs/research/continuity/H04_R03_FC1_EVIDENCE_RECEIPT.md",
           "pr": "#724 / #726 / #727 (merged)",
           "details": "Weak references track only registered Python-owned objects (not C heap arenas or OS physical pages). Phase C performance measurement remains strictly frozen."
+        },
+        {
+          "phase_id": "H04-R03-STATUS-752",
+          "title": "Separate current retention status from the historical snapshot",
+          "disposition": "MERGED",
+          "receipt": "docs/ai-context/H04_R03_ACCEPTANCE_FINDINGS_2026-11-06.md",
+          "pr": "#752 (merged 2026-11-22, https://github.com/t81dev/t81-foundation/pull/752, c9bc4d75f239f10a7bf43f0bd63843190b0a2aff)",
+          "details": "Merged documentation overlay. It separates the current retention status from the historical snapshot that still described Phase 4 retention as unimplemented at #724. The PR retains the registered-object and physical-reclamation limits. Phase C performance measurement remains strictly frozen. VERIFIED_BOUNDARY_ENFORCED on H04-R03-FC1 is unchanged."
         }
       ]
     }
