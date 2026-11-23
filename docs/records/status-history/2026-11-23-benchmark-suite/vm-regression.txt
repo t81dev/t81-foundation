@@ -1,0 +1,5 @@
+arg=32: dispatch=2262.50 ns native=1980.73 ns ratio=1.142x
+arg=256: dispatch=4266.77 ns native=3659.27 ns ratio=1.166x
+vm workload benchmark regression check PASSED
+- benchmark families checked: BM_VMSimulation_Dispatch, BM_NativeCall_Loop
+- args checked: 32, 256

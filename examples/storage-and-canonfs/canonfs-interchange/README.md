@@ -324,6 +324,14 @@ Expected shape:
 - error code: `canonfs-export-target-open-failed`
 - error reason: `target_open_failed`
 
+A manifest entry is rejected before it is written when its path is absolute or
+any path component is `..`. The export records `unsafe_target_path` and does not
+create the escaped host path. An unsafe-only manifest does not create the
+destination directory. A filename that only contains those characters, such as
+`nested/notes..txt`, stays admitted. Admitted entries in the same manifest still
+materialize inside the destination. The rejection is a target failure, so
+`policy_result` stays `allowed` when policy itself allowed the entry.
+
 ## Notes
 
 - This example is intentionally file-based and small.

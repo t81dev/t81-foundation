@@ -1,0 +1,99 @@
+{
+  "context": {
+    "date": "2026-11-23T04:23:26+00:00",
+    "host_name": "cursor",
+    "executable": "./build/benchmarks/benchmark_runner",
+    "num_cpus": 4,
+    "mhz_per_cpu": 2400,
+    "cpu_scaling_enabled": false,
+    "aslr_enabled": true,
+    "caches": [
+      {
+        "type": "Data",
+        "level": 1,
+        "size": 49152,
+        "num_sharing": 1
+      },
+      {
+        "type": "Instruction",
+        "level": 1,
+        "size": 32768,
+        "num_sharing": 1
+      },
+      {
+        "type": "Unified",
+        "level": 2,
+        "size": 2097152,
+        "num_sharing": 1
+      },
+      {
+        "type": "Unified",
+        "level": 3,
+        "size": 335544320,
+        "num_sharing": 4
+      }
+    ],
+    "load_avg": [2.06982,1.17871,0.459961],
+    "library_version": "v1.9.5",
+    "library_build_type": "release",
+    "json_schema_version": 1
+  },
+  "benchmarks": [
+    {
+      "name": "BM_VMSimulation_Dispatch/32",
+      "family_index": 0,
+      "per_family_instance_index": 0,
+      "run_name": "BM_VMSimulation_Dispatch/32",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 10000,
+      "real_time": 2.2625045000012278e+03,
+      "cpu_time": 2.2546466000000000e+03,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_VMSimulation_Dispatch/256",
+      "family_index": 0,
+      "per_family_instance_index": 1,
+      "run_name": "BM_VMSimulation_Dispatch/256",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 6321,
+      "real_time": 4.2667710805227962e+03,
+      "cpu_time": 4.2665402626166742e+03,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_NativeCall_Loop/32",
+      "family_index": 1,
+      "per_family_instance_index": 0,
+      "run_name": "BM_NativeCall_Loop/32",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 13885,
+      "real_time": 1.9807301404392563e+03,
+      "cpu_time": 1.9806574000720207e+03,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_NativeCall_Loop/256",
+      "family_index": 1,
+      "per_family_instance_index": 1,
+      "run_name": "BM_NativeCall_Loop/256",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 7807,
+      "real_time": 3.6592742410670335e+03,
+      "cpu_time": 3.6590599462021264e+03,
+      "time_unit": "ns"
+    }
+  ]
+}
