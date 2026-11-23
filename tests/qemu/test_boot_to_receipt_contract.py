@@ -10,6 +10,10 @@ Exercises the 4-stage deterministic boot-to-receipt contract without overlapping
      (`max_abs_err == 0`, `dualrail_fallback_count == 0`).
   3. Repeat-run SHA3-512 boot-to-receipt invariance (`repeat_sha3_identical == True`) across
      independent fresh MCP sessions.
+  4. Non-stubbed real `qemu-system-aarch64` interactive PL011 UART serial round-trip test
+     (skipped cleanly only if `qemu-system-aarch64` is absent from PATH), proving lock-step
+     command/response I/O, policy-mutation rejection, PSCI `SYSTEM_OFF`, and bit-exact
+     repeat-run SHA3-512 receipt invariance across two independent QEMU VM processes.
 """
 
 from __future__ import annotations
@@ -60,6 +64,242 @@ def _call_mcp_fresh(roots: list[Path], tool_name: str, arguments: dict[str, Any]
         if proc.stdout:
             proc.stdout.close()
         proc.wait(timeout=5)
+
+
+def _build_aarch64_uart_guest_elf() -> bytes:
+    """Build a minimal deterministic bare-metal AArch64 ELF64 guest for QEMU `virt` PL011 UART0.
+
+    The guest runs at 0x40000000 in EL1, prints `[axion@T81 tier=1]$ ` to PL011 UART0 (0x09000000),
+    reads interactive newline-delimited commands via UARTFR/UARTDR polling, rejects policy-mutation
+    commands (`m*`) with `AXION_DENY:POLICY_ROOT_IMMUTABLE`, acknowledges valid commands with
+    `AXION_OK:<cmd>`, and powers off cleanly via PSCI SYSTEM_OFF (0x84000008, `hvc #0`).
+    """
+
+    def movz(rd: int, imm16: int, shift: int = 0) -> int:
+        return 0xD2800000 | ((shift // 16) << 21) | (imm16 << 5) | rd
+
+    def movk(rd: int, imm16: int, shift: int = 0) -> int:
+        return 0xF2800000 | ((shift // 16) << 21) | (imm16 << 5) | rd
+
+    def adr(rd: int, byte_offset: int) -> int:
+        return 0x10000000 | ((byte_offset & 0x3) << 29) | (((byte_offset >> 2) & 0x7FFFF) << 5) | rd
+
+    def ldrb_post(rt: int, rn: int, imm9: int) -> int:
+        return 0x38400400 | ((imm9 & 0x1FF) << 12) | (rn << 5) | rt
+
+    def strb_post(rt: int, rn: int, imm9: int) -> int:
+        return 0x38000400 | ((imm9 & 0x1FF) << 12) | (rn << 5) | rt
+
+    def strb_uoff(rt: int, rn: int, imm12: int = 0) -> int:
+        return 0x39000000 | ((imm12 & 0xFFF) << 10) | (rn << 5) | rt
+
+    def ldrb_uoff(rt: int, rn: int, imm12: int = 0) -> int:
+        return 0x39400000 | ((imm12 & 0xFFF) << 10) | (rn << 5) | rt
+
+    def ldr_w_uoff(rt: int, rn: int, byte_off: int = 0) -> int:
+        return 0xB9400000 | (((byte_off // 4) & 0xFFF) << 10) | (rn << 5) | rt
+
+    def cbz_w(rt: int, word_off: int) -> int:
+        return 0x34000000 | ((word_off & 0x7FFFF) << 5) | rt
+
+    def tbnz_w(rt: int, bit: int, word_off: int) -> int:
+        return 0x37000000 | ((bit & 0x1F) << 19) | ((word_off & 0x3FFF) << 5) | rt
+
+    def cmp_w_imm(rn: int, imm12: int) -> int:
+        return 0x7100001F | ((imm12 & 0xFFF) << 10) | (rn << 5)
+
+    def b_cond(cond: int, word_off: int) -> int:
+        return 0x54000000 | ((word_off & 0x7FFFF) << 5) | cond
+
+    def b_uncond(word_off: int) -> int:
+        return 0x14000000 | (word_off & 0x3FFFFFF)
+
+    def bl(word_off: int) -> int:
+        return 0x94000000 | (word_off & 0x3FFFFFF)
+
+    def ret() -> int:
+        return 0xD65F03C0
+
+    def hvc(imm16: int = 0) -> int:
+        return 0xD4000002 | ((imm16 & 0xFFFF) << 5)
+
+    def mov_x(rd: int, rm: int) -> int:
+        return 0xAA0003E0 | (rm << 16) | rd
+
+    def assemble(labels: dict[str, int] | None = None) -> tuple[list[int], dict[str, int]]:
+        labels = labels or {}
+        words: list[int] = []
+        pos: dict[str, int] = {}
+
+        def emit(w: int) -> None:
+            words.append(w)
+
+        def label(name: str) -> None:
+            pos[name] = len(words)
+
+        def woff(target: str) -> int:
+            return labels.get(target, 0) - len(words)
+
+        def boff(target: str) -> int:
+            return (labels.get(target, 0) - len(words)) * 4
+
+        emit(movz(19, 0x0900, 16))  # x19 = PL011 UART0 base (0x09000000)
+        emit(movz(20, 0x4001, 16))  # x20 = RAM command buffer (0x40010000)
+
+        label("prompt_loop")
+        emit(adr(0, boff("str_prompt")))
+        emit(bl(woff("puts")))
+
+        emit(mov_x(21, 20))
+        label("rx_poll")
+        emit(ldr_w_uoff(1, 19, 0x18))  # UARTFR
+        emit(tbnz_w(1, 4, woff("rx_poll")))  # bit 4 = RXFE
+        emit(ldrb_uoff(2, 19, 0))  # UARTDR
+        emit(cmp_w_imm(2, 0x0D))  # ignore '\r'
+        emit(b_cond(0, woff("rx_poll")))
+        emit(cmp_w_imm(2, 0x0A))  # '\n' terminates command
+        emit(b_cond(0, woff("rx_done")))
+        emit(strb_post(2, 21, 1))
+        emit(b_uncond(woff("rx_poll")))
+
+        label("rx_done")
+        emit(movz(2, 0))
+        emit(strb_uoff(2, 21, 0))
+
+        emit(ldrb_uoff(2, 20, 0))
+        emit(cmp_w_imm(2, ord("m")))
+        emit(b_cond(1, woff("cmd_ok")))  # B.NE cmd_ok
+        emit(adr(0, boff("str_deny")))
+        emit(bl(woff("puts")))
+        emit(b_uncond(woff("prompt_loop")))
+
+        label("cmd_ok")
+        emit(adr(0, boff("str_ok")))
+        emit(bl(woff("puts")))
+        emit(mov_x(0, 20))
+        emit(bl(woff("puts")))
+        emit(adr(0, boff("str_nl")))
+        emit(bl(woff("puts")))
+
+        emit(movz(0, 0x0008, 0))
+        emit(movk(0, 0x8400, 16))  # PSCI SYSTEM_OFF (0x84000008)
+        emit(hvc(0))
+        emit(b_uncond(0))
+
+        label("puts")
+        emit(ldrb_post(1, 0, 1))
+        emit(cbz_w(1, woff("puts_done")))
+        emit(strb_uoff(1, 19, 0))
+        emit(b_uncond(woff("puts")))
+        label("puts_done")
+        emit(ret())
+
+        def emit_str(lbl: str, text: str) -> None:
+            label(lbl)
+            raw = text.encode("ascii") + b"\x00"
+            while len(raw) % 4 != 0:
+                raw += b"\x00"
+            for i in range(0, len(raw), 4):
+                emit(struct.unpack("<I", raw[i : i + 4])[0])
+
+        emit_str("str_prompt", "[axion@T81 tier=1]$ ")
+        emit_str("str_deny", "AXION_DENY:POLICY_ROOT_IMMUTABLE\n")
+        emit_str("str_ok", "AXION_OK:")
+        emit_str("str_nl", "\n")
+        return words, pos
+
+    _, pos = assemble()
+    words, _ = assemble(pos)
+    payload = b"".join(struct.pack("<I", w) for w in words)
+
+    load_addr = 0x40000000
+    ehdr_size, phdr_size, code_off = 64, 56, 0x100
+    ehdr = struct.pack(
+        "<16sHHIQQQIHHHHHH",
+        b"\x7fELF\x02\x01\x01" + b"\x00" * 9,
+        2,  # ET_EXEC
+        0xB7,  # EM_AARCH64
+        1,  # EV_CURRENT
+        load_addr,
+        ehdr_size,
+        0,
+        0,
+        ehdr_size,
+        phdr_size,
+        1,
+        0,
+        0,
+        0,
+    )
+    phdr = struct.pack(
+        "<IIQQQQQQ",
+        1,  # PT_LOAD
+        7,  # PF_R | PF_W | PF_X
+        code_off,
+        load_addr,
+        load_addr,
+        len(payload),
+        len(payload) + 0x20000,
+        0x1000,
+    )
+    return ehdr + phdr + (b"\x00" * (code_off - ehdr_size - phdr_size)) + payload
+
+
+def _run_real_qemu_serial_session(qemu_bin: str, elf_path: Path) -> bytes:
+    """Boot real `qemu-system-aarch64` and perform lock-step interactive PL011 UART round-trips."""
+    proc = subprocess.Popen(
+        [
+            qemu_bin,
+            "-machine",
+            "virt",
+            "-cpu",
+            "cortex-a57",
+            "-nographic",
+            "-monitor",
+            "none",
+            "-serial",
+            "stdio",
+            "-kernel",
+            str(elf_path),
+        ],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    transcript = bytearray()
+    try:
+        assert proc.stdin is not None and proc.stdout is not None and proc.stderr is not None
+
+        def read_until(marker: bytes) -> None:
+            while marker not in transcript:
+                ch = proc.stdout.read(1)
+                if not ch:
+                    raise RuntimeError(f"QEMU UART closed before marker {marker!r}; got {bytes(transcript)!r}")
+                transcript.extend(ch)
+
+        prompt = b"[axion@T81 tier=1]$ "
+        read_until(prompt)
+        proc.stdin.write(b"mutate-policy\n")
+        proc.stdin.flush()
+        read_until(b"AXION_DENY:POLICY_ROOT_IMMUTABLE\n" + prompt)
+        proc.stdin.write(b"status\n")
+        proc.stdin.flush()
+        read_until(b"AXION_OK:status\n")
+        rc = proc.wait(timeout=10)
+        stderr_bytes = proc.stderr.read()
+        if rc != 0:
+            raise RuntimeError(f"qemu-system-aarch64 exited with rc={rc}: {stderr_bytes!r}")
+        return bytes(transcript)
+    finally:
+        if proc.stdin:
+            proc.stdin.close()
+        if proc.stdout:
+            proc.stdout.close()
+        if proc.stderr:
+            proc.stderr.close()
+        if proc.poll() is None:
+            proc.kill()
+            proc.wait(timeout=5)
 
 
 def _build_dot_subgraph() -> tuple[str, int]:
@@ -345,6 +585,92 @@ exit 0
             self.assertEqual(r1["canonfs_weight_sha3_512"], r2["canonfs_weight_sha3_512"])
             self.assertEqual(r1["execution_receipt"], r2["execution_receipt"])
             self.assertEqual(r1["boot_receipt_sha3_512"], r2["boot_receipt_sha3_512"])
+
+    def test_04_real_qemu_aarch64_serial_roundtrip_and_repeat_receipt(self) -> None:
+        qemu_bin = shutil.which("qemu-system-aarch64")
+        if not qemu_bin:
+            self.skipTest("qemu-system-aarch64 not installed on this host")
+
+        elf_bytes = _build_aarch64_uart_guest_elf()
+        receipts: list[dict[str, str]] = []
+        for idx in range(2):
+            with tempfile.TemporaryDirectory(prefix=f"t81-real-qemu-{idx}-") as td:
+                root = Path(td)
+                elf_path = root / "ternaryos_uart_guest.elf"
+                elf_path.write_bytes(elf_bytes)
+
+                # Stage 1: Real non-stubbed QEMU AArch64 interactive PL011 UART serial round-trips
+                transcript = _run_real_qemu_serial_session(qemu_bin, elf_path)
+                self.assertEqual(
+                    transcript,
+                    b"[axion@T81 tier=1]$ AXION_DENY:POLICY_ROOT_IMMUTABLE\n"
+                    b"[axion@T81 tier=1]$ AXION_OK:status\n",
+                )
+                boot_img_sha3 = _call_mcp_fresh(
+                    [root], "t81.determinism_hash", {"path": str(elf_path), "compact": True}
+                )["result"]["structured"]["sha3_512"]
+                transcript_path = root / "uart_transcript.log"
+                transcript_path.write_bytes(transcript)
+                serial_sha3 = _call_mcp_fresh(
+                    [root], "t81.determinism_hash", {"path": str(transcript_path), "compact": True}
+                )["result"]["structured"]["sha3_512"]
+
+                # Stage 2: CanonFS SBDR1T2D + immutable Axion policy root
+                croot = root / "canonfs"
+                croot.mkdir()
+                sbdr_path = root / "enclave_weights.sbdr"
+                sbdr_path.write_bytes(b"SBDR1\x00\x00\x00" + struct.pack("<QQQQ", 4, 1, 0b0101, 0b1010))
+                subprocess.run(
+                    [T81_BIN, "canonfs", "import", str(sbdr_path), "--canonfs-root", str(croot), "--json"],
+                    check=True,
+                    capture_output=True,
+                )
+                fsck = _call_mcp_fresh(
+                    [root], "t81.canonfs_fsck", {"canonfs_root": str(croot), "compact": True}
+                )["result"]["structured"]
+                self.assertTrue(fsck["ok"] and fsck["checked_objects"] >= 1)
+                weight_sha3 = _call_mcp_fresh(
+                    [root], "t81.determinism_hash", {"path": str(sbdr_path), "compact": True}
+                )["result"]["structured"]["sha3_512"]
+
+                policy_path = root / "axion_root.apl"
+                policy_path.write_text(
+                    f'(policy\n  (tier 1)\n  (allowed-tensor-hashes ["{weight_sha3}"]))\n',
+                    encoding="utf-8",
+                )
+                policy_sha3 = _call_mcp_fresh(
+                    [root], "t81.determinism_hash", {"path": str(policy_path), "compact": True}
+                )["result"]["structured"]["sha3_512"]
+
+                # Stage 3: T81VM execution under immutable Axion policy
+                bc_hex, _ = _build_dot_subgraph()
+                run = _call_mcp_fresh(
+                    [root],
+                    "t81.run_subgraph",
+                    {"bytecode_hex": bc_hex, "policy_path": str(policy_path), "compact": True},
+                )["result"]["structured"]
+                self.assertTrue(run["ok"] and run["halted"])
+                self.assertEqual(run["verdict"], "VERIFIED_AND_EXECUTED")
+                self.assertEqual(run["dualrail_fallback_count"], 0)
+
+                # Stage 4: Chained SHA3-512 boot-to-receipt including real QEMU UART transcript
+                chained = (
+                    f"{boot_img_sha3}|{serial_sha3}|{policy_sha3}|{weight_sha3}|"
+                    f"{run['execution_receipt']}|GPU_R1_BitmaskSkip_Pop|k_star_prepacked=0"
+                )
+                receipts.append(
+                    {
+                        "boot_image_sha3_512": boot_img_sha3,
+                        "serial_transcript_sha3_512": serial_sha3,
+                        "policy_root_sha3_512": policy_sha3,
+                        "canonfs_weight_sha3_512": weight_sha3,
+                        "execution_receipt": run["execution_receipt"],
+                        "qemu_boot_receipt_sha3_512": "sha3-512:"
+                        + hashlib.sha3_512(chained.encode("utf-8")).hexdigest(),
+                    }
+                )
+
+        self.assertEqual(receipts[0], receipts[1])
 
 
 if __name__ == "__main__":
