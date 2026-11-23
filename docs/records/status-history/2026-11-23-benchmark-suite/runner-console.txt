@@ -1,0 +1,4 @@
+
+Generating benchmark report...
+Benchmark console table suppressed (set T81_BENCHMARK_VERBOSE_CONSOLE=1 to enable).
+Skipping benchmark report generation (set T81_BENCHMARK_WRITE_REPORTS=1 to enable)
