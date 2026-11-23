@@ -1310,6 +1310,25 @@ def run_self_test() -> int:
     )
     assert r_mem10_falsified["status"] == "REJECTED_FALSIFIED"
 
+    r_mem11_confirmed = ledger.evaluate_candidate(
+        RoutingCandidate(
+            experiment_id="H06-MEM-11",
+            regime="R1_ternary_act",
+            kernel="GPU_R1_BitmaskSkip_Pop",
+            scope=(
+                "L=64, 4096x1024, s>=75% zero-indirection ColMask Metal skip "
+                "(0.923ms @ M=1/90%, 0.208ms/tok @ M=16/90%, 1.53x vs cold dense GPU, sha3=OK)"
+            ),
+            measured_speedup=1.53,
+            min_speedup_threshold=1.25,
+            max_abs_err=0,
+            constraint_tag="none",
+            note="Confirmed on M2: 4KB/layer bitmask eliminates CSR indirection; optimal GPU path for s>=75%.",
+        ),
+        gpu_r1_receipts,
+    )
+    assert r_mem11_confirmed["status"] == "ACCEPTED_CONFIRMED"
+
     # Synthetic fail-closed checks for receipt drift and nonzero fallback
     drifted = ReceiptPair(ok_run1, {**ok_run2, "execution_receipt": "sha3-512:" + ("f" * 128)})
     assert (
