@@ -218,10 +218,16 @@ class RoutingLedger:
             return r2["m16_plus"] if batch_m >= 16 else r2["m1_to_4"]
         if regime == "R1_ternary_act":
             r1 = self.prior_routing["R1_ternary_act"]
-            if batch_m >= int(r1["gpu_min_batch"]):
-                return str(r1["gpu_kernel"])
+            # H06-MEM-09/11 heterogeneous rule:
+            # 1) M==1 & s>=90% -> 1T CPU SBDR128_SIMD (0.837ms vs 0.923ms Metal BitmaskSkip)
             if batch_m == 1 and sparsity_pct >= int(r1["m1_high_sparsity_min_pct"]):
                 return str(r1["m1_high_sparsity_kernel"])
+            # 2) s>=75% (M>=4 or M==1 with 75%<=s<90%) -> Metal GPU_R1_BitmaskSkip_Pop
+            if sparsity_pct >= int(r1["gpu_sparse_min_pct"]):
+                return str(r1["gpu_sparse_kernel"])
+            # 3) Dense / moderate sparsity (M>=4 or M==1 & s<=50%) -> dense Metal GPU_R1_DualRail_Pop
+            if batch_m >= int(r1["gpu_min_batch"]):
+                return str(r1["gpu_kernel"])
             if batch_m == 1 and sparsity_pct <= int(r1["m1_low_sparsity_max_pct"]):
                 return str(r1["gpu_kernel"])
             return str(r1["sparse_kernel"])
@@ -471,7 +477,7 @@ def run_self_test() -> int:
         canonfs_weight_sha3 = w3_hash_res["sha3_512"]
 
         stage3_route = ledger.recommend_route("R1_ternary_act", batch_m=1, sparsity_pct=75)
-        assert stage3_route == "CPU_1T_SBDR128_SIMD"
+        assert stage3_route == "GPU_R1_BitmaskSkip_Pop"
         stage3_w = [1, -1, 1]
         stage3_x = [stage2_oracle, 3, 5]
         stage3_oracle = sum(wi * xi for wi, xi in zip(stage3_w, stage3_x))
@@ -656,7 +662,7 @@ def run_self_test() -> int:
         assert (not bitnet_mismatch["ok"]) and (not bitnet_mismatch["admitted"])
 
         bitnet_route = ledger.recommend_route("R1_ternary_act", batch_m=1, sparsity_pct=75)
-        assert bitnet_route == "CPU_1T_SBDR128_SIMD"
+        assert bitnet_route == "GPU_R1_BitmaskSkip_Pop"
         bitnet_act = [13, 5, 9, 2]
         bitnet_oracle = sum(w * x for w, x in zip(trits[:4], bitnet_act))
         bitnet_max_abs_err = abs(bitnet_oracle - oracle_dot)
@@ -675,6 +681,7 @@ def run_self_test() -> int:
         bitnet_receipts = ReceiptPair(bitnet_run1, bitnet_run2)
         assert bitnet_receipts.policy_admitted and bitnet_receipts.sha3_identical
         assert bitnet_receipts.max_fallback_count == 0
+        assert "dualrail_sparse128_blocks_skipped" in bitnet_run1
 
         def _bitnet_chain(r: dict[str, Any]) -> str:
             payload = f"{bitnet_weight_sha3}|{r['execution_receipt']}|{bitnet_route}|k_star_prepacked={k_star_prepacked}"
@@ -802,7 +809,7 @@ def run_self_test() -> int:
         # Stage B (R2_int8_act, M=16 -> CPU_4T_INT8W, avoid_cpu_dualrail_unpack=True): y_r2 = 2*y_r1 - 5 = 25
         cross_r1_route = ledger.recommend_route("R1_ternary_act", batch_m=1, sparsity_pct=75)
         cross_r2_route = ledger.recommend_route("R2_int8_act", batch_m=16, sparsity_pct=0)
-        assert cross_r1_route == "CPU_1T_SBDR128_SIMD"
+        assert cross_r1_route == "GPU_R1_BitmaskSkip_Pop"
         assert cross_r2_route == "CPU_4T_INT8W"
         cross_r2_oracle = 2 * bitnet_oracle - 5
         cross_r2_computed = (bitnet_oracle * 2) - 5
@@ -1353,13 +1360,15 @@ def run_self_test() -> int:
         "R1_M1_s75": ledger.recommend_route("R1_ternary_act", batch_m=1, sparsity_pct=75),
         "R1_M1_s50": ledger.recommend_route("R1_ternary_act", batch_m=1, sparsity_pct=50),
         "R1_M4_s90": ledger.recommend_route("R1_ternary_act", batch_m=4, sparsity_pct=90),
+        "R1_M4_s50": ledger.recommend_route("R1_ternary_act", batch_m=4, sparsity_pct=50),
         "R2_M1": ledger.recommend_route("R2_int8_act", batch_m=1, sparsity_pct=0),
         "R2_M16": ledger.recommend_route("R2_int8_act", batch_m=16, sparsity_pct=0),
     }
     assert recommendations["R1_M1_s90"] == "CPU_1T_SBDR128_SIMD"
-    assert recommendations["R1_M1_s75"] == "CPU_1T_SBDR128_SIMD"
+    assert recommendations["R1_M1_s75"] == "GPU_R1_BitmaskSkip_Pop"
     assert recommendations["R1_M1_s50"] == "GPU_R1_DualRail_Pop"
-    assert recommendations["R1_M4_s90"] == "GPU_R1_DualRail_Pop"
+    assert recommendations["R1_M4_s90"] == "GPU_R1_BitmaskSkip_Pop"
+    assert recommendations["R1_M4_s50"] == "GPU_R1_DualRail_Pop"
     assert recommendations["R2_M1"] == "CPU_4T_INT4W"
     assert recommendations["R2_M16"] == "CPU_4T_INT8W"
 
