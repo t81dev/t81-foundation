@@ -1,3 +1,11 @@
+> **Live queue refresh (2026-11-22):** `main` fast-forwarded to `120b8dc90` (`v2.2.0-12-g120b8dc90`, merge of PR #845). [ROADMAP.md](../ROADMAP.md) near-term row 2 (PRs #747, #748, #750) is retired: those PRs were closed unmerged. Next maintenance slice is RFC-00D1 denial-before-materialization for directory export. SCG-08 Gate 2, H01/10A, F01 M1–M6, and `AXION-AI-001` HD01–HD06 remain held. CI on `120b8dc90` had sanitizer and macOS x86_64 GCC builds still running at refresh; the prior `main` red at `c9bc4d75f` was lychee GitHub `503` responses, and lint on `120b8dc90` had already passed.
+
+> **Latest post-`v2.1.0` operational status (2026-11-20):** Read [T81_RESEARCH_STATUS_2026-11-20_MONOLITH_SPLIT.md](T81_RESEARCH_STATUS_2026-11-20_MONOLITH_SPLIT.md) first. `main` at `217cc0698` cuts `tools/cli/core/main.cpp` (`11,135 → 4,107` lines into `cmd_*.{hpp,cpp}` + `help_text.{hpp,cpp}`) and `vm/vm.cpp` (`7,762 → 3,133` lines into `vm_support.{hpp,cpp}` + 6 `vm/internal/vm_*_opcodes.inc` groups), exposes `v2.1.0` Python SDK bindings + RFC-00D1 export negative tests (`7/7`), and fixes Windows CI + Intel oneAPI GPG key URL. All `F01`, `SCG-08 Gate 2`, `H01/10A`, and `AXION-AI-001` holds remain intact.
+
+> **Latest `v2.1.0` operational status (2026-11-19):** Read [T81_RESEARCH_STATUS_2026-11-19_V210_CONSOLIDATION.md](T81_RESEARCH_STATUS_2026-11-19_V210_CONSOLIDATION.md) first. `v2.1.0` is tagged at `9ddeeccda` (`main` at `f25387cb7`, `PUBLIC_API_LOCK.json` synced to `2.1.0`, 18/18 governance checks passing under `pipefail`, `AI Experiments CI` green). Hardened 15-tool native MCP server, NEON+AVX2 `T81VM` Dual-Rail/`SBDR1T2D` (`t81_dualrail_sbdr_vm_test` in CTest), real-fixture `BF16`/`SBDR1T2D` Safetensors ingest, and preserved negative findings (`INT4×Ternary` 4-plane compute crossover, KV-cache tie collisions, dense VSA, M2/M5 Harley-Seal CSA-3). All `F01`, `SCG-08 Gate 2`, `H01/10A`, and `AXION-AI-001` holds remain intact.
+
+> **Latest operational status (2026-11-19):** Read [T81_RESEARCH_STATUS_2026-11-19_V201_DUALRAIL_FULLSTACK.md](T81_RESEARCH_STATUS_2026-11-19_V201_DUALRAIL_FULLSTACK.md) first. `v2.0.1` is tagged at `f3b41b583` (`Python Wheels` 6/6 green); `main` (`16d083136`) adds Dual-Rail SIMD/Metal benchmarks (`89.1 GB/s`, `3.32 TOPS`), `+47%` lexer speedup, `t81.verify_subgraph` in `t81 mcp serve`, and full-stack `CanonFS → Axion → TISC → T81VM → DualRail` integration (`24k×–35k×` VM `TMatMul` speedup), while preserving all negative results and active holds (`F01`, `SCG-08 Gate 2`, `H01/10A`, `AXION-AI-001`).
+
 > **Latest operational status (2026-11-13):** Read [T81_RESEARCH_STATUS_2026-11-13.md](T81_RESEARCH_STATUS_2026-11-13.md) first. Supplied Codex reviews accept bounded #779/#780 changes; both remain draft/unmerged. #782 Windows builds and required quality gate now pass at the recorded head; CodeQL and final review remain pending. Five superseded PRs closed without merge; reconcile #778/#779 and preserve dependent work. Older overlays are historical. No scientific gate, release, or merge authority is granted.
 
 > **2026-11-12 holding-pattern overlay:** [T81_RESEARCH_STATUS_2026-11-12.md](T81_RESEARCH_STATUS_2026-11-12.md) supersedes older operational next-action guidance. Await independent review of draft PR #780 (BASE-PERF-00 candidate) and draft PR #779 (SCG-08 corrections). No merges, RFC ratification, or Gate 2 authorization implied.
@@ -317,3 +325,73 @@ Draft a **versioned authoritative TISC state-transition RFC** with exact operand
 
 ### Handoff rules
 Do not restart feasibility experiments, silently resolve the spec, claim merged-to-main status from PR #710, overwrite negative research, or confuse verified content hashes with independently replicated execution. Refresh GitHub PR tips and main before any subsequent action.
+
+
+## 2026-11-17 selected-PR reconciliation — PR #824 integrated, operations STOP
+
+Read the [dated reconciliation](T81_RESEARCH_STATUS_2026-11-17_PR824.md),
+[new observation receipt](receipts/2026-11-17-pr824-reconciliation.json) and
+[validation record](receipts/2026-11-17-pr824-validation.md). Fresh main is
+`ab15820a2dd8ebcadde0efecf1fbb0d43b57d3f9`; the #824 reviewed plan at
+`f803e15ebcf4896fc70608cb11d69505134e5578` is integrated without byte changes.
+PR #823 at `52604ee1d4b7d90f69b19651a942f68dd5653183` remains a separate
+draft/unmerged morning report, with independent review unverified here.
+User-reported Gemini review and human documentation-only merge authorization
+are attributed as such, not authenticated by hashes or the Codex bot review.
+
+**F01-HOST-BOLQ-v1 NOT ADOPTED; residual risks NOT ACCEPTED; M1–M6 STOP;
+`linux_relock_required=true`.** Operative protocol SHA-256
+`d48aeedc924cf505cab8a7fed316fc84d8f2c259dd502fd1d0a7fe8432f05de3`, legacy
+qualification semantics and original PR #812 UNSUPPORTED finding remain intact.
+M2–M4 require renewed joint review/co-pinning after any component change; M5
+implementation and H0–H5 each need their own applicable authorization; H6
+remains outside M5. Preserve 49,408 suite states, F254/256 and separate
+1 GiB / 921 MiB proposed provisioning storage with no A–F storage transfer.
+All prior observations, research/release holds and no-reset/no-retry rules
+remain historical evidence or applicable constraints. No new scientific result,
+repository-wide inventory or operational GO is recorded. Next: independent
+Gemini review of this documentation-only reconciliation.
+
+---
+
+## 2026-11-18 v2.0.0 Engineering Audit & Horizon Suggestions
+
+Added [V2_0_0_AUDIT_AND_HORIZON_2026-11-18.md](V2_0_0_AUDIT_AND_HORIZON_2026-11-18.md)
+(non-normative; pinned to `main` at `b7b1345ed162129133a7948ead7ed52e8fa5fc60`
+on ARM64 macOS). Records:
+- **Release-readiness blockers/gaps:** `t81_cli_stress_test_runner` version-string
+  assertion (`cli_stress_test.cpp:225`), `check_architecture_targets.py` +
+  `ARCHITECTURE.md` `_t81` target drift, `check_architecture_coherence.py` stale
+  `core/vm/` paths, `tools/cli/core/main.cpp:242` license string mismatch
+  (`MIT and GPL-3.0` vs `Apache-2.0`), `experiments/` `-Wc++17-extensions` warnings,
+  `spec/axion-kernel.md` §1.1 AX-M5 note, and `release.yml` `SHA256SUMS`/repro-hash
+  follow-ups.
+- **Horizon proposals (Tier E):** `canonfs fsck --verify-hashes` (closing the
+  observed readability-only `fsck` blind spot), portable SHA3-256 in
+  `Axion::DeterminismDetector`, `T81VM::get_execution_mode()` (`FW-02`),
+  `t81 ai inference run --checkpoint-canonfs`, and the zero-drift exact-rational
+  lab example.
+
+All existing holds (`RFC-00D7-F01` `M1–M6 STOP`, `SCG-08` Gate 2 `NO-GO`,
+`H01`/10A `BLOCKED`, `AXION-AI-001` `HD01–HD06` open, canonical `H01–H08`)
+remain unchanged.
+
+---
+
+## 2026-11-22 live queue refresh and RFC-00D1 materialization denial
+
+```text
+================================================================================
+DATE / SESSION: 2026-11-22 / Refresh main and continue RFC-00D1 policy depth
+REPOSITORIES AND PINNED COMMITS: t81-foundation main fast-forwarded c9bc4d75f..120b8dc90478fb25b82b11138fcc8101b3cffb37 (v2.2.0-12-g120b8dc90)
+QUESTION OR HYPOTHESIS TESTED: Contributor roadmap queue versus live main, then whether directory export honors denial-before-host-materialization.
+EVIDENCE EXAMINED: origin/main after fetch; gh pr list (35 open, 31 draft); CI runs 45084245015 and 45069281955; docs/ROADMAP.md; fs/canonfs_interchange_ops.cpp export_ref manifest branch.
+WHAT WAS REPRODUCED: Local fast-forward. Then `cmake -S . -B build -G Ninja` and `cmake --build build --target canonfs_interchange_test -j8` on macOS ARM64; `./build/canonfs_interchange_test` exited 0. Full platform CI on 120b8dc90 was still in progress at inspection (sanitizers and macos-x86_64 gcc). Prior main CI failure was lychee GitHub 503, with the required quality gate failing as a consequence. Lint on 120b8dc90 had already passed.
+WHAT WAS ONLY REPORTED OR MODELED: Open-PR check rollups and the in-progress CI job board. No Gate 2, H01, or F01 measurement.
+RESULT / NEGATIVE RESULT: Roadmap row naming PRs #747, #748, and #750 was stale; all three are closed unmerged. Directory export created the destination before policy admission. The manifest path now creates that directory only when an admitted entry is about to be written. Holds unchanged.
+KNOWN DEFECTS / CONFOUNDERS: Provenance records may still be written into CanonFS on a denied export. That is an evidence write, not host materialization of the export payload.
+OPEN PRS AND CI STATUS: 35 open. Non-draft: #732 green docs, #666 informational armv9 failure, #664 benchmark plus quality-gate failure, #719 stale red CI. Draft #847 was failing determinism while other jobs ran. PRs #747/#748/#750 closed unmerged.
+NEXT SINGLE ACTION: Keep RFC-00D1 target-side failure coverage narrow. Do not start SCG-08 Gate 2.
+STOPPING CRITERION: Stop if a change adds a profile name, source/target kind, or interchange format, or if it treats a passing CI run as scientific acceptance.
+================================================================================
+```

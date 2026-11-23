@@ -21,9 +21,9 @@ The T81 research roadmap is anchored by eight formal scientific investigations. 
 | **Investigation 01** | Numerical Correctness Assessment | **BOUNDED** | `/docs/research/NUMERICAL_SCIENTIFIC_ASSESSMENT.md` |
 | **Investigation 02** | Exact Rational Conversion Feasibility | **REVISE** | `/docs/research/EXACT_RATIONAL_CONVERSION_FEASIBILITY.md` |
 | **Investigation 03** | Accountable Computation Experiment Framework | **VALIDATED** | `/docs/research/ACCOUNTABLE_COMPUTATION_EXPERIMENT_FRAMEWORK.md` |
-| **Investigation 04** | Independent Validation of Rational Conversion | **VALIDATED** | `/INDEPENDENT_RATIONAL_CONVERSION_VALIDATION.md` |
-| **Investigation 05** | Balanced Ternary Radix & Arithmetic Comparison | **COMPLETED** | `/BALANCED_TERNARY_COMPARATIVE_RESEARCH.md` |
-| **Investigation 06** | Audit of Ternary Comparative Performance Claims | **AUDITED** | `/TERNARY_COMPARATIVE_CLAIMS_AUDIT.md` |
+| **Investigation 04** | Independent Validation of Rational Conversion | **VALIDATED** | `/docs/research/INDEPENDENT_RATIONAL_CONVERSION_VALIDATION.md` |
+| **Investigation 05** | Balanced Ternary Radix & Arithmetic Comparison | **COMPLETED** | `/docs/research/BALANCED_TERNARY_COMPARATIVE_RESEARCH.md` |
+| **Investigation 06** | Audit of Ternary Comparative Performance Claims | **AUDITED** | `/docs/research/TERNARY_COMPARATIVE_CLAIMS_AUDIT.md` |
 | **Investigation 07** | Ternary Dot-Product Hardware Feasibility | **NOT SUPPORTED** | `/experiments/ternary_hardware_feasibility/FINDINGS_REPORT.md` |
 | **Investigation 08** | Integrated System Advantage Assessment | **MIXED** (Assurance: **SUPPORTED**; Computational: **NOT SUPPORTED**; Compositional: **INCONCLUSIVE**) | `/docs/research/INTEGRATED_SYSTEM_ADVANTAGE_REPORT.md`, `/docs/research/INVESTIGATIONS_07_08_CORRECTIVE_ASSESSMENT.md` |
 

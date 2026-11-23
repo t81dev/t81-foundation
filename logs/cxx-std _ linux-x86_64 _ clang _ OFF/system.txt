@@ -1,8 +1,0 @@
-2026-02-15T03:15:28.6760000Z Job is about to start running on the hosted runner: GitHub Actions 1000022690
-2026-02-15T03:15:28.6760000Z Job is waiting for a hosted runner to come online.
-2026-02-15T03:15:28.6700000Z Evaluating cxx-standard-compat.if
-2026-02-15T03:15:28.6700000Z Evaluating: success()
-2026-02-15T03:15:28.6700000Z Result: true
-2026-02-15T03:15:28.6710000Z Requested labels: ubuntu-24.04
-2026-02-15T03:15:28.6710000Z Job defined at: t81dev/t81-foundation/.github/workflows/ci.yml@refs/heads/main
-2026-02-15T03:15:28.6710000Z Waiting for a runner to pick up this job...

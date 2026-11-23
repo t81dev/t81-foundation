@@ -137,12 +137,12 @@ class QEMUEFIChecker:
         qemu_configs = [
             self.root_dir / ".qemu",
             Path.home() / ".qemu",
-            "/etc/qemu"
+            Path("/etc/qemu")
         ]
         
         config_issues = []
         for config_path in qemu_configs:
-            if config_path.exists():
+            if config_path.is_file():
                 try:
                     with open(config_path, 'r') as f:
                         config_content = f.read()

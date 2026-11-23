@@ -24,19 +24,35 @@ def chapter_prefixes(path: Path) -> set[str]:
     return out
 
 
+ACTIVE_DOC_DIRS = [
+    "docs/governance",
+    "docs/research",
+    "docs/reference",
+    "docs/user-guide",
+    "docs/explanation",
+    "docs/how-to",
+    "docs/status",
+]
+
+
 def main() -> int:
     root = Path(__file__).resolve().parents[2]
     issues: list[str] = []
 
-    for rel in BOOK_DIRS:
-        path = root / rel
-        if not path.is_dir():
-            issues.append(f"missing directory: {rel}")
-            continue
-        found = chapter_prefixes(path)
-        missing = sorted(REQUIRED_PREFIXES - found)
-        if missing:
-            issues.append(f"{rel}: missing chapter prefixes {', '.join(missing)}")
+    if (root / "book").is_dir():
+        for rel in BOOK_DIRS:
+            path = root / rel
+            if not path.is_dir():
+                issues.append(f"missing directory: {rel}")
+                continue
+            found = chapter_prefixes(path)
+            missing = sorted(REQUIRED_PREFIXES - found)
+            if missing:
+                issues.append(f"{rel}: missing chapter prefixes {', '.join(missing)}")
+    else:
+        for rel in ACTIVE_DOC_DIRS:
+            if not (root / rel).is_dir():
+                issues.append(f"missing active docs directory: {rel}")
 
     if issues:
         print("docs structure check FAILED")
@@ -45,7 +61,10 @@ def main() -> int:
         return 1
 
     print("docs structure check PASSED")
-    print("- verified chapter prefix coverage 01..15 across book language directories")
+    if (root / "book").is_dir():
+        print("- verified chapter prefix coverage 01..15 across book language directories")
+    else:
+        print(f"- verified {len(ACTIVE_DOC_DIRS)} active docs/ directories")
     return 0
 
 

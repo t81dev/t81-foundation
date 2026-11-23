@@ -112,6 +112,16 @@ body {
   font-size: 0.7rem;
 }
 
+.badge-interactive {
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.badge-interactive:hover {
+  background-color: rgba(56, 139, 253, 0.25);
+  border-color: var(--accent-hover);
+}
+
 /* View Mode Switcher */
 .view-mode-toggle {
   display: flex;

@@ -125,7 +125,10 @@ The current v1 candidate contract includes:
   built-in policy profiles act as narrow operation-level admission controls,
   while an explicit policy document may further narrow the admitted operation
   and produce `ok`, `partial`, or `error` without introducing new profile
-  names
+  names. A denied export performs no host materialization: an existing
+  destination file is left unchanged, a fully denied directory export does not
+  create a destination that was absent, and a partial directory export writes
+  only admitted entries while leaving denied existing files unchanged
 
 The current promotion blockers are:
 
