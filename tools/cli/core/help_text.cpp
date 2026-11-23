@@ -1264,7 +1264,11 @@ void print_help_mcp() {
 Native C++ JSON-RPC 2.0 MCP server (zero Python runtime dependency).
 
 Actions:
-  serve                                 Start stdio JSON-RPC 2.0 MCP server (15 native tools)
+  serve [--root PATH]...                Start stdio JSON-RPC 2.0 MCP server (15 native tools)
+
+File tools accept paths only inside a --root directory after symlink and ".." resolution.
+Percent-encoded dots and slashes stay literal name characters. Embedded NUL is rejected.
+With no --root, the working directory is the root. Repeat --root to allow more than one tree.
 
 Native MCP tools exposed by `t81 mcp serve`:
   Governance & Receipts:
