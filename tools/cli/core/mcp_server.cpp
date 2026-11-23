@@ -725,10 +725,12 @@ std::string build_tools_list_json() {
 
          "{\"name\":\"t81.tx_commit\","
          "\"description\":\"Commit an active file transaction after required .apl policy, "
-         "concurrency, and capability-budget checks on the mutated artifact.\","
+         "concurrency, capability-budget, optional CanonFS SBDR1T2D, and T81VM subgraph checks.\","
          "\"inputSchema\":{\"type\":\"object\",\"required\":[\"tx_id\",\"policy_path\"],"
          "\"properties\":{\"tx_id\":{\"type\":\"string\"},\"policy_path\":{\"type\":\"string\"},"
          "\"agent_id\":{\"type\":\"string\"},\"expected_parent_sha3_512\":{\"type\":\"string\"},"
+         "\"canonfs_root\":{\"type\":\"string\"},\"sbdr_path\":{\"type\":\"string\"},"
+         "\"bytecode_hex\":{\"type\":\"string\"},"
          "\"max_abs_err\":{\"type\":\"integer\"},\"dualrail_fallback_count\":{\"type\":\"integer\"}"
          ","
          "\"repeat_sha3_identical\":{\"type\":\"boolean\"},"
@@ -1222,6 +1224,9 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         const std::string ppath = arg_str(args, "policy_path");
         const std::string req_agent = arg_str(args, "agent_id");
         const std::string expected_parent = arg_str(args, "expected_parent_sha3_512");
+        const std::string canonfs_root_arg = arg_str(args, "canonfs_root");
+        const std::string sbdr_path_arg = arg_str(args, "sbdr_path");
+        const std::string bc_hex_arg = arg_str(args, "bytecode_hex");
         const int64_t max_abs_err = arg_int64(args, "max_abs_err", 0);
         const int64_t fallback_cnt = arg_int64(args, "dualrail_fallback_count", 0);
         const bool repeat_ok = arg_bool(args, "repeat_sha3_identical", true);
@@ -1253,6 +1258,9 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
             bool policy_ok = true;
             std::string deny_code;
             std::string policy_err;
+            std::string sbdr_sha;
+            std::string vm_exec_receipt;
+            uint64_t vm_skipped_blocks = 0;
 
             if (tx.isolated && live_sha != tx.before_sha3_512) {
               policy_ok = false;
@@ -1299,6 +1307,120 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                   deny_code = "ERR_POLICY_HASH_DENIED";
                   policy_err =
                       "mutated target_path SHA3-512 denied by policy; call t81.tx_abort to restore";
+                } else {
+                  if (policy_ok && !canonfs_root_arg.empty()) {
+                    fs::path canon_root;
+                    if (!jail.resolve(canonfs_root_arg, canon_root)) {
+                      policy_ok = false;
+                      deny_code = "ERR_CANONFS_OUTSIDE_ROOT";
+                      policy_err = "canonfs_root is outside MCP filesystem root";
+                    } else {
+                      std::ostringstream cap;
+                      std::streambuf* old_buf = std::cout.rdbuf(cap.rdbuf());
+                      const int rc = run_canonfs_fsck_json(canon_root.string());
+                      std::cout.rdbuf(old_buf);
+                      if (rc != 0) {
+                        policy_ok = false;
+                        deny_code = "ERR_CANONFS_FSCK_FAILED";
+                        policy_err = "CanonFS integrity check failed (tampered store)";
+                      }
+                    }
+                  }
+                  if (policy_ok && !sbdr_path_arg.empty()) {
+                    std::vector<uint8_t> sbytes;
+                    if (!read_file_bytes(jail, sbdr_path_arg, sbytes)) {
+                      policy_ok = false;
+                      deny_code = "ERR_SBDR1T2D_READ";
+                      policy_err = "could not read sbdr_path";
+                    } else if (sbytes.size() < 40 ||
+                               std::memcmp(sbytes.data(), "SBDR1\0\0\0", 8) != 0) {
+                      policy_ok = false;
+                      deny_code = "ERR_SBDR1T2D_INVALID";
+                      policy_err = "invalid SBDR1T2D header or non-zero K* flag";
+                    } else {
+                      uint64_t total_blocks = 0;
+                      uint64_t active_blocks = 0;
+                      std::memcpy(&total_blocks, sbytes.data() + 8, sizeof(uint64_t));
+                      std::memcpy(&active_blocks, sbytes.data() + 16, sizeof(uint64_t));
+                      if (active_blocks > total_blocks) {
+                        policy_ok = false;
+                        deny_code = "ERR_SBDR1T2D_INVALID";
+                        policy_err = "SBDR1T2D active_blocks exceeds total_blocks";
+                      } else {
+                        sbdr_sha = sha3_512_hex(sbytes);
+                        vm_skipped_blocks += (total_blocks - active_blocks);
+                        if (!policy_admits_hash(pres.value(), sbdr_sha)) {
+                          policy_ok = false;
+                          deny_code = "ERR_SBDR1T2D_POLICY_DENIED";
+                          policy_err = "SBDR1T2D artifact SHA3-512 denied by policy";
+                        }
+                      }
+                    }
+                  }
+                  if (policy_ok && !bc_hex_arg.empty()) {
+                    std::vector<uint8_t> raw_bc;
+                    if (!decode_hex_bytes(bc_hex_arg, raw_bc) || raw_bc.empty()) {
+                      policy_ok = false;
+                      deny_code = "ERR_VM_INVALID_BYTECODE";
+                      policy_err = "invalid bytecode_hex in tx_commit";
+                    } else {
+                      std::vector<std::byte> bvec(raw_bc.size());
+                      std::memcpy(bvec.data(), raw_bc.data(), raw_bc.size());
+                      auto dec = t81::tisc::decode(bvec);
+                      if (!dec.has_value()) {
+                        policy_ok = false;
+                        deny_code = "ERR_VM_DECODE_FAILED";
+                        policy_err = "TISC v1.9.0 bytecode decode failed";
+                      } else {
+                        const auto vr = verify_tisc_subgraph(dec.value());
+                        if (!vr.ok) {
+                          policy_ok = false;
+                          deny_code = "ERR_VM_VERIFY_FAILED";
+                          policy_err = "TISC subgraph verification failed: " + vr.verdict;
+                        } else {
+                          const std::string prog_sha = sha3_512_hex(raw_bc);
+                          std::string receipts[2];
+                          for (int run_i = 0; run_i < 2 && policy_ok; ++run_i) {
+                            t81::vm::internal::reset_dualrail_telemetry();
+                            auto vm = t81::vm::make_interpreter_vm(
+                                std::make_unique<t81::axion::AIHookEngine>(
+                                    std::make_unique<t81::axion::PolicyEngine>(pres.value())));
+                            vm->load_program(dec.value());
+                            const auto run_res = vm->run_to_halt();
+                            const auto dr_tel = t81::vm::internal::dualrail_telemetry();
+                            if (!run_res.has_value()) {
+                              policy_ok = false;
+                              deny_code = "ERR_VM_TRAP";
+                              policy_err = std::string("T81VM trapped during tx_commit: ") +
+                                           trap_name_str(run_res.error());
+                            } else if (dr_tel.fallback_count != 0) {
+                              policy_ok = false;
+                              deny_code = "ERR_VM_DUALRAIL_FALLBACK";
+                              policy_err = "T81VM dualrail_fallback_count != 0 during tx_commit";
+                            } else {
+                              if (run_i == 0) {
+                                vm_skipped_blocks += dr_tel.sparse128_blocks_skipped;
+                              }
+                              const std::string rec_in =
+                                  prog_sha + "|HALT|0|" +
+                                  std::to_string(vm->state().axion_log.size()) + "|" +
+                                  std::to_string(dr_tel.fastpath_hits) + "|" +
+                                  std::to_string(dr_tel.fallback_count);
+                              receipts[run_i] =
+                                  sha3_512_hex(std::vector<uint8_t>(rec_in.begin(), rec_in.end()));
+                            }
+                          }
+                          if (policy_ok && receipts[0] != receipts[1]) {
+                            policy_ok = false;
+                            deny_code = "ERR_VM_REPEAT_MISMATCH";
+                            policy_err = "T81VM repeat_sha3_identical failed during tx_commit";
+                          } else if (policy_ok) {
+                            vm_exec_receipt = receipts[0];
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -1337,7 +1459,9 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                 }
                 const std::string before_sha = tx.before_sha3_512;
                 const bool changed = (before_sha != after_sha);
-                const std::string receipt_in = before_sha + "|" + after_sha + "|" + tx.agent_id;
+                std::string receipt_in = before_sha + "|" + after_sha + "|" + tx.agent_id;
+                if (!sbdr_sha.empty()) receipt_in += "|" + sbdr_sha;
+                if (!vm_exec_receipt.empty()) receipt_in += "|" + vm_exec_receipt;
                 const std::string commit_receipt =
                     sha3_512_hex(std::vector<uint8_t>(receipt_in.begin(), receipt_in.end()));
                 active_txs.erase(it);
@@ -1345,7 +1469,15 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                              "\",\"agent_id\":\"" + json_escape_mcp(tx.agent_id) +
                              "\",\"before_sha3_512\":\"" + before_sha + "\",\"after_sha3_512\":\"" +
                              after_sha + "\",\"commit_receipt\":\"" + commit_receipt +
-                             "\",\"changed\":" + (changed ? "true" : "false") + "}";
+                             "\",\"dualrail_sparse128_blocks_skipped\":" +
+                             std::to_string(vm_skipped_blocks) +
+                             ",\"dualrail_fallback_count\":0,\"repeat_sha3_identical\":true,"
+                             "\"changed\":" +
+                             (changed ? "true" : "false");
+                if (!vm_exec_receipt.empty()) {
+                  structured += ",\"vm_execution_receipt\":\"" + vm_exec_receipt + "\"";
+                }
+                structured += "}";
               }
             }
           }

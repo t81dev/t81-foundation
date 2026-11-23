@@ -634,6 +634,128 @@ class TernaryOSV02SemanticsTest(unittest.TestCase):
             self.assertEqual(run_ok["dualrail_fallback_count"], 0)
             self.assertGreaterEqual(run_ok["dualrail_sparse128_blocks_skipped"], 0)
 
+    def test_08_unified_tx_commit_t81vm_canonfs_sbdr1t2d_and_orphan_cleanup(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="t81-v02-unified-commit-") as td:
+            root = Path(td)
+            ws = self._prepare_governed_workspace(root)
+            bak_dir = root / "tx_bak"
+            bak_dir.mkdir()
+            target = root / "unified_state.json"
+            v0 = b'{"state":"init"}\n'
+            v1 = b'{"state":"verified_t81vm_sbdr1t2d","trit":1}\n'
+            target.write_bytes(v0)
+            v1_sha = "sha3-512:" + hashlib.sha3_512(v1).hexdigest()
+
+            pol = root / "unified_policy.apl"
+            pol.write_text(
+                f'(policy\n  (tier 1)\n  (allowed-tensor-hashes ["{ws["weight_sha3"]}" "{v1_sha}"]))\n',
+                encoding="utf-8",
+            )
+            bc_hex, _ = _build_dot_subgraph()
+
+            with _McpSession(root) as mcp:
+                # 1. Non-zero K* / bad SBDR header inside tx_commit -> fail-closed (-1), auto-aborted, zero orphan files
+                bad_sbdr = root / "bad_kstar_commit.sbdr"
+                bad_sbdr.write_bytes(b"SBDR1\x01\x00\x00" + struct.pack("<QQQQ", 4, 1, 0b0101, 0b1010))
+                tx_bad_sbdr = mcp.call(
+                    "t81.tx_begin",
+                    {
+                        "target_path": str(target),
+                        "backup_dir": str(bak_dir),
+                        "agent_id": "agent-sbdr",
+                        "isolated": True,
+                        "compact": True,
+                    },
+                )
+                Path(tx_bad_sbdr["staging_path"]).write_bytes(v1)
+                deny_sbdr = mcp.call(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": tx_bad_sbdr["tx_id"],
+                        "policy_path": str(pol),
+                        "agent_id": "agent-sbdr",
+                        "canonfs_root": str(ws["canonfs_root"]),
+                        "sbdr_path": str(bad_sbdr),
+                        "bytecode_hex": bc_hex,
+                        "compact": True,
+                    },
+                )
+                self.assertFalse(deny_sbdr["ok"] or deny_sbdr["committed"])
+                self.assertEqual(deny_sbdr["trit"], TRIT_REJECTED)
+                self.assertEqual(deny_sbdr["code"], "ERR_SBDR1T2D_INVALID")
+                self.assertTrue(deny_sbdr["auto_aborted"])
+                self.assertEqual(target.read_bytes(), v0)
+                self.assertEqual(list(bak_dir.iterdir()), [])
+
+                # 2. Tampered CanonFS store inside tx_commit -> fail-closed (-1), auto-aborted, zero orphan files
+                blk = next((ws["canonfs_root"] / "objects").rglob("*.blk"))
+                orig_blk = blk.read_bytes()
+                blk.write_bytes(orig_blk + b"Z")
+                tx_bad_fs = mcp.call(
+                    "t81.tx_begin",
+                    {
+                        "target_path": str(target),
+                        "backup_dir": str(bak_dir),
+                        "agent_id": "agent-fsck",
+                        "isolated": True,
+                        "compact": True,
+                    },
+                )
+                Path(tx_bad_fs["staging_path"]).write_bytes(v1)
+                deny_fs = mcp.call(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": tx_bad_fs["tx_id"],
+                        "policy_path": str(pol),
+                        "agent_id": "agent-fsck",
+                        "canonfs_root": str(ws["canonfs_root"]),
+                        "sbdr_path": str(ws["sbdr_path"]),
+                        "bytecode_hex": bc_hex,
+                        "compact": True,
+                    },
+                )
+                self.assertFalse(deny_fs["ok"] or deny_fs["committed"])
+                self.assertEqual(deny_fs["trit"], TRIT_REJECTED)
+                self.assertEqual(deny_fs["code"], "ERR_CANONFS_FSCK_FAILED")
+                self.assertTrue(deny_fs["auto_aborted"])
+                self.assertEqual(target.read_bytes(), v0)
+                self.assertEqual(list(bak_dir.iterdir()), [])
+                blk.write_bytes(orig_blk)
+
+                # 3. Clean CanonFS + SBDR1T2D (4 total, 1 active -> 3 zero blocks skipped) + T81VM double-run -> commit (+1)
+                tx_ok = mcp.call(
+                    "t81.tx_begin",
+                    {
+                        "target_path": str(target),
+                        "backup_dir": str(bak_dir),
+                        "agent_id": "agent-vm",
+                        "isolated": True,
+                        "compact": True,
+                    },
+                )
+                Path(tx_ok["staging_path"]).write_bytes(v1)
+                commit_ok = mcp.call(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": tx_ok["tx_id"],
+                        "policy_path": str(pol),
+                        "agent_id": "agent-vm",
+                        "canonfs_root": str(ws["canonfs_root"]),
+                        "sbdr_path": str(ws["sbdr_path"]),
+                        "bytecode_hex": bc_hex,
+                        "compact": True,
+                    },
+                )
+                self.assertTrue(commit_ok["ok"] and commit_ok["committed"], commit_ok)
+                self.assertEqual(commit_ok["trit"], TRIT_VERIFIED)
+                self.assertEqual(commit_ok["dualrail_sparse128_blocks_skipped"], 3)
+                self.assertEqual(commit_ok["dualrail_fallback_count"], 0)
+                self.assertTrue(commit_ok["repeat_sha3_identical"])
+                self.assertTrue(commit_ok["vm_execution_receipt"].startswith("sha3-512:"))
+                self.assertTrue(commit_ok["commit_receipt"].startswith("sha3-512:"))
+                self.assertEqual(target.read_bytes(), v1)
+                self.assertEqual(list(bak_dir.iterdir()), [])
+
 
 if __name__ == "__main__":
     unittest.main()
