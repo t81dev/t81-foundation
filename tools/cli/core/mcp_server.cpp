@@ -22,6 +22,7 @@
 #include <iostream>
 #include <iterator>
 #include <numeric>
+#include <optional>
 #include <sstream>
 #include <string_view>
 #include <unordered_map>
@@ -275,24 +276,102 @@ bool arg_u64(const JsonNode& obj, const std::string& key, uint64_t default_val, 
   return true;
 }
 
-bool write_file_bytes_atomic(const fs::path& path, const std::vector<uint8_t>& data) {
-  fs::path tmp = path;
+struct PathJail {
+  std::vector<fs::path> roots;
+  mutable std::string last_error;
+  static constexpr std::uintmax_t kMaxReadBytes = 64ull * 1024ull * 1024ull;
+
+  bool within(const fs::path& canonical) const {
+    const fs::path canon = canonical.lexically_normal();
+    for (const auto& root : roots) {
+      if (canon == root) return true;
+      const fs::path rel = canon.lexically_relative(root);
+      if (rel.empty() || rel.is_absolute()) continue;
+      bool escapes = false;
+      for (const auto& part : rel) {
+        if (part == "..") {
+          escapes = true;
+          break;
+        }
+      }
+      if (!escapes) return true;
+    }
+    return false;
+  }
+
+  // Relative paths resolve under the first root. Absolute paths must land inside any root
+  // after symlink and ".." canonicalization.
+  bool resolve(const fs::path& input, fs::path& canonical) const {
+    last_error.clear();
+    if (input.empty()) {
+      last_error = "empty path";
+      return false;
+    }
+    const auto native = input.native();
+    if (std::find(native.begin(), native.end(), fs::path::value_type{}) != native.end()) {
+      last_error = "could not resolve path";
+      return false;
+    }
+    std::error_code ec;
+    fs::path abs = input;
+    if (abs.is_relative()) {
+      if (roots.empty()) {
+        last_error = "MCP filesystem root is not configured";
+        return false;
+      }
+      abs = roots.front() / abs;
+    }
+    const fs::path canon = fs::weakly_canonical(abs, ec);
+    if (ec) {
+      last_error = "could not resolve path";
+      return false;
+    }
+    if (!within(canon)) {
+      last_error = "path is outside the MCP filesystem root";
+      return false;
+    }
+    canonical = canon;
+    return true;
+  }
+
+  bool resolve(const std::string& input, fs::path& canonical) const {
+    if (input.find('\0') != std::string::npos) {
+      last_error = "could not resolve path";
+      return false;
+    }
+    return resolve(fs::path(input), canonical);
+  }
+};
+
+bool write_file_bytes_atomic(const PathJail& jail, const fs::path& path,
+                             const std::vector<uint8_t>& data) {
+  fs::path canonical;
+  if (!jail.resolve(path, canonical)) return false;
+  fs::path tmp = canonical;
   tmp += ".tmp.t81";
   std::ofstream ofs(tmp, std::ios::binary | std::ios::trunc);
-  if (!ofs) return false;
-  ofs.write(reinterpret_cast<const char*>(data.data()), static_cast<std::streamsize>(data.size()));
+  if (!ofs) {
+    jail.last_error = "could not write file";
+    return false;
+  }
+  if (!data.empty()) {
+    ofs.write(reinterpret_cast<const char*>(data.data()),
+              static_cast<std::streamsize>(data.size()));
+  }
   ofs.flush();
   const bool ok = static_cast<bool>(ofs);
   ofs.close();
   if (!ok) {
     std::error_code ec;
     fs::remove(tmp, ec);
+    jail.last_error = "could not write file";
     return false;
   }
   std::error_code ec;
-  fs::rename(tmp, path, ec);
+  fs::rename(tmp, canonical, ec);
   if (ec) {
     fs::remove(tmp, ec);
+    jail.last_error = "could not write file";
     return false;
   }
   return true;
@@ -310,21 +389,77 @@ std::string sha3_512_hex(const std::vector<uint8_t>& bytes) {
   return "sha3-512:" + hex;
 }
 
-bool read_file_bytes(const fs::path& path, std::vector<uint8_t>& out) {
-  std::ifstream ifs(path, std::ios::binary);
-  if (!ifs) return false;
-  out.assign((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+bool read_file_bytes(const PathJail& jail, const fs::path& path, std::vector<uint8_t>& out) {
+  fs::path canonical;
+  if (!jail.resolve(path, canonical)) return false;
+  std::ifstream ifs(canonical, std::ios::binary);
+  if (!ifs) {
+    jail.last_error = "could not open file";
+    return false;
+  }
+  out.clear();
+  char buf[8192];
+  while (ifs) {
+    ifs.read(buf, sizeof(buf));
+    const auto n = static_cast<std::size_t>(ifs.gcount());
+    if (n == 0) break;
+    if (out.size() + n > PathJail::kMaxReadBytes) {
+      out.clear();
+      jail.last_error = "file exceeds MCP read limit";
+      return false;
+    }
+    out.insert(out.end(), buf, buf + n);
+  }
+  if (ifs.bad()) {
+    out.clear();
+    jail.last_error = "could not open file";
+    return false;
+  }
   return true;
 }
 
-bool write_file_bytes(const fs::path& path, const std::vector<uint8_t>& data) {
-  std::ofstream ofs(path, std::ios::binary | std::ios::trunc);
-  if (!ofs) return false;
+bool write_file_bytes(const PathJail& jail, const fs::path& path,
+                      const std::vector<uint8_t>& data) {
+  fs::path canonical;
+  if (!jail.resolve(path, canonical)) return false;
+  std::ofstream ofs(canonical, std::ios::binary | std::ios::trunc);
+  if (!ofs) {
+    jail.last_error = "could not write file";
+    return false;
+  }
   if (!data.empty()) {
     ofs.write(reinterpret_cast<const char*>(data.data()),
               static_cast<std::streamsize>(data.size()));
   }
-  return ofs.good();
+  if (!ofs.good()) {
+    jail.last_error = "could not write file";
+    return false;
+  }
+  return true;
+}
+
+bool path_text_has_nul(const std::string& path) { return path.find('\0') != std::string::npos; }
+
+bool read_file_bytes(const PathJail& jail, const std::string& path, std::vector<uint8_t>& out) {
+  if (path_text_has_nul(path)) {
+    jail.last_error = "could not resolve path";
+    return false;
+  }
+  return read_file_bytes(jail, fs::path(path), out);
+}
+
+bool write_file_bytes_atomic(const PathJail& jail, const std::string& path,
+                             const std::vector<uint8_t>& data) {
+  if (path_text_has_nul(path)) {
+    jail.last_error = "could not resolve path";
+    return false;
+  }
+  return write_file_bytes_atomic(jail, fs::path(path), data);
+}
+
+std::string io_failure_json(const PathJail& jail, std::string_view fallback) {
+  const std::string& err = jail.last_error.empty() ? std::string(fallback) : jail.last_error;
+  return "{\"ok\":false,\"error\":\"" + json_escape_mcp(err) + "\"}";
 }
 
 bool policy_admits_hash(const t81::axion::Policy& policy, const std::string& hash) {
@@ -348,17 +483,92 @@ int mode_rank(const std::string& m) {
   return -1;
 }
 
-std::string resolve_floor(const std::string& policy_text, const std::string& action_type) {
-  if (!action_type.empty()) {
-    for (const char* m : {"observe-only", "warn", "fail-closed"}) {
-      const std::string needle = "action-policy:" + action_type + "=" + m;
-      if (policy_text.find(needle) != std::string::npos) return m;
+bool action_type_token(std::string_view text) {
+  if (text.empty() || text.size() > 128) return false;
+  for (unsigned char c : text) {
+    if (std::isalnum(c) || c == '_' || c == '.' || c == ':' || c == '-') continue;
+    return false;
+  }
+  return true;
+}
+
+void skip_policy_ws(std::string_view text, size_t& index) {
+  while (index < text.size() && std::isspace(static_cast<unsigned char>(text[index]))) {
+    ++index;
+  }
+}
+
+bool consume_literal(std::string_view text, size_t& index, std::string_view literal) {
+  if (text.substr(index).starts_with(literal)) {
+    index += literal.size();
+    return true;
+  }
+  return false;
+}
+
+// First structured `(require-axion-event (reason "<prefix><mode>"))` clause wins.
+// A bare mention of `enforcement-mode:observe-only` in a comment or another string does not.
+std::optional<std::string> match_reason_mode(std::string_view text,
+                                             std::string_view reason_prefix) {
+  static constexpr std::string_view kHead = "(require-axion-event";
+  static constexpr std::string_view kModes[] = {"observe-only", "fail-closed", "warn"};
+  size_t search = 0;
+  while (search < text.size()) {
+    const size_t found = text.find(kHead, search);
+    if (found == std::string_view::npos) return std::nullopt;
+    size_t index = found + kHead.size();
+    skip_policy_ws(text, index);
+    if (!consume_literal(text, index, "(reason")) {
+      search = found + 1;
+      continue;
     }
+    skip_policy_ws(text, index);
+    if (!consume_literal(text, index, "\"")) {
+      search = found + 1;
+      continue;
+    }
+    if (!consume_literal(text, index, reason_prefix)) {
+      search = found + 1;
+      continue;
+    }
+    std::optional<std::string> mode;
+    for (const std::string_view candidate : kModes) {
+      if (text.substr(index).starts_with(candidate) && index + candidate.size() < text.size() &&
+          text[index + candidate.size()] == '"') {
+        mode = std::string(candidate);
+        index += candidate.size();
+        break;
+      }
+    }
+    if (!mode) {
+      search = found + 1;
+      continue;
+    }
+    if (!consume_literal(text, index, "\"")) {
+      search = found + 1;
+      continue;
+    }
+    skip_policy_ws(text, index);
+    if (!consume_literal(text, index, ")")) {
+      search = found + 1;
+      continue;
+    }
+    skip_policy_ws(text, index);
+    if (!consume_literal(text, index, ")")) {
+      search = found + 1;
+      continue;
+    }
+    return mode;
   }
-  for (const char* m : {"observe-only", "warn", "fail-closed"}) {
-    const std::string needle = std::string("enforcement-mode:") + m;
-    if (policy_text.find(needle) != std::string::npos) return m;
+  return std::nullopt;
+}
+
+std::string resolve_floor(const std::string& policy_text, const std::string& action_type) {
+  if (action_type_token(action_type)) {
+    const std::string prefix = "action-policy:" + action_type + "=";
+    if (const auto mode = match_reason_mode(policy_text, prefix)) return *mode;
   }
+  if (const auto mode = match_reason_mode(policy_text, "enforcement-mode:")) return *mode;
   return "fail-closed";
 }
 
@@ -367,8 +577,10 @@ std::string trim_ws(std::string s) {
   return s;
 }
 
-std::string read_git_head_sha(const fs::path& repo_root, std::string& ref_out) {
-  const fs::path head_path = repo_root / ".git" / "HEAD";
+std::string read_git_head_sha(const PathJail& jail, const fs::path& repo_root,
+                              std::string& ref_out) {
+  fs::path head_path;
+  if (!jail.resolve(repo_root / ".git" / "HEAD", head_path)) return "unknown";
   std::ifstream ifs(head_path);
   if (!ifs) return "unknown";
   std::string line;
@@ -376,7 +588,9 @@ std::string read_git_head_sha(const fs::path& repo_root, std::string& ref_out) {
   line = trim_ws(line);
   if (line.rfind("ref: ", 0) == 0) {
     ref_out = line.substr(5);
-    std::ifstream rfs(repo_root / ".git" / ref_out);
+    fs::path ref_path;
+    if (!jail.resolve(repo_root / ".git" / ref_out, ref_path)) return "ref-unpacked";
+    std::ifstream rfs(ref_path);
     if (rfs) {
       std::string sha;
       std::getline(rfs, sha);
@@ -441,9 +655,10 @@ std::string build_tools_list_json() {
          "\"string\"}}}},"
 
          "{\"name\":\"t81.tx_commit\","
-         "\"description\":\"Commit an active file transaction after optional .apl policy check on "
+         "\"description\":\"Commit an active file transaction after a required .apl policy check "
+         "on "
          "the mutated artifact.\","
-         "\"inputSchema\":{\"type\":\"object\",\"required\":[\"tx_id\"],"
+         "\"inputSchema\":{\"type\":\"object\",\"required\":[\"tx_id\",\"policy_path\"],"
          "\"properties\":{\"tx_id\":{\"type\":\"string\"},\"policy_path\":{\"type\":\"string\"}}}},"
 
          "{\"name\":\"t81.tx_abort\","
@@ -599,9 +814,54 @@ SubgraphVerifyResult verify_tisc_subgraph(const t81::tisc::Program& prog) {
 int run_mcp_serve(const std::vector<std::string>& command_args,
                   const std::function<int(const std::string&)>& run_canonfs_fsck_json) {
   if (command_args.empty() || command_args[0] != "serve") {
-    std::cerr << "Usage: t81 mcp serve\n"
+    std::cerr << "Usage: t81 mcp serve [--root PATH]...\n"
               << "Run 't81 help mcp' to list all 15 native MCP tools.\n";
     return 1;
+  }
+
+  std::vector<fs::path> root_args;
+  for (size_t i = 1; i < command_args.size(); ++i) {
+    const std::string& arg = command_args[i];
+    if (arg == "--root") {
+      if (i + 1 >= command_args.size() || command_args[i + 1].empty()) {
+        std::cerr << "t81 mcp serve: --root requires a path\n";
+        return 1;
+      }
+      root_args.emplace_back(command_args[++i]);
+    } else if (arg.rfind("--root=", 0) == 0) {
+      const std::string value = arg.substr(std::string("--root=").size());
+      if (value.empty()) {
+        std::cerr << "t81 mcp serve: --root requires a path\n";
+        return 1;
+      }
+      root_args.emplace_back(value);
+    } else {
+      std::cerr << "t81 mcp serve: unknown argument '" << arg << "'\n"
+                << "Usage: t81 mcp serve [--root PATH]...\n";
+      return 1;
+    }
+  }
+  if (root_args.empty()) {
+    std::error_code cwd_ec;
+    const fs::path cwd = fs::current_path(cwd_ec);
+    if (cwd_ec) {
+      std::cerr << "t81 mcp serve: could not resolve the working directory\n";
+      return 1;
+    }
+    root_args.push_back(cwd);
+  }
+
+  PathJail jail;
+  jail.roots.reserve(root_args.size());
+  for (const fs::path& root_arg : root_args) {
+    std::error_code ec;
+    const fs::path canon = fs::weakly_canonical(root_arg, ec);
+    std::error_code dir_ec;
+    if (ec || !fs::is_directory(canon, dir_ec)) {
+      std::cerr << "t81 mcp serve: --root is not a directory: " << root_arg.string() << "\n";
+      return 1;
+    }
+    jail.roots.push_back(canon.lexically_normal());
   }
 
   std::unordered_map<std::string, ActiveTx> active_txs;
@@ -659,7 +919,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                        "policy_path\",\"expected\":[\"policy_path\"]}";
         } else {
           std::vector<uint8_t> pbytes;
-          if (!read_file_bytes(ppath, pbytes)) {
+          if (!read_file_bytes(jail, ppath, pbytes)) {
             structured = "{\"ok\":false,\"valid\":false,\"error\":\"could not open policy file\"}";
           } else {
             std::string content(pbytes.begin(), pbytes.end());
@@ -701,7 +961,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         if (apath.empty() || ppath.empty()) {
           structured = "{\"ok\":false,\"decision\":\"DENY\",\"blocked\":true,\"error\":\"missing "
                        "required arguments\",\"expected\":[\"artifact_path\",\"policy_path\"]}";
-        } else if (!read_file_bytes(apath, abytes) || !read_file_bytes(ppath, pbytes)) {
+        } else if (!read_file_bytes(jail, apath, abytes) || !read_file_bytes(jail, ppath, pbytes)) {
           structured = "{\"ok\":false,\"decision\":\"DENY\",\"blocked\":true,\"error\":\"missing "
                        "artifact or policy file\"}";
         } else {
@@ -738,13 +998,16 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         }
       } else if (name == "t81.canonfs_fsck") {
         const std::string croot = arg_str(args, "canonfs_root");
+        fs::path canon_root;
         if (croot.empty()) {
           structured = "{\"ok\":false,\"error\":\"missing required argument: "
                        "canonfs_root\",\"expected\":[\"canonfs_root\"]}";
+        } else if (!jail.resolve(croot, canon_root)) {
+          structured = io_failure_json(jail, "path is outside the MCP filesystem root");
         } else {
           std::ostringstream cap;
           std::streambuf* old_buf = std::cout.rdbuf(cap.rdbuf());
-          const int rc = run_canonfs_fsck_json(croot);
+          const int rc = run_canonfs_fsck_json(canon_root.string());
           std::cout.rdbuf(old_buf);
           std::string raw = cap.str();
           if (!raw.empty() && raw.front() == '{') {
@@ -764,29 +1027,38 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         if (fpath.empty()) {
           structured = "{\"ok\":false,\"error\":\"missing required argument: "
                        "path\",\"expected\":[\"path\"]}";
-        } else if (!read_file_bytes(fpath, bytes)) {
-          structured = "{\"ok\":false,\"error\":\"could not open file\"}";
+        } else if (!read_file_bytes(jail, fpath, bytes)) {
+          structured = io_failure_json(jail, "could not open file");
         } else {
           structured = "{\"ok\":true,\"sha3_512\":\"" + sha3_512_hex(bytes) + "\"}";
         }
       } else if (name == "t81.session_bootstrap") {
         const std::string root_arg = arg_str(args, "repo_root");
-        const fs::path root = root_arg.empty() ? fs::current_path() : fs::path(root_arg);
-        std::string git_ref;
-        const std::string head_sha = read_git_head_sha(root, git_ref);
-        const fs::path lock_path = root / "docs" / "governance" / "PUBLIC_API_LOCK.json";
-        const fs::path reg_path = root / "docs" / "governance" / "DETERMINISM_SURFACE_REGISTRY.md";
-        std::vector<uint8_t> lock_bytes;
-        const bool lock_ok = read_file_bytes(lock_path, lock_bytes);
-        const bool reg_ok = fs::exists(reg_path);
-        structured =
-            std::string("{\"ok\":true,\"version\":\"") + T81_VERSION_STR + "\",\"repo_root\":\"" +
-            json_escape_mcp(root.string()) + "\",\"git_ref\":\"" + json_escape_mcp(git_ref) +
-            "\",\"git_head_sha\":\"" + json_escape_mcp(head_sha) +
-            "\",\"public_api_lock_present\":" + (lock_ok ? "true" : "false") +
-            ",\"public_api_lock_sha3_512\":\"" + (lock_ok ? sha3_512_hex(lock_bytes) : "") +
-            "\",\"determinism_registry_present\":" + (reg_ok ? "true" : "false") +
-            ",\"native_mcp_tools\":15,\"capabilities\":" + detect_host_capabilities_json() + "}";
+        fs::path root;
+        const fs::path requested = root_arg.empty() ? fs::path(".") : fs::path(root_arg);
+        if (!jail.resolve(requested, root)) {
+          structured = io_failure_json(jail, "path is outside the MCP filesystem root");
+        } else {
+          std::string git_ref;
+          const std::string head_sha = read_git_head_sha(jail, root, git_ref);
+          const fs::path lock_path = root / "docs" / "governance" / "PUBLIC_API_LOCK.json";
+          const fs::path reg_path =
+              root / "docs" / "governance" / "DETERMINISM_SURFACE_REGISTRY.md";
+          std::vector<uint8_t> lock_bytes;
+          const bool lock_ok = read_file_bytes(jail, lock_path, lock_bytes);
+          fs::path reg_canon;
+          std::error_code reg_ec;
+          const bool reg_ok =
+              jail.resolve(reg_path, reg_canon) && fs::is_regular_file(reg_canon, reg_ec);
+          structured =
+              std::string("{\"ok\":true,\"version\":\"") + T81_VERSION_STR + "\",\"repo_root\":\"" +
+              json_escape_mcp(root.string()) + "\",\"git_ref\":\"" + json_escape_mcp(git_ref) +
+              "\",\"git_head_sha\":\"" + json_escape_mcp(head_sha) +
+              "\",\"public_api_lock_present\":" + (lock_ok ? "true" : "false") +
+              ",\"public_api_lock_sha3_512\":\"" + (lock_ok ? sha3_512_hex(lock_bytes) : "") +
+              "\",\"determinism_registry_present\":" + (reg_ok ? "true" : "false") +
+              ",\"native_mcp_tools\":15,\"capabilities\":" + detect_host_capabilities_json() + "}";
+        }
       } else if (name == "t81.tx_begin") {
         const std::string tpath = arg_str(args, "target_path");
         const std::string bdir = arg_str(args, "backup_dir");
@@ -794,21 +1066,27 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         if (tpath.empty() || bdir.empty()) {
           structured = "{\"ok\":false,\"error\":\"missing required "
                        "arguments\",\"expected\":[\"target_path\",\"backup_dir\"]}";
-        } else if (!read_file_bytes(tpath, bytes)) {
-          structured = "{\"ok\":false,\"error\":\"could not read target_path\"}";
+        } else if (!read_file_bytes(jail, tpath, bytes)) {
+          structured = io_failure_json(jail, "could not read target_path");
         } else {
-          std::error_code ec;
-          fs::create_directories(bdir, ec);
-          const std::string tx_id = "tx-" + std::to_string(++tx_counter);
-          const fs::path bpath = fs::path(bdir) / (tx_id + ".bak");
-          if (!write_file_bytes(bpath, bytes)) {
-            structured = "{\"ok\":false,\"error\":\"could not write transaction backup\"}";
+          fs::path target_canon;
+          fs::path backup_root;
+          if (!jail.resolve(tpath, target_canon) || !jail.resolve(bdir, backup_root)) {
+            structured = io_failure_json(jail, "path is outside the MCP filesystem root");
           } else {
-            const std::string before_sha = sha3_512_hex(bytes);
-            active_txs[tx_id] = ActiveTx{tx_id, fs::path(tpath), bpath, before_sha};
-            structured = "{\"ok\":true,\"tx_id\":\"" + tx_id + "\",\"before_sha3_512\":\"" +
-                         before_sha + "\",\"backup_path\":\"" + json_escape_mcp(bpath.string()) +
-                         "\"}";
+            std::error_code ec;
+            fs::create_directories(backup_root, ec);
+            const std::string tx_id = "tx-" + std::to_string(++tx_counter);
+            const fs::path bpath = backup_root / (tx_id + ".bak");
+            if (ec || !write_file_bytes(jail, bpath, bytes)) {
+              structured = io_failure_json(jail, "could not write transaction backup");
+            } else {
+              const std::string before_sha = sha3_512_hex(bytes);
+              active_txs[tx_id] = ActiveTx{tx_id, target_canon, bpath, before_sha};
+              structured = "{\"ok\":true,\"tx_id\":\"" + tx_id + "\",\"before_sha3_512\":\"" +
+                           before_sha + "\",\"backup_path\":\"" + json_escape_mcp(bpath.string()) +
+                           "\"}";
+            }
           }
         }
       } else if (name == "t81.tx_abort") {
@@ -818,11 +1096,11 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           structured = "{\"ok\":false,\"error\":\"unknown or closed tx_id\"}";
         } else {
           std::vector<uint8_t> bbytes;
-          if (!read_file_bytes(it->second.backup_path, bbytes) ||
+          if (!read_file_bytes(jail, it->second.backup_path, bbytes) ||
               sha3_512_hex(bbytes) != it->second.before_sha3_512) {
             structured = "{\"ok\":false,\"error\":\"backup integrity verification failed (SHA3-512 "
                          "mismatch)\"}";
-          } else if (!write_file_bytes(it->second.target_path, bbytes)) {
+          } else if (!write_file_bytes(jail, it->second.target_path, bbytes)) {
             structured = "{\"ok\":false,\"error\":\"failed restoring target_path\"}";
           } else {
             std::error_code ec;
@@ -839,19 +1117,23 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         auto it = active_txs.find(tx_id);
         if (it == active_txs.end()) {
           structured = "{\"ok\":false,\"error\":\"unknown or closed tx_id\"}";
+        } else if (ppath.empty()) {
+          structured = "{\"ok\":false,\"committed\":false,\"tx_id\":\"" + tx_id +
+                       "\",\"error\":\"missing required argument: policy_path\"}";
         } else {
           std::vector<uint8_t> after_bytes;
-          if (!read_file_bytes(it->second.target_path, after_bytes)) {
+          if (!read_file_bytes(jail, it->second.target_path, after_bytes)) {
             structured = "{\"ok\":false,\"error\":\"could not read mutated target_path\"}";
           } else {
             const std::string after_sha = sha3_512_hex(after_bytes);
             bool policy_ok = true;
             std::string policy_err;
-            if (!ppath.empty()) {
+            {
               std::vector<uint8_t> pbytes;
-              if (!read_file_bytes(ppath, pbytes)) {
+              if (!read_file_bytes(jail, ppath, pbytes)) {
                 policy_ok = false;
-                policy_err = "could not read policy_path";
+                policy_err =
+                    jail.last_error.empty() ? "could not read policy_path" : jail.last_error;
               } else {
                 std::string ptext(pbytes.begin(), pbytes.end());
                 auto pres = t81::axion::parse_policy(ptext);
@@ -890,7 +1172,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         if (!bc_hex.empty()) {
           loaded_ok = decode_hex_bytes(bc_hex, raw);
         } else if (!bc_path.empty()) {
-          loaded_ok = read_file_bytes(bc_path, raw);
+          loaded_ok = read_file_bytes(jail, bc_path, raw);
         }
         if (!loaded_ok || raw.empty()) {
           structured = "{\"ok\":false,\"verdict\":\"REJECT_INVALID_INPUT\","
@@ -927,7 +1209,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         if (!bc_hex.empty()) {
           loaded_ok = decode_hex_bytes(bc_hex, raw);
         } else if (!bc_path.empty()) {
-          loaded_ok = read_file_bytes(bc_path, raw);
+          loaded_ok = read_file_bytes(jail, bc_path, raw);
         }
         if (!loaded_ok || raw.empty()) {
           structured = "{\"ok\":false,\"verdict\":\"REJECT_INVALID_INPUT\","
@@ -947,12 +1229,16 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
             if (!vr.ok) {
               structured = "{\"ok\":false,\"verdict\":\"" + vr.verdict +
                            "\",\"executed\":false,\"program_sha3_512\":\"" + prog_sha + "\"}";
+            } else if (ppath.empty()) {
+              structured = "{\"ok\":false,\"verdict\":\"REJECT_MISSING_POLICY\","
+                           "\"executed\":false,\"program_sha3_512\":\"" +
+                           prog_sha + "\"}";
             } else {
               t81::axion::Policy pol;
               bool pol_ok = true;
-              if (!ppath.empty()) {
+              {
                 std::vector<uint8_t> pbytes;
-                if (!read_file_bytes(ppath, pbytes)) {
+                if (!read_file_bytes(jail, ppath, pbytes)) {
                   pol_ok = false;
                 } else {
                   auto parsed = t81::axion::parse_policy(std::string(pbytes.begin(), pbytes.end()));
@@ -1005,8 +1291,8 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         if (!max_ok) {
           structured = "{\"ok\":false,\"allowed\":false,\"verdict\":\"REJECT_INVALID_ARGUMENT\"}";
         } else if (bp_path.empty() || bn_path.empty() || cp_path.empty() || cn_path.empty() ||
-                   !read_file_bytes(bp_path, bp) || !read_file_bytes(bn_path, bn) ||
-                   !read_file_bytes(cp_path, cp) || !read_file_bytes(cn_path, cn)) {
+                   !read_file_bytes(jail, bp_path, bp) || !read_file_bytes(jail, bn_path, bn) ||
+                   !read_file_bytes(jail, cp_path, cp) || !read_file_bytes(jail, cn_path, cn)) {
           structured = "{\"ok\":false,\"allowed\":false,\"verdict\":\"REJECT_IO_ERROR\"}";
         } else if (bp.empty() || bp.size() != bn.size() || bp.size() != cp.size() ||
                    bp.size() != cn.size() || (bp.size() % 8 != 0)) {
@@ -1062,9 +1348,9 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         const size_t dim = static_cast<size_t>(dim_u64);
         const size_t top_k_req = static_cast<size_t>(top_k_u64);
         std::vector<uint8_t> ip, in, qp, qn;
-        if (!dims_ok || dim == 0 || (dim % 64 != 0) || !read_file_bytes(ip_path, ip) ||
-            !read_file_bytes(in_path, in) || !read_file_bytes(qp_path, qp) ||
-            !read_file_bytes(qn_path, qn)) {
+        if (!dims_ok || dim == 0 || (dim % 64 != 0) || !read_file_bytes(jail, ip_path, ip) ||
+            !read_file_bytes(jail, in_path, in) || !read_file_bytes(jail, qp_path, qp) ||
+            !read_file_bytes(jail, qn_path, qn)) {
           structured = "{\"ok\":false,\"error\":\"invalid dim or unreadable index/query files\"}";
         } else {
           const size_t row_bytes = (dim / 64) * 8;
@@ -1136,14 +1422,14 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         const bool use_sbdr = !sbdr_path.empty();
         std::vector<uint8_t> bp, bn, dp, dn, sbdr;
         bool io_ok = max_ok && !bp_path.empty() && !bn_path.empty() && !op_path.empty() &&
-                     !on_path.empty() && read_file_bytes(bp_path, bp) &&
-                     read_file_bytes(bn_path, bn);
+                     !on_path.empty() && read_file_bytes(jail, bp_path, bp) &&
+                     read_file_bytes(jail, bn_path, bn);
         if (io_ok) {
           if (use_sbdr) {
-            io_ok = read_file_bytes(sbdr_path, sbdr);
+            io_ok = read_file_bytes(jail, sbdr_path, sbdr);
           } else {
-            io_ok = !dp_path.empty() && !dn_path.empty() && read_file_bytes(dp_path, dp) &&
-                    read_file_bytes(dn_path, dn);
+            io_ok = !dp_path.empty() && !dn_path.empty() && read_file_bytes(jail, dp_path, dp) &&
+                    read_file_bytes(jail, dn_path, dn);
           }
         }
         if (!io_ok) {
@@ -1281,8 +1567,8 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
 
             bool wrote_ok = false;
             if (within_budget) {
-              wrote_ok =
-                  write_file_bytes_atomic(op_path, op) && write_file_bytes_atomic(on_path, on);
+              wrote_ok = write_file_bytes_atomic(jail, op_path, op) &&
+                         write_file_bytes_atomic(jail, on_path, on);
             }
             const bool ok = within_budget && wrote_ok;
             const std::string verdict =

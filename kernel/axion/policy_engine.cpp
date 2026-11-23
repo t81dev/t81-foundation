@@ -250,7 +250,42 @@ Verdict PolicyEngine::evaluate_internal(const SyscallContext& ctx) {
     if (ctx.next_opcode == t81::tisc::Opcode::TLoadHash) {
       return Verdict{VerdictKind::Deny, "TLOADHASH requires active policy"};
     }
+    if (ctx.next_opcode == t81::tisc::Opcode::WeightsLoad) {
+      return Verdict{VerdictKind::Deny, "WeightsLoad requires active policy"};
+    }
     return Verdict{VerdictKind::Allow, "Axion policy engine (no policy)"};
+  }
+  if (ctx.next_opcode == t81::tisc::Opcode::WeightsLoad) {
+    // A model checksum admits this opcode only when it equals the tensor name.
+    // An empty payload is the pre-dispatch check, which does not know the name yet.
+    // The interpreter denies an empty name itself and repeats this check with the name.
+    const bool allowlist_empty =
+        policy_->allowed_tensor_hashes.empty() && policy_->allowed_ternary_model_hashes.empty();
+    if (allowlist_empty) {
+      return Verdict{VerdictKind::Deny, "WeightsLoad denied (allowed-tensor-hashes empty)"};
+    }
+    if (!ctx.payload.empty()) {
+      bool found = false;
+      for (const auto& h : policy_->allowed_tensor_hashes) {
+        if (h == ctx.payload) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        for (const auto& h : policy_->allowed_ternary_model_hashes) {
+          if (h == ctx.payload) {
+            found = true;
+            break;
+          }
+        }
+      }
+      if (!found) {
+        std::ostringstream ss;
+        ss << "WeightsLoad policy_violation name=" << ctx.payload;
+        return Verdict{VerdictKind::Deny, ss.str()};
+      }
+    }
   }
   if (ctx.next_opcode == t81::tisc::Opcode::TLoadHash) {
     if (policy_->allowed_tensor_hashes.empty()) {
