@@ -821,53 +821,92 @@ int main() {
 
     const std::string escape_payload = "canonfs-other-payload";
     const std::string escape_payload_ref = other_import.imported_objects.front();
-    t81::canonfs::interchange::Entry unsafe_entry;
-    unsafe_entry.path = "../escape.txt";
-    unsafe_entry.object_ref = escape_payload_ref;
-    unsafe_entry.size_bytes = escape_payload.size();
-    const fs::path unsafe_manifest_file = root / "unsafe-manifest.json";
-    {
-      std::ofstream out(unsafe_manifest_file, std::ios::binary | std::ios::trunc);
-      out << t81::canonfs::interchange::render_manifest("host-file", source.string(),
-                                                        {unsafe_entry});
-    }
-    const auto unsafe_manifest_import =
-        t81::canonfs::import_path(unsafe_manifest_file, import_options);
-    if (!expect(unsafe_manifest_import.ok(), "unsafe manifest import should succeed")) return 1;
-    t81::canonfs::ExportOptions unsafe_options = export_options;
-    unsafe_options.policy_evaluator = {};
-    const fs::path unsafe_out = root / "unsafe-export";
-    const fs::path escaped_file = root / "escape.txt";
-    const auto unsafe_export = t81::canonfs::export_ref(
-        unsafe_manifest_import.imported_objects.front(), unsafe_out, unsafe_options);
-    if (!expect(!unsafe_export.ok(), "unsafe manifest export should fail")) return 1;
-    if (!expect(!unsafe_export.errors.empty() &&
-                    unsafe_export.errors.front().reason == "unsafe_target_path",
-                "unsafe manifest export should report unsafe_target_path")) {
-      return 1;
-    }
-    if (!expect(unsafe_export.materialized_paths.empty(),
-                "unsafe manifest export should materialize nothing")) {
-      return 1;
-    }
-    if (!expect(!fs::exists(unsafe_out),
-                "unsafe-only export must not create the destination directory")) {
-      return 1;
-    }
-    if (!expect(!fs::exists(escaped_file),
-                "unsafe manifest export must not write outside the destination")) {
+    // Build a host-absolute path. POSIX and Windows disagree about which spellings
+    // are absolute, and an absolute manifest path replaces the destination on join.
+    std::error_code absolute_ec;
+    const fs::path absolute_escape = fs::absolute(root / "absolute-escape.txt", absolute_ec);
+    if (!expect(!absolute_ec && absolute_escape.is_absolute(),
+                "absolute escape fixture should be a host-absolute path")) {
       return 1;
     }
 
-    t81::canonfs::interchange::Entry kept_entry;
-    kept_entry.path = "kept.txt";
-    kept_entry.object_ref = escape_payload_ref;
-    kept_entry.size_bytes = escape_payload.size();
+    auto manifest_entry = [&](const std::string& path) {
+      t81::canonfs::interchange::Entry entry;
+      entry.path = path;
+      entry.object_ref = escape_payload_ref;
+      entry.size_bytes = escape_payload.size();
+      return entry;
+    };
+    struct UnsafePathCase {
+      std::string manifest_path;
+      fs::path host_path;
+    };
+    const std::vector<UnsafePathCase> unsafe_cases = {
+        {"../escape.txt", root / "escape.txt"},
+        {"nested/../../escape-nested.txt", root / "escape-nested.txt"},
+        {absolute_escape.generic_string(), absolute_escape},
+    };
+
+    t81::canonfs::ExportOptions unsafe_options = export_options;
+    unsafe_options.policy_evaluator = {};
+
+    for (std::size_t case_index = 0; case_index < unsafe_cases.size(); ++case_index) {
+      const auto& unsafe_case = unsafe_cases[case_index];
+      const fs::path manifest_file =
+          root / ("unsafe-manifest-" + std::to_string(case_index) + ".json");
+      {
+        std::ofstream out(manifest_file, std::ios::binary | std::ios::trunc);
+        out << t81::canonfs::interchange::render_manifest(
+            "host-file", source.string(), {manifest_entry(unsafe_case.manifest_path)});
+      }
+      const auto manifest_import = t81::canonfs::import_path(manifest_file, import_options);
+      if (!expect(manifest_import.ok(), "unsafe manifest import should succeed")) return 1;
+      const fs::path out_dir = root / ("unsafe-export-" + std::to_string(case_index));
+      const auto exported = t81::canonfs::export_ref(manifest_import.imported_objects.front(),
+                                                     out_dir, unsafe_options);
+      if (!expect(!exported.ok(), "unsafe manifest export should fail")) return 1;
+      if (!expect(exported.status == "error", "unsafe-only export status should be error")) {
+        return 1;
+      }
+      if (!expect(exported.policy_result == "allowed",
+                  "unsafe path rejection should stay policy-allowed")) {
+        return 1;
+      }
+      bool saw_reason = false;
+      for (const auto& error : exported.errors) {
+        if (error.reason == "unsafe_target_path" &&
+            error.message.find(unsafe_case.manifest_path) != std::string::npos) {
+          saw_reason = true;
+        }
+      }
+      if (!expect(saw_reason, "unsafe manifest export should report unsafe_target_path")) {
+        return 1;
+      }
+      if (!expect(exported.materialized_paths.empty(),
+                  "unsafe manifest export should materialize nothing")) {
+        return 1;
+      }
+      if (!expect(!fs::exists(out_dir),
+                  "unsafe-only export must not create the destination directory")) {
+        return 1;
+      }
+      if (!expect(!fs::exists(unsafe_case.host_path),
+                  "unsafe manifest export must not write outside the destination")) {
+        return 1;
+      }
+    }
+
+    // Unsafe entries sit before and after the admitted path. The admitted name
+    // contains ".." without a ".." component, so a substring check would reject it.
+    const std::string admitted_path = "nested/notes..txt";
     const fs::path mixed_manifest_file = root / "mixed-manifest.json";
     {
       std::ofstream out(mixed_manifest_file, std::ios::binary | std::ios::trunc);
-      out << t81::canonfs::interchange::render_manifest("host-file", source.string(),
-                                                        {unsafe_entry, kept_entry});
+      out << t81::canonfs::interchange::render_manifest(
+          "host-file", source.string(),
+          {manifest_entry(unsafe_cases[0].manifest_path), manifest_entry(admitted_path),
+           manifest_entry(unsafe_cases[1].manifest_path),
+           manifest_entry(unsafe_cases[2].manifest_path)});
     }
     const auto mixed_manifest_import =
         t81::canonfs::import_path(mixed_manifest_file, import_options);
@@ -875,23 +914,52 @@ int main() {
     const fs::path mixed_out = root / "mixed-export";
     const auto mixed_export = t81::canonfs::export_ref(
         mixed_manifest_import.imported_objects.front(), mixed_out, unsafe_options);
-    if (!expect(mixed_export.policy_result == "partial" || mixed_export.status == "partial",
-                "mixed manifest export should be partial")) {
+    if (!expect(mixed_export.status == "partial", "mixed manifest export should be partial")) {
       return 1;
     }
-    bool saw_unsafe = false;
+    if (!expect(mixed_export.policy_result == "allowed",
+                "mixed unsafe rejection should stay policy-allowed")) {
+      return 1;
+    }
+    int unsafe_error_count = 0;
     for (const auto& error : mixed_export.errors) {
       if (error.reason == "unsafe_target_path") {
-        saw_unsafe = true;
+        ++unsafe_error_count;
       }
     }
-    if (!expect(saw_unsafe, "mixed manifest export should record unsafe_target_path")) return 1;
-    if (!expect(read_file(mixed_out / "kept.txt") == escape_payload,
+    if (!expect(unsafe_error_count == static_cast<int>(unsafe_cases.size()),
+                "mixed manifest export should record one unsafe_target_path per rejected entry")) {
+      return 1;
+    }
+    for (const auto& unsafe_case : unsafe_cases) {
+      bool saw_reason = false;
+      for (const auto& error : mixed_export.errors) {
+        if (error.reason == "unsafe_target_path" &&
+            error.message.find(unsafe_case.manifest_path) != std::string::npos) {
+          saw_reason = true;
+        }
+      }
+      if (!expect(saw_reason, "mixed manifest export should identify each unsafe_target_path")) {
+        return 1;
+      }
+      if (!expect(!fs::exists(unsafe_case.host_path),
+                  "mixed manifest export must not write outside the destination")) {
+        return 1;
+      }
+    }
+    if (!expect(mixed_export.materialized_paths.size() == 1 &&
+                    mixed_export.materialized_paths.front() == admitted_path,
+                "mixed manifest export should materialize only the admitted path")) {
+      return 1;
+    }
+    if (!expect(read_file(mixed_out / "nested" / "notes..txt") == escape_payload,
                 "mixed manifest export should write the admitted entry")) {
       return 1;
     }
-    if (!expect(!fs::exists(escaped_file),
-                "mixed manifest export must not write outside the destination")) {
+    if (!expect(!fs::exists(mixed_out / "escape.txt") &&
+                    !fs::exists(mixed_out / "escape-nested.txt") &&
+                    !fs::exists(mixed_out / "nested" / "escape-nested.txt"),
+                "mixed manifest export must not rewrite dot-dot paths inside the destination")) {
       return 1;
     }
 
