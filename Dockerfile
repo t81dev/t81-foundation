@@ -43,7 +43,7 @@ COPY --from=builder /t81-dist/bin/t81 /usr/local/bin/t81
 COPY examples/ /t81/examples/
 
 # Entrypoint and demo scripts
-COPY docker/ /t81/docker/
+COPY tools/docker/ /t81/tools/docker/
 RUN chmod +x /t81/tools/docker/entrypoint.sh /t81/tools/docker/demo.sh
 
 # Default working directory for user files mounted via -v

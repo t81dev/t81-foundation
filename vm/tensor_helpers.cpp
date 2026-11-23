@@ -1,29 +1,33 @@
 #include "internal/tensor_helpers.hpp"
 
 #include <algorithm>
+#include <bit>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <deque>
+#include <mutex>
 #include <sstream>
+#include <unordered_map>
 
 #ifdef __ARM_NEON
-#  include <arm_neon.h>
+#include <arm_neon.h>
 #elif defined(__AVX2__)
-#  include <immintrin.h>
+#include <immintrin.h>
 #endif
 
+#include "t81/swar/swar.hpp"
+#include "t81/tensor/contracts.hpp"
+#include "t81/tensor/elementwise.hpp"
 #include "t81/tensor/llama.hpp"
 #include "t81/tensor/matmul.hpp"
-#include "t81/tensor/elementwise.hpp"
+#include "t81/tensor/mutation.hpp"
 #include "t81/tensor/native.hpp"
 #include "t81/tensor/reduce.hpp"
-#include "t81/swar/swar.hpp"
+#include "t81/tensor/ternary_native.hpp"
 #include "t81/tensor/transpose.hpp"
 #include "t81/tensor/unary.hpp"
-#include "t81/tensor/contracts.hpp"
-#include "t81/tensor/mutation.hpp"
-#include "t81/tensor/ternary_native.hpp"
 #include "t81/tracing/canonhash.hpp"
 #include "t81/types/detail/dmath.hpp"
 
@@ -31,8 +35,8 @@ namespace t81::vm::internal {
 
 namespace {
 
-using t81::core::detail::DFixed;
 using t81::ComputeTritVector;
+using t81::core::detail::DFixed;
 
 inline void prefetch_read_l2(const void* ptr) noexcept {
 #if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
@@ -170,8 +174,8 @@ std::optional<std::vector<std::int8_t>> decode_balanced_ternary_trits(
   }
 
   for (uint64_t limb : native.data) {
-    const std::size_t count =
-        static_cast<std::size_t>(std::min<uint64_t>(48, static_cast<uint64_t>(total_trits - out_offset)));
+    const std::size_t count = static_cast<std::size_t>(
+        std::min<uint64_t>(48, static_cast<uint64_t>(total_trits - out_offset)));
     uint64_t val = limb;
     for (int i = 47; i >= 0; --i) {
       const uint64_t digit = val % 3;
@@ -214,11 +218,11 @@ std::optional<t81::T729DynamicTensor> native_tensor_unary_exp_direct(
     return std::nullopt;
   }
 
-  static const float kExpNegOne = static_cast<float>(
-      t81::core::detail::exp(TensorFloat::from_double(-1.0)).to_double());
+  static const float kExpNegOne =
+      static_cast<float>(t81::core::detail::exp(TensorFloat::from_double(-1.0)).to_double());
   static const float kExpZero = 1.0f;
-  static const float kExpOne = static_cast<float>(
-      t81::core::detail::exp(TensorFloat::from_double(1.0)).to_double());
+  static const float kExpOne =
+      static_cast<float>(t81::core::detail::exp(TensorFloat::from_double(1.0)).to_double());
 
   uint64_t remaining = native.trits;
   if (remaining == 0 && !native.data.empty()) {
@@ -295,14 +299,14 @@ std::optional<t81::T729DynamicTensor> native_tensor_quant_direct(
 #endif
 #ifdef __ARM_NEON
     for (; i < total8; i += 8) {
-      const int8x8_t  sv   = vld1_s8(trits.data() + i);
+      const int8x8_t sv = vld1_s8(trits.data() + i);
       const int16x8_t sv16 = vmovl_s8(sv);
-      vst1q_f32(out.data() + i,     vcvtq_f32_s32(vmovl_s16(vget_low_s16(sv16))));
+      vst1q_f32(out.data() + i, vcvtq_f32_s32(vmovl_s16(vget_low_s16(sv16))));
       vst1q_f32(out.data() + i + 4, vcvtq_f32_s32(vmovl_s16(vget_high_s16(sv16))));
     }
 #elif defined(__AVX2__)
     for (; i < total8; i += 8) {
-      const __m128i sv   = _mm_loadl_epi64(reinterpret_cast<const __m128i*>(trits.data() + i));
+      const __m128i sv = _mm_loadl_epi64(reinterpret_cast<const __m128i*>(trits.data() + i));
       _mm256_storeu_ps(out.data() + i, _mm256_cvtepi32_ps(_mm256_cvtepi8_epi32(sv)));
     }
 #endif
@@ -311,8 +315,8 @@ std::optional<t81::T729DynamicTensor> native_tensor_quant_direct(
     }
   }
 
-  auto tensor = t81::T729DynamicTensor::from_host_float_data(
-      std::move(shape), std::move(out), t81::TensorNumericClass::ExactTrit);
+  auto tensor = t81::T729DynamicTensor::from_host_float_data(std::move(shape), std::move(out),
+                                                             t81::TensorNumericClass::ExactTrit);
   tensor.set_numeric_class(t81::TensorNumericClass::ExactTrit);
   return tensor;
 }
@@ -348,9 +352,9 @@ std::optional<t81::T729DynamicTensor> native_tensor_tact_direct(
 #endif
 #ifdef __ARM_NEON
   for (; i < total8; i += 8) {
-    const int8x8_t  sv   = vld1_s8(trits.data() + i);
+    const int8x8_t sv = vld1_s8(trits.data() + i);
     const int16x8_t sv16 = vmovl_s8(sv);
-    vst1q_f32(out.data() + i,     vcvtq_f32_s32(vmovl_s16(vget_low_s16(sv16))));
+    vst1q_f32(out.data() + i, vcvtq_f32_s32(vmovl_s16(vget_low_s16(sv16))));
     vst1q_f32(out.data() + i + 4, vcvtq_f32_s32(vmovl_s16(vget_high_s16(sv16))));
   }
 #elif defined(__AVX2__)
@@ -367,8 +371,8 @@ std::optional<t81::T729DynamicTensor> native_tensor_tact_direct(
     out[i] = static_cast<float>(t81::ops::ternary_detail::snap_trit(x));
   }
 
-  auto tensor = t81::T729DynamicTensor::from_host_float_data(
-      std::move(shape), std::move(out), t81::TensorNumericClass::ExactTrit);
+  auto tensor = t81::T729DynamicTensor::from_host_float_data(std::move(shape), std::move(out),
+                                                             t81::TensorNumericClass::ExactTrit);
   tensor.set_numeric_class(t81::TensorNumericClass::ExactTrit);
   return tensor;
 }
@@ -397,8 +401,10 @@ std::optional<t81::v1::T81BigInt> native_tensor_ternaccum_direct(
     std::vector<std::int8_t> av_trits(total, 0);
     for (std::size_t i = 0; i < total; ++i) {
       const float v = act_vals[i];
-      if (v == 1.0f)       av_trits[i] =  1;
-      else if (v == -1.0f) av_trits[i] = -1;
+      if (v == 1.0f)
+        av_trits[i] = 1;
+      else if (v == -1.0f)
+        av_trits[i] = -1;
     }
 
     int32_t dot = 0;
@@ -421,13 +427,13 @@ std::optional<t81::v1::T81BigInt> native_tensor_ternaccum_direct(
     for (; i < total8; i += 8) {
       const __m128i wv = _mm_loadl_epi64(reinterpret_cast<const __m128i*>(trits.data() + i));
       const __m128i av = _mm_loadl_epi64(reinterpret_cast<const __m128i*>(av_trits.data() + i));
-      acc8 = _mm256_add_epi32(acc8,
-          _mm256_mullo_epi32(_mm256_cvtepi8_epi32(wv), _mm256_cvtepi8_epi32(av)));
+      acc8 = _mm256_add_epi32(
+          acc8, _mm256_mullo_epi32(_mm256_cvtepi8_epi32(wv), _mm256_cvtepi8_epi32(av)));
     }
     {
       const __m128i lo = _mm256_extracti128_si256(acc8, 0);
       const __m128i hi = _mm256_extracti128_si256(acc8, 1);
-      const __m128i s  = _mm_add_epi32(lo, hi);
+      const __m128i s = _mm_add_epi32(lo, hi);
       const __m128i s2 = _mm_hadd_epi32(s, s);
       dot = _mm_extract_epi32(_mm_hadd_epi32(s2, s2), 0);
     }
@@ -463,10 +469,10 @@ std::optional<t81::T729DynamicTensor> native_tensor_unary_silu_direct(
     return std::nullopt;
   }
 
-  static const float kExpNegOne = static_cast<float>(
-      t81::core::detail::exp(TensorFloat::from_double(-1.0)).to_double());
-  static const float kExpPosOne = static_cast<float>(
-      t81::core::detail::exp(TensorFloat::from_double(1.0)).to_double());
+  static const float kExpNegOne =
+      static_cast<float>(t81::core::detail::exp(TensorFloat::from_double(-1.0)).to_double());
+  static const float kExpPosOne =
+      static_cast<float>(t81::core::detail::exp(TensorFloat::from_double(1.0)).to_double());
   static const float kSiluNegOne = -1.0f / (1.0f + kExpPosOne);
   static const float kSiluZero = 0.0f;
   static const float kSiluOne = 1.0f / (1.0f + kExpNegOne);
@@ -532,10 +538,10 @@ std::optional<t81::T729DynamicTensor> native_tensor_unary_softmax_direct(
     return std::nullopt;
   }
 
-  static const float kExpNegTwo = static_cast<float>(
-      t81::core::detail::exp(TensorFloat::from_double(-2.0)).to_double());
-  static const float kExpNegOne = static_cast<float>(
-      t81::core::detail::exp(TensorFloat::from_double(-1.0)).to_double());
+  static const float kExpNegTwo =
+      static_cast<float>(t81::core::detail::exp(TensorFloat::from_double(-2.0)).to_double());
+  static const float kExpNegOne =
+      static_cast<float>(t81::core::detail::exp(TensorFloat::from_double(-1.0)).to_double());
   static const float kExpZero = 1.0f;
 
   uint64_t remaining = native.trits;
@@ -689,8 +695,7 @@ std::optional<t81::T729DynamicTensor> native_tensor_rmsnorm_direct(
             ++nonzero_count;
           }
         }
-        const float mean_ss =
-            static_cast<float>(nonzero_count) / static_cast<float>(dim) + 1e-6f;
+        const float mean_ss = static_cast<float>(nonzero_count) / static_cast<float>(dim) + 1e-6f;
         const float inv_ss = t81::ops::detail::deterministic_inv_sqrt(mean_ss);
         const std::size_t row_base = out_index + 1 - static_cast<std::size_t>(dim);
         for (int j = 0; j < dim; ++j) {
@@ -819,7 +824,7 @@ std::optional<t81::T729DynamicTensor> native_tensor_rope_direct(
     int j = 0;
 #ifdef __ARM_NEON
     for (; j < hdim8; j += 8) {
-      float32x4x2_t vc   = vld2q_f32(drow + j);        // val[0]=v0s, val[1]=v1s
+      float32x4x2_t vc = vld2q_f32(drow + j);  // val[0]=v0s, val[1]=v1s
       const float32x4_t cos4 = vld1q_f32(cos_terms.data() + j / 2);
       const float32x4_t sin4 = vld1q_f32(sin_terms.data() + j / 2);
       float32x4x2_t vout;
@@ -833,7 +838,7 @@ std::optional<t81::T729DynamicTensor> native_tensor_rope_direct(
       const float f_sin = sin_terms[static_cast<std::size_t>(j / 2)];
       const float v0 = drow[j];
       const float v1 = drow[j + 1];
-      drow[j]     = v0 * f_cos - v1 * f_sin;
+      drow[j] = v0 * f_cos - v1 * f_sin;
       drow[j + 1] = v0 * f_sin + v1 * f_cos;
     }
   }
@@ -869,8 +874,7 @@ std::optional<t81::T729DynamicTensor> native_tensor_twembed_direct(
   row.reserve(cols);
   std::size_t global_offset = 0;
   for (uint64_t limb : native.data) {
-    const std::size_t count =
-        static_cast<std::size_t>(std::min<uint64_t>(48, remaining));
+    const std::size_t count = static_cast<std::size_t>(std::min<uint64_t>(48, remaining));
     if (global_offset >= row_end) {
       break;
     }
@@ -919,8 +923,8 @@ std::optional<t81::T729DynamicTensor> native_tensor_twembed_direct(
 std::optional<t81::T729DynamicTensor> native_tensor_twmatmul_direct(
     const t81::T729DynamicTensor& activations, const t81::weights::NativeTensor& weights,
     const std::vector<std::int8_t>& weight_trits) {
-  if (weights.format != t81::weights::NativeFormat::BalancedTernary ||
-      activations.rank() != 2 || weights.shape.size() != 2) {
+  if (weights.format != t81::weights::NativeFormat::BalancedTernary || activations.rank() != 2 ||
+      weights.shape.size() != 2) {
     return std::nullopt;
   }
 
@@ -956,25 +960,25 @@ std::optional<t81::T729DynamicTensor> native_tensor_twmatmul_direct(
   std::vector<float> out(static_cast<std::size_t>(m) * static_cast<std::size_t>(n), 0.0f);
   const int PB = std::min(k, 256);  // L2 block size over reduction axis
 #if defined(__ARM_NEON)
-  const int n16 = (n / 16) * 16;   // 16-wide NEON (4 × float32x4_t)
-  const int n4  = (n /  4) *  4;   // 4-wide tail
+  const int n16 = (n / 16) * 16;  // 16-wide NEON (4 × float32x4_t)
+  const int n4 = (n / 4) * 4;     // 4-wide tail
 #elif defined(__AVX2__)
-  const int n16 = (n / 16) * 16;   // 16-wide AVX2 (2 × __m256)
-  const int n8  = (n /  8) *  8;   // 8-wide tail
+  const int n16 = (n / 16) * 16;  // 16-wide AVX2 (2 × __m256)
+  const int n8 = (n / 8) * 8;     // 8-wide tail
 #endif
   for (int p0 = 0; p0 < k; p0 += PB) {
     const int pend = std::min(p0 + PB, k);
     for (int i = 0; i < m; ++i) {
-      float* const orow =
-          out.data() + static_cast<std::size_t>(i) * static_cast<std::size_t>(n);
+      float* const orow = out.data() + static_cast<std::size_t>(i) * static_cast<std::size_t>(n);
       for (int p = p0; p < pend; ++p) {
-        const float act_value =
-            act_vals[static_cast<std::size_t>(i) * static_cast<std::size_t>(k) +
-                     static_cast<std::size_t>(p)];
+        const float act_value = act_vals[static_cast<std::size_t>(i) * static_cast<std::size_t>(k) +
+                                         static_cast<std::size_t>(p)];
         int av = 0;
         if (exact_trit_activations) {
-          if (act_value == -1.0f) av = -1;
-          else if (act_value == 1.0f) av = 1;
+          if (act_value == -1.0f)
+            av = -1;
+          else if (act_value == 1.0f)
+            av = 1;
         } else {
           av = t81::ops::ternary_detail::snap_trit(act_value);
         }
@@ -989,66 +993,64 @@ std::optional<t81::T729DynamicTensor> native_tensor_twmatmul_direct(
         int j = 0;
 #ifdef __ARM_NEON
         // No vmulq_f32 — ternary constraint eliminates all multiplies.
-        const float32x4_t fav4  = vdupq_n_f32(static_cast<float>(av));
+        const float32x4_t fav4 = vdupq_n_f32(static_cast<float>(av));
         const float32x4_t fav4n = vnegq_f32(fav4);
         const float32x4_t zero4 = vdupq_n_f32(0.0f);
 // Select ±av or 0 from a float32x4_t trit vector.
 #define T81_TERN_SEL(wf_) \
-        vbslq_f32(vcgtq_f32((wf_), zero4), fav4, \
-                  vbslq_f32(vcltq_f32((wf_), zero4), fav4n, zero4))
+  vbslq_f32(vcgtq_f32((wf_), zero4), fav4, vbslq_f32(vcltq_f32((wf_), zero4), fav4n, zero4))
         // 16-wide: 2 int8x8 loads → 4 float32x4 groups, 4 independent chains.
         for (; j < n16; j += 16) {
           const int16x8_t wv16_lo = vmovl_s8(vld1_s8(wrow + j));
           const int16x8_t wv16_hi = vmovl_s8(vld1_s8(wrow + j + 8));
-          const float32x4_t wf0 = vcvtq_f32_s32(vmovl_s16(vget_low_s16 (wv16_lo)));
+          const float32x4_t wf0 = vcvtq_f32_s32(vmovl_s16(vget_low_s16(wv16_lo)));
           const float32x4_t wf1 = vcvtq_f32_s32(vmovl_s16(vget_high_s16(wv16_lo)));
-          const float32x4_t wf2 = vcvtq_f32_s32(vmovl_s16(vget_low_s16 (wv16_hi)));
+          const float32x4_t wf2 = vcvtq_f32_s32(vmovl_s16(vget_low_s16(wv16_hi)));
           const float32x4_t wf3 = vcvtq_f32_s32(vmovl_s16(vget_high_s16(wv16_hi)));
           float32x4_t ov0 = vld1q_f32(orow + j);
-          float32x4_t ov1 = vld1q_f32(orow + j +  4);
-          float32x4_t ov2 = vld1q_f32(orow + j +  8);
+          float32x4_t ov1 = vld1q_f32(orow + j + 4);
+          float32x4_t ov2 = vld1q_f32(orow + j + 8);
           float32x4_t ov3 = vld1q_f32(orow + j + 12);
           ov0 = vaddq_f32(ov0, T81_TERN_SEL(wf0));
           ov1 = vaddq_f32(ov1, T81_TERN_SEL(wf1));
           ov2 = vaddq_f32(ov2, T81_TERN_SEL(wf2));
           ov3 = vaddq_f32(ov3, T81_TERN_SEL(wf3));
-          vst1q_f32(orow + j,      ov0);
-          vst1q_f32(orow + j +  4, ov1);
-          vst1q_f32(orow + j +  8, ov2);
+          vst1q_f32(orow + j, ov0);
+          vst1q_f32(orow + j + 4, ov1);
+          vst1q_f32(orow + j + 8, ov2);
           vst1q_f32(orow + j + 12, ov3);
         }
         // 4-wide tail
         for (; j < n4; j += 4) {
-          const float32x4_t wf = vcvtq_f32_s32(vmovl_s16(
-              vget_low_s16(vmovl_s8(vld1_s8(wrow + j)))));
+          const float32x4_t wf =
+              vcvtq_f32_s32(vmovl_s16(vget_low_s16(vmovl_s8(vld1_s8(wrow + j)))));
           float32x4_t ov = vld1q_f32(orow + j);
           vst1q_f32(orow + j, vaddq_f32(ov, T81_TERN_SEL(wf)));
         }
 #undef T81_TERN_SEL
 #elif defined(__AVX2__)
         // No _mm256_mul_ps — ternary constraint eliminates all multiplies.
-        const __m256 fav8  = _mm256_set1_ps(static_cast<float>(av));
+        const __m256 fav8 = _mm256_set1_ps(static_cast<float>(av));
         const __m256 fav8n = _mm256_sub_ps(_mm256_setzero_ps(), fav8);
         const __m256 zero8 = _mm256_setzero_ps();
-#define T81_AVX_SEL(wf_) \
-        _mm256_blendv_ps( \
-          _mm256_blendv_ps(zero8, fav8n, _mm256_cmp_ps((wf_), zero8, _CMP_LT_OQ)), \
-          fav8, _mm256_cmp_ps((wf_), zero8, _CMP_GT_OQ))
+#define T81_AVX_SEL(wf_)                                                                          \
+  _mm256_blendv_ps(_mm256_blendv_ps(zero8, fav8n, _mm256_cmp_ps((wf_), zero8, _CMP_LT_OQ)), fav8, \
+                   _mm256_cmp_ps((wf_), zero8, _CMP_GT_OQ))
         // 16-wide: 2 × 8-wide AVX2 groups, 2 independent accumulator chains.
         for (; j < n16; j += 16) {
-          const __m256 wf0 = _mm256_cvtepi32_ps(_mm256_cvtepi8_epi32(
-              _mm_loadl_epi64(reinterpret_cast<const __m128i*>(wrow + j))));
+          const __m256 wf0 = _mm256_cvtepi32_ps(
+              _mm256_cvtepi8_epi32(_mm_loadl_epi64(reinterpret_cast<const __m128i*>(wrow + j))));
           const __m256 wf1 = _mm256_cvtepi32_ps(_mm256_cvtepi8_epi32(
               _mm_loadl_epi64(reinterpret_cast<const __m128i*>(wrow + j + 8))));
           __m256 ov0 = _mm256_loadu_ps(orow + j);
           __m256 ov1 = _mm256_loadu_ps(orow + j + 8);
-          _mm256_storeu_ps(orow + j,     _mm256_add_ps(ov0, T81_AVX_SEL(wf0)));
+          _mm256_storeu_ps(orow + j, _mm256_add_ps(ov0, T81_AVX_SEL(wf0)));
           _mm256_storeu_ps(orow + j + 8, _mm256_add_ps(ov1, T81_AVX_SEL(wf1)));
         }
         // 8-wide tail
         for (; j < n8; j += 8) {
-          const __m256 wf = _mm256_cvtepi32_ps(_mm256_cvtepi8_epi32(
-              _mm_loadl_epi64(reinterpret_cast<const __m128i*>(wrow + j))));
+          const __m256 wf = _mm256_cvtepi32_ps(
+              _mm256_cvtepi8_epi32(_mm_loadl_epi64(reinterpret_cast<const __m128i*>(wrow + j))));
           __m256 ov = _mm256_loadu_ps(orow + j);
           _mm256_storeu_ps(orow + j, _mm256_add_ps(ov, T81_AVX_SEL(wf)));
         }
@@ -1062,8 +1064,8 @@ std::optional<t81::T729DynamicTensor> native_tensor_twmatmul_direct(
     }
   }
 
-  auto tensor = t81::T729DynamicTensor::from_host_float_data(
-      {m, n}, std::move(out), t81::TensorNumericClass::ExactInt);
+  auto tensor = t81::T729DynamicTensor::from_host_float_data({m, n}, std::move(out),
+                                                             t81::TensorNumericClass::ExactInt);
   tensor.set_numeric_class(t81::TensorNumericClass::ExactInt);
   return tensor;
 }
@@ -1091,8 +1093,7 @@ std::optional<t81::T729DynamicTensor> native_tensor_tattn_direct(
   const auto& v_vals = v.data();
   if (q_vals.size() != static_cast<std::size_t>(seq_q) * static_cast<std::size_t>(head_q) ||
       v_vals.size() != static_cast<std::size_t>(seq_v) * static_cast<std::size_t>(head_v) ||
-      k_trits.size() <
-          static_cast<std::size_t>(seq_k) * static_cast<std::size_t>(head_k)) {
+      k_trits.size() < static_cast<std::size_t>(seq_k) * static_cast<std::size_t>(head_k)) {
     return std::nullopt;
   }
 
@@ -1117,7 +1118,8 @@ std::optional<t81::T729DynamicTensor> native_tensor_tattn_direct(
   //   New i→j→p: Q row q_row[p] and K row k_row[p] both sequential; output
   //   scores[i][j] accumulated as a scalar — stays in register across full p.
   // Inner p loop vectorized: ternary×ternary = int8×int8 → int32 sum.
-  std::vector<float> scores(static_cast<std::size_t>(seq_q) * static_cast<std::size_t>(seq_k), 0.0f);
+  std::vector<float> scores(static_cast<std::size_t>(seq_q) * static_cast<std::size_t>(seq_k),
+                            0.0f);
 #if defined(__ARM_NEON) || defined(__AVX2__)
   const int head8s = (head_q / 8) * 8;  // SIMD width for int8 score reduction
 #endif
@@ -1151,14 +1153,14 @@ std::optional<t81::T729DynamicTensor> native_tensor_tattn_direct(
       for (; p < head8s; p += 8) {
         const __m128i qv = _mm_loadl_epi64(reinterpret_cast<const __m128i*>(q_row + p));
         const __m128i kv = _mm_loadl_epi64(reinterpret_cast<const __m128i*>(k_row + p));
-        acc8 = _mm256_add_epi32(acc8,
-            _mm256_mullo_epi32(_mm256_cvtepi8_epi32(qv), _mm256_cvtepi8_epi32(kv)));
+        acc8 = _mm256_add_epi32(
+            acc8, _mm256_mullo_epi32(_mm256_cvtepi8_epi32(qv), _mm256_cvtepi8_epi32(kv)));
       }
       {
-        const __m128i lo  = _mm256_extracti128_si256(acc8, 0);
-        const __m128i hi  = _mm256_extracti128_si256(acc8, 1);
-        const __m128i s   = _mm_add_epi32(lo, hi);
-        const __m128i s2  = _mm_hadd_epi32(s, s);
+        const __m128i lo = _mm256_extracti128_si256(acc8, 0);
+        const __m128i hi = _mm256_extracti128_si256(acc8, 1);
+        const __m128i s = _mm_add_epi32(lo, hi);
+        const __m128i s2 = _mm_hadd_epi32(s, s);
         dot = _mm_extract_epi32(_mm_hadd_epi32(s2, s2), 0);
       }
 #endif
@@ -1173,7 +1175,8 @@ std::optional<t81::T729DynamicTensor> native_tensor_tattn_direct(
   // exp() stays scalar (correctness); scale and normalize passes are SIMD.
   const float scale = 1.0f / std::sqrt(static_cast<float>(head_q));
   for (int i = 0; i < seq_q; ++i) {
-    float* const srow = scores.data() + static_cast<std::size_t>(i) * static_cast<std::size_t>(seq_k);
+    float* const srow =
+        scores.data() + static_cast<std::size_t>(i) * static_cast<std::size_t>(seq_k);
     float row_max = -1.0e38f;
     for (int j = 0; j < seq_k; ++j) {
       srow[j] *= scale;
@@ -1211,8 +1214,7 @@ std::optional<t81::T729DynamicTensor> native_tensor_tattn_direct(
   for (int i = 0; i < seq_q; ++i) {
     const float* const srow =
         scores.data() + static_cast<std::size_t>(i) * static_cast<std::size_t>(seq_k);
-    float* const orow =
-        out.data() + static_cast<std::size_t>(i) * static_cast<std::size_t>(head_v);
+    float* const orow = out.data() + static_cast<std::size_t>(i) * static_cast<std::size_t>(head_v);
     for (int p = 0; p < seq_k; ++p) {
       const float alpha = srow[p];
       if (alpha == 0.0f) {
@@ -1229,8 +1231,8 @@ std::optional<t81::T729DynamicTensor> native_tensor_tattn_direct(
 #elif defined(__AVX2__)
       const __m256 alpha8 = _mm256_set1_ps(alpha);
       for (; j < headv_s; j += 8) {
-        _mm256_storeu_ps(orow + j,
-            _mm256_fmadd_ps(alpha8, _mm256_loadu_ps(vrow + j), _mm256_loadu_ps(orow + j)));
+        _mm256_storeu_ps(orow + j, _mm256_fmadd_ps(alpha8, _mm256_loadu_ps(vrow + j),
+                                                   _mm256_loadu_ps(orow + j)));
       }
 #endif
       for (; j < head_v; ++j) {
@@ -1303,9 +1305,9 @@ std::optional<t81::weights::NativeTensor> parse_canon_tensor_object(
   for (uint64_t dim : native.shape) {
     trits *= dim;
   }
-  native.trits =
-      native.format == t81::weights::NativeFormat::CanonicalFixed ? trits * DFixed::Storage::kNumTrits
-                                                                  : trits;
+  native.trits = native.format == t81::weights::NativeFormat::CanonicalFixed
+                     ? trits * DFixed::Storage::kNumTrits
+                     : trits;
   return native;
 }
 
@@ -1345,6 +1347,11 @@ std::optional<t81::canonfs::CanonRef> parse_canon_tensor_ref(std::string_view ha
   return t81::canonfs::CanonRef{ch};
 }
 
+namespace {
+std::optional<t81::T729DynamicTensor> try_decode_sbdr1t2d_and_cache(
+    const std::vector<std::byte>& bytes, std::string_view hash_text);
+}  // namespace
+
 TensorLoadHashResult load_canon_tensor_by_hash(t81::canonfs::Driver& driver,
                                                std::string_view hash_text) {
   auto ref = parse_canon_tensor_ref(hash_text);
@@ -1355,6 +1362,18 @@ TensorLoadHashResult load_canon_tensor_by_hash(t81::canonfs::Driver& driver,
   auto obj_res = driver.read_object_bytes(*ref);
   if (!obj_res.has_value()) {
     return {TensorLoadHashStatus::CanonFsMiss, std::nullopt};
+  }
+
+  // Fast path: canonical SBDR1T2D sparse-block Dual-Rail 2D weight matrix.
+  // Pre-populates CanonDualRailRhsCache directly from active blocks with zero transpose.
+  static constexpr char kSbdr2dMagic[8] = {'S', 'B', 'D', 'R', '1', 'T', '2', 'D'};
+  if (obj_res.value().size() >= 24 &&
+      std::memcmp(obj_res.value().data(), kSbdr2dMagic, sizeof(kSbdr2dMagic)) == 0) {
+    auto sbdr_tensor = try_decode_sbdr1t2d_and_cache(obj_res.value(), hash_text);
+    if (!sbdr_tensor.has_value()) {
+      return {TensorLoadHashStatus::DecodeFault, std::nullopt};
+    }
+    return {TensorLoadHashStatus::Ok, std::move(sbdr_tensor)};
   }
 
   auto decoded = decode_canon_tensor_object(obj_res.value());
@@ -1389,8 +1408,374 @@ bool tensor_softmax_compatible(const t81::T729DynamicTensor& tensor) {
   return t81::tensor_contracts::softmax_compatible(tensor);
 }
 
+namespace {
+
+struct CachedDualRailRhs {
+  std::size_t K = 0;
+  std::size_t N = 0;
+  std::size_t W64 = 0;
+  std::vector<std::uint64_t> Bp;
+  std::vector<std::uint64_t> Bn;
+};
+
+class CanonDualRailRhsCache {
+public:
+  static constexpr std::size_t kCapacity = 64;
+
+  std::shared_ptr<const CachedDualRailRhs> get(std::string_view key, std::size_t K,
+                                               std::size_t N) const {
+    if (key.empty()) return nullptr;
+    std::lock_guard<std::mutex> lock(mu_);
+    auto it = map_.find(std::string(key));
+    if (it == map_.end()) return nullptr;
+    if (it->second->K != K || it->second->N != N) return nullptr;
+    return it->second;
+  }
+
+  void put(std::string_view key, std::shared_ptr<const CachedDualRailRhs> entry) {
+    if (key.empty() || !entry) return;
+    std::lock_guard<std::mutex> lock(mu_);
+    std::string k(key);
+    if (map_.contains(k)) return;
+    if (fifo_.size() >= kCapacity) {
+      map_.erase(fifo_.front());
+      fifo_.pop_front();
+    }
+    fifo_.push_back(k);
+    map_.emplace(std::move(k), std::move(entry));
+  }
+
+private:
+  mutable std::mutex mu_;
+  std::unordered_map<std::string, std::shared_ptr<const CachedDualRailRhs>> map_;
+  std::deque<std::string> fifo_;
+};
+
+CanonDualRailRhsCache& canon_dualrail_rhs_cache() {
+  static CanonDualRailRhsCache cache;
+  return cache;
+}
+
+std::optional<t81::T729DynamicTensor> try_decode_sbdr1t2d_and_cache(
+    const std::vector<std::byte>& bytes, std::string_view hash_text) {
+  if (bytes.size() < 24) return std::nullopt;
+  std::uint64_t K64 = 0, N64 = 0;
+  std::memcpy(&K64, bytes.data() + 8, 8);
+  std::memcpy(&N64, bytes.data() + 16, 8);
+  if (K64 == 0 || N64 == 0 || K64 > 65536ULL || N64 > 65536ULL) return std::nullopt;
+
+  const std::size_t K = static_cast<std::size_t>(K64);
+  const std::size_t N = static_cast<std::size_t>(N64);
+  const std::size_t W64 = (K + 63) / 64;
+  const std::size_t total_words = N * W64;
+  const std::size_t mask_words = (total_words + 63) / 64;
+  const std::size_t header_bytes = 24 + mask_words * 8;
+  if (bytes.size() < header_bytes) return std::nullopt;
+
+  std::uint64_t active_blocks = 0;
+  for (std::size_t m = 0; m < mask_words; ++m) {
+    std::uint64_t mw = 0;
+    std::memcpy(&mw, bytes.data() + 24 + m * 8, 8);
+    if (m + 1 == mask_words && (total_words % 64) != 0) {
+      const std::uint64_t valid_mask = (1ULL << (total_words % 64)) - 1ULL;
+      if ((mw & ~valid_mask) != 0ULL) return std::nullopt;
+    }
+    active_blocks += static_cast<std::uint64_t>(std::popcount(mw));
+  }
+  if (bytes.size() != header_bytes + static_cast<std::size_t>(active_blocks) * 16) {
+    return std::nullopt;
+  }
+
+  auto built = std::make_shared<CachedDualRailRhs>();
+  built->K = K;
+  built->N = N;
+  built->W64 = W64;
+  built->Bp.assign(total_words, 0ULL);
+  built->Bn.assign(total_words, 0ULL);
+
+  std::vector<t81::core::detail::DFixed> fixed_vals(K * N, t81::core::detail::DFixed::zero());
+  const auto df_pos = t81::core::detail::DFixed::one();
+  const auto df_neg = -t81::core::detail::DFixed::one();
+
+  std::size_t payload_off = header_bytes;
+  for (std::size_t m = 0; m < mask_words; ++m) {
+    std::uint64_t bits = 0;
+    std::memcpy(&bits, bytes.data() + 24 + m * 8, 8);
+    while (bits != 0ULL) {
+      const unsigned tz = static_cast<unsigned>(std::countr_zero(bits));
+      const std::size_t word_idx = (m << 6) + tz;
+      std::uint64_t wp = 0, wn = 0;
+      std::memcpy(&wp, bytes.data() + payload_off, 8);
+      std::memcpy(&wn, bytes.data() + payload_off + 8, 8);
+      payload_off += 16;
+      if ((wp & wn) != 0ULL || (wp | wn) == 0ULL) return std::nullopt;
+      built->Bp[word_idx] = wp;
+      built->Bn[word_idx] = wn;
+
+      const std::size_t col = word_idx / W64;
+      const std::size_t k_base = (word_idx % W64) * 64;
+      const std::size_t k_lim = std::min(K, k_base + 64);
+      for (std::size_t k = k_base; k < k_lim; ++k) {
+        const std::uint64_t bit = 1ULL << (k - k_base);
+        if ((wp & bit) != 0ULL) {
+          fixed_vals[k * N + col] = df_pos;
+        } else if ((wn & bit) != 0ULL) {
+          fixed_vals[k * N + col] = df_neg;
+        }
+      }
+      bits &= (bits - 1ULL);
+    }
+  }
+
+  if (!hash_text.empty()) {
+    canon_dualrail_rhs_cache().put(hash_text, built);
+  }
+  auto tensor = t81::T729DynamicTensor::from_canonical_fixed(
+      {static_cast<int>(K), static_cast<int>(N)}, std::move(fixed_vals));
+  tensor.set_numeric_class(t81::TensorNumericClass::ExactTrit);
+  return tensor;
+}
+
+// Fast-path Dual-Rail (P, N) ternary 2D matmul for T729DynamicTensor when both
+// operands contain exact balanced-ternary values {-1.0f, 0.0f, +1.0f} and dimensions
+// exceed the SIMD amortization threshold. Falls back to t81::ops::matmul() on any
+// non-ternary float element with zero semantic change.
+bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
+                                    const t81::T729DynamicTensor& rhs,
+                                    std::string_view rhs_canon_hash, t81::T729DynamicTensor& out) {
+  if (lhs.shape().size() != 2 || rhs.shape().size() != 2) return false;
+  const std::size_t M = static_cast<std::size_t>(lhs.shape()[0]);
+  const std::size_t K = static_cast<std::size_t>(lhs.shape()[1]);
+  const std::size_t K2 = static_cast<std::size_t>(rhs.shape()[0]);
+  const std::size_t N = static_cast<std::size_t>(rhs.shape()[1]);
+  if (K != K2 || K < 64 || M * N < 64) return false;
+
+  const auto& a_data = lhs.data();
+  const std::size_t W64 = (K + 63) / 64;
+
+  std::vector<std::uint64_t> Ap(M * W64, 0ULL), An(M * W64, 0ULL);
+  for (std::size_t m = 0; m < M; ++m) {
+    const float* row = a_data.data() + m * K;
+    std::uint64_t* dp = Ap.data() + m * W64;
+    std::uint64_t* dn = An.data() + m * W64;
+    for (std::size_t k = 0; k < K; ++k) {
+      const float v = row[k];
+      if (v == 1.0f) {
+        dp[k >> 6] |= (1ULL << (k & 63));
+      } else if (v == -1.0f) {
+        dn[k >> 6] |= (1ULL << (k & 63));
+      } else if (v != 0.0f) {
+        return false;
+      }
+    }
+  }
+
+  // Seam 2: Check CanonDualRailRhsCache BEFORE touching rhs.data() so SBDR1T2D / cached
+  // CanonFS weights never trigger DFixed -> float materialization on TMatMul.
+  auto cached_rhs = canon_dualrail_rhs_cache().get(rhs_canon_hash, K, N);
+  if (!cached_rhs) {
+    const auto& b_data = rhs.data();
+    auto built = std::make_shared<CachedDualRailRhs>();
+    built->K = K;
+    built->N = N;
+    built->W64 = W64;
+    built->Bp.assign(N * W64, 0ULL);
+    built->Bn.assign(N * W64, 0ULL);
+    for (std::size_t k = 0; k < K; ++k) {
+      const float* row = b_data.data() + k * N;
+      const std::size_t word = k >> 6;
+      const std::uint64_t bit = 1ULL << (k & 63);
+      for (std::size_t n = 0; n < N; ++n) {
+        const float v = row[n];
+        if (v == 1.0f) {
+          built->Bp[n * W64 + word] |= bit;
+        } else if (v == -1.0f) {
+          built->Bn[n * W64 + word] |= bit;
+        } else if (v != 0.0f) {
+          return false;
+        }
+      }
+    }
+    if (!rhs_canon_hash.empty()) {
+      canon_dualrail_rhs_cache().put(rhs_canon_hash, built);
+    }
+    cached_rhs = std::move(built);
+  }
+  const auto& Bp = cached_rhs->Bp;
+  const auto& Bn = cached_rhs->Bn;
+
+  out = t81::T729DynamicTensor({static_cast<int>(M), static_cast<int>(N)});
+  float* c_data = out.data().data();
+
+  std::vector<std::size_t> active_pairs;
+  active_pairs.reserve(W64 / 2);
+  std::vector<std::size_t> active_words;
+  active_words.reserve(W64);
+
+  for (std::size_t m = 0; m < M; ++m) {
+    const std::uint64_t* ap = Ap.data() + m * W64;
+    const std::uint64_t* an = An.data() + m * W64;
+
+    // Primitive #3: Pre-collect active non-zero 128-trit blocks once per row (O(W64)).
+    // Zero branch mispredictions in the N loop; skips empty MoE/ReLU2 activation blocks.
+    active_pairs.clear();
+    active_words.clear();
+    std::size_t w_scan = 0;
+    for (; w_scan + 2 <= W64; w_scan += 2) {
+      if ((ap[w_scan] | an[w_scan] | ap[w_scan + 1] | an[w_scan + 1]) != 0ULL) {
+        active_pairs.push_back(w_scan);
+        if ((ap[w_scan] | an[w_scan]) != 0ULL) active_words.push_back(w_scan);
+        if ((ap[w_scan + 1] | an[w_scan + 1]) != 0ULL) active_words.push_back(w_scan + 1);
+      }
+    }
+    const bool has_tail = (w_scan < W64) && ((ap[w_scan] | an[w_scan]) != 0ULL);
+    if (has_tail) active_words.push_back(w_scan);
+
+    if (active_words.empty()) {
+      std::fill(c_data + m * N, c_data + (m + 1) * N, 0.0f);
+      continue;
+    }
+
+    std::size_t n = 0;
+#if defined(__aarch64__) && defined(__ARM_NEON)
+    for (; n + 4 <= N; n += 4) {
+      const std::uint64_t* bp0 = Bp.data() + (n + 0) * W64;
+      const std::uint64_t* bn0 = Bn.data() + (n + 0) * W64;
+      const std::uint64_t* bp1 = Bp.data() + (n + 1) * W64;
+      const std::uint64_t* bn1 = Bn.data() + (n + 1) * W64;
+      const std::uint64_t* bp2 = Bp.data() + (n + 2) * W64;
+      const std::uint64_t* bn2 = Bn.data() + (n + 2) * W64;
+      const std::uint64_t* bp3 = Bp.data() + (n + 3) * W64;
+      const std::uint64_t* bn3 = Bn.data() + (n + 3) * W64;
+
+      uint16x8_t p0 = vdupq_n_u16(0), n0 = vdupq_n_u16(0);
+      uint16x8_t p1 = vdupq_n_u16(0), n1 = vdupq_n_u16(0);
+      uint16x8_t p2 = vdupq_n_u16(0), n2 = vdupq_n_u16(0);
+      uint16x8_t p3 = vdupq_n_u16(0), n3 = vdupq_n_u16(0);
+
+      for (const std::size_t w : active_pairs) {
+        const uint8x16_t avp = vreinterpretq_u8_u64(vld1q_u64(ap + w));
+        const uint8x16_t avn = vreinterpretq_u8_u64(vld1q_u64(an + w));
+        auto acc = [&](const std::uint64_t* bp, const std::uint64_t* bn, uint16x8_t& pa,
+                       uint16x8_t& na) {
+          const uint8x16_t bvp = vreinterpretq_u8_u64(vld1q_u64(bp + w));
+          const uint8x16_t bvn = vreinterpretq_u8_u64(vld1q_u64(bn + w));
+          pa = vpadalq_u8(pa, vcntq_u8(vorrq_u8(vandq_u8(avp, bvp), vandq_u8(avn, bvn))));
+          na = vpadalq_u8(na, vcntq_u8(vorrq_u8(vandq_u8(avp, bvn), vandq_u8(avn, bvp))));
+        };
+        acc(bp0, bn0, p0, n0);
+        acc(bp1, bn1, p1, n1);
+        acc(bp2, bn2, p2, n2);
+        acc(bp3, bn3, p3, n3);
+      }
+
+      std::int32_t s0 =
+          static_cast<std::int32_t>(vaddlvq_u16(p0)) - static_cast<std::int32_t>(vaddlvq_u16(n0));
+      std::int32_t s1 =
+          static_cast<std::int32_t>(vaddlvq_u16(p1)) - static_cast<std::int32_t>(vaddlvq_u16(n1));
+      std::int32_t s2 =
+          static_cast<std::int32_t>(vaddlvq_u16(p2)) - static_cast<std::int32_t>(vaddlvq_u16(n2));
+      std::int32_t s3 =
+          static_cast<std::int32_t>(vaddlvq_u16(p3)) - static_cast<std::int32_t>(vaddlvq_u16(n3));
+      if (has_tail) {
+        const std::size_t w = w_scan;
+        s0 += std::popcount((ap[w] & bp0[w]) | (an[w] & bn0[w])) -
+              std::popcount((ap[w] & bn0[w]) | (an[w] & bp0[w]));
+        s1 += std::popcount((ap[w] & bp1[w]) | (an[w] & bn1[w])) -
+              std::popcount((ap[w] & bn1[w]) | (an[w] & bp1[w]));
+        s2 += std::popcount((ap[w] & bp2[w]) | (an[w] & bn2[w])) -
+              std::popcount((ap[w] & bn2[w]) | (an[w] & bp2[w]));
+        s3 += std::popcount((ap[w] & bp3[w]) | (an[w] & bn3[w])) -
+              std::popcount((ap[w] & bn3[w]) | (an[w] & bp3[w]));
+      }
+      c_data[m * N + n + 0] = static_cast<float>(s0);
+      c_data[m * N + n + 1] = static_cast<float>(s1);
+      c_data[m * N + n + 2] = static_cast<float>(s2);
+      c_data[m * N + n + 3] = static_cast<float>(s3);
+    }
+#elif defined(__AVX2__)
+    const __m256i low_mask = _mm256_set1_epi8(0x0F);
+    const __m256i pop_lut = _mm256_setr_epi8(0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4, 0, 1,
+                                             1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4);
+    const __m256i vzero = _mm256_setzero_si256();
+    auto avx2_popcnt_u8 = [&](__m256i v) -> __m256i {
+      const __m256i lo = _mm256_shuffle_epi8(pop_lut, _mm256_and_si256(v, low_mask));
+      const __m256i hi =
+          _mm256_shuffle_epi8(pop_lut, _mm256_and_si256(_mm256_srli_epi16(v, 4), low_mask));
+      return _mm256_sad_epu8(_mm256_add_epi8(lo, hi), vzero);
+    };
+    auto hsum_epi64 = [](__m256i v) -> std::int32_t {
+      alignas(32) std::uint64_t tmp[4];
+      _mm256_store_si256(reinterpret_cast<__m256i*>(tmp), v);
+      return static_cast<std::int32_t>(tmp[0] + tmp[1] + tmp[2] + tmp[3]);
+    };
+    for (; n < N; ++n) {
+      const std::uint64_t* bp = Bp.data() + n * W64;
+      const std::uint64_t* bn = Bn.data() + n * W64;
+      __m256i p_acc = vzero;
+      __m256i n_acc = vzero;
+      std::size_t w = 0;
+      for (; w + 4 <= W64; w += 4) {
+        if ((ap[w] | an[w] | ap[w + 1] | an[w + 1] | ap[w + 2] | an[w + 2] | ap[w + 3] |
+             an[w + 3]) == 0ULL) {
+          continue;
+        }
+        const __m256i avp = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(ap + w));
+        const __m256i avn = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(an + w));
+        const __m256i bvp = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(bp + w));
+        const __m256i bvn = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(bn + w));
+        const __m256i agree =
+            _mm256_or_si256(_mm256_and_si256(avp, bvp), _mm256_and_si256(avn, bvn));
+        const __m256i dis = _mm256_or_si256(_mm256_and_si256(avp, bvn), _mm256_and_si256(avn, bvp));
+        p_acc = _mm256_add_epi64(p_acc, avx2_popcnt_u8(agree));
+        n_acc = _mm256_add_epi64(n_acc, avx2_popcnt_u8(dis));
+      }
+      std::int32_t acc = hsum_epi64(p_acc) - hsum_epi64(n_acc);
+      for (; w < W64; ++w) {
+        if ((ap[w] | an[w]) == 0ULL) continue;
+        acc += std::popcount((ap[w] & bp[w]) | (an[w] & bn[w])) -
+               std::popcount((ap[w] & bn[w]) | (an[w] & bp[w]));
+      }
+      c_data[m * N + n] = static_cast<float>(acc);
+    }
+#endif
+    for (; n < N; ++n) {
+      const std::uint64_t* bp = Bp.data() + n * W64;
+      const std::uint64_t* bn = Bn.data() + n * W64;
+      std::int32_t acc = 0;
+      for (const std::size_t w : active_words) {
+        acc += std::popcount((ap[w] & bp[w]) | (an[w] & bn[w])) -
+               std::popcount((ap[w] & bn[w]) | (an[w] & bp[w]));
+      }
+      c_data[m * N + n] = static_cast<float>(acc);
+    }
+  }
+  if (lhs.numeric_class() == t81::TensorNumericClass::HostFloat ||
+      rhs.numeric_class() == t81::TensorNumericClass::HostFloat) {
+    out.set_numeric_class(t81::TensorNumericClass::HostFloat);
+  } else {
+    bool all_trits = true;
+    for (std::size_t i = 0; i < M * N; ++i) {
+      const float v = c_data[i];
+      if (v != -1.0f && v != 0.0f && v != 1.0f) {
+        all_trits = false;
+        break;
+      }
+    }
+    out.set_numeric_class(all_trits ? t81::TensorNumericClass::ExactTrit
+                                    : t81::TensorNumericClass::ExactInt);
+  }
+  return true;
+}
+
+}  // namespace
+
 t81::T729DynamicTensor tensor_matmul_2d(const t81::T729DynamicTensor& lhs,
                                         const t81::T729DynamicTensor& rhs) {
+  t81::T729DynamicTensor fast_out;
+  if (try_dualrail_ternary_matmul_2d(lhs, rhs, {}, fast_out)) {
+    return fast_out;
+  }
   return t81::ops::matmul(lhs, rhs);
 }
 
@@ -1561,11 +1946,21 @@ std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_transpose_checked(
 
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_matmul_checked(
     const t81::T729DynamicTensor& lhs, const t81::T729DynamicTensor& rhs) {
+  return tensor_matmul_checked_cached(lhs, rhs, {});
+}
+
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_matmul_checked_cached(
+    const t81::T729DynamicTensor& lhs, const t81::T729DynamicTensor& rhs,
+    std::string_view rhs_canon_hash) {
   if (!tensor_matmul_compatible(lhs, rhs)) {
     return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
                                                                 t81::vm::Trap::ShapeFault);
   }
-  return tensor_matmul_2d(lhs, rhs);
+  t81::T729DynamicTensor fast_out;
+  if (try_dualrail_ternary_matmul_2d(lhs, rhs, rhs_canon_hash, fast_out)) {
+    return fast_out;
+  }
+  return t81::ops::matmul(lhs, rhs);
 }
 
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_contract_dot_checked(
@@ -1579,7 +1974,8 @@ std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_contract_dot_checked
 }
 
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_attention_checked(
-    const t81::T729DynamicTensor& q, const t81::T729DynamicTensor& k, const t81::T729DynamicTensor& v) {
+    const t81::T729DynamicTensor& q, const t81::T729DynamicTensor& k,
+    const t81::T729DynamicTensor& v) {
   if (!tensor_attention_compatible(q, k, v)) {
     return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
                                                                 t81::vm::Trap::ShapeFault);
@@ -1596,16 +1992,16 @@ std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_embed_checked(
     const t81::T729DynamicTensor& table, std::int64_t index) {
   if (!tensor_embed_compatible(table, index)) {
     return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
-                                                                 t81::vm::Trap::BoundsFault);
+                                                                t81::vm::Trap::BoundsFault);
   }
   try {
     return t81::ops::embed(table, index);
   } catch (const std::out_of_range&) {
     return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
-                                                                 t81::vm::Trap::BoundsFault);
+                                                                t81::vm::Trap::BoundsFault);
   } catch (...) {
     return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
-                                                                 t81::vm::Trap::ShapeFault);
+                                                                t81::vm::Trap::ShapeFault);
   }
 }
 
@@ -1667,9 +2063,9 @@ std::expected<float, t81::vm::Trap> tensor_get_checked(const t81::T729DynamicTen
   return *out;
 }
 
-std::expected<void, t81::vm::Trap> tensor_set_checked(t81::T729DynamicTensor& tensor,
-                                                      std::int64_t index, float value,
-                                                      t81::tensor_mutation::ScalarWriteKind source_kind) {
+std::expected<void, t81::vm::Trap> tensor_set_checked(
+    t81::T729DynamicTensor& tensor, std::int64_t index, float value,
+    t81::tensor_mutation::ScalarWriteKind source_kind) {
   if (!tensor_set_at(tensor, index, value, source_kind)) {
     return std::expected<void, t81::vm::Trap>(t81::unexpect, t81::vm::Trap::BoundsFault);
   }

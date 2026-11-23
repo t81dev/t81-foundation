@@ -6,9 +6,9 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "t81"
-version = "1.9.2"
+version = "2.2.0"
 description = "Experimental computing and systems research: alternative representations, deterministic execution, and policy-governed artifacts"
-readme = "README.md"
+readme = "ffi/python/README.md"
 license = { text = "Apache-2.0" }
 requires-python = ">=3.9"
 keywords = [
@@ -26,6 +26,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
   "Topic :: Software Development :: Interpreters",
   "Typing :: Typed",
@@ -48,22 +49,25 @@ cmake.args = [
   "-DT81_BUILD_BENCHMARKS=OFF",
 ]
 cmake.build-type = "Release"
+build.targets = ["_t81"]
+install.components = ["python"]
+sdist.include = ["tools/model/weights_t81w_emitter.cpp"]
 
-# Pure-Python package lives in ffi/python/; the compiled _t81.so is installed
-# into t81/ by the CMake install() rule and picked up automatically.
-wheel.packages = ["ffi/python"]
+# Pure-Python package lives in ffi/python/t81/; the compiled _t81 extension is
+# installed into t81/ by the CMake install() rule and picked up automatically.
+wheel.packages = ["ffi/python/t81"]
 
 # ── cibuildwheel ─────────────────────────────────────────────────────────────
 
 [tool.cibuildwheel]
-# Build CPython 3.9–3.13; skip 32-bit and musl targets.
-build  = "cp39-* cp310-* cp311-* cp312-* cp313-*"
-skip   = ["*-win32", "*-manylinux_i686", "*-musllinux*"]
+# Build standard CPython 3.9–3.14 wheels for the supported platforms.
+build  = "cp39-* cp310-* cp311-* cp312-* cp313-* cp314-*"
+skip   = ["cp31?t-*", "*-win32", "*-manylinux_i686", "*-musllinux*"]
 
 # cmake and ninja are available as pip packages — no OS-level install needed.
 before-build = "pip install cmake ninja"
 
-test-command = "python -c \"import t81; assert t81.compile_and_run('fn main() -> i32 { return 1; }') == 1\""
+test-command = 'python "{project}/tests/python/test_installed_sdk.py"'
 
 # ── Linux: manylinux_2_28 + GCC 13 ───────────────────────────────────────────
 # manylinux2014 ships GCC 10 which does not support cxx_std_23.
@@ -75,6 +79,10 @@ manylinux-x86_64-image  = "manylinux_2_28"
 manylinux-aarch64-image = "manylinux_2_28"
 before-all = "dnf install -y gcc-toolset-13 gcc-toolset-13-gcc-c++ gcc-toolset-13-libstdc++-devel"
 environment = {CC = "/opt/rh/gcc-toolset-13/root/usr/bin/gcc", CXX = "/opt/rh/gcc-toolset-13/root/usr/bin/g++"}
+
+[tool.cibuildwheel.macos]
+# std::filesystem::path requires macOS 10.15+
+environment = {MACOSX_DEPLOYMENT_TARGET = "10.15"}
 
 # Per-platform arch is controlled by CIBW_ARCHS in the workflow matrix,
 # one runner per architecture, to avoid cross-compilation failures.

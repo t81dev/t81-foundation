@@ -10,6 +10,25 @@
 
 ---
 
+## 60-Second Proof (`v2.1.0`)
+
+Run the verified end-to-end stack locally right after `cmake -S . -B build -G Ninja && cmake --build build --target t81 -j8`:
+
+```bash
+# 1. Native C++ MCP server (15 in-process tools: Axion policy, CanonFS, atomic tx, TISC subgraph, Dual-Rail diff/RAG/adapter)
+python3 examples/research/agent-receipt-sidecar/test_native_mcp.py
+
+# 2. Full-stack CanonFS -> Axion -> TISC -> T81VM -> Dual-Rail TMatMul (bit-exact SHA3-512 receipt)
+./examples/research/full-stack-t81-pipeline/run_pipeline.sh
+
+# 3. Zero-copy CPU NEON <-> Apple Silicon Metal GPU 32-layer Dual-Rail decode (89.1 GB/s on M2; CPU fallback on Linux)
+./examples/research/heterogeneous-dualrail/run_demo.sh --layers=8
+```
+
+See [docs/research/DUAL_RAIL_HETEROGENEOUS_TISC_NOTE.md](docs/research/DUAL_RAIL_HETEROGENEOUS_TISC_NOTE.md) for pinned measurements, controls, caveats, and preserved negative results.
+
+---
+
 ## What is T81?
 
 **T81 Foundation is an implemented experimental computing architecture and open-source scientific research program investigating whether alternative computational representations—particularly balanced ternary—can provide measurable advantages over conventional binary systems.**
@@ -258,6 +277,27 @@ The project strictly enforces evidence classifications:
 **Implemented → Tested → Measured → Comparatively established**
 
 These are different evidentiary levels, not interchangeable labels. An experimental result must not claim more than its evidence supports.
+
+---
+
+## Extended Verification & Research Labs
+
+To run the full compromised-agent gauntlet, exact-rational lab, replay consensus, and deterministic risk triage alongside the 60-Second Proof above:
+
+```bash
+# Self-hosted MCP receipt dogfooding + 11-scenario compromised-agent gauntlet
+bash scripts/ci/run_agent_receipt_dogfood_smoke.sh
+
+# Ternary AI primitives (Dual-Rail RAG, flip-budget diffs, block-zero skip, SBDR1 vs Base-243, Kleene policy)
+./examples/research/ternary-ai-primitives/run_primitives.sh
+
+# Exact-rational lab, two-node replay consensus, and deterministic risk triage
+bash examples/research/exact-rational-lab/run_lab.sh
+bash examples/research/replay-consensus/run_consensus.sh
+bash examples/research/deterministic-risk-triage/run_triage_demo.sh
+```
+
+See [`examples/research/agent-receipt-sidecar/QUICKSTART.md`](examples/research/agent-receipt-sidecar/QUICKSTART.md) and [`THREAT_MODEL.md`](examples/research/agent-receipt-sidecar/THREAT_MODEL.md) for MCP client setup and explicit security boundaries.
 
 ---
 

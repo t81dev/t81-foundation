@@ -444,64 +444,83 @@ ExportOutcome export_ref(const std::string& canonical_hash, const fs::path& outp
     outcome.target_kind = "host-directory";
     outcome.manifest_ref = canonical_hash;
     outcome.source_objects.reserve(manifest.entries.size());
-    std::error_code ec;
-    fs::create_directories(output_path, ec);
-    if (ec) {
-      outcome.errors.push_back(make_issue("target_directory_create_failed",
-                                          "could not create export directory: " +
-                                              output_path.string()));
-    } else {
-      for (const auto& entry : manifest.entries) {
-        outcome.source_objects.push_back(entry.object_ref);
-        std::string policy_reason;
-        if (!allow_by_policy(options.policy_profile, options.policy_evaluator, entry.object_ref,
-                             "canonfs.export", entry.path, saw_policy_denial, policy_reason)) {
-          outcome.errors.push_back(make_issue("policy_denied",
-                                              "policy denied export of " + entry.path + ": " +
-                                                  policy_reason));
-          continue;
-        }
-        const fs::path relative_path(entry.path);
-        if (!is_safe_relative_export_path(relative_path)) {
-          outcome.errors.push_back(
-              make_issue("unsafe_target_path", "unsafe export path in manifest: " + entry.path));
-          continue;
-        }
-        std::vector<std::byte> entry_bytes;
-        CanonFsObjectInfo entry_info;
-        Issue entry_issue;
-        if (!load_canonfs_object(options.canonfs_root, entry.object_ref, entry_bytes, entry_info,
-                                 entry_issue)) {
-          outcome.errors.push_back(make_issue(entry_issue.reason,
-                                              entry.path + ": " + entry_issue.message));
-          continue;
-        }
-        const fs::path target_file = output_path / relative_path;
-        fs::create_directories(target_file.parent_path(), ec);
-        if (ec) {
-          outcome.errors.push_back(make_issue("target_directory_create_failed",
-                                              "could not create export directory: " +
-                                                  target_file.parent_path().string()));
-          continue;
-        }
-        std::ofstream out(target_file, std::ios::binary | std::ios::trunc);
-        if (!out) {
-          outcome.errors.push_back(make_issue("target_open_failed",
-                                              "could not open output file: " +
-                                                  target_file.string()));
-          continue;
-        }
-        for (std::byte b : entry_bytes) {
-          out.put(static_cast<char>(std::to_integer<unsigned char>(b)));
-        }
-        if (!out.good()) {
-          outcome.errors.push_back(make_issue("target_write_failed",
-                                              "failed writing output file: " +
-                                                  target_file.string()));
-          continue;
-        }
-        outcome.materialized_paths.push_back(entry.path);
+    // Create the destination only when an admitted entry is about to be written.
+    // A profile or policy denial must not leave a new host directory behind.
+    bool destination_ready = false;
+    bool destination_create_failed = false;
+    auto ensure_export_destination = [&]() -> bool {
+      if (destination_ready) {
+        return true;
       }
+      if (destination_create_failed) {
+        return false;
+      }
+      std::error_code ec;
+      fs::create_directories(output_path, ec);
+      if (ec) {
+        destination_create_failed = true;
+        outcome.errors.push_back(make_issue("target_directory_create_failed",
+                                            "could not create export directory: " +
+                                                output_path.string()));
+        return false;
+      }
+      destination_ready = true;
+      return true;
+    };
+    for (const auto& entry : manifest.entries) {
+      outcome.source_objects.push_back(entry.object_ref);
+      std::string policy_reason;
+      if (!allow_by_policy(options.policy_profile, options.policy_evaluator, entry.object_ref,
+                           "canonfs.export", entry.path, saw_policy_denial, policy_reason)) {
+        outcome.errors.push_back(make_issue("policy_denied",
+                                            "policy denied export of " + entry.path + ": " +
+                                                policy_reason));
+        continue;
+      }
+      const fs::path relative_path(entry.path);
+      if (!is_safe_relative_export_path(relative_path)) {
+        outcome.errors.push_back(
+            make_issue("unsafe_target_path", "unsafe export path in manifest: " + entry.path));
+        continue;
+      }
+      std::vector<std::byte> entry_bytes;
+      CanonFsObjectInfo entry_info;
+      Issue entry_issue;
+      if (!load_canonfs_object(options.canonfs_root, entry.object_ref, entry_bytes, entry_info,
+                               entry_issue)) {
+        outcome.errors.push_back(make_issue(entry_issue.reason,
+                                            entry.path + ": " + entry_issue.message));
+        continue;
+      }
+      if (!ensure_export_destination()) {
+        continue;
+      }
+      const fs::path target_file = output_path / relative_path;
+      std::error_code ec;
+      fs::create_directories(target_file.parent_path(), ec);
+      if (ec) {
+        outcome.errors.push_back(make_issue("target_directory_create_failed",
+                                            "could not create export directory: " +
+                                                target_file.parent_path().string()));
+        continue;
+      }
+      std::ofstream out(target_file, std::ios::binary | std::ios::trunc);
+      if (!out) {
+        outcome.errors.push_back(make_issue("target_open_failed",
+                                            "could not open output file: " +
+                                                target_file.string()));
+        continue;
+      }
+      for (std::byte b : entry_bytes) {
+        out.put(static_cast<char>(std::to_integer<unsigned char>(b)));
+      }
+      if (!out.good()) {
+        outcome.errors.push_back(make_issue("target_write_failed",
+                                            "failed writing output file: " +
+                                                target_file.string()));
+        continue;
+      }
+      outcome.materialized_paths.push_back(entry.path);
     }
   } else if (!is_manifest_document && !has_schema_field) {
     outcome.source_objects.push_back(canonical_hash);

@@ -86,15 +86,25 @@ def extract_manual_cli_lines(manual_text: str) -> set[str]:
 
 
 def extract_top_level_commands(help_text: str) -> list[str]:
+    section_headers = {
+        "Commands:",
+        "Core Workflow:",
+        "Governance, Verification & Storage:",
+        "AI, Tensors & Ternary Weights:",
+        "Agent, MCP & Interactive:",
+        "Experimental Frontends, Backends & Utilities:",
+    }
     commands: list[str] = []
     in_commands = False
     for line in help_text.splitlines():
-        if line.strip() == "Commands:":
+        stripped = line.strip()
+        if stripped in section_headers:
             in_commands = True
             continue
         if in_commands:
-            if not line.strip():
-                break
+            if not stripped:
+                in_commands = False
+                continue
             match = re.match(r"^\s{2}([a-z0-9-]+)\s", line)
             if match:
                 commands.append(match.group(1))

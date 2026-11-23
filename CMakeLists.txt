@@ -5,9 +5,9 @@ endif()
 project(t81 LANGUAGES C CXX ASM)
 
 # ---------- Version ----------
-set(T81_VERSION_MAJOR 1)
-set(T81_VERSION_MINOR 9)
-set(T81_VERSION_PATCH 1)
+set(T81_VERSION_MAJOR 2)
+set(T81_VERSION_MINOR 2)
+set(T81_VERSION_PATCH 0)
 set(T81_VERSION "${T81_VERSION_MAJOR}.${T81_VERSION_MINOR}.${T81_VERSION_PATCH}")
 
 # Generate version header
@@ -100,6 +100,22 @@ endif()
 # =============================================================================
 if(T81_ENABLE_TERNARYOS)
   add_subdirectory(ternaryos)
+endif()
+
+if(T81_BUILD_TESTS OR T81_BUILD_EXAMPLES)
+  include(FetchContent)
+  FetchContent_Declare(
+    asio
+    GIT_REPOSITORY https://github.com/chriskohlhoff/asio.git
+    GIT_TAG asio-1-30-2
+  )
+  FetchContent_MakeAvailable(asio)
+  # Asio does not provide a CMake target; expose a local interface target.
+  if(NOT TARGET asio)
+    add_library(asio INTERFACE)
+    target_include_directories(asio INTERFACE ${asio_SOURCE_DIR}/asio/include)
+    target_compile_definitions(asio INTERFACE ASIO_STANDALONE)
+  endif()
 endif()
 
 if(T81_BUILD_EXAMPLES)
@@ -208,20 +224,6 @@ if(T81_BUILD_TESTS)
         ${PROJECT_SOURCE_DIR}/tests/python/test_accountable_computation.py
         --runner $<TARGET_FILE:t81_accountable_experiment> --production-only)
   endif()
-  include(FetchContent)
-  FetchContent_Declare(
-    asio
-    GIT_REPOSITORY https://github.com/chriskohlhoff/asio.git
-    GIT_TAG asio-1-30-2
-  )
-  FetchContent_MakeAvailable(asio)
-  # Asio does not provide a CMake target; expose a local interface target.
-  if(NOT TARGET asio)
-    add_library(asio INTERFACE)
-    target_include_directories(asio INTERFACE ${asio_SOURCE_DIR}/asio/include)
-    target_compile_definitions(asio INTERFACE ASIO_STANDALONE)
-  endif()
-
   add_executable(t81_bigint_test tests/cpp/bigint_roundtrip.cpp)
   target_link_libraries(t81_bigint_test PRIVATE t81_core)
 
@@ -428,6 +430,10 @@ if(T81_BUILD_TESTS)
 
   add_executable(t81_vm_fault_test tests/cpp/vm_fault_test.cpp)
   target_link_libraries(t81_vm_fault_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_value_ops_boundary_test tests/cpp/vm_value_ops_boundary_test.cpp)
+  target_link_libraries(t81_vm_value_ops_boundary_test PRIVATE t81_vm t81_core)
+  target_include_directories(t81_vm_value_ops_boundary_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
   add_executable(t81_vm_deterministic_fault_test tests/cpp/test_vm_deterministic_fault.cpp)
   target_link_libraries(t81_vm_deterministic_fault_test PRIVATE t81_vm t81_core)
@@ -725,6 +731,10 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   add_executable(t81_vm_policy_parse_fail_closed_test
                  tests/cpp/vm_policy_parse_fail_closed_test.cpp)
   target_link_libraries(t81_vm_policy_parse_fail_closed_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_dualrail_sbdr_vm_test
+                 tests/cpp/dualrail_sbdr_vm_test.cpp)
+  target_link_libraries(t81_dualrail_sbdr_vm_test PRIVATE t81_vm t81_core)
 
   add_executable(t81_vm_axreport_policy_deny_fail_closed_test
                  tests/cpp/vm_axreport_policy_deny_fail_closed_test.cpp)
@@ -1588,6 +1598,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_vm_predispatch_policy_deny_logging_test
     t81_vm_ai_predispatch_deny_audit_test
     t81_vm_fault_test
+    t81_vm_value_ops_boundary_test
     t81_vm_deterministic_fault_test
     t81_vm_fault_family_determinism_matrix_test
     t81_vm_memory_test
@@ -1607,6 +1618,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_vm_workload_determinism_tiers_test
     t81_vm_mixed_workload_conformance_matrix_test
     t81_vm_policy_parse_fail_closed_test
+    t81_dualrail_sbdr_vm_test
     t81_vm_axreport_policy_deny_fail_closed_test
     t81_vm_system_registers_deterministic_test
     t81_vm_stubbed_opcode_fail_closed_test
@@ -1865,13 +1877,13 @@ endif()
 
 if(T81_BUILD_PYTHON_BINDINGS)
   set(PYBIND11_FINDPYTHON ON)
-  find_package(Python REQUIRED COMPONENTS Interpreter Development)
+  find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
   find_package(pybind11 REQUIRED)
   pybind11_add_module(_t81 lang/python/t81_python.cpp)
-  target_link_libraries(_t81 PRIVATE t81_core t81_lang_frontend t81_isa t81_vm)
+  target_link_libraries(_t81 PRIVATE t81_core t81_axion t81_lang_frontend t81_isa t81_vm)
   # Install the extension into the t81 package directory so scikit-build-core
-  # picks it up alongside ffi/python/__init__.py.
-  install(TARGETS _t81 LIBRARY DESTINATION t81)
+  # picks it up alongside ffi/python/t81/__init__.py.
+  install(TARGETS _t81 DESTINATION t81 COMPONENT python)
 endif()
 
 # =============================================================================
@@ -2147,7 +2159,11 @@ install(TARGETS ${T81_INSTALL_TARGETS}
 )
 
 # Install headers
-install(DIRECTORY include/t81 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY include/t81
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  PATTERN "config.hpp.in" EXCLUDE
+  PATTERN "config.hpp.backup" EXCLUDE
+)
 
 # Install export file
 install(EXPORT T81Targets

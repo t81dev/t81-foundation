@@ -30,17 +30,17 @@ endif()
 
 add_library(t81_tool_cli STATIC
   ${PROJECT_SOURCE_DIR}/tools/cli/ai/ai_cli_shared.cpp
-  ${PROJECT_SOURCE_DIR}/tools/cli/ai/t81_ai_cli.cpp
   # ${PROJECT_SOURCE_DIR}/tools/cli/ai/t81_ai_controlled.cpp  # Skip problematic file
   ${PROJECT_SOURCE_DIR}/tools/cli/core/artifact_family.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/core/canonize_tensor.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/cli_docs_gen.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/help_text.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/core/debugger.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/core/driver.cpp
   # ${PROJECT_SOURCE_DIR}/tools/cli/core/driver_refactored.cpp  # Skip problematic file
-  ${PROJECT_SOURCE_DIR}/tools/cli/core/main.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/mcp_server.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/core/process_capture.cpp
   # ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_tools/canonfs_performance.cpp  # Skip problematic file
-  ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_tools/canonfs_performance_standalone.cpp
   # ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_tools/canonfs_auto_optimizer.cpp  # Skip problematic file
   ${PROJECT_SOURCE_DIR}/tools/diagnostics/ternary_codec_metrics.cpp)
 
@@ -113,6 +113,11 @@ endif()
 
 add_executable(t81
   ${PROJECT_SOURCE_DIR}/tools/cli/core/main.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/cmd_axion_canonfs.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/cmd_determinism.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/cmd_policy.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/cmd_vm_tisc_ir.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/cmd_weights_model.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/ai/ai_cli_shared.cpp
 )
 t81_preserve_root_output(t81)

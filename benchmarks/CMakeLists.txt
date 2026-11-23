@@ -36,6 +36,7 @@ set(BENCHMARK_SUITE_SOURCES
     BM_TensorPromotion.cpp
     BM_Lexer.cpp
     BM_PackedTritVector.cpp
+    BM_DualRailTrit.cpp
     BM_TritwiseWorkloads.cpp
     BM_DispatchOverhead.cpp
     BM_VMSimulation.cpp

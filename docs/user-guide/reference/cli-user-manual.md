@@ -789,6 +789,15 @@ Local CLI UX feedback loop.
 Submit writes JSONL entries with schema `t81.feedback.v1`.
 Report emits schema `t81.feedback-report.v1`.
 
+### 4.26 `mcp`
+
+```text
+t81 mcp serve
+t81 mcp help
+```
+
+Starts the zero-dependency native C++ JSON-RPC 2.0 stdio MCP server exposing 15 tools (governance/policy gating, CanonFS fsck, atomic `SHA3-512` transactions, narrowed TISC subgraph verification/execution, and Dual-Rail `t81.diff_check` / `t81.memory_search` / `t81.adapter_apply`).
+
 ## 5. Help Contract
 
 Supported help forms. Help text is written to `stdout`, so piping works as expected:
