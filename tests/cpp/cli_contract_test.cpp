@@ -2226,6 +2226,7 @@ int main(int argc, char* argv[]) {
       T81_TEST_CHECK(static_cast<bool>(out));
       out << "(policy\n"
              "  (tier 2)\n"
+             "  (allowed-tensor-hashes [\"mat_a\" \"mat_b\"])\n"
              "  (allowed-ternary-model-hashes [\"sha3-512:"
           << loaded_model.checksum << "\"]))\n";
     }
@@ -2234,6 +2235,7 @@ int main(int argc, char* argv[]) {
       T81_TEST_CHECK(static_cast<bool>(out));
       out << "(policy\n"
              "  (tier 2)\n"
+             "  (allowed-tensor-hashes [\"mat_a\" \"mat_b\"])\n"
              "  (allowed-ternary-model-hashes [\"sha3-512:cafebabe\"]))\n";
     }
 
