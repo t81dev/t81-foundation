@@ -1,9 +1,9 @@
 # T81 Foundation — Python wheel build and PyPI publish
 #
 # Builds manylinux (x86_64 + aarch64), macOS (arm64 + x86_64), and Windows
-# (AMD64) wheels for CPython 3.9–3.13, then publishes to PyPI.
+# (AMD64) wheels for CPython 3.9–3.14, then publishes to PyPI.
 #
-# Trigger: every release tag  (v*.*.*)  or manual workflow_dispatch.
+# Publishing runs on release tags. Pull requests and manual runs verify artifacts.
 #
 # PyPI publishing uses OIDC Trusted Publishing — no stored API token needed.
 # Configure the trusted publisher at https://pypi.org/manage/account/publishing/
@@ -18,11 +18,19 @@ on:
   push:
     tags:
       - 'v*.*.*'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/python-wheels.yml'
+      - '.gitignore'
+      - 'pyproject.toml'
+      - 'ffi/python/**'
+      - 'lang/python/**'
+      - 'tests/python/test_installed_sdk.py'
   workflow_dispatch:
 
 permissions:
   contents: read
-  id-token: write   # required for OIDC trusted publishing
 
 jobs:
   # ── Build wheels on all platforms ─────────────────────────────────────────
@@ -69,7 +77,7 @@ jobs:
           platforms: aarch64
 
       - name: Install cibuildwheel
-        run: pip install cibuildwheel==2.23.3
+        run: pip install cibuildwheel==3.2.1
 
       - name: Build wheels
         run: python -m cibuildwheel --output-dir dist
@@ -103,6 +111,12 @@ jobs:
           pip install build
           python -m build --sdist --outdir dist
 
+      - name: Install and test the generated sdist
+        run: |
+          python -m venv "$RUNNER_TEMP/t81-sdist-test"
+          "$RUNNER_TEMP/t81-sdist-test/bin/python" -m pip install --no-deps dist/*.tar.gz
+          "$RUNNER_TEMP/t81-sdist-test/bin/python" tests/python/test_installed_sdk.py
+
       - name: Upload sdist
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -116,6 +130,9 @@ jobs:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     needs: [build-wheels, build-sdist]
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
     environment: pypi   # maps to the PyPI trusted-publisher environment
 
     steps:

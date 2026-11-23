@@ -17,6 +17,13 @@ T81_BIN = os.environ.get("T81_BIN", str(ROOT_DIR / "build" / "t81"))
 
 
 def main() -> int:
+    version_output = subprocess.check_output([T81_BIN, "--version"], text=True)
+    version_line = version_output.partition("\n")[0]
+    prefix = "T81 Foundation "
+    if not version_line.startswith(prefix) or not version_line[len(prefix):].strip():
+        raise RuntimeError(f"Unexpected t81 --version output: {version_line!r}")
+    cli_version = version_line[len(prefix):].strip()
+
     with tempfile.TemporaryDirectory() as td:
         tmp = Path(td)
         croot = tmp / "canonfs"
@@ -59,7 +66,8 @@ def main() -> int:
         try:
             init = rpc("initialize")
             assert init["result"]["serverInfo"]["name"] == "t81-native-mcp"
-            assert init["result"]["serverInfo"]["version"] == "2.1.0"
+            mcp_version = init["result"]["serverInfo"]["version"]
+            assert mcp_version == cli_version, (mcp_version, cli_version)
             # JSON-RPC 2.0 notification must produce NO response; next ping must match its own id.
             proc.stdin.write(json.dumps({"jsonrpc": "2.0", "method": "notifications/initialized"}) + "\n")
             proc.stdin.flush()

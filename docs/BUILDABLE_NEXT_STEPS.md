@@ -23,9 +23,10 @@ If those answers are unclear, narrow the work before starting it.
 ### Now
 
 - RFC-00D1 policy-profile depth:
-  build on the now-documented built-in profile surface by improving policy
-  documents, examples, and any remaining profile-shaped denial clarity without
-  broadening interchange format scope
+  keep built-in profile denial before host materialization. A fully denied
+  directory export must not create its destination, a denied file export must
+  leave existing bytes unchanged, and a partial export writes only admitted
+  entries. Do not add profile names or interchange formats.
 - CI and portability boringness:
   remove concrete toolchain/setup footguns, especially in build, demo, and
   smoke-test paths contributors are likely to try early
@@ -81,7 +82,7 @@ repo.
 
 1. Tighten CanonFS import denial reasons and add matching negative tests.
 2. (DONE — v2.1.0+) Tighten CanonFS export denial reasons and add matching negative tests (`tests/cpp/canonfs_cli_contract_tests.cpp` now covers `ExportSuccessJSONStructure`, `ExportPolicyFailureJSONStructure`, and `ExportInvalidRefJSONStructure` — 7/7 passing).
-3. (IN PROGRESS — 7/7 baseline landed) Expand RFC-00D1 CLI contract coverage for additional failure cases and JSON error shapes beyond the 7 core import/export contract tests.
+3. (IN PROGRESS) Expand RFC-00D1 contract coverage for failure cases beyond the original import/export JSON shapes. Directory export now defers destination creation until an admitted entry is written (`fs/canonfs_interchange_ops.cpp`, covered by `canonfs_interchange_test`). Keep going on remaining target-side failure cases without widening the seed contract.
 4. Keep interchange JSON payloads, schema IDs, and docs aligned.
 5. Add or refresh one golden CanonFS interchange example under `examples/`.
    Current seed example: `examples/storage-and-canonfs/canonfs-interchange/`.

@@ -53,7 +53,7 @@ experiments/integrated_system_advantage/work/
 *_test
 *_trace_test
 *_trace_demo
-weights_*
+/weights_*
 
 # ── Package managers ────────────────────────────────────────
 .vcpkg/

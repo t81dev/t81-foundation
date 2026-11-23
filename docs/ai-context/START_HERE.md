@@ -1,4 +1,4 @@
-> **Deferred design plan (2026-11-21).** [Interchangeable AI engines for Axion](AXION_ENGINE_INTERCHANGE_PLAN_2026-11-21.md) starts with a paper trace of `route-fixed` and records future work on sampled results, replay, effect recovery and substitution. Documentation only. HD01–HD06 remain open and F01 M1–M6 remain at STOP.
+> **Deferred design plan (rechecked 2026-11-23).** [Interchangeable AI engines for Axion](AXION_ENGINE_INTERCHANGE_PLAN_2026-11-21.md) is a non-normative paper plan for `route-fixed`. It does not replace the [live maintenance queue](ACTIVE_RESEARCH_HANDOFF.md) and does not authorize implementation. Recorded holds, not re-measured here: `AXION-AI-001` HD01–HD06 open, `RFC-00D7-F01` M1–M6 STOP, SCG-08 Gate 2 NO-GO, H01/10A BLOCKED.
 
 > **Latest post-`v2.1.0` modularization & CI status (2026-11-20):** Read [T81_RESEARCH_STATUS_2026-11-20_MONOLITH_SPLIT.md](T81_RESEARCH_STATUS_2026-11-20_MONOLITH_SPLIT.md) first. `main` at `217cc0698` completes the `main.cpp` (`11,135 → 4,107` lines, `-63.1%`) and `vm.cpp` (`7,762 → 3,133` lines, `-59.6%`) monolith splits (`-11,657` lines total, zero locked-header or behavioral changes), adds Python SDK `v2.1.0` Dual-Rail/Axion/SHA3 bindings + RFC-00D1 export negative tests (`7/7`), and fixes Windows MSVC/clang-cl CI + Intel oneAPI GPG key URL. All platform builds (Linux/macOS/Windows) and core gates are green; all `F01`, `SCG-08` Gate 2, `H01`/10A, and `AXION-AI-001` holds remain intact.
 
@@ -223,3 +223,15 @@ Preserved for audit traceability (superseded as live operational guidance by the
 - 2026-11-08: [T81_COMPLETE_STATUS_2026-11-08.md](T81_COMPLETE_STATUS_2026-11-08.md)
 - 2026-11-03: [BASE01_2026-11-03.md](BASE01_2026-11-03.md)
 - 2026-11-02: [PR/source receipt](receipts/2026-11-02-pr678-observations.json)
+
+---
+
+## 15. Deferred design plans
+
+Indexed so a later session can find them. These notes are not live next-action
+guidance, and they do not authorize implementation. The maintenance queue stays
+in [ACTIVE_RESEARCH_HANDOFF.md](ACTIVE_RESEARCH_HANDOFF.md).
+
+- 2026-11-21 plan, rechecked 2026-11-23 against `main`
+  `5a005b2dea5e1eb262d4af45698f8338d16b137c`:
+  [Interchangeable AI engines for Axion](AXION_ENGINE_INTERCHANGE_PLAN_2026-11-21.md)

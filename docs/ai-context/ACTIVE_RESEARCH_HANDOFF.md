@@ -1,4 +1,6 @@
-> **Deferred design plan (2026-11-21).** [Interchangeable AI engines for Axion](AXION_ENGINE_INTERCHANGE_PLAN_2026-11-21.md) starts with a paper trace of `route-fixed` and records future work on sampled results, replay, effect recovery and substitution. Documentation only. HD01–HD06 remain open and F01 M1–M6 remain at STOP.
+> **Live queue refresh (2026-11-22):** `main` fast-forwarded to `120b8dc90` (`v2.2.0-12-g120b8dc90`, merge of PR #845). [ROADMAP.md](../ROADMAP.md) near-term row 2 (PRs #747, #748, #750) is retired: those PRs were closed unmerged. Next maintenance slice is RFC-00D1 denial-before-materialization for directory export. SCG-08 Gate 2, H01/10A, F01 M1–M6, and `AXION-AI-001` HD01–HD06 remain held. CI on `120b8dc90` had sanitizer and macOS x86_64 GCC builds still running at refresh; the prior `main` red at `c9bc4d75f` was lychee GitHub `503` responses, and lint on `120b8dc90` had already passed.
+
+> **Deferred design plan (rechecked 2026-11-23).** [Interchangeable AI engines for Axion](AXION_ENGINE_INTERCHANGE_PLAN_2026-11-21.md) is a non-normative paper plan for `route-fixed`. It does not replace the 2026-11-22 live queue above and does not authorize implementation. Recorded holds, not re-measured here: `AXION-AI-001` HD01–HD06 open, `RFC-00D7-F01` M1–M6 STOP, SCG-08 Gate 2 NO-GO, H01/10A BLOCKED.
 
 > **Latest post-`v2.1.0` operational status (2026-11-20):** Read [T81_RESEARCH_STATUS_2026-11-20_MONOLITH_SPLIT.md](T81_RESEARCH_STATUS_2026-11-20_MONOLITH_SPLIT.md) first. `main` at `217cc0698` cuts `tools/cli/core/main.cpp` (`11,135 → 4,107` lines into `cmd_*.{hpp,cpp}` + `help_text.{hpp,cpp}`) and `vm/vm.cpp` (`7,762 → 3,133` lines into `vm_support.{hpp,cpp}` + 6 `vm/internal/vm_*_opcodes.inc` groups), exposes `v2.1.0` Python SDK bindings + RFC-00D1 export negative tests (`7/7`), and fixes Windows CI + Intel oneAPI GPG key URL. All `F01`, `SCG-08 Gate 2`, `H01/10A`, and `AXION-AI-001` holds remain intact.
 
@@ -375,3 +377,37 @@ on ARM64 macOS). Records:
 All existing holds (`RFC-00D7-F01` `M1–M6 STOP`, `SCG-08` Gate 2 `NO-GO`,
 `H01`/10A `BLOCKED`, `AXION-AI-001` `HD01–HD06` open, canonical `H01–H08`)
 remain unchanged.
+
+---
+
+## 2026-11-22 live queue refresh and RFC-00D1 materialization denial
+
+```text
+================================================================================
+DATE / SESSION: 2026-11-22 / Refresh main and continue RFC-00D1 policy depth
+REPOSITORIES AND PINNED COMMITS: t81-foundation main fast-forwarded c9bc4d75f..120b8dc90478fb25b82b11138fcc8101b3cffb37 (v2.2.0-12-g120b8dc90)
+QUESTION OR HYPOTHESIS TESTED: Contributor roadmap queue versus live main, then whether directory export honors denial-before-host-materialization.
+EVIDENCE EXAMINED: origin/main after fetch; gh pr list (35 open, 31 draft); CI runs 45084245015 and 45069281955; docs/ROADMAP.md; fs/canonfs_interchange_ops.cpp export_ref manifest branch.
+WHAT WAS REPRODUCED: Local fast-forward. Then `cmake -S . -B build -G Ninja` and `cmake --build build --target canonfs_interchange_test -j8` on macOS ARM64; `./build/canonfs_interchange_test` exited 0. Full platform CI on 120b8dc90 was still in progress at inspection (sanitizers and macos-x86_64 gcc). Prior main CI failure was lychee GitHub 503, with the required quality gate failing as a consequence. Lint on 120b8dc90 had already passed.
+WHAT WAS ONLY REPORTED OR MODELED: Open-PR check rollups and the in-progress CI job board. No Gate 2, H01, or F01 measurement.
+RESULT / NEGATIVE RESULT: Roadmap row naming PRs #747, #748, and #750 was stale; all three are closed unmerged. Directory export created the destination before policy admission. The manifest path now creates that directory only when an admitted entry is about to be written. Holds unchanged.
+KNOWN DEFECTS / CONFOUNDERS: Provenance records may still be written into CanonFS on a denied export. That is an evidence write, not host materialization of the export payload.
+OPEN PRS AND CI STATUS: 35 open. Non-draft: #732 green docs, #666 informational armv9 failure, #664 benchmark plus quality-gate failure, #719 stale red CI. Draft #847 was failing determinism while other jobs ran. PRs #747/#748/#750 closed unmerged.
+NEXT SINGLE ACTION: Keep RFC-00D1 target-side failure coverage narrow. Do not start SCG-08 Gate 2.
+STOPPING CRITERION: Stop if a change adds a profile name, source/target kind, or interchange format, or if it treats a passing CI run as scientific acceptance.
+================================================================================
+```
+
+---
+
+## 2026-11-23 deferred plan index — interchangeable AI engines
+
+Non-normative index entry for
+[Interchangeable AI engines for Axion](AXION_ENGINE_INTERCHANGE_PLAN_2026-11-21.md).
+The plan is a paper trace of the current `route-fixed` path-selection example
+and a deferred userspace interchange backlog. It does not replace the
+2026-11-22 live queue, authorize an engine prototype, or change recorded holds
+(`AXION-AI-001` HD01–HD06 open, `RFC-00D7-F01` M1–M6 STOP, SCG-08 Gate 2
+NO-GO, H01/10A BLOCKED). The recheck read sources at `main`
+`5a005b2dea5e1eb262d4af45698f8338d16b137c` and did not execute the route or
+classify tests.

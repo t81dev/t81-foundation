@@ -580,9 +580,6 @@ jobs:
         run: |
           set -eo pipefail
           choco install ninja cmake ccache
-          if [ "${{ matrix.compiler }}" = "clang-cl" ]; then
-            choco install llvm
-          fi
         shell: bash
 
       # Homebrew's GoogleTest uses AppleClang/libc++; the GCC lane uses libstdc++.
@@ -652,11 +649,25 @@ jobs:
           if [ "${{ runner.os }}" = "macOS" ] && [ "${{ matrix.compiler }}" = "gcc" ]; then
             dependency_args+=("-DGTest_DIR=$PWD/.ci-deps/googletest-install/lib/cmake/GTest")
           fi
+          c_compiler="${{ matrix.c_compiler }}"
+          cpp_compiler="${{ matrix.cpp_compiler }}"
+          if [ "${{ matrix.compiler }}" = "clang-cl" ]; then
+            # Use the compiler bundled with the selected Visual Studio STL.
+            vc_install_dir=$(cygpath -m "${VCINSTALLDIR:?Visual Studio environment missing}")
+            c_compiler="${vc_install_dir%/}/Tools/Llvm/x64/bin/clang-cl.exe"
+            cpp_compiler="$c_compiler"
+            {
+              printf 'Checked-out SHA: %s\n' "$(git rev-parse HEAD)"
+              printf 'clang-cl path: %s\n' "$c_compiler"
+              printf 'MSVC toolset version: %s\n' "${VCToolsVersion:?MSVC toolset version missing}"
+              "$c_compiler" --version
+            } 2>&1 | tee -a .github/logs/build-and-test.log
+          fi
           cmake -S . -B build -G Ninja \
             "${dependency_args[@]}" \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+            "-DCMAKE_C_COMPILER=$c_compiler" \
+            "-DCMAKE_CXX_COMPILER=$cpp_compiler" \
             -DCMAKE_C_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache 2>&1 | tee -a .github/logs/build-and-test.log
 
@@ -751,7 +762,7 @@ jobs:
         shell: bash
         run: |
           set -eo pipefail
-          ctest --test-dir build --output-on-failure --verbose --output-junit build/ctest-results.xml 2>&1 | tee -a .github/logs/build-and-test.log
+          ctest --test-dir build --output-on-failure --verbose --output-junit ctest-results.xml 2>&1 | tee -a .github/logs/build-and-test.log
 
       - name: Run T3_K reproducibility gates
         if: matrix.compiler == 'clang' && (matrix.platform == 'linux-x86_64' || matrix.platform == 'linux-arm64')
@@ -854,6 +865,7 @@ jobs:
           name: ci-build-${{ matrix.platform }}-${{ matrix.compiler }}
           path: |
             .github/logs/build-and-test.log
+            build/CMakeFiles/CMakeConfigureLog.yaml
             build/ctest-results.xml
             build/native-int128-probe.log
             build/artifacts/vm_workload_determinism_signatures.log
