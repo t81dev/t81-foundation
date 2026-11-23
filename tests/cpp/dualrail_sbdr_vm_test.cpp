@@ -400,8 +400,8 @@ void test_mixed_dense_and_sparse128_regime_routing_and_repeat_sha3() {
     check(res.has_value(), "Mixed dense+sparse128 VM run failed to halt");
     const auto tel = t81::vm::internal::dualrail_telemetry();
     check(tel.fastpath_hits == 2 && tel.dense_hits == 1 && tel.sparse128_hits == 1 &&
-              tel.fallback_count == 0,
-          "Expected 1 dense_hit + 1 sparse128_hit + 0 fallbacks in mixed-regime VM run");
+              tel.sparse128_blocks_skipped > 0 && tel.fallback_count == 0,
+          "Expected 1 dense_hit + 1 sparse128_hit + skipped blocks + 0 fallbacks");
     const auto& ctx = vm->state().contexts[0];
     const auto& cd = vm->state().tensors[static_cast<size_t>(ctx.registers[7] - 1)].value();
     const auto& cs = vm->state().tensors[static_cast<size_t>(ctx.registers[8] - 1)].value();

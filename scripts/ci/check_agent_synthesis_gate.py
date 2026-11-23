@@ -226,11 +226,11 @@ def check_routing_ledger_determinism(errors: list[str]) -> None:
             return
         accepted = int(payload.get("accepted_count", -1))
         neg_count = int(payload.get("negative_constraints_count", -1))
-        if accepted < 8 or neg_count < 14:
+        if accepted < 8 or neg_count < 15:
             errors.append(
                 f"routing_ledger.py run {run_idx} counts regressed: "
                 f"accepted_count={accepted} (expected >=8), "
-                f"negative_constraints_count={neg_count} (expected >=14)"
+                f"negative_constraints_count={neg_count} (expected >=15)"
             )
             return
         tamper = payload.get("chain_tamper_verification")
