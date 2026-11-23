@@ -82,7 +82,7 @@ repo.
 
 1. Tighten CanonFS import denial reasons and add matching negative tests.
 2. (DONE — v2.1.0+) Tighten CanonFS export denial reasons and add matching negative tests (`tests/cpp/canonfs_cli_contract_tests.cpp` now covers `ExportSuccessJSONStructure`, `ExportPolicyFailureJSONStructure`, and `ExportInvalidRefJSONStructure` — 7/7 passing).
-3. (IN PROGRESS) Expand RFC-00D1 contract coverage for failure cases beyond the original import/export JSON shapes. Directory export now defers destination creation until an admitted entry is written (`fs/canonfs_interchange_ops.cpp`, covered by `canonfs_interchange_test`). Keep going on remaining target-side failure cases without widening the seed contract.
+3. (IN PROGRESS) Expand RFC-00D1 contract coverage for failure cases beyond the original import/export JSON shapes. Directory export defers destination creation until an admitted entry is written, and `canonfs_interchange_test` now checks that a manifest path containing `..` records `unsafe_target_path` without writing outside the destination. Remaining target-side cases are `target_directory_create_failed` and `target_write_failed`. Do not widen the seed contract.
 4. Keep interchange JSON payloads, schema IDs, and docs aligned.
 5. Add or refresh one golden CanonFS interchange example under `examples/`.
    Current seed example: `examples/storage-and-canonfs/canonfs-interchange/`.

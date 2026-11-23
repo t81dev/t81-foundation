@@ -324,6 +324,11 @@ Expected shape:
 - error code: `canonfs-export-target-open-failed`
 - error reason: `target_open_failed`
 
+A manifest entry whose path is absolute or contains `..` is rejected before that
+entry is written. The export records `unsafe_target_path` and does not create
+the escaped host path. Admitted entries in the same manifest can still
+materialize inside the destination.
+
 ## Notes
 
 - This example is intentionally file-based and small.
