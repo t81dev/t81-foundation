@@ -112,6 +112,25 @@ exit "$QEMU_STATUS"
         self.assertNotIn("Building BOOTAA64.EFI", result.stdout)
         self.assertFalse((self.build / "canon_store.img").exists())
 
+    def test_interactive_serial_roundtrip_is_recorded_in_log(self):
+        self.stub(
+            "qemu-system-aarch64",
+            r"""printf '[axion@T81 tier=1]$ '
+printf 'uname\r\nT81 TernaryOS 1.0 AArch64 axion-kernel (bare-metal EFI)\r\n'
+printf '[axion@T81 tier=1]$ '
+printf 'el0\r\n[el0]\r\n[axion@T81 tier=1]$ '
+printf 'gov\r\n[governance]\r\n[axion@T81 tier=1]$ '
+exit 0
+""",
+        )
+        result = self.run_demo()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("Boot verified.", result.stdout)
+        log = (self.build / "boot-demo.serial.log").read_text()
+        self.assertIn("T81 TernaryOS 1.0 AArch64 axion-kernel (bare-metal EFI)", log)
+        self.assertIn("[el0]", log)
+        self.assertIn("[governance]", log)
+
 
 if __name__ == "__main__":
     unittest.main()

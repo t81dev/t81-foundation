@@ -63,19 +63,57 @@ jobs:
             -DT81_BUILD_TUI=OFF \
             -DT81_LLVM_CLANG="$(command -v clang-18)" \
             -DT81_LLD_LINK="$(command -v lld-link-18)"
-      - name: Run the launcher and exit QEMU from the Axion prompt
+      - name: Run the launcher, verify interactive serial round-trip, and exit QEMU
         run: |
           expect <<'EXPECT'
           set timeout 600
+          set prompt {\[axion@T81 tier=[0-9]+\]\$ }
           spawn bash drivers/qemu/scripts/boot_demo.sh
           expect {
-              -re {\[axion@T81 tier=[0-9]+\]\$ } {
-                  send -- "\x01x"
-                  exp_continue
+              -re $prompt {}
+              timeout {
+                  puts stderr "Timed out waiting for initial Axion prompt"
+                  exit 1
               }
+              eof {
+                  puts stderr "Launcher exited before initial Axion prompt"
+                  exit 1
+              }
+          }
+          foreach {cmd expected} {
+              "uname" "T81 TernaryOS 1.0 AArch64 axion-kernel (bare-metal EFI)"
+              "el0"   "[el0]"
+              "gov"   "[governance]"
+          } {
+              send -- "${cmd}\r"
+              expect {
+                  -ex $expected {}
+                  timeout {
+                      puts stderr "Timed out waiting for output of '${cmd}'"
+                      exit 1
+                  }
+                  eof {
+                      puts stderr "Launcher exited before output of '${cmd}'"
+                      exit 1
+                  }
+              }
+              expect {
+                  -re $prompt {}
+                  timeout {
+                      puts stderr "Timed out waiting for prompt after '${cmd}'"
+                      exit 1
+                  }
+                  eof {
+                      puts stderr "Launcher exited before prompt after '${cmd}'"
+                      exit 1
+                  }
+              }
+          }
+          send -- "\x01x"
+          expect {
               eof {}
               timeout {
-                  puts stderr "Timed out waiting for the boot demo"
+                  puts stderr "Timed out waiting for QEMU exit"
                   exit 1
               }
           }
@@ -88,6 +126,10 @@ jobs:
           EXPECT
           grep -Fq 'canonfs: I/O probe OK (LBA0 magic=CST1, LBA1 round-trip pass)' \
             "$BUILD_DIR/boot-demo.serial.log"
+          grep -Fq 'T81 TernaryOS 1.0 AArch64 axion-kernel (bare-metal EFI)' \
+            "$BUILD_DIR/boot-demo.serial.log"
+          grep -Fq '[el0]' "$BUILD_DIR/boot-demo.serial.log"
+          grep -Fq '[governance]' "$BUILD_DIR/boot-demo.serial.log"
       - name: Retain serial log
         if: ${{ always() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
