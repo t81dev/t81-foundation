@@ -54,7 +54,7 @@ Section 8 ("Resource feasibility, risks and next gate") of accepted protocol ARC
    > "External metadata utilities run only with V/W absent, within the same tree/caps; live monitoring uses L's in-process OS interfaces. No extra monitoring process or unaccounted helper is permitted while the runtime tree is populated."
 
 3. **In-Process Clock Monopoly and the H5 Qualification Block:**
-   Under R1 §8, the campaign clock is held exclusively by L in userspace via `time.monotonic_ns()`. When L executes within a container or virtualized guest, guest monotonic clocks are vulnerable to host scheduling pauses, vCPU descheduling, VM suspension, or hypervisor time dilation. During a guest pause or freeze, L cannot sample its clock or observe deadline expiration. However, running a watchdog process outside L on the host system directly violates the literal R1 prohibition: *"No extra monitoring process or unaccounted helper is permitted while the runtime tree is populated."* Qualification H5 correctly found: `HOST_CLOCK_ENFORCEMENT_BLOCKED`.
+   Under R1 §8, L alone holds the campaign's monotonic deadline. The I2 implementation at `f408f6fb27bd7516fb0b32f3645f9d53fbbd4b15` samples that deadline with `time.monotonic_ns()` in `experiments/arch003/accounting.py`. §8 does not name that Python API. When L executes within a container or virtualized guest, guest monotonic clocks are vulnerable to host scheduling pauses, vCPU descheduling, VM suspension, or hypervisor time dilation. During a guest pause or freeze, L cannot sample its clock or observe deadline expiration. However, running a watchdog process outside L on the host system directly violates the literal R1 prohibition: *"No extra monitoring process or unaccounted helper is permitted while the runtime tree is populated."* Qualification H5 correctly found: `HOST_CLOCK_ENFORCEMENT_BLOCKED`.
 
 ---
 
@@ -252,12 +252,13 @@ The complete receipt file `host-terminal-receipt.json` consists of exactly 15 fi
    - Integer values are formatted as standard base-10 ASCII digits without leading zeros, signs (`+`), or floating-point decimals/exponents (`.0`, `e+00`).
    - Boolean values are literal `true` or `false`.
    - The signing payload $M$ contains **no trailing newline**.
+   - **On-disk framing:** $M$ is only the canonical 14-field signing object. The file `host-terminal-receipt.json` is the canonical 15-field object, including `host_signature_hex`, encoded as UTF-8 and followed by exactly one LF. That matches the R1 rule that each JSON file is canonical JSON followed by one LF. $H_{receipt}$ is the SHA-256 of those exact file bytes, including the LF. The same split applies to `host-publication-attestation.json`: sign the 9-field payload with no trailing newline, then write the canonical 10-field object plus one LF. The JSON examples in this section omit that required trailing LF.
 4. **Signature Generation and Encoding:**
    - The private key $SK_{host}$ signs the byte sequence $M$:
      $$\sigma = \text{Ed25519\_Sign}(SK_{host}, M)$$
    - The 64-byte signature is encoded as 128 lowercase hexadecimal characters and stored in `host_signature_hex`.
 5. **Strict Schema Validation & Duplicate-Key Rejection:**
-   - Parser must reject any duplicate object keys (RFC 8259 / RFC 8785 compliance).
+   - Parser must reject any duplicate object keys. RFC 8785 requires that rejection. RFC 8259 says object names SHOULD be unique and leaves duplicate-key behavior to the parser.
    - Any unrecognized or unexpected keys outside the exact 15 defined fields of the complete receipt (or 14 fields of $D_{sign}$) must fail validation immediately.
    - Any type mismatch, uppercase hex characters, or integer out of range must fail validation immediately.
 
@@ -290,7 +291,7 @@ The complete receipt file `host-terminal-receipt.json` consists of exactly 15 fi
 | **Guest Freeze / Pause** | No heartbeat received for $> 15 \times 10^9\text{ ns}$ | Role H sends `SIGKILL` to guest process group | `BLOCKED_RESOURCE_ACCOUNTING` (Status 70); campaign marked unverified. |
 | **AC Power Drop** | `pmset` / sysfs reports battery power | Role H sends `SIGKILL` to guest process group | `INCONCLUSIVE_RESOURCE` (Status 71); battery run rejected. |
 | **Terminal Receipt Tampering** | Ed25519 signature fails verification against $PK_{host}$ | Host acceptance verifier rejects campaign | `BLOCKED_RESOURCE_ACCOUNTING` (Status 70). |
-| **Digest Mismatch** | `guest_sealed_root_sha256` $\ne \text{sha256}(artifact\text{-}index.json)$ or $\ne \text{read\_text}(evidence.sha256).\text{strip}()$ | Host acceptance verifier rejects campaign | `FAIL_CORRECTNESS` (Status 65). |
+| **Digest Mismatch** | `guest_sealed_root_sha256` $\ne$ SHA-256(`artifact-index.json`), or `evidence.sha256` is not exactly those 64 lowercase hex digits followed by one LF | Host acceptance verifier rejects campaign | `FAIL_CORRECTNESS` (Status 65). |
 | **Missing Terminal Receipt** | Guest directory present but no valid terminal receipt exists | Host acceptance verifier rejects campaign | `BLOCKED_RESOURCE_ACCOUNTING` (Status 70). |
 | **Missing Publication Attestation** | Terminal receipt exists but `host-publication-attestation.json` missing | Host acceptance verifier rejects campaign | `BLOCKED_RESOURCE_ACCOUNTING` (Status 70). |
 | **Publication Overrun (>1,800s)** | Attestation `host_elapsed_published_ns` $> 1,800 \times 10^9\text{ ns}$ | Host acceptance verifier rejects campaign | `INCONCLUSIVE_RESOURCE` (Status 71). |
@@ -311,7 +312,7 @@ The complete receipt file `host-terminal-receipt.json` consists of exactly 15 fi
 2. **Host Watchdog Resource Ceiling (16 MiB Cap):**
    - Role H is implemented as a minimal standalone C binary (`arch003_watchdog`) with zero dynamic runtime dependencies.
    - Resident memory ceiling: $\text{RSS}_{H} \le 16\text{ MiB}$ ($16,777,216$ bytes / $16,384\text{ KiB}$).
-   - Role H samples its own RSS via `getrusage(RUSAGE_SELF)` and records `watchdog_peak_rss_kib` in `host-terminal-receipt.json`. If $\text{RSS}_{H} > 16\text{ MiB}$, the watchdog receipt is invalid, causing fail-closed rejection.
+   - Role H samples its own RSS via `getrusage(RUSAGE_SELF)` and records `watchdog_peak_rss_kib` in `host-terminal-receipt.json`. `ru_maxrss` is kibibytes on Linux and bytes on Darwin. Divide the Darwin value by 1024, truncating toward zero, before the comparison or the receipt field. If $\text{RSS}_{H} > 16\text{ MiB}$, the watchdog receipt is invalid, causing fail-closed rejection.
 3. **Host Helper Process Boundaries:**
    - Role H is prohibited from spawning background workers, helper pools, concurrent monitoring tasks, or persistent subprocesses.
    - Bounded, sequential host helpers are permitted solely for instantaneous pre-flight host inspection before guest launch:
@@ -408,7 +409,7 @@ The R2 amendment is strictly an operational governance and host-authority amendm
   - Verification is never delegated or skipped. The independent verifier cannot rely on `manifest.status` or `campaign.json` declaration alone.
   - Acceptance strictly requires full offline re-verification of all 1,450,659 calls across Debug, Release, and Sanitizer profiles against `expected.bin` (header count, sequential case IDs, eligibility masks, rolling digests).
   - All 6 final rolling digests per profile must match the mathematical expectations exactly.
-  - All 6 guard receipts (G1 wrong-result exit 1, G2 over-long exit 1) and both sanitizer probe receipts (`asan_heap_end`, `ubsan_shift`) must be independently checked.
+  - All 6 guard receipts must be independently checked. G1 mutates the computed count to 2 and the worker exits 1; the verifier exits 1. G2 keeps that mutation and suppresses the worker's own comparison, so the worker exits 0; the verifier still exits 1 and must not treat the child exit as success. Both sanitizer probe receipts (`asan_heap_end`, `ubsan_shift`) must be independently checked.
 - **Terminology Reconciliation (`campaign.json` vs `manifest`):**
   - The document reconciles terminology: the canonical file name on disk in the evidence directory is `campaign.json` (as implemented in `evidence.py` and `verifier.py`), which contains the serialized campaign manifest object adhering to schema `t81.arch002.correctness-evidence.v1`. References in documentation to "the campaign manifest" or `manifest.json` refer to this exact artifact `campaign.json`.
 - **Output Budget Reconciled with 100 MiB Cap:**
@@ -448,6 +449,7 @@ The guest supervisor `verifier.py` cannot be the sole acceptance judge of extern
    - Verify $\text{Ed25519\_Verify}(PK_{host}, M_1, \sigma_1) == \text{valid}$. If verification fails, reject immediately as `BLOCKED_RESOURCE_ACCOUNTING` (Status 70).
    - Verify `termination_issued == false`.
    - Verify `host_elapsed_ns <= 1800 * 10^9`.
+   - Verify `host_elapsed_ns == host_complete_boot_ns - host_start_boot_ns`.
    - Verify `max_sleep_divergence_ns < 100_000_000`.
    - Verify `power_source == "AC_MAINS"`.
    - Verify `watchdog_peak_rss_kib <= 16384` (16 MiB).
@@ -463,14 +465,15 @@ The guest supervisor `verifier.py` cannot be the sole acceptance judge of extern
    - Verify $\text{Ed25519\_Verify}(PK_{host}, M_2, \sigma_2) == \text{valid}$. If verification fails, reject immediately as `BLOCKED_RESOURCE_ACCOUNTING` (Status 70).
    - **Receipt Digest Binding Check:** Compute $H_{receipt\_disk} \equiv \text{SHA256}(\text{read\_bytes}(host\text{-}terminal\text{-}receipt.json))$.
    - Assert $H_{receipt\_disk} == \text{attestation.terminal\_receipt\_sha256}$.
+   - Assert `campaign_uuid` and `host_start_boot_ns` equal the same fields in `host-terminal-receipt.json`.
+   - Assert `host_elapsed_published_ns == host_published_boot_ns - host_start_boot_ns`.
    - **Authoritative Inclusive Deadline Verification:**
      Assert $\text{attestation.host\_elapsed\_published\_ns} \le 1,800 \times 10^9\text{ ns}$ ($1,800.0\text{ seconds}$).
      If $\text{attestation.host\_elapsed\_published\_ns} > 1,800 \times 10^9\text{ ns}$, reject immediately fail-closed as `INCONCLUSIVE_RESOURCE` (Status 71).
 4. **Evidence-Root Identity & Guest Root Binding Verification:**
    - The normative definition of the guest evidence-root digest throughout R1, I2, and R2 is strictly the SHA-256 hash of `artifact-index.json`:
      $$H_{root} \equiv \text{SHA256}(\text{read\_bytes}(artifact\text{-}index.json))$$
-   - Ingest `evidence.sha256` from the guest directory; verify that its stripped text content matches $H_{root}$:
-     $$\text{read\_text}(evidence.sha256).\text{strip}() == H_{root}$$
+   - Ingest `evidence.sha256` from the guest directory and require its bytes to be exactly $H_{root}$ as 64 lowercase hexadecimal characters followed by one LF.
    - Ingest `guest_sealed_root_sha256` from `host-terminal-receipt.json`.
    - Assert $H_{root} == \text{guest\_sealed\_root\_sha256}$. Any disagreement between $H_{root}$, the content of `evidence.sha256`, and `guest_sealed_root_sha256` in the signed host receipt causes immediate fail-closed rejection as `FAIL_CORRECTNESS` (Status 65).
 5. **Complete Artifact Inventory & Digest Verification:**
@@ -486,7 +489,7 @@ The guest supervisor `verifier.py` cannot be the sole acceptance judge of extern
      - `observed-D.bin` (Debug profile, 483,553 calls, 15,473,712 bytes)
      - `observed-R.bin` (Release profile, 483,553 calls, 15,473,712 bytes)
      - `observed-S.bin` (Sanitizer profile, 483,553 calls, 15,473,712 bytes)
-     - `guard-expected.bin`, `guard-observed-*.bin`
+     - `guard-expected.bin` and the six observed guard files `guard-D-G1.bin`, `guard-D-G2.bin`, `guard-R-G1.bin`, `guard-R-G2.bin`, `guard-S-G1.bin`, and `guard-S-G2.bin`
      - All 6 oracle receipts, all 6 guard receipts, all 2 sanitizer probe receipts, build receipts, binary receipts, and `authorization.json`.
    - Any missing file (including specifically `observed-S.bin`) or hash mismatch fails immediately as `FAIL_EVIDENCE` (Status 67).
 6. **Detection and Rejection of Conflicting Terminal Records:**
@@ -603,7 +606,7 @@ post-fsync completion <= 1,800 seconds."
 | **Deadline Authority (§8)** | Solely inside guest L via `time.monotonic_ns()`. | Dual authority: guest L checks internally; host H enforces externally via suspend-aware timer. | Guarantees fail-closed termination even if guest kernel or hypervisor hangs. |
 | **Clock Source (§6, §8)** | Monotonic userspace clock. | Dual matching-rate suspend-aware clocks (`CLOCK_BOOTTIME` vs `CLOCK_MONOTONIC` on Linux; `mach_continuous_time` vs `mach_absolute_time` on Darwin) and sleep detection ($\Delta_{sleep} \ge 100\text{ ms}$). | Prevents host S3/S4 sleep from hiding campaign elapsed time overruns while eliminating uncoupled clock drift. |
 | **Receipt Authentication (§8)** | Internal JSON files; no signature or trust root. | Ephemeral Ed25519 host keypair; host signs terminal receipt; host verifier checks against pre-authorized key. | Real cryptographic authentication prevents forged or retrofitted watchdog receipts. |
-| **Finalization Flow (§8)** | Unsequenced single-pass sealing. | Two-Stage Terminal Handshake: guest seals `artifact-index.json` & `evidence.sha256`, receives host pre-exit ACK, exits 0; host reaps guest, samples authoritative completion timestamp, signs & durably publishes `host-terminal-receipt.json` under inclusive 1,800s deadline. | Resolves circularity; ensures host deadline covers full evidence sealing, reaping, and final receipt publication. |
+| **Finalization Flow (§8)** | Unsequenced single-pass sealing. | Two-stage terminal handshake: guest seals `artifact-index.json` and `evidence.sha256`, receives `READY_TO_REAP`, and exits 0. Host reaps the guest, samples `T_host_complete_boot_ns`, signs and fsyncs `host-terminal-receipt.json`, samples `T_host_published_boot_ns`, and durably publishes `host-publication-attestation.json`. Both records must finish within the inclusive 1,800s deadline. | The publication attestation, not a pre-reap timestamp, certifies that sealing, reaping, and durable publication finished inside the deadline. |
 | **Acceptance Verification (§8)** | Relies solely on guest `verifier.py`. | Dual acceptance: guest verifier + independent external `host_acceptance_verifier.py`. | Prevents compromised guest from self-certifying host compliance. |
 | **Watchdog RSS (§8)** | No external watchdog permitted; all memory in live tree $\le 512\text{ MiB}$. | Guest tree remains $\le 512\text{ MiB}$. Role H on host capped at $\le 16\text{ MiB}$ host RSS. | Preserves candidate memory pressure constraints without charging host hypervisor tools to guest. |
 | **macOS Power (§6)** | "AC power... sleep disabled for the bounded run." | Explicit check for AC mains; DC battery prohibited; `caffeinate` alone recognized as defective on battery. | Prevents kernel thermal sleep and clock distortion on Apple Silicon battery power. |
@@ -621,14 +624,14 @@ Before R2 can be declared accepted and ready for implementation authorization:
 4. **CRIT-R2-04 (Negative Control Specification):** Complete specifications for negative tests N1–N5 (including real suspension N3) must be provided with deterministic fail-closed exit codes.
 5. **CRIT-R2-05 (Host Power Verification):** Explicit commands and exit contracts for AC mains verification on Darwin and Linux must be specified.
 6. **CRIT-R2-06 (Cryptographic Non-Repudiation):** Verification of Role H receipts must rely on Ed25519 signature checks against a pre-authorized host public key.
-7. **CRIT-R2-07 (Dual Acceptance Artifacts):** Final acceptance must strictly require both valid guest artifacts and a matching, signed terminal host receipt.
+7. **CRIT-R2-07 (Dual Acceptance Artifacts):** Final acceptance must require the guest artifact inventory, a matching signed `host-terminal-receipt.json`, and a signed `host-publication-attestation.json` whose receipt digest and inclusive deadline check both succeed.
 
 ---
 
 ## 6. Compatibility and Provenance Analysis
 
 - **Backward Compatibility with R1:**
-  R2 is strictly an operational refinement of the process monitoring location restriction in §8. Any valid R1 execution that was completely observable and completed within 1,800 seconds remains valid under R2 when monitored by Role H.
+  R2 adds Role H to the §8 monitoring rule. A historical R1 bundle remains R1 evidence. It is not an R2-accepted campaign: §2.11 rejects a bundle that lacks `host-terminal-receipt.json` or `host-publication-attestation.json`. The scientific matrix in R1 §§1–5 and §7 is unchanged.
 - **Provenance and Lineage:**
   - Base protocol: PR #714 commit `1454bd63426d21686cfb5ef22dbaebc3c9cae94b`.
   - Baseline implementation: PR #716 commit `f408f6fb27bd7516fb0b32f3645f9d53fbbd4b15`.
@@ -643,19 +646,17 @@ The following changes will be required in the follow-on implementation revision 
 
 1. **Host Watchdog Native Binary (`experiments/arch003/host_watchdog.c`):**
    - Implement Role H watchdog in C without external runtime dependencies.
-   - Generate ephemeral Ed25519 keypair; export `host_authority.pub`.
+   - Generate an ephemeral Ed25519 keypair and write `PK_host` only to the pre-launch `host-authorization.json` defined in §2.3.2.
    - Sample dual matching-rate clocks (`CLOCK_BOOTTIME` and `CLOCK_MONOTONIC` on Linux; `mach_continuous_time` and `mach_absolute_time` on Darwin).
    - Evaluate $\Delta_{sleep}(t)$; abort if $\ge 100,000,000\text{ ns}$.
    - Query AC power state (`pmset -g batt` / `/sys/class/power_supply`).
    - Monitor heartbeat pulses; enforce 1,800-second hard deadline via POSIX signals.
-   - Execute Terminal Handshake: receive `root_sha256`, generate and sign `host-terminal-receipt.json`.
+   - Execute the §2.3.3 handshake: receive the sealed root, send `READY_TO_REAP`, reap the guest, then sign and durably publish `host-terminal-receipt.json` and `host-publication-attestation.json` inside the 1,800-second envelope.
 2. **Guest Campaign Handshake (`experiments/arch003/campaign.py`):**
    - Emit periodic heartbeat pulses during execution.
    - Transmit `root_sha256` after evidence sealing; await terminal ACK before exiting.
 3. **Independent Host Acceptance Verifier (`experiments/arch003/host_acceptance_verifier.py`):**
-   - Ingest trusted $PK_{host}$ from host authorization record.
-   - Verify signature and fields of `host-terminal-receipt.json`.
-   - Validate digest match against guest `evidence.sha256`.
+   - Implement the §2.11 algorithm: load $PK_{host}$ from `host-authorization.json`, verify both signed records, bind $H_{receipt}$ and $H_{root}$, and check the full artifact inventory, including `observed-S.bin` and the six `guard-*-G*.bin` files.
 4. **Negative Test Fixtures (`experiments/arch003/tests/test_watchdog.py`):**
    - Implement test suite verifying N1 (deadlock kill), N2 (heartbeat timeout), N3 (real host suspension / sleep jump), N4 (tampered receipt/signature), and N5 (battery disconnect).
 
