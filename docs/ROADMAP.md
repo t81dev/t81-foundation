@@ -2,7 +2,7 @@
 
 **Engineering Maintenance, Experimental Validation, and Research Priorities**
 
-**Updated:** November 2026
+**Updated:** 2026-11-22. Live `main` observed at `120b8dc90478fb25b82b11138fcc8101b3cffb37` (`v2.2.0-12-g120b8dc90`) after PR #845. This date refreshes the near-term queue below. It does not authorize SCG-08 Gate 2, close H01/10A, adopt F01, or change H01–H08.
 
 This roadmap connects the engineering maintenance program to T81's active scientific research.
 
@@ -309,14 +309,18 @@ If these cannot be stated clearly, narrow the task before implementation.
 
 ## Near-term execution sequence
 
+Observed 2026-11-22 against `main` at `120b8dc90`. Rows are ordered for the next maintenance slice. Scientific holds stay in force: SCG-08 Gate 2 remains withheld, H01/10A remains blocked, and F01 M1–M6 remain stopped.
+
 | Order | Work | Completion condition |
 |---|---|---|
-| 1 | Independent review of SCG-08 Phase 1 Gate 1 harness | All schema validations and smoke tests pass |
-| 2 | Reconcile open portability and policy boundary PRs (#747, #748, #750) | Clear separation of policy checks from command execution |
-| 3 | Evaluate Gate 2 authorization criteria for SCG-08 | Formal decision recorded before large-scale runs |
-| 4 | Investigate subsystem-specific ternary effects | At least one falsifiable bounded result |
-| 5 | Revisit physical feasibility where matched evidence becomes available | Supported physical disposition or documented block |
-| Ongoing | Runtime, CanonFS, CI and contributor maintenance | Existing contracts remain reliable |
+| 1 | RFC-00D1 policy-profile depth on the current seed | Denial stays before host materialization. A fully denied directory export does not create its destination, a denied file export preserves existing bytes, and a partial export writes only admitted entries. No new profile names or interchange formats. |
+| 2 | Independent review of SCG-08 Phase 1 Gate 1 harness | Schema validations and smoke tests pass. This review does not authorize Gate 2. |
+| 3 | Record Gate 2 authorization criteria for SCG-08 | A formal maintainer decision exists before any large-scale run. |
+| 4 | Investigate one subsystem-specific ternary effect | One falsifiable bounded result, with the matched control named in advance. |
+| 5 | Revisit physical feasibility where matched evidence becomes available | Supported physical disposition or a documented block. |
+| Ongoing | Runtime, CanonFS, CI, and contributor maintenance | Existing contracts remain reliable. Platform CI on `120b8dc90` was still running sanitizer and macOS x86_64 GCC builds when this queue was refreshed; do not treat an in-progress run as a green `main`. |
+
+Retired from this queue on 2026-11-22: reconcile PRs #747, #748, and #750. All three were closed unmerged (#747 on 2026-11-13, #748 and #750 on 2026-11-15). Do not reopen them as the next action.
 
 ## Long-term research direction
 

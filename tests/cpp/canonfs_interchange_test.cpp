@@ -542,6 +542,10 @@ int main() {
                 "policy-denied export error should identify the export denial")) {
       return 1;
     }
+    if (!expect(!fs::exists(root / "denied.txt"),
+                "policy-denied file export must not create the destination")) {
+      return 1;
+    }
     export_options.policy_evaluator = {};
 
     t81::canonfs::ImportOptions denied_import_options;
@@ -612,6 +616,10 @@ int main() {
                 "import-only profile export should report explicit materialization denial")) {
       return 1;
     }
+    if (!expect(!fs::exists(root / "import-only-denied.txt"),
+                "import-only file export must not create the destination")) {
+      return 1;
+    }
 
     t81::canonfs::ImportOptions deny_all_import_options;
     deny_all_import_options.canonfs_root = import_options.canonfs_root;
@@ -668,6 +676,10 @@ int main() {
                     "policy-profile deny-all denies canonfs.export before host-side "
                     "materialization") != std::string::npos,
                 "deny-all profile export should report explicit materialization denial")) {
+      return 1;
+    }
+    if (!expect(!fs::exists(root / "deny-all-denied.txt"),
+                "deny-all file export must not create the destination")) {
       return 1;
     }
 
@@ -735,6 +747,83 @@ int main() {
     std::getline(golden_alpha, golden_alpha_text);
     golden_alpha.close();
     if (!expect(golden_alpha_text == "alpha", "golden example alpha payload mismatch")) {
+      return 1;
+    }
+
+    const fs::path denied_tree = root / "denied-golden-export";
+    t81::canonfs::ExportOptions import_only_tree = export_options;
+    import_only_tree.policy_profile = t81::canonfs::InterchangePolicyProfile::ImportOnly;
+    const auto denied_tree_export =
+        t81::canonfs::export_ref(golden_import.manifest_ref, denied_tree, import_only_tree);
+    if (!expect(!denied_tree_export.ok(), "import-only directory export should fail")) return 1;
+    if (!expect(denied_tree_export.policy_result == "denied",
+                "import-only directory export should be denied")) {
+      return 1;
+    }
+    if (!expect(denied_tree_export.materialized_paths.empty(),
+                "import-only directory export should materialize nothing")) {
+      return 1;
+    }
+    if (!expect(!fs::exists(denied_tree),
+                "import-only directory export must not create the destination")) {
+      return 1;
+    }
+
+    const fs::path policy_denied_tree = root / "policy-denied-golden-export";
+    t81::canonfs::ExportOptions policy_denied_tree_options = export_options;
+    policy_denied_tree_options.policy_evaluator =
+        [](std::string_view, std::string_view, std::string_view) {
+          return t81::canonfs::InterchangePolicyDecision{.allowed = false, .reason = "blocked"};
+        };
+    const auto policy_denied_tree_export = t81::canonfs::export_ref(
+        golden_import.manifest_ref, policy_denied_tree, policy_denied_tree_options);
+    if (!expect(!policy_denied_tree_export.ok(), "policy-denied directory export should fail")) {
+      return 1;
+    }
+    if (!expect(policy_denied_tree_export.materialized_paths.empty(),
+                "fully denied directory export should materialize nothing")) {
+      return 1;
+    }
+    if (!expect(!fs::exists(policy_denied_tree),
+                "fully denied directory export must not create the destination")) {
+      return 1;
+    }
+
+    const fs::path partial_tree = root / "partial-golden-export";
+    fs::create_directories(partial_tree / "nested", ec);
+    if (!expect(!ec, "partial export fixture directory create failed")) return 1;
+    {
+      std::ofstream keep(partial_tree / "nested" / "beta.txt", std::ios::binary | std::ios::trunc);
+      keep << "keep-beta";
+    }
+    t81::canonfs::ExportOptions partial_options = export_options;
+    partial_options.policy_evaluator =
+        [](std::string_view, std::string_view, std::string_view path) {
+          if (std::string(path).find("beta") != std::string::npos) {
+            return t81::canonfs::InterchangePolicyDecision{.allowed = false,
+                                                           .reason = "beta blocked"};
+          }
+          return t81::canonfs::InterchangePolicyDecision{.allowed = true, .reason = "allow"};
+        };
+    const auto partial_export =
+        t81::canonfs::export_ref(golden_import.manifest_ref, partial_tree, partial_options);
+    if (!expect(partial_export.policy_result == "partial",
+                "partial directory export should report partial")) {
+      return 1;
+    }
+    if (!expect(!partial_export.materialized_paths.empty(),
+                "partial directory export should materialize admitted paths")) {
+      return 1;
+    }
+    std::ifstream partial_alpha(partial_tree / "alpha.txt");
+    std::string partial_alpha_text;
+    std::getline(partial_alpha, partial_alpha_text);
+    partial_alpha.close();
+    if (!expect(partial_alpha_text == "alpha", "partial directory export should write alpha")) {
+      return 1;
+    }
+    if (!expect(read_file(partial_tree / "nested" / "beta.txt") == "keep-beta",
+                "partial directory export must preserve a denied existing file")) {
       return 1;
     }
 
