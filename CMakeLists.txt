@@ -739,6 +739,15 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   add_executable(t81_provider_contract_test
                  tests/cpp/provider_contract_test.cpp)
   target_link_libraries(t81_provider_contract_test PRIVATE t81_provider_adapters t81_provider t81_vm t81_core)
+  find_package(Python3 COMPONENTS Interpreter QUIET)
+  if(Python3_Interpreter_FOUND)
+    add_test(NAME t81_provider_schema_conformance_test
+      COMMAND ${Python3_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/ci/test_provider_schema_conformance.py)
+    set_tests_properties(t81_provider_schema_conformance_test PROPERTIES
+      ENVIRONMENT "T81_PROVIDER_CONTRACT_TEST_BIN=$<TARGET_FILE:t81_provider_contract_test>"
+      TIMEOUT 60)
+  endif()
 
   add_executable(t81_vm_axreport_policy_deny_fail_closed_test
                  tests/cpp/vm_axreport_policy_deny_fail_closed_test.cpp)

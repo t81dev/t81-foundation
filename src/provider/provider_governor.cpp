@@ -1,6 +1,7 @@
 #include "provider/provider_governor.hpp"
 
 #include <algorithm>
+#include <bit>
 #include <chrono>
 #include <iomanip>
 #include <sstream>
@@ -200,6 +201,49 @@ std::string canon_ref_hex(const t81::canonfs::CanonRef& ref) {
 std::string ProviderGovernor::compute_policy_sha3_512(const t81::axion::Policy& policy) {
   std::ostringstream ss(std::ios::binary);
   policy.serialize(ss);
+
+  // M-03: Append a deterministic canonical suffix for Policy fields not covered by TLV v1
+  // Policy::serialize(), without mutating Policy::serialize() itself.
+  auto write_u8 = [&](std::uint8_t v) { ss.put(static_cast<char>(v)); };
+  auto write_u64 = [&](std::uint64_t v) {
+    for (int i = 0; i < 8; ++i) {
+      ss.put(static_cast<char>((v >> (i * 8)) & 0xFF));
+    }
+  };
+  auto write_opt_i64 = [&](const std::optional<std::int64_t>& v) {
+    write_u8(v.has_value() ? 1 : 0);
+    if (v.has_value()) write_u64(static_cast<std::uint64_t>(*v));
+  };
+  auto write_str = [&](const std::string& s) {
+    write_u64(static_cast<std::uint64_t>(s.size()));
+    ss.write(s.data(), static_cast<std::streamsize>(s.size()));
+  };
+
+  write_str("t81.policy.ext.v1");
+  write_opt_i64(policy.max_tensors);
+  write_opt_i64(policy.max_tensor_elements);
+  write_opt_i64(policy.max_symbolic_nodes);
+  write_opt_i64(policy.max_symbolic_graphs);
+  write_opt_i64(policy.max_infinite_forms);
+  write_u64(static_cast<std::uint64_t>(policy.allowed_ternary_model_hashes.size()));
+  for (const auto& h : policy.allowed_ternary_model_hashes) write_str(h);
+  write_u8(policy.ternary_weight_domain_check ? 1 : 0);
+  write_u8(policy.activation_ceiling_max_nonzero_fraction.has_value() ? 1 : 0);
+  if (policy.activation_ceiling_max_nonzero_fraction.has_value()) {
+    write_u64(std::bit_cast<std::uint64_t>(*policy.activation_ceiling_max_nonzero_fraction));
+  }
+  write_u8(policy.activation_ceiling_policy.has_value() ? 1 : 0);
+  if (policy.activation_ceiling_policy.has_value()) {
+    const auto& acp = *policy.activation_ceiling_policy;
+    write_u8(acp.max_nonzero_fraction.has_value() ? 1 : 0);
+    if (acp.max_nonzero_fraction.has_value()) {
+      write_u64(std::bit_cast<std::uint64_t>(*acp.max_nonzero_fraction));
+    }
+    write_u64(static_cast<std::uint64_t>(acp.mode_mask.size()));
+    for (const auto& m : acp.mode_mask) write_str(m);
+    write_str(acp.scope);
+  }
+
   return sha3_512_prefixed_str(ss.str());
 }
 
@@ -215,6 +259,11 @@ GovernedExecutionOutcome ProviderGovernor::execute(IAiProvider& provider,
   GovernedExecutionOutcome outcome;
   outcome.authorization_verdict = {t81::axion::VerdictKind::Deny, "not_evaluated"};
   outcome.provider_invoked = false;
+  // m-01: Populate active policy digest upfront so preflight denials also record it.
+  if (policy_engine_ && policy_engine_->active_policy()) {
+    outcome.authoritative_policy_sha3_512 =
+        compute_policy_sha3_512(*policy_engine_->active_policy());
+  }
 
   auto finalize_and_persist = [&]() -> GovernedExecutionOutcome {
     auto fail_persist = [&](std::string detail) -> GovernedExecutionOutcome {
@@ -612,10 +661,11 @@ std::string ProviderGovernor::project_to_rfc00d4_json(
 namespace {
 
 struct JsonVal {
-  enum class Kind { Null, Bool, Int, String, Array, Object };
+  enum class Kind { Null, Bool, Int, UInt, String, Array, Object };
   Kind kind{Kind::Null};
   bool b{false};
   std::int64_t i{0};
+  std::uint64_t u{0};
   std::string s;
   std::vector<JsonVal> arr;
   std::map<std::string, JsonVal> obj;
@@ -638,6 +688,42 @@ private:
            (src_[pos_] == ' ' || src_[pos_] == '\t' || src_[pos_] == '\n' || src_[pos_] == '\r')) {
       ++pos_;
     }
+  }
+
+  static void append_utf8(std::string& out, std::uint32_t cp) {
+    if (cp <= 0x7F) {
+      out.push_back(static_cast<char>(cp));
+    } else if (cp <= 0x7FF) {
+      out.push_back(static_cast<char>(0xC0 | ((cp >> 6) & 0x1F)));
+      out.push_back(static_cast<char>(0x80 | (cp & 0x3F)));
+    } else if (cp <= 0xFFFF) {
+      out.push_back(static_cast<char>(0xE0 | ((cp >> 12) & 0x0F)));
+      out.push_back(static_cast<char>(0x80 | ((cp >> 6) & 0x3F)));
+      out.push_back(static_cast<char>(0x80 | (cp & 0x3F)));
+    } else {
+      out.push_back(static_cast<char>(0xF0 | ((cp >> 18) & 0x07)));
+      out.push_back(static_cast<char>(0x80 | ((cp >> 12) & 0x3F)));
+      out.push_back(static_cast<char>(0x80 | ((cp >> 6) & 0x3F)));
+      out.push_back(static_cast<char>(0x80 | (cp & 0x3F)));
+    }
+  }
+
+  bool parse_hex4(std::uint32_t& code) {
+    if (pos_ + 4 > src_.size()) return false;
+    code = 0;
+    for (int k = 0; k < 4; ++k) {
+      char h = src_[pos_++];
+      code <<= 4;
+      if (h >= '0' && h <= '9')
+        code |= static_cast<std::uint32_t>(h - '0');
+      else if (h >= 'a' && h <= 'f')
+        code |= static_cast<std::uint32_t>(h - 'a' + 10);
+      else if (h >= 'A' && h <= 'F')
+        code |= static_cast<std::uint32_t>(h - 'A' + 10);
+      else
+        return false;
+    }
+    return true;
   }
 
   bool parse_string(std::string& out) {
@@ -673,21 +759,23 @@ private:
             out.push_back('\t');
             break;
           case 'u': {
-            if (pos_ + 4 > src_.size()) return false;
-            unsigned int code = 0;
-            for (int k = 0; k < 4; ++k) {
-              char h = src_[pos_++];
-              code <<= 4;
-              if (h >= '0' && h <= '9')
-                code |= static_cast<unsigned int>(h - '0');
-              else if (h >= 'a' && h <= 'f')
-                code |= static_cast<unsigned int>(h - 'a' + 10);
-              else if (h >= 'A' && h <= 'F')
-                code |= static_cast<unsigned int>(h - 'A' + 10);
-              else
+            std::uint32_t code = 0;
+            if (!parse_hex4(code)) return false;
+            // m-02: Handle UTF-16 surrogate pairs and encode full UTF-8.
+            if (code >= 0xD800 && code <= 0xDBFF) {
+              if (pos_ + 2 > src_.size() || src_[pos_] != '\\' || src_[pos_ + 1] != 'u') {
                 return false;
+              }
+              pos_ += 2;
+              std::uint32_t low = 0;
+              if (!parse_hex4(low) || low < 0xDC00 || low > 0xDFFF) return false;
+              const std::uint32_t cp = 0x10000u + (((code - 0xD800u) << 10) | (low - 0xDC00u));
+              append_utf8(out, cp);
+            } else if (code >= 0xDC00 && code <= 0xDFFF) {
+              return false;  // lone low surrogate
+            } else {
+              append_utf8(out, code);
             }
-            out.push_back(static_cast<char>(code & 0xFF));
             break;
           }
           default:
@@ -700,15 +788,31 @@ private:
     return false;
   }
 
-  bool parse_int(std::int64_t& out) {
+  // M-01 + m-02: Support both signed int64 and unsigned uint64 (e.g. UINT64_MAX seed)
+  // while rejecting RFC 8259-invalid leading zeros (00, 01, -01).
+  bool parse_number(JsonVal& out) {
     const std::size_t start = pos_;
-    if (pos_ < src_.size() && src_[pos_] == '-') ++pos_;
+    const bool negative = (pos_ < src_.size() && src_[pos_] == '-');
+    if (negative) ++pos_;
     if (pos_ >= src_.size() || src_[pos_] < '0' || src_[pos_] > '9') return false;
-    while (pos_ < src_.size() && src_[pos_] >= '0' && src_[pos_] <= '9') ++pos_;
+    if (src_[pos_] == '0') {
+      ++pos_;
+      if (pos_ < src_.size() && src_[pos_] >= '0' && src_[pos_] <= '9') {
+        return false;  // RFC 8259 forbids leading zeros
+      }
+    } else {
+      while (pos_ < src_.size() && src_[pos_] >= '0' && src_[pos_] <= '9') ++pos_;
+    }
+    const std::string token(src_.substr(start, pos_ - start));
     try {
       std::size_t consumed = 0;
-      const std::string token(src_.substr(start, pos_ - start));
-      out = std::stoll(token, &consumed, 10);
+      if (negative) {
+        out.kind = JsonVal::Kind::Int;
+        out.i = std::stoll(token, &consumed, 10);
+        return consumed == token.size();
+      }
+      out.kind = JsonVal::Kind::UInt;
+      out.u = std::stoull(token, &consumed, 10);
       return consumed == token.size();
     } catch (...) {
       return false;
@@ -795,8 +899,7 @@ private:
       return true;
     }
     if (c == '-' || (c >= '0' && c <= '9')) {
-      out.kind = JsonVal::Kind::Int;
-      return parse_int(out.i);
+      return parse_number(out);
     }
     return false;
   }
@@ -840,8 +943,17 @@ EvidenceVerificationResult ProviderGovernor::verify_evidence_json(
     return res;
   }
 
-  const auto* trit = get_field(root, "trit", JsonVal::Kind::Int);
-  if (!trit || (trit->i != -1 && trit->i != 0 && trit->i != 1)) {
+  auto trit_it = root.obj.find("trit");
+  bool trit_ok = false;
+  if (trit_it != root.obj.end()) {
+    if (trit_it->second.kind == JsonVal::Kind::Int && trit_it->second.i == -1) {
+      trit_ok = true;
+    } else if (trit_it->second.kind == JsonVal::Kind::UInt &&
+               (trit_it->second.u == 0 || trit_it->second.u == 1)) {
+      trit_ok = true;
+    }
+  }
+  if (!trit_ok) {
     res.valid = false;
     res.reason = "invalid or missing trit domain {-1, 0, 1}";
     return res;

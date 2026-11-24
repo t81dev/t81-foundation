@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <string>
 #include <vector>
@@ -503,7 +504,24 @@ void test_at07_policy_digest_provenance_and_d4_authority() {
   T81_REQUIRE(ok_out.evidence_json.find("\"policy_sha3_512\":\"" + sha_a_1 + "\"") !=
               std::string::npos);
 
-  // 3. D4: Permissive VM-internal policy on T81VmProvider CANNOT weaken or bypass strict
+  // 3. M-03: Two policies differing only in TLV-v1-omitted fields produce distinct digests
+  t81::axion::Policy policy_a_ext = policy_a;
+  policy_a_ext.allowed_ternary_model_hashes.push_back("sha3-512:" + std::string(128, '9'));
+  T81_REQUIRE(ProviderGovernor::compute_policy_sha3_512(policy_a_ext) != sha_a_1);
+
+  // 4. m-01: Preflight denial (CapabilityMismatch) still records active authoritative policy digest
+  ProviderRequest unsupported_req;
+  unsupported_req.operation = "unsupported.op";
+  unsupported_req.artifact = {"prog-55", "tisc-v1.9.0", prog_hash, std::nullopt};
+  unsupported_req.input = {"application/x-t81-tisc", prog, std::nullopt};
+  auto preflight_out = gov_a.execute(vm_provider, unsupported_req, empty_ctx, cancel);
+  T81_REQUIRE(!preflight_out.result.ok);
+  T81_REQUIRE(preflight_out.result.failure_code == FailureCode::CapabilityMismatch);
+  T81_REQUIRE(preflight_out.authoritative_policy_sha3_512 == sha_a_1);
+  T81_REQUIRE(preflight_out.evidence_json.find("\"policy_sha3_512\":\"" + sha_a_1 + "\"") !=
+              std::string::npos);
+
+  // 5. D4: Permissive VM-internal policy on T81VmProvider CANNOT weaken or bypass strict
   // ProviderGovernor
   auto engine_strict = std::make_shared<t81::axion::PolicyEngine>(policy_b);
   ProviderGovernor gov_strict(engine_strict, canonfs);
@@ -731,6 +749,48 @@ void test_at10_structural_json_spoofing_rejection() {
   // Malformed JSON must also be rejected
   auto bad_json = ProviderGovernor::verify_evidence_json("{not valid json", "");
   T81_REQUIRE(!bad_json.valid);
+
+  // m-02: RFC 8259-invalid leading zeros rejected
+  const std::string leading_zero =
+      "{\"schema\":\"t81.provider.evidence.v1\",\"trit\":01,"
+      "\"provider\":{\"execution_class\":\"deterministic\"},"
+      "\"challengeability\":{\"replayable\":true,\"verification_mode\":\"bit_exact_replay\"}}";
+  T81_REQUIRE(!ProviderGovernor::verify_evidence_json(leading_zero, "").valid);
+
+  // m-02: Valid UTF-8 \uXXXX escape (including surrogate pair) parses cleanly
+  const std::string valid_unicode =
+      "{\"schema\":\"t81.provider.evidence.v1\",\"trit\":1,"
+      "\"authority\":{\"principal_id\":\"agent-\\u03B1-\\uD83D\\uDE00\"},"
+      "\"provider\":{\"execution_class\":\"deterministic\"},"
+      "\"challengeability\":{\"replayable\":true,\"verification_mode\":\"bit_exact_replay\"}}";
+  T81_REQUIRE(ProviderGovernor::verify_evidence_json(valid_unicode, "").valid);
+
+  // M-01: UINT64_MAX seed round-trips through ControlledProvider + verify_persisted_evidence()
+  const std::string model_hash = "sha3-512:" + std::string(128, '7');
+  t81::axion::Policy allow_max_seed;
+  allow_max_seed.tier = 1;
+  allow_max_seed.allowed_tensor_hashes.push_back(model_hash);
+  auto policy_engine = std::make_shared<t81::axion::PolicyEngine>(allow_max_seed);
+  std::shared_ptr<t81::canonfs::Driver> canonfs = t81::canonfs::make_in_memory_driver();
+  ProviderGovernor governor(policy_engine, canonfs);
+  ControlledProvider ctrl;
+  ProviderRequest req;
+  req.operation = "text.generate";
+  req.artifact = {"max-seed-rng", "mt19937_64", model_hash, std::nullopt};
+  req.input = {"text/plain;charset=utf-8", to_bytes("seed-test"), std::nullopt};
+  req.parameters["tokens"] = "4";
+  ExecutionContext ctx;
+  ctx.principal_id = "agent-m01";
+  ctx.user_consent_verified = true;
+  ctx.seed = std::numeric_limits<std::uint64_t>::max();
+  CancellationToken cancel;
+
+  auto max_out = governor.execute(ctrl, req, ctx, cancel);
+  T81_REQUIRE(max_out.result.ok);
+  T81_REQUIRE(max_out.evidence_ref.has_value());
+  T81_REQUIRE(ProviderGovernor::verify_persisted_evidence(*canonfs, *max_out.evidence_ref,
+                                                          max_out.evidence_sha3_512)
+                  .valid);
 }
 
 void dump_live_json_for_schema_validation() {

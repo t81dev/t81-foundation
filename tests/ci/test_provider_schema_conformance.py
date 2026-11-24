@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import unittest
@@ -66,6 +67,12 @@ def validate_against_schema(instance: Any, schema: dict[str, Any], path: str = "
 
 class ProviderSchemaConformanceTest(unittest.TestCase):
     def _find_binary(self) -> Path:
+        env_bin = os.environ.get("T81_PROVIDER_CONTRACT_TEST_BIN")
+        if env_bin:
+            p = Path(env_bin)
+            if p.exists():
+                return p
+            self.fail(f"T81_PROVIDER_CONTRACT_TEST_BIN does not exist: {env_bin}")
         candidates = [
             REPO_ROOT / "build/t81_provider_contract_test",
             REPO_ROOT / "build/t81_provider_contract_test.exe",
