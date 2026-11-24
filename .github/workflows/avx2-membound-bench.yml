@@ -96,6 +96,19 @@ jobs:
             --benchmark_out=build/avx2-artifacts/avx2_membound.json
           cat build/avx2-artifacts/avx2_membound.json
 
+      - name: Run H06-MEM-04 multi-batch regime benchmark & regression gate
+        run: |
+          set -euo pipefail
+          cmake --build build --target t81_bench_h06_mem_04 -j "$(nproc)"
+          ./build/benchmarks/t81_bench_h06_mem_04 \
+            --manifest benchmarks/h06_mem_04/manifests/xeon_6975p_avx2.json \
+            --output build/avx2-artifacts/h06_mem_04_xeon.json \
+            --smoke
+          python3 scripts/eval_h06_mem_04.py \
+            --results build/avx2-artifacts/h06_mem_04_xeon.json \
+            --markdown-out build/avx2-artifacts/h06_mem_04_xeon.md
+          cat build/avx2-artifacts/h06_mem_04_xeon.md >> "${GITHUB_STEP_SUMMARY}"
+
       - name: Upload native x86_64 AVX2 JSON artifact
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -104,4 +117,6 @@ jobs:
           path: |
             build/avx2-artifacts/avx2_membound.json
             build/avx2-artifacts/host_cpu.txt
+            build/avx2-artifacts/h06_mem_04_xeon.json
+            build/avx2-artifacts/h06_mem_04_xeon.md
           if-no-files-found: error
