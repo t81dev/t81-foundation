@@ -271,11 +271,6 @@ bool arg_int64_strict(const JsonNode& obj, const std::string& key, int64_t& out,
   }
 }
 
-int64_t arg_int64(const JsonNode& obj, const std::string& key, int64_t default_val = 0) {
-  int64_t val = default_val;
-  return arg_int64_strict(obj, key, val, default_val) ? val : default_val;
-}
-
 bool env_compact_mode() {
   const char* v = std::getenv("T81_MCP_COMPACT");
   return v != nullptr && (std::strcmp(v, "1") == 0 || std::strcmp(v, "true") == 0);
