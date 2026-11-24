@@ -1,0 +1,81 @@
+# .github/workflows/avx2-membound-bench.yml
+#
+# Native x86-64 AVX2 Memory-Bound Dual-Rail Calibration (BM_MemBound64_*)
+#
+# Manually triggered (workflow_dispatch) on ubuntu-24.04 (native x86_64) to
+# compile benchmark_runner with `-O3 -march=native` so `__x86_64__ && __AVX2__`
+# kernels in benchmarks/BM_DualRailMemoryBound.cpp are actively executed and
+# exported as structured JSON alongside host CPU metadata.
+
+name: Native x86-64 AVX2 MemBound Benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      benchmark_filter:
+        description: "Google Benchmark filter regex"
+        required: false
+        default: "BM_MemBound64_(DualRail_Dense|SBDR128_SIMD|INT8_Sparse128)"
+      benchmark_min_time:
+        description: "Minimum time per benchmark case"
+        required: false
+        default: "0.2s"
+
+permissions:
+  contents: read
+
+jobs:
+  avx2-membound-bench:
+    name: "bench / native-x86_64-avx2 / ubuntu-24.04"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
+
+      - name: Verify native x86_64 hardware and AVX2 support
+        run: |
+          set -euo pipefail
+          ARCH="$(uname -m)"
+          echo "uname -m: ${ARCH}"
+          test "${ARCH}" = "x86_64"
+          grep -m1 -E "model name" /proc/cpuinfo || true
+          grep -m1 -w "avx2" /proc/cpuinfo > /dev/null
+          echo "AVX2_VERIFIED=1"
+          mkdir -p build/avx2-artifacts
+          {
+            echo "uname: $(uname -a)"
+            grep -m1 -E "model name" /proc/cpuinfo || true
+            lscpu || true
+          } > build/avx2-artifacts/host_cpu.txt
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ninja-build
+
+      - name: Configure and build benchmark_runner with -O3 -march=native
+        env:
+          T81_BENCH_CXX_FLAGS: "-O3 -march=native -DNDEBUG"
+        run: bash scripts/ci/build_benchmark_runner.sh
+
+      - name: Run native x86_64 AVX2 BM_MemBound64 benchmarks
+        run: |
+          set -euo pipefail
+          ./build/benchmarks/benchmark_runner \
+            --benchmark_filter="${{ github.event.inputs.benchmark_filter || 'BM_MemBound64_(DualRail_Dense|SBDR128_SIMD|INT8_Sparse128)' }}" \
+            --benchmark_min_time="${{ github.event.inputs.benchmark_min_time || '0.2s' }}" \
+            --benchmark_format=json \
+            --benchmark_out=build/avx2-artifacts/avx2_membound.json
+          cat build/avx2-artifacts/avx2_membound.json
+
+      - name: Upload native x86_64 AVX2 JSON artifact
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: avx2-membound-bench-json
+          path: |
+            build/avx2-artifacts/avx2_membound.json
+            build/avx2-artifacts/host_cpu.txt
+          if-no-files-found: error

@@ -12,7 +12,7 @@ integrated, production-ready, or comparatively superior. Begin with the
 - `experiments/`: bounded experimental implementations, controls, and raw results. Build flags and portability differ by experiment.
 - `experimental/`: research implementations, including the historical `experimental/hanoi/` import. Historical arithmetic is evidence to test, not a correctness oracle.
 - `benchmarks/`: performance workloads; measured results require equivalent baselines and explicit conditions.
-- `examples/`: runnable examples and experiment adapters; their existence does not promote an interface to the deterministic core.
+- `examples/`: runnable examples and experiment adapters (including `examples/research/agent-receipt-sidecar/` with native MCP parity tests and the receipt-backed `routing_ledger.py`); their existence does not promote an interface to the deterministic core.
 
 ## Implementation and contracts
 
@@ -38,8 +38,8 @@ The root [support guide](SUPPORT_TAXONOMY.md) explains this distinction.
 
 - `CMakeLists.txt`, `cmake/`, `CMakePresets.json`: authoritative out-of-source CMake build configuration.
 - `tests/`: unit, contract, conformance, fixture, and regression tests. Enabled targets depend on CMake options.
-- `scripts/`, `.github/`: validation tooling, workflows, and contributor templates. Workflow definitions are not evidence that a particular run passed.
-- `docs/`: research, governance, references, maintenance handoff, and historical records.
+- `scripts/`, `.github/`: validation tooling, workflows, and contributor templates (including `scripts/ci/verify_fast.sh` and the ratcheting Agent Synthesis Gate `scripts/ci/check_agent_synthesis_gate.py`). Workflow definitions are not evidence that a particular run passed.
+- `docs/`: research, governance, references, maintenance handoff, and historical records (including `docs/ai-context/` operational ledgers and `docs/research/proposals/`).
 - `archive/`: consolidated historical development, product, OpenClaw skill wrapper, and market material (`customer_tools/`, `development_tests/`, `execution_reports/`, `market-demos/`, `market_analysis/`, `skills/`, `strategic_docs/`). These names and documents do not establish validated customer, performance, or security capabilities.
 - `artifacts/` and `examples/legacy-root-samples/`: recorded/generated material and relocated legacy root sample records; inspect provenance before treating it as reproducible evidence.
 - `third_party/`: external dependencies. Some dependencies are fetched during configuration; see [build instructions](CONTRIBUTING.md).

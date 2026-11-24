@@ -1,6 +1,7 @@
 #include "internal/tensor_helpers.hpp"
 
 #include <algorithm>
+#include <atomic>
 #include <bit>
 #include <cmath>
 #include <cstddef>
@@ -1416,7 +1417,52 @@ struct CachedDualRailRhs {
   std::size_t W64 = 0;
   std::vector<std::uint64_t> Bp;
   std::vector<std::uint64_t> Bn;
+  // Regime-aware 128-trit SIMD sparse stream (populated when K%128==0 and sparsity >= 50%).
+  bool use_sparse128 = false;
+  std::uint64_t sp_blocks_skipped = 0;
+  std::vector<std::uint32_t> sp_col_offsets;
+  std::vector<std::uint16_t> sp_blk_idx;
+  std::vector<std::uint64_t> sp_bp;
+  std::vector<std::uint64_t> sp_bn;
 };
+
+void build_sparse128_if_beneficial(CachedDualRailRhs& rhs) {
+  if (rhs.W64 < 2 || (rhs.W64 % 2) != 0) return;
+  const std::size_t B128 = rhs.W64 / 2;
+  const std::size_t total_blocks = rhs.N * B128;
+  std::size_t active = 0;
+  for (std::size_t n = 0; n < rhs.N; ++n) {
+    const std::uint64_t* bp = rhs.Bp.data() + n * rhs.W64;
+    const std::uint64_t* bn = rhs.Bn.data() + n * rhs.W64;
+    for (std::size_t b = 0; b < B128; ++b) {
+      if ((bp[2 * b] | bn[2 * b] | bp[2 * b + 1] | bn[2 * b + 1]) != 0ULL) ++active;
+    }
+  }
+  // H06-MEM-02 threshold: route to 128-trit SIMD sparse when block sparsity >= 50%.
+  if (active * 2 > total_blocks) return;
+  rhs.use_sparse128 = true;
+  rhs.sp_blocks_skipped = static_cast<std::uint64_t>(total_blocks - active);
+  rhs.sp_col_offsets.resize(rhs.N + 1, 0);
+  rhs.sp_blk_idx.reserve(active);
+  rhs.sp_bp.reserve(active * 2);
+  rhs.sp_bn.reserve(active * 2);
+  for (std::size_t n = 0; n < rhs.N; ++n) {
+    rhs.sp_col_offsets[n] = static_cast<std::uint32_t>(rhs.sp_blk_idx.size());
+    const std::uint64_t* bp = rhs.Bp.data() + n * rhs.W64;
+    const std::uint64_t* bn = rhs.Bn.data() + n * rhs.W64;
+    for (std::size_t b = 0; b < B128; ++b) {
+      const std::uint64_t p0 = bp[2 * b], n0 = bn[2 * b];
+      const std::uint64_t p1 = bp[2 * b + 1], n1 = bn[2 * b + 1];
+      if ((p0 | n0 | p1 | n1) == 0ULL) continue;
+      rhs.sp_blk_idx.push_back(static_cast<std::uint16_t>(b));
+      rhs.sp_bp.push_back(p0);
+      rhs.sp_bp.push_back(p1);
+      rhs.sp_bn.push_back(n0);
+      rhs.sp_bn.push_back(n1);
+    }
+  }
+  rhs.sp_col_offsets[rhs.N] = static_cast<std::uint32_t>(rhs.sp_blk_idx.size());
+}
 
 class CanonDualRailRhsCache {
 public:
@@ -1493,9 +1539,7 @@ std::optional<t81::T729DynamicTensor> try_decode_sbdr1t2d_and_cache(
   built->Bp.assign(total_words, 0ULL);
   built->Bn.assign(total_words, 0ULL);
 
-  std::vector<t81::core::detail::DFixed> fixed_vals(K * N, t81::core::detail::DFixed::zero());
-  const auto df_pos = t81::core::detail::DFixed::one();
-  const auto df_neg = -t81::core::detail::DFixed::one();
+  std::vector<float> float_vals(K * N, 0.0f);
 
   std::size_t payload_off = header_bytes;
   for (std::size_t m = 0; m < mask_words; ++m) {
@@ -1518,20 +1562,22 @@ std::optional<t81::T729DynamicTensor> try_decode_sbdr1t2d_and_cache(
       for (std::size_t k = k_base; k < k_lim; ++k) {
         const std::uint64_t bit = 1ULL << (k - k_base);
         if ((wp & bit) != 0ULL) {
-          fixed_vals[k * N + col] = df_pos;
+          float_vals[k * N + col] = 1.0f;
         } else if ((wn & bit) != 0ULL) {
-          fixed_vals[k * N + col] = df_neg;
+          float_vals[k * N + col] = -1.0f;
         }
       }
       bits &= (bits - 1ULL);
     }
   }
 
+  build_sparse128_if_beneficial(*built);
   if (!hash_text.empty()) {
     canon_dualrail_rhs_cache().put(hash_text, built);
   }
-  auto tensor = t81::T729DynamicTensor::from_canonical_fixed(
-      {static_cast<int>(K), static_cast<int>(N)}, std::move(fixed_vals));
+  auto tensor = t81::T729DynamicTensor::from_host_float_data(
+      {static_cast<int>(K), static_cast<int>(N)}, std::move(float_vals),
+      t81::TensorNumericClass::ExactTrit);
   tensor.set_numeric_class(t81::TensorNumericClass::ExactTrit);
   return tensor;
 }
@@ -1540,6 +1586,21 @@ std::optional<t81::T729DynamicTensor> try_decode_sbdr1t2d_and_cache(
 // operands contain exact balanced-ternary values {-1.0f, 0.0f, +1.0f} and dimensions
 // exceed the SIMD amortization threshold. Falls back to t81::ops::matmul() on any
 // non-ternary float element with zero semantic change.
+std::atomic<std::uint64_t>& dualrail_dense_counter() {
+  static std::atomic<std::uint64_t> c{0};
+  return c;
+}
+
+std::atomic<std::uint64_t>& dualrail_sparse128_counter() {
+  static std::atomic<std::uint64_t> c{0};
+  return c;
+}
+
+std::atomic<std::uint64_t>& dualrail_sparse128_blocks_skipped_counter() {
+  static std::atomic<std::uint64_t> c{0};
+  return c;
+}
+
 bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
                                     const t81::T729DynamicTensor& rhs,
                                     std::string_view rhs_canon_hash, t81::T729DynamicTensor& out) {
@@ -1554,11 +1615,77 @@ bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
   const std::size_t W64 = (K + 63) / 64;
 
   std::vector<std::uint64_t> Ap(M * W64, 0ULL), An(M * W64, 0ULL);
+  const std::size_t full_words = K / 64;
+  (void)full_words;
   for (std::size_t m = 0; m < M; ++m) {
     const float* row = a_data.data() + m * K;
     std::uint64_t* dp = Ap.data() + m * W64;
     std::uint64_t* dn = An.data() + m * W64;
-    for (std::size_t k = 0; k < K; ++k) {
+    std::size_t w = 0;
+#if defined(__aarch64__) && defined(__ARM_NEON)
+    const float32x4_t vpos = vdupq_n_f32(1.0f);
+    const float32x4_t vneg = vdupq_n_f32(-1.0f);
+    const float32x4_t vzero_f = vdupq_n_f32(0.0f);
+    static constexpr std::uint8_t kBitWeights[16] = {1, 2, 4, 8, 16, 32, 64, 128,
+                                                     1, 2, 4, 8, 16, 32, 64, 128};
+    const uint8x16_t weights = vld1q_u8(kBitWeights);
+    for (; w < full_words; ++w) {
+      const float* p = row + w * 64;
+      uint8x16_t pm[4], nm[4];
+      uint32x4_t valid_all = vdupq_n_u32(0xFFFFFFFFu);
+      for (int c = 0; c < 4; ++c) {
+        const float* cp = p + c * 16;
+        uint32x4_t p0 = vceqq_f32(vld1q_f32(cp + 0), vpos);
+        uint32x4_t p1 = vceqq_f32(vld1q_f32(cp + 4), vpos);
+        uint32x4_t p2 = vceqq_f32(vld1q_f32(cp + 8), vpos);
+        uint32x4_t p3 = vceqq_f32(vld1q_f32(cp + 12), vpos);
+        uint32x4_t n0 = vceqq_f32(vld1q_f32(cp + 0), vneg);
+        uint32x4_t n1 = vceqq_f32(vld1q_f32(cp + 4), vneg);
+        uint32x4_t n2 = vceqq_f32(vld1q_f32(cp + 8), vneg);
+        uint32x4_t n3 = vceqq_f32(vld1q_f32(cp + 12), vneg);
+        uint32x4_t z0 = vceqq_f32(vld1q_f32(cp + 0), vzero_f);
+        uint32x4_t z1 = vceqq_f32(vld1q_f32(cp + 4), vzero_f);
+        uint32x4_t z2 = vceqq_f32(vld1q_f32(cp + 8), vzero_f);
+        uint32x4_t z3 = vceqq_f32(vld1q_f32(cp + 12), vzero_f);
+        valid_all = vandq_u32(valid_all, vorrq_u32(vorrq_u32(p0, n0), z0));
+        valid_all = vandq_u32(valid_all, vorrq_u32(vorrq_u32(p1, n1), z1));
+        valid_all = vandq_u32(valid_all, vorrq_u32(vorrq_u32(p2, n2), z2));
+        valid_all = vandq_u32(valid_all, vorrq_u32(vorrq_u32(p3, n3), z3));
+        const uint8x16_t pb = vcombine_u8(vmovn_u16(vcombine_u16(vmovn_u32(p0), vmovn_u32(p1))),
+                                          vmovn_u16(vcombine_u16(vmovn_u32(p2), vmovn_u32(p3))));
+        const uint8x16_t nb = vcombine_u8(vmovn_u16(vcombine_u16(vmovn_u32(n0), vmovn_u32(n1))),
+                                          vmovn_u16(vcombine_u16(vmovn_u32(n2), vmovn_u32(n3))));
+        pm[c] = vandq_u8(pb, weights);
+        nm[c] = vandq_u8(nb, weights);
+      }
+      if (vminvq_u32(valid_all) == 0u) return false;
+      const uint8x16_t pq = vpaddq_u8(vpaddq_u8(pm[0], pm[1]), vpaddq_u8(pm[2], pm[3]));
+      const uint8x16_t nq = vpaddq_u8(vpaddq_u8(nm[0], nm[1]), vpaddq_u8(nm[2], nm[3]));
+      dp[w] = vgetq_lane_u64(vreinterpretq_u64_u8(vpaddq_u8(pq, pq)), 0);
+      dn[w] = vgetq_lane_u64(vreinterpretq_u64_u8(vpaddq_u8(nq, nq)), 0);
+    }
+#elif defined(__AVX2__)
+    const __m256 vpos = _mm256_set1_ps(1.0f);
+    const __m256 vneg = _mm256_set1_ps(-1.0f);
+    const __m256 vzero_f = _mm256_setzero_ps();
+    for (; w < full_words; ++w) {
+      std::uint64_t pm = 0, nm = 0;
+      const float* p = row + w * 64;
+      for (int c = 0; c < 8; ++c) {
+        const __m256 vf = _mm256_loadu_ps(p + c * 8);
+        const __m256 eqp = _mm256_cmp_ps(vf, vpos, _CMP_EQ_OQ);
+        const __m256 eqn = _mm256_cmp_ps(vf, vneg, _CMP_EQ_OQ);
+        const __m256 eqz = _mm256_cmp_ps(vf, vzero_f, _CMP_EQ_OQ);
+        const int valid = _mm256_movemask_ps(_mm256_or_ps(_mm256_or_ps(eqp, eqn), eqz));
+        if (valid != 0xFF) return false;
+        pm |= static_cast<std::uint64_t>(_mm256_movemask_ps(eqp)) << (c * 8);
+        nm |= static_cast<std::uint64_t>(_mm256_movemask_ps(eqn)) << (c * 8);
+      }
+      dp[w] = pm;
+      dn[w] = nm;
+    }
+#endif
+    for (std::size_t k = w * 64; k < K; ++k) {
       const float v = row[k];
       if (v == 1.0f) {
         dp[k >> 6] |= (1ULL << (k & 63));
@@ -1596,6 +1723,7 @@ bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
         }
       }
     }
+    build_sparse128_if_beneficial(*built);
     if (!rhs_canon_hash.empty()) {
       canon_dualrail_rhs_cache().put(rhs_canon_hash, built);
     }
@@ -1604,156 +1732,200 @@ bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
   const auto& Bp = cached_rhs->Bp;
   const auto& Bn = cached_rhs->Bn;
 
-  out = t81::T729DynamicTensor({static_cast<int>(M), static_cast<int>(N)});
-  float* c_data = out.data().data();
+  std::vector<float> c_vec(M * N, 0.0f);
+  float* c_data = c_vec.data();
 
-  std::vector<std::size_t> active_pairs;
-  active_pairs.reserve(W64 / 2);
-  std::vector<std::size_t> active_words;
-  active_words.reserve(W64);
-
-  for (std::size_t m = 0; m < M; ++m) {
-    const std::uint64_t* ap = Ap.data() + m * W64;
-    const std::uint64_t* an = An.data() + m * W64;
-
-    // Primitive #3: Pre-collect active non-zero 128-trit blocks once per row (O(W64)).
-    // Zero branch mispredictions in the N loop; skips empty MoE/ReLU2 activation blocks.
-    active_pairs.clear();
-    active_words.clear();
-    std::size_t w_scan = 0;
-    for (; w_scan + 2 <= W64; w_scan += 2) {
-      if ((ap[w_scan] | an[w_scan] | ap[w_scan + 1] | an[w_scan + 1]) != 0ULL) {
-        active_pairs.push_back(w_scan);
-        if ((ap[w_scan] | an[w_scan]) != 0ULL) active_words.push_back(w_scan);
-        if ((ap[w_scan + 1] | an[w_scan + 1]) != 0ULL) active_words.push_back(w_scan + 1);
-      }
-    }
-    const bool has_tail = (w_scan < W64) && ((ap[w_scan] | an[w_scan]) != 0ULL);
-    if (has_tail) active_words.push_back(w_scan);
-
-    if (active_words.empty()) {
-      std::fill(c_data + m * N, c_data + (m + 1) * N, 0.0f);
-      continue;
-    }
-
-    std::size_t n = 0;
+  if (cached_rhs->use_sparse128) {
+    for (std::size_t m = 0; m < M; ++m) {
+      const std::uint64_t* ap = Ap.data() + m * W64;
+      const std::uint64_t* an = An.data() + m * W64;
+      for (std::size_t n = 0; n < N; ++n) {
+        const std::uint32_t begin = cached_rhs->sp_col_offsets[n];
+        const std::uint32_t end = cached_rhs->sp_col_offsets[n + 1];
 #if defined(__aarch64__) && defined(__ARM_NEON)
-    for (; n + 4 <= N; n += 4) {
-      const std::uint64_t* bp0 = Bp.data() + (n + 0) * W64;
-      const std::uint64_t* bn0 = Bn.data() + (n + 0) * W64;
-      const std::uint64_t* bp1 = Bp.data() + (n + 1) * W64;
-      const std::uint64_t* bn1 = Bn.data() + (n + 1) * W64;
-      const std::uint64_t* bp2 = Bp.data() + (n + 2) * W64;
-      const std::uint64_t* bn2 = Bn.data() + (n + 2) * W64;
-      const std::uint64_t* bp3 = Bp.data() + (n + 3) * W64;
-      const std::uint64_t* bn3 = Bn.data() + (n + 3) * W64;
-
-      uint16x8_t p0 = vdupq_n_u16(0), n0 = vdupq_n_u16(0);
-      uint16x8_t p1 = vdupq_n_u16(0), n1 = vdupq_n_u16(0);
-      uint16x8_t p2 = vdupq_n_u16(0), n2 = vdupq_n_u16(0);
-      uint16x8_t p3 = vdupq_n_u16(0), n3 = vdupq_n_u16(0);
-
-      for (const std::size_t w : active_pairs) {
-        const uint8x16_t avp = vreinterpretq_u8_u64(vld1q_u64(ap + w));
-        const uint8x16_t avn = vreinterpretq_u8_u64(vld1q_u64(an + w));
-        auto acc = [&](const std::uint64_t* bp, const std::uint64_t* bn, uint16x8_t& pa,
-                       uint16x8_t& na) {
-          const uint8x16_t bvp = vreinterpretq_u8_u64(vld1q_u64(bp + w));
-          const uint8x16_t bvn = vreinterpretq_u8_u64(vld1q_u64(bn + w));
-          pa = vpadalq_u8(pa, vcntq_u8(vorrq_u8(vandq_u8(avp, bvp), vandq_u8(avn, bvn))));
-          na = vpadalq_u8(na, vcntq_u8(vorrq_u8(vandq_u8(avp, bvn), vandq_u8(avn, bvp))));
-        };
-        acc(bp0, bn0, p0, n0);
-        acc(bp1, bn1, p1, n1);
-        acc(bp2, bn2, p2, n2);
-        acc(bp3, bn3, p3, n3);
-      }
-
-      std::int32_t s0 =
-          static_cast<std::int32_t>(vaddlvq_u16(p0)) - static_cast<std::int32_t>(vaddlvq_u16(n0));
-      std::int32_t s1 =
-          static_cast<std::int32_t>(vaddlvq_u16(p1)) - static_cast<std::int32_t>(vaddlvq_u16(n1));
-      std::int32_t s2 =
-          static_cast<std::int32_t>(vaddlvq_u16(p2)) - static_cast<std::int32_t>(vaddlvq_u16(n2));
-      std::int32_t s3 =
-          static_cast<std::int32_t>(vaddlvq_u16(p3)) - static_cast<std::int32_t>(vaddlvq_u16(n3));
-      if (has_tail) {
-        const std::size_t w = w_scan;
-        s0 += std::popcount((ap[w] & bp0[w]) | (an[w] & bn0[w])) -
-              std::popcount((ap[w] & bn0[w]) | (an[w] & bp0[w]));
-        s1 += std::popcount((ap[w] & bp1[w]) | (an[w] & bn1[w])) -
-              std::popcount((ap[w] & bn1[w]) | (an[w] & bp1[w]));
-        s2 += std::popcount((ap[w] & bp2[w]) | (an[w] & bn2[w])) -
-              std::popcount((ap[w] & bn2[w]) | (an[w] & bp2[w]));
-        s3 += std::popcount((ap[w] & bp3[w]) | (an[w] & bn3[w])) -
-              std::popcount((ap[w] & bn3[w]) | (an[w] & bp3[w]));
-      }
-      c_data[m * N + n + 0] = static_cast<float>(s0);
-      c_data[m * N + n + 1] = static_cast<float>(s1);
-      c_data[m * N + n + 2] = static_cast<float>(s2);
-      c_data[m * N + n + 3] = static_cast<float>(s3);
-    }
-#elif defined(__AVX2__)
-    const __m256i low_mask = _mm256_set1_epi8(0x0F);
-    const __m256i pop_lut = _mm256_setr_epi8(0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4, 0, 1,
-                                             1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4);
-    const __m256i vzero = _mm256_setzero_si256();
-    auto avx2_popcnt_u8 = [&](__m256i v) -> __m256i {
-      const __m256i lo = _mm256_shuffle_epi8(pop_lut, _mm256_and_si256(v, low_mask));
-      const __m256i hi =
-          _mm256_shuffle_epi8(pop_lut, _mm256_and_si256(_mm256_srli_epi16(v, 4), low_mask));
-      return _mm256_sad_epu8(_mm256_add_epi8(lo, hi), vzero);
-    };
-    auto hsum_epi64 = [](__m256i v) -> std::int32_t {
-      alignas(32) std::uint64_t tmp[4];
-      _mm256_store_si256(reinterpret_cast<__m256i*>(tmp), v);
-      return static_cast<std::int32_t>(tmp[0] + tmp[1] + tmp[2] + tmp[3]);
-    };
-    for (; n < N; ++n) {
-      const std::uint64_t* bp = Bp.data() + n * W64;
-      const std::uint64_t* bn = Bn.data() + n * W64;
-      __m256i p_acc = vzero;
-      __m256i n_acc = vzero;
-      std::size_t w = 0;
-      for (; w + 4 <= W64; w += 4) {
-        if ((ap[w] | an[w] | ap[w + 1] | an[w + 1] | ap[w + 2] | an[w + 2] | ap[w + 3] |
-             an[w + 3]) == 0ULL) {
-          continue;
+        uint16x8_t p_acc = vdupq_n_u16(0);
+        uint16x8_t n_acc = vdupq_n_u16(0);
+        for (std::uint32_t idx = begin; idx < end; ++idx) {
+          const std::size_t w = static_cast<std::size_t>(cached_rhs->sp_blk_idx[idx]) * 2;
+          const uint8x16_t avp = vreinterpretq_u8_u64(vld1q_u64(ap + w));
+          const uint8x16_t avn = vreinterpretq_u8_u64(vld1q_u64(an + w));
+          const uint8x16_t bvp = vreinterpretq_u8_u64(
+              vld1q_u64(cached_rhs->sp_bp.data() + static_cast<std::size_t>(idx) * 2));
+          const uint8x16_t bvn = vreinterpretq_u8_u64(
+              vld1q_u64(cached_rhs->sp_bn.data() + static_cast<std::size_t>(idx) * 2));
+          p_acc = vpadalq_u8(p_acc, vcntq_u8(vorrq_u8(vandq_u8(avp, bvp), vandq_u8(avn, bvn))));
+          n_acc = vpadalq_u8(n_acc, vcntq_u8(vorrq_u8(vandq_u8(avp, bvn), vandq_u8(avn, bvp))));
         }
-        const __m256i avp = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(ap + w));
-        const __m256i avn = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(an + w));
-        const __m256i bvp = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(bp + w));
-        const __m256i bvn = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(bn + w));
-        const __m256i agree =
-            _mm256_or_si256(_mm256_and_si256(avp, bvp), _mm256_and_si256(avn, bvn));
-        const __m256i dis = _mm256_or_si256(_mm256_and_si256(avp, bvn), _mm256_and_si256(avn, bvp));
-        p_acc = _mm256_add_epi64(p_acc, avx2_popcnt_u8(agree));
-        n_acc = _mm256_add_epi64(n_acc, avx2_popcnt_u8(dis));
-      }
-      std::int32_t acc = hsum_epi64(p_acc) - hsum_epi64(n_acc);
-      for (; w < W64; ++w) {
-        if ((ap[w] | an[w]) == 0ULL) continue;
-        acc += std::popcount((ap[w] & bp[w]) | (an[w] & bn[w])) -
-               std::popcount((ap[w] & bn[w]) | (an[w] & bp[w]));
-      }
-      c_data[m * N + n] = static_cast<float>(acc);
-    }
+        c_data[m * N + n] = static_cast<float>(static_cast<std::int32_t>(vaddlvq_u16(p_acc)) -
+                                               static_cast<std::int32_t>(vaddlvq_u16(n_acc)));
+#else
+        std::int32_t acc = 0;
+        for (std::uint32_t idx = begin; idx < end; ++idx) {
+          const std::size_t w = static_cast<std::size_t>(cached_rhs->sp_blk_idx[idx]) * 2;
+          const std::uint64_t* bp = cached_rhs->sp_bp.data() + static_cast<std::size_t>(idx) * 2;
+          const std::uint64_t* bn = cached_rhs->sp_bn.data() + static_cast<std::size_t>(idx) * 2;
+          acc += std::popcount((ap[w] & bp[0]) | (an[w] & bn[0])) -
+                 std::popcount((ap[w] & bn[0]) | (an[w] & bp[0])) +
+                 std::popcount((ap[w + 1] & bp[1]) | (an[w + 1] & bn[1])) -
+                 std::popcount((ap[w + 1] & bn[1]) | (an[w + 1] & bp[1]));
+        }
+        c_data[m * N + n] = static_cast<float>(acc);
 #endif
-    for (; n < N; ++n) {
-      const std::uint64_t* bp = Bp.data() + n * W64;
-      const std::uint64_t* bn = Bn.data() + n * W64;
-      std::int32_t acc = 0;
-      for (const std::size_t w : active_words) {
-        acc += std::popcount((ap[w] & bp[w]) | (an[w] & bn[w])) -
-               std::popcount((ap[w] & bn[w]) | (an[w] & bp[w]));
       }
-      c_data[m * N + n] = static_cast<float>(acc);
+    }
+    dualrail_sparse128_counter().fetch_add(1, std::memory_order_relaxed);
+    dualrail_sparse128_blocks_skipped_counter().fetch_add(
+        static_cast<std::uint64_t>(M) * cached_rhs->sp_blocks_skipped, std::memory_order_relaxed);
+  } else {
+    dualrail_dense_counter().fetch_add(1, std::memory_order_relaxed);
+    std::vector<std::size_t> active_pairs;
+    active_pairs.reserve(W64 / 2);
+    std::vector<std::size_t> active_words;
+    active_words.reserve(W64);
+
+    for (std::size_t m = 0; m < M; ++m) {
+      const std::uint64_t* ap = Ap.data() + m * W64;
+      const std::uint64_t* an = An.data() + m * W64;
+
+      // Primitive #3: Pre-collect active non-zero 128-trit blocks once per row (O(W64)).
+      // Zero branch mispredictions in the N loop; skips empty MoE/ReLU2 activation blocks.
+      active_pairs.clear();
+      active_words.clear();
+      std::size_t w_scan = 0;
+      for (; w_scan + 2 <= W64; w_scan += 2) {
+        if ((ap[w_scan] | an[w_scan] | ap[w_scan + 1] | an[w_scan + 1]) != 0ULL) {
+          active_pairs.push_back(w_scan);
+          if ((ap[w_scan] | an[w_scan]) != 0ULL) active_words.push_back(w_scan);
+          if ((ap[w_scan + 1] | an[w_scan + 1]) != 0ULL) active_words.push_back(w_scan + 1);
+        }
+      }
+      const bool has_tail = (w_scan < W64) && ((ap[w_scan] | an[w_scan]) != 0ULL);
+      if (has_tail) active_words.push_back(w_scan);
+
+      if (active_words.empty()) {
+        std::fill(c_data + m * N, c_data + (m + 1) * N, 0.0f);
+        continue;
+      }
+
+      std::size_t n = 0;
+#if defined(__aarch64__) && defined(__ARM_NEON)
+      for (; n + 4 <= N; n += 4) {
+        const std::uint64_t* bp0 = Bp.data() + (n + 0) * W64;
+        const std::uint64_t* bn0 = Bn.data() + (n + 0) * W64;
+        const std::uint64_t* bp1 = Bp.data() + (n + 1) * W64;
+        const std::uint64_t* bn1 = Bn.data() + (n + 1) * W64;
+        const std::uint64_t* bp2 = Bp.data() + (n + 2) * W64;
+        const std::uint64_t* bn2 = Bn.data() + (n + 2) * W64;
+        const std::uint64_t* bp3 = Bp.data() + (n + 3) * W64;
+        const std::uint64_t* bn3 = Bn.data() + (n + 3) * W64;
+
+        uint16x8_t p0 = vdupq_n_u16(0), n0 = vdupq_n_u16(0);
+        uint16x8_t p1 = vdupq_n_u16(0), n1 = vdupq_n_u16(0);
+        uint16x8_t p2 = vdupq_n_u16(0), n2 = vdupq_n_u16(0);
+        uint16x8_t p3 = vdupq_n_u16(0), n3 = vdupq_n_u16(0);
+
+        for (const std::size_t w : active_pairs) {
+          const uint8x16_t avp = vreinterpretq_u8_u64(vld1q_u64(ap + w));
+          const uint8x16_t avn = vreinterpretq_u8_u64(vld1q_u64(an + w));
+          auto acc = [&](const std::uint64_t* bp, const std::uint64_t* bn, uint16x8_t& pa,
+                         uint16x8_t& na) {
+            const uint8x16_t bvp = vreinterpretq_u8_u64(vld1q_u64(bp + w));
+            const uint8x16_t bvn = vreinterpretq_u8_u64(vld1q_u64(bn + w));
+            pa = vpadalq_u8(pa, vcntq_u8(vorrq_u8(vandq_u8(avp, bvp), vandq_u8(avn, bvn))));
+            na = vpadalq_u8(na, vcntq_u8(vorrq_u8(vandq_u8(avp, bvn), vandq_u8(avn, bvp))));
+          };
+          acc(bp0, bn0, p0, n0);
+          acc(bp1, bn1, p1, n1);
+          acc(bp2, bn2, p2, n2);
+          acc(bp3, bn3, p3, n3);
+        }
+
+        std::int32_t s0 =
+            static_cast<std::int32_t>(vaddlvq_u16(p0)) - static_cast<std::int32_t>(vaddlvq_u16(n0));
+        std::int32_t s1 =
+            static_cast<std::int32_t>(vaddlvq_u16(p1)) - static_cast<std::int32_t>(vaddlvq_u16(n1));
+        std::int32_t s2 =
+            static_cast<std::int32_t>(vaddlvq_u16(p2)) - static_cast<std::int32_t>(vaddlvq_u16(n2));
+        std::int32_t s3 =
+            static_cast<std::int32_t>(vaddlvq_u16(p3)) - static_cast<std::int32_t>(vaddlvq_u16(n3));
+        if (has_tail) {
+          const std::size_t w = w_scan;
+          s0 += std::popcount((ap[w] & bp0[w]) | (an[w] & bn0[w])) -
+                std::popcount((ap[w] & bn0[w]) | (an[w] & bp0[w]));
+          s1 += std::popcount((ap[w] & bp1[w]) | (an[w] & bn1[w])) -
+                std::popcount((ap[w] & bn1[w]) | (an[w] & bp1[w]));
+          s2 += std::popcount((ap[w] & bp2[w]) | (an[w] & bn2[w])) -
+                std::popcount((ap[w] & bn2[w]) | (an[w] & bp2[w]));
+          s3 += std::popcount((ap[w] & bp3[w]) | (an[w] & bn3[w])) -
+                std::popcount((ap[w] & bn3[w]) | (an[w] & bp3[w]));
+        }
+        c_data[m * N + n + 0] = static_cast<float>(s0);
+        c_data[m * N + n + 1] = static_cast<float>(s1);
+        c_data[m * N + n + 2] = static_cast<float>(s2);
+        c_data[m * N + n + 3] = static_cast<float>(s3);
+      }
+#elif defined(__AVX2__)
+      const __m256i low_mask = _mm256_set1_epi8(0x0F);
+      const __m256i pop_lut = _mm256_setr_epi8(0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4, 0, 1,
+                                               1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4);
+      const __m256i vzero = _mm256_setzero_si256();
+      auto avx2_popcnt_u8 = [&](__m256i v) -> __m256i {
+        const __m256i lo = _mm256_shuffle_epi8(pop_lut, _mm256_and_si256(v, low_mask));
+        const __m256i hi =
+            _mm256_shuffle_epi8(pop_lut, _mm256_and_si256(_mm256_srli_epi16(v, 4), low_mask));
+        return _mm256_sad_epu8(_mm256_add_epi8(lo, hi), vzero);
+      };
+      auto hsum_epi64 = [](__m256i v) -> std::int32_t {
+        alignas(32) std::uint64_t tmp[4];
+        _mm256_store_si256(reinterpret_cast<__m256i*>(tmp), v);
+        return static_cast<std::int32_t>(tmp[0] + tmp[1] + tmp[2] + tmp[3]);
+      };
+      for (; n < N; ++n) {
+        const std::uint64_t* bp = Bp.data() + n * W64;
+        const std::uint64_t* bn = Bn.data() + n * W64;
+        __m256i p_acc = vzero;
+        __m256i n_acc = vzero;
+        std::size_t w = 0;
+        for (; w + 4 <= W64; w += 4) {
+          if ((ap[w] | an[w] | ap[w + 1] | an[w + 1] | ap[w + 2] | an[w + 2] | ap[w + 3] |
+               an[w + 3]) == 0ULL) {
+            continue;
+          }
+          const __m256i avp = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(ap + w));
+          const __m256i avn = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(an + w));
+          const __m256i bvp = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(bp + w));
+          const __m256i bvn = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(bn + w));
+          const __m256i agree =
+              _mm256_or_si256(_mm256_and_si256(avp, bvp), _mm256_and_si256(avn, bvn));
+          const __m256i dis =
+              _mm256_or_si256(_mm256_and_si256(avp, bvn), _mm256_and_si256(avn, bvp));
+          p_acc = _mm256_add_epi64(p_acc, avx2_popcnt_u8(agree));
+          n_acc = _mm256_add_epi64(n_acc, avx2_popcnt_u8(dis));
+        }
+        std::int32_t acc = hsum_epi64(p_acc) - hsum_epi64(n_acc);
+        for (; w < W64; ++w) {
+          if ((ap[w] | an[w]) == 0ULL) continue;
+          acc += std::popcount((ap[w] & bp[w]) | (an[w] & bn[w])) -
+                 std::popcount((ap[w] & bn[w]) | (an[w] & bp[w]));
+        }
+        c_data[m * N + n] = static_cast<float>(acc);
+      }
+#endif
+      for (; n < N; ++n) {
+        const std::uint64_t* bp = Bp.data() + n * W64;
+        const std::uint64_t* bn = Bn.data() + n * W64;
+        std::int32_t acc = 0;
+        for (const std::size_t w : active_words) {
+          acc += std::popcount((ap[w] & bp[w]) | (an[w] & bn[w])) -
+                 std::popcount((ap[w] & bn[w]) | (an[w] & bp[w]));
+        }
+        c_data[m * N + n] = static_cast<float>(acc);
+      }
     }
   }
-  if (lhs.numeric_class() == t81::TensorNumericClass::HostFloat ||
-      rhs.numeric_class() == t81::TensorNumericClass::HostFloat) {
-    out.set_numeric_class(t81::TensorNumericClass::HostFloat);
-  } else {
+  t81::TensorNumericClass out_class = t81::TensorNumericClass::HostFloat;
+  if (lhs.numeric_class() != t81::TensorNumericClass::HostFloat &&
+      rhs.numeric_class() != t81::TensorNumericClass::HostFloat) {
     bool all_trits = true;
     for (std::size_t i = 0; i < M * N; ++i) {
       const float v = c_data[i];
@@ -1762,20 +1934,43 @@ bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
         break;
       }
     }
-    out.set_numeric_class(all_trits ? t81::TensorNumericClass::ExactTrit
-                                    : t81::TensorNumericClass::ExactInt);
+    out_class = all_trits ? t81::TensorNumericClass::ExactTrit : t81::TensorNumericClass::ExactInt;
   }
+  out = t81::T729DynamicTensor::from_host_float_data({static_cast<int>(M), static_cast<int>(N)},
+                                                     std::move(c_vec), out_class);
+  out.set_numeric_class(out_class);
   return true;
 }
 
+std::atomic<std::uint64_t> g_dualrail_fastpath_hits{0};
+std::atomic<std::uint64_t> g_dualrail_fallback_count{0};
+
 }  // namespace
+
+DualRailTelemetry dualrail_telemetry() noexcept {
+  return {g_dualrail_fastpath_hits.load(std::memory_order_relaxed),
+          g_dualrail_fallback_count.load(std::memory_order_relaxed),
+          dualrail_dense_counter().load(std::memory_order_relaxed),
+          dualrail_sparse128_counter().load(std::memory_order_relaxed),
+          dualrail_sparse128_blocks_skipped_counter().load(std::memory_order_relaxed)};
+}
+
+void reset_dualrail_telemetry() noexcept {
+  g_dualrail_fastpath_hits.store(0, std::memory_order_relaxed);
+  g_dualrail_fallback_count.store(0, std::memory_order_relaxed);
+  dualrail_dense_counter().store(0, std::memory_order_relaxed);
+  dualrail_sparse128_counter().store(0, std::memory_order_relaxed);
+  dualrail_sparse128_blocks_skipped_counter().store(0, std::memory_order_relaxed);
+}
 
 t81::T729DynamicTensor tensor_matmul_2d(const t81::T729DynamicTensor& lhs,
                                         const t81::T729DynamicTensor& rhs) {
   t81::T729DynamicTensor fast_out;
   if (try_dualrail_ternary_matmul_2d(lhs, rhs, {}, fast_out)) {
+    g_dualrail_fastpath_hits.fetch_add(1, std::memory_order_relaxed);
     return fast_out;
   }
+  g_dualrail_fallback_count.fetch_add(1, std::memory_order_relaxed);
   return t81::ops::matmul(lhs, rhs);
 }
 
@@ -1851,7 +2046,30 @@ std::optional<float> tensor_get_at(const t81::T729DynamicTensor& tensor, std::in
 
 bool tensor_set_at(t81::T729DynamicTensor& tensor, std::int64_t index, float value,
                    t81::tensor_mutation::ScalarWriteKind source_kind) {
-  return t81::tensor_mutation::write_scalar(tensor, index, value, source_kind);
+  if (!t81::tensor_contracts::linear_index_in_bounds(tensor, index)) {
+    return false;
+  }
+  // T729DynamicTensor::set_value_at updates the canonical fixed element in O(1)
+  // when canonical_fixed_authoritative() is true, and updates host float storage
+  // in O(1) without triggering an O(N) DFixed rebuild when lazy/host-backed.
+  if (!tensor.set_value_at(static_cast<std::size_t>(index), value)) {
+    return false;
+  }
+  if (source_kind == t81::tensor_mutation::ScalarWriteKind::FloatValue ||
+      !tensor.strict_core_eligible()) {
+    tensor.set_numeric_class(t81::TensorNumericClass::HostFloat);
+    return true;
+  }
+  long long integral = 0;
+  if (!t81::tensor_mutation::is_exact_integral_scalar(value, &integral)) {
+    tensor.set_numeric_class(t81::TensorNumericClass::HostFloat);
+    return true;
+  }
+  if (tensor.numeric_class() == t81::TensorNumericClass::ExactTrit &&
+      (integral < -1 || integral > 1)) {
+    tensor.set_numeric_class(t81::TensorNumericClass::ExactInt);
+  }
+  return true;
 }
 
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_vec_binary_checked(
@@ -1958,8 +2176,10 @@ std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_matmul_checked_cache
   }
   t81::T729DynamicTensor fast_out;
   if (try_dualrail_ternary_matmul_2d(lhs, rhs, rhs_canon_hash, fast_out)) {
+    g_dualrail_fastpath_hits.fetch_add(1, std::memory_order_relaxed);
     return fast_out;
   }
+  g_dualrail_fallback_count.fetch_add(1, std::memory_order_relaxed);
   return t81::ops::matmul(lhs, rhs);
 }
 

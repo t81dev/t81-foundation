@@ -172,4 +172,15 @@ std::expected<void, t81::vm::Trap> tensor_set_checked(
     t81::T729DynamicTensor& tensor, std::int64_t index, float value,
     t81::tensor_mutation::ScalarWriteKind source_kind);
 
+struct DualRailTelemetry {
+  std::uint64_t fastpath_hits{0};
+  std::uint64_t fallback_count{0};
+  std::uint64_t dense_hits{0};
+  std::uint64_t sparse128_hits{0};
+  std::uint64_t sparse128_blocks_skipped{0};
+};
+
+DualRailTelemetry dualrail_telemetry() noexcept;
+void reset_dualrail_telemetry() noexcept;
+
 }  // namespace t81::vm::internal

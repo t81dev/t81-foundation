@@ -8,6 +8,7 @@
 #include "t81/isa/encoding.hpp"
 #include "t81/isa/opcodes.hpp"
 #include "t81/vm/vm.hpp"
+#include "vm/internal/tensor_helpers.hpp"
 
 #include <algorithm>
 #include <bit>
@@ -36,9 +37,12 @@ namespace fs = std::filesystem;
 
 struct ActiveTx {
   std::string tx_id;
+  std::string agent_id;
   fs::path target_path;
   fs::path backup_path;
+  fs::path staging_path;
   std::string before_sha3_512;
+  bool isolated = false;
 };
 
 std::string json_escape_mcp(std::string_view input) {
@@ -74,6 +78,7 @@ struct JsonNode {
   std::string str;  // decoded string for String; raw token for Number/Bool/Null
   std::string raw;  // exact raw JSON slice (useful for preserving JSON-RPC id)
   std::unordered_map<std::string, JsonNode> obj;
+  std::vector<JsonNode> arr;
 };
 
 class ScopedJsonParser {
@@ -198,6 +203,7 @@ private:
       while (true) {
         JsonNode elem;
         if (!parse_val(elem, depth + 1)) return false;
+        out.arr.push_back(std::move(elem));
         skip_ws();
         if (i_ < s_.size() && s_[i_] == ',') {
           ++i_;
@@ -238,6 +244,76 @@ std::string arg_str(const JsonNode& obj, const std::string& key) {
   auto it = obj.obj.find(key);
   if (it == obj.obj.end() || it->second.kind != JsonNode::Kind::String) return {};
   return it->second.str;
+}
+
+bool arg_bool(const JsonNode& obj, const std::string& key, bool default_val = false) {
+  if (obj.kind != JsonNode::Kind::Object) return default_val;
+  auto it = obj.obj.find(key);
+  if (it == obj.obj.end() || it->second.kind != JsonNode::Kind::Bool) return default_val;
+  return it->second.str == "true";
+}
+
+bool arg_int64_strict(const JsonNode& obj, const std::string& key, int64_t& out,
+                      int64_t default_val = 0) {
+  out = default_val;
+  if (obj.kind != JsonNode::Kind::Object) return true;
+  auto it = obj.obj.find(key);
+  if (it == obj.obj.end()) return true;
+  if (it->second.kind != JsonNode::Kind::Number) return false;
+  try {
+    std::size_t pos = 0;
+    const long long parsed = std::stoll(it->second.raw, &pos, 10);
+    if (pos != it->second.raw.size()) return false;
+    out = static_cast<int64_t>(parsed);
+    return true;
+  } catch (...) {
+    return false;
+  }
+}
+
+bool env_compact_mode() {
+  const char* v = std::getenv("T81_MCP_COMPACT");
+  return v != nullptr && (std::strcmp(v, "1") == 0 || std::strcmp(v, "true") == 0);
+}
+
+const char* trap_name_str(t81::vm::Trap t) {
+  using t81::vm::Trap;
+  switch (t) {
+    case Trap::None:
+      return "None";
+    case Trap::DecodeFault:
+      return "DecodeFault";
+    case Trap::TypeFault:
+      return "TypeFault";
+    case Trap::BoundsFault:
+      return "BoundsFault";
+    case Trap::StackFault:
+      return "StackFault";
+    case Trap::DivisionFault:
+      return "DivisionFault";
+    case Trap::SecurityFault:
+      return "SecurityFault";
+    case Trap::TierFault:
+      return "TierFault";
+    case Trap::ShapeFault:
+      return "ShapeFault";
+    case Trap::TrapInstruction:
+      return "TrapInstruction";
+    case Trap::Unimplemented:
+      return "Unimplemented";
+    case Trap::AssertionFailed:
+      return "AssertionFailed";
+    case Trap::EthicsViolation:
+      return "EthicsViolation";
+    case Trap::CapabilityDenied:
+      return "CapabilityDenied";
+    case Trap::ActivationFault:
+      return "ActivationFault";
+    case Trap::FFIPolicyDenied:
+      return "FFIPolicyDenied";
+    default:
+      return "UnknownTrap";
+  }
 }
 
 bool arg_double(const JsonNode& obj, const std::string& key, double default_val, double& out) {
@@ -649,17 +725,23 @@ std::string build_tools_list_json() {
 
          "{\"name\":\"t81.tx_begin\","
          "\"description\":\"Begin an atomic file transaction by sealing a SHA3-512 verified backup "
-         "before mutation.\","
+         "before mutation (with optional per-agent isolated staging).\","
          "\"inputSchema\":{\"type\":\"object\",\"required\":[\"target_path\",\"backup_dir\"],"
          "\"properties\":{\"target_path\":{\"type\":\"string\"},\"backup_dir\":{\"type\":"
-         "\"string\"}}}},"
+         "\"string\"},\"agent_id\":{\"type\":\"string\"},\"isolated\":{\"type\":\"boolean\"}}}},"
 
          "{\"name\":\"t81.tx_commit\","
-         "\"description\":\"Commit an active file transaction after a required .apl policy check "
-         "on "
-         "the mutated artifact.\","
+         "\"description\":\"Commit an active file transaction after required .apl policy, "
+         "concurrency, capability-budget, optional CanonFS SBDR1T2D, and T81VM subgraph checks.\","
          "\"inputSchema\":{\"type\":\"object\",\"required\":[\"tx_id\",\"policy_path\"],"
-         "\"properties\":{\"tx_id\":{\"type\":\"string\"},\"policy_path\":{\"type\":\"string\"}}}},"
+         "\"properties\":{\"tx_id\":{\"type\":\"string\"},\"policy_path\":{\"type\":\"string\"},"
+         "\"agent_id\":{\"type\":\"string\"},\"expected_parent_sha3_512\":{\"type\":\"string\"},"
+         "\"canonfs_root\":{\"type\":\"string\"},\"sbdr_path\":{\"type\":\"string\"},"
+         "\"bytecode_hex\":{\"type\":\"string\"},"
+         "\"max_abs_err\":{\"type\":\"integer\"},\"dualrail_fallback_count\":{\"type\":\"integer\"}"
+         ","
+         "\"repeat_sha3_identical\":{\"type\":\"boolean\"},"
+         "\"auto_abort_on_deny\":{\"type\":\"boolean\"}}}},"
 
          "{\"name\":\"t81.tx_abort\","
          "\"description\":\"Abort an active file transaction and restore the exact pre-mutation "
@@ -732,8 +814,18 @@ std::string detect_host_capabilities_json() {
   return std::string("{\"cpu_simd\":\"") + cpu_simd + "\",\"gpu_backend\":\"" + gpu_backend +
          "\",\"dualrail_layout\":\"DualRail_PN_64\",\"bytes_per_trit\":0.25,"
          "\"bit_exact_cross_device_sha3_512\":true,"
-         "\"dualrail_crossover\":{\"min_k\":64,\"min_mn\":64,\"reuse_k_star\":6,"
-         "\"gpu_fused_min_matmuls\":4}}";
+         "\"dualrail_crossover\":{\"min_k\":64,\"min_mn\":64,\"reuse_k_star\":4,"
+         "\"gpu_fused_min_matmuls\":4},"
+         "\"regime_routing\":{"
+         "\"R1_ternary_act\":{\"dense\":\"DualRail_PN_64\",\"sparse_min_pct\":50,"
+         "\"sparse_kernel\":\"SBDR128_SIMD\",\"gpu_kernel\":\"GPU_R1_DualRail_Pop\","
+         "\"gpu_sparse_kernel\":\"GPU_R1_BitmaskSkip_Pop\",\"gpu_sparse_min_pct\":75,"
+         "\"m1_high_sparsity_min_pct\":90,\"m1_high_sparsity_kernel\":\"CPU_1T_SBDR128_SIMD\","
+         "\"m1_low_sparsity_max_pct\":50,\"gpu_min_batch\":4,"
+         "\"k_star_prepacked\":0,\"k_star_simd4t_vs_gpu_int4\":2,"
+         "\"k_star_simd4t_vs_cpu_int4\":3,\"avoid_per_layer_cpu_thread_barrier\":true},"
+         "\"R2_int8_act\":{\"m1_to_4\":\"CPU_4T_INT4W\",\"m16_plus\":\"CPU_4T_INT8W\","
+         "\"avoid_cpu_dualrail_unpack\":true}}}";
 }
 
 bool decode_hex_bytes(std::string_view hex, std::vector<uint8_t>& out) {
@@ -865,6 +957,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
   }
 
   std::unordered_map<std::string, ActiveTx> active_txs;
+  std::unordered_map<std::string, std::string> last_commit_receipts;
   uint64_t tx_counter = 0;
 
   std::string line;
@@ -896,7 +989,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                 << ",\"result\":{\"tools\":" << build_tools_list_json() << "}}\n"
                 << std::flush;
     } else if (method == "tools/call") {
-      static const JsonNode kEmptyObj{JsonNode::Kind::Object, {}, "{}", {}};
+      static const JsonNode kEmptyObj{JsonNode::Kind::Object, {}, "{}", {}, {}};
       const auto params_it = req.obj.find("params");
       const JsonNode& params =
           (params_it != req.obj.end() && params_it->second.kind == JsonNode::Kind::Object)
@@ -959,8 +1052,13 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         const std::string req_mode = arg_str(args, "mode");
         std::vector<uint8_t> abytes, pbytes;
         if (apath.empty() || ppath.empty()) {
-          structured = "{\"ok\":false,\"decision\":\"DENY\",\"blocked\":true,\"error\":\"missing "
-                       "required arguments\",\"expected\":[\"artifact_path\",\"policy_path\"]}";
+          structured = "{\"ok\":false,\"code\":\"ERR_MISSING_ARG\",\"decision\":\"DENY\","
+                       "\"blocked\":true,\"error\":\"missing required arguments\","
+                       "\"expected\":[\"artifact_path\",\"policy_path\"]}";
+        } else if (!req_mode.empty() && mode_rank(req_mode) < 0) {
+          structured = "{\"ok\":false,\"code\":\"ERR_INVALID_ARG\",\"decision\":\"DENY\","
+                       "\"blocked\":true,\"error\":\"invalid mode: expected observe-only, warn, "
+                       "or fail-closed\"}";
         } else if (!read_file_bytes(jail, apath, abytes) || !read_file_bytes(jail, ppath, pbytes)) {
           structured = "{\"ok\":false,\"decision\":\"DENY\",\"blocked\":true,\"error\":\"missing "
                        "artifact or policy file\"}";
@@ -1062,9 +1160,12 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
       } else if (name == "t81.tx_begin") {
         const std::string tpath = arg_str(args, "target_path");
         const std::string bdir = arg_str(args, "backup_dir");
+        const std::string req_agent = arg_str(args, "agent_id");
+        const std::string agent_id = req_agent.empty() ? "default" : req_agent;
+        const bool isolated = arg_bool(args, "isolated", false);
         std::vector<uint8_t> bytes;
         if (tpath.empty() || bdir.empty()) {
-          structured = "{\"ok\":false,\"error\":\"missing required "
+          structured = "{\"ok\":false,\"trit\":-1,\"error\":\"missing required "
                        "arguments\",\"expected\":[\"target_path\",\"backup_dir\"]}";
         } else if (!read_file_bytes(jail, tpath, bytes)) {
           structured = io_failure_json(jail, "could not read target_path");
@@ -1078,14 +1179,23 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
             fs::create_directories(backup_root, ec);
             const std::string tx_id = "tx-" + std::to_string(++tx_counter);
             const fs::path bpath = backup_root / (tx_id + ".bak");
-            if (ec || !write_file_bytes(jail, bpath, bytes)) {
+            const fs::path spath = isolated ? (backup_root / (tx_id + ".stage")) : fs::path{};
+            if (ec || !write_file_bytes(jail, bpath, bytes) ||
+                (isolated && !write_file_bytes(jail, spath, bytes))) {
               structured = io_failure_json(jail, "could not write transaction backup");
             } else {
               const std::string before_sha = sha3_512_hex(bytes);
-              active_txs[tx_id] = ActiveTx{tx_id, target_canon, bpath, before_sha};
-              structured = "{\"ok\":true,\"tx_id\":\"" + tx_id + "\",\"before_sha3_512\":\"" +
-                           before_sha + "\",\"backup_path\":\"" + json_escape_mcp(bpath.string()) +
-                           "\"}";
+              active_txs[tx_id] =
+                  ActiveTx{tx_id, agent_id, target_canon, bpath, spath, before_sha, isolated};
+              structured = "{\"ok\":true,\"trit\":0,\"tx_id\":\"" + tx_id + "\",\"agent_id\":\"" +
+                           json_escape_mcp(agent_id) +
+                           "\",\"isolated\":" + (isolated ? "true" : "false") +
+                           ",\"before_sha3_512\":\"" + before_sha + "\",\"backup_path\":\"" +
+                           json_escape_mcp(bpath.string()) + "\"";
+              if (isolated) {
+                structured += ",\"staging_path\":\"" + json_escape_mcp(spath.string()) + "\"";
+              }
+              structured += "}";
             }
           }
         }
@@ -1093,74 +1203,356 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         const std::string tx_id = arg_str(args, "tx_id");
         auto it = active_txs.find(tx_id);
         if (it == active_txs.end()) {
-          structured = "{\"ok\":false,\"error\":\"unknown or closed tx_id\"}";
+          structured = "{\"ok\":false,\"trit\":-1,\"error\":\"unknown or closed tx_id\"}";
         } else {
           std::vector<uint8_t> bbytes;
           if (!read_file_bytes(jail, it->second.backup_path, bbytes) ||
               sha3_512_hex(bbytes) != it->second.before_sha3_512) {
-            structured = "{\"ok\":false,\"error\":\"backup integrity verification failed (SHA3-512 "
-                         "mismatch)\"}";
-          } else if (!write_file_bytes(jail, it->second.target_path, bbytes)) {
-            structured = "{\"ok\":false,\"error\":\"failed restoring target_path\"}";
+            structured = "{\"ok\":false,\"trit\":-1,\"error\":\"backup integrity verification "
+                         "failed (SHA3-512 mismatch)\"}";
+          } else if (!it->second.isolated &&
+                     !write_file_bytes(jail, it->second.target_path, bbytes)) {
+            structured = "{\"ok\":false,\"trit\":-1,\"error\":\"failed restoring target_path\"}";
           } else {
             std::error_code ec;
             fs::remove(it->second.backup_path, ec);
+            if (it->second.isolated && !it->second.staging_path.empty()) {
+              fs::remove(it->second.staging_path, ec);
+            }
             const std::string restored_sha = it->second.before_sha3_512;
+            const std::string aid = it->second.agent_id;
             active_txs.erase(it);
-            structured = "{\"ok\":true,\"tx_id\":\"" + tx_id +
-                         "\",\"aborted\":true,\"restored_sha3_512\":\"" + restored_sha + "\"}";
+            structured = "{\"ok\":true,\"trit\":-1,\"tx_id\":\"" + tx_id + "\",\"agent_id\":\"" +
+                         json_escape_mcp(aid) + "\",\"aborted\":true,\"restored_sha3_512\":\"" +
+                         restored_sha + "\"}";
           }
         }
       } else if (name == "t81.tx_commit") {
         const std::string tx_id = arg_str(args, "tx_id");
         const std::string ppath = arg_str(args, "policy_path");
+        const std::string req_agent = arg_str(args, "agent_id");
+        const std::string expected_parent = arg_str(args, "expected_parent_sha3_512");
+        const std::string expected_parent_rec = arg_str(args, "expected_parent_receipt");
+        const std::string canonfs_root_arg = arg_str(args, "canonfs_root");
+        const std::string sbdr_path_arg = arg_str(args, "sbdr_path");
+        const std::string bc_hex_arg = arg_str(args, "bytecode_hex");
+        int64_t max_abs_err = 0;
+        const bool max_abs_err_valid = arg_int64_strict(args, "max_abs_err", max_abs_err, 0);
+        int64_t fallback_cnt = 0;
+        const bool fallback_cnt_valid =
+            arg_int64_strict(args, "dualrail_fallback_count", fallback_cnt, 0);
+        const bool repeat_ok = arg_bool(args, "repeat_sha3_identical", true);
+        const bool req_auto_abort = arg_bool(args, "auto_abort_on_deny", false);
         auto it = active_txs.find(tx_id);
         if (it == active_txs.end()) {
-          structured = "{\"ok\":false,\"error\":\"unknown or closed tx_id\"}";
+          structured = "{\"ok\":false,\"trit\":-1,\"error\":\"unknown or closed tx_id\"}";
         } else if (ppath.empty()) {
-          structured = "{\"ok\":false,\"committed\":false,\"tx_id\":\"" + tx_id +
+          structured = "{\"ok\":false,\"trit\":-1,\"committed\":false,\"tx_id\":\"" + tx_id +
                        "\",\"error\":\"missing required argument: policy_path\"}";
+        } else if (!req_agent.empty() && req_agent != it->second.agent_id) {
+          const ActiveTx tx = it->second;
+          const bool do_auto_abort = req_auto_abort || tx.isolated;
+          bool auto_aborted = false;
+          if (do_auto_abort) {
+            std::vector<uint8_t> bbytes;
+            if (!tx.isolated && read_file_bytes(jail, tx.backup_path, bbytes) &&
+                sha3_512_hex(bbytes) == tx.before_sha3_512) {
+              write_file_bytes(jail, tx.target_path, bbytes);
+            }
+            std::error_code ec;
+            fs::remove(tx.backup_path, ec);
+            if (tx.isolated && !tx.staging_path.empty()) {
+              fs::remove(tx.staging_path, ec);
+            }
+            active_txs.erase(it);
+            auto_aborted = true;
+          }
+          structured = "{\"ok\":false,\"trit\":-1,\"committed\":false,\"auto_aborted\":" +
+                       std::string(auto_aborted ? "true" : "false") + ",\"tx_id\":\"" + tx_id +
+                       "\",\"agent_id\":\"" + json_escape_mcp(tx.agent_id) +
+                       "\",\"code\":\"ERR_AGENT_MISMATCH\",\"error\":\"agent_id does not own "
+                       "transaction\"}";
         } else {
+          const ActiveTx tx = it->second;
+          const bool do_auto_abort = req_auto_abort || tx.isolated;
+          const fs::path candidate_path = tx.isolated ? tx.staging_path : tx.target_path;
           std::vector<uint8_t> after_bytes;
-          if (!read_file_bytes(jail, it->second.target_path, after_bytes)) {
-            structured = "{\"ok\":false,\"error\":\"could not read mutated target_path\"}";
+          std::vector<uint8_t> live_bytes;
+          if (!read_file_bytes(jail, candidate_path, after_bytes)) {
+            structured =
+                "{\"ok\":false,\"trit\":-1,\"error\":\"could not read mutated target_path\"}";
+          } else if (!read_file_bytes(jail, tx.target_path, live_bytes)) {
+            structured = "{\"ok\":false,\"trit\":-1,\"error\":\"could not read live target_path\"}";
           } else {
             const std::string after_sha = sha3_512_hex(after_bytes);
+            const std::string live_sha = sha3_512_hex(live_bytes);
             bool policy_ok = true;
+            std::string deny_code;
             std::string policy_err;
-            {
+            std::string sbdr_sha;
+            std::string vm_exec_receipt;
+            uint64_t vm_skipped_blocks = 0;
+            bool vm_repeat_verified = false;
+
+            if (tx.target_path.filename() == "axion_root.apl") {
+              policy_ok = false;
+              deny_code = "ERR_IMMUTABLE_POLICY_ROOT";
+              policy_err = "axion_root.apl is immutable regardless of supplied policy_path";
+            } else if (!max_abs_err_valid || !fallback_cnt_valid) {
+              policy_ok = false;
+              deny_code = "ERR_INVALID_BUDGET";
+              policy_err = "capability budget arguments must be exact integers";
+            } else if (tx.isolated && live_sha != tx.before_sha3_512) {
+              policy_ok = false;
+              deny_code = "ERR_TX_CONFLICT";
+              policy_err = "stale transaction: target_path was committed by a peer; rebase on "
+                           "current_sha3_512";
+            } else if (!expected_parent.empty() && live_sha != expected_parent) {
+              policy_ok = false;
+              deny_code = "ERR_PARENT_RECEIPT_MISMATCH";
+              policy_err = "expected_parent_sha3_512 does not match live target_path SHA3-512";
+            } else if (!expected_parent_rec.empty() &&
+                       (last_commit_receipts.find(tx.target_path.string()) ==
+                            last_commit_receipts.end() ||
+                        last_commit_receipts[tx.target_path.string()] != expected_parent_rec)) {
+              policy_ok = false;
+              deny_code = "ERR_PARENT_RECEIPT_MISMATCH";
+              policy_err = "expected_parent_receipt does not match latest committed receipt";
+            } else if (max_abs_err != 0) {
+              policy_ok = false;
+              deny_code = "ERR_BUDGET_MAX_ABS_ERR";
+              policy_err = "capability budget violated: max_abs_err != 0";
+            } else if (fallback_cnt != 0) {
+              policy_ok = false;
+              deny_code = "ERR_BUDGET_DUALRAIL_FALLBACK";
+              policy_err = "capability budget violated: dualrail_fallback_count != 0";
+            } else if (!repeat_ok) {
+              policy_ok = false;
+              deny_code = "ERR_BUDGET_REPEAT_DETERMINISM";
+              policy_err = "capability budget violated: repeat_sha3_identical != true";
+            } else {
+              fs::path policy_canon;
               std::vector<uint8_t> pbytes;
-              if (!read_file_bytes(jail, ppath, pbytes)) {
+              if (!jail.resolve(ppath, policy_canon) || !read_file_bytes(jail, ppath, pbytes)) {
                 policy_ok = false;
+                deny_code = "ERR_POLICY_READ";
                 policy_err =
                     jail.last_error.empty() ? "could not read policy_path" : jail.last_error;
+              } else if (policy_canon == tx.target_path) {
+                policy_ok = false;
+                deny_code = "ERR_IMMUTABLE_POLICY_ROOT";
+                policy_err = "policy_path is immutable and outside agent tx_commit write authority";
               } else {
                 std::string ptext(pbytes.begin(), pbytes.end());
                 auto pres = t81::axion::parse_policy(ptext);
                 if (!pres) {
                   policy_ok = false;
+                  deny_code = "ERR_POLICY_PARSE";
                   policy_err = pres.error();
+                } else if (!policy_admits_hash(pres.value(), after_sha)) {
+                  policy_ok = false;
+                  deny_code = "ERR_POLICY_HASH_DENIED";
+                  policy_err =
+                      "mutated target_path SHA3-512 denied by policy; call t81.tx_abort to restore";
                 } else {
-                  if (!policy_admits_hash(pres.value(), after_sha)) {
-                    policy_ok = false;
-                    policy_err = "mutated target_path SHA3-512 denied by policy; call t81.tx_abort "
-                                 "to restore";
+                  if (policy_ok && !canonfs_root_arg.empty()) {
+                    fs::path canon_root;
+                    if (!jail.resolve(canonfs_root_arg, canon_root)) {
+                      policy_ok = false;
+                      deny_code = "ERR_CANONFS_OUTSIDE_ROOT";
+                      policy_err = "canonfs_root is outside MCP filesystem root";
+                    } else {
+                      std::ostringstream cap;
+                      std::streambuf* old_buf = std::cout.rdbuf(cap.rdbuf());
+                      const int rc = run_canonfs_fsck_json(canon_root.string());
+                      std::cout.rdbuf(old_buf);
+                      if (rc != 0) {
+                        policy_ok = false;
+                        deny_code = "ERR_CANONFS_FSCK_FAILED";
+                        policy_err = "CanonFS integrity check failed (tampered store)";
+                      }
+                    }
+                  }
+                  if (policy_ok && !sbdr_path_arg.empty()) {
+                    std::vector<uint8_t> sbytes;
+                    if (!read_file_bytes(jail, sbdr_path_arg, sbytes)) {
+                      policy_ok = false;
+                      deny_code = "ERR_SBDR1T2D_READ";
+                      policy_err = "could not read sbdr_path";
+                    } else if (sbytes.size() < 24 ||
+                               std::memcmp(sbytes.data(), "SBDR1\0\0\0", 8) != 0) {
+                      policy_ok = false;
+                      deny_code = "ERR_SBDR1T2D_INVALID";
+                      policy_err = "invalid SBDR1T2D header or non-zero K* flag";
+                    } else {
+                      uint64_t total_blocks = 0;
+                      std::memcpy(&total_blocks, sbytes.data() + 8, sizeof(uint64_t));
+                      const uint64_t mask_words = (total_blocks + 63ULL) / 64ULL;
+                      const uint64_t header_and_mask_bytes = 16ULL + mask_words * sizeof(uint64_t);
+                      if (total_blocks == 0 || mask_words > (sbytes.size() / sizeof(uint64_t)) ||
+                          sbytes.size() < header_and_mask_bytes) {
+                        policy_ok = false;
+                        deny_code = "ERR_SBDR1T2D_INVALID";
+                        policy_err = "SBDR1T2D truncated or invalid block bitmap";
+                      } else {
+                        uint64_t active_blocks = 0;
+                        bool bitmap_overflow = false;
+                        for (uint64_t wi = 0; wi < mask_words; ++wi) {
+                          uint64_t mw = 0;
+                          std::memcpy(&mw, sbytes.data() + 16 + wi * sizeof(uint64_t),
+                                      sizeof(uint64_t));
+                          if (wi + 1 == mask_words && (total_blocks % 64ULL) != 0) {
+                            const uint64_t valid_mask = (1ULL << (total_blocks % 64ULL)) - 1ULL;
+                            if ((mw & ~valid_mask) != 0) {
+                              bitmap_overflow = true;
+                              break;
+                            }
+                          }
+                          active_blocks += static_cast<uint64_t>(std::popcount(mw));
+                        }
+                        const uint64_t expected_size =
+                            header_and_mask_bytes + active_blocks * 16ULL;
+                        if (bitmap_overflow || active_blocks > total_blocks ||
+                            sbytes.size() != expected_size) {
+                          policy_ok = false;
+                          deny_code = "ERR_SBDR1T2D_INVALID";
+                          policy_err = "SBDR1T2D bitmap or payload length mismatch";
+                        } else {
+                          sbdr_sha = sha3_512_hex(sbytes);
+                          vm_skipped_blocks += (total_blocks - active_blocks);
+                          if (!policy_admits_hash(pres.value(), sbdr_sha)) {
+                            policy_ok = false;
+                            deny_code = "ERR_SBDR1T2D_POLICY_DENIED";
+                            policy_err = "SBDR1T2D artifact SHA3-512 denied by policy";
+                          }
+                        }
+                      }
+                    }
+                  }
+                  if (policy_ok && !bc_hex_arg.empty()) {
+                    std::vector<uint8_t> raw_bc;
+                    if (!decode_hex_bytes(bc_hex_arg, raw_bc) || raw_bc.empty()) {
+                      policy_ok = false;
+                      deny_code = "ERR_VM_INVALID_BYTECODE";
+                      policy_err = "invalid bytecode_hex in tx_commit";
+                    } else {
+                      std::vector<std::byte> bvec(raw_bc.size());
+                      std::memcpy(bvec.data(), raw_bc.data(), raw_bc.size());
+                      auto dec = t81::tisc::decode(bvec);
+                      if (!dec.has_value()) {
+                        policy_ok = false;
+                        deny_code = "ERR_VM_DECODE_FAILED";
+                        policy_err = "TISC v1.9.0 bytecode decode failed";
+                      } else {
+                        const auto vr = verify_tisc_subgraph(dec.value());
+                        if (!vr.ok) {
+                          policy_ok = false;
+                          deny_code = "ERR_VM_VERIFY_FAILED";
+                          policy_err = "TISC subgraph verification failed: " + vr.verdict;
+                        } else {
+                          const std::string prog_sha = sha3_512_hex(raw_bc);
+                          std::string receipts[2];
+                          for (int run_i = 0; run_i < 2 && policy_ok; ++run_i) {
+                            t81::vm::internal::reset_dualrail_telemetry();
+                            auto vm = t81::vm::make_interpreter_vm(
+                                std::make_unique<t81::axion::AIHookEngine>(
+                                    std::make_unique<t81::axion::PolicyEngine>(pres.value())));
+                            vm->load_program(dec.value());
+                            const auto run_res = vm->run_to_halt();
+                            const auto dr_tel = t81::vm::internal::dualrail_telemetry();
+                            if (!run_res.has_value()) {
+                              policy_ok = false;
+                              deny_code = "ERR_VM_TRAP";
+                              policy_err = std::string("T81VM trapped during tx_commit: ") +
+                                           trap_name_str(run_res.error());
+                            } else if (dr_tel.fallback_count != 0) {
+                              policy_ok = false;
+                              deny_code = "ERR_VM_DUALRAIL_FALLBACK";
+                              policy_err = "T81VM dualrail_fallback_count != 0 during tx_commit";
+                            } else {
+                              if (run_i == 0) {
+                                vm_skipped_blocks += dr_tel.sparse128_blocks_skipped;
+                              }
+                              const std::string rec_in =
+                                  prog_sha + "|HALT|0|" +
+                                  std::to_string(vm->state().axion_log.size()) + "|" +
+                                  std::to_string(dr_tel.fastpath_hits) + "|" +
+                                  std::to_string(dr_tel.fallback_count);
+                              receipts[run_i] =
+                                  sha3_512_hex(std::vector<uint8_t>(rec_in.begin(), rec_in.end()));
+                            }
+                          }
+                          if (policy_ok && receipts[0] != receipts[1]) {
+                            policy_ok = false;
+                            deny_code = "ERR_VM_REPEAT_MISMATCH";
+                            policy_err = "T81VM repeat_sha3_identical failed during tx_commit";
+                          } else if (policy_ok) {
+                            vm_exec_receipt = receipts[0];
+                            vm_repeat_verified = true;
+                          }
+                        }
+                      }
+                    }
                   }
                 }
               }
             }
+
             if (!policy_ok) {
-              structured = "{\"ok\":false,\"committed\":false,\"tx_id\":\"" + tx_id +
-                           "\",\"error\":\"" + json_escape_mcp(policy_err) + "\"}";
+              bool auto_aborted = false;
+              if (do_auto_abort) {
+                std::vector<uint8_t> bbytes;
+                if (!tx.isolated && read_file_bytes(jail, tx.backup_path, bbytes) &&
+                    sha3_512_hex(bbytes) == tx.before_sha3_512) {
+                  (void)write_file_bytes(jail, tx.target_path, bbytes);
+                }
+                std::error_code ec;
+                fs::remove(tx.backup_path, ec);
+                if (tx.isolated && !tx.staging_path.empty()) {
+                  fs::remove(tx.staging_path, ec);
+                }
+                active_txs.erase(it);
+                auto_aborted = true;
+              }
+              structured = "{\"ok\":false,\"trit\":-1,\"committed\":false,\"auto_aborted\":" +
+                           std::string(auto_aborted ? "true" : "false") + ",\"tx_id\":\"" + tx_id +
+                           "\",\"agent_id\":\"" + json_escape_mcp(tx.agent_id) + "\",\"code\":\"" +
+                           deny_code + "\",\"current_sha3_512\":\"" + live_sha + "\",\"error\":\"" +
+                           json_escape_mcp(policy_err) + "\"}";
             } else {
-              std::error_code ec;
-              fs::remove(it->second.backup_path, ec);
-              const std::string before_sha = it->second.before_sha3_512;
-              const bool changed = (before_sha != after_sha);
-              active_txs.erase(it);
-              structured = "{\"ok\":true,\"committed\":true,\"tx_id\":\"" + tx_id +
-                           "\",\"before_sha3_512\":\"" + before_sha + "\",\"after_sha3_512\":\"" +
-                           after_sha + "\",\"changed\":" + (changed ? "true" : "false") + "}";
+              if (tx.isolated && !write_file_bytes(jail, tx.target_path, after_bytes)) {
+                structured =
+                    "{\"ok\":false,\"trit\":-1,\"committed\":false,\"error\":\"failed publishing "
+                    "staged artifact to target_path\"}";
+              } else {
+                std::error_code ec;
+                fs::remove(tx.backup_path, ec);
+                if (tx.isolated && !tx.staging_path.empty()) {
+                  fs::remove(tx.staging_path, ec);
+                }
+                const std::string before_sha = tx.before_sha3_512;
+                const bool changed = (before_sha != after_sha);
+                std::string receipt_in = before_sha + "|" + after_sha + "|" + tx.agent_id;
+                if (!sbdr_sha.empty()) receipt_in += "|" + sbdr_sha;
+                if (!vm_exec_receipt.empty()) receipt_in += "|" + vm_exec_receipt;
+                const std::string commit_receipt =
+                    sha3_512_hex(std::vector<uint8_t>(receipt_in.begin(), receipt_in.end()));
+                last_commit_receipts[tx.target_path.string()] = commit_receipt;
+                active_txs.erase(it);
+                structured = "{\"ok\":true,\"trit\":1,\"committed\":true,\"tx_id\":\"" + tx_id +
+                             "\",\"agent_id\":\"" + json_escape_mcp(tx.agent_id) +
+                             "\",\"before_sha3_512\":\"" + before_sha + "\",\"after_sha3_512\":\"" +
+                             after_sha + "\",\"commit_receipt\":\"" + commit_receipt +
+                             "\",\"dualrail_sparse128_blocks_skipped\":" +
+                             std::to_string(vm_skipped_blocks) +
+                             ",\"dualrail_fallback_count\":0,\"repeat_sha3_identical\":" +
+                             (vm_repeat_verified ? "true" : "null") +
+                             ",\"changed\":" + (changed ? "true" : "false");
+                if (!vm_exec_receipt.empty()) {
+                  structured += ",\"vm_execution_receipt\":\"" + vm_exec_receipt + "\"";
+                }
+                structured += "}";
+              }
             }
           }
         }
@@ -1254,27 +1646,43 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                              "\"executed\":false,\"program_sha3_512\":\"" +
                              prog_sha + "\"}";
               } else {
+                t81::vm::internal::reset_dualrail_telemetry();
                 auto vm = t81::vm::make_interpreter_vm(std::make_unique<t81::axion::AIHookEngine>(
                     std::make_unique<t81::axion::PolicyEngine>(pol)));
                 vm->load_program(dec.value());
                 const auto run_res = vm->run_to_halt();
+                const auto dr_tel = t81::vm::internal::dualrail_telemetry();
                 const bool halted = run_res.has_value();
                 const int trap_code = halted ? 0 : static_cast<int>(run_res.error());
+                const std::string trap_name = halted ? "" : trap_name_str(run_res.error());
+                const uint64_t fault_pc =
+                    vm->state().contexts.empty() ? 0ULL : vm->state().contexts[0].pc;
                 const size_t ax_events = vm->state().axion_log.size();
-                const std::string rec_in = prog_sha + "|" + (halted ? "HALT" : "TRAP") + "|" +
-                                           std::to_string(trap_code) + "|" +
-                                           std::to_string(ax_events);
+                const std::string last_ax_reason =
+                    ax_events == 0 ? "" : vm->state().axion_log.back().verdict.reason;
+                const std::string rec_in =
+                    prog_sha + "|" + (halted ? "HALT" : "TRAP") + "|" + std::to_string(trap_code) +
+                    "|" + std::to_string(ax_events) + "|" + std::to_string(dr_tel.fastpath_hits) +
+                    "|" + std::to_string(dr_tel.fallback_count);
                 const std::vector<uint8_t> rec_bytes(rec_in.begin(), rec_in.end());
                 const std::string exec_rec = sha3_512_hex(rec_bytes);
-                structured = std::string("{\"ok\":") + (halted ? "true" : "false") +
-                             ",\"verdict\":\"" + (halted ? "VERIFIED_AND_EXECUTED" : "VM_TRAP") +
-                             "\",\"executed\":true,\"halted\":" + (halted ? "true" : "false") +
-                             ",\"trap_code\":" + std::to_string(trap_code) +
-                             ",\"instruction_count\":" + std::to_string(dec.value().insns.size()) +
-                             ",\"matmul_count\":" + std::to_string(vr.matmul_count) +
-                             ",\"axion_events\":" + std::to_string(ax_events) +
-                             ",\"program_sha3_512\":\"" + prog_sha + "\",\"execution_receipt\":\"" +
-                             exec_rec + "\"}";
+                structured =
+                    std::string("{\"ok\":") + (halted ? "true" : "false") + ",\"verdict\":\"" +
+                    (halted ? "VERIFIED_AND_EXECUTED" : "VM_TRAP") +
+                    "\",\"executed\":true,\"halted\":" + (halted ? "true" : "false") +
+                    ",\"trap_code\":" + std::to_string(trap_code) + ",\"trap_name\":\"" +
+                    trap_name + "\",\"fault_pc\":" + std::to_string(fault_pc) +
+                    ",\"last_axion_reason\":\"" + json_escape_mcp(last_ax_reason) +
+                    "\",\"dualrail_fastpath_hits\":" + std::to_string(dr_tel.fastpath_hits) +
+                    ",\"dualrail_dense_hits\":" + std::to_string(dr_tel.dense_hits) +
+                    ",\"dualrail_sparse128_hits\":" + std::to_string(dr_tel.sparse128_hits) +
+                    ",\"dualrail_sparse128_blocks_skipped\":" +
+                    std::to_string(dr_tel.sparse128_blocks_skipped) +
+                    ",\"dualrail_fallback_count\":" + std::to_string(dr_tel.fallback_count) +
+                    ",\"instruction_count\":" + std::to_string(dec.value().insns.size()) +
+                    ",\"matmul_count\":" + std::to_string(vr.matmul_count) +
+                    ",\"axion_events\":" + std::to_string(ax_events) + ",\"program_sha3_512\":\"" +
+                    prog_sha + "\",\"execution_receipt\":\"" + exec_rec + "\"}";
               }
             }
           }
@@ -1591,11 +1999,33 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           }
         }
       }
-      const bool is_err = (structured.find("\"ok\":false") != std::string::npos) ||
-                          (structured.find("\"ok\": false") != std::string::npos);
+      bool is_err = true;
+      std::string err_tag = "ERR";
+      {
+        JsonNode parsed_out;
+        ScopedJsonParser out_parser(structured);
+        if (out_parser.parse(parsed_out) && parsed_out.kind == JsonNode::Kind::Object) {
+          const auto ok_it = parsed_out.obj.find("ok");
+          if (ok_it != parsed_out.obj.end() && ok_it->second.kind == JsonNode::Kind::Bool) {
+            is_err = (ok_it->second.str != "true");
+          } else {
+            is_err = false;
+          }
+          const std::string c = arg_str(parsed_out, "code");
+          const std::string v = arg_str(parsed_out, "verdict");
+          if (!c.empty())
+            err_tag = c;
+          else if (!v.empty())
+            err_tag = v;
+        }
+      }
+      const bool compact_mode = arg_bool(args, "compact", env_compact_mode());
+      const std::string text_payload =
+          compact_mode ? (is_err ? ("err:" + err_tag) : "ok") : structured;
       std::cout << "{\"jsonrpc\":\"2.0\",\"id\":" << id
                 << ",\"result\":{\"content\":[{\"type\":\"text\",\"text\":\""
-                << json_escape_mcp(structured) << "\"}],\"isError\":" << (is_err ? "true" : "false")
+                << json_escape_mcp(text_payload)
+                << "\"}],\"isError\":" << (is_err ? "true" : "false")
                 << ",\"structured\":" << structured << "}}\n"
                 << std::flush;
     } else {
