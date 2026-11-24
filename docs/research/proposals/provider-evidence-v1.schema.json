@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://t81foundation.org/schemas/draft/provider-evidence-v1.json",
+  "title": "T81ProviderEvidenceV1",
+  "description": "Draft canonical, timestamp-free provider execution evidence envelope for CanonFS persistence and lossless projection to draft RFC-00D4.",
+  "type": "object",
+  "required": [
+    "schema",
+    "trit",
+    "provider",
+    "artifact",
+    "authority",
+    "execution",
+    "digests",
+    "challengeability"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "t81.provider.evidence.v1"
+    },
+    "trit": {
+      "type": "integer",
+      "enum": [-1, 0, 1]
+    },
+    "provider": {
+      "type": "object",
+      "required": [
+        "provider_id",
+        "provider_version",
+        "runtime_environment",
+        "execution_class",
+        "isolation_mode"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "provider_id": { "type": "string" },
+        "provider_version": { "type": "string" },
+        "runtime_environment": { "type": "string" },
+        "execution_class": {
+          "type": "string",
+          "enum": ["deterministic", "seeded_probabilistic", "external_probabilistic"]
+        },
+        "isolation_mode": {
+          "type": "string",
+          "enum": ["in_process_readonly", "jailed_process", "external_endpoint"]
+        }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "required": ["artifact_id", "format", "sha3_512"],
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": { "type": "string" },
+        "format": { "type": "string" },
+        "sha3_512": { "type": "string" },
+        "canonfs_ref": { "type": ["string", "null"] }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "required": [
+        "principal_id",
+        "policy_sha3_512",
+        "verdict",
+        "reason",
+        "user_consent_verified",
+        "provider_invoked"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "principal_id": { "type": "string" },
+        "policy_sha3_512": { "type": "string" },
+        "verdict": {
+          "type": "string",
+          "enum": ["Allow", "Deny", "Defer", "Warn", "Quarantine"]
+        },
+        "reason": { "type": "string" },
+        "user_consent_verified": { "type": "boolean" },
+        "provider_invoked": { "type": "boolean" }
+      }
+    },
+    "execution": {
+      "type": "object",
+      "required": [
+        "operation",
+        "ok",
+        "failure_code",
+        "seed",
+        "steps_consumed",
+        "tokens_consumed",
+        "dualrail_fallback_count"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "operation": { "type": "string" },
+        "ok": { "type": "boolean" },
+        "failure_code": { "type": "string" },
+        "seed": { "type": ["integer", "null"] },
+        "steps_consumed": { "type": "integer", "minimum": 0 },
+        "tokens_consumed": { "type": "integer", "minimum": 0 },
+        "dualrail_fallback_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "digests": {
+      "type": "object",
+      "required": [
+        "input_sha3_512",
+        "params_sha3_512",
+        "output_sha3_512",
+        "parent_evidence_sha3_512"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "input_sha3_512": { "type": "string" },
+        "params_sha3_512": { "type": "string" },
+        "output_sha3_512": { "type": "string" },
+        "parent_evidence_sha3_512": { "type": ["string", "null"] }
+      }
+    },
+    "challengeability": {
+      "type": "object",
+      "required": ["replayable", "verification_mode"],
+      "additionalProperties": false,
+      "properties": {
+        "replayable": { "type": "boolean" },
+        "verification_mode": {
+          "type": "string",
+          "enum": ["bit_exact_replay", "seeded_bounded_attestation", "provenance_only"]
+        }
+      }
+    }
+  }
+}

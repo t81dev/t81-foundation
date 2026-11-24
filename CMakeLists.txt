@@ -736,6 +736,10 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
                  tests/cpp/dualrail_sbdr_vm_test.cpp)
   target_link_libraries(t81_dualrail_sbdr_vm_test PRIVATE t81_vm t81_core)
 
+  add_executable(t81_provider_contract_test
+                 tests/cpp/provider_contract_test.cpp)
+  target_link_libraries(t81_provider_contract_test PRIVATE t81_provider_adapters t81_provider t81_vm t81_core)
+
   add_executable(t81_vm_axreport_policy_deny_fail_closed_test
                  tests/cpp/vm_axreport_policy_deny_fail_closed_test.cpp)
   target_link_libraries(t81_vm_axreport_policy_deny_fail_closed_test PRIVATE t81_vm t81_core)
@@ -1619,6 +1623,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_vm_mixed_workload_conformance_matrix_test
     t81_vm_policy_parse_fail_closed_test
     t81_dualrail_sbdr_vm_test
+    t81_provider_contract_test
     t81_vm_axreport_policy_deny_fail_closed_test
     t81_vm_system_registers_deterministic_test
     t81_vm_stubbed_opcode_fail_closed_test
