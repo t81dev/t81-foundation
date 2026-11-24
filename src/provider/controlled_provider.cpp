@@ -111,7 +111,39 @@ ProviderResult ControlledProvider::execute(const ProviderRequest& request,
     }
 
     if (simulated_token_delay_ms_ > 0) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(simulated_token_delay_ms_));
+      const auto token_wait_end =
+          std::chrono::steady_clock::now() + std::chrono::milliseconds(simulated_token_delay_ms_);
+      const auto deadline = context.budget.timeout_ms > 0
+                                ? (started + std::chrono::milliseconds(context.budget.timeout_ms))
+                                : std::chrono::steady_clock::time_point::max();
+      while (true) {
+        if (cancel.is_cancelled()) {
+          res.ok = false;
+          res.trit = -1;
+          res.failure_code = FailureCode::Cancelled;
+          res.failure_detail = "cancelled during token generation";
+          res.tokens_consumed = i;
+          return res;
+        }
+        const auto now = std::chrono::steady_clock::now();
+        if (context.budget.timeout_ms > 0 && now >= deadline) {
+          res.ok = false;
+          res.trit = -1;
+          res.failure_code = FailureCode::TimedOut;
+          res.failure_detail = "token generation exceeded timeout_ms";
+          res.tokens_consumed = i;
+          return res;
+        }
+        if (now >= token_wait_end) {
+          break;
+        }
+        const auto target = std::min(token_wait_end, deadline);
+        const auto remaining = target - now;
+        const auto slice =
+            std::min(remaining, std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+                                    std::chrono::milliseconds(2)));
+        std::this_thread::sleep_for(slice);
+      }
     }
 
     if (context.budget.timeout_ms > 0) {

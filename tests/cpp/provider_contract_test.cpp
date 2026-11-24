@@ -1,9 +1,11 @@
+#include <chrono>
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
 #include <limits>
 #include <memory>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "provider/controlled_provider.hpp"
@@ -686,6 +688,63 @@ void test_at08_exceptions_cooperative_timeout_memory_and_strict_int() {
   T81_REQUIRE(!int_out.result.ok);
   T81_REQUIRE(int_out.result.trit == -1);
   T81_REQUIRE(int_out.result.failure_code == FailureCode::InvalidBudget);
+
+  // 5. P2 fix: Deadline-clamped wait does not overrun timeout_ms on long simulated delay
+  ControlledProvider long_delay_ctrl(/*simulated_token_delay_ms=*/2000);
+  ProviderRequest clamp_req;
+  clamp_req.operation = "text.generate";
+  clamp_req.artifact = {"clamp-art", "mt19937_64", any_hash, std::nullopt};
+  clamp_req.input = {"text/plain;charset=utf-8", to_bytes("hi"), std::nullopt};
+  clamp_req.parameters["tokens"] = "2";
+  ExecutionContext clamp_ctx;
+  clamp_ctx.principal_id = "agent-p2-clamp";
+  clamp_ctx.user_consent_verified = true;
+  clamp_ctx.seed = 42;
+  clamp_ctx.budget.timeout_ms = 30;
+  const auto t0 = std::chrono::steady_clock::now();
+  auto clamp_out = governor.execute(long_delay_ctrl, clamp_req, clamp_ctx, cancel);
+  const auto elapsed_ms =
+      std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - t0)
+          .count();
+  T81_REQUIRE(!clamp_out.result.ok);
+  T81_REQUIRE(clamp_out.result.trit == -1);
+  T81_REQUIRE(clamp_out.result.failure_code == FailureCode::TimedOut);
+  T81_REQUIRE(elapsed_ms < 500);
+
+  // 6. P2 fix: Concurrent T81VmProvider invocations have isolated telemetry & identical receipts
+  const auto prog = make_load_imm_halt_bytecode(77);
+  const std::string prog_hash = sha3_512_prefixed_bytes(prog);
+  t81::axion::Policy vm_allow;
+  vm_allow.tier = 1;
+  vm_allow.allowed_tensor_hashes.push_back(prog_hash);
+  auto vm_engine = std::make_shared<t81::axion::PolicyEngine>(vm_allow);
+  ProviderGovernor vm_gov(vm_engine, canonfs);
+  T81VmProvider vm_prov(vm_allow);
+  ProviderRequest vm_req;
+  vm_req.operation = "subgraph.run";
+  vm_req.artifact = {"conc-vm", "tisc-v1.9.0", prog_hash, std::nullopt};
+  vm_req.input = {"application/x-t81-tisc", prog, std::nullopt};
+  ExecutionContext vm_ctx;
+  vm_ctx.principal_id = "agent-p2-conc";
+
+  constexpr int kThreads = 4;
+  std::vector<GovernedExecutionOutcome> outcomes(kThreads);
+  std::vector<std::thread> workers;
+  workers.reserve(kThreads);
+  for (int i = 0; i < kThreads; ++i) {
+    workers.emplace_back(
+        [&, i]() { outcomes[i] = vm_gov.execute(vm_prov, vm_req, vm_ctx, cancel); });
+  }
+  for (auto& w : workers) w.join();
+
+  for (int i = 0; i < kThreads; ++i) {
+    T81_REQUIRE(outcomes[i].result.ok);
+    T81_REQUIRE(outcomes[i].result.trit == 1);
+    T81_REQUIRE(outcomes[i].result.dualrail_fallback_count == 0);
+    T81_REQUIRE(outcomes[i].evidence_ref.has_value());
+    T81_REQUIRE(outcomes[i].evidence_sha3_512 == outcomes[0].evidence_sha3_512);
+    T81_REQUIRE(outcomes[i].evidence_ref->hash == outcomes[0].evidence_ref->hash);
+  }
 }
 
 void test_at09_persistence_failure_clears_stale_receipt() {

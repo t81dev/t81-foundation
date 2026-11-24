@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <memory>
+#include <mutex>
 #include <sstream>
 
 #include "t81/axion/ai_hooks.hpp"
@@ -53,6 +54,13 @@ ProviderResult T81VmProvider::execute(const ProviderRequest& request,
 
   const std::uint64_t step_limit =
       context.budget.max_steps > 0 ? context.budget.max_steps : 100000ULL;
+
+  // Serialize VM execution + dualrail_telemetry() delta capture across concurrent
+  // T81VmProvider calls so process-global VM telemetry counters cannot cross-contaminate
+  // fallback attribution while keeping frozen vm/tensor_helpers.cpp untouched.
+  static std::mutex vm_telemetry_mutex;
+  std::lock_guard<std::mutex> telem_lock(vm_telemetry_mutex);
+
   const auto started = std::chrono::steady_clock::now();
   const auto before_telem = t81::vm::internal::dualrail_telemetry();
 
