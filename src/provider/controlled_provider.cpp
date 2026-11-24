@@ -45,8 +45,31 @@ ProviderResult ControlledProvider::execute(const ProviderRequest& request,
   std::uint64_t requested_tokens = 8;
   auto it = request.parameters.find("tokens");
   if (it != request.parameters.end()) {
+    const std::string& raw = it->second;
+    bool valid_digits = !raw.empty();
+    for (char ch : raw) {
+      if (ch < '0' || ch > '9') {
+        valid_digits = false;
+        break;
+      }
+    }
+    if (!valid_digits) {
+      res.ok = false;
+      res.trit = -1;
+      res.failure_code = FailureCode::InvalidBudget;
+      res.failure_detail = "tokens parameter must be a non-negative base-10 integer";
+      return res;
+    }
     try {
-      const auto parsed = std::stoull(it->second);
+      std::size_t pos = 0;
+      const auto parsed = std::stoull(raw, &pos, 10);
+      if (pos != raw.size()) {
+        res.ok = false;
+        res.trit = -1;
+        res.failure_code = FailureCode::InvalidBudget;
+        res.failure_detail = "tokens parameter contains trailing characters";
+        return res;
+      }
       requested_tokens = parsed;
     } catch (...) {
       res.ok = false;

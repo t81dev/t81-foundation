@@ -517,9 +517,263 @@ void test_at07_policy_digest_provenance_and_d4_authority() {
   T81_REQUIRE(permissive_vm_provider.invocation_count() == 0);
 }
 
+class ThrowingProvider final : public IAiProvider {
+public:
+  ThrowingProvider() {
+    desc_.provider_id = "test.throwing";
+    desc_.provider_version = "0.1.0";
+    desc_.runtime_environment = "test-throwing";
+    desc_.execution_class = ExecutionClass::ExternalProbabilistic;
+    desc_.isolation_mode = IsolationMode::InProcessReadOnly;
+    desc_.capabilities.supported_operations = {"op.throw"};
+    desc_.capabilities.supported_input_types = {"text/plain;charset=utf-8"};
+    desc_.capabilities.supported_output_types = {"text/plain;charset=utf-8"};
+    desc_.capabilities.supports_cancellation = true;
+  }
+  const ProviderDescriptor& descriptor() const noexcept override { return desc_; }
+  ProviderResult execute(const ProviderRequest&, const ExecutionContext&,
+                         const CancellationToken&) override {
+    throw std::runtime_error("simulated provider crash");
+  }
+
+private:
+  ProviderDescriptor desc_;
+};
+
+class NonCancellableProvider final : public IAiProvider {
+public:
+  NonCancellableProvider() {
+    desc_.provider_id = "test.noncancellable";
+    desc_.provider_version = "0.1.0";
+    desc_.runtime_environment = "test-noncancellable";
+    desc_.execution_class = ExecutionClass::ExternalProbabilistic;
+    desc_.isolation_mode = IsolationMode::InProcessReadOnly;
+    desc_.capabilities.supported_operations = {"op.block"};
+    desc_.capabilities.supported_input_types = {"text/plain;charset=utf-8"};
+    desc_.capabilities.supported_output_types = {"text/plain;charset=utf-8"};
+    desc_.capabilities.supports_cancellation = false;
+  }
+  const ProviderDescriptor& descriptor() const noexcept override { return desc_; }
+  ProviderResult execute(const ProviderRequest&, const ExecutionContext&,
+                         const CancellationToken&) override {
+    ++invocations;
+    ProviderResult r;
+    r.ok = true;
+    r.trit = 0;
+    return r;
+  }
+  std::uint64_t invocations{0};
+
+private:
+  ProviderDescriptor desc_;
+};
+
+class FailingWriteDriver final : public t81::canonfs::Driver {
+public:
+  t81::canonfs::Result<t81::canonfs::CanonRef> write_object(t81::canonfs::ObjectType,
+                                                            std::span<const std::byte>) override {
+    return std::unexpected(t81::canonfs::Error::CapabilityError);
+  }
+  t81::canonfs::Result<std::vector<std::byte>> read_object_bytes(
+      const t81::canonfs::CanonRef&) override {
+    return std::unexpected(t81::canonfs::Error::NotFound);
+  }
+  t81::canonfs::Result<void> publish_capability(const t81::canonfs::CapabilityGrant&) override {
+    return {};
+  }
+  t81::canonfs::Result<void> revoke_capability(const t81::canonfs::CanonRef&) override {
+    return {};
+  }
+  t81::canonfs::Result<void> parity_repair_subtree(const t81::canonfs::CanonRef&) override {
+    return {};
+  }
+  void set_axion_hook(std::function<t81::canonfs::AxionVerdict(
+                          t81::canonfs::OpKind, const t81::canonfs::CanonRef&)>) override {}
+};
+
+void test_at08_exceptions_cooperative_timeout_memory_and_strict_int() {
+  std::cout << "[AT-08] Exceptions, cooperative timeout, payload max_memory_bytes, strict int "
+               "(F-03)...\n";
+
+  const std::string any_hash = "sha3-512:" + std::string(128, 'e');
+  t81::axion::Policy allow_policy;
+  allow_policy.tier = 1;
+  allow_policy.allowed_tensor_hashes.push_back(any_hash);
+
+  auto policy_engine = std::make_shared<t81::axion::PolicyEngine>(allow_policy);
+  std::shared_ptr<t81::canonfs::Driver> canonfs = t81::canonfs::make_in_memory_driver();
+  ProviderGovernor governor(policy_engine, canonfs);
+  CancellationToken cancel;
+
+  // 1. Provider exception caught -> ProviderFault, trit == -1, cleared output, persisted evidence
+  ThrowingProvider thrower;
+  ProviderRequest throw_req;
+  throw_req.operation = "op.throw";
+  throw_req.artifact = {"throw-art", "raw", any_hash, std::nullopt};
+  throw_req.input = {"text/plain;charset=utf-8", to_bytes("boom"), std::nullopt};
+  ExecutionContext ctx;
+  ctx.principal_id = "agent-f03";
+
+  auto throw_out = governor.execute(thrower, throw_req, ctx, cancel);
+  T81_REQUIRE(!throw_out.result.ok);
+  T81_REQUIRE(throw_out.result.trit == -1);
+  T81_REQUIRE(throw_out.result.failure_code == FailureCode::ProviderFault);
+  T81_REQUIRE(throw_out.result.output.bytes.empty());
+  T81_REQUIRE(throw_out.evidence_ref.has_value());
+  T81_REQUIRE(ProviderGovernor::verify_persisted_evidence(*canonfs, *throw_out.evidence_ref,
+                                                          throw_out.evidence_sha3_512)
+                  .valid);
+
+  // 2. timeout_ms > 0 on non-cancellable provider -> CapabilityMismatch, 0 invocations
+  NonCancellableProvider noncancel;
+  ProviderRequest nc_req;
+  nc_req.operation = "op.block";
+  nc_req.artifact = {"nc-art", "raw", any_hash, std::nullopt};
+  nc_req.input = {"text/plain;charset=utf-8", to_bytes("x"), std::nullopt};
+  ctx.budget.timeout_ms = 50;
+  auto nc_out = governor.execute(noncancel, nc_req, ctx, cancel);
+  T81_REQUIRE(!nc_out.result.ok);
+  T81_REQUIRE(nc_out.result.failure_code == FailureCode::CapabilityMismatch);
+  T81_REQUIRE(!nc_out.provider_invoked);
+  T81_REQUIRE(noncancel.invocations == 0);
+
+  // 3. Payload size exceeding max_memory_bytes -> BudgetExhausted, 0 invocations
+  ControlledProvider ctrl;
+  ProviderRequest mem_req;
+  mem_req.operation = "text.generate";
+  mem_req.artifact = {"mem-art", "mt19937_64", any_hash, std::nullopt};
+  mem_req.input = {"text/plain;charset=utf-8", to_bytes("0123456789abcdef"), std::nullopt};
+  ExecutionContext mem_ctx;
+  mem_ctx.principal_id = "agent-f03";
+  mem_ctx.user_consent_verified = true;
+  mem_ctx.seed = 1;
+  mem_ctx.budget.max_memory_bytes = 8;
+  auto mem_out = governor.execute(ctrl, mem_req, mem_ctx, cancel);
+  T81_REQUIRE(!mem_out.result.ok);
+  T81_REQUIRE(mem_out.result.failure_code == FailureCode::BudgetExhausted);
+  T81_REQUIRE(!mem_out.provider_invoked);
+  T81_REQUIRE(ctrl.invocation_count() == 0);
+
+  // 4. Strict integer parsing in ControlledProvider rejects "4abc"
+  ProviderRequest bad_int_req;
+  bad_int_req.operation = "text.generate";
+  bad_int_req.artifact = {"int-art", "mt19937_64", any_hash, std::nullopt};
+  bad_int_req.input = {"text/plain;charset=utf-8", to_bytes("hi"), std::nullopt};
+  bad_int_req.parameters["tokens"] = "4abc";
+  ExecutionContext int_ctx;
+  int_ctx.principal_id = "agent-f03";
+  int_ctx.user_consent_verified = true;
+  int_ctx.seed = 1;
+  auto int_out = governor.execute(ctrl, bad_int_req, int_ctx, cancel);
+  T81_REQUIRE(!int_out.result.ok);
+  T81_REQUIRE(int_out.result.trit == -1);
+  T81_REQUIRE(int_out.result.failure_code == FailureCode::InvalidBudget);
+}
+
+void test_at09_persistence_failure_clears_stale_receipt() {
+  std::cout << "[AT-09] Persistence failure fail-closed receipt clearing (F-04, D2)...\n";
+
+  const auto prog = make_load_imm_halt_bytecode(123);
+  const std::string prog_hash = sha3_512_prefixed_bytes(prog);
+
+  t81::axion::Policy allow_policy;
+  allow_policy.tier = 1;
+  allow_policy.allowed_tensor_hashes.push_back(prog_hash);
+  auto policy_engine = std::make_shared<t81::axion::PolicyEngine>(allow_policy);
+
+  T81VmProvider vm_provider(allow_policy);
+  ProviderRequest req;
+  req.operation = "subgraph.run";
+  req.artifact = {"prog-123", "tisc-v1.9.0", prog_hash, std::nullopt};
+  req.input = {"application/x-t81-tisc", prog, std::nullopt};
+  ExecutionContext ctx;
+  ctx.principal_id = "agent-f04";
+  CancellationToken cancel;
+
+  // 1. Null CanonFS driver -> EvidencePersistError, empty evidence_json/sha/ref/output
+  ProviderGovernor null_driver_gov(policy_engine, nullptr);
+  auto null_out = null_driver_gov.execute(vm_provider, req, ctx, cancel);
+  T81_REQUIRE(!null_out.result.ok);
+  T81_REQUIRE(null_out.result.trit == -1);
+  T81_REQUIRE(null_out.result.failure_code == FailureCode::EvidencePersistError);
+  T81_REQUIRE(null_out.result.output.bytes.empty());
+  T81_REQUIRE(!null_out.evidence_ref.has_value());
+  T81_REQUIRE(null_out.evidence_json.empty());
+  T81_REQUIRE(null_out.evidence_sha3_512.empty());
+
+  // 2. Failing CanonFS write_object -> EvidencePersistError, empty evidence_json/sha/ref/output
+  auto failing_driver = std::make_shared<FailingWriteDriver>();
+  ProviderGovernor fail_gov(policy_engine, failing_driver);
+  auto fail_out = fail_gov.execute(vm_provider, req, ctx, cancel);
+  T81_REQUIRE(!fail_out.result.ok);
+  T81_REQUIRE(fail_out.result.trit == -1);
+  T81_REQUIRE(fail_out.result.failure_code == FailureCode::EvidencePersistError);
+  T81_REQUIRE(fail_out.result.output.bytes.empty());
+  T81_REQUIRE(!fail_out.evidence_ref.has_value());
+  T81_REQUIRE(fail_out.evidence_json.empty());
+  T81_REQUIRE(fail_out.evidence_sha3_512.empty());
+}
+
+void test_at10_structural_json_spoofing_rejection() {
+  std::cout << "[AT-10] Structural JSON spoofing rejection (F-05)...\n";
+
+  // Attempt to bypass honesty check by injecting "\"execution_class\":\"deterministic\""
+  // inside an unrelated string field (authority.principal_id) while actual provider is
+  // seeded_probabilistic claiming bit_exact_replay.
+  const std::string spoofed =
+      "{\"schema\":\"t81.provider.evidence.v1\",\"trit\":1,"
+      "\"authority\":{\"principal_id\":\"\\\"execution_class\\\":\\\"deterministic\\\"\"},"
+      "\"provider\":{\"execution_class\":\"seeded_probabilistic\"},"
+      "\"challengeability\":{\"replayable\":true,\"verification_mode\":\"bit_exact_replay\"}}";
+  auto res = ProviderGovernor::verify_evidence_json(spoofed, "");
+  T81_REQUIRE(!res.valid);
+
+  // Malformed JSON must also be rejected
+  auto bad_json = ProviderGovernor::verify_evidence_json("{not valid json", "");
+  T81_REQUIRE(!bad_json.valid);
+}
+
+void dump_live_json_for_schema_validation() {
+  const auto prog = make_load_imm_halt_bytecode(42);
+  const std::string prog_hash = sha3_512_prefixed_bytes(prog);
+
+  t81::axion::Policy allow_policy;
+  allow_policy.tier = 1;
+  allow_policy.allowed_tensor_hashes.push_back(prog_hash);
+
+  auto policy_engine = std::make_shared<t81::axion::PolicyEngine>(allow_policy);
+  std::shared_ptr<t81::canonfs::Driver> canonfs = t81::canonfs::make_in_memory_driver();
+  ProviderGovernor governor(policy_engine, canonfs);
+  T81VmProvider vm_provider(allow_policy);
+
+  ProviderRequest req;
+  req.operation = "subgraph.run";
+  req.artifact = {"load-imm-42", "tisc-v1.9.0", prog_hash, std::nullopt};
+  req.input = {"application/x-t81-tisc", prog, std::nullopt};
+
+  ExecutionContext ctx;
+  ctx.principal_id = "agent-schema";
+  CancellationToken cancel;
+
+  auto out = governor.execute(vm_provider, req, ctx, cancel);
+  T81_REQUIRE(out.result.ok);
+
+  const std::string caps = ProviderGovernor::serialize_capabilities_json(vm_provider.descriptor());
+  const std::string rfc00d4 = ProviderGovernor::project_to_rfc00d4_json(
+      out, vm_provider.descriptor(), req, ctx, "2026-11-24T00:00:00Z", "unsigned-draft",
+      "urn:t81:test-key");
+
+  std::cout << "{\"capabilities\":" << caps << ",\"evidence\":" << out.evidence_json
+            << ",\"rfc00d4\":" << rfc00d4 << "}\n";
+}
+
 }  // namespace
 
-int main() {
+int main(int argc, char** argv) {
+  if (argc > 1 && std::string(argv[1]) == "--dump-json") {
+    dump_live_json_for_schema_validation();
+    return 0;
+  }
   test_at01_provider_independent_fail_closed_denial();
   test_at02_deterministic_bit_exact_replay();
   test_at03_probabilistic_honesty_and_consent_gate();
@@ -527,6 +781,9 @@ int main() {
   test_at05_offline_tamper_and_honesty_rejection();
   test_at06_artifact_digest_bait_and_switch_and_canonfs_precedence();
   test_at07_policy_digest_provenance_and_d4_authority();
-  std::cout << "ALL M1 PROVIDER CONTRACT ACCEPTANCE TESTS (AT-01..AT-07) PASSED.\n";
+  test_at08_exceptions_cooperative_timeout_memory_and_strict_int();
+  test_at09_persistence_failure_clears_stale_receipt();
+  test_at10_structural_json_spoofing_rejection();
+  std::cout << "ALL M1 PROVIDER CONTRACT ACCEPTANCE TESTS (AT-01..AT-10) PASSED.\n";
   return 0;
 }

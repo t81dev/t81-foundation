@@ -217,44 +217,44 @@ GovernedExecutionOutcome ProviderGovernor::execute(IAiProvider& provider,
   outcome.provider_invoked = false;
 
   auto finalize_and_persist = [&]() -> GovernedExecutionOutcome {
-    outcome.evidence_json = build_evidence_json(desc, request, context, outcome);
-    outcome.evidence_sha3_512 = sha3_512_prefixed_str(outcome.evidence_json);
-
-    if (!canonfs_driver_) {
+    auto fail_persist = [&](std::string detail) -> GovernedExecutionOutcome {
       outcome.result.ok = false;
       outcome.result.trit = -1;
       outcome.result.failure_code = FailureCode::EvidencePersistError;
-      outcome.result.failure_detail = "CanonFS driver is null";
+      outcome.result.failure_detail = std::move(detail);
       outcome.result.output.bytes.clear();
+      // D2: Never expose an unpersisted success-shaped receipt on persistence failure.
+      outcome.evidence_ref.reset();
+      outcome.evidence_json.clear();
+      outcome.evidence_sha3_512.clear();
       return outcome;
+    };
+
+    const std::string candidate_json = build_evidence_json(desc, request, context, outcome);
+    const std::string candidate_sha = sha3_512_prefixed_str(candidate_json);
+
+    if (!canonfs_driver_) {
+      return fail_persist("CanonFS driver is null");
     }
 
-    std::vector<std::byte> payload(outcome.evidence_json.size());
-    for (std::size_t i = 0; i < outcome.evidence_json.size(); ++i) {
-      payload[i] = static_cast<std::byte>(outcome.evidence_json[i]);
+    std::vector<std::byte> payload(candidate_json.size());
+    for (std::size_t i = 0; i < candidate_json.size(); ++i) {
+      payload[i] = static_cast<std::byte>(candidate_json[i]);
     }
 
     std::lock_guard<std::mutex> lock(canonfs_mutex_);
     auto write_res = canonfs_driver_->write_object(t81::canonfs::ObjectType::RawBlock, payload);
     if (!write_res) {
-      outcome.result.ok = false;
-      outcome.result.trit = -1;
-      outcome.result.failure_code = FailureCode::EvidencePersistError;
-      outcome.result.failure_detail = "CanonFS write_object failed";
-      outcome.result.output.bytes.clear();
-      return outcome;
+      return fail_persist("CanonFS write_object failed");
     }
 
     auto read_res = canonfs_driver_->read_object_bytes(*write_res);
-    if (!read_res || sha3_512_prefixed_bytes(*read_res) != outcome.evidence_sha3_512) {
-      outcome.result.ok = false;
-      outcome.result.trit = -1;
-      outcome.result.failure_code = FailureCode::EvidencePersistError;
-      outcome.result.failure_detail = "CanonFS read-back SHA3-512 verification failed";
-      outcome.result.output.bytes.clear();
-      return outcome;
+    if (!read_res || sha3_512_prefixed_bytes(*read_res) != candidate_sha) {
+      return fail_persist("CanonFS read-back SHA3-512 verification failed");
     }
 
+    outcome.evidence_json = candidate_json;
+    outcome.evidence_sha3_512 = candidate_sha;
     outcome.evidence_ref = *write_res;
     return outcome;
   };
@@ -283,6 +283,26 @@ GovernedExecutionOutcome ProviderGovernor::execute(IAiProvider& provider,
     outcome.result.trit = -1;
     outcome.result.failure_code = FailureCode::BudgetExhausted;
     outcome.result.failure_detail = "input exceeds provider max_input_bytes";
+    return finalize_and_persist();
+  }
+
+  // F-03: In M1, max_memory_bytes bounds input/output payload sizes only (NOT process RSS).
+  if (context.budget.max_memory_bytes > 0 &&
+      request.input.bytes.size() > context.budget.max_memory_bytes) {
+    outcome.result.ok = false;
+    outcome.result.trit = -1;
+    outcome.result.failure_code = FailureCode::BudgetExhausted;
+    outcome.result.failure_detail = "input payload exceeds budget max_memory_bytes";
+    return finalize_and_persist();
+  }
+
+  // F-03: In-process timeouts are cooperative; reject timeout_ms > 0 on non-cancellable providers.
+  if (context.budget.timeout_ms > 0 && !desc.capabilities.supports_cancellation) {
+    outcome.result.ok = false;
+    outcome.result.trit = -1;
+    outcome.result.failure_code = FailureCode::CapabilityMismatch;
+    outcome.result.failure_detail =
+        "provider does not support cooperative cancellation required for timeout_ms";
     return finalize_and_persist();
   }
 
@@ -427,10 +447,24 @@ GovernedExecutionOutcome ProviderGovernor::execute(IAiProvider& provider,
     return finalize_and_persist();
   }
 
-  // 4. Governed provider execution (only after Axion Allow)
+  // 5. Governed provider execution (only after Axion Allow; exceptions caught fail-closed)
   const auto started = std::chrono::steady_clock::now();
   outcome.provider_invoked = true;
-  outcome.result = provider.execute(request, context, cancel);
+  try {
+    outcome.result = provider.execute(request, context, cancel);
+  } catch (const std::exception& e) {
+    outcome.result = ProviderResult{};
+    outcome.result.ok = false;
+    outcome.result.trit = -1;
+    outcome.result.failure_code = FailureCode::ProviderFault;
+    outcome.result.failure_detail = std::string("provider threw exception: ") + e.what();
+  } catch (...) {
+    outcome.result = ProviderResult{};
+    outcome.result.ok = false;
+    outcome.result.trit = -1;
+    outcome.result.failure_code = FailureCode::ProviderFault;
+    outcome.result.failure_detail = "provider threw unknown exception";
+  }
   const auto elapsed_ms =
       static_cast<std::uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
                                      std::chrono::steady_clock::now() - started)
@@ -447,7 +481,14 @@ GovernedExecutionOutcome ProviderGovernor::execute(IAiProvider& provider,
     outcome.result.ok = false;
     outcome.result.trit = -1;
     outcome.result.failure_code = FailureCode::TimedOut;
-    outcome.result.failure_detail = "execution exceeded timeout_ms budget";
+    outcome.result.failure_detail = "execution exceeded cooperative timeout_ms budget";
+    outcome.result.output.bytes.clear();
+  } else if (outcome.result.ok && context.budget.max_memory_bytes > 0 &&
+             outcome.result.output.bytes.size() > context.budget.max_memory_bytes) {
+    outcome.result.ok = false;
+    outcome.result.trit = -1;
+    outcome.result.failure_code = FailureCode::BudgetExhausted;
+    outcome.result.failure_detail = "output payload exceeds budget max_memory_bytes";
     outcome.result.output.bytes.clear();
   } else if (outcome.result.ok && desc.execution_class == ExecutionClass::Deterministic &&
              outcome.result.dualrail_fallback_count > 0) {
@@ -483,6 +524,8 @@ std::string ProviderGovernor::serialize_capabilities_json(const ProviderDescript
   std::ostringstream os;
   os << "{"
      << "\"capabilities\":{"
+     << "\"artifact_is_inline_input\":"
+     << (descriptor.capabilities.artifact_is_inline_input ? "true" : "false") << ","
      << "\"max_input_bytes\":" << descriptor.capabilities.max_input_bytes << ","
      << "\"max_output_tokens\":" << descriptor.capabilities.max_output_tokens << ","
      << "\"requires_network\":" << (descriptor.capabilities.requires_network ? "true" : "false")
@@ -566,16 +609,215 @@ std::string ProviderGovernor::project_to_rfc00d4_json(
   return os.str();
 }
 
+namespace {
+
+struct JsonVal {
+  enum class Kind { Null, Bool, Int, String, Array, Object };
+  Kind kind{Kind::Null};
+  bool b{false};
+  std::int64_t i{0};
+  std::string s;
+  std::vector<JsonVal> arr;
+  std::map<std::string, JsonVal> obj;
+};
+
+class StrictJsonParser {
+public:
+  explicit StrictJsonParser(std::string_view src) : src_(src) {}
+
+  bool parse_root(JsonVal& out) {
+    skip_ws();
+    if (!parse_value(out, 0)) return false;
+    skip_ws();
+    return pos_ == src_.size();
+  }
+
+private:
+  void skip_ws() {
+    while (pos_ < src_.size() &&
+           (src_[pos_] == ' ' || src_[pos_] == '\t' || src_[pos_] == '\n' || src_[pos_] == '\r')) {
+      ++pos_;
+    }
+  }
+
+  bool parse_string(std::string& out) {
+    if (pos_ >= src_.size() || src_[pos_] != '"') return false;
+    ++pos_;
+    out.clear();
+    while (pos_ < src_.size()) {
+      char c = src_[pos_++];
+      if (c == '"') return true;
+      if (static_cast<unsigned char>(c) < 0x20) return false;
+      if (c == '\\') {
+        if (pos_ >= src_.size()) return false;
+        char esc = src_[pos_++];
+        switch (esc) {
+          case '"':
+          case '\\':
+          case '/':
+            out.push_back(esc);
+            break;
+          case 'b':
+            out.push_back('\b');
+            break;
+          case 'f':
+            out.push_back('\f');
+            break;
+          case 'n':
+            out.push_back('\n');
+            break;
+          case 'r':
+            out.push_back('\r');
+            break;
+          case 't':
+            out.push_back('\t');
+            break;
+          case 'u': {
+            if (pos_ + 4 > src_.size()) return false;
+            unsigned int code = 0;
+            for (int k = 0; k < 4; ++k) {
+              char h = src_[pos_++];
+              code <<= 4;
+              if (h >= '0' && h <= '9')
+                code |= static_cast<unsigned int>(h - '0');
+              else if (h >= 'a' && h <= 'f')
+                code |= static_cast<unsigned int>(h - 'a' + 10);
+              else if (h >= 'A' && h <= 'F')
+                code |= static_cast<unsigned int>(h - 'A' + 10);
+              else
+                return false;
+            }
+            out.push_back(static_cast<char>(code & 0xFF));
+            break;
+          }
+          default:
+            return false;
+        }
+      } else {
+        out.push_back(c);
+      }
+    }
+    return false;
+  }
+
+  bool parse_int(std::int64_t& out) {
+    const std::size_t start = pos_;
+    if (pos_ < src_.size() && src_[pos_] == '-') ++pos_;
+    if (pos_ >= src_.size() || src_[pos_] < '0' || src_[pos_] > '9') return false;
+    while (pos_ < src_.size() && src_[pos_] >= '0' && src_[pos_] <= '9') ++pos_;
+    try {
+      std::size_t consumed = 0;
+      const std::string token(src_.substr(start, pos_ - start));
+      out = std::stoll(token, &consumed, 10);
+      return consumed == token.size();
+    } catch (...) {
+      return false;
+    }
+  }
+
+  bool parse_value(JsonVal& out, int depth) {
+    if (depth > 16) return false;
+    skip_ws();
+    if (pos_ >= src_.size()) return false;
+    const char c = src_[pos_];
+    if (c == '"') {
+      out.kind = JsonVal::Kind::String;
+      return parse_string(out.s);
+    }
+    if (c == '{') {
+      out.kind = JsonVal::Kind::Object;
+      out.obj.clear();
+      ++pos_;
+      skip_ws();
+      if (pos_ < src_.size() && src_[pos_] == '}') {
+        ++pos_;
+        return true;
+      }
+      while (true) {
+        skip_ws();
+        std::string key;
+        if (!parse_string(key)) return false;
+        skip_ws();
+        if (pos_ >= src_.size() || src_[pos_] != ':') return false;
+        ++pos_;
+        JsonVal val;
+        if (!parse_value(val, depth + 1)) return false;
+        if (out.obj.find(key) != out.obj.end()) return false;  // reject duplicate keys
+        out.obj.emplace(std::move(key), std::move(val));
+        skip_ws();
+        if (pos_ >= src_.size()) return false;
+        if (src_[pos_] == '}') {
+          ++pos_;
+          return true;
+        }
+        if (src_[pos_] != ',') return false;
+        ++pos_;
+      }
+    }
+    if (c == '[') {
+      out.kind = JsonVal::Kind::Array;
+      out.arr.clear();
+      ++pos_;
+      skip_ws();
+      if (pos_ < src_.size() && src_[pos_] == ']') {
+        ++pos_;
+        return true;
+      }
+      while (true) {
+        JsonVal elem;
+        if (!parse_value(elem, depth + 1)) return false;
+        out.arr.push_back(std::move(elem));
+        skip_ws();
+        if (pos_ >= src_.size()) return false;
+        if (src_[pos_] == ']') {
+          ++pos_;
+          return true;
+        }
+        if (src_[pos_] != ',') return false;
+        ++pos_;
+      }
+    }
+    if (src_.substr(pos_, 4) == "true") {
+      out.kind = JsonVal::Kind::Bool;
+      out.b = true;
+      pos_ += 4;
+      return true;
+    }
+    if (src_.substr(pos_, 5) == "false") {
+      out.kind = JsonVal::Kind::Bool;
+      out.b = false;
+      pos_ += 5;
+      return true;
+    }
+    if (src_.substr(pos_, 4) == "null") {
+      out.kind = JsonVal::Kind::Null;
+      pos_ += 4;
+      return true;
+    }
+    if (c == '-' || (c >= '0' && c <= '9')) {
+      out.kind = JsonVal::Kind::Int;
+      return parse_int(out.i);
+    }
+    return false;
+  }
+
+  std::string_view src_;
+  std::size_t pos_{0};
+};
+
+const JsonVal* get_field(const JsonVal& obj, const std::string& key, JsonVal::Kind kind) {
+  if (obj.kind != JsonVal::Kind::Object) return nullptr;
+  auto it = obj.obj.find(key);
+  if (it == obj.obj.end() || it->second.kind != kind) return nullptr;
+  return &it->second;
+}
+
+}  // namespace
+
 EvidenceVerificationResult ProviderGovernor::verify_evidence_json(
     std::string_view evidence_json, std::string_view expected_sha3_512) {
   EvidenceVerificationResult res;
   res.computed_sha3_512 = sha3_512_prefixed_str(evidence_json);
-
-  if (evidence_json.find("\"schema\":\"t81.provider.evidence.v1\"") == std::string_view::npos) {
-    res.valid = false;
-    res.reason = "missing or mismatched t81.provider.evidence.v1 schema marker";
-    return res;
-  }
 
   if (!expected_sha3_512.empty() && res.computed_sha3_512 != expected_sha3_512) {
     res.valid = false;
@@ -583,12 +825,48 @@ EvidenceVerificationResult ProviderGovernor::verify_evidence_json(
     return res;
   }
 
-  // Execution-class honesty invariant: non-deterministic providers MUST NOT claim bit_exact_replay
-  const bool is_deterministic =
-      evidence_json.find("\"execution_class\":\"deterministic\"") != std::string_view::npos;
-  const bool claims_bit_exact =
-      evidence_json.find("\"verification_mode\":\"bit_exact_replay\"") != std::string_view::npos ||
-      evidence_json.find("\"replayable\":true") != std::string_view::npos;
+  JsonVal root;
+  StrictJsonParser parser(evidence_json);
+  if (!parser.parse_root(root) || root.kind != JsonVal::Kind::Object) {
+    res.valid = false;
+    res.reason = "malformed JSON evidence object";
+    return res;
+  }
+
+  const auto* schema = get_field(root, "schema", JsonVal::Kind::String);
+  if (!schema || schema->s != "t81.provider.evidence.v1") {
+    res.valid = false;
+    res.reason = "missing or mismatched t81.provider.evidence.v1 schema marker";
+    return res;
+  }
+
+  const auto* trit = get_field(root, "trit", JsonVal::Kind::Int);
+  if (!trit || (trit->i != -1 && trit->i != 0 && trit->i != 1)) {
+    res.valid = false;
+    res.reason = "invalid or missing trit domain {-1, 0, 1}";
+    return res;
+  }
+
+  const auto* provider = get_field(root, "provider", JsonVal::Kind::Object);
+  const auto* challenge = get_field(root, "challengeability", JsonVal::Kind::Object);
+  if (!provider || !challenge) {
+    res.valid = false;
+    res.reason = "missing required provider or challengeability object";
+    return res;
+  }
+
+  const auto* exec_cls = get_field(*provider, "execution_class", JsonVal::Kind::String);
+  const auto* replayable = get_field(*challenge, "replayable", JsonVal::Kind::Bool);
+  const auto* ver_mode = get_field(*challenge, "verification_mode", JsonVal::Kind::String);
+  if (!exec_cls || !replayable || !ver_mode) {
+    res.valid = false;
+    res.reason = "missing required execution_class, replayable, or verification_mode fields";
+    return res;
+  }
+
+  // Structural execution-class honesty invariant (immune to substring spoofing in other fields)
+  const bool is_deterministic = (exec_cls->s == "deterministic");
+  const bool claims_bit_exact = (ver_mode->s == "bit_exact_replay") || replayable->b;
 
   if (!is_deterministic && claims_bit_exact) {
     res.valid = false;

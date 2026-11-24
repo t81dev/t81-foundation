@@ -120,7 +120,6 @@ struct ProviderResult {
   std::uint64_t steps_consumed{0};
   std::uint64_t tokens_consumed{0};
   std::uint64_t dualrail_fallback_count{0};
-  std::map<std::string, std::string> provenance_metadata;
 };
 
 class IAiProvider {
