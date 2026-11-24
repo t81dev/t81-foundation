@@ -40,6 +40,7 @@ struct ProviderCapabilities {
   bool supports_streaming{false};
   bool requires_network{false};
   bool requires_user_consent{false};
+  bool artifact_is_inline_input{false};
   std::uint64_t max_input_bytes{0};
   std::uint64_t max_output_tokens{0};
 };
@@ -136,6 +137,8 @@ struct GovernedExecutionOutcome {
   ProviderResult result;
   t81::axion::Verdict authorization_verdict;
   bool provider_invoked{false};
+  std::string authoritative_policy_sha3_512;
+  std::string authoritative_artifact_sha3_512;
   std::string evidence_json;
   std::string evidence_sha3_512;
   std::optional<t81::canonfs::CanonRef> evidence_ref;

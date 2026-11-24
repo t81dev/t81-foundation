@@ -70,15 +70,20 @@ std::string build_evidence_json(const ProviderDescriptor& desc, const ProviderRe
       ctx.parent_evidence_sha3_512 ? json_string(*ctx.parent_evidence_sha3_512) : "null";
   const std::string seed_json = ctx.seed ? std::to_string(*ctx.seed) : "null";
 
+  const std::string recorded_artifact_sha = outcome.authoritative_artifact_sha3_512.empty()
+                                                ? req.artifact.sha3_512
+                                                : outcome.authoritative_artifact_sha3_512;
+  const std::string recorded_policy_sha = outcome.authoritative_policy_sha3_512;
+
   std::ostringstream os;
   os << "{"
      << "\"artifact\":{"
      << "\"artifact_id\":" << json_string(req.artifact.artifact_id) << ","
      << "\"canonfs_ref\":" << artifact_ref_json << ","
      << "\"format\":" << json_string(req.artifact.format) << ","
-     << "\"sha3_512\":" << json_string(req.artifact.sha3_512) << "},"
+     << "\"sha3_512\":" << json_string(recorded_artifact_sha) << "},"
      << "\"authority\":{"
-     << "\"policy_sha3_512\":" << json_string(ctx.policy_sha3_512) << ","
+     << "\"policy_sha3_512\":" << json_string(recorded_policy_sha) << ","
      << "\"principal_id\":" << json_string(ctx.principal_id) << ","
      << "\"provider_invoked\":" << (outcome.provider_invoked ? "true" : "false") << ","
      << "\"reason\":" << json_string(outcome.authorization_verdict.reason) << ","
@@ -192,6 +197,12 @@ std::string canon_ref_hex(const t81::canonfs::CanonRef& ref) {
   return os.str();
 }
 
+std::string ProviderGovernor::compute_policy_sha3_512(const t81::axion::Policy& policy) {
+  std::ostringstream ss(std::ios::binary);
+  policy.serialize(ss);
+  return sha3_512_prefixed_str(ss.str());
+}
+
 ProviderGovernor::ProviderGovernor(std::shared_ptr<t81::axion::PolicyEngine> policy_engine,
                                    std::shared_ptr<t81::canonfs::Driver> canonfs_driver)
     : policy_engine_(std::move(policy_engine)), canonfs_driver_(std::move(canonfs_driver)) {}
@@ -283,13 +294,82 @@ GovernedExecutionOutcome ProviderGovernor::execute(IAiProvider& provider,
     return finalize_and_persist();
   }
 
-  if (desc.execution_class != ExecutionClass::ExternalProbabilistic &&
-      request.artifact.sha3_512.empty()) {
-    outcome.result.ok = false;
-    outcome.result.trit = -1;
-    outcome.result.failure_code = FailureCode::ArtifactDigestError;
-    outcome.result.failure_detail = "artifact sha3_512 digest is required";
-    return finalize_and_persist();
+  // 2. Artifact-source precedence & independent digest verification (F-01)
+  // Precedence:
+  //   (a) canonfs_ref present -> read bytes from CanonFS; if artifact_is_inline_input,
+  //       require exact byte + digest identity between CanonFS object and inline input.
+  //   (b) artifact_is_inline_input (no canonfs_ref) -> compute SHA3-512 over input.bytes.
+  //   (c) non-inline, non-CanonFS artifact -> require non-empty sha3_512 unless
+  //   ExternalProbabilistic.
+  // Any mismatch against caller-supplied request.artifact.sha3_512 fails closed BEFORE
+  // Axion/provider.
+  if (request.artifact.canonfs_ref.has_value()) {
+    if (!canonfs_driver_) {
+      outcome.result.ok = false;
+      outcome.result.trit = -1;
+      outcome.result.failure_code = FailureCode::ArtifactDigestError;
+      outcome.result.failure_detail = "cannot verify artifact canonfs_ref without CanonFS driver";
+      return finalize_and_persist();
+    }
+    std::vector<std::byte> canon_bytes;
+    bool read_ok = false;
+    {
+      std::lock_guard<std::mutex> lock(canonfs_mutex_);
+      auto read_art = canonfs_driver_->read_object_bytes(*request.artifact.canonfs_ref);
+      if (read_art) {
+        canon_bytes = std::move(*read_art);
+        read_ok = true;
+      }
+    }
+    if (!read_ok) {
+      outcome.result.ok = false;
+      outcome.result.trit = -1;
+      outcome.result.failure_code = FailureCode::ArtifactDigestError;
+      outcome.result.failure_detail = "artifact canonfs_ref missing or unreadable";
+      return finalize_and_persist();
+    }
+    const std::string canon_digest = sha3_512_prefixed_bytes(canon_bytes);
+    if (desc.capabilities.artifact_is_inline_input) {
+      const std::string inline_digest = sha3_512_prefixed_bytes(request.input.bytes);
+      if (canon_bytes != request.input.bytes || canon_digest != inline_digest) {
+        outcome.result.ok = false;
+        outcome.result.trit = -1;
+        outcome.result.failure_code = FailureCode::ArtifactDigestError;
+        outcome.result.failure_detail =
+            "artifact canonfs_ref bytes do not match inline executable input bytes";
+        return finalize_and_persist();
+      }
+    }
+    if (!request.artifact.sha3_512.empty() && request.artifact.sha3_512 != canon_digest) {
+      outcome.result.ok = false;
+      outcome.result.trit = -1;
+      outcome.result.failure_code = FailureCode::ArtifactDigestError;
+      outcome.result.failure_detail =
+          "caller artifact.sha3_512 does not match CanonFS object bytes";
+      return finalize_and_persist();
+    }
+    outcome.authoritative_artifact_sha3_512 = canon_digest;
+  } else if (desc.capabilities.artifact_is_inline_input) {
+    const std::string inline_digest = sha3_512_prefixed_bytes(request.input.bytes);
+    if (!request.artifact.sha3_512.empty() && request.artifact.sha3_512 != inline_digest) {
+      outcome.result.ok = false;
+      outcome.result.trit = -1;
+      outcome.result.failure_code = FailureCode::ArtifactDigestError;
+      outcome.result.failure_detail =
+          "caller artifact.sha3_512 does not match inline executable input bytes";
+      return finalize_and_persist();
+    }
+    outcome.authoritative_artifact_sha3_512 = inline_digest;
+  } else {
+    if (desc.execution_class != ExecutionClass::ExternalProbabilistic &&
+        request.artifact.sha3_512.empty()) {
+      outcome.result.ok = false;
+      outcome.result.trit = -1;
+      outcome.result.failure_code = FailureCode::ArtifactDigestError;
+      outcome.result.failure_detail = "artifact sha3_512 digest is required";
+      return finalize_and_persist();
+    }
+    outcome.authoritative_artifact_sha3_512 = request.artifact.sha3_512;
   }
 
   if (desc.capabilities.requires_user_consent && !context.user_consent_verified) {
@@ -300,7 +380,7 @@ GovernedExecutionOutcome ProviderGovernor::execute(IAiProvider& provider,
     return finalize_and_persist();
   }
 
-  // 2. Pre-execution cancellation check
+  // 3. Pre-execution cancellation check
   if (cancel.is_cancelled()) {
     outcome.result.ok = false;
     outcome.result.trit = -1;
@@ -309,7 +389,7 @@ GovernedExecutionOutcome ProviderGovernor::execute(IAiProvider& provider,
     return finalize_and_persist();
   }
 
-  // 3. Provider-independent Axion authorization gate
+  // 4. Provider-independent Axion authorization gate & policy provenance binding (F-02)
   if (!policy_engine_ || !policy_engine_->active_policy()) {
     outcome.authorization_verdict = {t81::axion::VerdictKind::Deny, "missing_active_policy"};
     outcome.result.ok = false;
@@ -319,10 +399,21 @@ GovernedExecutionOutcome ProviderGovernor::execute(IAiProvider& provider,
     return finalize_and_persist();
   }
 
+  outcome.authoritative_policy_sha3_512 = compute_policy_sha3_512(*policy_engine_->active_policy());
+  if (!context.policy_sha3_512.empty() &&
+      context.policy_sha3_512 != outcome.authoritative_policy_sha3_512) {
+    outcome.authorization_verdict = {t81::axion::VerdictKind::Deny, "policy_sha3_512_mismatch"};
+    outcome.result.ok = false;
+    outcome.result.trit = -1;
+    outcome.result.failure_code = FailureCode::PolicyDenied;
+    outcome.result.failure_detail = "caller policy_sha3_512 does not match active Axion policy";
+    return finalize_and_persist();
+  }
+
   t81::axion::SyscallContext ctx;
   ctx.caller = context.principal_id;
   ctx.syscall = "provider:" + request.operation;
-  ctx.payload = request.artifact.sha3_512;
+  ctx.payload = outcome.authoritative_artifact_sha3_512;
   ctx.policy = policy_engine_->active_policy();
   ctx.next_opcode = t81::tisc::Opcode::TLoadHash;
   ctx.final_authorization = true;
@@ -452,10 +543,14 @@ std::string ProviderGovernor::project_to_rfc00d4_json(
      << "\"runtime_environment\":" << json_string(descriptor.runtime_environment) << ","
      << "\"transformation_id\":"
      << json_string(descriptor.provider_id + "@" + descriptor.provider_version) << ","
-     << "\"model_weights_digest\":" << json_string(request.artifact.sha3_512) << "},"
+     << "\"model_weights_digest\":"
+     << json_string(outcome.authoritative_artifact_sha3_512.empty()
+                        ? request.artifact.sha3_512
+                        : outcome.authoritative_artifact_sha3_512)
+     << "},"
      << "\"authority\":{"
      << "\"policy_id\":\"axion.policy.v1\","
-     << "\"policy_hash\":" << json_string(context.policy_sha3_512) << ","
+     << "\"policy_hash\":" << json_string(outcome.authoritative_policy_sha3_512) << ","
      << "\"verdict\":" << json_string(adb_verdict) << ","
      << "\"enforcement_mode\":\"fail-closed\","
      << "\"evaluation_timestamp\":" << json_string(std::string(timestamp_utc)) << "},"

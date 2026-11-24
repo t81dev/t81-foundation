@@ -23,6 +23,9 @@ public:
                                                  const ExecutionContext& context,
                                                  const CancellationToken& cancel);
 
+  // Compute canonical SHA3-512 digest over Policy::serialize() binary TLV output.
+  [[nodiscard]] static std::string compute_policy_sha3_512(const t81::axion::Policy& policy);
+
   // Serialize a ProviderDescriptor to canonical t81.provider.capabilities.v1 JSON.
   [[nodiscard]] static std::string serialize_capabilities_json(
       const ProviderDescriptor& descriptor);

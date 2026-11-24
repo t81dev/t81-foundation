@@ -26,6 +26,7 @@ T81VmProvider::T81VmProvider(t81::axion::Policy vm_policy) : vm_policy_(std::mov
   descriptor_.capabilities.supports_streaming = false;
   descriptor_.capabilities.requires_network = false;
   descriptor_.capabilities.requires_user_consent = false;
+  descriptor_.capabilities.artifact_is_inline_input = true;
   descriptor_.capabilities.max_input_bytes = 1024 * 1024;
   descriptor_.capabilities.max_output_tokens = 0;
 }

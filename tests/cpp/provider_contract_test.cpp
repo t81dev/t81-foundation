@@ -53,7 +53,9 @@ void test_at01_provider_independent_fail_closed_denial() {
   std::cout << "[AT-01] Provider-independent fail-closed Axion denial...\n";
 
   const std::string approved_hash = "sha3-512:" + std::string(128, 'a');
-  const std::string unapproved_hash = "sha3-512:" + std::string(128, 'b');
+  const auto unapproved_bytecode = make_load_imm_halt_bytecode(42);
+  const std::string unapproved_vm_hash = sha3_512_prefixed_bytes(unapproved_bytecode);
+  const std::string unapproved_rng_hash = "sha3-512:" + std::string(128, 'b');
 
   t81::axion::Policy strict_policy;
   strict_policy.tier = 1;
@@ -70,15 +72,15 @@ void test_at01_provider_independent_fail_closed_denial() {
   ExecutionContext ctx;
   ctx.correlation_id = "at01-deny";
   ctx.principal_id = "agent-audit";
-  ctx.policy_sha3_512 = "sha3-512:" + std::string(128, '1');
+  ctx.policy_sha3_512 = ProviderGovernor::compute_policy_sha3_512(strict_policy);
   ctx.user_consent_verified = true;
   ctx.seed = 12345;
 
   // Deny against deterministic provider
   ProviderRequest vm_req;
   vm_req.operation = "subgraph.run";
-  vm_req.artifact = {"demo-vm", "tisc-v1.9.0", unapproved_hash, std::nullopt};
-  vm_req.input = {"application/x-t81-tisc", make_load_imm_halt_bytecode(42), std::nullopt};
+  vm_req.artifact = {"demo-vm", "tisc-v1.9.0", unapproved_vm_hash, std::nullopt};
+  vm_req.input = {"application/x-t81-tisc", unapproved_bytecode, std::nullopt};
 
   auto vm_out = governor.execute(vm_provider, vm_req, ctx, cancel);
   T81_REQUIRE(!vm_out.result.ok);
@@ -94,7 +96,7 @@ void test_at01_provider_independent_fail_closed_denial() {
   // Deny against probabilistic provider under identical policy
   ProviderRequest ctrl_req;
   ctrl_req.operation = "text.generate";
-  ctrl_req.artifact = {"demo-rng", "mock-rng", unapproved_hash, std::nullopt};
+  ctrl_req.artifact = {"demo-rng", "mock-rng", unapproved_rng_hash, std::nullopt};
   ctrl_req.input = {"text/plain;charset=utf-8", to_bytes("hello"), std::nullopt};
 
   auto ctrl_out = governor.execute(ctrl_provider, ctrl_req, ctx, cancel);
@@ -138,7 +140,7 @@ void test_at02_deterministic_bit_exact_replay() {
   ExecutionContext ctx;
   ctx.correlation_id = "at02-replay";
   ctx.principal_id = "agent-det";
-  ctx.policy_sha3_512 = "sha3-512:" + std::string(128, '2');
+  ctx.policy_sha3_512 = ProviderGovernor::compute_policy_sha3_512(allow_policy);
   ctx.budget.max_steps = 100;
 
   auto run1 = governor.execute(vm_provider, req, ctx, cancel);
@@ -193,7 +195,7 @@ void test_at03_probabilistic_honesty_and_consent_gate() {
   ExecutionContext ctx;
   ctx.correlation_id = "at03-prob";
   ctx.principal_id = "agent-prob";
-  ctx.policy_sha3_512 = "sha3-512:" + std::string(128, '3');
+  ctx.policy_sha3_512 = ProviderGovernor::compute_policy_sha3_512(allow_policy);
   ctx.seed = 424242;
   ctx.budget.max_output_tokens = 16;
 
@@ -259,7 +261,7 @@ void test_at04_cancellation_budget_and_timeout() {
 
   ExecutionContext ctx;
   ctx.principal_id = "agent-limits";
-  ctx.policy_sha3_512 = "sha3-512:" + std::string(128, '4');
+  ctx.policy_sha3_512 = ProviderGovernor::compute_policy_sha3_512(allow_policy);
 
   // 1. Pre-cancelled token -> Cancelled, 0 invocations
   CancellationToken pre_cancelled;
@@ -321,7 +323,7 @@ void test_at05_offline_tamper_and_honesty_rejection() {
 
   ExecutionContext ctx;
   ctx.principal_id = "agent-verify";
-  ctx.policy_sha3_512 = "sha3-512:" + std::string(128, '5');
+  ctx.policy_sha3_512 = ProviderGovernor::compute_policy_sha3_512(allow_policy);
   CancellationToken cancel;
 
   auto out = governor.execute(vm_provider, req, ctx, cancel);
@@ -344,6 +346,177 @@ void test_at05_offline_tamper_and_honesty_rejection() {
   T81_REQUIRE(!dishonest_res.valid);
 }
 
+void test_at06_artifact_digest_bait_and_switch_and_canonfs_precedence() {
+  std::cout << "[AT-06] Artifact digest bait-and-switch & CanonFS precedence (F-01)...\n";
+
+  const auto prog_a = make_load_imm_halt_bytecode(11);
+  const auto prog_b = make_load_imm_halt_bytecode(22);
+  const std::string hash_a = sha3_512_prefixed_bytes(prog_a);
+  const std::string hash_b = sha3_512_prefixed_bytes(prog_b);
+  T81_REQUIRE(hash_a != hash_b);
+
+  t81::axion::Policy allow_a;
+  allow_a.tier = 1;
+  allow_a.allowed_tensor_hashes.push_back(hash_a);
+
+  auto policy_engine = std::make_shared<t81::axion::PolicyEngine>(allow_a);
+  std::shared_ptr<t81::canonfs::Driver> canonfs = t81::canonfs::make_in_memory_driver();
+  ProviderGovernor governor(policy_engine, canonfs);
+  T81VmProvider vm_provider(allow_a);
+
+  CancellationToken cancel;
+  ExecutionContext ctx;
+  ctx.principal_id = "agent-f01";
+  ctx.policy_sha3_512 = ProviderGovernor::compute_policy_sha3_512(allow_a);
+
+  // 1. Inline bait-and-switch: claim hash_a while supplying prog_b bytes -> ArtifactDigestError, 0
+  // invocations
+  ProviderRequest bait_req;
+  bait_req.operation = "subgraph.run";
+  bait_req.artifact = {"bait", "tisc-v1.9.0", hash_a, std::nullopt};
+  bait_req.input = {"application/x-t81-tisc", prog_b, std::nullopt};
+
+  auto bait_out = governor.execute(vm_provider, bait_req, ctx, cancel);
+  T81_REQUIRE(!bait_out.result.ok);
+  T81_REQUIRE(bait_out.result.trit == -1);
+  T81_REQUIRE(bait_out.result.failure_code == FailureCode::ArtifactDigestError);
+  T81_REQUIRE(!bait_out.provider_invoked);
+  T81_REQUIRE(vm_provider.invocation_count() == 0);
+
+  // 2. Dual canonfs_ref + inline mismatch: CanonFS stores prog_a, inline input supplies prog_b
+  auto ref_a = canonfs->write_object(t81::canonfs::ObjectType::RawBlock, prog_a);
+  T81_REQUIRE(ref_a.has_value());
+  ProviderRequest dual_mismatch;
+  dual_mismatch.operation = "subgraph.run";
+  dual_mismatch.artifact = {"dual-mismatch", "tisc-v1.9.0", hash_a, *ref_a};
+  dual_mismatch.input = {"application/x-t81-tisc", prog_b, std::nullopt};
+
+  auto dual_out = governor.execute(vm_provider, dual_mismatch, ctx, cancel);
+  T81_REQUIRE(!dual_out.result.ok);
+  T81_REQUIRE(dual_out.result.failure_code == FailureCode::ArtifactDigestError);
+  T81_REQUIRE(!dual_out.provider_invoked);
+  T81_REQUIRE(vm_provider.invocation_count() == 0);
+
+  // 3. CanonFS ref mismatch against caller artifact.sha3_512 (non-inline ControlledProvider)
+  auto ref_b = canonfs->write_object(t81::canonfs::ObjectType::RawBlock, prog_b);
+  T81_REQUIRE(ref_b.has_value());
+  ControlledProvider ctrl_provider;
+  ctx.user_consent_verified = true;
+  ctx.seed = 77;
+  ProviderRequest ctrl_mismatch;
+  ctrl_mismatch.operation = "text.generate";
+  ctrl_mismatch.artifact = {"ctrl-ref-mismatch", "raw", hash_a, *ref_b};
+  ctrl_mismatch.input = {"text/plain;charset=utf-8", to_bytes("hi"), std::nullopt};
+
+  auto ctrl_out = governor.execute(ctrl_provider, ctrl_mismatch, ctx, cancel);
+  T81_REQUIRE(!ctrl_out.result.ok);
+  T81_REQUIRE(ctrl_out.result.failure_code == FailureCode::ArtifactDigestError);
+  T81_REQUIRE(!ctrl_out.provider_invoked);
+  T81_REQUIRE(ctrl_provider.invocation_count() == 0);
+
+  // 4. Unreadable/missing CanonFS ref fails closed before provider invocation
+  t81::canonfs::CanonRef missing_ref{};
+  missing_ref.hash.h.bytes[0] = 0xDE;
+  missing_ref.hash.h.bytes[1] = 0xAD;
+  ProviderRequest missing_req;
+  missing_req.operation = "subgraph.run";
+  missing_req.artifact = {"missing-ref", "tisc-v1.9.0", hash_a, missing_ref};
+  missing_req.input = {"application/x-t81-tisc", prog_a, std::nullopt};
+
+  auto missing_out = governor.execute(vm_provider, missing_req, ctx, cancel);
+  T81_REQUIRE(!missing_out.result.ok);
+  T81_REQUIRE(missing_out.result.failure_code == FailureCode::ArtifactDigestError);
+  T81_REQUIRE(!missing_out.provider_invoked);
+  T81_REQUIRE(vm_provider.invocation_count() == 0);
+
+  // 5. Matching canonfs_ref + inline prog_a + empty caller sha3_512 -> Governor computes & allows
+  ProviderRequest valid_dual;
+  valid_dual.operation = "subgraph.run";
+  valid_dual.artifact = {"valid-dual", "tisc-v1.9.0", "", *ref_a};
+  valid_dual.input = {"application/x-t81-tisc", prog_a, std::nullopt};
+
+  auto valid_out = governor.execute(vm_provider, valid_dual, ctx, cancel);
+  T81_REQUIRE(valid_out.result.ok);
+  T81_REQUIRE(valid_out.authoritative_artifact_sha3_512 == hash_a);
+  T81_REQUIRE(vm_provider.invocation_count() == 1);
+}
+
+void test_at07_policy_digest_provenance_and_d4_authority() {
+  std::cout << "[AT-07] Policy provenance binding (F-02), D1 determinism, and D4 authority...\n";
+
+  const auto prog = make_load_imm_halt_bytecode(55);
+  const std::string prog_hash = sha3_512_prefixed_bytes(prog);
+
+  t81::axion::Policy policy_a;
+  policy_a.tier = 1;
+  policy_a.allowed_tensor_hashes.push_back(prog_hash);
+
+  t81::axion::Policy policy_a_copy;
+  policy_a_copy.tier = 1;
+  policy_a_copy.allowed_tensor_hashes.push_back(prog_hash);
+
+  t81::axion::Policy policy_b;
+  policy_b.tier = 2;
+  policy_b.allowed_tensor_hashes.push_back("sha3-512:" + std::string(128, 'f'));
+
+  // D1: Verify Policy::serialize() determinism across repeated calls on identical Policy objects
+  const std::string sha_a_1 = ProviderGovernor::compute_policy_sha3_512(policy_a);
+  const std::string sha_a_2 = ProviderGovernor::compute_policy_sha3_512(policy_a);
+  const std::string sha_a_copy = ProviderGovernor::compute_policy_sha3_512(policy_a_copy);
+  const std::string sha_b = ProviderGovernor::compute_policy_sha3_512(policy_b);
+  T81_REQUIRE(sha_a_1 == sha_a_2);
+  T81_REQUIRE(sha_a_1 == sha_a_copy);
+  T81_REQUIRE(sha_a_1 != sha_b);
+
+  auto engine_a = std::make_shared<t81::axion::PolicyEngine>(policy_a);
+  std::shared_ptr<t81::canonfs::Driver> canonfs = t81::canonfs::make_in_memory_driver();
+  ProviderGovernor gov_a(engine_a, canonfs);
+  T81VmProvider vm_provider(policy_a);
+
+  ProviderRequest req;
+  req.operation = "subgraph.run";
+  req.artifact = {"prog-55", "tisc-v1.9.0", prog_hash, std::nullopt};
+  req.input = {"application/x-t81-tisc", prog, std::nullopt};
+  CancellationToken cancel;
+
+  // 1. Forged/mismatched context.policy_sha3_512 -> PolicyDenied, 0 invocations, evidence records
+  // sha_a_1
+  ExecutionContext bad_ctx;
+  bad_ctx.principal_id = "agent-f02";
+  bad_ctx.policy_sha3_512 = sha_b;
+  auto mismatch_out = gov_a.execute(vm_provider, req, bad_ctx, cancel);
+  T81_REQUIRE(!mismatch_out.result.ok);
+  T81_REQUIRE(mismatch_out.result.trit == -1);
+  T81_REQUIRE(mismatch_out.result.failure_code == FailureCode::PolicyDenied);
+  T81_REQUIRE(!mismatch_out.provider_invoked);
+  T81_REQUIRE(vm_provider.invocation_count() == 0);
+  T81_REQUIRE(mismatch_out.authoritative_policy_sha3_512 == sha_a_1);
+  T81_REQUIRE(mismatch_out.evidence_json.find("\"policy_sha3_512\":\"" + sha_a_1 + "\"") !=
+              std::string::npos);
+
+  // 2. Empty context.policy_sha3_512 -> succeeds and evidence records authoritative sha_a_1
+  ExecutionContext empty_ctx;
+  empty_ctx.principal_id = "agent-f02";
+  auto ok_out = gov_a.execute(vm_provider, req, empty_ctx, cancel);
+  T81_REQUIRE(ok_out.result.ok);
+  T81_REQUIRE(ok_out.authoritative_policy_sha3_512 == sha_a_1);
+  T81_REQUIRE(ok_out.evidence_json.find("\"policy_sha3_512\":\"" + sha_a_1 + "\"") !=
+              std::string::npos);
+
+  // 3. D4: Permissive VM-internal policy on T81VmProvider CANNOT weaken or bypass strict
+  // ProviderGovernor
+  auto engine_strict = std::make_shared<t81::axion::PolicyEngine>(policy_b);
+  ProviderGovernor gov_strict(engine_strict, canonfs);
+  T81VmProvider permissive_vm_provider(policy_a);  // VM-internal policy allows prog_hash
+  ExecutionContext d4_ctx;
+  d4_ctx.principal_id = "agent-d4";
+  auto d4_out = gov_strict.execute(permissive_vm_provider, req, d4_ctx, cancel);
+  T81_REQUIRE(!d4_out.result.ok);
+  T81_REQUIRE(d4_out.result.failure_code == FailureCode::PolicyDenied);
+  T81_REQUIRE(!d4_out.provider_invoked);
+  T81_REQUIRE(permissive_vm_provider.invocation_count() == 0);
+}
+
 }  // namespace
 
 int main() {
@@ -352,6 +525,8 @@ int main() {
   test_at03_probabilistic_honesty_and_consent_gate();
   test_at04_cancellation_budget_and_timeout();
   test_at05_offline_tamper_and_honesty_rejection();
-  std::cout << "ALL M1 PROVIDER CONTRACT ACCEPTANCE TESTS (AT-01..AT-05) PASSED.\n";
+  test_at06_artifact_digest_bait_and_switch_and_canonfs_precedence();
+  test_at07_policy_digest_provenance_and_d4_authority();
+  std::cout << "ALL M1 PROVIDER CONTRACT ACCEPTANCE TESTS (AT-01..AT-07) PASSED.\n";
   return 0;
 }
