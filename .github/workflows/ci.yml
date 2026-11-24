@@ -550,6 +550,8 @@ jobs:
             /docs/reference/AI_OS_OBJECT_BUNDLE_VERSIONING_BOUNDARY.md
             /docs/reference/AI_OS_OBJECT_FAMILY_ADMISSION_CONTRACT.md
             /docs/status/BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md
+            /docs/research/proposals/provider-capabilities-v1.schema.json
+            /docs/research/proposals/provider-evidence-v1.schema.json
             /README.md
             /LICENSE
           sparse-checkout-cone-mode: false

@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://t81foundation.org/schemas/draft/provider-capabilities-v1.json",
+  "title": "T81ProviderCapabilitiesV1",
+  "description": "Draft provider capability descriptor separating provider identity, execution class, isolation mode, and supported operations.",
+  "type": "object",
+  "required": [
+    "schema",
+    "provider_id",
+    "provider_version",
+    "runtime_environment",
+    "execution_class",
+    "isolation_mode",
+    "capabilities"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "t81.provider.capabilities.v1"
+    },
+    "provider_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provider_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "runtime_environment": {
+      "type": "string",
+      "minLength": 1
+    },
+    "execution_class": {
+      "type": "string",
+      "enum": [
+        "deterministic",
+        "seeded_probabilistic",
+        "external_probabilistic"
+      ]
+    },
+    "isolation_mode": {
+      "type": "string",
+      "enum": [
+        "in_process_readonly",
+        "jailed_process",
+        "external_endpoint"
+      ]
+    },
+    "capabilities": {
+      "type": "object",
+      "required": [
+        "supported_operations",
+        "supported_input_types",
+        "supported_output_types",
+        "supports_cancellation",
+        "supports_streaming",
+        "requires_network",
+        "requires_user_consent",
+        "artifact_is_inline_input"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "supported_operations": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "supported_input_types": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "supported_output_types": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "supports_cancellation": { "type": "boolean" },
+        "supports_streaming": { "type": "boolean" },
+        "requires_network": { "type": "boolean" },
+        "requires_user_consent": { "type": "boolean" },
+        "artifact_is_inline_input": { "type": "boolean" },
+        "max_input_bytes": { "type": "integer", "minimum": 0 },
+        "max_output_tokens": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}
