@@ -10,6 +10,7 @@ set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
 set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googlebenchmark)
 
+find_package(Threads REQUIRED)
 option(T81_ENABLE_METAL "Enable Apple Metal GPU compute backend for H06-MEM-04 benchmarks" OFF)
 
 if(APPLE AND T81_ENABLE_METAL)
