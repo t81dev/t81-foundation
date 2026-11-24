@@ -12,10 +12,18 @@ name: Native x86-64 AVX2 MemBound Benchmark
 on:
   workflow_dispatch:
     inputs:
-      benchmark_filter:
-        description: "Google Benchmark filter regex"
+      preset:
+        description: "Benchmark preset (default_l64 or dram_sweep_gt480mib)"
         required: false
-        default: "BM_MemBound64_(DualRail_Dense|SBDR128_SIMD|INT8_Sparse128)"
+        type: choice
+        default: "default_l64"
+        options:
+          - "default_l64"
+          - "dram_sweep_gt480mib"
+      benchmark_filter:
+        description: "Optional Google Benchmark filter regex (overrides preset)"
+        required: false
+        default: ""
       benchmark_min_time:
         description: "Minimum time per benchmark case"
         required: false
@@ -48,7 +56,15 @@ jobs:
             echo "uname: $(uname -a)"
             grep -m1 -E "model name" /proc/cpuinfo || true
             lscpu || true
+            echo "=== MEMORY ==="
+            free -h || true
+            grep -E "MemTotal|MemAvailable|SwapTotal" /proc/meminfo || true
           } > build/avx2-artifacts/host_cpu.txt
+          AVAIL_MIB="$(awk '/MemAvailable:/ {printf "%d", $2/1024}' /proc/meminfo)"
+          echo "Available RAM: ${AVAIL_MIB} MiB"
+          if [ "${{ github.event.inputs.preset || 'default_l64' }}" = "dram_sweep_gt480mib" ]; then
+            test "${AVAIL_MIB}" -ge 4096
+          fi
 
       - name: Install build dependencies
         run: |
@@ -60,11 +76,21 @@ jobs:
           T81_BENCH_CXX_FLAGS: "-O3 -march=native -DNDEBUG"
         run: bash scripts/ci/build_benchmark_runner.sh
 
-      - name: Run native x86_64 AVX2 BM_MemBound64 benchmarks
+      - name: Run native x86_64 AVX2 MemBound benchmarks
         run: |
           set -euo pipefail
+          PRESET="${{ github.event.inputs.preset || 'default_l64' }}"
+          CUSTOM_FILTER="${{ github.event.inputs.benchmark_filter || '' }}"
+          if [ -n "${CUSTOM_FILTER}" ]; then
+            FILTER="${CUSTOM_FILTER}"
+          elif [ "${PRESET}" = "dram_sweep_gt480mib" ]; then
+            FILTER="BM_MemBoundDramSweep_(DualRail_Dense|SBDR128_SIMD|INT8_Sparse128)"
+          else
+            FILTER="BM_MemBound64_(DualRail_Dense|SBDR128_SIMD|INT8_Sparse128)"
+          fi
+          echo "Running benchmark_filter=${FILTER}"
           ./build/benchmarks/benchmark_runner \
-            --benchmark_filter="${{ github.event.inputs.benchmark_filter || 'BM_MemBound64_(DualRail_Dense|SBDR128_SIMD|INT8_Sparse128)' }}" \
+            --benchmark_filter="${FILTER}" \
             --benchmark_min_time="${{ github.event.inputs.benchmark_min_time || '0.2s' }}" \
             --benchmark_format=json \
             --benchmark_out=build/avx2-artifacts/avx2_membound.json

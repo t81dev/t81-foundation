@@ -22,6 +22,7 @@
 #include <condition_variable>
 #include <cstdint>
 #include <cstring>
+#include <fstream>
 #include <functional>
 #include <mutex>
 #include <random>
@@ -943,6 +944,179 @@ static void BM_MemBound64_INT8_Sparse128(benchmark::State& state) {
   state.counters["weight_MB"] = static_cast<double>(total_bytes) / (1024.0 * 1024.0);
 }
 BENCHMARK(BM_MemBound64_INT8_Sparse128)->Arg(50)->Arg(75)->Arg(90);
+
+// ============================================================================
+// Off-L3 DRAM Sweep (parameterized L, >480 MiB working-set calibration)
+// Allocates L physically distinct layer buffers per variant (cloning the 64
+// deterministic layers from get_layer_set_64) after a fail-closed RAM pre-check
+// so large-L runs exceed Xeon 480 MiB L3 without OOM-killing CI runners.
+// ============================================================================
+
+static bool check_available_ram_for_bytes(size_t required_bytes, double& avail_mib_out) {
+  avail_mib_out = -1.0;
+#if defined(__linux__)
+  std::ifstream meminfo("/proc/meminfo");
+  std::string key;
+  uint64_t kb = 0;
+  std::string unit;
+  while (meminfo >> key >> kb >> unit) {
+    if (key == "MemAvailable:") {
+      avail_mib_out = static_cast<double>(kb) / 1024.0;
+      const size_t avail_bytes = static_cast<size_t>(kb) * 1024ULL;
+      return required_bytes * 2ULL < avail_bytes;
+    }
+  }
+#endif
+  // Conservative cap on non-Linux hosts (e.g., local macOS smoke runs): allow up to 3 GiB
+  return required_bytes <= (3ULL * 1024ULL * 1024ULL * 1024ULL);
+}
+
+static void BM_MemBoundDramSweep_DualRail_Dense(benchmark::State& state) {
+  const size_t num_layers = static_cast<size_t>(state.range(0));
+  const int sparsity_pct = static_cast<int>(state.range(1));
+  const auto& ls = get_layer_set_64(sparsity_pct);
+  const size_t total_bytes = num_layers * kTotalWords * 16ULL;
+  double avail_mib = -1.0;
+  if (!check_available_ram_for_bytes(total_bytes, avail_mib)) {
+    state.SkipWithError("Insufficient available RAM for DualRail_Dense DRAM sweep");
+    return;
+  }
+
+  // Physically distinct layer buffers so every layer streams unique pages from L3/DRAM
+  std::vector<std::vector<uint64_t>> dr_p(num_layers);
+  std::vector<std::vector<uint64_t>> dr_n(num_layers);
+  for (size_t l = 0; l < num_layers; ++l) {
+    dr_p[l] = ls.dr_p[l % kM_Layers64];
+    dr_n[l] = ls.dr_n[l % kM_Layers64];
+  }
+
+  std::vector<int32_t> out(kN);
+  matvec_dualrail_dense(ls.act_p.data(), ls.act_n.data(), dr_p[0].data(), dr_n[0].data(),
+                        out.data());
+  if (out != ls.oracle_layer0) {
+    state.SkipWithError("DualRail_Dense DRAM sweep oracle mismatch");
+    return;
+  }
+
+  for (auto _ : state) {
+    for (size_t l = 0; l < num_layers; ++l) {
+      matvec_dualrail_dense(ls.act_p.data(), ls.act_n.data(), dr_p[l].data(), dr_n[l].data(),
+                            out.data());
+      benchmark::DoNotOptimize(out.data());
+    }
+  }
+  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) *
+                          static_cast<int64_t>(total_bytes));
+  state.counters["layers"] = static_cast<double>(num_layers);
+  state.counters["sparsity_pct"] = static_cast<double>(sparsity_pct);
+  state.counters["weight_MiB"] = static_cast<double>(total_bytes) / (1024.0 * 1024.0);
+  state.counters["exceeds_480MiB_L3"] = (total_bytes > 480ULL * 1024ULL * 1024ULL) ? 1.0 : 0.0;
+}
+BENCHMARK(BM_MemBoundDramSweep_DualRail_Dense)
+    ->Args({64, 50})
+    ->Args({64, 75})
+    ->Args({64, 90})
+    ->Args({640, 50})
+    ->Args({640, 75})
+    ->Args({640, 90});
+
+static void BM_MemBoundDramSweep_SBDR128_SIMD(benchmark::State& state) {
+  const size_t num_layers = static_cast<size_t>(state.range(0));
+  const int sparsity_pct = static_cast<int>(state.range(1));
+  const auto& ls = get_layer_set_64(sparsity_pct);
+  size_t total_bytes = 0;
+  for (size_t l = 0; l < num_layers; ++l) {
+    total_bytes += ls.sbdr128_layers[l % kM_Layers64].payload_bytes;
+  }
+  double avail_mib = -1.0;
+  if (!check_available_ram_for_bytes(total_bytes, avail_mib)) {
+    state.SkipWithError("Insufficient available RAM for SBDR128_SIMD DRAM sweep");
+    return;
+  }
+
+  auto layers = std::decay_t<decltype(ls.sbdr128_layers)>(num_layers);
+  for (size_t l = 0; l < num_layers; ++l) {
+    layers[l] = ls.sbdr128_layers[l % kM_Layers64];
+  }
+
+  std::vector<int32_t> out(kN);
+  matvec_sbdr128_simd(ls.act_p.data(), ls.act_n.data(), layers[0], out.data());
+  if (out != ls.oracle_layer0) {
+    state.SkipWithError("SBDR128_SIMD DRAM sweep oracle mismatch");
+    return;
+  }
+
+  for (auto _ : state) {
+    for (size_t l = 0; l < num_layers; ++l) {
+      matvec_sbdr128_simd(ls.act_p.data(), ls.act_n.data(), layers[l], out.data());
+      benchmark::DoNotOptimize(out.data());
+    }
+  }
+  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) *
+                          static_cast<int64_t>(total_bytes));
+  state.counters["layers"] = static_cast<double>(num_layers);
+  state.counters["sparsity_pct"] = static_cast<double>(sparsity_pct);
+  state.counters["weight_MiB"] = static_cast<double>(total_bytes) / (1024.0 * 1024.0);
+  state.counters["exceeds_480MiB_L3"] = (total_bytes > 480ULL * 1024ULL * 1024ULL) ? 1.0 : 0.0;
+}
+BENCHMARK(BM_MemBoundDramSweep_SBDR128_SIMD)
+    ->Args({64, 50})
+    ->Args({64, 75})
+    ->Args({64, 90})
+    ->Args({640, 50})
+    ->Args({1024, 50})
+    ->Args({2048, 75})
+    ->Args({5120, 90});
+
+static void BM_MemBoundDramSweep_INT8_Sparse128(benchmark::State& state) {
+  const size_t num_layers = static_cast<size_t>(state.range(0));
+  const int sparsity_pct = static_cast<int>(state.range(1));
+  const auto& ls = get_layer_set_64(sparsity_pct);
+  size_t total_bytes = 0;
+  for (size_t l = 0; l < num_layers; ++l) {
+    total_bytes += ls.int8_sparse128_layers[l % kM_Layers64].payload_bytes;
+  }
+  double avail_mib = -1.0;
+  if (!check_available_ram_for_bytes(total_bytes, avail_mib)) {
+    state.SkipWithError("Insufficient available RAM for INT8_Sparse128 DRAM sweep");
+    return;
+  }
+
+  std::vector<LayerSet64::Sparse128Int8> layers(num_layers);
+  for (size_t l = 0; l < num_layers; ++l) {
+    layers[l] = ls.int8_sparse128_layers[l % kM_Layers64];
+  }
+
+  std::vector<int32_t> out(kN);
+  matvec_int8_sparse128(ls.act_i8.data(), layers[0], out.data());
+  if (out != ls.oracle_layer0) {
+    state.SkipWithError("INT8_Sparse128 DRAM sweep oracle mismatch");
+    return;
+  }
+
+  for (auto _ : state) {
+    for (size_t l = 0; l < num_layers; ++l) {
+      matvec_int8_sparse128(ls.act_i8.data(), layers[l], out.data());
+      benchmark::DoNotOptimize(out.data());
+    }
+  }
+  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) *
+                          static_cast<int64_t>(total_bytes));
+  state.counters["layers"] = static_cast<double>(num_layers);
+  state.counters["sparsity_pct"] = static_cast<double>(sparsity_pct);
+  state.counters["weight_MiB"] = static_cast<double>(total_bytes) / (1024.0 * 1024.0);
+  state.counters["exceeds_480MiB_L3"] = (total_bytes > 480ULL * 1024ULL * 1024ULL) ? 1.0 : 0.0;
+}
+BENCHMARK(BM_MemBoundDramSweep_INT8_Sparse128)
+    ->Args({64, 50})
+    ->Args({64, 75})
+    ->Args({64, 90})
+    ->Args({640, 50})
+    ->Args({1024, 50})
+    ->Args({640, 75})
+    ->Args({2048, 75})
+    ->Args({2048, 90})
+    ->Args({5120, 90});
 
 // ============================================================================
 // H06-MEM-03: R2 Regime — INT8 Activations [-127, 127] x Ternary Weights
