@@ -592,11 +592,11 @@ class FailingWriteDriver final : public t81::canonfs::Driver {
 public:
   t81::canonfs::Result<t81::canonfs::CanonRef> write_object(t81::canonfs::ObjectType,
                                                             std::span<const std::byte>) override {
-    return std::unexpected(t81::canonfs::Error::CapabilityError);
+    return t81::make_unexpected(t81::canonfs::Error::CapabilityError);
   }
   t81::canonfs::Result<std::vector<std::byte>> read_object_bytes(
       const t81::canonfs::CanonRef&) override {
-    return std::unexpected(t81::canonfs::Error::NotFound);
+    return t81::make_unexpected(t81::canonfs::Error::NotFound);
   }
   t81::canonfs::Result<void> publish_capability(const t81::canonfs::CapabilityGrant&) override {
     return {};
