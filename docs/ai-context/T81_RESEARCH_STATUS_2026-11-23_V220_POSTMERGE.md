@@ -45,7 +45,8 @@ Reconciled with [T81_RESEARCH_STATUS_2026-11-23_BY_AI_FOR_AI_COEXISTENCE.md](T81
   - `boot_image_sha3_512`: `sha3-512:26bda4ae26a9fd74c4aff8e3c633c8b54174b9913742fd40d9228fe76a1eebfcc1717ac68824be3a1c9640a2aa2fc6803ed31667614254e439a3f93d83c0c55d`
   - `serial_transcript_sha3_512`: `sha3-512:b052306fc0fe3c1f6175e9d0241d6688b43cf877b9d0e99b25c8b32855e926b9fabccd06263a954c38379ea3c463d9336b1b5ff3eed1bb4d63c92198d0be9248`
   - `ledger_sha3_512` (at `4fc40e24b`): `sha3-512:bf21b0bbadec67cf2ff1dde4b09c192bd4274734e0e969dfe4ae741b7eeeacf747688ec985baf493b05768810cf3d3d26e02d32e2cf3217d1dc7a1beff3ad42b`
-  - Black-box 4-tier AI-usability harness (`examples/research/agent-receipt-sidecar/ai_usability_eval.py`, PR `#861`): `19/19` trials passing (`+1: 11`, `0: 3`, `-1: 5`, `0` orphans, `eval_report_sha3_512`: `sha3-512:243081f8967badce79c07d8c1a6150262858622cb488e7503d3acc084e8ea7710556c4b9581f503bac504bece8ea2ba92a1865d0e6cfdd7cf9abb03976b1ce1f`).
+  - Black-box 4-tier AI-usability harness (`examples/research/agent-receipt-sidecar/ai_usability_eval.py`, merged via PR `#861`): `19/19` trials passing (`+1: 11`, `0: 3`, `-1: 5`, `0` orphans, `eval_report_sha3_512`: `sha3-512:243081f8967badce79c07d8c1a6150262858622cb488e7503d3acc084e8ea7710556c4b9581f503bac504bece8ea2ba92a1865d0e6cfdd7cf9abb03976b1ce1f`).
+  - **Native `x86_64` AVX2 Measured (`ubuntu-24.04`, `Intel(R) Xeon(R) 6975P-C`, `480 MiB` L3, Run [`45325242627`](https://github.com/t81dev/t81-foundation/actions/runs/45325242627)):** `DualRail_Dense` `2.544 / 2.530 / 2.554 ms`, `SBDR128_SIMD` `2.433 / 1.354 / 0.751 ms` (`5.54× / 2.07× / 1.68×` vs `INT8_Sparse128` `13.477 / 2.805 / 1.262 ms`; L3-resident caveat disclosed).
 
 ## 3. CI & Determinism Gate Check (`2026-11-23`)
 
