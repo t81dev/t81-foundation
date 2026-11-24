@@ -1586,6 +1586,21 @@ std::optional<t81::T729DynamicTensor> try_decode_sbdr1t2d_and_cache(
 // operands contain exact balanced-ternary values {-1.0f, 0.0f, +1.0f} and dimensions
 // exceed the SIMD amortization threshold. Falls back to t81::ops::matmul() on any
 // non-ternary float element with zero semantic change.
+std::atomic<std::uint64_t>& dualrail_dense_counter() {
+  static std::atomic<std::uint64_t> c{0};
+  return c;
+}
+
+std::atomic<std::uint64_t>& dualrail_sparse128_counter() {
+  static std::atomic<std::uint64_t> c{0};
+  return c;
+}
+
+std::atomic<std::uint64_t>& dualrail_sparse128_blocks_skipped_counter() {
+  static std::atomic<std::uint64_t> c{0};
+  return c;
+}
+
 bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
                                     const t81::T729DynamicTensor& rhs,
                                     std::string_view rhs_canon_hash, t81::T729DynamicTensor& out) {
@@ -1719,10 +1734,6 @@ bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
 
   std::vector<float> c_vec(M * N, 0.0f);
   float* c_data = c_vec.data();
-
-  std::atomic<std::uint64_t>& dualrail_dense_counter();
-  std::atomic<std::uint64_t>& dualrail_sparse128_counter();
-  std::atomic<std::uint64_t>& dualrail_sparse128_blocks_skipped_counter();
 
   if (cached_rhs->use_sparse128) {
     for (std::size_t m = 0; m < M; ++m) {
@@ -1933,21 +1944,6 @@ bool try_dualrail_ternary_matmul_2d(const t81::T729DynamicTensor& lhs,
 
 std::atomic<std::uint64_t> g_dualrail_fastpath_hits{0};
 std::atomic<std::uint64_t> g_dualrail_fallback_count{0};
-
-std::atomic<std::uint64_t>& dualrail_dense_counter() {
-  static std::atomic<std::uint64_t> c{0};
-  return c;
-}
-
-std::atomic<std::uint64_t>& dualrail_sparse128_counter() {
-  static std::atomic<std::uint64_t> c{0};
-  return c;
-}
-
-std::atomic<std::uint64_t>& dualrail_sparse128_blocks_skipped_counter() {
-  static std::atomic<std::uint64_t> c{0};
-  return c;
-}
 
 }  // namespace
 
