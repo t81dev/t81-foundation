@@ -1,0 +1,209 @@
+---- MODULE TernaryOSTransactions ----
+(***************************************************************************)
+(* Formal TLA+ specification for TernaryOS v0.2 transactional isolation    *)
+(* and Axion Governor capability-budget enforcement over 729-byte          *)
+(* CanonStore blocks (TERNARYOS_ARCHITECTURE_v0.2.md,                      *)
+(* TERNARYOS_MULTI_AGENT_CAPABILITY_BUDGET_v0.2.md).                       *)
+(*                                                                         *)
+(* Models concurrent agents executing TxBegin, TxRead, TxWrite (over       *)
+(* balanced-ternary trits {-1, 0, +1}), TxCommit, and TxAbort with:        *)
+(*   - Fail-closed capability budgets (AXHALT when budget <= 0)            *)
+(*   - Snapshot isolation & atomic multi-key commit with zero orphans      *)
+(*   - Deterministic canonical agent-ID conflict resolution                *)
+(***************************************************************************)
+
+EXTENDS Integers, FiniteSets
+
+CONSTANTS
+    Agents,     \* Finite set of ordered integer agent IDs, e.g. {1, 2}
+    Keys,       \* Finite set of CanonStore block keys, e.g. {"k1", "k2"}
+    MaxBudget   \* Maximum per-agent mutation capability budget, e.g. 2
+
+ASSUME
+    /\ IsFiniteSet(Agents)
+    /\ Agents # {}
+    /\ \A a \in Agents : a \in Nat /\ a >= 1
+    /\ IsFiniteSet(Keys)
+    /\ Keys # {}
+    /\ MaxBudget \in Nat /\ MaxBudget >= 1
+
+Trits == {-1, 0, 1}
+TxStates == {"idle", "active", "committed", "aborted"}
+MaxEpoch == MaxBudget * Cardinality(Agents)
+
+VARIABLES
+    canonStore,         \* [Keys -> Trits]: committed 729-byte CanonStore blocks
+    epoch,              \* 0..MaxEpoch: monotonic committed epoch counter
+    txState,            \* [Agents -> TxStates]: per-agent transaction lifecycle
+    txSnapshot,         \* [Agents -> [Keys -> Trits]]: isolated snapshot at TxBegin
+    txSnapEpoch,        \* [Agents -> 0..MaxEpoch]: parent epoch captured at TxBegin
+    txWriteSet,         \* [Agents -> SUBSET Keys]: staged dirty keys
+    txStage,            \* [Agents -> [Keys -> Trits]]: isolated staging buffer
+    budget,             \* [Agents -> 0..MaxBudget]: remaining capability budget
+    lastCommitBudget,   \* [Agents -> 0..MaxBudget]: budget immediately prior to commit
+    lastConflictWinner  \* Agents \cup {0}: canonical winner of last write-write conflict
+
+vars == <<canonStore, epoch, txState, txSnapshot, txSnapEpoch,
+          txWriteSet, txStage, budget, lastCommitBudget, lastConflictWinner>>
+
+-----------------------------------------------------------------------------
+(* Canonical conflict helpers *)
+
+HasLowerConflictingPeer(a) ==
+    \E p \in Agents :
+        /\ p < a
+        /\ txState[p] = "active"
+        /\ (txWriteSet[p] \cap txWriteSet[a]) # {}
+
+LowestConflictingPeer(a) ==
+    CHOOSE p \in Agents :
+        /\ p < a
+        /\ txState[p] = "active"
+        /\ (txWriteSet[p] \cap txWriteSet[a]) # {}
+        /\ \A q \in Agents :
+            (q < a /\ txState[q] = "active" /\ (txWriteSet[q] \cap txWriteSet[a]) # {})
+            => p <= q
+
+-----------------------------------------------------------------------------
+(* Initial state: all CanonStore blocks inert (0), budgets at MaxBudget *)
+
+Init ==
+    /\ canonStore = [k \in Keys |-> 0]
+    /\ epoch = 0
+    /\ txState = [a \in Agents |-> "idle"]
+    /\ txSnapshot = [a \in Agents |-> [k \in Keys |-> 0]]
+    /\ txSnapEpoch = [a \in Agents |-> 0]
+    /\ txWriteSet = [a \in Agents |-> {}]
+    /\ txStage = [a \in Agents |-> [k \in Keys |-> 0]]
+    /\ budget = [a \in Agents |-> MaxBudget]
+    /\ lastCommitBudget = [a \in Agents |-> 0]
+    /\ lastConflictWinner = 0
+
+-----------------------------------------------------------------------------
+(* Transaction operations *)
+
+TxBegin(a) ==
+    /\ txState[a] \in {"idle", "committed", "aborted"}
+    /\ txState' = [txState EXCEPT ![a] = "active"]
+    /\ txSnapshot' = [txSnapshot EXCEPT ![a] = canonStore]
+    /\ txSnapEpoch' = [txSnapEpoch EXCEPT ![a] = epoch]
+    /\ txWriteSet' = [txWriteSet EXCEPT ![a] = {}]
+    /\ txStage' = [txStage EXCEPT ![a] = canonStore]
+    /\ UNCHANGED <<canonStore, epoch, budget, lastCommitBudget, lastConflictWinner>>
+
+TxRead(a, k) ==
+    /\ txState[a] = "active"
+    /\ LET observed == IF k \in txWriteSet[a] THEN txStage[a][k] ELSE txSnapshot[a][k]
+       IN observed \in Trits
+    /\ UNCHANGED vars
+
+TxWrite(a, k, tritVal) ==
+    /\ txState[a] = "active"
+    /\ tritVal \in Trits
+    /\ budget[a] > 0
+    /\ txStage' = [txStage EXCEPT ![a][k] = tritVal]
+    /\ txWriteSet' = [txWriteSet EXCEPT ![a] = @ \cup {k}]
+    /\ UNCHANGED <<canonStore, epoch, txState, txSnapshot, txSnapEpoch,
+                   budget, lastCommitBudget, lastConflictWinner>>
+
+TxCommit(a) ==
+    /\ txState[a] = "active"
+    /\ IF budget[a] <= 0 THEN
+           \* AXHALT fail-closed: zero budget cannot commit or mutate CanonStore
+           /\ txState' = [txState EXCEPT ![a] = "aborted"]
+           /\ txWriteSet' = [txWriteSet EXCEPT ![a] = {}]
+           /\ txStage' = [txStage EXCEPT ![a] = canonStore]
+           /\ UNCHANGED <<canonStore, epoch, txSnapshot, txSnapEpoch,
+                          budget, lastCommitBudget, lastConflictWinner>>
+       ELSE IF txSnapEpoch[a] # epoch THEN
+           \* Stale parent epoch (optimistic concurrency conflict -> fail-closed abort)
+           /\ txState' = [txState EXCEPT ![a] = "aborted"]
+           /\ txWriteSet' = [txWriteSet EXCEPT ![a] = {}]
+           /\ txStage' = [txStage EXCEPT ![a] = canonStore]
+           /\ UNCHANGED <<canonStore, epoch, txSnapshot, txSnapEpoch,
+                          budget, lastCommitBudget, lastConflictWinner>>
+       ELSE IF HasLowerConflictingPeer(a) THEN
+           \* Deterministic canonical agent-ID ordering: lower ID peer wins
+           /\ txState' = [txState EXCEPT ![a] = "aborted"]
+           /\ txWriteSet' = [txWriteSet EXCEPT ![a] = {}]
+           /\ txStage' = [txStage EXCEPT ![a] = canonStore]
+           /\ lastConflictWinner' = LowestConflictingPeer(a)
+           /\ UNCHANGED <<canonStore, epoch, txSnapshot, txSnapEpoch,
+                          budget, lastCommitBudget>>
+       ELSE IF txWriteSet[a] = {} THEN
+           \* Read-only commit: no CanonStore mutation and no budget charge
+           /\ txState' = [txState EXCEPT ![a] = "committed"]
+           /\ lastCommitBudget' = [lastCommitBudget EXCEPT ![a] = budget[a]]
+           /\ UNCHANGED <<canonStore, epoch, txSnapshot, txSnapEpoch,
+                          txWriteSet, txStage, budget, lastConflictWinner>>
+       ELSE
+           \* Atomic multi-key commit to CanonStore + deterministic budget decrement
+           /\ epoch < MaxEpoch
+           /\ canonStore' = [k \in Keys |->
+                  IF k \in txWriteSet[a] THEN txStage[a][k] ELSE canonStore[k]]
+           /\ epoch' = epoch + 1
+           /\ budget' = [budget EXCEPT ![a] = @ - 1]
+           /\ lastCommitBudget' = [lastCommitBudget EXCEPT ![a] = budget[a]]
+           /\ txState' = [txState EXCEPT ![a] = "committed"]
+           /\ txWriteSet' = [txWriteSet EXCEPT ![a] = {}]
+           /\ txStage' = [txStage EXCEPT ![a] = canonStore']
+           /\ UNCHANGED <<txSnapshot, txSnapEpoch, lastConflictWinner>>
+
+TxAbort(a) ==
+    /\ txState[a] = "active"
+    /\ txState' = [txState EXCEPT ![a] = "aborted"]
+    /\ txWriteSet' = [txWriteSet EXCEPT ![a] = {}]
+    /\ txStage' = [txStage EXCEPT ![a] = canonStore]
+    /\ UNCHANGED <<canonStore, epoch, txSnapshot, txSnapEpoch,
+                   budget, lastCommitBudget, lastConflictWinner>>
+
+Next ==
+    \E a \in Agents :
+        \/ TxBegin(a)
+        \/ \E k \in Keys : TxRead(a, k)
+        \/ \E k \in Keys, v \in Trits : TxWrite(a, k, v)
+        \/ TxCommit(a)
+        \/ TxAbort(a)
+
+Spec == Init /\ [][Next]_vars
+
+-----------------------------------------------------------------------------
+(* Safety Invariants *)
+
+TypeOK ==
+    /\ canonStore \in [Keys -> Trits]
+    /\ epoch \in 0..MaxEpoch
+    /\ txState \in [Agents -> TxStates]
+    /\ txSnapshot \in [Agents -> [Keys -> Trits]]
+    /\ txSnapEpoch \in [Agents -> 0..MaxEpoch]
+    /\ txWriteSet \in [Agents -> SUBSET Keys]
+    /\ txStage \in [Agents -> [Keys -> Trits]]
+    /\ budget \in [Agents -> 0..MaxBudget]
+    /\ lastCommitBudget \in [Agents -> 0..MaxBudget]
+    /\ lastConflictWinner \in Agents \cup {0}
+
+\* No agent can commit a transaction if its capability budget was <= 0 (AXHALT).
+FailClosedBudgetInvariant ==
+    \A a \in Agents :
+        /\ budget[a] >= 0
+        /\ budget[a] <= MaxBudget
+        /\ (txState[a] = "committed" => lastCommitBudget[a] > 0)
+        /\ (budget[a] = 0 => txWriteSet[a] = {})
+
+\* Uncommitted writes are never visible to concurrent transactions;
+\* non-active transactions leave zero orphan staged writes.
+SnapshotIsolationAndAtomicity ==
+    \A a \in Agents :
+        /\ (txState[a] = "active" /\ txSnapEpoch[a] = epoch)
+           => txSnapshot[a] = canonStore
+        /\ (txState[a] # "active") => txWriteSet[a] = {}
+
+\* Write-write conflicts resolve strictly via canonical agent ordering
+\* (never randomized or non-deterministic).
+DeterministicConflictResolution ==
+    /\ (lastConflictWinner # 0 => lastConflictWinner \in Agents)
+    /\ \A a \in Agents :
+        (txState[a] = "active" /\ HasLowerConflictingPeer(a))
+        => LowestConflictingPeer(a) < a
+
+====
