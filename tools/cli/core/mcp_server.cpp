@@ -253,15 +253,27 @@ bool arg_bool(const JsonNode& obj, const std::string& key, bool default_val = fa
   return it->second.str == "true";
 }
 
-int64_t arg_int64(const JsonNode& obj, const std::string& key, int64_t default_val = 0) {
-  if (obj.kind != JsonNode::Kind::Object) return default_val;
+bool arg_int64_strict(const JsonNode& obj, const std::string& key, int64_t& out,
+                      int64_t default_val = 0) {
+  out = default_val;
+  if (obj.kind != JsonNode::Kind::Object) return true;
   auto it = obj.obj.find(key);
-  if (it == obj.obj.end() || it->second.kind != JsonNode::Kind::Number) return default_val;
+  if (it == obj.obj.end()) return true;
+  if (it->second.kind != JsonNode::Kind::Number) return false;
   try {
-    return std::stoll(it->second.raw);
+    std::size_t pos = 0;
+    const long long parsed = std::stoll(it->second.raw, &pos, 10);
+    if (pos != it->second.raw.size()) return false;
+    out = static_cast<int64_t>(parsed);
+    return true;
   } catch (...) {
-    return default_val;
+    return false;
   }
+}
+
+int64_t arg_int64(const JsonNode& obj, const std::string& key, int64_t default_val = 0) {
+  int64_t val = default_val;
+  return arg_int64_strict(obj, key, val, default_val) ? val : default_val;
 }
 
 bool env_compact_mode() {
@@ -1229,8 +1241,11 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         const std::string canonfs_root_arg = arg_str(args, "canonfs_root");
         const std::string sbdr_path_arg = arg_str(args, "sbdr_path");
         const std::string bc_hex_arg = arg_str(args, "bytecode_hex");
-        const int64_t max_abs_err = arg_int64(args, "max_abs_err", 0);
-        const int64_t fallback_cnt = arg_int64(args, "dualrail_fallback_count", 0);
+        int64_t max_abs_err = 0;
+        const bool max_abs_err_valid = arg_int64_strict(args, "max_abs_err", max_abs_err, 0);
+        int64_t fallback_cnt = 0;
+        const bool fallback_cnt_valid =
+            arg_int64_strict(args, "dualrail_fallback_count", fallback_cnt, 0);
         const bool repeat_ok = arg_bool(args, "repeat_sha3_identical", true);
         const bool req_auto_abort = arg_bool(args, "auto_abort_on_deny", false);
         auto it = active_txs.find(tx_id);
@@ -1244,6 +1259,11 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           const bool do_auto_abort = req_auto_abort || tx.isolated;
           bool auto_aborted = false;
           if (do_auto_abort) {
+            std::vector<uint8_t> bbytes;
+            if (!tx.isolated && read_file_bytes(jail, tx.backup_path, bbytes) &&
+                sha3_512_hex(bbytes) == tx.before_sha3_512) {
+              write_file_bytes(jail, tx.target_path, bbytes);
+            }
             std::error_code ec;
             fs::remove(tx.backup_path, ec);
             if (tx.isolated && !tx.staging_path.empty()) {
@@ -1277,8 +1297,17 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
             std::string sbdr_sha;
             std::string vm_exec_receipt;
             uint64_t vm_skipped_blocks = 0;
+            bool vm_repeat_verified = false;
 
-            if (tx.isolated && live_sha != tx.before_sha3_512) {
+            if (tx.target_path.filename() == "axion_root.apl") {
+              policy_ok = false;
+              deny_code = "ERR_IMMUTABLE_POLICY_ROOT";
+              policy_err = "axion_root.apl is immutable regardless of supplied policy_path";
+            } else if (!max_abs_err_valid || !fallback_cnt_valid) {
+              policy_ok = false;
+              deny_code = "ERR_INVALID_BUDGET";
+              policy_err = "capability budget arguments must be exact integers";
+            } else if (tx.isolated && live_sha != tx.before_sha3_512) {
               policy_ok = false;
               deny_code = "ERR_TX_CONFLICT";
               policy_err = "stale transaction: target_path was committed by a peer; rebase on "
@@ -1355,27 +1384,52 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                       policy_ok = false;
                       deny_code = "ERR_SBDR1T2D_READ";
                       policy_err = "could not read sbdr_path";
-                    } else if (sbytes.size() < 40 ||
+                    } else if (sbytes.size() < 24 ||
                                std::memcmp(sbytes.data(), "SBDR1\0\0\0", 8) != 0) {
                       policy_ok = false;
                       deny_code = "ERR_SBDR1T2D_INVALID";
                       policy_err = "invalid SBDR1T2D header or non-zero K* flag";
                     } else {
                       uint64_t total_blocks = 0;
-                      uint64_t active_blocks = 0;
                       std::memcpy(&total_blocks, sbytes.data() + 8, sizeof(uint64_t));
-                      std::memcpy(&active_blocks, sbytes.data() + 16, sizeof(uint64_t));
-                      if (active_blocks > total_blocks) {
+                      const uint64_t mask_words = (total_blocks + 63ULL) / 64ULL;
+                      const uint64_t header_and_mask_bytes = 16ULL + mask_words * sizeof(uint64_t);
+                      if (total_blocks == 0 || mask_words > (sbytes.size() / sizeof(uint64_t)) ||
+                          sbytes.size() < header_and_mask_bytes) {
                         policy_ok = false;
                         deny_code = "ERR_SBDR1T2D_INVALID";
-                        policy_err = "SBDR1T2D active_blocks exceeds total_blocks";
+                        policy_err = "SBDR1T2D truncated or invalid block bitmap";
                       } else {
-                        sbdr_sha = sha3_512_hex(sbytes);
-                        vm_skipped_blocks += (total_blocks - active_blocks);
-                        if (!policy_admits_hash(pres.value(), sbdr_sha)) {
+                        uint64_t active_blocks = 0;
+                        bool bitmap_overflow = false;
+                        for (uint64_t wi = 0; wi < mask_words; ++wi) {
+                          uint64_t mw = 0;
+                          std::memcpy(&mw, sbytes.data() + 16 + wi * sizeof(uint64_t),
+                                      sizeof(uint64_t));
+                          if (wi + 1 == mask_words && (total_blocks % 64ULL) != 0) {
+                            const uint64_t valid_mask = (1ULL << (total_blocks % 64ULL)) - 1ULL;
+                            if ((mw & ~valid_mask) != 0) {
+                              bitmap_overflow = true;
+                              break;
+                            }
+                          }
+                          active_blocks += static_cast<uint64_t>(std::popcount(mw));
+                        }
+                        const uint64_t expected_size =
+                            header_and_mask_bytes + active_blocks * 16ULL;
+                        if (bitmap_overflow || active_blocks > total_blocks ||
+                            sbytes.size() != expected_size) {
                           policy_ok = false;
-                          deny_code = "ERR_SBDR1T2D_POLICY_DENIED";
-                          policy_err = "SBDR1T2D artifact SHA3-512 denied by policy";
+                          deny_code = "ERR_SBDR1T2D_INVALID";
+                          policy_err = "SBDR1T2D bitmap or payload length mismatch";
+                        } else {
+                          sbdr_sha = sha3_512_hex(sbytes);
+                          vm_skipped_blocks += (total_blocks - active_blocks);
+                          if (!policy_admits_hash(pres.value(), sbdr_sha)) {
+                            policy_ok = false;
+                            deny_code = "ERR_SBDR1T2D_POLICY_DENIED";
+                            policy_err = "SBDR1T2D artifact SHA3-512 denied by policy";
+                          }
                         }
                       }
                     }
@@ -1439,6 +1493,7 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                             policy_err = "T81VM repeat_sha3_identical failed during tx_commit";
                           } else if (policy_ok) {
                             vm_exec_receipt = receipts[0];
+                            vm_repeat_verified = true;
                           }
                         }
                       }
@@ -1495,9 +1550,9 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                              after_sha + "\",\"commit_receipt\":\"" + commit_receipt +
                              "\",\"dualrail_sparse128_blocks_skipped\":" +
                              std::to_string(vm_skipped_blocks) +
-                             ",\"dualrail_fallback_count\":0,\"repeat_sha3_identical\":true,"
-                             "\"changed\":" +
-                             (changed ? "true" : "false");
+                             ",\"dualrail_fallback_count\":0,\"repeat_sha3_identical\":" +
+                             (vm_repeat_verified ? "true" : "null") +
+                             ",\"changed\":" + (changed ? "true" : "false");
                 if (!vm_exec_receipt.empty()) {
                   structured += ",\"vm_execution_receipt\":\"" + vm_exec_receipt + "\"";
                 }
