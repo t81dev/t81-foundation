@@ -801,7 +801,7 @@ def run_evaluation() -> dict[str, Any]:
                         "compact": True,
                     },
                 )
-                Path(tx_bad_sbdr["staging_path"]).write_bytes(b'{"epoch":99,"state":"bad-sbdr"}\n')
+                Path(tx_bad_sbdr["staging_path"]).write_bytes(v2)
                 c_bad_sbdr, _ = mcp.call_tool(
                     "t81.tx_commit",
                     {
@@ -820,6 +820,7 @@ def run_evaluation() -> dict[str, Any]:
                     and c_frac.get("code") == "ERR_INVALID_BUDGET"
                     and not bool(c_bad_sbdr.get("ok"))
                     and c_bad_sbdr.get("trit") == TRIT_REJECTED
+                    and c_bad_sbdr.get("code") == "ERR_SBDR1T2D_INVALID"
                     and len(orphans_adv) == 0
                 )
                 record(
@@ -935,8 +936,11 @@ def run_evaluation() -> dict[str, Any]:
                 )
                 tampered_sbdr.unlink(missing_ok=True)
                 orphans_tamp = _find_orphans(root)
+                expected_tampered_sha = _sha3_512(bytes(orig_bytes))
                 tamper_ok = (
-                    h_tampered.get("sha3_512") != ws["weight_sha3"]
+                    bool(h_tampered.get("ok"))
+                    and h_tampered.get("sha3_512") == expected_tampered_sha
+                    and h_tampered.get("sha3_512") != ws["weight_sha3"]
                     and (
                         gate_tampered.get("decision") != "ALLOW"
                         or bool(gate_tampered.get("blocked"))
