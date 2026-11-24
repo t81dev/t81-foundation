@@ -118,13 +118,22 @@ def check_regressions(
     return failures
 
 
-def render_markdown(data: dict[str, Any], det_ok: bool, reg_failures: list[str]) -> str:
+def render_markdown(
+    data: dict[str, Any], det_ok: bool, baseline_checked: bool, reg_failures: list[str]
+) -> str:
+    if not baseline_checked:
+        reg_status = "NOT RUN (no --baseline provided)"
+    elif not reg_failures:
+        reg_status = "PASS"
+    else:
+        reg_status = f"FAIL ({len(reg_failures)} violations)"
+
     lines = [
         f"## H06-MEM-04 Benchmark Summary — `{data['benchmark_id']}`",
         "",
         f"- **Hardware:** {data['hardware_profile']['name']} (`{data['hardware_profile']['arch']}`, {data['hardware_profile']['physical_cores']} cores)",
         f"- **Determinism Gate:** {'PASS (bit-exact across all backends)' if det_ok else 'FAIL'}",
-        f"- **Regression Gate:** {'PASS' if not reg_failures else f'FAIL ({len(reg_failures)} violations)'}",
+        f"- **Regression Gate:** {reg_status}",
         "",
         "| Tier | Batch | Kernel | Backend | Regime | p50 (µs) | p95 (µs) | GOPS/s | GB/s | Hash |",
         "| :--- | :---: | :--- | :--- | :--- | ---: | ---: | ---: | ---: | :--- |",
@@ -161,8 +170,9 @@ def main() -> int:
     if gates.get("require_exact_determinism", True):
         det_failures = check_determinism(results)
 
+    baseline_checked = bool(args.baseline)
     reg_failures: list[str] = []
-    if args.baseline:
+    if baseline_checked:
         base_data = json.loads(Path(args.baseline).read_text(encoding="utf-8"))
         validate_schema(base_data, schema)
         reg_failures = check_regressions(
@@ -172,7 +182,7 @@ def main() -> int:
             float(gates["min_throughput_ratio"]),
         )
 
-    md = render_markdown(data, len(det_failures) == 0, reg_failures)
+    md = render_markdown(data, len(det_failures) == 0, baseline_checked, reg_failures)
     if args.markdown_out:
         Path(args.markdown_out).write_text(md, encoding="utf-8")
     else:
