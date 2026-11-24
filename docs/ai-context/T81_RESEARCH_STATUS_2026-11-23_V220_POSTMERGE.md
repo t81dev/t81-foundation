@@ -1,7 +1,7 @@
 # T81 Engineering & Research Status Overlay — `v2.2.0` Release & Post-Merge `main` Reconciliation (2026-11-23)
 
 **Status:** Non-normative dated operational snapshot (supersedes `2026-11-20` overlay for release and `main` layout; preserves all historical research holds, negative findings, and `CURRENT_STATE.json` contract-test compatibility).  
-**Pinned Release Tag:** `v2.2.0` (`7aa734ea4`, published `2026-11-22T13:31:48Z`) · **Pinned `origin/main`:** `2e6e78056`
+**Pinned Release Tag:** `v2.2.0` (`7aa734ea4`, published `2026-11-22T13:31:48Z`) · **Pinned `origin/main`:** `b2248e457`
 
 ## 1. Shipped `v2.2.0` Surface & Packaging Verification
 
@@ -27,6 +27,24 @@
 - **PR #848 (`5a005b2de`):** `fix(canonfs): keep denied directory exports off the host`.
 - **PR #849 (`82395ae27`):** `test(canonfs): reject absolute and nested unsafe export paths` + fixture download retry on `curl` recv errors.
 - **PR #850 (`2e6e78056`):** `Record 2026-11-23 cloud VM benchmark suite evidence`.
+- **PR #847 (`bef0c7e44`):** `fix(mcp): confine serve paths and gate WeightsLoad`.
+- **PR #858:** `ci(docs): add bounded lychee retries for transient HTTP 503 responses`.
+- **PR #857:** `fix,test(canonfs): flush export writes and cover target failure reasons`.
+- **PR #856:** `ci(qemu): verify interactive Axion serial round-trip in AArch64 boot demo`.
+- **PR #855 (`b2248e457`):** `docs(ai-context): refresh handoff and AGENTS.md to v2.2.0 state`.
+
+## 4b. Coexistence & TernaryOS v0.2 Reconciliation (`feat/ternaryos-v0.2-nonblocking`)
+
+Reconciled with [T81_RESEARCH_STATUS_2026-11-23_BY_AI_FOR_AI_COEXISTENCE.md](T81_RESEARCH_STATUS_2026-11-23_BY_AI_FOR_AI_COEXISTENCE.md), [TERNARYOS_ARCHITECTURE_v0.2.md](../research/proposals/TERNARYOS_ARCHITECTURE_v0.2.md), [TERNARYOS_BOOT_TO_RECEIPT_CONTRACT_v0.1.md](../research/proposals/TERNARYOS_BOOT_TO_RECEIPT_CONTRACT_v0.1.md), and [TERNARYOS_MULTI_AGENT_CAPABILITY_BUDGET_v0.2.md](../research/proposals/TERNARYOS_MULTI_AGENT_CAPABILITY_BUDGET_v0.2.md):
+
+- **Routing Ledger & `R1`/`R2` Rules:** `10` accepted (`+1`) / `16` negative (`-1`) constraints; `M == 1` with `s >= 90%` → `CPU_1T_SBDR128_SIMD`; `s >= 75%` for `M >= 4` or `75% <= s < 90%` at `M == 1` → `GPU_R1_BitmaskSkip_Pop`; dense/moderate `R1` → `GPU_R1_DualRail_Pop`; `R2` `M = 1..4` → `CPU_4T_INT4W`, `M >= 16` → `CPU_4T_INT8W`; `k_star_prepacked == 0`.
+- **Explicit `{-1, 0, +1}` Semantics:** `+1` verified with valid `SHA3-512` receipts, `0` strictly for inert / zero-skip (`dualrail_sparse128_blocks_skipped`) / unmeasured states (including native `x86_64` AVX2 `BM_MemBound64_(DualRail_Dense|SBDR128_SIMD|INT8_Sparse128)` until measured on `ubuntu-24.04`), `-1` for fail-closed denials, conflicts, or tamper breaches.
+- **Immutable Policy Root & Multi-Agent Isolation:** `axion_root.apl` mutation rejected fail-closed (`ERR_IMMUTABLE_POLICY_ROOT`); `tx_begin`/`tx_commit`/`tx_abort` enforce `ERR_TX_CONFLICT`, `ERR_PARENT_RECEIPT_MISMATCH`, `ERR_AGENT_MISMATCH`, unified `CanonFS` fsck + `SBDR1T2D` (`K* = 0`) + double-run `T81VM` gating with `0` orphan `.stage`/`.bak` artifacts.
+- **Verified Digests:**
+  - `boot_receipt_sha3_512`: `sha3-512:737e6dc910757ff96e6a1207bf47ca9edc4f9f0f31ba46464463a003ac9405d7c95f0feb1d0c2147432ebc365a4f2c491c0ceba0d33b23706adad5b080e1aca7`
+  - `boot_image_sha3_512`: `sha3-512:26bda4ae26a9fd74c4aff8e3c633c8b54174b9913742fd40d9228fe76a1eebfcc1717ac68824be3a1c9640a2aa2fc6803ed31667614254e439a3f93d83c0c55d`
+  - `serial_transcript_sha3_512`: `sha3-512:b052306fc0fe3c1f6175e9d0241d6688b43cf877b9d0e99b25c8b32855e926b9fabccd06263a954c38379ea3c463d9336b1b5ff3eed1bb4d63c92198d0be9248`
+  - Black-box 4-tier AI-usability harness (`examples/research/agent-receipt-sidecar/ai_usability_eval.py`): `19/19` trials passing (`+1: 11`, `0: 3`, `-1: 5`, `0` orphans).
 
 ## 3. CI & Determinism Gate Check (`2026-11-23`)
 

@@ -57,7 +57,7 @@ Do not expand subsystem count casually. Favor finishing existing lanes over star
 
 These areas have enough implementation and test weight to extend carefully:
 
-- CLI/runtime path (including the standalone 15-tool native C++ MCP server `t81 mcp serve`)
+- CLI/runtime path (including the standalone 15-tool native C++ MCP server `t81 mcp serve` with RFC-00D8 compact framing, isolated multi-agent `tx_begin`/`tx_commit`/`tx_abort`, immutable `axion_root.apl` protection, and `{-1, 0, +1}` black-box evaluation in `examples/research/agent-receipt-sidecar/ai_usability_eval.py`)
 - core deterministic VM/data surfaces (including Dual-Rail `(P, N)` `TMatMul` and `SBDR1T2D` CanonFS weight caching)
 - Axion policy concepts
 - CanonFS interchange contracts and schemas
