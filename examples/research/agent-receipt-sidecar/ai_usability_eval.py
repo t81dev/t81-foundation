@@ -92,6 +92,11 @@ class BlackBoxMcpClient:
             raise RuntimeError(f"MCP server closed stdout on {method}")
         return json.loads(raw), len(raw.encode("utf-8"))
 
+    def send_raw_line(self, line: str) -> None:
+        assert self._proc.stdin is not None
+        self._proc.stdin.write(line if line.endswith("\n") else line + "\n")
+        self._proc.stdin.flush()
+
     def call_tool(self, name: str, arguments: dict[str, Any]) -> tuple[dict[str, Any], int]:
         resp, nbytes = self.rpc("tools/call", {"name": name, "arguments": arguments})
         return resp["result"]["structured"], nbytes
@@ -734,6 +739,220 @@ def run_evaluation() -> dict[str, Any]:
                         "parent_receipt": c3.get("commit_receipt"),
                         "commit_receipt": c4.get("commit_receipt"),
                         "orphans": orphans_c4,
+                    },
+                )
+
+                # Adversarial Trial 20: Malformed JSON-RPC stdin resilience & unknown tool rejection
+                mcp.send_raw_line("{malformed-json-not-closed")
+                mcp.send_raw_line('{"jsonrpc":"2.0","method":"notifications/initialized"}')
+                unk_resp, _ = mcp.rpc("tools/call", {"name": "t81.nonexistent_tool", "arguments": {}})
+                post_malformed_hash, _ = mcp.call_tool(
+                    "t81.determinism_hash",
+                    {"path": str(ws["policy_path"]), "compact": True},
+                )
+                malformed_ok = (
+                    ("error" in unk_resp or bool(unk_resp.get("result", {}).get("isError")))
+                    and post_malformed_hash.get("sha3_512") == ws["policy_sha3"]
+                )
+                record(
+                    3,
+                    "malformed_jsonrpc_and_unknown_tool_resilience",
+                    TRIT_REJECTED if malformed_ok else TRIT_INERT,
+                    malformed_ok,
+                    {
+                        "server_survived_malformed_stdin": post_malformed_hash.get("sha3_512")
+                        == ws["policy_sha3"],
+                        "unknown_tool_rejected": "error" in unk_resp
+                        or bool(unk_resp.get("result", {}).get("isError")),
+                    },
+                )
+
+                # Adversarial Trial 21: Fractional budget & malformed SBDR1T2D fail-closed with 0 orphans
+                tx_frac, _ = mcp.call_tool(
+                    "t81.tx_begin",
+                    {
+                        "target_path": str(ws["target_path"]),
+                        "backup_dir": str(ws["bak_dir"]),
+                        "agent_id": "eval-agent-frac",
+                        "isolated": True,
+                        "compact": True,
+                    },
+                )
+                Path(tx_frac["staging_path"]).write_bytes(b'{"epoch":99,"state":"bad-budget"}\n')
+                c_frac, _ = mcp.call_tool(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": tx_frac["tx_id"],
+                        "policy_path": str(ws["policy_path"]),
+                        "agent_id": "eval-agent-frac",
+                        "max_abs_err": 0.5,
+                        "compact": True,
+                    },
+                )
+                bad_sbdr_path = root / "corrupt_sbdr.sbdr"
+                bad_sbdr_path.write_bytes(b"SBDR1\x00\x00\x00" + struct.pack("<QQ", 4, 1))
+                tx_bad_sbdr, _ = mcp.call_tool(
+                    "t81.tx_begin",
+                    {
+                        "target_path": str(ws["target_path"]),
+                        "backup_dir": str(ws["bak_dir"]),
+                        "agent_id": "eval-agent-sbdr",
+                        "isolated": True,
+                        "compact": True,
+                    },
+                )
+                Path(tx_bad_sbdr["staging_path"]).write_bytes(b'{"epoch":99,"state":"bad-sbdr"}\n')
+                c_bad_sbdr, _ = mcp.call_tool(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": tx_bad_sbdr["tx_id"],
+                        "policy_path": str(ws["policy_path"]),
+                        "agent_id": "eval-agent-sbdr",
+                        "sbdr_path": str(bad_sbdr_path),
+                        "compact": True,
+                    },
+                )
+                bad_sbdr_path.unlink(missing_ok=True)
+                orphans_adv = _find_orphans(root)
+                frac_sbdr_ok = (
+                    not bool(c_frac.get("ok"))
+                    and c_frac.get("trit") == TRIT_REJECTED
+                    and c_frac.get("code") == "ERR_INVALID_BUDGET"
+                    and not bool(c_bad_sbdr.get("ok"))
+                    and c_bad_sbdr.get("trit") == TRIT_REJECTED
+                    and len(orphans_adv) == 0
+                )
+                record(
+                    3,
+                    "fractional_budget_and_invalid_sbdr_fail_closed",
+                    TRIT_REJECTED if frac_sbdr_ok else TRIT_INERT,
+                    frac_sbdr_ok,
+                    {
+                        "fractional_code": c_frac.get("code"),
+                        "bad_sbdr_code": c_bad_sbdr.get("code"),
+                        "orphans": orphans_adv,
+                    },
+                )
+
+                # Adversarial Trial 22: 4-way concurrent isolated tx burst (1 winner, 2 conflicts, 1 abort, 0 orphans)
+                burst_txs = []
+                burst_payloads = [v1, v2, v3, v4]
+                for idx in range(4):
+                    btx, _ = mcp.call_tool(
+                        "t81.tx_begin",
+                        {
+                            "target_path": str(ws["target_path"]),
+                            "backup_dir": str(ws["bak_dir"]),
+                            "agent_id": f"eval-burst-{idx}",
+                            "isolated": True,
+                            "compact": True,
+                        },
+                    )
+                    Path(btx["staging_path"]).write_bytes(burst_payloads[idx])
+                    burst_txs.append(btx)
+
+                burst_win, _ = mcp.call_tool(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": burst_txs[0]["tx_id"],
+                        "policy_path": str(ws["policy_path"]),
+                        "agent_id": "eval-burst-0",
+                        "expected_parent_receipt": c4["commit_receipt"],
+                        "canonfs_root": str(ws["canonfs_root"]),
+                        "sbdr_path": str(ws["sbdr_path"]),
+                        "bytecode_hex": bc_hex,
+                        "compact": True,
+                    },
+                )
+                burst_c1, _ = mcp.call_tool(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": burst_txs[1]["tx_id"],
+                        "policy_path": str(ws["policy_path"]),
+                        "agent_id": "eval-burst-1",
+                        "compact": True,
+                    },
+                )
+                burst_c2, _ = mcp.call_tool(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": burst_txs[2]["tx_id"],
+                        "policy_path": str(ws["policy_path"]),
+                        "agent_id": "eval-burst-2",
+                        "compact": True,
+                    },
+                )
+                burst_ab, _ = mcp.call_tool(
+                    "t81.tx_abort",
+                    {
+                        "tx_id": burst_txs[3]["tx_id"],
+                        "agent_id": "eval-burst-3",
+                        "compact": True,
+                    },
+                )
+                orphans_burst = _find_orphans(root)
+                burst_ok = (
+                    bool(burst_win.get("ok"))
+                    and bool(burst_win.get("committed"))
+                    and burst_win.get("trit") == TRIT_VERIFIED
+                    and burst_c1.get("code") == "ERR_TX_CONFLICT"
+                    and burst_c1.get("trit") == TRIT_REJECTED
+                    and burst_c2.get("code") == "ERR_TX_CONFLICT"
+                    and burst_c2.get("trit") == TRIT_REJECTED
+                    and bool(burst_ab.get("ok"))
+                    and len(orphans_burst) == 0
+                )
+                record(
+                    3,
+                    "concurrent_tx_burst_isolation_and_zero_orphans",
+                    TRIT_VERIFIED if burst_ok else TRIT_REJECTED,
+                    burst_ok,
+                    {
+                        "winner_receipt": burst_win.get("commit_receipt"),
+                        "conflict_codes": [burst_c1.get("code"), burst_c2.get("code")],
+                        "aborted_ok": burst_ab.get("ok"),
+                        "orphans": orphans_burst,
+                    },
+                )
+
+                # Adversarial Trial 23: CanonFS SBDR1T2D 1-byte tamper digest & policy denial
+                tampered_sbdr = root / "tampered_sbdr1t2d.sbdr"
+                orig_bytes = bytearray(ws["sbdr_path"].read_bytes())
+                orig_bytes[-1] ^= 0x01
+                tampered_sbdr.write_bytes(bytes(orig_bytes))
+                h_tampered, _ = mcp.call_tool(
+                    "t81.determinism_hash",
+                    {"path": str(tampered_sbdr), "compact": True},
+                )
+                gate_tampered, _ = mcp.call_tool(
+                    "t81.gate_check",
+                    {
+                        "artifact_path": str(tampered_sbdr),
+                        "policy_path": str(ws["policy_path"]),
+                        "action_type": "read_metrics",
+                        "compact": True,
+                    },
+                )
+                tampered_sbdr.unlink(missing_ok=True)
+                orphans_tamp = _find_orphans(root)
+                tamper_ok = (
+                    h_tampered.get("sha3_512") != ws["weight_sha3"]
+                    and (
+                        gate_tampered.get("decision") != "ALLOW"
+                        or bool(gate_tampered.get("blocked"))
+                    )
+                    and len(orphans_tamp) == 0
+                )
+                record(
+                    3,
+                    "canonfs_sbdr1t2d_digest_tamper_detection",
+                    TRIT_REJECTED if tamper_ok else TRIT_INERT,
+                    tamper_ok,
+                    {
+                        "digest_changed": h_tampered.get("sha3_512") != ws["weight_sha3"],
+                        "decision": gate_tampered.get("decision"),
+                        "blocked": gate_tampered.get("blocked"),
+                        "orphans": orphans_tamp,
                     },
                 )
         finally:
