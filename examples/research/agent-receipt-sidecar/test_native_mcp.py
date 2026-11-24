@@ -593,9 +593,61 @@ def main() -> int:
             tx_back = rpc("tools/call", {"name": "t81.tx_abort", "arguments": {"tx_id": tx_open["tx_id"]}})["result"]["structured"]
             assert tx_back["ok"] and nopolicy.read_bytes() == b"keep-me"
 
+            # 12. Full 15/15 coverage: t81.determinism_hash positive + t81.policy_test allow/deny
+            dh_ok = rpc("tools/call", {"name": "t81.determinism_hash", "arguments": {"path": str(good)}})["result"]["structured"]
+            assert dh_ok["ok"] and dh_ok["sha3_512"] == good_sha
+            pt_allow = rpc("tools/call", {"name": "t81.policy_test", "arguments": {"policy_path": str(pol), "model_hash": good_sha}})["result"]["structured"]
+            assert pt_allow["ok"] and pt_allow["admitted"]
+            pt_deny = rpc("tools/call", {"name": "t81.policy_test", "arguments": {"policy_path": str(pol), "model_hash": "sha3-512:" + ("0" * 128)}})["result"]["structured"]
+            assert not pt_deny["ok"] and not pt_deny["admitted"]
+
+            # 13. RFC-00D8: compact mode token savings + invalid mode fail-closed + trap diagnostics
+            full_resp = rpc("tools/call", {"name": "t81.gate_check", "arguments": {"artifact_path": str(good), "policy_path": str(pol)}})
+            compact_resp = rpc("tools/call", {"name": "t81.gate_check", "arguments": {"artifact_path": str(good), "policy_path": str(pol), "compact": True}})
+            assert compact_resp["result"]["content"][0]["text"] == "ok"
+            assert not compact_resp["result"]["isError"]
+            assert compact_resp["result"]["structured"] == full_resp["result"]["structured"]
+            full_bytes = len(json.dumps(full_resp))
+            compact_bytes = len(json.dumps(compact_resp))
+            assert compact_bytes < full_bytes * 0.65, (full_bytes, compact_bytes)
+
+            bad_mode = rpc("tools/call", {"name": "t81.gate_check", "arguments": {"artifact_path": str(good), "policy_path": str(pol), "mode": "bogus-mode", "compact": True}})
+            assert bad_mode["result"]["isError"]
+            assert bad_mode["result"]["content"][0]["text"] == "err:ERR_INVALID_ARG"
+            assert bad_mode["result"]["structured"]["code"] == "ERR_INVALID_ARG"
+            assert bad_mode["result"]["structured"]["blocked"]
+
+            run_diag = rpc("tools/call", {"name": "t81.run_subgraph", "arguments": {"bytecode_hex": halt_bc, "policy_path": str(pol), "compact": True}})["result"]["structured"]
+            run_diag2 = rpc("tools/call", {"name": "t81.run_subgraph", "arguments": {"bytecode_hex": halt_bc, "policy_path": str(pol), "compact": True}})["result"]["structured"]
+            assert not run_diag["ok"] and run_diag["verdict"] == "VM_TRAP"
+            assert run_diag["trap_name"] == "SecurityFault" and "fault_pc" in run_diag and "last_axion_reason" in run_diag
+            assert run_diag["dualrail_fallback_count"] == 0 and "dualrail_sparse128_hits" in run_diag
+            assert run_diag["execution_receipt"] == run_diag2["execution_receipt"]
+
+            boot_caps = rpc("tools/call", {"name": "t81.session_bootstrap", "arguments": {"repo_root": str(tmp), "compact": True}})["result"]["structured"]["capabilities"]
+            r1_route = boot_caps["regime_routing"]["R1_ternary_act"]
+            r2_route = boot_caps["regime_routing"]["R2_int8_act"]
+            assert r1_route["sparse_min_pct"] == 50
+            assert r1_route["sparse_kernel"] == "SBDR128_SIMD"
+            assert r1_route["gpu_kernel"] == "GPU_R1_DualRail_Pop"
+            assert r1_route["gpu_sparse_kernel"] == "GPU_R1_BitmaskSkip_Pop"
+            assert r1_route["gpu_sparse_min_pct"] == 75
+            assert r1_route["m1_high_sparsity_min_pct"] == 90
+            assert r1_route["m1_high_sparsity_kernel"] == "CPU_1T_SBDR128_SIMD"
+            assert r1_route["m1_low_sparsity_max_pct"] == 50
+            assert r1_route["gpu_min_batch"] == 4
+            assert r1_route["k_star_prepacked"] == 0
+            assert r1_route["k_star_simd4t_vs_gpu_int4"] == 2
+            assert r1_route["k_star_simd4t_vs_cpu_int4"] == 3
+            assert r1_route["avoid_per_layer_cpu_thread_barrier"] is True
+            assert r2_route["m1_to_4"] == "CPU_4T_INT4W"
+            assert r2_route["m16_plus"] == "CPU_4T_INT8W"
+            assert r2_route["avoid_cpu_dualrail_unpack"] is True
+
             print(json.dumps({
                 "native_cpp_mcp_tools": len(tools),
                 "all_checks_passed": True,
+                "rfc00d8_compact_reduction_pct": round(100.0 * (1.0 - compact_bytes / full_bytes), 1),
                 "gate_check_100_calls": {
                     "mean_ms": round(statistics.mean(lats), 3),
                     "p50_ms": round(statistics.median(lats), 3),
