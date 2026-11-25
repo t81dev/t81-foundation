@@ -1,0 +1,1943 @@
+# =============================================================================
+# Test Suite (extracted from root CMakeLists.txt in Wave 3)
+# =============================================================================
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+
+  if(T81_BUILD_CONCURRENT_EXPERIMENT)
+    find_package(Threads REQUIRED)
+    find_package(Python3 COMPONENTS Interpreter REQUIRED)
+    add_executable(t81_concurrent_revocation
+      ${CMAKE_SOURCE_DIR}/examples/governance/accountable-computation/concurrent_revocation.cpp
+      ${CMAKE_SOURCE_DIR}/ternaryos/dev/canon_store.cpp)
+    target_include_directories(t81_concurrent_revocation PRIVATE ${PROJECT_SOURCE_DIR}/ternaryos)
+    target_link_libraries(t81_concurrent_revocation PRIVATE t81_core t81_axion Threads::Threads)
+    add_test(NAME canonfs_concurrent_revocation_experiment
+      COMMAND ${Python3_EXECUTABLE}
+        ${PROJECT_SOURCE_DIR}/tests/python/test_canonfs_concurrent_revocation.py
+        --runner $<TARGET_FILE:t81_concurrent_revocation>)
+    set_tests_properties(canonfs_concurrent_revocation_experiment PROPERTIES TIMEOUT 120)
+  endif()
+  if(T81_BUILD_ACCOUNTABLE_EXPERIMENT)
+    add_executable(t81_accountable_experiment
+      ${CMAKE_SOURCE_DIR}/examples/governance/accountable-computation/runner.cpp)
+    target_link_libraries(t81_accountable_experiment PRIVATE t81_vm t81_axion t81_core)
+    find_package(Python3 COMPONENTS Interpreter REQUIRED)
+    add_test(NAME accountable_computation_experiment
+      COMMAND ${Python3_EXECUTABLE}
+        ${PROJECT_SOURCE_DIR}/tests/python/test_accountable_computation.py
+        --runner $<TARGET_FILE:t81_accountable_experiment> --production-only)
+  endif()
+  add_executable(t81_bigint_test ${CMAKE_SOURCE_DIR}/tests/cpp/bigint_roundtrip.cpp)
+  target_link_libraries(t81_bigint_test PRIVATE t81_core)
+
+  add_executable(t81_fraction_test ${CMAKE_SOURCE_DIR}/tests/cpp/fraction_roundtrip.cpp)
+  target_link_libraries(t81_fraction_test PRIVATE t81_core)
+
+  add_executable(t81_bigint_properties_test ${CMAKE_SOURCE_DIR}/tests/cpp/bigint_properties_test.cpp)
+  target_link_libraries(t81_bigint_properties_test PRIVATE t81_core)
+
+  add_executable(t81_prob_properties_test ${CMAKE_SOURCE_DIR}/tests/cpp/prob_properties_test.cpp)
+  target_link_libraries(t81_prob_properties_test PRIVATE t81_core)
+
+
+  add_executable(t81_t81int_properties_test ${CMAKE_SOURCE_DIR}/tests/cpp/t81int_properties_test.cpp)
+  target_link_libraries(t81_t81int_properties_test PRIVATE t81_core)
+
+  add_executable(t81_bigint_division_edge_properties_test ${CMAKE_SOURCE_DIR}/tests/cpp/bigint_division_edge_properties_test.cpp)
+  target_link_libraries(t81_bigint_division_edge_properties_test PRIVATE t81_core)
+
+  add_executable(t81_bigint_division_semantics_test ${CMAKE_SOURCE_DIR}/tests/cpp/bigint_division_semantics_test.cpp)
+  target_link_libraries(t81_bigint_division_semantics_test PRIVATE t81_core)
+
+  add_executable(t81_bigint_gcd_divmod_property_test ${CMAKE_SOURCE_DIR}/tests/cpp/bigint_gcd_divmod_property_test.cpp)
+  target_link_libraries(t81_bigint_gcd_divmod_property_test PRIVATE t81_core)
+
+  add_executable(t81_bigint_mod_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81BigInt_mod.cpp)
+  target_link_libraries(t81_bigint_mod_test PRIVATE t81_core)
+
+  # Consolidated modular inverse test (ExtGCD + Stein, shared fixtures)
+  add_executable(t81_bigint_modular_inverse_test ${CMAKE_SOURCE_DIR}/tests/cpp/bigint_modular_inverse_test.cpp)
+  target_link_libraries(t81_bigint_modular_inverse_test PRIVATE t81_core)
+
+  add_executable(t81_bigint_sqrt_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81BigInt_sqrt.cpp)
+  target_link_libraries(t81_bigint_sqrt_test PRIVATE t81_core)
+
+  add_executable(fuzz_bigint_div ${CMAKE_SOURCE_DIR}/tests/cpp/fuzz_bigint_div.cpp)
+  target_link_libraries(fuzz_bigint_div PRIVATE t81_core)
+
+  add_executable(fuzz_bigint_libfuzzer ${CMAKE_SOURCE_DIR}/tests/cpp/fuzz_bigint_libfuzzer.cpp)
+  target_link_libraries(fuzz_bigint_libfuzzer PRIVATE t81_core)
+
+  add_executable(t81_fraction_properties_test ${CMAKE_SOURCE_DIR}/tests/cpp/fraction_properties_test.cpp)
+  target_link_libraries(t81_fraction_properties_test PRIVATE t81_core)
+
+  add_executable(t81_core_numeric_compat_test ${CMAKE_SOURCE_DIR}/tests/cpp/core_numeric_compat_test.cpp)
+  target_link_libraries(t81_core_numeric_compat_test PRIVATE t81_core)
+
+  add_executable(t81_core_bigint_compat_properties_test ${CMAKE_SOURCE_DIR}/tests/cpp/core_bigint_compat_properties_test.cpp)
+  target_link_libraries(t81_core_bigint_compat_properties_test PRIVATE t81_core)
+
+  add_executable(t81_core_fraction_compat_properties_test ${CMAKE_SOURCE_DIR}/tests/cpp/core_fraction_compat_properties_test.cpp)
+  target_link_libraries(t81_core_fraction_compat_properties_test PRIVATE t81_core)
+
+  add_executable(t81_v1_canonical_numeric_contract_test ${CMAKE_SOURCE_DIR}/tests/cpp/v1_canonical_numeric_contract_test.cpp)
+  target_link_libraries(t81_v1_canonical_numeric_contract_test PRIVATE t81_core)
+
+  add_executable(t81_tensor_transpose_test ${CMAKE_SOURCE_DIR}/tests/cpp/tensor_transpose_test.cpp)
+  target_link_libraries(t81_tensor_transpose_test PRIVATE t81_core)
+
+  add_executable(t81_core_improvements_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_core_improvements.cpp)
+  target_link_libraries(t81_core_improvements_test PRIVATE t81_core)
+
+  add_executable(t81_core_features_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_core_features.cpp)
+  target_link_libraries(t81_core_features_test PRIVATE t81_core)
+
+  add_executable(t81_tensor_slice_test ${CMAKE_SOURCE_DIR}/tests/cpp/tensor_slice_test.cpp)
+  target_link_libraries(t81_tensor_slice_test PRIVATE t81_core)
+
+  add_executable(t81_tensor_reshape_test ${CMAKE_SOURCE_DIR}/tests/cpp/tensor_reshape_test.cpp)
+  target_link_libraries(t81_tensor_reshape_test PRIVATE t81_core)
+
+  add_executable(t81_tensor_loader_test ${CMAKE_SOURCE_DIR}/tests/cpp/tensor_loader_test.cpp)
+  target_link_libraries(t81_tensor_loader_test PRIVATE t81_io)
+
+  add_executable(t81_weights_quantize_test ${CMAKE_SOURCE_DIR}/tests/cpp/weights_quantize_test.cpp)
+  target_link_libraries(t81_weights_quantize_test PRIVATE t81_core t81_tool_model)
+
+  add_executable(t81_canonfs_io_test ${CMAKE_SOURCE_DIR}/tests/cpp/canonfs_io_test.cpp)
+  target_link_libraries(t81_canonfs_io_test PRIVATE t81_core)
+
+  add_executable(canonfs_axion_trace_test ${CMAKE_SOURCE_DIR}/tests/cpp/canonfs_axion_trace_test.cpp)
+  target_link_libraries(canonfs_axion_trace_test PRIVATE t81_core t81_axion)
+  add_executable(canonfs_policy_boundary_test ${CMAKE_SOURCE_DIR}/tests/cpp/canonfs_policy_boundary_test.cpp
+    ${CMAKE_SOURCE_DIR}/ternaryos/dev/canon_store.cpp)
+  target_link_libraries(canonfs_policy_boundary_test PRIVATE t81_core t81_axion)
+  target_include_directories(canonfs_policy_boundary_test PRIVATE ${PROJECT_SOURCE_DIR}/ternaryos)
+
+  add_executable(canonfs_persistent_driver_test ${CMAKE_SOURCE_DIR}/tests/cpp/canonfs_persistent_driver_test.cpp)
+  target_link_libraries(canonfs_persistent_driver_test PRIVATE t81_core t81_axion)
+
+  add_executable(canonfs_read_verify_test ${CMAKE_SOURCE_DIR}/tests/cpp/canonfs_read_verify_test.cpp)
+  target_link_libraries(canonfs_read_verify_test PRIVATE t81_core t81_axion)
+
+  add_executable(canonfs_read_verify_env_contract_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/canonfs_read_verify_env_contract_test.cpp)
+  target_link_libraries(canonfs_read_verify_env_contract_test PRIVATE t81_core t81_axion)
+
+  add_executable(canonfs_integrity_matrix_test ${CMAKE_SOURCE_DIR}/tests/cpp/canonfs_integrity_matrix_test.cpp)
+  target_link_libraries(canonfs_integrity_matrix_test PRIVATE t81_core t81_axion)
+
+  add_executable(canonfs_storage_format_test ${CMAKE_SOURCE_DIR}/tests/cpp/canonfs_storage_format_test.cpp)
+  target_link_libraries(canonfs_storage_format_test PRIVATE t81_core)
+  add_executable(t81_vm_metarefine_writecode_denial_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_metarefine_writecode_denial_test.cpp)
+  target_link_libraries(t81_vm_metarefine_writecode_denial_test PRIVATE t81_vm t81_core)
+  add_executable(canonfs_identity_contract_test ${CMAKE_SOURCE_DIR}/tests/cpp/canonfs_identity_contract_test.cpp)
+  target_link_libraries(canonfs_identity_contract_test PRIVATE t81_core t81_axion)
+
+  add_executable(t81_ir_encoding_test ${CMAKE_SOURCE_DIR}/tests/cpp/ir_encoding_test.cpp)
+  target_link_libraries(t81_ir_encoding_test PRIVATE t81_core)
+
+  add_executable(t81_isa_encoding_test ${CMAKE_SOURCE_DIR}/tests/cpp/tisc_encoding_test.cpp)
+  target_link_libraries(t81_isa_encoding_test PRIVATE t81_core)
+
+  add_executable(t81_vm_tensor_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_tensor_test.cpp)
+  target_link_libraries(t81_vm_tensor_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_tloadhash_conformance_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_tloadhash_conformance_test.cpp)
+  target_link_libraries(t81_vm_tloadhash_conformance_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_tloadhash_custom_driver_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_tloadhash_custom_driver_test.cpp)
+  target_link_libraries(t81_vm_tloadhash_custom_driver_test PRIVATE t81_vm t81_core)
+
+
+  add_executable(t81_vm_tloadhash_canonical_fixed_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_tloadhash_canonical_fixed_test.cpp)
+  target_link_libraries(t81_vm_tloadhash_canonical_fixed_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_canonfs_root_env_contract_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_canonfs_root_env_contract_test.cpp)
+  target_link_libraries(t81_vm_canonfs_root_env_contract_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_tloadhash_decodefault_determinism_matrix_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_tloadhash_decodefault_determinism_matrix_test.cpp)
+  target_link_libraries(t81_vm_tloadhash_decodefault_determinism_matrix_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_ai_phase1_attention_conformance_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_ai_phase1_attention_conformance_test.cpp)
+  target_link_libraries(t81_vm_ai_phase1_attention_conformance_test PRIVATE t81_vm t81_core)
+  add_executable(t81_vm_ai_phase1_embed_conformance_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_ai_phase1_embed_conformance_test.cpp)
+  target_link_libraries(t81_vm_ai_phase1_embed_conformance_test PRIVATE t81_vm t81_core)
+  add_executable(t81_vm_ai_phase1_qmatmul_conformance_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_ai_phase1_qmatmul_conformance_test.cpp)
+  target_link_libraries(t81_vm_ai_phase1_qmatmul_conformance_test PRIVATE t81_vm t81_core)
+  add_executable(t81_vm_ai_phase1_shared_helper_parity_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_ai_phase1_shared_helper_parity_test.cpp)
+  target_link_libraries(t81_vm_ai_phase1_shared_helper_parity_test PRIVATE t81_vm t81_core)
+  add_executable(t81_vm_ai_phase1_wload_conformance_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_ai_phase1_wload_conformance_test.cpp)
+  target_link_libraries(t81_vm_ai_phase1_wload_conformance_test PRIVATE t81_vm t81_core)
+  add_executable(t81_vm_ai_phase1_gather_conformance_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_ai_phase1_gather_conformance_test.cpp)
+  target_link_libraries(t81_vm_ai_phase1_gather_conformance_test PRIVATE t81_vm t81_core)
+  add_executable(t81_vm_ai_phase1_scatter_conformance_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_ai_phase1_scatter_conformance_test.cpp)
+  target_link_libraries(t81_vm_ai_phase1_scatter_conformance_test PRIVATE t81_vm t81_core)
+  add_executable(t81_vm_ai_phase1_wload_canonfs_audit_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_ai_phase1_wload_canonfs_audit_test.cpp)
+  target_link_libraries(t81_vm_ai_phase1_wload_canonfs_audit_test PRIVATE t81_vm t81_core)
+  add_executable(t81_vm_ai_phase1_scatter_aliasing_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_ai_phase1_scatter_aliasing_test.cpp)
+  target_link_libraries(t81_vm_ai_phase1_scatter_aliasing_test PRIVATE t81_vm t81_core)
+  add_executable(t81_vm_ai_phase1_gather_axis1_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_ai_phase1_gather_axis1_test.cpp)
+  target_link_libraries(t81_vm_ai_phase1_gather_axis1_test PRIVATE t81_vm t81_core)
+  add_executable(t81_vm_rfc0034_ternary_native_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_rfc0034_ternary_native_test.cpp)
+  target_link_libraries(t81_vm_rfc0034_ternary_native_test PRIVATE t81_vm t81_core)
+  add_executable(t81_vm_rfc0040_swar_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_rfc0040_swar_test.cpp)
+  target_link_libraries(t81_vm_rfc0040_swar_test PRIVATE t81_vm t81_core)
+  add_executable(t81_lang_ai_m6_annotation_lowering_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/lang_ai_m6_annotation_lowering_test.cpp)
+  target_link_libraries(t81_lang_ai_m6_annotation_lowering_test
+                        PRIVATE t81_lang_frontend t81_isa t81_vm)
+
+  add_executable(t81_vm_tensor_shape_faults_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_tensor_shape_faults_test.cpp)
+  target_link_libraries(t81_vm_tensor_shape_faults_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_tisc_v04_extensions_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_tisc_v04_extensions_test.cpp)
+  target_link_libraries(t81_vm_tisc_v04_extensions_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_tensor_get_set_conformance_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_tensor_get_set_conformance_test.cpp)
+  target_link_libraries(t81_vm_tensor_get_set_conformance_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_tensor_helper_predicates_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_tensor_helper_predicates_test.cpp)
+  target_link_libraries(t81_vm_tensor_helper_predicates_test PRIVATE t81_vm t81_core)
+  target_include_directories(t81_vm_tensor_helper_predicates_test PRIVATE ${CMAKE_SOURCE_DIR})
+  add_executable(t81_vm_tensor_provenance_trace_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_tensor_provenance_trace_test.cpp)
+  target_link_libraries(t81_vm_tensor_provenance_trace_test PRIVATE t81_vm t81_core)
+  target_include_directories(t81_vm_tensor_provenance_trace_test PRIVATE ${CMAKE_SOURCE_DIR})
+
+  add_executable(t81_vm_predispatch_policy_deny_logging_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_predispatch_policy_deny_logging_test.cpp)
+  target_link_libraries(t81_vm_predispatch_policy_deny_logging_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_ai_predispatch_deny_audit_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_ai_predispatch_deny_audit_test.cpp)
+  target_link_libraries(t81_vm_ai_predispatch_deny_audit_test PRIVATE t81_vm t81_axion t81_core)
+
+  add_executable(t81_vm_fault_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_fault_test.cpp)
+  target_link_libraries(t81_vm_fault_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_value_ops_boundary_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_value_ops_boundary_test.cpp)
+  target_link_libraries(t81_vm_value_ops_boundary_test PRIVATE t81_vm t81_core)
+  target_include_directories(t81_vm_value_ops_boundary_test PRIVATE ${CMAKE_SOURCE_DIR})
+
+  add_executable(t81_vm_deterministic_fault_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_vm_deterministic_fault.cpp)
+  target_link_libraries(t81_vm_deterministic_fault_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_fault_family_determinism_matrix_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_fault_family_determinism_matrix_test.cpp)
+  target_link_libraries(t81_vm_fault_family_determinism_matrix_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_new_opcodes_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_new_opcodes_test.cpp)
+  target_link_libraries(t81_vm_new_opcodes_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_test_axion_opcodes ${CMAKE_SOURCE_DIR}/tests/cpp/test_axion_opcodes.cpp)
+  target_link_libraries(t81_test_axion_opcodes PRIVATE t81_vm t81_core)
+  add_test(NAME t81_test_axion_opcodes COMMAND t81_test_axion_opcodes)
+
+  add_executable(t81_test_axion_m6_canonical_reason ${CMAKE_SOURCE_DIR}/tests/cpp/test_axion_m6_canonical_reason.cpp)
+  target_link_libraries(t81_test_axion_m6_canonical_reason PRIVATE t81_core)
+  add_test(NAME t81_test_axion_m6_canonical_reason COMMAND t81_test_axion_m6_canonical_reason)
+
+  add_executable(t81_vm_neural_opcodes_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_vm_neural_opcodes.cpp)
+  target_link_libraries(t81_vm_neural_opcodes_test PRIVATE t81_vm t81_core)
+  add_test(NAME t81_vm_neural_opcodes_test COMMAND t81_vm_neural_opcodes_test)
+
+  add_executable(test_bitwise ${CMAKE_SOURCE_DIR}/tests/cpp/test_bitwise.cpp)
+  target_link_libraries(test_bitwise PRIVATE t81_vm t81_core)
+  add_test(NAME test_bitwise COMMAND test_bitwise)
+
+  add_executable(t81_vm_memory_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_memory_test.cpp)
+  target_link_libraries(t81_vm_memory_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_resource_monitoring_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_resource_monitoring.cpp)
+  target_link_libraries(t81_vm_resource_monitoring_test PRIVATE t81_vm t81_core)
+  add_test(NAME t81_vm_resource_monitoring_test COMMAND t81_vm_resource_monitoring_test)
+
+  add_executable(t81_axion_log_determinism_test ${CMAKE_SOURCE_DIR}/tests/cpp/axion_log_determinism_test.cpp)
+  target_link_libraries(t81_axion_log_determinism_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_reflection_non_interference_test ${CMAKE_SOURCE_DIR}/tests/cpp/reflection_non_interference_test.cpp)
+  target_link_libraries(t81_reflection_non_interference_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_weights_load_test ${CMAKE_SOURCE_DIR}/tests/cpp/weights_load_test.cpp)
+  target_link_libraries(t81_weights_load_test PRIVATE t81_vm t81_core t81_tool_model)
+  add_executable(t81_vm_decoder_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_decoder_test.cpp)
+  target_link_libraries(t81_vm_decoder_test PRIVATE t81_decode t81_vm t81_core t81_tool_model)
+  add_test(NAME t81_vm_decoder_test COMMAND t81_vm_decoder_test)
+  set_tests_properties(t81_vm_decoder_test PROPERTIES TIMEOUT 300)
+  add_executable(t81_safetensors_import_test ${CMAKE_SOURCE_DIR}/tests/cpp/safetensors_import_test.cpp)
+  target_link_libraries(t81_safetensors_import_test PRIVATE t81_tool_model t81_core)
+  add_executable(t81_native_weights_metrics_test ${CMAKE_SOURCE_DIR}/tests/cpp/native_weights_metrics_test.cpp)
+  target_link_libraries(t81_native_weights_metrics_test PRIVATE t81_tool_model t81_core)
+  if(T81_ENABLE_LLAMA_CPP)
+    add_executable(t81_gguf_import_bridge_test ${CMAKE_SOURCE_DIR}/tests/cpp/gguf_import_bridge_test.cpp)
+    target_link_libraries(t81_gguf_import_bridge_test PRIVATE t81_tool_model t81_vm t81_core)
+  endif()
+
+  add_executable(t81_hash_stub_test ${CMAKE_SOURCE_DIR}/tests/cpp/hash_stub_test.cpp)
+  target_link_libraries(t81_hash_stub_test PRIVATE t81_core)
+
+  add_executable(t81_sha3_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_sha3.cpp)
+  target_link_libraries(t81_sha3_test PRIVATE t81_core)
+
+  add_executable(t81_axion_stub_test ${CMAKE_SOURCE_DIR}/tests/cpp/axion_stub_test.cpp)
+  target_link_libraries(t81_axion_stub_test PRIVATE t81_core t81_axion)
+
+  add_executable(t81_check_tier_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_check_tier.cpp)
+  target_link_libraries(t81_check_tier_test PRIVATE t81_core t81_axion)
+
+  add_executable(t81_codec_base243_test ${CMAKE_SOURCE_DIR}/tests/cpp/codec_base243_test.cpp)
+  target_link_libraries(t81_codec_base243_test PRIVATE t81_core)
+  add_executable(t81_codec_base81_test ${CMAKE_SOURCE_DIR}/tests/cpp/codec_base81_test.cpp)
+  target_link_libraries(t81_codec_base81_test PRIVATE t81_core)
+
+  add_executable(t81_trit_packing_test ${CMAKE_SOURCE_DIR}/tests/cpp/trit_packing_test.cpp)
+  target_link_libraries(t81_trit_packing_test PRIVATE t81_core)
+
+  add_executable(t81_packed_trit_vector_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_packed_trit_vector.cpp)
+  target_link_libraries(t81_packed_trit_vector_test PRIVATE t81_core)
+  if(T81_IS_X86_64 AND NOT MSVC)
+    target_compile_options(t81_packed_trit_vector_test PRIVATE -mavx2 -mfma)
+  endif()
+
+  add_executable(t81_tritwise_backend_equivalence_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_tritwise_backend_equivalence.cpp)
+  target_link_libraries(t81_tritwise_backend_equivalence_test PRIVATE t81_core)
+  if(T81_IS_X86_64 AND NOT MSVC)
+    target_compile_options(t81_tritwise_backend_equivalence_test PRIVATE -mavx2 -mfma)
+  endif()
+  add_test(NAME t81_tritwise_backend_equivalence_test COMMAND t81_tritwise_backend_equivalence_test)
+
+  # RFC-0049 — Canonical Ternary Arithmetic Semantics conformance test.
+  # Verifies scalar trit oracle == T81BigInt multi-limb path for add/sub/mul/neg.
+  add_executable(t81_arithmetic_backend_equivalence_test
+    ${CMAKE_SOURCE_DIR}/tests/cpp/test_arithmetic_backend_equivalence.cpp)
+  target_link_libraries(t81_arithmetic_backend_equivalence_test PRIVATE t81_core)
+
+  add_executable(t81_simd_api_test ${CMAKE_SOURCE_DIR}/tests/cpp/simd_api_test.cpp)
+  target_link_libraries(t81_simd_api_test PRIVATE t81_core)
+  if(T81_IS_X86_64 AND NOT MSVC)
+    target_compile_options(t81_simd_api_test PRIVATE -mavx2 -mfma)
+  endif()
+
+  add_executable(t81_phase2c_truth_table_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_phase2c_truth_table.cpp)
+  target_link_libraries(t81_phase2c_truth_table_test PRIVATE t81_core)
+
+  add_executable(t81_packed_trit_vector_stress_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_packed_trit_vector_stress.cpp)
+  target_link_libraries(t81_packed_trit_vector_stress_test PRIVATE t81_core)
+
+  add_executable(t81_base81_balanced_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_base81_balanced.cpp)
+  target_link_libraries(t81_base81_balanced_test PRIVATE t81_core)
+
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
+    add_executable(t81_base81_simd_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_base81_simd.cpp)
+    target_link_libraries(t81_base81_simd_test PRIVATE t81_core)
+  endif()
+
+  add_executable(t81_base81_packed_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_base81_packed.cpp)
+  target_link_libraries(t81_base81_packed_test PRIVATE t81_core)
+
+  add_executable(t81_metadata_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_metadata.cpp)
+  target_link_libraries(t81_metadata_test PRIVATE t81_core)
+
+  add_executable(t81_isa_base81_view_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_tisc_base81_view.cpp)
+  target_link_libraries(t81_isa_base81_view_test PRIVATE t81_isa)
+
+  add_executable(tisc_base81 ${CMAKE_SOURCE_DIR}/tools/tisc_base81.cpp)
+  target_link_libraries(tisc_base81 PRIVATE t81_isa)
+
+  add_executable(setun_bridge_test ${CMAKE_SOURCE_DIR}/tests/cpp/setun_bridge_test.cpp)
+  target_link_libraries(setun_bridge_test PRIVATE t81_core)
+
+  add_executable(tisc_opcode_matrix_test ${CMAKE_SOURCE_DIR}/tests/cpp/tisc_opcode_matrix_test.cpp)
+  target_link_libraries(tisc_opcode_matrix_test PRIVATE t81_isa)
+
+  add_executable(t81lang_conformance_baseline_test ${CMAKE_SOURCE_DIR}/tests/cpp/t81lang_conformance_baseline_test.cpp)
+add_executable(t81lang_surface_gate_test ${CMAKE_SOURCE_DIR}/tests/cpp/t81lang_surface_gate_test.cpp)
+target_link_libraries(t81lang_surface_gate_test PRIVATE t81_lang_frontend t81_core)
+add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
+
+  target_link_libraries(t81lang_conformance_baseline_test PRIVATE t81_lang_frontend)
+
+  add_executable(t81lang_conformance_edge_semantics_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/t81lang_conformance_edge_semantics_test.cpp)
+  target_link_libraries(t81lang_conformance_edge_semantics_test PRIVATE t81_lang_frontend)
+  add_test(NAME t81lang_conformance_edge_semantics_test
+           COMMAND t81lang_conformance_edge_semantics_test)
+
+  add_executable(t81_numeric_format_test ${CMAKE_SOURCE_DIR}/tests/cpp/t81_numeric_format_test.cpp)
+  target_link_libraries(t81_numeric_format_test PRIVATE t81_core)
+
+  add_executable(axion_recursion_guardrails_test ${CMAKE_SOURCE_DIR}/tests/cpp/axion_recursion_guardrails_test.cpp)
+  target_link_libraries(axion_recursion_guardrails_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_tensor_shape_test ${CMAKE_SOURCE_DIR}/tests/cpp/tensor_shape_test.cpp)
+  target_link_libraries(t81_tensor_shape_test PRIVATE t81_core)
+
+  add_executable(t81_tensor_serialization_canonical_fixed_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/tensor_serialization_canonical_fixed_test.cpp)
+  target_link_libraries(t81_tensor_serialization_canonical_fixed_test PRIVATE t81_core)
+
+  add_executable(t81_tensor_native_decode_test ${CMAKE_SOURCE_DIR}/tests/cpp/tensor_native_decode_test.cpp)
+  target_link_libraries(t81_tensor_native_decode_test PRIVATE t81_core)
+
+  add_executable(t81_ternary_arith_test ${CMAKE_SOURCE_DIR}/tests/cpp/ternary_arith_test.cpp)
+  target_link_libraries(t81_ternary_arith_test PRIVATE t81_core)
+
+  add_executable(t81_tensor_matmul_test ${CMAKE_SOURCE_DIR}/tests/cpp/tensor_matmul_test.cpp)
+  target_link_libraries(t81_tensor_matmul_test PRIVATE t81_core)
+
+  add_executable(t81_tensor_conv_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Tensor_conv.cpp)
+  target_link_libraries(t81_tensor_conv_test PRIVATE t81_core)
+
+  add_executable(t81_tensor_nn_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Tensor_nn.cpp)
+  target_link_libraries(t81_tensor_nn_test PRIVATE t81_core)
+
+  add_executable(t81_tensor_reduce_test ${CMAKE_SOURCE_DIR}/tests/cpp/tensor_reduce_test.cpp)
+  target_link_libraries(t81_tensor_reduce_test PRIVATE t81_core)
+
+  add_executable(t81_tensor_broadcast_test ${CMAKE_SOURCE_DIR}/tests/cpp/tensor_broadcast_test.cpp)
+  target_link_libraries(t81_tensor_broadcast_test PRIVATE t81_core)
+
+  add_executable(t81_entropy_test ${CMAKE_SOURCE_DIR}/tests/cpp/entropy_test.cpp)
+  target_link_libraries(t81_entropy_test PRIVATE t81_core)
+
+  add_executable(t81_ethics_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_ethics.cpp)
+  target_link_libraries(t81_ethics_test PRIVATE t81_core t81_axion)
+  add_test(NAME t81_ethics_test COMMAND t81_ethics_test)
+
+  add_executable(t81_ethics_invariants_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_ethics_invariants.cpp)
+  target_link_libraries(t81_ethics_invariants_test PRIVATE t81_core t81_axion)
+  add_test(NAME t81_ethics_invariants_test COMMAND t81_ethics_invariants_test)
+
+  add_executable(test_resource_monitoring ${CMAKE_SOURCE_DIR}/tests/cpp/test_resource_monitoring.cpp)
+  target_link_libraries(test_resource_monitoring PRIVATE t81_core t81_isa t81_vm)
+  add_test(NAME test_resource_monitoring COMMAND test_resource_monitoring)
+
+  add_executable(test_tier3_opcodes ${CMAKE_SOURCE_DIR}/tests/cpp/test_tier3_opcodes.cpp)
+  target_link_libraries(test_tier3_opcodes PRIVATE t81_core t81_isa t81_vm)
+  add_test(NAME test_tier3_opcodes COMMAND test_tier3_opcodes)
+
+  add_executable(t81_expected_test ${CMAKE_SOURCE_DIR}/tests/cpp/expected_test.cpp)
+  target_link_libraries(t81_expected_test PRIVATE t81_core)
+
+  add_executable(t81_tensor_elementwise_test ${CMAKE_SOURCE_DIR}/tests/cpp/tensor_elementwise_test.cpp)
+  target_link_libraries(t81_tensor_elementwise_test PRIVATE t81_core)
+
+  add_executable(t81_tensor_ternary_test ${CMAKE_SOURCE_DIR}/tests/cpp/tensor_ternary_test.cpp)
+  target_link_libraries(t81_tensor_ternary_test PRIVATE t81_core)
+
+  add_executable(t81_t729_tensor_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t729_tensor.cpp)
+  target_link_libraries(t81_t729_tensor_test PRIVATE t81_core)
+
+  add_executable(t81_symbolic_algebra_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_symbolic_algebra.cpp)
+  target_link_libraries(t81_symbolic_algebra_test PRIVATE t81_core)
+
+  add_executable(t81_semantic_graph_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_semantic_graph.cpp)
+  target_link_libraries(t81_semantic_graph_test PRIVATE t81_core)
+
+  add_executable(t81_neural_primitives_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_neural_primitives.cpp)
+  target_link_libraries(t81_neural_primitives_test PRIVATE t81_core)
+
+  add_executable(t81_frontend_neural_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_frontend_neural.cpp)
+  target_link_libraries(t81_frontend_neural_test PRIVATE t81_lang_frontend t81_core)
+
+  add_executable(t81_c_api_bigint_test ${CMAKE_SOURCE_DIR}/tests/cpp/c_api_bigint_test.c)
+  target_link_libraries(t81_c_api_bigint_test PRIVATE t81_c_api)
+  target_include_directories(t81_c_api_bigint_test PRIVATE ${CMAKE_SOURCE_DIR})
+
+  add_executable(t81_tensor_unary_test ${CMAKE_SOURCE_DIR}/tests/cpp/tensor_unary_test.cpp)
+  target_link_libraries(t81_tensor_unary_test PRIVATE t81_core)
+
+  add_executable(t81_hanoi_integration_test ${CMAKE_SOURCE_DIR}/tests/cpp/hanoi_integration_test.cpp)
+  target_link_libraries(t81_hanoi_integration_test PRIVATE t81_core t81_experimental t81_axion)
+
+  add_executable(t81_hanoi_command_surface_test ${CMAKE_SOURCE_DIR}/tests/cpp/hanoi_command_surface_test.cpp)
+  target_link_libraries(t81_hanoi_command_surface_test PRIVATE t81_core t81_experimental t81_axion)
+
+  add_executable(t81_vm_load_store_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_load_store_test.cpp)
+  target_link_libraries(t81_vm_load_store_test PRIVATE t81_vm t81_core)
+
+  
+  add_executable(t81_vm_illegal_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_illegal_test.cpp)
+  target_link_libraries(t81_vm_illegal_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_bounds_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_bounds_test.cpp)
+  target_link_libraries(t81_vm_bounds_test PRIVATE t81_vm t81_core)
+
+  add_executable(vm_bounds_trace_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_bounds_trace_test.cpp)
+  target_link_libraries(vm_bounds_trace_test PRIVATE t81_vm t81_core)
+  add_test(NAME vm_bounds_trace_test COMMAND vm_bounds_trace_test)
+
+  add_executable(t81_canonfs_driver_test ${CMAKE_SOURCE_DIR}/tests/cpp/canonfs_driver_test.cpp)
+  target_link_libraries(t81_canonfs_driver_test PRIVATE t81_core)
+
+  add_executable(canonfs_interchange_test ${CMAKE_SOURCE_DIR}/tests/cpp/canonfs_interchange_test.cpp)
+  target_link_libraries(canonfs_interchange_test PRIVATE t81_core)
+  
+  # Find and link GTest (optional)
+  find_package(GTest QUIET)
+  if(GTEST_FOUND)
+    add_executable(canonfs_cli_contract_tests ${CMAKE_SOURCE_DIR}/tests/cpp/canonfs_cli_contract_tests.cpp)
+    target_link_libraries(canonfs_cli_contract_tests PRIVATE t81_core GTest::gtest GTest::gtest_main)
+  endif()
+
+  add_executable(t81_canonfs_rs_repair_test ${CMAKE_SOURCE_DIR}/tests/cpp/canonfs_rs_repair_test.cpp)
+  target_link_libraries(t81_canonfs_rs_repair_test PRIVATE t81_core)
+
+  # RFC-0000 §1: CanonHash-81 reference vector tests.
+  add_executable(t81_canonhash81_reference_vectors_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/canonhash81_reference_vectors_test.cpp)
+  target_link_libraries(t81_canonhash81_reference_vectors_test PRIVATE t81_core)
+
+  add_executable(t81_vm_trace_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_trace_test.cpp)
+  target_link_libraries(t81_vm_trace_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_determinism_property_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_determinism_property_test.cpp)
+  target_link_libraries(t81_vm_determinism_property_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_state_transition_invariants_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_state_transition_invariants_test.cpp)
+  target_link_libraries(t81_vm_state_transition_invariants_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_state_transition_conformance_matrix_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_state_transition_conformance_matrix_test.cpp)
+  target_link_libraries(t81_vm_state_transition_conformance_matrix_test PRIVATE t81_vm t81_core)
+
+  # vm_workload_determinism_test absorbed into vm_workload_determinism_tiers_test as "workload" tier
+
+  add_executable(t81_vm_workload_determinism_tiers_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_workload_determinism_tiers_test.cpp)
+  target_link_libraries(t81_vm_workload_determinism_tiers_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_mixed_workload_conformance_matrix_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_mixed_workload_conformance_matrix_test.cpp)
+  target_link_libraries(t81_vm_mixed_workload_conformance_matrix_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_policy_parse_fail_closed_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_policy_parse_fail_closed_test.cpp)
+  target_link_libraries(t81_vm_policy_parse_fail_closed_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_dualrail_sbdr_vm_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/dualrail_sbdr_vm_test.cpp)
+  target_link_libraries(t81_dualrail_sbdr_vm_test PRIVATE t81_vm t81_core)
+
+  add_executable(test_regime_dispatch
+                 ${CMAKE_SOURCE_DIR}/tests/vm/test_regime_dispatch.cpp)
+  target_link_libraries(test_regime_dispatch PRIVATE t81_regime_dispatch Threads::Threads)
+
+  add_executable(t81_provider_contract_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/provider_contract_test.cpp)
+  target_link_libraries(t81_provider_contract_test PRIVATE t81_provider_adapters t81_provider t81_vm t81_core)
+  find_package(Python3 COMPONENTS Interpreter QUIET)
+  if(Python3_Interpreter_FOUND)
+    add_test(NAME t81_provider_schema_conformance_test
+      COMMAND ${Python3_EXECUTABLE}
+        ${CMAKE_SOURCE_DIR}/tests/ci/test_provider_schema_conformance.py)
+    set_tests_properties(t81_provider_schema_conformance_test PROPERTIES
+      ENVIRONMENT "T81_PROVIDER_CONTRACT_TEST_BIN=$<TARGET_FILE:t81_provider_contract_test>"
+      TIMEOUT 60)
+  endif()
+
+  add_executable(t81_vm_axreport_policy_deny_fail_closed_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_axreport_policy_deny_fail_closed_test.cpp)
+  target_link_libraries(t81_vm_axreport_policy_deny_fail_closed_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_system_registers_deterministic_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_system_registers_deterministic_test.cpp)
+  target_link_libraries(t81_vm_system_registers_deterministic_test PRIVATE t81_vm t81_core)
+
+  # Consolidated fail-closed stub harness (merges async/network + privileged opcode tests)
+  add_executable(t81_vm_stubbed_opcode_fail_closed_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/vm_stubbed_opcode_fail_closed_test.cpp)
+  target_link_libraries(t81_vm_stubbed_opcode_fail_closed_test PRIVATE t81_vm t81_core)
+
+  add_executable(vm_extended_ops_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_extended_ops_test.cpp)
+  target_link_libraries(vm_extended_ops_test PRIVATE t81_vm t81_core)
+
+  add_executable(llama_kernels_test ${CMAKE_SOURCE_DIR}/tests/cpp/llama_kernels_test.cpp)
+  target_link_libraries(llama_kernels_test PRIVATE t81_core)
+
+  add_executable(t81_vm_jump_flags_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_jump_flags_test.cpp)
+  target_link_libraries(t81_vm_jump_flags_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_float_fraction_ops_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_float_fraction_ops_test.cpp)
+  target_link_libraries(t81_vm_float_fraction_ops_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_literal_pool_extension_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_vm_literal_pool_extension.cpp)
+  target_link_libraries(t81_vm_literal_pool_extension_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_neg_jumps_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_neg_jumps_test.cpp)
+  target_link_libraries(t81_vm_neg_jumps_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_print_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_print_test.cpp)
+  target_link_libraries(t81_vm_print_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_frontend_lexer_test ${CMAKE_SOURCE_DIR}/tests/cpp/frontend_lexer_test.cpp)
+  target_link_libraries(t81_frontend_lexer_test PRIVATE t81_lang_frontend)
+
+  add_executable(t81_frontend_parser_test ${CMAKE_SOURCE_DIR}/tests/cpp/frontend_parser_test.cpp)
+  target_link_libraries(t81_frontend_parser_test PRIVATE t81_lang_frontend)
+
+  add_executable(t81_parser_regression_audit_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_parser_regression_audit.cpp)
+  target_link_libraries(t81_parser_regression_audit_test PRIVATE t81_lang_frontend)
+  add_test(NAME t81_parser_regression_audit_test COMMAND t81_parser_regression_audit_test)
+
+  add_executable(t81_spec_compliance_test ${CMAKE_SOURCE_DIR}/tests/cpp/spec_compliance_test.cpp)
+  target_link_libraries(t81_spec_compliance_test PRIVATE t81_lang_frontend)
+
+  add_executable(tisc_semantic_equivalence_test ${CMAKE_SOURCE_DIR}/tests/cpp/tisc_semantic_equivalence_test.cpp)
+  target_link_libraries(tisc_semantic_equivalence_test PRIVATE t81_vm t81_core)
+
+  add_executable(tisc_opcode_family_semantics_test ${CMAKE_SOURCE_DIR}/tests/cpp/tisc_opcode_family_semantics_test.cpp)
+  target_link_libraries(tisc_opcode_family_semantics_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_frontend_expression_features_test ${CMAKE_SOURCE_DIR}/tests/cpp/frontend_expression_features_test.cpp)
+  target_link_libraries(t81_frontend_expression_features_test PRIVATE t81_lang_frontend t81_isa)
+
+  add_executable(t81_frontend_parser_generics_test ${CMAKE_SOURCE_DIR}/tests/cpp/frontend_parser_generics_test.cpp)
+  target_link_libraries(t81_frontend_parser_generics_test PRIVATE t81_lang_frontend)
+
+  add_executable(t81_frontend_parser_appendix_coverage_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/frontend_parser_appendix_coverage_test.cpp)
+  target_link_libraries(t81_frontend_parser_appendix_coverage_test PRIVATE t81_lang_frontend)
+  add_test(NAME t81_frontend_parser_appendix_coverage_test
+           COMMAND t81_frontend_parser_appendix_coverage_test)
+
+  add_executable(t81_frontend_parser_recovery_test ${CMAKE_SOURCE_DIR}/tests/cpp/frontend_parser_recovery_test.cpp)
+  target_link_libraries(t81_frontend_parser_recovery_test PRIVATE t81_lang_frontend)
+
+  add_executable(t81_frontend_parser_legacy_rejection_test ${CMAKE_SOURCE_DIR}/tests/cpp/frontend_parser_legacy_rejection_test.cpp)
+  target_link_libraries(t81_frontend_parser_legacy_rejection_test PRIVATE t81_lang_frontend)
+
+  add_executable(t81_frontend_ir_generator_test ${CMAKE_SOURCE_DIR}/tests/cpp/frontend_ir_generator_test.cpp)
+  target_link_libraries(t81_frontend_ir_generator_test PRIVATE t81_lang_frontend t81_isa)
+
+  add_executable(t81_frontend_logical_lowering_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_frontend_logical_lowering.cpp)
+  target_link_libraries(t81_frontend_logical_lowering_test PRIVATE t81_lang_frontend t81_isa)
+
+  add_executable(t81_ir_snapshot_audit_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_ir_snapshot_audit.cpp)
+  target_link_libraries(t81_ir_snapshot_audit_test PRIVATE t81_lang_frontend t81_isa)
+  add_test(NAME t81_ir_snapshot_audit_test COMMAND t81_ir_snapshot_audit_test)
+
+  add_executable(t81_semantic_analyzer_option_result_test ${CMAKE_SOURCE_DIR}/tests/cpp/semantic_analyzer_option_result_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_option_result_test PRIVATE t81_lang_frontend)
+
+  add_executable(test_std_option_result ${CMAKE_SOURCE_DIR}/tests/cpp/test_std_option_result.cpp)
+  target_link_libraries(test_std_option_result PRIVATE t81_lang_frontend t81_isa)
+
+  add_executable(t81_semantic_analyzer_match_test ${CMAKE_SOURCE_DIR}/tests/cpp/semantic_analyzer_match_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_match_test PRIVATE t81_lang_frontend)
+
+  add_executable(t81_semantic_analyzer_generic_test ${CMAKE_SOURCE_DIR}/tests/cpp/semantic_analyzer_generic_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_generic_test PRIVATE t81_lang_frontend)
+
+  add_executable(t81_semantic_analyzer_indexing_test ${CMAKE_SOURCE_DIR}/tests/cpp/semantic_analyzer_indexing_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_indexing_test PRIVATE t81_lang_frontend)
+
+  add_executable(t81_semantic_analyzer_vector_literal_test ${CMAKE_SOURCE_DIR}/tests/cpp/semantic_analyzer_vector_literal_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_vector_literal_test PRIVATE t81_lang_frontend)
+
+  add_executable(t81_semantic_analyzer_record_enum_test ${CMAKE_SOURCE_DIR}/tests/cpp/semantic_analyzer_record_enum_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_record_enum_test PRIVATE t81_lang_frontend)
+
+  add_executable(t81_semantic_analyzer_equality_test ${CMAKE_SOURCE_DIR}/tests/cpp/semantic_analyzer_equality_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_equality_test PRIVATE t81_lang_frontend)
+
+  add_executable(t81_semantic_analyzer_numeric_test ${CMAKE_SOURCE_DIR}/tests/cpp/semantic_analyzer_numeric_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_numeric_test PRIVATE t81_lang_frontend)
+
+  add_executable(t81_semantic_analyzer_stage3_rules_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/semantic_analyzer_stage3_rules_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_stage3_rules_test PRIVATE t81_lang_frontend)
+  add_test(NAME t81_semantic_analyzer_stage3_rules_test
+           COMMAND t81_semantic_analyzer_stage3_rules_test)
+
+  add_executable(t81_semantic_analyzer_diagnostic_location_test ${CMAKE_SOURCE_DIR}/tests/cpp/semantic_analyzer_diagnostic_location_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_diagnostic_location_test PRIVATE t81_lang_frontend)
+
+  add_executable(t81_semantic_analyzer_cascade_suppression_test ${CMAKE_SOURCE_DIR}/tests/cpp/semantic_analyzer_cascade_suppression_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_cascade_suppression_test PRIVATE t81_lang_frontend)
+
+  add_executable(t81_semantic_analyzer_diagnostic_precision_test ${CMAKE_SOURCE_DIR}/tests/cpp/semantic_analyzer_diagnostic_precision_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_diagnostic_precision_test PRIVATE t81_lang_frontend)
+
+  add_executable(t81_isa_binary_emitter_test ${CMAKE_SOURCE_DIR}/tests/cpp/tisc_binary_emitter_test.cpp)
+  target_link_libraries(t81_isa_binary_emitter_test PRIVATE t81_isa)
+
+  add_executable(t81_isa_type_alias_io_test ${CMAKE_SOURCE_DIR}/tests/cpp/tisc_type_alias_io_test.cpp)
+  target_link_libraries(t81_isa_type_alias_io_test PRIVATE t81_isa)
+
+  add_executable(t81_isa_binary_io_determinism_test ${CMAKE_SOURCE_DIR}/tests/cpp/tisc_binary_io_determinism_test.cpp)
+  target_link_libraries(t81_isa_binary_io_determinism_test PRIVATE t81_isa t81_core)
+  add_executable(t81_isa_binary_metadata_roundtrip_property_test ${CMAKE_SOURCE_DIR}/tests/cpp/tisc_binary_metadata_roundtrip_property_test.cpp)
+  target_link_libraries(t81_isa_binary_metadata_roundtrip_property_test PRIVATE t81_isa t81_core)
+
+  add_executable(t81_semantic_analyzer_loop_test ${CMAKE_SOURCE_DIR}/tests/cpp/semantic_analyzer_loop_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_loop_test PRIVATE t81_lang_frontend)
+
+  add_executable(t81_semantic_analyzer_scope_lifetime_test ${CMAKE_SOURCE_DIR}/tests/cpp/semantic_analyzer_scope_lifetime_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_scope_lifetime_test PRIVATE t81_lang_frontend)
+
+  add_executable(ir_inspector ${CMAKE_SOURCE_DIR}/tools/ir_inspector.cpp)
+  target_link_libraries(ir_inspector PRIVATE t81_lang_frontend)
+
+  add_executable(e2e_let_statement_test ${CMAKE_SOURCE_DIR}/tests/cpp/e2e_let_statement_test.cpp)
+  target_link_libraries(e2e_let_statement_test PRIVATE t81_lang_frontend t81_isa t81_vm)
+
+  add_executable(e2e_arithmetic_test ${CMAKE_SOURCE_DIR}/tests/cpp/e2e_arithmetic_test.cpp)
+  target_link_libraries(e2e_arithmetic_test PRIVATE t81_lang_frontend t81_isa t81_vm)
+
+  add_executable(e2e_if_statement_test ${CMAKE_SOURCE_DIR}/tests/cpp/e2e_if_statement_test.cpp)
+  target_link_libraries(e2e_if_statement_test PRIVATE t81_lang_frontend t81_isa t81_vm)
+
+  add_executable(e2e_option_result_test ${CMAKE_SOURCE_DIR}/tests/cpp/e2e_option_result_test.cpp)
+  target_link_libraries(e2e_option_result_test PRIVATE t81_lang_frontend t81_isa t81_vm)
+
+  add_executable(e2e_option_type_test ${CMAKE_SOURCE_DIR}/tests/cpp/e2e_option_type_test.cpp)
+  target_link_libraries(e2e_option_type_test PRIVATE t81_lang_frontend t81_isa t81_vm)
+
+  add_executable(e2e_option_result_function_test ${CMAKE_SOURCE_DIR}/tests/cpp/e2e_option_result_function_test.cpp)
+  target_link_libraries(e2e_option_result_function_test PRIVATE t81_lang_frontend t81_isa t81_vm)
+
+  add_executable(t81_cli_check_test ${CMAKE_SOURCE_DIR}/tests/cpp/cli_check_test.cpp)
+  target_link_libraries(t81_cli_check_test PRIVATE t81_tool_cli)
+
+  add_executable(security_package_init_test ${CMAKE_SOURCE_DIR}/tests/cpp/security_package_init_test.cpp)
+  target_link_libraries(security_package_init_test PRIVATE t81_tool_cli)
+
+  add_executable(t81_cli_pipeline_test ${CMAKE_SOURCE_DIR}/tests/cpp/cli_pipeline_test.cpp)
+  target_link_libraries(t81_cli_pipeline_test PRIVATE t81_tool_cli)
+
+  add_executable(t81_cli_disasm_test ${CMAKE_SOURCE_DIR}/tests/cpp/cli_disasm_test.cpp)
+  target_link_libraries(t81_cli_disasm_test PRIVATE t81_tool_cli)
+
+  add_executable(t81_cli_debugger_test ${CMAKE_SOURCE_DIR}/tests/cpp/cli_debugger_test.cpp)
+  target_link_libraries(t81_cli_debugger_test PRIVATE t81_tool_cli t81_isa)
+
+  add_executable(t81_cli_option_result_test ${CMAKE_SOURCE_DIR}/tests/cpp/cli_option_result_test.cpp)
+  target_link_libraries(t81_cli_option_result_test PRIVATE t81_tool_cli t81_isa t81_vm)
+
+  add_executable(t81_cli_diagnostic_context_test ${CMAKE_SOURCE_DIR}/tests/cpp/cli_diagnostic_context_test.cpp)
+  target_link_libraries(t81_cli_diagnostic_context_test PRIVATE t81_tool_cli t81_lang_frontend t81_isa t81_vm)
+
+  add_executable(t81_cli_trace_export_test ${CMAKE_SOURCE_DIR}/tests/cpp/cli_trace_export_test.cpp)
+  target_link_libraries(t81_cli_trace_export_test PRIVATE t81_tool_cli)
+
+  add_executable(t81_cli_model_resolution_test ${CMAKE_SOURCE_DIR}/tests/cpp/cli_model_resolution_test.cpp)
+  target_link_libraries(t81_cli_model_resolution_test PRIVATE t81_tool_cli)
+
+  # Skip on Windows because it relies on POSIX fork() and <sys/wait.h> which are unsupported.
+  if(NOT WIN32)
+    add_executable(t81_cli_contract_test ${CMAKE_SOURCE_DIR}/tests/cpp/cli_contract_test.cpp)
+    target_compile_features(t81_cli_contract_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(t81_cli_contract_test PRIVATE t81_tool_model)
+
+    add_executable(t81_ai_task_answer_fixed_test ${CMAKE_SOURCE_DIR}/tests/cpp/ai_task_answer_fixed_test.cpp)
+    target_compile_features(t81_ai_task_answer_fixed_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(t81_ai_task_answer_fixed_test PRIVATE t81_tool_model)
+
+    add_executable(t81_ai_task_classify_fixed_test ${CMAKE_SOURCE_DIR}/tests/cpp/ai_task_classify_fixed_test.cpp)
+    target_compile_features(t81_ai_task_classify_fixed_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(t81_ai_task_classify_fixed_test PRIVATE t81_tool_model)
+
+    add_executable(t81_ai_task_route_fixed_test ${CMAKE_SOURCE_DIR}/tests/cpp/ai_task_route_fixed_test.cpp)
+    target_compile_features(t81_ai_task_route_fixed_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(t81_ai_task_route_fixed_test PRIVATE t81_tool_model)
+
+    add_executable(t81_ai_task_assess_fixed_test ${CMAKE_SOURCE_DIR}/tests/cpp/ai_task_assess_fixed_test.cpp)
+    target_compile_features(t81_ai_task_assess_fixed_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(t81_ai_task_assess_fixed_test PRIVATE t81_tool_model)
+
+    add_executable(t81_ai_task_framework_test ${CMAKE_SOURCE_DIR}/tests/cpp/ai_task_framework_test.cpp)
+    target_compile_features(t81_ai_task_framework_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(t81_ai_task_framework_test PRIVATE t81_tool_model)
+
+    add_executable(t81_ai_task_assess_fixed_composition_test
+                   ${CMAKE_SOURCE_DIR}/tests/cpp/ai_task_assess_fixed_composition_test.cpp)
+    target_compile_features(t81_ai_task_assess_fixed_composition_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(t81_ai_task_assess_fixed_composition_test PRIVATE t81_tool_model)
+
+    add_executable(t81_ai_task_route_fixed_composition_test
+                   ${CMAKE_SOURCE_DIR}/tests/cpp/ai_task_route_fixed_composition_test.cpp)
+    target_compile_features(t81_ai_task_route_fixed_composition_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(t81_ai_task_route_fixed_composition_test PRIVATE t81_tool_model)
+    add_executable(t81_ai_task_classify_fixed_composition_test
+                   ${CMAKE_SOURCE_DIR}/tests/cpp/ai_task_classify_fixed_composition_test.cpp)
+    target_compile_features(t81_ai_task_classify_fixed_composition_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(t81_ai_task_classify_fixed_composition_test PRIVATE t81_tool_model)
+
+    add_executable(t81_ai_task_read_field_test ${CMAKE_SOURCE_DIR}/tests/cpp/ai_task_read_field_test.cpp)
+    target_compile_features(t81_ai_task_read_field_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(t81_ai_task_read_field_test PRIVATE t81_tool_model)
+
+    add_executable(artifact_validate_record_test ${CMAKE_SOURCE_DIR}/tests/cpp/artifact_validate_record_test.cpp)
+    target_compile_features(artifact_validate_record_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(artifact_validate_record_test PRIVATE t81_tool_model)
+
+    add_executable(artifact_family_test ${CMAKE_SOURCE_DIR}/tests/cpp/artifact_family_test.cpp)
+    target_compile_features(artifact_family_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(artifact_family_test PRIVATE t81_tool_cli t81_core)
+  endif()
+
+  # Skip on Windows because it relies on POSIX fork() and <sys/wait.h> which are unsupported.
+  if(NOT WIN32)
+    add_executable(t81_cli_stress_test ${CMAKE_SOURCE_DIR}/tests/cpp/cli_stress_test.cpp)
+    target_compile_features(t81_cli_stress_test PRIVATE ${T81_CXX_STD_FEATURE})
+  endif()
+
+  if(T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND T81_CLANG_C_INCLUDE_DIR AND T81_CLANG_C_LIBRARY)
+    add_executable(t81_c_frontend_mlir_smoke_test ${CMAKE_SOURCE_DIR}/tests/cpp/c_frontend_mlir_smoke_test.cpp)
+    target_link_libraries(t81_c_frontend_mlir_smoke_test PRIVATE t81_c_frontend)
+  endif()
+  if(T81_ENABLE_RUST_FRONTEND AND T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND T81_CLANG_C_INCLUDE_DIR AND T81_CLANG_C_LIBRARY AND T81_RUSTC_EXECUTABLE)
+    add_executable(t81_rust_frontend_mlir_smoke_test ${CMAKE_SOURCE_DIR}/tests/cpp/rust_frontend_mlir_smoke_test.cpp)
+    target_link_libraries(t81_rust_frontend_mlir_smoke_test PRIVATE t81_rust_frontend)
+  endif()
+  if(T81_ENABLE_PYTHON_FRONTEND AND T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND T81_CLANG_C_INCLUDE_DIR AND T81_CLANG_C_LIBRARY AND Python3_EXECUTABLE)
+    add_executable(t81_python_frontend_mlir_smoke_test ${CMAKE_SOURCE_DIR}/tests/cpp/python_frontend_mlir_smoke_test.cpp)
+    target_link_libraries(t81_python_frontend_mlir_smoke_test PRIVATE t81_python_frontend)
+  endif()
+
+  add_executable(t81_cli_structural_types_test ${CMAKE_SOURCE_DIR}/tests/cpp/cli_structural_types_test.cpp)
+  target_link_libraries(t81_cli_structural_types_test PRIVATE t81_tool_cli t81_isa t81_vm)
+
+  add_executable(t81_cli_repl_test ${CMAKE_SOURCE_DIR}/tests/cpp/cli_repl_test.cpp)
+  target_link_libraries(t81_cli_repl_test PRIVATE t81_tool_cli t81_isa t81_vm)
+
+  add_executable(cli_canonize_tensor_test ${CMAKE_SOURCE_DIR}/tests/cpp/cli_canonize_tensor_test.cpp)
+  target_link_libraries(cli_canonize_tensor_test PRIVATE t81_tool_cli t81_core)
+
+  add_executable(cli_repro_hash_test ${CMAKE_SOURCE_DIR}/tests/cpp/cli_repro_hash_test.cpp)
+  target_compile_features(cli_repro_hash_test PRIVATE ${T81_CXX_STD_FEATURE})
+
+  # Parameterized stdlib fixture harness (consolidates 10 per-module tests)
+  add_executable(cli_stdlib_fixtures_test ${CMAKE_SOURCE_DIR}/tests/cpp/cli_stdlib_fixtures_test.cpp)
+  target_link_libraries(cli_stdlib_fixtures_test PRIVATE t81_tool_cli t81_isa t81_vm)
+
+  add_executable(cli_std_collections_determinism_test ${CMAKE_SOURCE_DIR}/tests/cpp/cli_std_collections_determinism_test.cpp)
+  target_link_libraries(cli_std_collections_determinism_test PRIVATE t81_tool_cli t81_isa t81_vm)
+
+  add_executable(t81_cli_record_enum_test ${CMAKE_SOURCE_DIR}/tests/cpp/cli_record_enum_test.cpp)
+  target_link_libraries(t81_cli_record_enum_test PRIVATE t81_tool_cli t81_isa t81_vm)
+
+  add_executable(t81_tier4_test ${CMAKE_SOURCE_DIR}/tests/cpp/tier4_test.cpp)
+  target_link_libraries(t81_tier4_test PRIVATE t81_core t81_axion t81_experimental)
+
+  add_executable(t81_tier5_test ${CMAKE_SOURCE_DIR}/tests/cpp/tier5_test.cpp)
+  target_link_libraries(t81_tier5_test PRIVATE t81_core t81_experimental)
+
+  add_executable(t81_infinite_opcodes_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_infinite_opcodes.cpp)
+  target_link_libraries(t81_infinite_opcodes_test PRIVATE t81_vm t81_isa t81_core t81_experimental)
+
+  add_executable(t81_tier4_vm_test ${CMAKE_SOURCE_DIR}/tests/cpp/tier4_vm_test.cpp)
+  target_link_libraries(t81_tier4_vm_test PRIVATE t81_vm t81_core t81_experimental)
+
+  add_executable(t81_tier4_distributed_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_tier4_distributed.cpp)
+  target_link_libraries(t81_tier4_distributed_test PRIVATE t81_vm t81_core t81_experimental)
+
+  add_executable(tiers_structure_test ${CMAKE_SOURCE_DIR}/tests/cpp/tiers_structure_test.cpp)
+  target_link_libraries(tiers_structure_test PRIVATE t81_core t81_experimental)
+
+  add_executable(vm_reflection_tier2_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_reflection_tier2_test.cpp)
+  target_link_libraries(vm_reflection_tier2_test PRIVATE t81_vm t81_isa t81_core t81_experimental)
+  add_test(NAME vm_reflection_tier2_test COMMAND vm_reflection_tier2_test)
+  add_executable(reflective_evidence_replay_test ${CMAKE_SOURCE_DIR}/tests/cpp/reflective_evidence_replay_test.cpp)
+  target_link_libraries(reflective_evidence_replay_test PRIVATE t81_core t81_experimental)
+  add_test(NAME reflective_evidence_replay_test COMMAND reflective_evidence_replay_test)
+
+  add_executable(t81_jit_test ${CMAKE_SOURCE_DIR}/tests/cpp/jit_test.cpp)
+  target_link_libraries(t81_jit_test PRIVATE t81_vm t81_core)
+
+  add_executable(jit_trace_equivalence_test ${CMAKE_SOURCE_DIR}/tests/cpp/jit_trace_equivalence_test.cpp)
+  target_link_libraries(jit_trace_equivalence_test PRIVATE t81_vm)
+
+  add_executable(jit_repro_oracle_test ${CMAKE_SOURCE_DIR}/tests/cpp/jit_repro_oracle_test.cpp)
+  target_link_libraries(jit_repro_oracle_test PRIVATE t81_vm t81_core)
+
+  # RFC-0028 §4: CanonFS-backed trace cache acceptance tests.
+  add_executable(jit_canonfs_cache_test ${CMAKE_SOURCE_DIR}/tests/cpp/jit_canonfs_cache_test.cpp)
+  target_link_libraries(jit_canonfs_cache_test PRIVATE t81_vm t81_core)
+
+  add_executable(vm_gc_safepoint_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_gc_safepoint_test.cpp)
+  target_link_libraries(vm_gc_safepoint_test PRIVATE t81_vm t81_core)
+
+  # RFC-0015 — First-Class Agent Constructs
+  add_executable(agent_constructs_test ${CMAKE_SOURCE_DIR}/tests/cpp/agent_constructs_test.cpp)
+  target_link_libraries(agent_constructs_test PRIVATE t81_vm t81_lang_frontend t81_core)
+
+  # RFC-0015 §3.2 + RFC-0048 §4.2 — Axion policy enforcement at AgentInvoke runtime boundary
+  add_executable(axion_agent_invoke_policy_test ${CMAKE_SOURCE_DIR}/tests/cpp/axion_agent_invoke_policy_test.cpp)
+  target_link_libraries(axion_agent_invoke_policy_test PRIVATE t81_vm t81_axion t81_core)
+
+  # RFC-0036 — Governed Foreign Function Interface (T81Lang `foreign {}` syntax)
+  add_executable(t81lang_foreign_ffi_test ${CMAKE_SOURCE_DIR}/tests/cpp/t81lang_foreign_ffi_test.cpp)
+  target_link_libraries(t81lang_foreign_ffi_test PRIVATE t81_vm t81_lang_frontend t81_core)
+  add_library(ffi_bridge_testlib SHARED ${CMAKE_SOURCE_DIR}/tests/cpp/ffi_bridge_testlib.cpp)
+  add_executable(vm_ffi_bridge_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_ffi_bridge_test.cpp)
+  target_link_libraries(vm_ffi_bridge_test PRIVATE t81_vm t81_isa t81_core)
+  target_compile_definitions(
+    vm_ffi_bridge_test PRIVATE T81_VM_FFI_TESTLIB_PATH="$<TARGET_FILE:ffi_bridge_testlib>")
+  add_dependencies(vm_ffi_bridge_test ffi_bridge_testlib)
+
+  # RFC-0037 — TNN stdlib (std.tnn.* builtins → RFC-0034 TISC opcodes)
+  add_executable(tnn_stdlib_test ${CMAKE_SOURCE_DIR}/tests/cpp/tnn_stdlib_test.cpp)
+  target_link_libraries(tnn_stdlib_test PRIVATE t81_vm t81_lang_frontend t81_core)
+
+  # RFC-0038 — Ternary Lattice Cryptography (POLYMUL / POLYMOD)
+  add_executable(lattice_crypto_test ${CMAKE_SOURCE_DIR}/tests/cpp/lattice_crypto_test.cpp)
+  target_link_libraries(lattice_crypto_test PRIVATE t81_vm t81_lang_frontend t81_core)
+
+  # RFC-0039 — NTRU-KEM (TVecSub / polyadd / polysub / ntru_encrypt / ntru_decrypt)
+  add_executable(ntru_kem_test ${CMAKE_SOURCE_DIR}/tests/cpp/ntru_kem_test.cpp)
+  target_link_libraries(ntru_kem_test PRIVATE t81_vm t81_lang_frontend t81_core)
+
+  add_executable(jit_tensor_trace_equivalence_test ${CMAKE_SOURCE_DIR}/tests/cpp/jit_tensor_trace_equivalence_test.cpp)
+  target_link_libraries(jit_tensor_trace_equivalence_test PRIVATE t81_vm)
+
+  add_executable(vm_jit_per_instruction_policy_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_jit_per_instruction_policy_test.cpp)
+  target_link_libraries(vm_jit_per_instruction_policy_test PRIVATE t81_vm t81_core)
+
+  add_executable(axion_loop_metadata_test ${CMAKE_SOURCE_DIR}/tests/cpp/axion_loop_metadata_test.cpp)
+  target_link_libraries(axion_loop_metadata_test PRIVATE t81_tool_cli t81_isa t81_vm)
+
+  add_executable(axion_match_metadata_test ${CMAKE_SOURCE_DIR}/tests/cpp/axion_match_metadata_test.cpp)
+  target_link_libraries(axion_match_metadata_test PRIVATE t81_tool_cli t81_isa t81_vm)
+
+  add_executable(axion_enum_guard_test ${CMAKE_SOURCE_DIR}/tests/cpp/axion_enum_guard_test.cpp)
+  target_link_libraries(axion_enum_guard_test PRIVATE t81_tool_cli t81_isa t81_vm)
+
+add_executable(axion_policy_match_guard_test ${CMAKE_SOURCE_DIR}/tests/cpp/axion_policy_match_guard_test.cpp)
+target_link_libraries(axion_policy_match_guard_test PRIVATE t81_tool_cli t81_isa t81_vm)
+
+add_executable(axion_policy_gc_trace_test ${CMAKE_SOURCE_DIR}/tests/cpp/axion_policy_gc_trace_test.cpp)
+target_link_libraries(axion_policy_gc_trace_test PRIVATE t81_tool_cli t81_isa t81_vm)
+
+  add_executable(axion_policy_bytecode_test ${CMAKE_SOURCE_DIR}/tests/cpp/axion_policy_bytecode_test.cpp)
+  target_link_libraries(axion_policy_bytecode_test PRIVATE t81_core t81_axion)
+
+  add_executable(axion_hybrid_mlp_policy_test ${CMAKE_SOURCE_DIR}/tests/cpp/axion_hybrid_mlp_policy_test.cpp)
+  target_link_libraries(axion_hybrid_mlp_policy_test PRIVATE t81_core t81_axion)
+
+add_executable(axion_policy_segment_event_test ${CMAKE_SOURCE_DIR}/tests/cpp/axion_policy_segment_event_test.cpp)
+target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
+
+  add_executable(axion_policy_invariants_test ${CMAKE_SOURCE_DIR}/tests/cpp/axion_policy_invariants_test.cpp)
+  target_link_libraries(axion_policy_invariants_test PRIVATE t81_vm t81_core)
+
+  add_executable(axion_policy_allow_deny_determinism_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/axion_policy_allow_deny_determinism_test.cpp)
+  target_link_libraries(axion_policy_allow_deny_determinism_test PRIVATE t81_vm t81_core)
+
+  # RFC-0032 Phase 3 gate tests — AIHookEngine + AiModelLoader
+  add_executable(axion_ai_hooks_test ${CMAKE_SOURCE_DIR}/tests/cpp/axion_ai_hooks_test.cpp)
+  target_link_libraries(axion_ai_hooks_test PRIVATE t81_axion t81_core)
+  add_test(NAME axion_ai_hooks_test COMMAND axion_ai_hooks_test)
+
+  # RFC-0032 Phase 4 gate tests — T81VmBackend (C-02)
+  add_executable(backend_adapter_test ${CMAKE_SOURCE_DIR}/tests/cpp/backend_adapter_test.cpp)
+  target_link_libraries(backend_adapter_test PRIVATE t81_vm t81_axion t81_core)
+  add_test(NAME backend_adapter_test COMMAND backend_adapter_test)
+
+  # RFC-0032 Phase 5 gate tests — EvidenceCollector (C-06)
+  add_executable(t81_determinism_evidence_test
+                 ${CMAKE_SOURCE_DIR}/tests/determinism/evidence_collector.cpp)
+  target_link_libraries(t81_determinism_evidence_test PRIVATE t81_axion t81_core)
+  add_test(NAME t81_determinism_evidence_test COMMAND t81_determinism_evidence_test)
+
+  add_executable(axion_policy_conformance_matrix_test
+                 ${CMAKE_SOURCE_DIR}/tests/cpp/axion_policy_conformance_matrix_test.cpp)
+  target_link_libraries(axion_policy_conformance_matrix_test PRIVATE t81_vm t81_core)
+
+  add_executable(axion_instruction_counter_test ${CMAKE_SOURCE_DIR}/tests/cpp/axion_instruction_counter_test.cpp)
+  target_link_libraries(axion_instruction_counter_test PRIVATE t81_core t81_vm)
+
+  add_executable(e2e_match_expression_test ${CMAKE_SOURCE_DIR}/tests/cpp/e2e_match_expression_test.cpp)
+  target_link_libraries(e2e_match_expression_test PRIVATE t81_lang_frontend t81_isa t81_vm)
+
+  add_executable(e2e_loop_statement_test ${CMAKE_SOURCE_DIR}/tests/cpp/e2e_loop_statement_test.cpp)
+  target_link_libraries(e2e_loop_statement_test PRIVATE t81_lang_frontend t81_isa t81_vm)
+
+  add_executable(e2e_advanced_features_test ${CMAKE_SOURCE_DIR}/tests/cpp/e2e_advanced_features_test.cpp)
+  target_link_libraries(e2e_advanced_features_test PRIVATE t81_lang_frontend t81_isa t81_vm)
+
+  add_executable(e2e_print_runtime_test ${CMAKE_SOURCE_DIR}/tests/cpp/e2e_print_runtime_test.cpp)
+  target_link_libraries(e2e_print_runtime_test PRIVATE t81_lang_frontend t81_isa t81_vm)
+
+  add_executable(e2e_compile_determinism_test ${CMAKE_SOURCE_DIR}/tests/cpp/e2e_compile_determinism_test.cpp)
+  target_link_libraries(e2e_compile_determinism_test PRIVATE t81_tool_cli t81_isa t81_vm t81_core)
+
+  add_executable(e2e_match_metadata_determinism_test ${CMAKE_SOURCE_DIR}/tests/cpp/e2e_match_metadata_determinism_test.cpp)
+  target_link_libraries(e2e_match_metadata_determinism_test PRIVATE t81_tool_cli t81_vm)
+
+  add_executable(e2e_ast_ir_canonical_determinism_test ${CMAKE_SOURCE_DIR}/tests/cpp/e2e_ast_ir_canonical_determinism_test.cpp)
+  target_link_libraries(e2e_ast_ir_canonical_determinism_test PRIVATE t81_lang_frontend t81_core)
+
+  add_executable(e2e_enum_metadata_determinism_test ${CMAKE_SOURCE_DIR}/tests/cpp/e2e_enum_metadata_determinism_test.cpp)
+  target_link_libraries(e2e_enum_metadata_determinism_test PRIVATE t81_tool_cli t81_isa)
+
+  add_executable(cli_e2e_test ${CMAKE_SOURCE_DIR}/tests/cpp/cli_e2e_test.cpp)
+  target_link_libraries(cli_e2e_test PRIVATE t81_tool_cli)
+
+  if(T81_BUILD_FUZZ_TESTS)
+    add_executable(t81_frontend_fuzz_test ${CMAKE_SOURCE_DIR}/tests/cpp/frontend_fuzz_test.cpp)
+    target_link_libraries(t81_frontend_fuzz_test PRIVATE t81_lang_frontend)
+
+    add_executable(fuzz_parser ${CMAKE_SOURCE_DIR}/tests/fuzz/fuzz_parser.cpp)
+    target_link_libraries(fuzz_parser PRIVATE t81_lang_frontend t81_core)
+
+    add_executable(fuzz_vm ${CMAKE_SOURCE_DIR}/tests/fuzz/fuzz_vm.cpp)
+    target_link_libraries(fuzz_vm PRIVATE t81_vm t81_core t81_isa)
+
+    if(T81_ENABLE_LIBFUZZER)
+      foreach(_fuzz_target fuzz_parser fuzz_vm)
+        target_compile_options(${_fuzz_target} PRIVATE -fsanitize=fuzzer -DT81_FUZZ_TARGET)
+        target_link_options(${_fuzz_target} PRIVATE -fsanitize=fuzzer)
+      endforeach()
+    endif()
+
+  endif()
+
+  add_executable(t81_t81int_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81int.cpp)
+  target_link_libraries(t81_t81int_test PRIVATE t81_core)
+
+  add_executable(t81_t81int_overflow_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81int_overflow.cpp)
+  target_link_libraries(t81_t81int_overflow_test PRIVATE t81_core)
+
+  add_executable(t81_t81fraction_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81fraction.cpp)
+  target_link_libraries(t81_t81fraction_test PRIVATE t81_core)
+
+  add_executable(t81_bigint_sub_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81bigint_sub.cpp)
+  target_link_libraries(t81_bigint_sub_test PRIVATE t81_core)
+
+  add_executable(t81_limb27_mul_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81_limb27_mul.cpp)
+  target_link_libraries(t81_limb27_mul_test PRIVATE t81_core)
+
+  add_executable(t81_limb54_reference_mul_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81_limb54_reference_mul.cpp)
+  target_link_libraries(t81_limb54_reference_mul_test PRIVATE t81_core)
+
+  add_executable(t81_limb54_karatsuba_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81_limb54_karatsuba.cpp)
+  target_link_libraries(t81_limb54_karatsuba_test PRIVATE t81_core)
+
+  add_executable(t81_phase6_qualification_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_scg07_phase6_qualification.cpp)
+  target_link_libraries(t81_phase6_qualification_test PRIVATE t81_core)
+
+  add_executable(t81_t81int_generic_div_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81int_generic_div.cpp)
+  target_link_libraries(t81_t81int_generic_div_test PRIVATE t81_core)
+
+  add_executable(t81_int_sign_trit_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81int_sign_trit.cpp)
+  target_link_libraries(t81_int_sign_trit_test PRIVATE t81_core)
+
+  add_executable(t81_division_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_division.cpp)
+  target_link_libraries(t81_division_test PRIVATE t81_core)
+
+  add_executable(t81_float_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Float.cpp)
+  target_link_libraries(t81_float_test PRIVATE t81_core)
+
+  add_executable(t81_float_deterministic_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Float.cpp)
+  target_compile_definitions(t81_float_deterministic_test PRIVATE T81_DETERMINISTIC)
+  target_link_libraries(t81_float_deterministic_test PRIVATE t81_core)
+  add_test(NAME t81_float_deterministic_test COMMAND t81_float_deterministic_test)
+
+  add_executable(t81_bigint_float_conversion_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81BigInt_Float_conversion.cpp)
+  target_link_libraries(t81_bigint_float_conversion_test PRIVATE t81_core)
+  add_test(NAME t81_bigint_float_conversion_test COMMAND t81_bigint_float_conversion_test)
+
+  add_executable(t81_float_properties_test ${CMAKE_SOURCE_DIR}/tests/cpp/float_properties_test.cpp)
+  target_link_libraries(t81_float_properties_test PRIVATE t81_core)
+
+  add_executable(t81_t81int_to_binary_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81int_to_binary.cpp)
+  target_link_libraries(t81_t81int_to_binary_test PRIVATE t81_core)
+
+  add_executable(t81_complex_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Complex.cpp)
+  target_link_libraries(t81_complex_test PRIVATE t81_core)
+
+  add_executable(t81_prob_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Prob.cpp)
+  target_link_libraries(t81_prob_test PRIVATE t81_core)
+
+  add_executable(t81_symbol_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Symbol.cpp)
+  target_link_libraries(t81_symbol_test PRIVATE t81_core)
+
+  add_executable(t81_string_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81String.cpp)
+  target_link_libraries(t81_string_test PRIVATE t81_core)
+
+  add_executable(t81_qutrit_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Qutrit.cpp)
+  target_link_libraries(t81_qutrit_test PRIVATE t81_core)
+
+  add_executable(t81_fixed_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Fixed.cpp)
+  target_link_libraries(t81_fixed_test PRIVATE t81_core)
+
+  add_executable(t81_uint_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Uint.cpp)
+  target_link_libraries(t81_uint_test PRIVATE t81_core)
+
+  add_executable(t81_list_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81List.cpp)
+  target_link_libraries(t81_list_test PRIVATE t81_core)
+
+  add_executable(t81_map_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Map.cpp)
+  target_link_libraries(t81_map_test PRIVATE t81_core)
+
+  add_executable(t81_set_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Set.cpp)
+  target_link_libraries(t81_set_test PRIVATE t81_core)
+
+  add_executable(t81_vector_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Vector.cpp)
+  target_link_libraries(t81_vector_test PRIVATE t81_core)
+
+  add_executable(t81_matrix_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Matrix.cpp)
+  target_link_libraries(t81_matrix_test PRIVATE t81_core)
+
+  add_executable(t81_matrix_singular_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Matrix_singular.cpp)
+  target_link_libraries(t81_matrix_singular_test PRIVATE t81_core)
+
+  add_executable(debug_matrix_crash ${CMAKE_SOURCE_DIR}/tests/cpp/debug_matrix_crash.cpp)
+  target_link_libraries(debug_matrix_crash PRIVATE t81_core)
+  add_test(NAME debug_matrix_crash COMMAND debug_matrix_crash)
+
+  add_executable(t81_maybe_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Maybe.cpp)
+  target_link_libraries(t81_maybe_test PRIVATE t81_core)
+
+  add_executable(t81_result_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Result.cpp)
+  target_link_libraries(t81_result_test PRIVATE t81_core)
+
+  add_executable(t81_simd_add_helpers_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81_simd_add_helpers.cpp)
+  target_link_libraries(t81_simd_add_helpers_test PRIVATE t81_core)
+
+  add_executable(t81_quaternion_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Quaternion.cpp)
+  target_link_libraries(t81_quaternion_test PRIVATE t81_core)
+
+  add_executable(t81_time_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Time.cpp)
+  target_link_libraries(t81_time_test PRIVATE t81_core)
+
+  add_executable(t81_bytes_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Bytes.cpp)
+  target_link_libraries(t81_bytes_test PRIVATE t81_core)
+
+  add_executable(t81_tree_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Tree.cpp)
+  target_link_libraries(t81_tree_test PRIVATE t81_core)
+
+  add_executable(t81_native_conversion_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81_native_conversion.cpp)
+  target_link_libraries(t81_native_conversion_test PRIVATE t81_core)
+
+  add_executable(t81_native_property_test ${CMAKE_SOURCE_DIR}/tests/cpp/t81_native_property_test.cpp)
+  target_link_libraries(t81_native_property_test PRIVATE t81_core)
+
+  add_executable(t81_limb_bohemian_add_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81_limb_bohemian_add.cpp)
+  target_link_libraries(t81_limb_bohemian_add_test PRIVATE t81_core)
+
+  add_executable(t81_limb_bohemian_mul_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81_limb_bohemian_mul.cpp)
+  target_link_libraries(t81_limb_bohemian_mul_test PRIVATE t81_core)
+
+  add_executable(t81_limb54_add_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81_limb54_add.cpp)
+  target_link_libraries(t81_limb54_add_test PRIVATE t81_core)
+
+  add_executable(t81_limb54_booth_mul_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81_limb54_booth_mul.cpp)
+  target_link_libraries(t81_limb54_booth_mul_test PRIVATE t81_core)
+
+  add_executable(t81_limb_booth_mul_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81_limb_booth_mul.cpp)
+  target_link_libraries(t81_limb_booth_mul_test PRIVATE t81_core)
+
+  add_executable(t81_limb_mul_wide_high_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81_limb_mul_wide_high.cpp)
+  target_link_libraries(t81_limb_mul_wide_high_test PRIVATE t81_core)
+
+  add_executable(t81_limb_add_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81_limb_add.cpp)
+  target_link_libraries(t81_limb_add_test PRIVATE t81_core)
+
+  add_executable(t81_native_arith_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81_native_arith.cpp)
+  target_link_libraries(t81_native_arith_test PRIVATE t81_core)
+
+  add_executable(t81_bigint_v1_baseline_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_bigint_v1_baseline.cpp)
+  target_link_libraries(t81_bigint_v1_baseline_test PRIVATE t81_core)
+
+  add_executable(t81_bigint_v1_perf ${CMAKE_SOURCE_DIR}/tests/cpp/test_bigint_v1_perf.cpp)
+  target_link_libraries(t81_bigint_v1_perf PRIVATE t81_core)
+
+  add_executable(test_bigint_robust_features ${CMAKE_SOURCE_DIR}/tests/cpp/test_bigint_robust_features.cpp)
+  target_link_libraries(test_bigint_robust_features PRIVATE t81_core)
+  add_executable(t81_int128_test ${CMAKE_SOURCE_DIR}/tests/cpp/t81_int128_test.cpp)
+  target_link_libraries(t81_int128_test PRIVATE t81_core)
+  add_executable(t81_process_capture_test
+    ${CMAKE_SOURCE_DIR}/tests/cpp/process_capture_test.cpp
+    ${CMAKE_SOURCE_DIR}/tools/cli/core/process_capture.cpp)
+  target_include_directories(t81_process_capture_test PRIVATE ${PROJECT_SOURCE_DIR})
+  target_compile_features(t81_process_capture_test PRIVATE ${T81_CXX_STD_FEATURE})
+  find_package(Threads REQUIRED)
+  target_link_libraries(t81_process_capture_test PRIVATE Threads::Threads)
+  if(WIN32)
+    target_link_libraries(t81_process_capture_test PRIVATE advapi32)
+  endif()
+  if(MINGW)
+    target_link_options(t81_process_capture_test PRIVATE -municode)
+  endif()
+  # Execute the fallback even on hosts with a native __int128 backend.
+  add_executable(t81_int128_portable_test ${CMAKE_SOURCE_DIR}/tests/cpp/t81_int128_test.cpp)
+  target_include_directories(t81_int128_portable_test PRIVATE ${PROJECT_SOURCE_DIR}/include)
+  target_compile_features(t81_int128_portable_test PRIVATE ${T81_CXX_STD_FEATURE})
+  target_compile_definitions(t81_int128_portable_test PRIVATE T81_FORCE_PORTABLE_INT128=1)
+
+  add_executable(test_bigint_multilimb_ext ${CMAKE_SOURCE_DIR}/tests/cpp/test_bigint_multilimb_ext.cpp)
+  target_link_libraries(test_bigint_multilimb_ext PRIVATE t81_core)
+
+  add_executable(test_T81Tensor_transpose ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Tensor_transpose.cpp)
+  target_link_libraries(test_T81Tensor_transpose PRIVATE t81_core)
+
+  add_executable(performance_advancements_test ${CMAKE_SOURCE_DIR}/tests/cpp/performance_advancements_test.cpp)
+  target_link_libraries(performance_advancements_test PRIVATE t81_core t81_axion t81_experimental)
+
+  add_executable(t81_distributed_tensor_test ${CMAKE_SOURCE_DIR}/tests/cpp/distributed_tensor_test.cpp)
+  target_link_libraries(t81_distributed_tensor_test PRIVATE t81_core)
+
+  add_executable(tensor_backend_parity_test ${CMAKE_SOURCE_DIR}/tests/cpp/tensor_backend_parity_test.cpp)
+  target_link_libraries(tensor_backend_parity_test PRIVATE t81_core)
+
+  add_executable(bigint_perf_guardrail_test ${CMAKE_SOURCE_DIR}/tests/cpp/bigint_perf_guardrail_test.cpp)
+  target_link_libraries(bigint_perf_guardrail_test PRIVATE t81_core)
+
+  add_executable(t81_bigint_allocation_pathology_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_bigint_allocation_pathology.cpp)
+  target_link_libraries(t81_bigint_allocation_pathology_test PRIVATE t81_core)
+
+  add_executable(t81_bigint_allocation_guardrail_test ${CMAKE_SOURCE_DIR}/tests/cpp/bigint_allocation_guardrail_test.cpp)
+  target_link_libraries(t81_bigint_allocation_guardrail_test PRIVATE t81_core)
+
+  add_executable(t81_vm_tier_promotion_test ${CMAKE_SOURCE_DIR}/tests/cpp/vm_tier_promotion_test.cpp)
+  target_link_libraries(t81_vm_tier_promotion_test PRIVATE t81_vm t81_core t81_isa)
+
+  add_executable(t81_code_protection_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_code_protection.cpp)
+  target_link_libraries(t81_code_protection_test PRIVATE t81_vm t81_core)
+
+  add_executable(axion_heap_compaction_trace_test ${CMAKE_SOURCE_DIR}/tests/cpp/axion_heap_compaction_trace_test.cpp)
+  target_link_libraries(axion_heap_compaction_trace_test PRIVATE t81_tool_cli t81_isa t81_vm)
+
+  add_executable(axion_nested_guard_test ${CMAKE_SOURCE_DIR}/tests/cpp/axion_nested_guard_test.cpp)
+  target_link_libraries(axion_nested_guard_test PRIVATE t81_tool_cli t81_vm)
+
+  add_executable(e2e_axion_trace_test ${CMAKE_SOURCE_DIR}/tests/cpp/e2e_axion_trace_test.cpp)
+  target_link_libraries(e2e_axion_trace_test PRIVATE t81_tool_cli t81_vm)
+
+  if(T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND MLIR_FOUND)
+    add_executable(t81_mlir_t81_dialect_memory_ops_test ${CMAKE_SOURCE_DIR}/tests/cpp/mlir_t81_dialect_memory_ops_test.cpp)
+    target_link_libraries(t81_mlir_t81_dialect_memory_ops_test PRIVATE t81_mlir t81_core t81_isa)
+  endif()
+
+  enable_testing()
+
+  # Controlled backend host authorization; checks remain active in Release tests.
+  add_executable(controlled_ai_authorization_test ${CMAKE_SOURCE_DIR}/tests/cpp/controlled_ai_authorization_test.cpp)
+  target_link_libraries(controlled_ai_authorization_test PRIVATE t81_direct_api)
+  add_test(NAME controlled_ai_authorization_test COMMAND controlled_ai_authorization_test)
+  add_executable(direct_api_authorization_test ${CMAKE_SOURCE_DIR}/tests/cpp/direct_api_authorization_test.cpp)
+  target_link_libraries(direct_api_authorization_test PRIVATE t81_direct_api)
+  add_test(NAME direct_api_authorization_test COMMAND direct_api_authorization_test)
+  find_package(Python3 COMPONENTS Interpreter REQUIRED)
+  if(MSVC)
+    add_test(NAME t81_msvc_debug_configuration
+      COMMAND ${Python3_EXECUTABLE}
+        ${PROJECT_SOURCE_DIR}/tests/python/check_msvc_debug_configuration.py
+        --source ${PROJECT_SOURCE_DIR} --cmake ${CMAKE_COMMAND}
+        --compiler ${CMAKE_CXX_COMPILER} --generator ${CMAKE_GENERATOR})
+    set_tests_properties(t81_msvc_debug_configuration PROPERTIES TIMEOUT 120)
+  endif()
+  # Exercise real failure paths with NDEBUG defined, including in Debug builds.
+  foreach(guard sha3 float map)
+    string(TOUPPER "${guard}" guard_kind)
+    add_executable(t81_release_${guard}_guard ${CMAKE_SOURCE_DIR}/tests/cpp/release_correctness_guard.cpp)
+    target_compile_definitions(t81_release_${guard}_guard PRIVATE
+      NDEBUG T81_RELEASE_GUARD_${guard_kind})
+    target_link_libraries(t81_release_${guard}_guard PRIVATE t81_core)
+    add_test(NAME t81_release_${guard}_guard
+      COMMAND ${Python3_EXECUTABLE}
+        ${PROJECT_SOURCE_DIR}/tests/python/check_release_correctness_guard.py
+        ${guard} $<TARGET_FILE:t81_release_${guard}_guard>)
+    set_tests_properties(t81_release_${guard}_guard PROPERTIES TIMEOUT 30)
+  endforeach()
+  add_test(NAME controlled_ai_evidence_json_test
+    COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tests/python/test_controlled_ai_evidence_json.py
+      $<TARGET_FILE:controlled_ai_authorization_test>)
+  set_tests_properties(controlled_ai_authorization_test direct_api_authorization_test
+    controlled_ai_evidence_json_test PROPERTIES TIMEOUT 30)
+  if(EXISTS "${CMAKE_SOURCE_DIR}/experiments/radix_comparison/CMakeLists.txt")
+    add_subdirectory(${CMAKE_SOURCE_DIR}/experiments/radix_comparison ${CMAKE_BINARY_DIR}/experiments/radix_comparison)
+  endif()
+  if(EXISTS "${CMAKE_SOURCE_DIR}/experiments/packed_ternary_matvec/CMakeLists.txt")
+    add_subdirectory(${CMAKE_SOURCE_DIR}/experiments/packed_ternary_matvec ${CMAKE_BINARY_DIR}/experiments/packed_ternary_matvec)
+  endif()
+  if(EXISTS "${CMAKE_SOURCE_DIR}/experiments/h04_r02_adaptive_representation/CMakeLists.txt")
+    add_subdirectory(${CMAKE_SOURCE_DIR}/experiments/h04_r02_adaptive_representation ${CMAKE_BINARY_DIR}/experiments/h04_r02_adaptive_representation)
+  endif()
+  if(EXISTS "${CMAKE_SOURCE_DIR}/experiments/s02_stochastic_topology/CMakeLists.txt")
+    add_subdirectory(${CMAKE_SOURCE_DIR}/experiments/s02_stochastic_topology ${CMAKE_BINARY_DIR}/experiments/s02_stochastic_topology)
+  endif()
+  if(T81_BUILD_EXPERIMENTS)
+    if(EXISTS "${CMAKE_SOURCE_DIR}/experiments/scg08_arithmetic_work/CMakeLists.txt")
+      add_subdirectory(${CMAKE_SOURCE_DIR}/experiments/scg08_arithmetic_work ${CMAKE_BINARY_DIR}/experiments/scg08_arithmetic_work)
+    endif()
+  endif()
+  set(T81_TEST_TARGETS
+    t81_float_test
+    t81_float_properties_test
+    t81_t81int_to_binary_test
+    t81_division_test
+    t81_t81int_test
+    t81_t81int_overflow_test
+    t81_t81fraction_test
+    t81_bigint_sub_test
+    t81_limb27_mul_test
+    t81_limb54_reference_mul_test
+    t81_limb54_karatsuba_test
+    t81_phase6_qualification_test
+    t81_t81int_generic_div_test
+    t81_int_sign_trit_test
+    t81_bigint_test
+    t81_fraction_test
+    t81_bigint_properties_test
+    t81_prob_properties_test
+    t81_t81int_properties_test
+    t81_bigint_division_edge_properties_test
+    t81_bigint_division_semantics_test
+    t81_bigint_gcd_divmod_property_test
+    t81_bigint_modular_inverse_test
+    fuzz_bigint_libfuzzer
+    t81_fraction_properties_test
+    t81_core_numeric_compat_test
+    t81_core_bigint_compat_properties_test
+    t81_core_fraction_compat_properties_test
+    t81_v1_canonical_numeric_contract_test
+    t81_complex_test
+    t81_prob_test
+    t81_symbol_test
+    t81_string_test
+    t81_qutrit_test
+    t81_fixed_test
+    t81_uint_test
+    t81_list_test
+    t81_map_test
+    t81_set_test
+    t81_vector_test
+    t81_matrix_test
+    t81_matrix_singular_test
+    t81_maybe_test
+    t81_result_test
+    t81_quaternion_test
+    t81_time_test
+    t81_bytes_test
+    t81_tree_test
+    t81_tensor_transpose_test
+    t81_core_improvements_test
+    t81_core_features_test
+    t81_tensor_slice_test
+    t81_tensor_reshape_test
+    t81_tensor_loader_test
+    t81_canonfs_io_test
+    canonfs_persistent_driver_test
+    canonfs_policy_boundary_test
+    canonfs_identity_contract_test
+    canonfs_storage_format_test
+    t81_vm_metarefine_writecode_denial_test
+    canonfs_read_verify_test
+    canonfs_read_verify_env_contract_test
+    canonfs_integrity_matrix_test
+    t81_vm_canonfs_root_env_contract_test
+    t81_ir_encoding_test
+    t81_isa_encoding_test
+    t81_hash_stub_test
+    t81_sha3_test
+    t81_axion_stub_test
+    t81_codec_base243_test
+    t81_codec_base81_test
+    t81_trit_packing_test
+    t81_packed_trit_vector_test
+    t81_phase2c_truth_table_test
+    t81_packed_trit_vector_stress_test
+    t81_base81_balanced_test
+    t81_base81_packed_test
+    t81_metadata_test
+    t81_isa_base81_view_test
+    setun_bridge_test
+    tisc_opcode_matrix_test
+    t81lang_conformance_baseline_test
+    t81_numeric_format_test
+    axion_recursion_guardrails_test
+    t81_tensor_shape_test
+    t81_tensor_serialization_canonical_fixed_test
+    t81_tensor_native_decode_test
+    t81_ternary_arith_test
+    t81_tensor_matmul_test
+    t81_tensor_reduce_test
+    t81_tensor_broadcast_test
+    t81_entropy_test
+    t81_expected_test
+    t81_tensor_elementwise_test
+    t81_tensor_ternary_test
+    t81_t729_tensor_test
+    t81_symbolic_algebra_test
+    t81_semantic_graph_test
+    t81_neural_primitives_test
+    t81_frontend_neural_test
+    t81_c_api_bigint_test
+    t81_tensor_unary_test
+    t81_hanoi_integration_test
+    t81_hanoi_command_surface_test
+    t81_vm_load_store_test
+    t81_vm_illegal_test
+    t81_vm_bounds_test
+    t81_vm_tensor_test
+    t81_vm_tloadhash_conformance_test
+    t81_vm_tloadhash_custom_driver_test
+    t81_vm_tloadhash_canonical_fixed_test
+    t81_vm_tloadhash_decodefault_determinism_matrix_test
+    t81_vm_ai_phase1_attention_conformance_test
+    t81_vm_ai_phase1_embed_conformance_test
+    t81_vm_ai_phase1_qmatmul_conformance_test
+    t81_vm_ai_phase1_shared_helper_parity_test
+    t81_vm_ai_phase1_wload_conformance_test
+    t81_vm_ai_phase1_gather_conformance_test
+    t81_vm_ai_phase1_scatter_conformance_test
+    t81_vm_ai_phase1_wload_canonfs_audit_test
+    t81_vm_ai_phase1_scatter_aliasing_test
+    t81_vm_ai_phase1_gather_axis1_test
+    t81_lang_ai_m6_annotation_lowering_test
+    t81_vm_tensor_shape_faults_test
+    t81_vm_tisc_v04_extensions_test
+    t81_vm_tensor_get_set_conformance_test
+    t81_vm_tensor_helper_predicates_test
+    t81_vm_tensor_provenance_trace_test
+    t81_vm_predispatch_policy_deny_logging_test
+    t81_vm_ai_predispatch_deny_audit_test
+    t81_vm_fault_test
+    t81_vm_value_ops_boundary_test
+    t81_vm_deterministic_fault_test
+    t81_vm_fault_family_determinism_matrix_test
+    t81_vm_memory_test
+    t81_axion_log_determinism_test
+    t81_reflection_non_interference_test
+    t81_canonfs_driver_test
+    canonfs_interchange_test
+    t81_canonfs_rs_repair_test
+    t81_canonhash81_reference_vectors_test
+    t81_weights_load_test
+    t81_safetensors_import_test
+    t81_native_weights_metrics_test
+    t81_vm_trace_test
+    t81_vm_determinism_property_test
+    t81_vm_state_transition_invariants_test
+    t81_vm_state_transition_conformance_matrix_test
+    t81_vm_workload_determinism_tiers_test
+    t81_vm_mixed_workload_conformance_matrix_test
+    t81_vm_policy_parse_fail_closed_test
+    t81_dualrail_sbdr_vm_test
+    test_regime_dispatch
+    t81_provider_contract_test
+    t81_vm_axreport_policy_deny_fail_closed_test
+    t81_vm_system_registers_deterministic_test
+    t81_vm_stubbed_opcode_fail_closed_test
+    vm_extended_ops_test
+    llama_kernels_test
+    t81_vm_jump_flags_test
+    t81_vm_float_fraction_ops_test
+    t81_vm_literal_pool_extension_test
+    t81_vm_neg_jumps_test
+    t81_vm_print_test
+    t81_limb_bohemian_add_test
+    t81_limb_bohemian_mul_test
+    t81_limb_booth_mul_test
+    t81_limb_mul_wide_high_test
+    t81_limb_add_test
+    t81_native_arith_test
+    t81_native_conversion_test
+    t81_simd_add_helpers_test
+    t81_native_property_test
+    t81_bigint_v1_baseline_test
+    t81_limb54_add_test
+    t81_limb54_booth_mul_test
+    t81_frontend_lexer_test
+    t81_frontend_parser_test
+    t81_spec_compliance_test
+    tisc_semantic_equivalence_test
+    tisc_opcode_family_semantics_test
+    t81_frontend_expression_features_test
+    t81_frontend_parser_generics_test
+    t81_frontend_parser_recovery_test
+    t81_frontend_parser_legacy_rejection_test
+    t81_frontend_ir_generator_test
+    t81_frontend_logical_lowering_test
+    t81_semantic_analyzer_option_result_test
+    test_std_option_result
+    t81_semantic_analyzer_match_test
+    t81_semantic_analyzer_generic_test
+    t81_semantic_analyzer_indexing_test
+    t81_semantic_analyzer_vector_literal_test
+    t81_semantic_analyzer_equality_test
+    t81_semantic_analyzer_loop_test
+    t81_semantic_analyzer_scope_lifetime_test
+    t81_semantic_analyzer_numeric_test
+    t81_semantic_analyzer_diagnostic_location_test
+    t81_semantic_analyzer_cascade_suppression_test
+    t81_semantic_analyzer_diagnostic_precision_test
+    t81_isa_binary_emitter_test
+    t81_isa_type_alias_io_test
+    t81_isa_binary_io_determinism_test
+    t81_isa_binary_metadata_roundtrip_property_test
+    e2e_option_result_test
+    e2e_option_result_function_test
+    e2e_option_type_test
+    e2e_match_expression_test
+    e2e_loop_statement_test
+    e2e_advanced_features_test
+    e2e_print_runtime_test
+    e2e_compile_determinism_test
+    e2e_match_metadata_determinism_test
+    e2e_ast_ir_canonical_determinism_test
+    e2e_enum_metadata_determinism_test
+    cli_e2e_test
+    t81_cli_check_test
+    t81_cli_pipeline_test
+    t81_cli_disasm_test
+    t81_cli_debugger_test
+    t81_cli_option_result_test
+    t81_cli_diagnostic_context_test
+    t81_cli_trace_export_test
+    cli_canonize_tensor_test
+    axion_heap_compaction_trace_test
+    axion_policy_gc_trace_test
+    axion_policy_match_guard_test
+    axion_policy_segment_event_test
+    axion_policy_invariants_test
+    axion_policy_allow_deny_determinism_test
+    axion_policy_conformance_matrix_test
+    axion_loop_metadata_test
+    axion_match_metadata_test
+    axion_enum_guard_test
+    axion_nested_guard_test
+    axion_instruction_counter_test
+    canonfs_axion_trace_test
+    t81_tier4_test
+    t81_tier5_test
+    t81_infinite_opcodes_test
+    t81_tier4_vm_test
+    t81_tier4_distributed_test
+    t81_jit_test
+    jit_trace_equivalence_test
+    jit_repro_oracle_test
+    jit_canonfs_cache_test
+    vm_gc_safepoint_test
+    agent_constructs_test
+    axion_agent_invoke_policy_test
+    t81lang_foreign_ffi_test
+    vm_ffi_bridge_test
+    tnn_stdlib_test
+    lattice_crypto_test
+    ntru_kem_test
+    jit_tensor_trace_equivalence_test
+    vm_jit_per_instruction_policy_test
+    e2e_axion_trace_test
+    axion_policy_bytecode_test
+    axion_hybrid_mlp_policy_test
+    test_bigint_multilimb_ext
+    test_bigint_robust_features
+    t81_int128_test
+    t81_process_capture_test
+    t81_int128_portable_test
+    t81_bigint_v1_perf
+    bigint_perf_guardrail_test
+    t81_bigint_allocation_pathology_test
+    t81_bigint_allocation_guardrail_test
+    t81_vm_tier_promotion_test
+    test_T81Tensor_transpose
+    performance_advancements_test
+    t81_distributed_tensor_test
+    tensor_backend_parity_test
+    t81_cli_model_resolution_test
+    t81_vm_rfc0034_ternary_native_test
+    t81_vm_rfc0040_swar_test
+    t81_simd_api_test
+    t81_arithmetic_backend_equivalence_test
+  )
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
+    list(APPEND T81_TEST_TARGETS t81_base81_simd_test)
+  endif()
+  if(T81_ENABLE_LLAMA_CPP)
+    list(APPEND T81_TEST_TARGETS t81_gguf_import_bridge_test)
+  endif()
+  if(T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND MLIR_FOUND)
+    list(APPEND T81_TEST_TARGETS t81_mlir_t81_dialect_memory_ops_test)
+  endif()
+  if(T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND T81_CLANG_C_INCLUDE_DIR AND T81_CLANG_C_LIBRARY)
+    list(APPEND T81_TEST_TARGETS t81_c_frontend_mlir_smoke_test)
+  endif()
+  if(T81_ENABLE_RUST_FRONTEND AND T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND T81_CLANG_C_INCLUDE_DIR AND T81_CLANG_C_LIBRARY AND T81_RUSTC_EXECUTABLE)
+    list(APPEND T81_TEST_TARGETS t81_rust_frontend_mlir_smoke_test)
+  endif()
+  if(T81_ENABLE_PYTHON_FRONTEND AND T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND T81_CLANG_C_INCLUDE_DIR AND T81_CLANG_C_LIBRARY AND Python3_EXECUTABLE)
+    list(APPEND T81_TEST_TARGETS t81_python_frontend_mlir_smoke_test)
+  endif()
+  if(T81_BUILD_FUZZ_TESTS AND T81_RUN_FRONTEND_FUZZ_IN_CTEST)
+    list(APPEND T81_TEST_TARGETS t81_frontend_fuzz_test)
+  endif()
+  foreach(tgt IN LISTS T81_TEST_TARGETS)
+    add_test(NAME ${tgt} COMMAND $<TARGET_FILE:${tgt}>)
+  endforeach()
+  # Golden interchange fixtures live in the source tree, including out-of-tree builds.
+  set_tests_properties(canonfs_interchange_test PROPERTIES WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+  set_tests_properties(t81_process_capture_test PROPERTIES TIMEOUT 60)
+  set_tests_properties(jit_trace_equivalence_test PROPERTIES TIMEOUT 240)
+  add_test(NAME t81_cli_execution_policy_test
+    COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tests/python/test_cli_execution_policy.py
+      --t81-bin $<TARGET_FILE:t81>)
+  set_tests_properties(t81_cli_execution_policy_test PROPERTIES TIMEOUT 180)
+  if(UNIX)
+    find_program(T81_SKILL_TEST_BASH NAMES bash)
+    if(NOT T81_SKILL_TEST_BASH)
+      message(FATAL_ERROR "Bash is required for the skill policy boundary test")
+    endif()
+    add_test(NAME t81_skill_policy_boundary_test
+      COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tests/python/test_skill_policy_boundary.py
+        --bash ${T81_SKILL_TEST_BASH} --t81-bin $<TARGET_FILE:t81>)
+    set_tests_properties(t81_skill_policy_boundary_test PROPERTIES TIMEOUT 90)
+  endif()
+  add_test(NAME t81_cli_repro_hash_test COMMAND $<TARGET_FILE:cli_repro_hash_test> $<TARGET_FILE:t81>)
+  set_tests_properties(t81_cli_repro_hash_test PROPERTIES WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+  add_test(NAME canonfs_cli_portable_storage_test
+    COMMAND ${Python3_EXECUTABLE}
+      ${PROJECT_SOURCE_DIR}/tests/python/test_canonfs_cli_portable_storage.py
+      --cli $<TARGET_FILE:t81>)
+  set_tests_properties(canonfs_cli_portable_storage_test PROPERTIES TIMEOUT 120)
+  if(NOT WIN32)
+    add_test(NAME t81_cli_contract_test_runner COMMAND $<TARGET_FILE:t81_cli_contract_test> $<TARGET_FILE:t81>)
+    add_test(NAME t81_ai_task_answer_fixed_test_runner COMMAND $<TARGET_FILE:t81_ai_task_answer_fixed_test> $<TARGET_FILE:t81>)
+    add_test(NAME t81_ai_task_classify_fixed_test_runner COMMAND $<TARGET_FILE:t81_ai_task_classify_fixed_test> $<TARGET_FILE:t81>)
+    add_test(NAME t81_ai_task_route_fixed_test_runner COMMAND $<TARGET_FILE:t81_ai_task_route_fixed_test> $<TARGET_FILE:t81>)
+    add_test(NAME t81_ai_task_assess_fixed_test_runner COMMAND $<TARGET_FILE:t81_ai_task_assess_fixed_test> $<TARGET_FILE:t81>)
+    add_test(NAME t81_ai_task_framework_test_runner COMMAND $<TARGET_FILE:t81_ai_task_framework_test> $<TARGET_FILE:t81>)
+    add_test(NAME t81_ai_task_assess_fixed_composition_test_runner COMMAND $<TARGET_FILE:t81_ai_task_assess_fixed_composition_test> $<TARGET_FILE:t81>)
+    add_test(NAME t81_ai_task_route_fixed_composition_test_runner COMMAND $<TARGET_FILE:t81_ai_task_route_fixed_composition_test> $<TARGET_FILE:t81>)
+    add_test(NAME t81_ai_task_classify_fixed_composition_test_runner COMMAND $<TARGET_FILE:t81_ai_task_classify_fixed_composition_test> $<TARGET_FILE:t81>)
+    add_test(NAME t81_ai_task_read_field_test_runner COMMAND $<TARGET_FILE:t81_ai_task_read_field_test> $<TARGET_FILE:t81>)
+    add_test(NAME artifact_validate_record_test_runner COMMAND $<TARGET_FILE:artifact_validate_record_test> $<TARGET_FILE:t81>)
+    add_test(NAME artifact_family_test_runner COMMAND $<TARGET_FILE:artifact_family_test>)
+  endif()
+  if(NOT WIN32)
+    add_test(NAME t81_cli_stress_test_runner COMMAND $<TARGET_FILE:t81_cli_stress_test> $<TARGET_FILE:t81>)
+    set_tests_properties(t81_cli_stress_test_runner PROPERTIES TIMEOUT 300)
+  endif()
+  add_test(NAME t81_cli_stdlib_fixtures_test COMMAND $<TARGET_FILE:cli_stdlib_fixtures_test>)
+  add_test(NAME cli_std_collections_determinism_test COMMAND $<TARGET_FILE:cli_std_collections_determinism_test>)
+  add_test(
+    NAME t81_legacy_core_numeric_include_policy_test
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/tests/ci/check_legacy_core_numeric_includes_test.py
+  )
+  set_tests_properties(t81_legacy_core_numeric_include_policy_test PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  )
+  add_test(
+    NAME t81_legacy_core_numeric_type_usage_policy_test
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/tests/ci/check_legacy_core_numeric_type_usage_test.py
+  )
+  set_tests_properties(t81_legacy_core_numeric_type_usage_policy_test PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  )
+  add_test(
+    NAME t81_legacy_v1_numeric_include_policy_test
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/tests/ci/check_legacy_v1_numeric_includes_test.py
+  )
+  set_tests_properties(t81_legacy_v1_numeric_include_policy_test PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  )
+  add_test(
+    NAME t81_core_numeric_wrapper_thinness_policy_test
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/tests/ci/check_core_numeric_wrapper_thinness_test.py
+  )
+  set_tests_properties(t81_core_numeric_wrapper_thinness_policy_test PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  )
+  add_test(
+    NAME t81_v1_canonical_numeric_alias_usage_policy_test
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/tests/ci/check_v1_canonical_numeric_alias_usage_test.py
+  )
+  set_tests_properties(t81_v1_canonical_numeric_alias_usage_policy_test PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  )
+  add_test(
+    NAME t81_root_structure_policy_test
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/tests/ci/check_root_structure_test.py
+  )
+  set_tests_properties(t81_root_structure_policy_test PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  )
+  add_test(NAME t81_stable_baseline_checker_test
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/ci/test_stable_baseline_compliance.py)
+
+# --- Post-conformance unit tests ---
+  add_executable(t81_graph_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Graph.cpp)
+  target_link_libraries(t81_graph_test PRIVATE t81_core)
+  add_test(NAME t81_graph_test COMMAND t81_graph_test)
+
+  add_executable(t81_graph_components_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Graph_components.cpp)
+  target_link_libraries(t81_graph_components_test PRIVATE t81_core)
+  add_test(NAME t81_graph_components_test COMMAND t81_graph_components_test)
+
+  add_executable(t81_graph_shortest_path_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Graph_shortest_path.cpp)
+  target_link_libraries(t81_graph_shortest_path_test PRIVATE t81_core)
+  add_test(NAME t81_graph_shortest_path_test COMMAND t81_graph_shortest_path_test)
+
+  add_executable(t81_graph_large_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Graph_large.cpp)
+  target_link_libraries(t81_graph_large_test PRIVATE t81_core)
+  add_test(NAME t81_graph_large_test COMMAND t81_graph_large_test)
+
+  add_executable(t81_map_regression_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Map_regression.cpp)
+  target_link_libraries(t81_map_regression_test PRIVATE t81_core)
+  add_test(NAME t81_map_regression_test COMMAND t81_map_regression_test)
+
+  add_executable(t81_polynomial_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Polynomial.cpp)
+  target_link_libraries(t81_polynomial_test PRIVATE t81_core)
+  add_test(NAME t81_polynomial_test COMMAND t81_polynomial_test)
+
+  add_executable(t81_agent_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Agent.cpp)
+  target_link_libraries(t81_agent_test PRIVATE t81_core)
+  add_test(NAME t81_agent_test COMMAND t81_agent_test)
+
+  add_executable(t81_agent_neural_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Agent_neural.cpp)
+  target_link_libraries(t81_agent_neural_test PRIVATE t81_core)
+  add_test(NAME t81_agent_neural_test COMMAND t81_agent_neural_test)
+
+  add_executable(t81_stream_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Stream.cpp)
+  target_link_libraries(t81_stream_test PRIVATE t81_core)
+  add_test(NAME t81_stream_test COMMAND t81_stream_test)
+
+  add_executable(t81_promise_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Promise.cpp)
+  target_link_libraries(t81_promise_test PRIVATE t81_core)
+  add_test(NAME t81_promise_test COMMAND t81_promise_test)
+
+  add_executable(t81_thread_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Thread.cpp)
+  target_link_libraries(t81_thread_test PRIVATE t81_core)
+  add_test(NAME t81_thread_test COMMAND t81_thread_test)
+
+  add_executable(t81_network_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Network.cpp)
+  target_link_libraries(t81_network_test PRIVATE t81_core asio)
+  if(WIN32)
+    target_link_libraries(t81_network_test PRIVATE ws2_32 mswsock)
+  endif()
+  add_test(NAME t81_network_test COMMAND t81_network_test)
+
+  add_executable(t81_discovery_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Discovery.cpp)
+  target_link_libraries(t81_discovery_test PRIVATE t81_core asio)
+  if(WIN32)
+    target_link_libraries(t81_discovery_test PRIVATE ws2_32 mswsock)
+  endif()
+  add_test(NAME t81_discovery_test COMMAND t81_discovery_test)
+
+  add_executable(t81_category_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Category.cpp)
+  target_link_libraries(t81_category_test PRIVATE t81_core)
+  add_test(NAME t81_category_test COMMAND t81_category_test)
+
+  add_executable(t81_proof_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Proof.cpp)
+  target_link_libraries(t81_proof_test PRIVATE t81_core)
+  add_test(NAME t81_proof_test COMMAND t81_proof_test)
+
+  add_executable(t81_tensor_slice_static_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Tensor_slice_static.cpp)
+  target_link_libraries(t81_tensor_slice_static_test PRIVATE t81_core)
+  add_test(NAME t81_tensor_slice_static_test COMMAND t81_tensor_slice_static_test)
+
+  add_executable(t81_tensor_concat_static_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Tensor_concat_static.cpp)
+  target_link_libraries(t81_tensor_concat_static_test PRIVATE t81_core)
+  add_test(NAME t81_tensor_concat_static_test COMMAND t81_tensor_concat_static_test)
+
+  add_executable(t81_tensor_permute_static_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Tensor_permute_static.cpp)
+  target_link_libraries(t81_tensor_permute_static_test PRIVATE t81_core)
+  add_test(NAME t81_tensor_permute_static_test COMMAND t81_tensor_permute_static_test)
+
+  add_executable(t81_tensor_pad_static_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Tensor_pad_static.cpp)
+  target_link_libraries(t81_tensor_pad_static_test PRIVATE t81_core)
+  add_test(NAME t81_tensor_pad_static_test COMMAND t81_tensor_pad_static_test)
+
+  add_executable(t81_tensor_activations_static_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Tensor_activations_static.cpp)
+  target_link_libraries(t81_tensor_activations_static_test PRIVATE t81_core)
+  add_test(NAME t81_tensor_activations_static_test COMMAND t81_tensor_activations_static_test)
+
+  add_executable(t81_tensor_softmax_static_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Tensor_softmax_static.cpp)
+  target_link_libraries(t81_tensor_softmax_static_test PRIVATE t81_core)
+  add_test(NAME t81_tensor_softmax_static_test COMMAND t81_tensor_softmax_static_test)
+
+  add_executable(t81_graph_pagerank_convergence_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Graph_pagerank_convergence.cpp)
+  target_link_libraries(t81_graph_pagerank_convergence_test PRIVATE t81_core)
+  add_test(NAME t81_graph_pagerank_convergence_test COMMAND t81_graph_pagerank_convergence_test)
+
+  add_executable(t81_graph_bfs_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Graph_bfs.cpp)
+  target_link_libraries(t81_graph_bfs_test PRIVATE t81_core)
+  add_test(NAME t81_graph_bfs_test COMMAND t81_graph_bfs_test)
+
+  add_executable(t81_float_rounding_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Float_rounding.cpp)
+  target_link_libraries(t81_float_rounding_test PRIVATE t81_core)
+  add_test(NAME t81_float_rounding_test COMMAND t81_float_rounding_test)
+
+  add_executable(t81_float_clamp_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Float_clamp.cpp)
+  target_link_libraries(t81_float_clamp_test PRIVATE t81_core)
+  add_test(NAME t81_float_clamp_test COMMAND t81_float_clamp_test)
+
+  add_executable(t81_int_pow_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Int_pow.cpp)
+  target_link_libraries(t81_int_pow_test PRIVATE t81_core)
+  add_test(NAME t81_int_pow_test COMMAND t81_int_pow_test)
+
+  add_executable(t81_int_gcd_lcm_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Int_gcd_lcm.cpp)
+  target_link_libraries(t81_int_gcd_lcm_test PRIVATE t81_core)
+  add_test(NAME t81_int_gcd_lcm_test COMMAND t81_int_gcd_lcm_test)
+
+  add_executable(t81_int_shift_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81int_shift.cpp)
+  target_link_libraries(t81_int_shift_test PRIVATE t81_core)
+  add_test(NAME t81_int_shift_test COMMAND t81_int_shift_test)
+
+  add_executable(t81_std_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81_std.cpp)
+  target_link_libraries(t81_std_test PRIVATE t81_core)
+  add_test(NAME t81_std_test COMMAND t81_std_test)
+
+  add_executable(t81_symbolic_vm_test ${CMAKE_SOURCE_DIR}/tests/cpp/symbolic_vm_test.cpp)
+  target_link_libraries(t81_symbolic_vm_test PRIVATE t81_core t81_isa t81_vm)
+  add_test(NAME t81_symbolic_vm_test COMMAND t81_symbolic_vm_test)
+
+  add_executable(tier1_rewrite_confluence_test ${CMAKE_SOURCE_DIR}/tests/cpp/tier1_rewrite_confluence_test.cpp)
+  target_link_libraries(tier1_rewrite_confluence_test PRIVATE t81_core t81_experimental)
+  add_test(NAME tier1_rewrite_confluence_test COMMAND tier1_rewrite_confluence_test)
+
+  add_executable(t81_cog_symbolic_graph_include_surface_test
+    ${CMAKE_SOURCE_DIR}/tests/cpp/cog_symbolic_graph_include_surface_test.cpp)
+  target_link_libraries(t81_cog_symbolic_graph_include_surface_test PRIVATE t81_core)
+  add_test(NAME t81_cog_symbolic_graph_include_surface_test
+           COMMAND t81_cog_symbolic_graph_include_surface_test)
+
+  add_executable(test_t81float_scientific ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81float_scientific.cpp)
+  target_link_libraries(test_t81float_scientific PRIVATE t81_core t81_isa t81_lang_frontend)
+  add_test(NAME test_t81float_scientific COMMAND test_t81float_scientific)
+
+  add_executable(test_symbol_type ${CMAKE_SOURCE_DIR}/tests/cpp/test_symbol_type.cpp)
+  target_link_libraries(test_symbol_type PRIVATE t81_core t81_isa t81_lang_frontend)
+  add_test(NAME test_symbol_type COMMAND test_symbol_type)
+
+  add_executable(test_dynamic_vector ${CMAKE_SOURCE_DIR}/tests/cpp/test_dynamic_vector.cpp)
+  target_link_libraries(test_dynamic_vector PRIVATE t81_core t81_isa t81_lang_frontend)
+  add_test(NAME test_dynamic_vector COMMAND test_dynamic_vector)
+
+  add_executable(test_concurrency ${CMAKE_SOURCE_DIR}/tests/cpp/test_concurrency.cpp)
+  target_link_libraries(test_concurrency PRIVATE t81_core t81_isa t81_vm)
+  add_test(NAME test_concurrency COMMAND test_concurrency)
+
+  add_executable(test_collections_scaffold ${CMAKE_SOURCE_DIR}/tests/cpp/test_collections_scaffold.cpp)
+  target_link_libraries(test_collections_scaffold PRIVATE t81_core t81_isa t81_vm t81_lang_frontend t81_axion)
+  add_test(NAME test_collections_scaffold COMMAND test_collections_scaffold)
+
+  if(T81_ENABLE_LLAMA_CPP)
+    find_package(Python3 COMPONENTS Interpreter REQUIRED)
+    if(T81_LLAMA_REPRO_MODEL AND T81_LLAMA_REPRO_POLICY AND T81_LLAMA_REPRO_PROMPT)
+      add_test(
+        NAME llama_cpp_repro_gate_test
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/ci/llama_cpp_repro_gate.py
+          --t81-bin $<TARGET_FILE:t81>
+          --model ${T81_LLAMA_REPRO_MODEL}
+          --policy ${T81_LLAMA_REPRO_POLICY}
+          --prompt ${T81_LLAMA_REPRO_PROMPT}
+          --runs 3
+          --max-tokens 64
+          --seed 0
+          --threads 1
+          --top-k 1
+          --top-p 1.0
+          --temperature 0.0
+          --hash-out ${CMAKE_BINARY_DIR}/llama_cpp_repro_hash.txt
+      )
+    else()
+      message(STATUS
+        "llama_cpp_repro_gate_test not added (set T81_LLAMA_REPRO_MODEL, "
+        "T81_LLAMA_REPRO_POLICY, and T81_LLAMA_REPRO_PROMPT to enable).")
+    endif()
+  endif()
+
+# --- Determinism & hardening tests ---
+  add_executable(test_bigint_demotion ${CMAKE_SOURCE_DIR}/tests/cpp/test_bigint_demotion.cpp)
+  target_link_libraries(test_bigint_demotion PRIVATE t81_core)
+  add_test(NAME test_bigint_demotion COMMAND test_bigint_demotion)
+add_executable(t81_graph_algorithms_test ${CMAKE_SOURCE_DIR}/tests/cpp/test_T81Graph_algorithms.cpp)
+target_link_libraries(t81_graph_algorithms_test PRIVATE t81_core)
+add_test(NAME t81_graph_algorithms_test COMMAND t81_graph_algorithms_test)
+
+  # Determinism Stress Tests
+  # RFC-0032 Phase 1 — codec determinism gate tests
+  add_executable(t81_determinism_codec_test ${CMAKE_SOURCE_DIR}/tests/determinism/codec/ternary_codec_test.cpp)
+  target_link_libraries(t81_determinism_codec_test PRIVATE t81_math_quantization)
+  add_test(NAME t81_determinism_codec_test COMMAND t81_determinism_codec_test)
+
+  add_executable(t81_determinism_primitives_test ${CMAKE_SOURCE_DIR}/tests/determinism/test_primitives.cpp)
+  target_link_libraries(t81_determinism_primitives_test PRIVATE t81_core)
+  add_test(NAME t81_determinism_primitives_test COMMAND t81_determinism_primitives_test)
+
+  add_executable(t81_determinism_float_test ${CMAKE_SOURCE_DIR}/tests/determinism/test_float.cpp)
+  target_link_libraries(t81_determinism_float_test PRIVATE t81_core)
+  add_test(NAME t81_determinism_float_test COMMAND t81_determinism_float_test)
+
+  add_executable(t81_determinism_containers_test ${CMAKE_SOURCE_DIR}/tests/determinism/test_containers.cpp)
+  target_link_libraries(t81_determinism_containers_test PRIVATE t81_core)
+  add_test(NAME t81_determinism_containers_test COMMAND t81_determinism_containers_test)
+
+  add_executable(t81_determinism_math_test ${CMAKE_SOURCE_DIR}/tests/determinism/test_math.cpp)
+  target_link_libraries(t81_determinism_math_test PRIVATE t81_core)
+  add_test(NAME t81_determinism_math_test COMMAND t81_determinism_math_test)
+
+  add_executable(t81_determinism_vector_test ${CMAKE_SOURCE_DIR}/tests/determinism/test_vector.cpp)
+  target_link_libraries(t81_determinism_vector_test PRIVATE t81_core)
+  add_test(NAME t81_determinism_vector_test COMMAND t81_determinism_vector_test)
+
+  add_executable(t81_determinism_new_types_test ${CMAKE_SOURCE_DIR}/tests/determinism/test_new_types.cpp)
+  target_link_libraries(t81_determinism_new_types_test PRIVATE t81_core)
+  add_test(NAME t81_determinism_new_types_test COMMAND t81_determinism_new_types_test)
+
+
+  # Repository Hardening Deterministic Tests
+  add_executable(test_deterministic_float_boundaries ${CMAKE_SOURCE_DIR}/tests/cpp/test_deterministic_float_boundaries.cpp)
+  target_link_libraries(test_deterministic_float_boundaries PRIVATE t81_core)
+  add_test(NAME test_deterministic_float_boundaries COMMAND test_deterministic_float_boundaries)
+
+  # RFC-0030: Deterministic Math Subsystem acceptance test
+  add_executable(test_t81float_soft_math ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81float_soft_math.cpp)
+  target_link_libraries(test_t81float_soft_math PRIVATE t81_core)
+  add_test(NAME test_t81float_soft_math COMMAND test_t81float_soft_math)
+
+  add_executable(test_map_determinism ${CMAKE_SOURCE_DIR}/tests/cpp/test_map_determinism.cpp)
+  target_link_libraries(test_map_determinism PRIVATE t81_core)
+  add_test(NAME test_map_determinism COMMAND test_map_determinism)
+
+  add_executable(test_t81lang_traceability_enforcement ${CMAKE_SOURCE_DIR}/tests/cpp/test_t81lang_traceability_enforcement.cpp)
+  target_link_libraries(test_t81lang_traceability_enforcement PRIVATE t81_core t81_isa t81_vm t81_tool_cli)
+  add_test(NAME test_t81lang_traceability_enforcement COMMAND test_t81lang_traceability_enforcement)
+
+  add_executable(test_axion_evidence_loop_closure_corrected ${CMAKE_SOURCE_DIR}/tests/cpp/test_axion_evidence_loop_closure_corrected.cpp)
+  target_link_libraries(test_axion_evidence_loop_closure_corrected PRIVATE t81_core t81_isa t81_vm t81_tool_cli t81_axion)
+  add_test(NAME test_axion_evidence_loop_closure_corrected COMMAND test_axion_evidence_loop_closure_corrected)
+  add_executable(test_swar ${CMAKE_SOURCE_DIR}/tests/cpp/test_swar.cpp)
+  target_link_libraries(test_swar PRIVATE t81_core t81_experimental)
+  add_test(NAME test_swar COMMAND test_swar)
+
+# =============================================================================
+# Black-Box MCP AI-Usability Evaluation Harness (23/23 JSON-RPC 2.0 trials)
+# =============================================================================
+find_package(Python3 COMPONENTS Interpreter QUIET)
+if(Python3_Interpreter_FOUND)
+  add_test(NAME t81_ai_usability_eval_test
+    COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_SOURCE_DIR}/examples/research/agent-receipt-sidecar/ai_usability_eval.py)
+  set_tests_properties(t81_ai_usability_eval_test PROPERTIES
+    ENVIRONMENT "T81_BIN=$<TARGET_FILE:t81>"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    TIMEOUT 120)
+endif()
