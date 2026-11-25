@@ -1,8 +1,8 @@
 {
   "schema_version": "2.0.0",
-  "generated_at": "2026-11-17",
+  "generated_at": "2026-11-24",
   "purpose": "Non-normative operational index; never grants authorization",
-  "selected_view": "2026-11-17-pr824-reconciled",
+  "selected_view": "2026-11-24-m1-provider-merged",
   "operational_views": {
     "2026-11-02": {
       "view_date": "2026-11-02",
@@ -630,6 +630,319 @@
           "next": "Any future M5 requires separate authorization after M1 and reviewed/reconciled/co-pinned M2-M4; changes require renewed reconciliation. H0-H5 remain separate, preliminary H5 needs separate approval, H6 remains outside M5."
         }
       ]
+    },
+    "2026-11-24-m1-provider-merged": {
+      "view_date": "2026-11-24",
+      "freshness": "Dated operational view following merge of PRs #861, #862, #863, #864, #872, and #865 into main. Refresh GitHub state before taking action.",
+      "coverage": {
+        "inventory_scope": "post_v220_m1_provider_contract_and_h06_mem_04_queue",
+        "coverage_state": "partial_selected_prs_reconciled",
+        "open_pr_count": 2
+      },
+      "repository_observation": {
+        "envelope": {
+          "subject": "t81dev/t81-foundation main branch head after PR #865 merge",
+          "observed_at": "2026-11-24T23:48:00Z",
+          "source_revision": {
+            "commit_sha": "dd39decbb5acf3f2b6bf0d7dc9d90ba46bc325a0"
+          },
+          "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+          "retained_receipt": "origin/main commit dd39decbb5acf3f2b6bf0d7dc9d90ba46bc325a0"
+        },
+        "name": "t81dev/t81-foundation",
+        "base_branch": "main",
+        "observed_head": "dd39decbb5acf3f2b6bf0d7dc9d90ba46bc325a0"
+      },
+      "scientific_observations": [
+        {
+          "envelope": {
+            "subject": "Investigation 10A physical solid-state ternary storage",
+            "observed_at": "2026-11-24T23:48:00Z",
+            "source_revision": {
+              "inherit_from": "repository_observation"
+            },
+            "collector": "scientific_assessment_auditor",
+            "retained_receipt": "docs/research/INVESTIGATION_10A_PHYSICAL_STORAGE_EVIDENCE_ASSESSMENT.md"
+          },
+          "id": "H01",
+          "status": "physical_evaluation_blocked",
+          "verification": "blocked",
+          "claims_boundary": "Inconclusive / literature attributions unverified; physical ternary silicon is not experimentally falsified and hardware superiority is not demonstrated."
+        },
+        {
+          "envelope": {
+            "subject": "H04-R02 adaptive balanced ternary vs adaptive binary",
+            "observed_at": "2026-11-24T23:48:00Z",
+            "source_revision": {
+              "inherit_from": "repository_observation"
+            },
+            "collector": "scientific_assessment_auditor",
+            "retained_receipt": "experiments/h04_r02_adaptive_representation/CORRECTED_RESULTS.md"
+          },
+          "id": "H04-R02",
+          "status": "conditional_model_counterexample_not_hardware_proof",
+          "verification": "source_reported",
+          "claims_boundary": "Conditional model outcome under 10-bit Tier-0 control (AT=1210 < AB=1250 at r=1.60); native capacity is unequal and does not demonstrate universal advantage or hardware superiority."
+        },
+        {
+          "envelope": {
+            "subject": "T81-AIOPT-001 M1 fixed-catalog pattern filtering",
+            "observed_at": "2026-11-24T23:48:00Z",
+            "source_revision": {
+              "commit_sha": "b2b9d3c73df96d6b4227ee0061c56bc2ee04a8fe"
+            },
+            "collector": "Jules_AI_assisted_source_assessment_not_independent_experimental_replication",
+            "retained_receipt": "docs/research/aiopt/T81-AIOPT-001-SCIENTIFIC-REVIEW.md"
+          },
+          "id": "AIOPT-001-M1",
+          "status": "redesign_required",
+          "verification": "falsified",
+          "claims_boundary": "Preserved negative mathematical critique of C40 equality filtering; no ternary speedup is accepted."
+        },
+        {
+          "envelope": {
+            "subject": "T81-AIOPT-001 M2 adversarial design and workload critique",
+            "observed_at": "2026-11-24T23:48:00Z",
+            "source_revision": {
+              "inherit_from": "repository_observation"
+            },
+            "collector": "adversarial_design_reviewer",
+            "retained_receipt": "docs/research/aiopt/T81-AIOPT-001-M2-ADVERSARIAL-DESIGN-ASSESSMENT.md"
+          },
+          "id": "AIOPT-001-M2",
+          "status": "design_only_execution_blocked",
+          "verification": "unverified",
+          "claims_boundary": "Execution freeze remains active across all M2 candidates."
+        }
+      ],
+      "pr_observations": [
+        {
+          "envelope": {
+            "subject": "PR #861 TernaryOS v0.2 multi-agent tx isolation and AI-usability harness",
+            "observed_at": "2026-11-24T23:48:00Z",
+            "source_revision": {
+              "commit_sha": "662fb3ab0d0bc6c41dd2fe4bf12a7b88486f6b99"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/pull/861"
+          },
+          "pr_number": 861,
+          "title": "feat(ternaryos,mcp,bench): TernaryOS v0.2 multi-agent tx isolation, black-box AI-usability harness, coexistence ledger & x86_64 AVX2 workflow",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/861",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "b2248e457cfcdc5b446e87238649291b0f7f15c4",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "eb1b8a3b5cdee56cdf1cdcd01237b78b842032b1",
+          "merge_sha": {
+            "commit_sha": "662fb3ab0d0bc6c41dd2fe4bf12a7b88486f6b99"
+          },
+          "scientific_acceptance": "Bounded runtime & evaluation harness integration; no general ternary hardware superiority claimed.",
+          "integration_readiness": "Merged into main with green CI.",
+          "authorization_status": "maintainer_merged"
+        },
+        {
+          "envelope": {
+            "subject": "PR #862 TLA+ TernaryOSTransactions invariants and TLC CI workflow",
+            "observed_at": "2026-11-24T23:48:00Z",
+            "source_revision": {
+              "commit_sha": "4821c4dcf9e904d438c9024a1e041f9e7452961c"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/pull/862"
+          },
+          "pr_number": 862,
+          "title": "spec(formal): add TLA+ TernaryOSTransactions invariants and TLC CI workflow",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/862",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "662fb3ab0d0bc6c41dd2fe4bf12a7b88486f6b99",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "59cbcce63783c88fe6be5460ef3a9f201730022b",
+          "merge_sha": {
+            "commit_sha": "4821c4dcf9e904d438c9024a1e041f9e7452961c"
+          },
+          "scientific_acceptance": "Formal TLC model-checking invariants verified (14,227,489 states, 0 errors) for modeled transactional isolation.",
+          "integration_readiness": "Merged into main with green CI.",
+          "authorization_status": "maintainer_merged"
+        },
+        {
+          "envelope": {
+            "subject": "PR #863 Xeon 6975P-C AVX2 cache-resident BM_MemBound64 metrics",
+            "observed_at": "2026-11-24T23:48:00Z",
+            "source_revision": {
+              "commit_sha": "70baf467e1e0a25f5f9c9d2f0f2ef2bb80f1c184"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/pull/863"
+          },
+          "pr_number": 863,
+          "title": "docs(ai-context): record native x86_64 AVX2 BM_MemBound64 metrics (Run #45325242627)",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/863",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "4821c4dcf9e904d438c9024a1e041f9e7452961c",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "a3bbbae1570792b7405df2bed7dd1efe5f119bfc",
+          "merge_sha": {
+            "commit_sha": "70baf467e1e0a25f5f9c9d2f0f2ef2bb80f1c184"
+          },
+          "scientific_acceptance": "Scoped native x86_64 AVX2 cache-resident benchmark evidence recorded (Run #45325242627).",
+          "integration_readiness": "Merged into main with green CI.",
+          "authorization_status": "maintainer_merged"
+        },
+        {
+          "envelope": {
+            "subject": "PR #864 off-L3 (>480 MiB) DRAM sweep and RAM-guarded workflow preset",
+            "observed_at": "2026-11-24T23:48:00Z",
+            "source_revision": {
+              "commit_sha": "e51970a13e1b341695266d32671beb309a398297"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/pull/864"
+          },
+          "pr_number": 864,
+          "title": "bench(avx2): add off-L3 (>480 MiB) DRAM sweep and RAM-guarded workflow preset",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/864",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "70baf467e1e0a25f5f9c9d2f0f2ef2bb80f1c184",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "bd777a0c93406e958f5cbf8140b88ef025e90d02",
+          "merge_sha": {
+            "commit_sha": "e51970a13e1b341695266d32671beb309a398297"
+          },
+          "scientific_acceptance": "Scoped off-L3 (>480 MiB) DRAM benchmark sweep executed on Xeon 6975P-C (Run #45328018712).",
+          "integration_readiness": "Merged into main with green CI.",
+          "authorization_status": "maintainer_merged"
+        },
+        {
+          "envelope": {
+            "subject": "PR #872 ai_usability_eval.py 23/23 adversarial trials & AVX2 L3-vs-DRAM crossover note",
+            "observed_at": "2026-11-24T23:48:00Z",
+            "source_revision": {
+              "commit_sha": "bc1ec0a62a5eddb184ff766267cfb53d9e0d2e06"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "docs/records/status-history/AVX2_L3_VS_OFF_L3_DRAM_CROSSOVER_2026-11-24.md"
+          },
+          "pr_number": 872,
+          "title": "test(mcp,docs): expand ai_usability_eval.py to 23/23 adversarial trials & add AVX2 L3-vs-DRAM crossover note",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/872",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "e51970a13e1b341695266d32671beb309a398297",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "b9a900918623ebe7ccce4f47eca451b516d1a3fc",
+          "merge_sha": {
+            "commit_sha": "bc1ec0a62a5eddb184ff766267cfb53d9e0d2e06"
+          },
+          "scientific_acceptance": "Adversarial MCP JSON-RPC & tx isolation evaluation (23/23) + grounded L3-vs-DRAM crossover synthesis.",
+          "integration_readiness": "Merged into main with 38/38 green CI.",
+          "authorization_status": "maintainer_merged"
+        },
+        {
+          "envelope": {
+            "subject": "PR #865 M1 provider-neutral execution contract, ProviderGovernor, CanonFS evidence & AT-01..AT-10",
+            "observed_at": "2026-11-24T23:48:00Z",
+            "source_revision": {
+              "commit_sha": "dd39decbb5acf3f2b6bf0d7dc9d90ba46bc325a0"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "docs/research/proposals/PROVIDER_EXECUTION_CONTRACT_v0.1.md"
+          },
+          "pr_number": 865,
+          "title": "feat(provider,spec): M1 provider-neutral execution contract, Axion governor & CanonFS evidence (AT-01..AT-05)",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/865",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "bc1ec0a62a5eddb184ff766267cfb53d9e0d2e06",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "7f47465bff1fa38d9b0a1457ae937b3e965a449e",
+          "merge_sha": {
+            "commit_sha": "dd39decbb5acf3f2b6bf0d7dc9d90ba46bc325a0"
+          },
+          "scientific_acceptance": "Draft M1 provider-neutral contract & C++ implementation (AT-01..AT-10 + schema conformance); frozen TISC v1.9.0 and PUBLIC_API_LOCK.json v2.2.0 untouched.",
+          "integration_readiness": "Merged into main with 39/39 green CI and explicit human approval.",
+          "authorization_status": "maintainer_merged"
+        },
+        {
+          "envelope": {
+            "subject": "PR #873 H06-MEM-04 regime dispatch rules, Apple Metal GPU path & multi-batch benchmark suite",
+            "observed_at": "2026-11-24T23:48:00Z",
+            "source_revision": {
+              "commit_sha": "f1f28d2193c2d63799f908aa6056abda4a636426"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/pull/873"
+          },
+          "pr_number": 873,
+          "title": "feat(vm): H06-MEM-04 regime dispatch rules, Apple Metal GPU path, and multi-batch benchmark suite",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/873",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "dd39decbb5acf3f2b6bf0d7dc9d90ba46bc325a0",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "f1f28d2193c2d63799f908aa6056abda4a636426",
+          "merge_sha": {
+            "value": null,
+            "reason": "pr_is_open_awaiting_post_merge_ci_rerun"
+          },
+          "scientific_acceptance": "Passed 39/39 CI prior to main merge; re-running CI after resolving CMakeLists.txt merge with #865.",
+          "integration_readiness": "CI re-running on f1f28d219; human approval recorded.",
+          "authorization_status": "human_approved_awaiting_green_ci"
+        },
+        {
+          "envelope": {
+            "subject": "PR #859 SCG-08 Gate 1 -Wclass-memaccess warning fix (held)",
+            "observed_at": "2026-11-24T23:48:00Z",
+            "source_revision": {
+              "commit_sha": "0b6aca82acad961eb82591eb2c31d1e1faa77d97"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/pull/859"
+          },
+          "pr_number": 859,
+          "title": "fix(scg08): silence -Wclass-memaccess warning in Gate 1 negative test",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/859",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "e51970a13e1b341695266d32671beb309a398297",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "0b6aca82acad961eb82591eb2c31d1e1faa77d97",
+          "merge_sha": {
+            "value": null,
+            "reason": "pr_is_open_explicitly_held"
+          },
+          "scientific_acceptance": "Bounded warning cleanup in Gate 1 negative test; SCG-08 Gate 2 NO-GO remains intact.",
+          "integration_readiness": "Held / untouched by policy.",
+          "authorization_status": "held_by_maintainer"
+        }
+      ],
+      "ci_observations": [],
+      "workstreams": [
+        {
+          "id": "provider_contract_m1",
+          "priority": "P0",
+          "state": "merged_pr_865_next_m2_m3_queued_not_started",
+          "source": "docs/research/proposals/PROVIDER_EXECUTION_CONTRACT_v0.1.md",
+          "next": "Queued next lanes (not started): M2 (persistent MCP receipt ledger) and M3 (Python SDK governed execution)."
+        },
+        {
+          "id": "h06_mem_04_regime_dispatch",
+          "priority": "P1",
+          "state": "pr_873_open_ci_rerunning_at_f1f28d219",
+          "source": "https://github.com/t81dev/t81-foundation/pull/873",
+          "next": "Merge PR #873 once post-main-merge CI finishes green."
+        },
+        {
+          "id": "F01-HOST-BOLQ-v1",
+          "priority": "P0",
+          "state": "NOT ADOPTED; residual risks NOT ACCEPTED; M1-M6 STOP; linux_relock_required=true",
+          "source": "docs/research/proposals/RFC-00D7-F01-BOLQ-MIGRATION/REVIEW_PLAN.md",
+          "next": "Maintain F01 M1-M6 STOP, SCG-08 Gate 2 NO-GO, H01/10A BLOCKED, and AXION-AI-001 HD01-HD06 holds."
+        }
+      ]
     }
   },
   "historical_snapshots": {
@@ -718,5 +1031,5 @@
     "performance_measurement": false,
     "production_activation": false
   },
-  "next_gate": "2026-11-17 selected-PR overlay: read T81_RESEARCH_STATUS_2026-11-17_PR824.md and operational_views.2026-11-17-pr824-reconciled with receipts/2026-11-17-pr824-reconciliation.json. PR #824 integrated at ab15820a2dd8ebcadde0efecf1fbb0d43b57d3f9; PR #823 remains independent draft/unmerged. F01-HOST-BOLQ-v1 NOT ADOPTED; residual risks NOT ACCEPTED; M1-M6 STOP; linux_relock_required=true. selected_view intentionally retains historical 2026-11-02-reconciled for existing contract-test compatibility; it is not a live inventory. No new scientific, merge, implementation, host or execution authority; unrelated historical holds remain unchanged. Prior next_gate retained in the new receipt."
+  "next_gate": "2026-11-24 M1 post-merge overlay: main is at dd39decbb (PRs #861, #862, #863, #864, #872, and #865 merged; #873 open & re-running CI at f1f28d219; #859 open/held at 0b6aca82a). Next queued lanes (not started): M2 (persistent MCP receipt ledger) and M3 (Python SDK governed execution). All frozen contracts (TISC v1.9.0, PUBLIC_API_LOCK.json v2.2.0) and active research holds (F01 M1-M6 STOP, SCG-08 Gate 2 NO-GO, H01/10A BLOCKED, AXION-AI-001 HD01-HD06) remain intact. This index grants no execution, merge, or protocol-amendment authority."
 }

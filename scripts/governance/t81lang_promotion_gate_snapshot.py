@@ -14,7 +14,7 @@ from dataclasses import dataclass
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 BACKLOG_FILE = REPO_ROOT / "docs/status/HARDENING_BACKLOG.md"
-GATE_FILE = REPO_ROOT / "docs/status/T81LANG_PROMOTION_GATE.md"
+GATE_FILE = REPO_ROOT / "docs/status/archive/T81LANG_PROMOTION_GATE.md"
 MATRIX_FILE = REPO_ROOT / "docs/status/IMPLEMENTATION_MATRIX.md"
 AUDIT_FILE = REPO_ROOT / "docs/records/audits/2026-03-governance-review.md"
 REGISTRY_FILE = REPO_ROOT / "docs/governance/DETERMINISM_SURFACE_REGISTRY.md"
@@ -65,7 +65,7 @@ def main() -> int:
     parser.add_argument("--fixtures-dir", default="tests/fixtures/t81lang_determinism")
     parser.add_argument(
         "--output",
-        default="docs/status/T81LANG_PROMOTION_GATE_SNAPSHOT.md",
+        default="docs/status/archive/T81LANG_PROMOTION_GATE_SNAPSHOT.md",
         help="Path for generated snapshot markdown.",
     )
     args = parser.parse_args()

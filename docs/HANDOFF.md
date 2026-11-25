@@ -113,9 +113,9 @@ If those answers are weak, narrow the work before building it.
 - DAIOS target architecture:
   [spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md](../spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md)
 - Bounded family status: [docs/status/BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md](status/BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md)
-- AI CLI reality check: [docs/status/AI_CLI_IMPLEMENTATION_MATRIX.md](status/AI_CLI_IMPLEMENTATION_MATRIX.md)
-- Strategic convergence note:
-  [docs/status/TERNARY_FABRIC_STRATEGIC_CONVERGENCE_NOTE.md](status/TERNARY_FABRIC_STRATEGIC_CONVERGENCE_NOTE.md)
+- AI CLI reality check (archived snapshot): [docs/status/archive/AI_CLI_IMPLEMENTATION_MATRIX.md](status/archive/AI_CLI_IMPLEMENTATION_MATRIX.md)
+- Strategic convergence note (archived):
+  [docs/status/archive/TERNARY_FABRIC_STRATEGIC_CONVERGENCE_NOTE.md](status/archive/TERNARY_FABRIC_STRATEGIC_CONVERGENCE_NOTE.md)
 
 The short version:
 
