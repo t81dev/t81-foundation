@@ -91,8 +91,10 @@ std::uint32_t RegimeSelector::compute_worker_count(Regime regime,
       return std::min<std::uint32_t>(cores, b);
     case Regime::R2_OffL3StreamingDRAM:
     case Regime::R4_OversizedOutOfCore: {
-      const std::uint32_t cap = policy_.stream_worker_cap > 0 ? policy_.stream_worker_cap
-                                                              : std::min<std::uint32_t>(cores, 4U);
+      const bool apple_unified = (hardware_.arch == ArchKind::Arm64 && hardware_.metal_available);
+      const std::uint32_t auto_cap = apple_unified ? cores : std::min<std::uint32_t>(cores, 4U);
+      const std::uint32_t cap =
+          policy_.stream_worker_cap > 0 ? policy_.stream_worker_cap : auto_cap;
       return std::min<std::uint32_t>(std::max<std::uint32_t>(1U, cap), b);
     }
   }
@@ -143,8 +145,10 @@ double RegimeSelector::estimate_throughput_score(Regime regime,
       if (!hardware_.metal_available || query.metal_queue_depth > policy_.metal_max_queue_depth) {
         return 0.0;
       }
+      const bool work_ok = (policy_.metal_min_work_ops == 0 || query.work_ops == 0 ||
+                            query.work_ops >= policy_.metal_min_work_ops);
       if (query.batch_size < policy_.metal_min_batch ||
-          query.working_set_bytes < policy_.metal_min_working_set_bytes) {
+          query.working_set_bytes < policy_.metal_min_working_set_bytes || !work_ok) {
         return 0.50;
       }
       return std::min(b, 64.0) * 0.65 + 4.0;
@@ -179,9 +183,13 @@ DispatchDecision RegimeSelector::evaluate_candidate(const WorkloadQuery& query) 
     return d;
   }
 
-  // Check accelerator eligibility (R3) first when batch & working set meet Metal thresholds.
+  // Check accelerator eligibility (R3) first when batch, working set & work_ops meet Metal
+  // thresholds.
+  const bool work_ok = (policy_.metal_min_work_ops == 0 || query.work_ops == 0 ||
+                        query.work_ops >= policy_.metal_min_work_ops);
   const bool metal_eligible = hardware_.metal_available && b >= policy_.metal_min_batch &&
                               query.working_set_bytes >= policy_.metal_min_working_set_bytes &&
+                              work_ok &&
                               (hardware_.metal_vram_budget_bytes == 0 ||
                                query.working_set_bytes <= hardware_.metal_vram_budget_bytes);
 
