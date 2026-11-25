@@ -184,12 +184,12 @@ class OperationalStateContractTest(unittest.TestCase):
         import tempfile
         with tempfile.TemporaryDirectory() as tmp:
             output = Path(tmp) / "corrected.json"
-            proc = subprocess.run([sys.executable, str(ROOT / "review/pr-656/check.py"),
+            proc = subprocess.run([sys.executable, str(ROOT / "docs/records/audits/pr-656/check.py"),
                                    "--output", str(output)], cwd=tmp,
                                   capture_output=True, text=True)
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
             replay = json.loads(output.read_text())
-            retained = json.loads((ROOT / "review/pr-656/corrected-results.json").read_text())
+            retained = json.loads((ROOT / "docs/records/audits/pr-656/corrected-results.json").read_text())
             self.assertEqual(replay["sources"], retained["sources"])
             self.assertEqual(len(replay["rows"]), len(retained["rows"]))
             self.assertTrue(all(row["agreement"] for row in replay["rows"]))
