@@ -30,7 +30,7 @@ The following superseded PRs were closed without merge after their replacements 
 
 ## 3. Pinned Architecture Assessment & Next Lanes
 
-* **Evidence-linked architecture assessment:** [docs/records/audits/2026-11-15-architecture-assessment/README.md](../records/audits/2026-11-15-architecture-assessment/README.md) (inspected against `c2ab68e582c9f773ce94a9e13bcb805016f07dd4`).
+* **Evidence-linked architecture assessment:** [docs/records/audits/2026-11-15-architecture-assessment/README.md](../../records/audits/2026-11-15-architecture-assessment/README.md) (inspected against `c2ab68e582c9f773ce94a9e13bcb805016f07dd4`).
   * Classifies claims as `[specified]`, `[implemented]`, `[tested]`, `[measured]`, or `[proposed]`.
   * Separates software/HDL dual-bitplane representations (`[proposed]`) from CMOS differential electrical signaling (`[proposed]`, modeled area/power context).
   * Follows authoritative RFC/governance status for DCP maturity (`RFC-00D1` draft/partially implemented; `RFC-00D0` draft/design-led).
