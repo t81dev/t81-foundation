@@ -73,6 +73,7 @@ struct WorkloadBuffers {
   std::uint32_t words_per_row{4};  // k_dim / 64
   std::uint32_t num_banks{1};
   std::uint64_t actual_working_set_bytes{0};
+  double effective_nonzero_density{1.0};
 
   // Banked dense ternary weights [num_banks * out_dim * k_dim], values in {-1, 0, +1}.
   std::vector<std::int8_t> weights;
@@ -189,6 +190,8 @@ WorkloadBuffers build_buffers(std::uint32_t batch, std::uint32_t out_dim, std::u
       }
     }
     kernel_struct_bytes = buf.dual_rail.size() * sizeof(DualRailWord);
+    // DualRail_Dense and SBDR1T2D traverse every 64-bit bitplane word densely.
+    buf.effective_nonzero_density = 1.0;
   } else if (kernel_kind == KernelExecKind::Sbdr128Simd) {
     buf.sbdr128_row_offsets.resize(total_rows + 1, 0U);
     buf.sbdr128_blocks.reserve(total_rows * (k_dim / 128U));
@@ -218,6 +221,11 @@ WorkloadBuffers build_buffers(std::uint32_t batch, std::uint32_t out_dim, std::u
     buf.sbdr128_row_offsets[total_rows] = static_cast<std::uint32_t>(buf.sbdr128_blocks.size());
     kernel_struct_bytes = buf.sbdr128_row_offsets.size() * sizeof(std::uint32_t) +
                           buf.sbdr128_blocks.size() * sizeof(Sbdr128Block);
+    const std::size_t total_blocks = total_rows * (k_dim / 128U);
+    buf.effective_nonzero_density =
+        total_blocks > 0
+            ? static_cast<double>(buf.sbdr128_blocks.size()) / static_cast<double>(total_blocks)
+            : 1.0;
   } else if (kernel_kind == KernelExecKind::Int8Sparse128) {
     buf.csr_row_offsets.resize(total_rows + 1, 0U);
     buf.csr_cols.reserve(total_weights / 3U);
@@ -235,6 +243,9 @@ WorkloadBuffers build_buffers(std::uint32_t batch, std::uint32_t out_dim, std::u
     buf.csr_row_offsets[total_rows] = static_cast<std::uint32_t>(buf.csr_cols.size());
     kernel_struct_bytes = buf.csr_row_offsets.size() * sizeof(std::uint32_t) +
                           buf.csr_cols.size() * sizeof(std::uint16_t) + buf.csr_vals.size();
+    buf.effective_nonzero_density = total_weights > 0 ? static_cast<double>(buf.csr_vals.size()) /
+                                                            static_cast<double>(total_weights)
+                                                      : 0.0;
   }
 
   buf.actual_working_set_bytes = buf.weights.size() + kernel_struct_bytes + act_bytes + out_bytes;
@@ -424,6 +435,28 @@ std::uint64_t extract_json_u64(const std::string& json, const std::string& key,
   }
 }
 
+double extract_json_double(const std::string& json, const std::string& key, double fallback) {
+  const std::string needle = "\"" + key + "\"";
+  const auto kpos = json.find(needle);
+  if (kpos == std::string::npos) return fallback;
+  const auto colon = json.find(':', kpos + needle.size());
+  if (colon == std::string::npos) return fallback;
+  std::size_t p = colon + 1;
+  while (p < json.size() && (json[p] == ' ' || json[p] == '\t' || json[p] == '\n')) ++p;
+  std::size_t end = p;
+  while (end < json.size() &&
+         ((json[end] >= '0' && json[end] <= '9') || json[end] == '.' || json[end] == '-' ||
+          json[end] == '+' || json[end] == 'e' || json[end] == 'E')) {
+    ++end;
+  }
+  if (end == p) return fallback;
+  try {
+    return std::stod(json.substr(p, end - p));
+  } catch (...) {
+    return fallback;
+  }
+}
+
 bool extract_json_bool(const std::string& json, const std::string& key, bool fallback) {
   const std::string needle = "\"" + key + "\"";
   const auto kpos = json.find(needle);
@@ -548,9 +581,11 @@ int main(int argc, char** argv) {
   pol.metal_min_batch =
       static_cast<std::uint32_t>(extract_json_u64(manifest_text, "metal_min_batch", 16));
   pol.metal_min_working_set_bytes =
-      extract_json_u64(manifest_text, "metal_min_working_set_bytes", 64ULL * 1024ULL * 1024ULL);
+      extract_json_u64(manifest_text, "metal_min_working_set_bytes", 32ULL * 1024ULL * 1024ULL);
   pol.metal_min_work_ops =
       extract_json_u64(manifest_text, "metal_min_work_ops", 32ULL * 1024ULL * 1024ULL);
+  pol.metal_min_nonzero_density =
+      extract_json_double(manifest_text, "metal_min_nonzero_density", 0.30);
   pol.stream_worker_cap =
       static_cast<std::uint32_t>(extract_json_u64(manifest_text, "stream_worker_cap", 0));
 
@@ -634,6 +669,7 @@ int main(int argc, char** argv) {
            << "    \"metal_min_batch\": " << pol.metal_min_batch << ",\n"
            << "    \"metal_min_working_set_bytes\": " << pol.metal_min_working_set_bytes << ",\n"
            << "    \"metal_min_work_ops\": " << pol.metal_min_work_ops << ",\n"
+           << "    \"metal_min_nonzero_density\": " << pol.metal_min_nonzero_density << ",\n"
            << "    \"hysteresis_gain_ratio\": " << pol.hysteresis_gain_ratio << ",\n"
            << "    \"stream_worker_cap\": " << pol.stream_worker_cap << "\n"
            << "  },\n"
@@ -676,6 +712,7 @@ int main(int argc, char** argv) {
           q.work_ops = 2ULL * static_cast<std::uint64_t>(batch) *
                        static_cast<std::uint64_t>(out_dim) * static_cast<std::uint64_t>(k_dim);
           q.sparsity_pct = sparsity_pct;
+          q.nonzero_density = buf.effective_nonzero_density;
           q.is_r2_int8_act = (kernel == "INT8_Sparse128");
 
           const auto d0 = std::chrono::steady_clock::now();
@@ -757,6 +794,7 @@ int main(int argc, char** argv) {
                    << "\"backend\": \"" << backend_str << "\", "
                    << "\"regime_selected\": \"" << regime_name(dec.regime) << "\", "
                    << "\"working_set_bytes\": " << actual_ws_bytes << ", "
+                   << "\"nonzero_density\": " << buf.effective_nonzero_density << ", "
                    << "\"p50_us\": " << p50 << ", "
                    << "\"p95_us\": " << p95 << ", "
                    << "\"p99_us\": " << p99 << ", "

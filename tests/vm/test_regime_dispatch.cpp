@@ -271,6 +271,144 @@ void test_m2_work_op_gating_and_stream_cap() {
   T81_REQUIRE(d_r4.worker_threads == 8);
 }
 
+void test_phase3_r3_r4_boundary_and_sparse_routing_m2() {
+  std::cout << "[7/8] Phase 3 Apple M2 R3/R4 boundary tightening & sparse-aware dispatch...\n";
+  const HardwareProfile m2 = HardwareProfile::apple_m2_reference();
+  RegimeSelector sel(m2);  // default policy: metal_min_ws=32MiB, metal_min_nonzero_density=0.30
+
+  // Medium working set (24 MiB < 32 MiB) avoids GPU launch latency even at B=32, 512x2048 ops.
+  WorkloadQuery q_med;
+  q_med.batch_size = 32;
+  q_med.working_set_bytes = 24 * kMiB;
+  q_med.work_ops = 2ULL * 32ULL * 512ULL * 2048ULL;
+  q_med.nonzero_density = 1.0;
+  auto d_med = sel.select(q_med);
+  T81_REQUIRE(d_med.regime == Regime::R2_OffL3StreamingDRAM);
+  T81_REQUIRE(d_med.backend == BackendKind::CpuStreamMT);
+  T81_REQUIRE(d_med.worker_threads == 8);
+
+  // OUT_OF_CORE 512x2048 B=32 (~60 MiB dense DualRail/SBDR1T2D): now routes to R3 Metal GPU
+  // instead of falling into R4 CPU streaming.
+  sel.reset_hysteresis();
+  WorkloadQuery q_512_b32;
+  q_512_b32.batch_size = 32;
+  q_512_b32.working_set_bytes = 60 * kMiB;
+  q_512_b32.work_ops = 2ULL * 32ULL * 512ULL * 2048ULL;
+  q_512_b32.nonzero_density = 1.0;
+  auto d_512_b32 = sel.select(q_512_b32);
+  T81_REQUIRE(d_512_b32.regime == Regime::R3_AcceleratorMultiBatch);
+  T81_REQUIRE(d_512_b32.backend == BackendKind::MetalGpu);
+
+  // OUT_OF_CORE 1024x4096 B=16 (~60 MiB, 134.2M ops, low sparsity 0.50 density): routes to R3.
+  sel.reset_hysteresis();
+  WorkloadQuery q_1024_b16;
+  q_1024_b16.batch_size = 16;
+  q_1024_b16.working_set_bytes = 60 * kMiB;
+  q_1024_b16.work_ops = 2ULL * 16ULL * 1024ULL * 4096ULL;
+  q_1024_b16.sparsity_pct = 50;
+  q_1024_b16.nonzero_density = 0.50;
+  auto d_1024_b16 = sel.select(q_1024_b16);
+  T81_REQUIRE(d_1024_b16.regime == Regime::R3_AcceleratorMultiBatch);
+  T81_REQUIRE(d_1024_b16.backend == BackendKind::MetalGpu);
+
+  // High-sparsity INT8_Sparse128 (75% zeros -> 0.25 non-zero density, 84 MiB, 512x2048 B=32):
+  // MUST bypass R3 Metal GPU and route to zero-skip CPU path (R4 with 8 workers).
+  sel.reset_hysteresis();
+  WorkloadQuery q_sparse;
+  q_sparse.batch_size = 32;
+  q_sparse.working_set_bytes = 84 * kMiB;
+  q_sparse.work_ops = 2ULL * 32ULL * 512ULL * 2048ULL;
+  q_sparse.sparsity_pct = 75;
+  q_sparse.nonzero_density = 0.25;
+  q_sparse.is_r2_int8_act = true;
+  auto d_sparse = sel.select(q_sparse);
+  T81_REQUIRE(d_sparse.regime == Regime::R4_OversizedOutOfCore);
+  T81_REQUIRE(d_sparse.backend == BackendKind::CpuStreamMT);
+  T81_REQUIRE(d_sparse.kernel == KernelKind::INT8_Sparse128);
+  T81_REQUIRE(d_sparse.worker_threads == 8);
+  T81_REQUIRE(d_sparse.tile_batch_size >= d_sparse.worker_threads);
+  T81_REQUIRE(d_sparse.tile_batch_size < q_sparse.batch_size);
+
+  // Backwards-compatible unspecified nonzero_density (< 0.0) with INT8_Sparse128 at 75% sparsity
+  // also routes to zero-skip CPU instead of Metal GPU.
+  sel.reset_hysteresis();
+  WorkloadQuery q_sparse_legacy = q_sparse;
+  q_sparse_legacy.nonzero_density = -1.0;
+  auto d_sparse_legacy = sel.select(q_sparse_legacy);
+  T81_REQUIRE(d_sparse_legacy.regime == Regime::R4_OversizedOutOfCore);
+  T81_REQUIRE(d_sparse_legacy.backend == BackendKind::CpuStreamMT);
+  T81_REQUIRE(d_sparse_legacy.kernel == KernelKind::INT8_Sparse128);
+
+  // Hysteresis must immediately exit R3 when switching from dense matrix to high-sparsity CPU path.
+  sel.reset_hysteresis();
+  T81_REQUIRE(sel.select(q_512_b32).regime == Regime::R3_AcceleratorMultiBatch);
+  auto d_exit = sel.select(q_sparse);
+  T81_REQUIRE(d_exit.regime == Regime::R4_OversizedOutOfCore);
+  T81_REQUIRE(d_exit.backend == BackendKind::CpuStreamMT);
+  T81_REQUIRE(d_exit.switched_from_active);
+
+  // Small matrix 128x512 B=64 (8.4M ops < 32M) at 60 MiB stays on CPU R4 (no GPU launch overhead).
+  sel.reset_hysteresis();
+  WorkloadQuery q_128_b64;
+  q_128_b64.batch_size = 64;
+  q_128_b64.working_set_bytes = 60 * kMiB;
+  q_128_b64.work_ops = 2ULL * 64ULL * 128ULL * 512ULL;
+  q_128_b64.nonzero_density = 1.0;
+  auto d_128_b64 = sel.select(q_128_b64);
+  T81_REQUIRE(d_128_b64.regime == Regime::R4_OversizedOutOfCore);
+  T81_REQUIRE(d_128_b64.backend == BackendKind::CpuStreamMT);
+  T81_REQUIRE(d_128_b64.worker_threads == 8);
+}
+
+void test_phase3_sparse_routing_xeon() {
+  std::cout << "[8/8] Phase 3 Xeon 6975P-C x86_64 dense vs. high-sparsity routing...\n";
+  const HardwareProfile xeon = HardwareProfile::xeon_6975p_reference();
+  RegimeSelector sel(xeon);
+
+  // L3-resident high-sparsity INT8_Sparse128 (B=16, 256 MiB < 0.85*480 MiB): R1 with 4 workers.
+  WorkloadQuery q_r1;
+  q_r1.batch_size = 16;
+  q_r1.working_set_bytes = 256 * kMiB;
+  q_r1.work_ops = 2ULL * 16ULL * 1024ULL * 4096ULL;
+  q_r1.sparsity_pct = 75;
+  q_r1.nonzero_density = 0.25;
+  q_r1.is_r2_int8_act = true;
+  auto d_r1 = sel.select(q_r1);
+  T81_REQUIRE(d_r1.regime == Regime::R1_L3ResidentMultiBatch);
+  T81_REQUIRE(d_r1.backend == BackendKind::CpuSimdMT);
+  T81_REQUIRE(d_r1.kernel == KernelKind::INT8_Sparse128);
+  T81_REQUIRE(d_r1.worker_threads == 4);
+
+  // Off-L3 streaming dense matrix (B=32, 640 MiB): R2 with <= 4 streaming workers (no Metal).
+  sel.reset_hysteresis();
+  WorkloadQuery q_r2;
+  q_r2.batch_size = 32;
+  q_r2.working_set_bytes = 640 * kMiB;
+  q_r2.work_ops = 2ULL * 32ULL * 1024ULL * 4096ULL;
+  q_r2.nonzero_density = 1.0;
+  auto d_r2 = sel.select(q_r2);
+  T81_REQUIRE(d_r2.regime == Regime::R2_OffL3StreamingDRAM);
+  T81_REQUIRE(d_r2.backend == BackendKind::CpuStreamMT);
+  T81_REQUIRE(d_r2.kernel == KernelKind::DualRail_Dense);
+  T81_REQUIRE(d_r2.worker_threads == 4);
+
+  // Out-of-core high-sparsity matrix (B=64, 1536 MiB > 2*480 MiB): R4 tiled CPU streaming.
+  sel.reset_hysteresis();
+  WorkloadQuery q_r4;
+  q_r4.batch_size = 64;
+  q_r4.working_set_bytes = 1536 * kMiB;
+  q_r4.work_ops = 2ULL * 64ULL * 1024ULL * 4096ULL;
+  q_r4.sparsity_pct = 85;
+  q_r4.nonzero_density = 0.15;
+  q_r4.is_r2_int8_act = true;
+  auto d_r4 = sel.select(q_r4);
+  T81_REQUIRE(d_r4.regime == Regime::R4_OversizedOutOfCore);
+  T81_REQUIRE(d_r4.backend == BackendKind::CpuStreamMT);
+  T81_REQUIRE(d_r4.kernel == KernelKind::INT8_Sparse128);
+  T81_REQUIRE(d_r4.worker_threads == 4);
+  T81_REQUIRE(d_r4.tile_batch_size >= 1 && d_r4.tile_batch_size < q_r4.batch_size);
+}
+
 }  // namespace
 
 int main() {
@@ -280,6 +418,8 @@ int main() {
   test_metal_queue_and_worker_fallbacks();
   test_bit_exact_cross_backend_determinism();
   test_m2_work_op_gating_and_stream_cap();
+  test_phase3_r3_r4_boundary_and_sparse_routing_m2();
+  test_phase3_sparse_routing_xeon();
   std::cout << "ALL H06-MEM-04 REGIME DISPATCH TESTS PASSED.\n";
   return 0;
 }
