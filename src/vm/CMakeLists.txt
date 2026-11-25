@@ -32,6 +32,16 @@ target_include_directories(t81_jit PRIVATE
 target_sources(t81_vm PRIVATE $<TARGET_OBJECTS:t81_jit>)
 target_link_libraries(t81_vm PUBLIC t81_core t81_isa t81_axion t81_ffi t81_experimental)
 
+add_library(t81_regime_dispatch STATIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/regime_dispatch.cpp
+)
+t81_preserve_root_output(t81_regime_dispatch)
+target_compile_features(t81_regime_dispatch PUBLIC ${T81_CXX_STD_FEATURE})
+target_include_directories(t81_regime_dispatch PUBLIC ${PROJECT_SOURCE_DIR}/src)
+if(APPLE AND T81_ENABLE_METAL)
+  target_compile_definitions(t81_regime_dispatch PUBLIC T81_HAS_METAL=1)
+endif()
+
 if(T81_ENABLE_DPE)
   message(STATUS "[t81] T81_ENABLE_DPE=ON -- building DPE task graph (RFC-DPE-0002 through RFC-DPE-0009)")
 

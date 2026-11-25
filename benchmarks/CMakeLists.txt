@@ -10,6 +10,28 @@ set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
 set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googlebenchmark)
 
+find_package(Threads REQUIRED)
+option(T81_ENABLE_METAL "Enable Apple Metal GPU compute backend for H06-MEM-04 benchmarks" OFF)
+
+if(APPLE AND T81_ENABLE_METAL)
+    enable_language(OBJCXX)
+    add_executable(t81_bench_h06_mem_04
+        h06_mem_04/run_h06_mem_04.cpp
+        h06_mem_04/metal_dispatch.mm
+    )
+    set_source_files_properties(h06_mem_04/metal_dispatch.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc")
+    target_compile_definitions(t81_bench_h06_mem_04 PRIVATE T81_HAS_METAL=1)
+    target_link_libraries(t81_bench_h06_mem_04 PRIVATE
+        t81_regime_dispatch Threads::Threads "-framework Metal" "-framework Foundation")
+else()
+    add_executable(t81_bench_h06_mem_04
+        h06_mem_04/run_h06_mem_04.cpp
+        h06_mem_04/metal_dispatch_stub.cpp
+    )
+    target_link_libraries(t81_bench_h06_mem_04 PRIVATE t81_regime_dispatch Threads::Threads)
+endif()
+target_compile_features(t81_bench_h06_mem_04 PRIVATE cxx_std_20)
+
 set(BENCHMARK_RUNNER_SOURCES
     runner/benchmark_runner.cpp
     runner/arith_throughput.cpp
