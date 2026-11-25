@@ -9,7 +9,7 @@ This path is retained for stable links from tutorials/guides.
 
 - Program control snapshot: [`../status/PROJECT_CONTROL_CENTER.md`](../status/PROJECT_CONTROL_CENTER.md)
 - Drift and alignment: [`../status/DRIFT_DECOMPOSITION.md`](../status/DRIFT_DECOMPOSITION.md)
-- Active tasks: [`../status/TASKS.md`](../status/TASKS.md)
+- Archived tasks snapshot: [`../status/archive/TASKS.md`](../status/archive/TASKS.md)
 - Release readiness packet (2026-03, archived): [`../records/audits/RELEASE_READINESS_PACKET_2026-03.md`](../records/audits/RELEASE_READINESS_PACKET_2026-03.md)
 - Current reference status summary: [`STATUS.md`](STATUS.md)
 
