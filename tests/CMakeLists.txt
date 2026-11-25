@@ -1589,7 +1589,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     list(APPEND T81_TEST_TARGETS t81_frontend_fuzz_test)
   endif()
   foreach(tgt IN LISTS T81_TEST_TARGETS)
-    add_test(NAME ${tgt} COMMAND $<TARGET_FILE:${tgt}>)
+    add_test(NAME ${tgt} COMMAND $<TARGET_FILE:${tgt}> WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
   endforeach()
   # Golden interchange fixtures live in the source tree, including out-of-tree builds.
   set_tests_properties(canonfs_interchange_test PROPERTIES WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
