@@ -1,0 +1,46 @@
+{
+  "benchmark_id": "h06-mem-04-apple-m2-arm64",
+  "provenance": {
+    "git_sha": "e51970a13e1b341695266d32671beb309a398297",
+    "branch": "main",
+    "build_flags": "-O3 -march=native -DNDEBUG",
+    "ndebug": true
+  },
+  "hardware_profile": {
+    "name": "Apple M2 (8-core arm64 NEON + Metal zero-copy)",
+    "arch": "arm64",
+    "has_neon": true,
+    "has_avx2": false,
+    "physical_cores": 8,
+    "l2_cache_bytes": 16777216,
+    "l3_cache_bytes": 0,
+    "metal_available": true,
+    "metal_vram_budget_bytes": 8589934592
+  },
+  "sweep_axes": {
+    "batch_sizes": [1, 4, 8, 16, 32, 64, 128],
+    "working_set_tiers": ["L2_RESIDENT", "L3_RESIDENT", "OFF_L3_STREAMING", "OUT_OF_CORE"],
+    "kernels": ["DualRail_Dense", "SBDR128_SIMD", "INT8_Sparse128", "SBDR1T2D"],
+    "backends": ["auto_dispatch", "cpu_simd_1t", "cpu_simd_mt", "cpu_stream_mt", "metal_gpu"]
+  },
+  "dispatch_policy": {
+    "r0_max_batch": 4,
+    "r1_max_batch": 32,
+    "l2_resident_ratio": 0.75,
+    "l3_resident_ratio": 0.85,
+    "metal_min_batch": 16,
+    "metal_min_working_set_bytes": 67108864,
+    "hysteresis_gain_ratio": 1.15,
+    "stream_worker_cap": 4
+  },
+  "measurement": {
+    "warmup_iters": 2,
+    "measure_iters": 7,
+    "sparsity_pct": 75
+  },
+  "regression_gates": {
+    "require_exact_determinism": true,
+    "max_p95_regression_pct": 5.0,
+    "min_throughput_ratio": 0.95
+  }
+}

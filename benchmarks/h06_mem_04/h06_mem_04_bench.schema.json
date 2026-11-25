@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://t81foundation.org/schemas/benchmarks/h06_mem_04_bench.schema.json",
+  "title": "H06Mem04BenchmarkSchema",
+  "description": "Schema validating H06-MEM-04 multi-batch regime dispatch manifests and benchmark result artifacts.",
+  "type": "object",
+  "required": [
+    "benchmark_id",
+    "provenance",
+    "hardware_profile",
+    "sweep_axes",
+    "dispatch_policy",
+    "measurement",
+    "regression_gates"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "benchmark_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["git_sha", "branch", "build_flags", "ndebug"],
+      "additionalProperties": false,
+      "properties": {
+        "git_sha": { "type": "string" },
+        "branch": { "type": "string" },
+        "build_flags": { "type": "string" },
+        "ndebug": { "type": "boolean" }
+      }
+    },
+    "hardware_profile": {
+      "type": "object",
+      "required": [
+        "name",
+        "arch",
+        "has_neon",
+        "has_avx2",
+        "physical_cores",
+        "l2_cache_bytes",
+        "l3_cache_bytes",
+        "metal_available",
+        "metal_vram_budget_bytes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "arch": { "type": "string", "enum": ["arm64", "x86_64", "other"] },
+        "has_neon": { "type": "boolean" },
+        "has_avx2": { "type": "boolean" },
+        "physical_cores": { "type": "integer", "minimum": 1 },
+        "l2_cache_bytes": { "type": "integer", "minimum": 0 },
+        "l3_cache_bytes": { "type": "integer", "minimum": 0 },
+        "metal_available": { "type": "boolean" },
+        "metal_vram_budget_bytes": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "sweep_axes": {
+      "type": "object",
+      "required": ["batch_sizes", "working_set_tiers", "kernels", "backends"],
+      "additionalProperties": false,
+      "properties": {
+        "batch_sizes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "integer", "minimum": 1 }
+        },
+        "working_set_tiers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": ["L2_RESIDENT", "L3_RESIDENT", "OFF_L3_STREAMING", "OUT_OF_CORE"]
+          }
+        },
+        "kernels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": ["DualRail_Dense", "SBDR128_SIMD", "INT8_Sparse128", "SBDR1T2D"]
+          }
+        },
+        "backends": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": ["auto_dispatch", "cpu_simd_1t", "cpu_simd_mt", "cpu_stream_mt", "metal_gpu"]
+          }
+        }
+      }
+    },
+    "dispatch_policy": {
+      "type": "object",
+      "required": [
+        "r0_max_batch",
+        "r1_max_batch",
+        "l2_resident_ratio",
+        "l3_resident_ratio",
+        "metal_min_batch",
+        "metal_min_working_set_bytes",
+        "hysteresis_gain_ratio",
+        "stream_worker_cap"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "r0_max_batch": { "type": "integer", "minimum": 1 },
+        "r1_max_batch": { "type": "integer", "minimum": 1 },
+        "l2_resident_ratio": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "l3_resident_ratio": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "metal_min_batch": { "type": "integer", "minimum": 1 },
+        "metal_min_working_set_bytes": { "type": "integer", "minimum": 0 },
+        "hysteresis_gain_ratio": { "type": "number", "minimum": 1.0 },
+        "stream_worker_cap": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "measurement": {
+      "type": "object",
+      "required": ["warmup_iters", "measure_iters", "sparsity_pct"],
+      "additionalProperties": false,
+      "properties": {
+        "warmup_iters": { "type": "integer", "minimum": 0 },
+        "measure_iters": { "type": "integer", "minimum": 1 },
+        "sparsity_pct": { "type": "integer", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "regression_gates": {
+      "type": "object",
+      "required": ["require_exact_determinism", "max_p95_regression_pct", "min_throughput_ratio"],
+      "additionalProperties": false,
+      "properties": {
+        "require_exact_determinism": { "type": "boolean" },
+        "max_p95_regression_pct": { "type": "number", "minimum": 0.0 },
+        "min_throughput_ratio": { "type": "number", "minimum": 0.0 }
+      }
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "tier",
+          "batch_size",
+          "kernel",
+          "backend",
+          "regime_selected",
+          "working_set_bytes",
+          "p50_us",
+          "p95_us",
+          "p99_us",
+          "gops_per_sec",
+          "effective_gb_per_sec",
+          "dispatch_overhead_us",
+          "determinism_hash"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "tier": { "type": "string" },
+          "batch_size": { "type": "integer", "minimum": 1 },
+          "kernel": { "type": "string" },
+          "backend": { "type": "string" },
+          "regime_selected": { "type": "string" },
+          "working_set_bytes": { "type": "integer", "minimum": 0 },
+          "p50_us": { "type": "number", "minimum": 0.0 },
+          "p95_us": { "type": "number", "minimum": 0.0 },
+          "p99_us": { "type": "number", "minimum": 0.0 },
+          "gops_per_sec": { "type": "number", "minimum": 0.0 },
+          "effective_gb_per_sec": { "type": "number", "minimum": 0.0 },
+          "dispatch_overhead_us": { "type": "number", "minimum": 0.0 },
+          "determinism_hash": { "type": "string", "minLength": 16 }
+        }
+      }
+    }
+  }
+}
