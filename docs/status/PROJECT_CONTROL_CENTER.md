@@ -1,7 +1,7 @@
 # Project Control Center
 
 Status: Active
-Last Updated: 2026-04-01
+Last Updated: 2026-11-24
 Owner: @t81dev
 Version: 1.10.0
 
@@ -135,5 +135,5 @@ Full boundary: `EXTENSION_PROFILE.md`
 | What do CI gates look like? | `CI_GATE_STATUS.md` |
 | What decisions were made and why? | `DECISION_LOG.md` |
 | What does the spec-to-impl matrix say? | `IMPLEMENTATION_MATRIX.md` |
-| What is the audit history? | `DETERMINISM_AUDIT_LOG.md` |
-| What are the dependency versions? | `DEPENDENCY_HEALTH.md` |
+| What is the audit history? | `archive/DETERMINISM_AUDIT_LOG.md` |
+| What are the dependency versions? | `archive/DEPENDENCY_HEALTH.md` |

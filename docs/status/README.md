@@ -1,6 +1,6 @@
 # /docs/status — Control Surface
 
-Last Updated: 2026-03-29
+Last Updated: 2026-11-24
 Authority: `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`
 
 This directory is a cockpit, not an archive.
@@ -46,7 +46,8 @@ Narrative documents, temporal plans, and time-bound reports live in `docs/record
 ### Alignment Truth
 
 - `IMPLEMENTATION_MATRIX.md` — spec authority, implementation maturity, promotion state, drift risk, last review date per subsystem
-- `AI_CLI_IMPLEMENTATION_MATRIX.md` — concrete reality check for `t81 ai ...`; distinguishes real surfaces from scaffolded or stubbed inference commands
+- `SYSTEM_STATUS.md` — concise subsystem/maturity snapshot aligned with `PROJECT_CONTROL_CENTER.md`
+- `BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md` — CI-enforced bounded AI OS object-family contract (`assess-fixed`, `route-fixed`, `classify-fixed`)
 
 ### Risk and Decisions
 
@@ -57,7 +58,6 @@ Narrative documents, temporal plans, and time-bound reports live in `docs/record
 
 - `DRIFT_DECOMPOSITION.md` — spec claim → implementation reality → closure plan, per surface
 - `HARDENING_BACKLOG.md` — structural hardening and determinism tightening only (no features)
-- `DETERMINISM_AUDIT_LOG.md` — chronological: what was audited, what failed, what was patched, what remains open
 
 ### Experimental Boundary
 
@@ -71,9 +71,14 @@ Narrative documents, temporal plans, and time-bound reports live in `docs/record
 ### Operational
 
 - `CI_GATE_STATUS.md` — required gates, informational gates, known failures, benchmark guardrail, flaky-test inventory
-- `DEPENDENCY_HEALTH.md` — dependency versions, upgrade policy, CVE tracking, determinism impact
-- `TASKS.md` — active implementation tasks (C2 close, stdlib fixture suites)
+- `CI_WORKFLOW_CONFIRMATION.md` — freshness-governed `AI Experiments CI` workflow trigger confirmation
 - `AI_CLI_MILESTONE_EVIDENCE.md` — current bounded native AI inference milestone snapshot, runnable proof points, and remaining gap
+
+### Archived Status Docs (`docs/status/archive/`)
+
+Superseded milestone snapshots, March–April 2026 task queues, and duplicate stubs moved out of the active cockpit into `docs/status/archive/`:
+
+- `archive/AI_CLI_IMPLEMENTATION_MATRIX.md` · `archive/AUDIT_REMEDIATION_CROSSWALK.md` · `archive/DEPENDENCY_HEALTH.md` · `archive/DETERMINISM_AUDIT_LOG.md` · `archive/GOVERNANCE_BOUNDARIES_CLARIFICATION.md` · `archive/JIT_EQUIVALENCE_GAP.md` · `archive/RFC_0030_FLOAT_DOMAIN_PROMOTION.md` · `archive/ROADMAP.md` · `archive/STDLIB_PROMOTION_SNAPSHOT.md` · `archive/T81LANG_IMPLEMENTATION_TASK_QUEUE_2026-03.md` · `archive/T81LANG_PROMOTION_GATE.md` · `archive/T81LANG_PROMOTION_GATE_SNAPSHOT.md` · `archive/T81LANG_TRACEABILITY_MATRIX.md` · `archive/TASKS.md` · `archive/TERNARY_FABRIC_STRATEGIC_CONVERGENCE_NOTE.md`
 
 ---
 

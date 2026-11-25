@@ -137,7 +137,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--snapshot-path",
-        default="docs/status/T81LANG_PROMOTION_GATE_SNAPSHOT.md",
+        default="docs/status/archive/T81LANG_PROMOTION_GATE_SNAPSHOT.md",
         help="Promotion snapshot file path.",
     )
     args = parser.parse_args()

@@ -314,10 +314,10 @@ jobs:
         run: |
           set -euo pipefail
           docs=(
-            "docs/status/AUDIT_REMEDIATION_CROSSWALK.md"
-            "docs/status/T81LANG_TRACEABILITY_MATRIX.md"
-            "docs/status/JIT_EQUIVALENCE_GAP.md"
-            "docs/status/GOVERNANCE_BOUNDARIES_CLARIFICATION.md"
+            "docs/status/archive/AUDIT_REMEDIATION_CROSSWALK.md"
+            "docs/status/archive/T81LANG_TRACEABILITY_MATRIX.md"
+            "docs/status/archive/JIT_EQUIVALENCE_GAP.md"
+            "docs/status/archive/GOVERNANCE_BOUNDARIES_CLARIFICATION.md"
             "docs/records/status-history/AXION_STATUS.md"
           )
 
