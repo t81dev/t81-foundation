@@ -183,7 +183,7 @@ def resolve_runtime_model(repo_root: Path, out_dir: Path, user_model: str) -> tu
 
     preferred = [
         repo_root / "tests/fixtures/llama_cpp_repro/model.gguf",
-        repo_root / "artifacts/archive/dummy.gguf",
+        repo_root / "archive/model_artifacts/dummy.gguf",
     ]
     for p in preferred:
         if p.exists():
