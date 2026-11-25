@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SNAPSHOT = REPO_ROOT / "docs/status/STDLIB_PROMOTION_SNAPSHOT.md"
+SNAPSHOT = REPO_ROOT / "docs/status/archive/STDLIB_PROMOTION_SNAPSHOT.md"
 
 EXPECTED_MODULES = {
     "std.core",
@@ -28,7 +28,7 @@ ALLOWED_STATUS = {"stable", "bounded", "experimental"}
 def main() -> int:
     if not SNAPSHOT.exists():
         print("stdlib promotion snapshot check FAILED")
-        print("- missing snapshot: docs/status/STDLIB_PROMOTION_SNAPSHOT.md")
+        print("- missing snapshot: docs/status/archive/STDLIB_PROMOTION_SNAPSHOT.md")
         return 1
 
     text = SNAPSHOT.read_text(encoding="utf-8")

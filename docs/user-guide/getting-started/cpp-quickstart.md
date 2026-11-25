@@ -82,7 +82,7 @@ ______________________________________________________________________
 ## 4. Where to Go Next
 
 - **To understand the code's structure:** Read the [`../../explanation/ARCHITECTURE.md`](../../explanation/ARCHITECTURE.md) to see how the different libraries (`t81_core`, `t81_lang_frontend`, etc.) fit together in the deterministic ledger.
-- **To find a task to work on:** See the prioritized list of needed contributions in [`TASKS.md`](../../status/TASKS.md).
+- **To find a task to work on:** See the prioritized list of needed contributions in [`TASKS.md`](../../status/archive/TASKS.md).
 - **To understand the onboarding flow:** See [`../../records/archive/temporal-guides/tutorials/onboarding.md`](../../records/archive/temporal-guides/tutorials/onboarding.md).
 - **To explore the API:** Generate the Doxygen documentation by running `cmake --build build --target docs` and opening `build/api/html/index.html`.
 

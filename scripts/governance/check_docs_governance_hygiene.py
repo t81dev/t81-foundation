@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-QUEUE_FILE = REPO_ROOT / "docs/status/T81LANG_IMPLEMENTATION_TASK_QUEUE_2026-03.md"
+QUEUE_FILE = REPO_ROOT / "docs/status/archive/T81LANG_IMPLEMENTATION_TASK_QUEUE_2026-03.md"
 
 REQUIRED_READMES = [
     "codec/README.md",
