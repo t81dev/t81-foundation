@@ -30,8 +30,9 @@
     "l3_resident_ratio": 0.85,
     "metal_min_batch": 16,
     "metal_min_working_set_bytes": 67108864,
+    "metal_min_work_ops": 33554432,
     "hysteresis_gain_ratio": 1.15,
-    "stream_worker_cap": 4
+    "stream_worker_cap": 8
   },
   "measurement": {
     "warmup_iters": 2,

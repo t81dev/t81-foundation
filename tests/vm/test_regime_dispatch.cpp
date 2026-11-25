@@ -231,6 +231,46 @@ void test_bit_exact_cross_backend_determinism() {
   T81_REQUIRE(out_1t == out_mt);
 }
 
+void test_m2_work_op_gating_and_stream_cap() {
+  std::cout << "[6/6] Apple M2 R3 work_ops gating & R4 stream_worker_cap=8...\n";
+  const HardwareProfile m2 = HardwareProfile::apple_m2_reference();
+  DispatchPolicy pol;
+  pol.metal_min_batch = 16;
+  pol.metal_min_working_set_bytes = 64 * kMiB;
+  pol.metal_min_work_ops = 32ULL * 1024ULL * 1024ULL;  // 32M ops
+  pol.stream_worker_cap = 0;                           // auto -> 8 on Apple M2 unified memory
+
+  RegimeSelector sel(m2, pol);
+
+  // Small matrix (128x512, B=32 -> 4.19M ops < 32M): must NOT dispatch to Metal GPU
+  WorkloadQuery q_small;
+  q_small.batch_size = 32;
+  q_small.working_set_bytes = 80 * kMiB;
+  q_small.work_ops = 2ULL * 32ULL * 128ULL * 512ULL;
+  auto d_small = sel.select(q_small);
+  T81_REQUIRE(d_small.regime == Regime::R4_OversizedOutOfCore);
+  T81_REQUIRE(d_small.backend == BackendKind::CpuStreamMT);
+  T81_REQUIRE(d_small.worker_threads == 8);
+
+  // Large matrix (512x2048, B=32 -> 67.1M ops >= 32M): eligible for Metal GPU R3
+  sel.reset_hysteresis();
+  WorkloadQuery q_large = q_small;
+  q_large.work_ops = 2ULL * 32ULL * 512ULL * 2048ULL;
+  auto d_large = sel.select(q_large);
+  T81_REQUIRE(d_large.regime == Regime::R3_AcceleratorMultiBatch);
+  T81_REQUIRE(d_large.backend == BackendKind::MetalGpu);
+
+  // Explicit stream_worker_cap = 8 in R4
+  pol.stream_worker_cap = 8;
+  RegimeSelector sel_cap8(m2, pol);
+  WorkloadQuery q_r4;
+  q_r4.batch_size = 16;
+  q_r4.working_set_bytes = 48 * kMiB;  // > 2*16MiB LLC, < 64MiB Metal threshold
+  auto d_r4 = sel_cap8.select(q_r4);
+  T81_REQUIRE(d_r4.regime == Regime::R4_OversizedOutOfCore);
+  T81_REQUIRE(d_r4.worker_threads == 8);
+}
+
 }  // namespace
 
 int main() {
@@ -239,6 +279,7 @@ int main() {
   test_hysteresis_stability();
   test_metal_queue_and_worker_fallbacks();
   test_bit_exact_cross_backend_determinism();
+  test_m2_work_op_gating_and_stream_cap();
   std::cout << "ALL H06-MEM-04 REGIME DISPATCH TESTS PASSED.\n";
   return 0;
 }
