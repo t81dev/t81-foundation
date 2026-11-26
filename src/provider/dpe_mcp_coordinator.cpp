@@ -17,9 +17,8 @@ namespace t81::provider {
 namespace {
 
 std::string sha3_hex_str(const std::string& s) {
-  return "sha3-512:" +
-         t81::crypto::sha3_512_hex(std::span<const uint8_t>(
-             reinterpret_cast<const uint8_t*>(s.data()), s.size()));
+  return "sha3-512:" + t81::crypto::sha3_512_hex(std::span<const uint8_t>(
+                           reinterpret_cast<const uint8_t*>(s.data()), s.size()));
 }
 
 }  // namespace
@@ -32,8 +31,7 @@ DpeMcpCoordinator::DpeMcpCoordinator(std::shared_ptr<t81::axion::PolicyEngine> p
       max_workers_(std::max<std::size_t>(1, max_workers)),
       signing_kp_(t81::crypto::ed25519_generate_keypair()) {}
 
-DpeMcpCommitOutcome DpeMcpCoordinator::execute_and_commit(
-    const std::vector<DpeAgentTask>& tasks) {
+DpeMcpCommitOutcome DpeMcpCoordinator::execute_and_commit(const std::vector<DpeAgentTask>& tasks) {
   DpeMcpCommitOutcome out;
   if (!policy_engine_ || !canonfs_driver_) {
     out.code = "ERR_POLICY_DENIED";
@@ -175,8 +173,8 @@ DpeMcpCommitOutcome DpeMcpCoordinator::execute_and_commit(
           meaning_json, evidence_json, authority_json);
       const std::string sig =
           t81::crypto::sign_rfc00d4_payload_b64(signing_kp_.seed, signing_kp_.public_key, payload);
-      dag_nodes.push_back(t81::crypto::AccountableBundleNode{
-          t.task_id, t.dep_task_ids, payload, sig, signing_kp_.public_key});
+      dag_nodes.push_back(t81::crypto::AccountableBundleNode{t.task_id, t.dep_task_ids, payload,
+                                                             sig, signing_kp_.public_key});
     }
   }
 

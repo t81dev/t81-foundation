@@ -31,8 +31,8 @@ struct DpeAgentTask {
 struct DpeMcpCommitOutcome {
   bool ok{false};
   int trit{-1};
-  std::string code;   // "OK", "ERR_DPE_CYCLE", "ERR_DPE_TX_CONFLICT",
-                      // "ERR_POLICY_DENIED", "ERR_EVIDENCE_PERSIST_FAILED"
+  std::string code;  // "OK", "ERR_DPE_CYCLE", "ERR_DPE_TX_CONFLICT",
+                     // "ERR_POLICY_DENIED", "ERR_EVIDENCE_PERSIST_FAILED"
   std::string error;
   uint32_t conflict_winner_agent{0};
   std::size_t levels_executed{0};
