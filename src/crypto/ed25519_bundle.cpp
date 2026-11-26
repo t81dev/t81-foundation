@@ -451,7 +451,7 @@ struct Point {
   gf t{};
 };
 
-inline void dbl_point(Point& p) noexcept {
+[[maybe_unused]] inline void dbl_point(Point& p) noexcept {
   gf a, b, c, e, f, g, h, t;
   S(a, p.x);
   S(b, p.y);
@@ -721,6 +721,8 @@ bool ed25519_verify(std::span<const uint8_t, 32> public_key, std::span<const uin
   auto k_hash = h_k.finish();
   reduce(k_hash.data());
 
+  Point p{kGf0, kGf1, kGf1, kGf0};
+#if defined(__clang__)
   // 2-bit windowed Shamir's simultaneous double-scalar mul: s*B + k*Q (public inputs only).
   static const std::array<Point, 4> b_tab = []() {
     Point B{kX, kY, kGf1, {}};
@@ -757,7 +759,6 @@ bool ed25519_verify(std::span<const uint8_t, 32> public_key, std::span<const uin
     }
   }
 
-  Point p{kGf0, kGf1, kGf1, kGf0};
   bool started = false;
   for (int i = 254; i >= 0; i -= 2) {
     if (started) {
@@ -776,6 +777,13 @@ bool ed25519_verify(std::span<const uint8_t, 32> public_key, std::span<const uin
       }
     }
   }
+#else
+  // Standard TweetNaCl verification path: p = k*Q + s*B (zero Shamir table/dbl_point dependency).
+  Point r_base;
+  scalarmult(p, q, k_hash.data());
+  scalarbase(r_base, signature.data() + 32);
+  add_point(p, r_base);
+#endif
 
   uint8_t check_r[32];
   pack_point(check_r, p);
