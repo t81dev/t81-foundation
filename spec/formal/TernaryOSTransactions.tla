@@ -157,13 +157,38 @@ TxAbort(a) ==
     /\ UNCHANGED <<canonStore, epoch, txSnapshot, txSnapEpoch,
                    budget, lastCommitBudget, lastConflictWinner>>
 
+\* Wave 4: Level-parallel DPE worker batch commit of pairwise-disjoint write-sets
+\* from active agents on the current epoch with positive capability budgets.
+DpeBatchCommit(S) ==
+    /\ S \subseteq Agents
+    /\ Cardinality(S) >= 2
+    /\ epoch + Cardinality(S) <= MaxEpoch
+    /\ \A a \in S :
+        /\ txState[a] = "active"
+        /\ txSnapEpoch[a] = epoch
+        /\ budget[a] > 0
+        /\ txWriteSet[a] # {}
+    /\ \A a, b \in S : a # b => (txWriteSet[a] \cap txWriteSet[b]) = {}
+    /\ canonStore' = [k \in Keys |->
+           IF \E a \in S : k \in txWriteSet[a]
+           THEN txStage[CHOOSE a \in S : k \in txWriteSet[a]][k]
+           ELSE canonStore[k]]
+    /\ epoch' = epoch + Cardinality(S)
+    /\ budget' = [a \in Agents |-> IF a \in S THEN budget[a] - 1 ELSE budget[a]]
+    /\ lastCommitBudget' = [a \in Agents |-> IF a \in S THEN budget[a] ELSE lastCommitBudget[a]]
+    /\ txState' = [a \in Agents |-> IF a \in S THEN "committed" ELSE txState[a]]
+    /\ txWriteSet' = [a \in Agents |-> IF a \in S THEN {} ELSE txWriteSet[a]]
+    /\ txStage' = [a \in Agents |-> IF a \in S THEN canonStore' ELSE txStage[a]]
+    /\ UNCHANGED <<txSnapshot, txSnapEpoch, lastConflictWinner>>
+
 Next ==
-    \E a \in Agents :
-        \/ TxBegin(a)
-        \/ \E k \in Keys : TxRead(a, k)
-        \/ \E k \in Keys, v \in Trits : TxWrite(a, k, v)
-        \/ TxCommit(a)
-        \/ TxAbort(a)
+    \/ (\E a \in Agents :
+            \/ TxBegin(a)
+            \/ \E k \in Keys : TxRead(a, k)
+            \/ \E k \in Keys, v \in Trits : TxWrite(a, k, v)
+            \/ TxCommit(a)
+            \/ TxAbort(a))
+    \/ (\E S \in SUBSET Agents : DpeBatchCommit(S))
 
 Spec == Init /\ [][Next]_vars
 

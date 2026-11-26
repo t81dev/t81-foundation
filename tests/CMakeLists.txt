@@ -549,6 +549,11 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   target_link_libraries(t81_ed25519_bundle_test PRIVATE t81_crypto)
   add_test(NAME t81_ed25519_bundle_test COMMAND t81_ed25519_bundle_test)
 
+  add_executable(t81_dpe_mcp_unification_test
+    ${PROJECT_SOURCE_DIR}/tests/cpp/dpe_mcp_unification_test.cpp)
+  target_link_libraries(t81_dpe_mcp_unification_test PRIVATE t81_provider t81_crypto t81_core)
+  add_test(NAME t81_dpe_mcp_unification_test COMMAND t81_dpe_mcp_unification_test)
+
   add_executable(t81_provider_contract_test
                  ${CMAKE_SOURCE_DIR}/tests/cpp/provider_contract_test.cpp)
   target_link_libraries(t81_provider_contract_test PRIVATE t81_provider_adapters t81_provider t81_vm t81_core)

@@ -453,7 +453,8 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "canonize-file" || a.command == "memory-stats" ||
                  a.command == "tier" || a.command == "profile" || a.command == "c" ||
                  a.command == "rust" || a.command == "python" || a.command == "llvm" ||
-                 a.command == "mlir" || a.command == "mcp" || a.command == "receipt") {
+                 a.command == "mlir" || a.command == "mcp" || a.command == "enclave" ||
+                 a.command == "receipt") {
         a.command_args.emplace_back(argv[i]);
       } else {
         throw_usage_error("Unknown option: " + std::string(arg));
@@ -474,7 +475,7 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "canonize-file" || a.command == "memory-stats" ||
                  a.command == "tier" || a.command == "c" || a.command == "rust" ||
                  a.command == "python" || a.command == "llvm" || a.command == "mlir" ||
-                 a.command == "mcp" || a.command == "receipt") {
+                 a.command == "mcp" || a.command == "enclave" || a.command == "receipt") {
         a.command_args.emplace_back(argv[i]);
       } else {
         if (!a.input.empty()) {
@@ -3622,6 +3623,89 @@ int main(int argc, char* argv[]) {
     } else if (args.command == "canonfs") {
       return run_canonfs_command(args);
 
+    } else if (args.command == "enclave") {
+      // Wave 4: Ephemeral TernaryOS AArch64 security enclave runner (Experimental / Governed
+      // non-DCP).
+      if (args.command_args.empty() || args.command_args[0] == "help" ||
+          args.command_args[0] == "--help") {
+        std::cout << "t81 enclave run --payload <canon_ref> --policy <apl> [--efi <BOOTAA64.EFI>] "
+                     "[--dry-run] [--json]\n"
+                  << "  Headless AArch64 TernaryOS security enclave runner (Experimental / "
+                     "Governed non-DCP;\n"
+                  << "  TTBR0 per-thread L3 isolation per RFC-00C6; not a general-purpose OS).\n";
+        return 0;
+      }
+      if (args.command_args[0] != "run") {
+        std::cerr << "t81 enclave: unknown subcommand '" << args.command_args[0]
+                  << "' (expected 'run')\n";
+        return 1;
+      }
+      std::string payload_ref;
+      std::string policy_path;
+      std::string efi_path = "build/ternaryos/BOOTAA64.EFI";
+      bool dry_run = false;
+      bool as_json = false;
+      for (std::size_t i = 1; i < args.command_args.size(); ++i) {
+        const std::string& a = args.command_args[i];
+        if (a == "--payload" && i + 1 < args.command_args.size()) {
+          payload_ref = args.command_args[++i];
+        } else if (a == "--policy" && i + 1 < args.command_args.size()) {
+          policy_path = args.command_args[++i];
+        } else if (a == "--efi" && i + 1 < args.command_args.size()) {
+          efi_path = args.command_args[++i];
+        } else if (a == "--dry-run") {
+          dry_run = true;
+        } else if (a == "--json") {
+          as_json = true;
+        }
+      }
+      if (policy_path.empty() && args.policy.has_value()) {
+        policy_path = args.policy->string();
+      }
+      if (payload_ref.empty() || policy_path.empty()) {
+        std::cerr << "t81 enclave run: --payload <canon_ref> and --policy <apl> are required "
+                     "(fail-closed)\n";
+        return 1;
+      }
+      std::ifstream pf(policy_path, std::ios::binary);
+      if (!pf) {
+        std::cerr << "t81 enclave run: unreadable policy file: " << policy_path << "\n";
+        return 1;
+      }
+      const std::string ptext((std::istreambuf_iterator<char>(pf)),
+                              std::istreambuf_iterator<char>());
+      auto parsed_pol = t81::axion::parse_policy(ptext);
+      if (!parsed_pol.has_value()) {
+        std::cerr << "t81 enclave run: invalid .apl policy (fail-closed)\n";
+        return 1;
+      }
+      const std::string pol_digest =
+          "sha3-512:" + t81::crypto::sha3_512_hex(std::span<const uint8_t>(
+                            reinterpret_cast<const uint8_t*>(ptext.data()), ptext.size()));
+      const std::string qemu_cmd =
+          "qemu-system-aarch64 -M virt -cpu cortex-a57 -m 256M -nographic -no-reboot -kernel " +
+          efi_path;
+      if (dry_run) {
+        if (as_json) {
+          std::cout << "{\"ok\":true,\"mode\":\"dry_run\",\"classification\":\"experimental_"
+                       "governed_non_dcp\","
+                    << "\"isolation\":\"ttbr0_l3_rfc00c6\",\"payload_ref\":\"" << payload_ref
+                    << "\",\"policy_sha3_512\":\"" << pol_digest << "\",\"efi_path\":\"" << efi_path
+                    << "\",\"qemu_cmd\":\"" << qemu_cmd << "\"}\n";
+        } else {
+          std::cout << "TernaryOS Enclave Runner (dry-run, Experimental / Governed non-DCP)\n"
+                    << "  payload: " << payload_ref << "\n"
+                    << "  policy_sha3_512: " << pol_digest << "\n"
+                    << "  qemu_cmd: " << qemu_cmd << "\n";
+        }
+        return 0;
+      }
+      if (!std::filesystem::exists(efi_path)) {
+        std::cerr << "t81 enclave run: EFI image not found at " << efi_path
+                  << " (pass --efi <path> or --dry-run)\n";
+        return 1;
+      }
+      return std::system(qemu_cmd.c_str()) == 0 ? 0 : 1;
     } else if (args.command == "mcp") {
       if (!args.command_args.empty() && args.command_args[0] == "help") {
         return emit_help([&] { print_help_mcp(); });
