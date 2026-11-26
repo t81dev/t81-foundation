@@ -3,9 +3,9 @@
 # Reproducible Inference Benchmark — T81 ternary vs FP32/FP16/Int8/NEON
 #
 # Runs BM_InferenceComparison on a scheduled/manual cadence and on release
-# tags. Parses JSON output and commits inference_comparison.md so the published
-# comparison stays fresh without acting as a second push-sensitive benchmark
-# lane.
+# tags. Parses JSON output and opens/updates a PR with inference_comparison.md
+# so the published comparison stays fresh without pushing directly to main or
+# acting as a second push-sensitive benchmark lane.
 #
 # Trigger:
 #   - weekly schedule
@@ -278,16 +278,18 @@ jobs:
           path: bench-*.json
           retention-days: 30
 
-      - name: Commit results
-        id: commit
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add benchmarks/results/inference_comparison.md
-          if git diff --cached --quiet; then
-            echo "no_changes=true" >> "$GITHUB_OUTPUT"
-          else
-            git commit -m "chore(bench): refresh inference comparison results [ci skip]"
-            git push
-            echo "no_changes=false" >> "$GITHUB_OUTPUT"
-          fi
+      - name: Create pull request with benchmark results
+        id: cpr
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: main
+          branch: chore/inference-benchmark-results
+          delete-branch: true
+          add-paths: benchmarks/results/inference_comparison.md
+          commit-message: "chore(bench): refresh inference comparison results [ci skip]"
+          title: "chore(bench): refresh inference comparison results"
+          body: |
+            Automated update of `benchmarks/results/inference_comparison.md` from the
+            `Inference Benchmark` workflow (`${{ github.event_name }}` on `${{ github.ref_name }}`).
+          labels: benchmarks,automated
