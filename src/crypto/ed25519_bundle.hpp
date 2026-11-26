@@ -28,9 +28,9 @@ struct Ed25519KeyPair {
 [[nodiscard]] Ed25519KeyPair ed25519_generate_keypair();
 
 // RFC 8032 PureEdDSA Ed25519 sign & verify (constant-time scalar mul).
-[[nodiscard]] std::array<uint8_t, 64> ed25519_sign(
-    std::span<const uint8_t, 32> seed, std::span<const uint8_t, 32> public_key,
-    std::span<const uint8_t> message) noexcept;
+[[nodiscard]] std::array<uint8_t, 64> ed25519_sign(std::span<const uint8_t, 32> seed,
+                                                   std::span<const uint8_t, 32> public_key,
+                                                   std::span<const uint8_t> message) noexcept;
 
 [[nodiscard]] bool ed25519_verify(std::span<const uint8_t, 32> public_key,
                                   std::span<const uint8_t> message,
@@ -71,8 +71,8 @@ struct AccountableBundleNode {
 
 struct DagVerificationResult {
   bool ok{false};
-  std::string code;   // "OK", "ERR_DAG_EMPTY", "ERR_DAG_DUPLICATE_ID",
-                      // "ERR_DAG_MISSING_PARENT", "ERR_DAG_CYCLE", "ERR_RECEIPT_VERIFY_FAILED"
+  std::string code;  // "OK", "ERR_DAG_EMPTY", "ERR_DAG_DUPLICATE_ID",
+                     // "ERR_DAG_MISSING_PARENT", "ERR_DAG_CYCLE", "ERR_RECEIPT_VERIFY_FAILED"
   std::string error;
   std::size_t verified_nodes{0};
 };

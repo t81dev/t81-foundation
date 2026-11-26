@@ -967,8 +967,8 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
   const t81::crypto::Ed25519KeyPair session_kp = t81::crypto::ed25519_generate_keypair();
   const std::string session_pub_pem = t81::crypto::export_public_key_pem(session_kp.public_key);
   std::shared_ptr<t81::canonfs::Driver> receipt_canonfs;
-  auto ensure_receipt_canonfs = [&](const fs::path& explicit_root)
-      -> std::shared_ptr<t81::canonfs::Driver> {
+  auto ensure_receipt_canonfs =
+      [&](const fs::path& explicit_root) -> std::shared_ptr<t81::canonfs::Driver> {
     if (!explicit_root.empty()) {
       auto d = std::shared_ptr<t81::canonfs::Driver>(
           t81::canonfs::make_persistent_driver(explicit_root));
@@ -987,10 +987,10 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
           const std::string& evidence_json, const std::string& authority_json,
           std::string& out_ref_hex, std::string& out_sig_b64, std::string& out_err_code,
           std::string& out_err_msg) -> bool {
-    const std::string payload = t81::crypto::rfc00d4_canonical_signing_payload(
-        meaning_json, evidence_json, authority_json);
-    out_sig_b64 = t81::crypto::sign_rfc00d4_payload_b64(session_kp.seed, session_kp.public_key,
-                                                        payload);
+    const std::string payload =
+        t81::crypto::rfc00d4_canonical_signing_payload(meaning_json, evidence_json, authority_json);
+    out_sig_b64 =
+        t81::crypto::sign_rfc00d4_payload_b64(session_kp.seed, session_kp.public_key, payload);
     if (!t81::crypto::verify_rfc00d4_payload_b64(session_kp.public_key, payload, out_sig_b64)) {
       out_err_code = "ERR_RECEIPT_VERIFY_FAILED";
       out_err_msg = "native Ed25519 self-verification failed for sealed MCP receipt";
@@ -1604,8 +1604,8 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                 if (read_file_bytes(jail, ppath, pbytes)) {
                   auto pres = t81::axion::parse_policy(std::string(pbytes.begin(), pbytes.end()));
                   if (pres.has_value()) {
-                    policy_sha = t81::provider::ProviderGovernor::compute_policy_sha3_512(
-                        pres.value());
+                    policy_sha =
+                        t81::provider::ProviderGovernor::compute_policy_sha3_512(pres.value());
                   }
                 }
               }
@@ -1626,9 +1626,9 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
               std::string sig_b64;
               std::string persist_code;
               std::string persist_err;
-              const bool sealed_ok = persist_and_sign_receipt(
-                  fs::path{}, meaning_json, evidence_json, authority_json, evidence_ref_hex,
-                  sig_b64, persist_code, persist_err);
+              const bool sealed_ok =
+                  persist_and_sign_receipt(fs::path{}, meaning_json, evidence_json, authority_json,
+                                           evidence_ref_hex, sig_b64, persist_code, persist_err);
               if (!sealed_ok) {
                 std::error_code ec;
                 fs::remove(tx.backup_path, ec);
@@ -1793,20 +1793,19 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                 const std::string meaning_json =
                     "{\"action_type\":\"mcp.run_subgraph\",\"program_sha3_512\":\"" + prog_sha +
                     "\"}";
-                const std::string evidence_json =
-                    "{\"execution_receipt\":\"" + exec_rec + "\",\"halted\":" +
-                    (halted ? "true" : "false") +
-                    ",\"reproducibility_class\":\"deterministic\"}";
-                const std::string authority_json =
-                    "{\"policy_sha3_512\":\"" + policy_sha + "\",\"verdict\":\"" +
-                    (halted ? "Allow" : "Deny") + "\"}";
+                const std::string evidence_json = "{\"execution_receipt\":\"" + exec_rec +
+                                                  "\",\"halted\":" + (halted ? "true" : "false") +
+                                                  ",\"reproducibility_class\":\"deterministic\"}";
+                const std::string authority_json = "{\"policy_sha3_512\":\"" + policy_sha +
+                                                   "\",\"verdict\":\"" +
+                                                   (halted ? "Allow" : "Deny") + "\"}";
                 const bool sealed_ok = persist_and_sign_receipt(
                     fs::path{}, meaning_json, evidence_json, authority_json, evidence_ref_hex,
                     sig_b64, persist_code, persist_err);
                 if (!sealed_ok) {
                   structured = "{\"ok\":false,\"verdict\":\"" + persist_code +
-                               "\",\"executed\":false,\"error\":\"" +
-                               json_escape_mcp(persist_err) + "\"}";
+                               "\",\"executed\":false,\"error\":\"" + json_escape_mcp(persist_err) +
+                               "\"}";
                 } else {
                   structured =
                       std::string("{\"ok\":") + (halted ? "true" : "false") + ",\"verdict\":\"" +
@@ -1823,8 +1822,9 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                       ",\"dualrail_fallback_count\":" + std::to_string(dr_tel.fallback_count) +
                       ",\"instruction_count\":" + std::to_string(dec.value().insns.size()) +
                       ",\"matmul_count\":" + std::to_string(vr.matmul_count) +
-                      ",\"axion_events\":" + std::to_string(ax_events) + ",\"program_sha3_512\":\"" +
-                      prog_sha + "\",\"policy_sha3_512\":\"" + policy_sha +
+                      ",\"axion_events\":" + std::to_string(ax_events) +
+                      ",\"program_sha3_512\":\"" + prog_sha + "\",\"policy_sha3_512\":\"" +
+                      policy_sha +
                       "\",\"reproducibility_class\":\"deterministic\",\"evidence_canonfs_ref\":\"" +
                       evidence_ref_hex + "\",\"ed25519_signature_b64\":\"" + sig_b64 +
                       "\",\"execution_receipt\":\"" + exec_rec + "\"}";
