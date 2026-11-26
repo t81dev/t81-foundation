@@ -29,8 +29,9 @@
     "l2_resident_ratio": 0.75,
     "l3_resident_ratio": 0.85,
     "metal_min_batch": 16,
-    "metal_min_working_set_bytes": 67108864,
+    "metal_min_working_set_bytes": 33554432,
     "metal_min_work_ops": 33554432,
+    "metal_min_nonzero_density": 0.3,
     "hysteresis_gain_ratio": 1.15,
     "stream_worker_cap": 8
   },

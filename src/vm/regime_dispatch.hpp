@@ -94,9 +94,11 @@ struct DispatchPolicy {
   double l3_resident_ratio{0.85};
   double out_of_core_tile_ratio{0.80};
   std::uint32_t metal_min_batch{16};
-  std::uint64_t metal_min_working_set_bytes{64ULL * 1024ULL * 1024ULL};
+  std::uint64_t metal_min_working_set_bytes{32ULL * 1024ULL * 1024ULL};
   std::uint64_t metal_min_work_ops{32ULL * 1024ULL *
                                    1024ULL};  // 2*B*M*K gate to amortize GPU launch
+  double metal_min_nonzero_density{
+      0.30};  // Route high-sparsity workloads (< 0.30 non-zero) to zero-skip CPU paths
   std::uint32_t metal_max_queue_depth{2};
   double hysteresis_gain_ratio{1.15};
   std::uint32_t stream_worker_cap{
@@ -108,6 +110,8 @@ struct WorkloadQuery {
   std::uint64_t working_set_bytes{0};
   std::uint64_t work_ops{0};      // 0 = unspecified; otherwise total arithmetic ops (2*B*M*K)
   std::uint32_t sparsity_pct{0};  // 0..100
+  double nonzero_density{
+      -1.0};  // < 0.0 = unspecified (dense default); otherwise [0.0, 1.0] non-zero ratio
   std::uint32_t metal_queue_depth{0};
   bool worker_pool_healthy{true};
   bool is_r2_int8_act{false};
