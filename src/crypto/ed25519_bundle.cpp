@@ -173,16 +173,18 @@ inline void car25519(gf& o) noexcept {
     o[i] += (1LL << 16);
     int64_t c = o[i] >> 16;
     o[(i + 1) * (i < 15)] += c - 1 + 37 * (c - 1) * (i == 15);
-    o[i] -= c << 16;
+    o[i] -= c * 65536LL;
   }
 }
 
 inline void sel25519(gf& p, gf& q, int b) noexcept {
-  int64_t c = ~(int64_t(b) - 1);
+  const uint64_t mask = ~static_cast<uint64_t>(static_cast<int64_t>(b) - 1);
   for (int i = 0; i < 16; ++i) {
-    int64_t t = c & (p[i] ^ q[i]);
-    p[i] ^= t;
-    q[i] ^= t;
+    const uint64_t pi = static_cast<uint64_t>(p[i]);
+    const uint64_t qi = static_cast<uint64_t>(q[i]);
+    const uint64_t t = mask & (pi ^ qi);
+    p[i] = static_cast<int64_t>(pi ^ t);
+    q[i] = static_cast<int64_t>(qi ^ t);
   }
 }
 
@@ -238,23 +240,21 @@ inline void Z(gf& o, const gf& a, const gf& b) noexcept {
 }
 
 inline void M(gf& o, const gf& a, const gf& b) noexcept {
-#if defined(__SIZEOF_INT128__)
+#if defined(__SIZEOF_INT128__) && defined(__clang__)
   // Fast 5-limb 51-bit radix-2^51 multiplication using __uint128_t (~8x faster than 16x16).
   auto pack5 = [](const gf& x, uint64_t r[5]) noexcept {
     gf t = x;
     car25519(t);
     car25519(t);
+    // Add 2*p = 2^256 - 38 so every limb is strictly non-negative before unsigned packing.
+    t[0] += 0xffda;
+    for (int i = 1; i < 16; ++i) t[i] += 0xffff;
     uint64_t u[16];
     for (int i = 0; i < 16; ++i) u[i] = static_cast<uint64_t>(t[i]);
-    uint64_t c0 = u[0] >> 16;
-    u[0] &= 0xffff;
-    u[1] += c0;
-    uint64_t c1 = u[1] >> 16;
-    u[1] &= 0xffff;
-    u[2] += c1;
-    uint64_t c2 = u[2] >> 16;
-    u[2] &= 0xffff;
-    u[3] += c2;
+    for (int i = 0; i < 15; ++i) {
+      u[i + 1] += u[i] >> 16;
+      u[i] &= 0xffff;
+    }
     uint64_t top = u[15] >> 15;
     u[15] &= 0x7fff;
     r[0] = (u[0] | (u[1] << 16) | (u[2] << 32) | ((u[3] & 0x7ULL) << 48)) + top * 19;
@@ -266,7 +266,7 @@ inline void M(gf& o, const gf& a, const gf& b) noexcept {
   uint64_t f[5], g[5];
   pack5(a, f);
   pack5(b, g);
-  using u128 = unsigned __int128;
+  __extension__ using u128 = unsigned __int128;
   uint64_t g1_19 = g[1] * 19, g2_19 = g[2] * 19, g3_19 = g[3] * 19, g4_19 = g[4] * 19;
   u128 h0 = u128(f[0]) * g[0] + u128(f[1]) * g4_19 + u128(f[2]) * g3_19 + u128(f[3]) * g2_19 +
             u128(f[4]) * g1_19;
@@ -298,20 +298,35 @@ inline void M(gf& o, const gf& a, const gf& b) noexcept {
   c = r0 >> 51;
   r0 &= kMask51;
   r1 += c;
+  c = r1 >> 51;
+  r1 &= kMask51;
+  r2 += c;
+  c = r2 >> 51;
+  r2 &= kMask51;
+  r3 += c;
+  c = r3 >> 51;
+  r3 &= kMask51;
+  r4 += c;
+  c = r4 >> 51;
+  r4 &= kMask51;
+  r0 += c * 19;
+  c = r0 >> 51;
+  r0 &= kMask51;
+  r1 += c;
   // Unpack 51-bit limbs back to 16-bit gf limbs.
   o[0] = static_cast<int64_t>(r0 & 0xffff);
   o[1] = static_cast<int64_t>((r0 >> 16) & 0xffff);
   o[2] = static_cast<int64_t>((r0 >> 32) & 0xffff);
-  o[3] = static_cast<int64_t>((r0 >> 48) | ((r1 & 0x1fff) << 3));
+  o[3] = static_cast<int64_t>((r0 >> 48) + ((r1 & 0x1fff) << 3));
   o[4] = static_cast<int64_t>((r1 >> 13) & 0xffff);
   o[5] = static_cast<int64_t>((r1 >> 29) & 0xffff);
-  o[6] = static_cast<int64_t>((r1 >> 45) | ((r2 & 0x3ff) << 6));
+  o[6] = static_cast<int64_t>((r1 >> 45) + ((r2 & 0x3ff) << 6));
   o[7] = static_cast<int64_t>((r2 >> 10) & 0xffff);
   o[8] = static_cast<int64_t>((r2 >> 26) & 0xffff);
-  o[9] = static_cast<int64_t>((r2 >> 42) | ((r3 & 0x7f) << 9));
+  o[9] = static_cast<int64_t>((r2 >> 42) + ((r3 & 0x7f) << 9));
   o[10] = static_cast<int64_t>((r3 >> 7) & 0xffff);
   o[11] = static_cast<int64_t>((r3 >> 23) & 0xffff);
-  o[12] = static_cast<int64_t>((r3 >> 39) | ((r4 & 0xf) << 12));
+  o[12] = static_cast<int64_t>((r3 >> 39) + ((r4 & 0xf) << 12));
   o[13] = static_cast<int64_t>((r4 >> 4) & 0xffff);
   o[14] = static_cast<int64_t>((r4 >> 20) & 0xffff);
   o[15] = static_cast<int64_t>(r4 >> 36);
@@ -327,21 +342,19 @@ inline void M(gf& o, const gf& a, const gf& b) noexcept {
 }
 
 inline void S(gf& o, const gf& a) noexcept {
-#if defined(__SIZEOF_INT128__)
+#if defined(__SIZEOF_INT128__) && defined(__clang__)
   gf t = a;
   car25519(t);
   car25519(t);
+  // Add 2*p = 2^256 - 38 so every limb is strictly non-negative before unsigned packing.
+  t[0] += 0xffda;
+  for (int i = 1; i < 16; ++i) t[i] += 0xffff;
   uint64_t u[16];
   for (int i = 0; i < 16; ++i) u[i] = static_cast<uint64_t>(t[i]);
-  uint64_t c0 = u[0] >> 16;
-  u[0] &= 0xffff;
-  u[1] += c0;
-  uint64_t c1 = u[1] >> 16;
-  u[1] &= 0xffff;
-  u[2] += c1;
-  uint64_t c2 = u[2] >> 16;
-  u[2] &= 0xffff;
-  u[3] += c2;
+  for (int i = 0; i < 15; ++i) {
+    u[i + 1] += u[i] >> 16;
+    u[i] &= 0xffff;
+  }
   uint64_t top = u[15] >> 15;
   u[15] &= 0x7fff;
   uint64_t f0 = (u[0] | (u[1] << 16) | (u[2] << 32) | ((u[3] & 0x7ULL) << 48)) + top * 19;
@@ -349,7 +362,7 @@ inline void S(gf& o, const gf& a) noexcept {
   uint64_t f2 = (u[6] >> 6) | (u[7] << 10) | (u[8] << 26) | ((u[9] & 0x1ffULL) << 42);
   uint64_t f3 = (u[9] >> 9) | (u[10] << 7) | (u[11] << 23) | ((u[12] & 0xfffULL) << 39);
   uint64_t f4 = (u[12] >> 12) | (u[13] << 4) | (u[14] << 20) | (u[15] << 36);
-  using u128 = unsigned __int128;
+  __extension__ using u128 = unsigned __int128;
   uint64_t f0_2 = f0 * 2, f1_2 = f1 * 2;
   uint64_t f1_38 = f1 * 38, f2_38 = f2 * 38, f3_38 = f3 * 38, f4_19 = f4 * 19;
   u128 h0 = u128(f0) * f0 + u128(f1_38) * f4 + u128(f2_38) * f3;
@@ -377,19 +390,34 @@ inline void S(gf& o, const gf& a) noexcept {
   c = r0 >> 51;
   r0 &= kMask51;
   r1 += c;
+  c = r1 >> 51;
+  r1 &= kMask51;
+  r2 += c;
+  c = r2 >> 51;
+  r2 &= kMask51;
+  r3 += c;
+  c = r3 >> 51;
+  r3 &= kMask51;
+  r4 += c;
+  c = r4 >> 51;
+  r4 &= kMask51;
+  r0 += c * 19;
+  c = r0 >> 51;
+  r0 &= kMask51;
+  r1 += c;
   o[0] = static_cast<int64_t>(r0 & 0xffff);
   o[1] = static_cast<int64_t>((r0 >> 16) & 0xffff);
   o[2] = static_cast<int64_t>((r0 >> 32) & 0xffff);
-  o[3] = static_cast<int64_t>((r0 >> 48) | ((r1 & 0x1fff) << 3));
+  o[3] = static_cast<int64_t>((r0 >> 48) + ((r1 & 0x1fff) << 3));
   o[4] = static_cast<int64_t>((r1 >> 13) & 0xffff);
   o[5] = static_cast<int64_t>((r1 >> 29) & 0xffff);
-  o[6] = static_cast<int64_t>((r1 >> 45) | ((r2 & 0x3ff) << 6));
+  o[6] = static_cast<int64_t>((r1 >> 45) + ((r2 & 0x3ff) << 6));
   o[7] = static_cast<int64_t>((r2 >> 10) & 0xffff);
   o[8] = static_cast<int64_t>((r2 >> 26) & 0xffff);
-  o[9] = static_cast<int64_t>((r2 >> 42) | ((r3 & 0x7f) << 9));
+  o[9] = static_cast<int64_t>((r2 >> 42) + ((r3 & 0x7f) << 9));
   o[10] = static_cast<int64_t>((r3 >> 7) & 0xffff);
   o[11] = static_cast<int64_t>((r3 >> 23) & 0xffff);
-  o[12] = static_cast<int64_t>((r3 >> 39) | ((r4 & 0xf) << 12));
+  o[12] = static_cast<int64_t>((r3 >> 39) + ((r4 & 0xf) << 12));
   o[13] = static_cast<int64_t>((r4 >> 4) & 0xffff);
   o[14] = static_cast<int64_t>((r4 >> 20) & 0xffff);
   o[15] = static_cast<int64_t>(r4 >> 36);
@@ -423,7 +451,7 @@ struct Point {
   gf t{};
 };
 
-inline void dbl_point(Point& p) noexcept {
+[[maybe_unused]] inline void dbl_point(Point& p) noexcept {
   gf a, b, c, e, f, g, h, t;
   S(a, p.x);
   S(b, p.y);
@@ -552,7 +580,7 @@ inline void modL(uint8_t r[32], int64_t x[64]) noexcept {
     for (; j < i - 12; ++j) {
       x[j] += carry - 16 * x[i] * static_cast<int64_t>(kL[j - (i - 32)]);
       carry = (x[j] + 128) >> 8;
-      x[j] -= carry << 8;
+      x[j] -= carry * 256LL;
     }
     x[j] += carry;
     x[i] = 0;
@@ -693,6 +721,8 @@ bool ed25519_verify(std::span<const uint8_t, 32> public_key, std::span<const uin
   auto k_hash = h_k.finish();
   reduce(k_hash.data());
 
+  Point p{kGf0, kGf1, kGf1, kGf0};
+#if defined(__clang__)
   // 2-bit windowed Shamir's simultaneous double-scalar mul: s*B + k*Q (public inputs only).
   static const std::array<Point, 4> b_tab = []() {
     Point B{kX, kY, kGf1, {}};
@@ -729,7 +759,6 @@ bool ed25519_verify(std::span<const uint8_t, 32> public_key, std::span<const uin
     }
   }
 
-  Point p{kGf0, kGf1, kGf1, kGf0};
   bool started = false;
   for (int i = 254; i >= 0; i -= 2) {
     if (started) {
@@ -748,6 +777,13 @@ bool ed25519_verify(std::span<const uint8_t, 32> public_key, std::span<const uin
       }
     }
   }
+#else
+  // Standard TweetNaCl verification path: p = k*Q + s*B (zero Shamir table/dbl_point dependency).
+  Point r_base;
+  scalarmult(p, q, k_hash.data());
+  scalarbase(r_base, signature.data() + 32);
+  add_point(p, r_base);
+#endif
 
   uint8_t check_r[32];
   pack_point(check_r, p);

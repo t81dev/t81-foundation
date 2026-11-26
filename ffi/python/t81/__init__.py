@@ -61,6 +61,13 @@ from t81._t81 import (  # noqa: F401  (re-exported as public API)
     dualrail_dot,
     dualrail_diff_check,
     dualrail_adapter_apply,
+    # ── v2.3.0 M3 Governed Provider & Native Ed25519 DAG primitives ──────────
+    ProviderGovernor,
+    T81VmProvider,
+    ControlledProvider,
+    ed25519_generate_keypair,
+    sign_rfc00d4_payload,
+    verify_dag,
 )
 
 # Friendly alias: `t81.VM()` instead of `t81.make_interpreter_vm()`
@@ -101,4 +108,11 @@ __all__ = [
     "dualrail_dot",
     "dualrail_diff_check",
     "dualrail_adapter_apply",
+    # v2.3.0 M3 Provider & Ed25519
+    "ProviderGovernor",
+    "T81VmProvider",
+    "ControlledProvider",
+    "ed25519_generate_keypair",
+    "sign_rfc00d4_payload",
+    "verify_dag",
 ]
