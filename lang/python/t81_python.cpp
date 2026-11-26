@@ -810,6 +810,9 @@ PYBIND11_MODULE(_t81, m) {
       req.operation = operation;
       req.artifact.artifact_id = "python-sdk-artifact";
       req.artifact.format = media_type;
+      req.artifact.sha3_512 =
+          "sha3-512:" + crypto::sha3_512_hex(std::span<const uint8_t>(
+                            reinterpret_cast<const uint8_t*>(input_str.data()), input_str.size()));
       req.input.media_type = media_type;
       req.input.bytes.resize(input_str.size());
       if (!input_str.empty()) {
