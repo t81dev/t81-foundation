@@ -321,6 +321,12 @@ Alongside the scientific phases below, engineering execution is structured aroun
 - **Milestone B (Near-Term):** `M3` Python SDK governed provider execution + zero-copy buffer protocol & `@` Dual-Rail matmul (`v2.3.0`), 2B+ scale BitNet Safetensors streaming `SBDR1T2D` validation, and `H06-MEM-04` `RegimeSelector` promotion with discrete GPU backend abstraction (`Governed non-DCP` per `RFC-0051`).
 - **Milestone C (Medium-Term):** `DPE` (`include/t81/dpe/`) level-parallel DAG unification with MCP transactional isolation (verified in TLA+), and `TernaryOS` AArch64 (`RFC-00C6..00CE`) packaged as a bounded ephemeral headless security enclave runner (`Governed non-DCP`, never a general-purpose OS).
 
+### Horizon D: Stratified Neural-Symbolic AI OS (`Deterministic` / `Stochastic` / `Hybrid`) — *Planned / Design Target*
+Architecture blueprint: [`docs/architecture/AI_OS_STRATIFIED_BLUEPRINT.md`](architecture/AI_OS_STRATIFIED_BLUEPRINT.md) (governed by `DEC-004` in [`docs/ai-context/DECISIONS_AND_GOVERNANCE.md`](ai-context/DECISIONS_AND_GOVERNANCE.md); none of the neural OS helpers below are currently implemented or authorized for production):
+
+- **D1 — Advisory Learned Prototypes (Plane 2, Planned):** Evaluate compact (`< 100 MB` resident footprint) learned predictors (regime/batch predictor or trajectory anomaly classifier) strictly behind `RegimeSelector` (`R0`–`R4`) and fail-closed `Axion` (`{-1, 0, +1}`) gates, with compiled zero-dependency deterministic fallbacks in Planes 3/0.
+- **D2 — Bounded Learned Controllers (Plane 3, Planned):** Promote only components that prove a measurable, statistically verified CI win over static heuristics while preserving `100%` bit-exact `State A → State C` fallback parity, Ed25519 `RFC-00D4` receipt sealing, and zero direct `Plane 2 → Plane 0` write authority.
+
 ### Closed / Falsified Hypotheses & Active Research Holds (Do Not Re-Open Without New Controls)
 
 | Hypothesis / Hold | Disposition | Measured / Documentary Basis |

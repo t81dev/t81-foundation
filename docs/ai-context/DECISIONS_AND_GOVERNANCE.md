@@ -186,3 +186,16 @@ Reported local ADM-2 candidates (`0c22ac323484e37cc85f95201bd4dc01729dedb4` and 
 **Integration gate:** PR #710 is merged only into `experiment/cpa005-integration-base` (result `514fa17cf5629a7aea9ebb1b035f01f3ef7687f3`), carrying CPA-004 content plus CPA-006 additions. PR #709 remains open draft, PR #707 remains open. Integrate a single cumulative CPA-004/006 candidate if subsequently authorized; avoid double-applying #709 and the cumulative branch. Review #707 independently. No merge or production activation is authorized by this document.
 
 **Next decision record:** A separate versioned TISC state-transition RFC must specify exact operand roles, target units, predicate flags, tags, PC progression, fault ordering, opcode admission and migration rules; obtain explicit maintainer approval before code changes. Preserve historical CPA evidence, negative controls and source identities unchanged. This non-normative index is not itself an RFC or acceptance record.
+
+---
+
+## 11. Neural-Symbolic Boundary Invariant (`DEC-004`) — 2026-11-26
+
+**Status:** Active Design Invariant (Non-Normative Governance Boundary for Horizon D; does not claim neural OS subsystems are implemented or authorize production deployment).  
+**Reference Blueprint:** [`docs/architecture/AI_OS_STRATIFIED_BLUEPRINT.md`](../architecture/AI_OS_STRATIFIED_BLUEPRINT.md)
+
+To prevent architectural drift as T81 explores Horizon D (Stratified Neural-Symbolic AI OS), all contributors and automated agents are bound by three non-negotiable boundary rules:
+
+1. **Neural ≠ Stochastic:** A neural or learned forward pass is not automatically non-deterministic, nor is it automatically bit-exact. Pinned-weight integer/ternary forward passes verified under deterministic kernels may declare `reproducibility_class: "deterministic"`, whereas sampled, floating-point-nondeterministic, or external-endpoint models must declare `"seeded_probabilistic"` or `"external_probabilistic"`. Every plane crossing must explicitly record its `reproducibility_class`.
+2. **Strict Non-Authority (Advisory-Only Plane 2):** Learned/neural OS subsystems operate exclusively in **Plane 2** as advisory proposers (e.g., dispatch hints, prefetch/eviction hints, anomaly scores, candidate adapter deltas). They have **zero direct commit authority** and can never bypass **Plane 3** reconciliation (`Axion` `.apl` policy gate, `t81.diff_check`, `tx_commit`) to mutate `CanonFS`, `axion_root.apl`, or committed enclave state directly.
+3. **Mandatory Deterministic Fallback:** Every Plane 2 neural OS helper must ship alongside a compiled, zero-dependency deterministic fallback path in **Planes 3/0**. If the helper abstains (`0`), fails, exceeds its `< 100 MB` resident footprint cap, or is unavailable, execution must deterministically fall back to the verified Plane 3/0 path with bit-exact `State A → State C` parity and zero orphan files.
