@@ -5,7 +5,7 @@ Last Verified (UTC): 2026-02-26
 Maturity: `Frozen`
 
 > **Architecture File Style Guide**
-> - Terminology mapping: "Opcode set" -> `include/t81/isa/opcodes.hpp`; "Program format" -> `include/t81/isa/program.hpp`; "ISA runtime enforcement" -> `core/vm/vm.cpp`.
+> - Terminology mapping: "Opcode set" -> `include/t81/isa/opcodes.hpp`; "Program format" -> `include/t81/isa/program.hpp`; "ISA runtime enforcement" -> `vm/vm.cpp`.
 > - Link style: repo-relative markdown links to concrete files only.
 > - Diagram conventions: GitHub-renderable Mermaid only.
 > - Maturity labels: `Frozen`, `Stable`, `Experimental`, `Stubbed`.
@@ -21,7 +21,7 @@ Define portable instruction semantics, opcode identity, and program-level operan
 - Program and instruction representation (`Program`, `Insn`, literal kinds)  
   [`include/t81/isa/program.hpp`](../../../include/t81/isa/program.hpp)
 - Binary emitter/encoding/IO implementations  
-  [`core/isa/`](../../../core/isa)
+  [`isa/`](../../../isa)
 
 ## Structural View
 
@@ -59,7 +59,7 @@ Diagram source: [`../diagrams/tisc-isa-structure.mmd`](../diagrams/tisc-isa-stru
 
 - [`include/t81/isa/opcodes.hpp`](../../../include/t81/isa/opcodes.hpp)
 - [`include/t81/isa/program.hpp`](../../../include/t81/isa/program.hpp)
-- [`core/isa/README.md`](../../../core/isa/README.md)
-- [`core/vm/vm.cpp`](../../../core/vm/vm.cpp)
+- [`isa/README.md`](../../../isa/README.md)
+- [`vm/vm.cpp`](../../../vm/vm.cpp)
 - [`spec/tisc-spec.md`](../../../spec/tisc-spec.md)
 - [`docs/governance/FREEZE_ENFORCEMENT.md`](../../governance/FREEZE_ENFORCEMENT.md)

@@ -1,7 +1,7 @@
 # Architecture documentation index
 
 Status: Active
-Last Updated: 2026-11-23
+Last Updated: 2026-11-26
 
 ## Purpose
 
@@ -15,10 +15,11 @@ specification authority, freeze boundaries, or determinism claim scope.
 
 ## Navigation
 
+- [OVERVIEW.md](./OVERVIEW.md) — Canonical implemented architecture snapshot & four-plane alignment
+- [AI_OS_STRATIFIED_BLUEPRINT.md](./AI_OS_STRATIFIED_BLUEPRINT.md) — Stratified Neural-Symbolic AI OS Blueprint (*Planned / Design Target — Horizon D*)
+- [T81_ARCHITECTURE_REPORT.md](./T81_ARCHITECTURE_REPORT.md) — Full architectural narrative & post-Wave 5 runtime posture
 - [ARCHITECTURE_DOC_STANDARD.md](./ARCHITECTURE_DOC_STANDARD.md)
-- [OVERVIEW.md](./OVERVIEW.md)
 - [DEPENDENCY_FIREWALL.md](./DEPENDENCY_FIREWALL.md)
-- [T81_ARCHITECTURE_REPORT.md](./T81_ARCHITECTURE_REPORT.md)
 - [system_map.yaml](./system_map.yaml)
 - [layers/README.md](./layers/README.md)
 - [layers/data-types.md](./layers/data-types.md)
@@ -33,6 +34,8 @@ specification authority, freeze boundaries, or determinism claim scope.
 - [cross-cutting/execution-model.md](./cross-cutting/execution-model.md)
 - [cross-cutting/capability-boundaries.md](./cross-cutting/capability-boundaries.md)
 - [diagrams/README.md](./diagrams/README.md)
+- [diagnostics/ARCH_ENG_002_DIAGNOSTIC_REPORT.md](./diagnostics/ARCH_ENG_002_DIAGNOSTIC_REPORT.md)
+- [visualization/ARCHITECTURE_VISUALIZATION_REPORT.md](./visualization/ARCHITECTURE_VISUALIZATION_REPORT.md)
 - [adr/](./adr/)
 
 ## Active Proposals & Coexistence Architecture (Experimental / Draft)
