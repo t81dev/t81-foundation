@@ -1965,4 +1965,12 @@ if(Python3_Interpreter_FOUND)
     ENVIRONMENT "T81_BIN=$<TARGET_FILE:t81>"
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     TIMEOUT 120)
+
+  add_test(NAME t81_three_plane_differential_test
+    COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_SOURCE_DIR}/tests/determinism/three_plane_differential_test.py)
+  set_tests_properties(t81_three_plane_differential_test PROPERTIES
+    ENVIRONMENT "T81_BUILD_DIR=${CMAKE_BINARY_DIR}"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    TIMEOUT 120)
 endif()
