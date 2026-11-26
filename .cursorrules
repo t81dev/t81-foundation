@@ -1,34 +1,9 @@
-This file is an adapter; the canonical rules live in AGENTS.md and docs/explanation/ARCHITECTURE.md
-
 # Cursor Rules for T81 Foundation
 
-# High-level context
-- This repository implements the T81 Foundation: an experimental computing architecture and systems research platform with specified deterministic runtime surfaces.
-- The normative source of truth is the Markdown specification under the spec/ directory.
-- Public APIs are under include/t81/; implementations include vm/, fs/, kernel/axion/, lang/, and tools/. src/ assembles build targets; see PROJECT_STRUCTURE.md.
+This file is a lightweight Cursor adapter. **Authoritative rules, research continuity boundaries, frozen contracts, and contribution guidelines live in [`AGENTS.md`](AGENTS.md)** — read `AGENTS.md` and `docs/ai-context/START_HERE.md` first before making changes.
 
-# When starting work
-- First, read README.md, AGENTS.md, docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md, and docs/research/RESEARCH_CHARTER.md. Then inspect the applicable architecture, specifications, source, and tests.
-- Preserve canonical H01–H08 and Hanoi/CWEB history. Record measured, modeled, tested, and unverified claims separately; never fabricate benchmarks, citations, or test results. Preserve negative findings and report untested assumptions.
-- For any file you edit, try to locate its corresponding spec section in spec/ and read it.
-
-# General rules
-- Do not introduce behavior that contradicts the spec.
-- Prefer small, incremental refactors over sweeping rewrites.
-- Whenever you change behavior, propose corresponding updates to tests and docs.
-- Avoid adding hidden global state, implicit I/O, or nondeterminism in core execution paths.
-- Treat historical Hanoi/CWEB artifacts as preserved research evidence, not a validated correctness oracle; new code should target the applicable modern API.
-
-# C++ style
-- Use modern C++ (C++20 or newer) where it clarifies intent.
-- Prefer value semantics and RAII; avoid raw new/delete in higher-level code.
-- Keep headers in include/t81/ stable; add new APIs thoughtfully and document them.
-
-# Safety & Axion
-- Be conservative when editing Axion or cognitive-tier related code.
-- Do not weaken safety checks or alignment constraints without explicit instruction and matching spec updates.
-
-# Good tasks for Cursor
-- Adding or improving unit tests in tests/cpp/.
-- Refactoring C++ implementation to better match include/t81/*.hpp and the spec.
-- Improving documentation comments and minor spec clarifications (without changing semantics).
+## Cursor-Specific Workflow Hooks
+- Locate the matching contract in `spec/` before editing implementation files (`isa/`, `vm/`, `fs/`, `kernel/axion/`, `lang/`, `src/provider/`, `tools/`).
+- Preserve frozen boundaries (`TISC v1.9.0`, `docs/governance/PUBLIC_API_LOCK.json`, `include/t81/**/*.hpp`) and all active research holds (`F01 M1–M6 STOP`, `SCG-08 Gate 2 NO-GO`, `H01` / Inv 10A `BLOCKED`, `AXION-AI-001 HD01–HD06`).
+- Prefer small, reviewable C++20/Python increments with matching unit tests (`tests/cpp/`, `tests/vm/`, `tests/ci/`) and local governance verification before opening a PR.
+- Keep public claims evidence-bounded; never fabricate benchmarks, citations, or test runs.

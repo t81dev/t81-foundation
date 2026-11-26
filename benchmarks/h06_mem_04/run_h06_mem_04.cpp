@@ -453,6 +453,29 @@ int main(int argc, char** argv) {
   std::string manifest_path;
   std::string output_path;
   bool smoke = false;
+  std::uint32_t cli_out_dim = 0U;
+  std::uint32_t cli_k_dim = 0U;
+  std::vector<std::uint32_t> cli_batches;
+  std::vector<std::string> cli_tiers;
+
+  auto parse_csv_u32 = [](const std::string& csv) {
+    std::vector<std::uint32_t> out;
+    std::istringstream ss(csv);
+    std::string tok;
+    while (std::getline(ss, tok, ',')) {
+      if (!tok.empty()) out.push_back(static_cast<std::uint32_t>(std::stoul(tok)));
+    }
+    return out;
+  };
+  auto parse_csv_str = [](const std::string& csv) {
+    std::vector<std::string> out;
+    std::istringstream ss(csv);
+    std::string tok;
+    while (std::getline(ss, tok, ',')) {
+      if (!tok.empty()) out.push_back(tok);
+    }
+    return out;
+  };
 
   for (int i = 1; i < argc; ++i) {
     const std::string arg = argv[i];
@@ -462,12 +485,20 @@ int main(int argc, char** argv) {
       output_path = argv[++i];
     } else if (arg == "--smoke") {
       smoke = true;
+    } else if (arg == "--out-dim" && i + 1 < argc) {
+      cli_out_dim = static_cast<std::uint32_t>(std::stoul(argv[++i]));
+    } else if (arg == "--k-dim" && i + 1 < argc) {
+      cli_k_dim = static_cast<std::uint32_t>(std::stoul(argv[++i]));
+    } else if (arg == "--batches" && i + 1 < argc) {
+      cli_batches = parse_csv_u32(argv[++i]);
+    } else if (arg == "--tiers" && i + 1 < argc) {
+      cli_tiers = parse_csv_str(argv[++i]);
     }
   }
 
   if (manifest_path.empty() || output_path.empty()) {
-    std::cerr
-        << "Usage: t81_bench_h06_mem_04 --manifest <path> --output <results.json> [--smoke]\n";
+    std::cerr << "Usage: t81_bench_h06_mem_04 --manifest <path> --output <results.json> "
+                 "[--smoke] [--out-dim N] [--k-dim K] [--batches 1,16,64] [--tiers OUT_OF_CORE]\n";
     return 2;
   }
 
@@ -518,8 +549,10 @@ int main(int argc, char** argv) {
       static_cast<std::uint32_t>(extract_json_u64(manifest_text, "metal_min_batch", 16));
   pol.metal_min_working_set_bytes =
       extract_json_u64(manifest_text, "metal_min_working_set_bytes", 64ULL * 1024ULL * 1024ULL);
+  pol.metal_min_work_ops =
+      extract_json_u64(manifest_text, "metal_min_work_ops", 32ULL * 1024ULL * 1024ULL);
   pol.stream_worker_cap =
-      static_cast<std::uint32_t>(extract_json_u64(manifest_text, "stream_worker_cap", 4));
+      static_cast<std::uint32_t>(extract_json_u64(manifest_text, "stream_worker_cap", 0));
 
   const std::uint32_t sparsity_pct =
       static_cast<std::uint32_t>(extract_json_u64(manifest_text, "sparsity_pct", 75));
@@ -529,10 +562,13 @@ int main(int argc, char** argv) {
       smoke ? 3U : static_cast<std::uint32_t>(extract_json_u64(manifest_text, "measure_iters", 7));
 
   const std::vector<std::uint32_t> batch_sizes =
-      smoke ? std::vector<std::uint32_t>{1, 4, 16, 64}
-            : std::vector<std::uint32_t>{1, 4, 8, 16, 32, 64, 128};
-  const std::vector<std::string> tiers = {"L2_RESIDENT", "L3_RESIDENT", "OFF_L3_STREAMING",
-                                          "OUT_OF_CORE"};
+      !cli_batches.empty() ? cli_batches
+                           : (smoke ? std::vector<std::uint32_t>{1, 4, 16, 64}
+                                    : std::vector<std::uint32_t>{1, 4, 8, 16, 32, 64, 128});
+  const std::vector<std::string> tiers =
+      !cli_tiers.empty() ? cli_tiers
+                         : std::vector<std::string>{"L2_RESIDENT", "L3_RESIDENT",
+                                                    "OFF_L3_STREAMING", "OUT_OF_CORE"};
   const std::vector<std::string> kernels = {"DualRail_Dense", "SBDR128_SIMD", "INT8_Sparse128",
                                             "SBDR1T2D"};
   std::vector<std::string> backends = {"auto_dispatch", "cpu_simd_1t", "cpu_simd_mt",
@@ -576,8 +612,12 @@ int main(int argc, char** argv) {
     out_json << batch_sizes[i];
   }
   out_json << "],\n"
-           << "    \"working_set_tiers\": [\"L2_RESIDENT\", \"L3_RESIDENT\", \"OFF_L3_STREAMING\", "
-              "\"OUT_OF_CORE\"],\n"
+           << "    \"working_set_tiers\": [";
+  for (std::size_t i = 0; i < tiers.size(); ++i) {
+    if (i > 0) out_json << ", ";
+    out_json << "\"" << tiers[i] << "\"";
+  }
+  out_json << "],\n"
            << "    \"kernels\": [\"DualRail_Dense\", \"SBDR128_SIMD\", \"INT8_Sparse128\", "
               "\"SBDR1T2D\"],\n"
            << "    \"backends\": [";
@@ -593,6 +633,7 @@ int main(int argc, char** argv) {
            << "    \"l3_resident_ratio\": " << pol.l3_resident_ratio << ",\n"
            << "    \"metal_min_batch\": " << pol.metal_min_batch << ",\n"
            << "    \"metal_min_working_set_bytes\": " << pol.metal_min_working_set_bytes << ",\n"
+           << "    \"metal_min_work_ops\": " << pol.metal_min_work_ops << ",\n"
            << "    \"hysteresis_gain_ratio\": " << pol.hysteresis_gain_ratio << ",\n"
            << "    \"stream_worker_cap\": " << pol.stream_worker_cap << "\n"
            << "  },\n"
@@ -609,8 +650,8 @@ int main(int argc, char** argv) {
            << "  \"results\": [\n";
 
   bool first_row = true;
-  const std::uint32_t out_dim = smoke ? 64U : 128U;
-  const std::uint32_t k_dim = smoke ? 256U : 512U;
+  const std::uint32_t out_dim = cli_out_dim > 0U ? cli_out_dim : (smoke ? 64U : 128U);
+  const std::uint32_t k_dim = cli_k_dim > 0U ? cli_k_dim : (smoke ? 256U : 512U);
 
   for (std::size_t ti = 0; ti < tiers.size(); ++ti) {
     const std::string& tier = tiers[ti];
@@ -632,6 +673,8 @@ int main(int argc, char** argv) {
           WorkloadQuery q;
           q.batch_size = batch;
           q.working_set_bytes = actual_ws_bytes;
+          q.work_ops = 2ULL * static_cast<std::uint64_t>(batch) *
+                       static_cast<std::uint64_t>(out_dim) * static_cast<std::uint64_t>(k_dim);
           q.sparsity_pct = sparsity_pct;
           q.is_r2_int8_act = (kernel == "INT8_Sparse128");
 
@@ -708,6 +751,8 @@ int main(int argc, char** argv) {
           out_json << "    {"
                    << "\"tier\": \"" << tier << "\", "
                    << "\"batch_size\": " << batch << ", "
+                   << "\"out_dim\": " << out_dim << ", "
+                   << "\"k_dim\": " << k_dim << ", "
                    << "\"kernel\": \"" << kernel << "\", "
                    << "\"backend\": \"" << backend_str << "\", "
                    << "\"regime_selected\": \"" << regime_name(dec.regime) << "\", "
