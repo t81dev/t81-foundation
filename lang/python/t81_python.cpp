@@ -806,26 +806,32 @@ PYBIND11_MODULE(_t81, m) {
                           std::optional<uint64_t> seed, uint64_t max_steps) {
       provider::ProviderRequest req;
       req.operation = operation;
+      req.artifact.artifact_id = "python-sdk-artifact";
+      req.artifact.format = media_type;
       req.input.media_type = media_type;
-      req.input.bytes.assign(reinterpret_cast<const uint8_t*>(input_str.data()),
-                             reinterpret_cast<const uint8_t*>(input_str.data()) + input_str.size());
-      req.seed = seed;
-      req.budget.max_steps = max_steps;
+      req.input.bytes.resize(input_str.size());
+      if (!input_str.empty()) {
+        std::memcpy(req.input.bytes.data(), input_str.data(), input_str.size());
+      }
       provider::ExecutionContext ctx;
       ctx.principal_id = principal_id;
       ctx.policy_sha3_512 = policy_sha3_512;
       ctx.user_consent_verified = user_consent_verified;
+      ctx.seed = seed;
+      ctx.budget.max_steps = max_steps;
+      ctx.budget.max_output_tokens = 64;
       provider::CancellationToken cancel;
       auto outcome = governor.execute(prov, req, ctx, cancel);
       py::dict d;
-      d["ok"] = (outcome.status == provider::ExecutionStatus::Succeeded);
-      d["trit"] = static_cast<int>(outcome.trit);
+      d["ok"] = outcome.result.ok;
+      d["trit"] = static_cast<int>(outcome.result.trit);
       d["provider_invoked"] = outcome.provider_invoked;
       d["evidence_json"] = outcome.evidence_json;
       d["evidence_sha3_512"] = outcome.evidence_sha3_512;
-      d["output_bytes"] = py::bytes(reinterpret_cast<const char*>(outcome.output.bytes.data()),
-                                    outcome.output.bytes.size());
-      d["error_message"] = outcome.error_message;
+      d["output_bytes"] =
+          py::bytes(reinterpret_cast<const char*>(outcome.result.output.bytes.data()),
+                    outcome.result.output.bytes.size());
+      d["error_message"] = outcome.result.failure_detail;
       return d;
     }
   };
@@ -850,7 +856,7 @@ PYBIND11_MODULE(_t81, m) {
           "execute_vm",
           [](PyProviderGovernor& self, provider::T81VmProvider& prov, py::bytes bytecode,
              const std::string& principal_id, uint64_t max_steps) {
-            return self.run_provider(prov, "tisc.execute", "application/x-t81-tisc",
+            return self.run_provider(prov, "subgraph.run", "application/x-t81-tisc",
                                      std::string(bytecode), principal_id, true, std::nullopt,
                                      max_steps);
           },
@@ -861,7 +867,7 @@ PYBIND11_MODULE(_t81, m) {
           [](PyProviderGovernor& self, provider::ControlledProvider& prov,
              const std::string& input_text, const std::string& principal_id,
              bool user_consent_verified, std::optional<uint64_t> seed) {
-            return self.run_provider(prov, "controlled.sample", "text/plain", input_text,
+            return self.run_provider(prov, "text.generate", "text/plain;charset=utf-8", input_text,
                                      principal_id, user_consent_verified, seed, 1000);
           },
           py::arg("provider"), py::arg("input_text"), py::arg("principal_id") = "python-agent",

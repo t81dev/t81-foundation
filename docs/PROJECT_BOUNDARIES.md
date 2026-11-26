@@ -1,24 +1,27 @@
 # T81 Project Boundaries
 
-## **Stable Core (Production-Ready)**
+> **Research Posture Alignment:** Per [`AGENTS.md`](../AGENTS.md) and [`docs/releases/v2.1.0.md`](releases/v2.1.0.md), T81 Foundation is an experimental computing architecture and systems research platform. "Stable Core" denotes strictly verified, fail-closed, deterministic software surfaces—not commercial production readiness, general ternary superiority, or physical ternary hardware advantage.
+
+## **Stable Core (Verified / Bounded Surfaces)**
 
 ### What IS Stable Core:
-- **Deterministic VM**: Bit-exact reproducible execution (100% tested)
-- **Axion Policy Engine**: Pre-side-effect governance (100% tested)
-- **CanonFS**: Immutable storage with provenance (100% tested)
-- **Decision Bundles**: Verifiable AI task results (100% tested)
-- **Bounded AI OS-Object Family**: assess-fixed, route-fixed, classify-fixed (100% tested)
+- **Deterministic VM**: Bit-exact reproducible interpreter execution + Dual-Rail `(P, N)` / `SBDR1T2D` fast paths (DCP Verified for interpreter path)
+- **Axion Policy Engine**: Fail-closed pre-side-effect governance (Stable Bounded, governed non-DCP)
+- **CanonFS**: Immutable content-addressed storage with `RFC-00D1` v1 interchange seed and provenance (Stable Bounded, governed non-DCP)
+- **Native C++ MCP Control Plane**: 15-tool `RFC-00D8` JSON-RPC server with `--root` jail and `tx_begin`/`tx_commit`/`tx_abort` isolation (Stable Bounded)
+- **Bounded AI OS-Object Family**: `assess-fixed`, `route-fixed`, `classify-fixed` (Frozen 3-member baseline)
+- **Decision Bundles & Provider Evidence**: Draft `RFC-00D4` bundles and `M1` `ProviderGovernor` (`t81.provider.evidence.v1`, staged under `src/provider/`)
 
 ### Location:
-- `src/core/`, `src/vm/`, `src/axion/`, `src/isa/`
-- `tools/cli/core/` (essential CLI only)
-- `include/t81/` (public APIs)
+- `src/core/`, `src/vm/`, `src/axion/`, `src/isa/`, `vm/`, `kernel/axion/`, `fs/`
+- `tools/cli/core/` (essential CLI and native C++ MCP server)
+- `include/t81/` (locked public APIs: `PUBLIC_API_LOCK.json` `v2.2.0`)
 - `tests/cpp/` (core test suite)
 
 ### Status:
-- **393/393 tests passing** (100%)
-- **RFC-00D1 CanonFS interchange**: Stable v1 contract
-- **TISC ISA v1.9.0**: Frozen specification
+- **432+ configured CTest targets** (100% green post-merge CI on `main@8aa086906`)
+- **RFC-00D1 CanonFS interchange**: Stable v1 seed contract (RFC remains draft overall)
+- **TISC ISA v1.9.0**: Frozen specification (`PUBLIC_API_LOCK.json` `v2.2.0`)
 
 ---
 
@@ -63,28 +66,28 @@
 
 ### **Critical Boundary: Determinism vs Nondeterminism**
 
-#### **Production T81 Runtime: ALWAYS DETERMINISTIC**
-- **Guarantee**: Bit-exact reproducibility
-- **Markets**: Regulated industries (finance, healthcare, legal)
-- **Use Cases**: Production systems requiring audit trails
-- **API Contract**: Deterministic execution guaranteed
+#### **Stable Core T81 Runtime: ALWAYS DETERMINISTIC (DCP-Bounded)**
+- **Guarantee**: Bit-exact reproducibility on surfaces verified in `DETERMINISM_SURFACE_REGISTRY.md`
+- **Target Domains**: Regulated and high-assurance audit research (finance, healthcare, legal)
+- **Use Cases**: Governed execution and verifiable audit trails
+- **API Contract**: Deterministic execution guaranteed within DCP scope
 
 #### **Experimental Research: MAY EXPLORE NONDETERMINISM**
 - **Purpose**: Research and education only
 - **Location**: `tools/experimental/nondeterministic_research.cpp`
 - **Disclaimers**: Prominent warnings about experimental status
-- **No Production Use**: Never integrated into production runtime
+- **No Stable Core Use**: Never integrated into DCP-certified runtime paths
 - **Educational Value**: Demonstrates WHY determinism matters
 
 ---
 
 ## **Usage Guidelines**
 
-### **For Production Users:**
+### **For Stable Core Users:**
 - Use **stable core** components only
-- Rely on **100% tested** functionality
-- Follow **RFC-governed** APIs
-- Expect **deterministic guarantees**
+- Rely on **registry-verified** deterministic functionality
+- Follow **RFC-governed** APIs (`PUBLIC_API_LOCK.json`)
+- Expect **DCP-bounded deterministic guarantees**
 
 ### **For Researchers/Contributors:**
 - **Experimental directory** available for exploration

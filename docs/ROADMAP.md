@@ -2,7 +2,7 @@
 
 **Engineering Maintenance, Experimental Validation, and Research Priorities**
 
-**Updated:** 2026-11-22. Live `main` observed at `120b8dc90478fb25b82b11138fcc8101b3cffb37` (`v2.2.0-12-g120b8dc90`) after PR #845. This date refreshes the near-term queue below. It does not authorize SCG-08 Gate 2, close H01/10A, adopt F01, or change H01–H08.
+**Updated:** 2026-11-26. Live `main` observed at `8aa0869063185a8a250200742b229911793d3419` (post-`v2.2.0`, Waves 0–4 and `H06-MEM-04` Phase 3 merged). This date refreshes the AI-Native Deterministic Control Plane trajectory and near-term queue below. It does not authorize `SCG-08` Gate 2, close `H01`/10A, adopt `F01`, or change `H01–H08`.
 
 This roadmap connects the engineering maintenance program to T81's active scientific research.
 
@@ -307,9 +307,35 @@ Each proposed task should identify:
 
 If these cannot be stated clearly, narrow the task before implementation.
 
+## AI-Native Deterministic Control Plane Trajectory
+
+Alongside the scientific phases below, engineering execution is structured around T81's demonstrated strength as a **local, deterministic, fail-closed AI-agent control plane and ternary-semantic runtime on binary hosts**:
+
+### Completed / Pinned Baseline (`v2.2.0` → `main@8aa086906`)
+- **Frozen Core (`DCP Verified`):** `TISC v1.9.0-Stable`, `PUBLIC_API_LOCK.json` `v2.2.0`, `T81VM` interpreter + NEON/AVX2 Dual-Rail `(P, N)` `TMatMul` + `SBDR1T2D` CanonFS caching (`t81_dualrail_sbdr_vm_test`), and `T3_K` / `T81Lang` reproducibility gates.
+- **Bounded Control Plane:** Fail-closed `Axion` policy engine (`axion_root.apl`), `CanonFS` (`RFC-00D1` v1 seed), 3-member Bounded AI OS-Object family (`assess-fixed`/`route-fixed`/`classify-fixed`), and 15-tool native C++ MCP Airlock (`t81 mcp serve`, `--root` jail, `tx_begin`/`tx_commit`/`tx_abort`, `23/23` `ai_usability_eval.py` trials, TLA+ `TernaryOSTransactions` TLC `14,227,489` states / `0` errors).
+- **Provider & Regime Foundations:** `M1 ProviderGovernor` (`t81.provider.evidence.v1`, `AT-01..AT-10`, PR `#865`), `H06-MEM-04` Phase 3 sparse-aware Apple Metal/CPU dispatch (`PR #882`), native `x86_64` AVX2 off-L3 DRAM sweep (`PR #864`), and `t81==2.2.0` Python wheels (`31` PyPI files, `cp39–cp314`).
+
+### Engineering Milestones (Gated by Verification & Maintainer Authorization)
+- **Milestone A (Immediate):** Native C++ Ed25519 bundle signing & DAG verification (`src/crypto/`), `M2` Persistent MCP Receipt Ledger (`ProviderGovernor` + `CanonFS` receipts in `tx_commit`/`run_subgraph`), and formal maintainer ratification of `RFC-00D4` and `RFC-00D6`.
+- **Milestone B (Near-Term):** `M3` Python SDK governed provider execution + zero-copy buffer protocol & `@` Dual-Rail matmul (`v2.3.0`), 2B+ scale BitNet Safetensors streaming `SBDR1T2D` validation, and `H06-MEM-04` `RegimeSelector` promotion with discrete GPU backend abstraction (`Governed non-DCP` per `RFC-0051`).
+- **Milestone C (Medium-Term):** `DPE` (`include/t81/dpe/`) level-parallel DAG unification with MCP transactional isolation (verified in TLA+), and `TernaryOS` AArch64 (`RFC-00C6..00CE`) packaged as a bounded ephemeral headless security enclave runner (`Governed non-DCP`, never a general-purpose OS).
+
+### Closed / Falsified Hypotheses & Active Research Holds (Do Not Re-Open Without New Controls)
+
+| Hypothesis / Hold | Disposition | Measured / Documentary Basis |
+| :--- | :--- | :--- |
+| **Software CPU Ternary Addition (`H01`/`H02`)** | **FALSIFIED & FROZEN (STOP)** | `t81_radix_comparison`: 4-trit tryte add `11.7 ns` vs 64-bit binary ALU `1.1 ns` (`10.6×` slower). |
+| **In-Cache Packed Ternary MatVec (`H03`/`H06`)** | **FALSIFIED for CPU speed** | `t81_packed_ternary_matvec`: `12.91` vs `17.15 GFLOP/s` INT8 AVX2 (`75.3%` due to `VPSHUFB` decode tax); retained for `75%` storage compression only. |
+| **TISC Bytecode Compactness (`Inv 09-E1`, `H03`)** | **NOT SUPPORTED** | Complete TISC binary (`1,240 B`) is `7.898×` larger than conforming WebAssembly MVP (`157 B`). |
+| **`T81-AIOPT-001` M1 / M2** | **M1 FALSIFIED · M2 FROZEN** | M1 4-trit catalog filtering reduces to $O(1)$ scalar lookup; M2 execution remains frozen (`7` P1 blockers in PR `#673`). |
+| **`H01` / Investigation 10A (Physical Silicon)** | **PHYSICAL EVALUATION BLOCKED** | No matched 3-state semiconductor cell characterization data available; no physical ternary silicon exists in-repo. |
+| **`F01-HOST-BOLQ-v1`** | **NOT ADOPTED (`M1–M6 STOP`)** | Residual physical-overrun risks not accepted; `linux_relock_required=true`; PR `#812` `UNSUPPORTED` retained. |
+| **`SCG-08` Gate 2 & `AXION-AI-001`** | **HELD (`NO-GO` / `HD01–HD06` open)** | Gate 2 empirical benchmarking strictly withheld; PR `#859` explicitly held by maintainer. |
+
 ## Near-term execution sequence
 
-Observed 2026-11-22 against `main` at `120b8dc90`. Rows are ordered for the next maintenance slice. Scientific holds stay in force: SCG-08 Gate 2 remains withheld, H01/10A remains blocked, and F01 M1–M6 remain stopped.
+Observed 2026-11-26 against `main` at `8aa086906`. Rows are ordered for the next maintenance slice. Scientific holds stay in force: `SCG-08` Gate 2 remains withheld, `H01`/10A remains blocked, `AXION-AI-001` `HD01–HD06` remain open, and `F01` M1–M6 remain stopped.
 
 | Order | Work | Completion condition |
 |---|---|---|
