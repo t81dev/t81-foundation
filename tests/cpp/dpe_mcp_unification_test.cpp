@@ -28,10 +28,26 @@ int main() {
 
   // 1. Diamond 4-node multi-agent DAG across 3 levels (disjoint keys -> bit-exact commit).
   std::vector<t81::provider::DpeAgentTask> diamond = {
-      {"t0-root", 1, {}, {"k0"}, []() { return std::unordered_map<std::string, std::string>{{"k0", "+1"}}; }},
-      {"t1-left", 2, {"t0-root"}, {"k1"}, []() { return std::unordered_map<std::string, std::string>{{"k1", "-1"}}; }},
-      {"t2-right", 3, {"t0-root"}, {"k2"}, []() { return std::unordered_map<std::string, std::string>{{"k2", "+1"}}; }},
-      {"t3-join", 4, {"t1-left", "t2-right"}, {"k3"}, []() { return std::unordered_map<std::string, std::string>{{"k3", "0"}}; }},
+      {"t0-root",
+       1,
+       {},
+       {"k0"},
+       []() { return std::unordered_map<std::string, std::string>{{"k0", "+1"}}; }},
+      {"t1-left",
+       2,
+       {"t0-root"},
+       {"k1"},
+       []() { return std::unordered_map<std::string, std::string>{{"k1", "-1"}}; }},
+      {"t2-right",
+       3,
+       {"t0-root"},
+       {"k2"},
+       []() { return std::unordered_map<std::string, std::string>{{"k2", "+1"}}; }},
+      {"t3-join",
+       4,
+       {"t1-left", "t2-right"},
+       {"k3"},
+       []() { return std::unordered_map<std::string, std::string>{{"k3", "0"}}; }},
   };
 
   auto r1 = coord.execute_and_commit(diamond);
@@ -52,8 +68,16 @@ int main() {
 
   // 2. Intra-level write-write conflict -> fail closed with canonical lowest-agent-ID winner.
   std::vector<t81::provider::DpeAgentTask> conflict = {
-      {"c-a2", 2, {}, {"shared_key"}, []() { return std::unordered_map<std::string, std::string>{{"shared_key", "+1"}}; }},
-      {"c-a1", 1, {}, {"shared_key"}, []() { return std::unordered_map<std::string, std::string>{{"shared_key", "-1"}}; }},
+      {"c-a2",
+       2,
+       {},
+       {"shared_key"},
+       []() { return std::unordered_map<std::string, std::string>{{"shared_key", "+1"}}; }},
+      {"c-a1",
+       1,
+       {},
+       {"shared_key"},
+       []() { return std::unordered_map<std::string, std::string>{{"shared_key", "-1"}}; }},
   };
   auto rc = coord.execute_and_commit(conflict);
   if (rc.ok || rc.code != "ERR_DPE_TX_CONFLICT" || rc.conflict_winner_agent != 1) {

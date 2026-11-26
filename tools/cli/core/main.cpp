@@ -3622,14 +3622,15 @@ int main(int argc, char* argv[]) {
       return run_canonfs_command(args);
 
     } else if (args.command == "enclave") {
-      // Wave 4: Ephemeral TernaryOS AArch64 security enclave runner (Experimental / Governed non-DCP).
+      // Wave 4: Ephemeral TernaryOS AArch64 security enclave runner (Experimental / Governed
+      // non-DCP).
       if (args.command_args.empty() || args.command_args[0] == "help" ||
           args.command_args[0] == "--help") {
-        std::cout
-            << "t81 enclave run --payload <canon_ref> --policy <apl> [--efi <BOOTAA64.EFI>] "
-               "[--dry-run] [--json]\n"
-            << "  Headless AArch64 TernaryOS security enclave runner (Experimental / Governed non-DCP;\n"
-            << "  TTBR0 per-thread L3 isolation per RFC-00C6; not a general-purpose OS).\n";
+        std::cout << "t81 enclave run --payload <canon_ref> --policy <apl> [--efi <BOOTAA64.EFI>] "
+                     "[--dry-run] [--json]\n"
+                  << "  Headless AArch64 TernaryOS security enclave runner (Experimental / "
+                     "Governed non-DCP;\n"
+                  << "  TTBR0 per-thread L3 isolation per RFC-00C6; not a general-purpose OS).\n";
         return 0;
       }
       if (args.command_args[0] != "run") {
@@ -3660,7 +3661,8 @@ int main(int argc, char* argv[]) {
         policy_path = args.policy->string();
       }
       if (payload_ref.empty() || policy_path.empty()) {
-        std::cerr << "t81 enclave run: --payload <canon_ref> and --policy <apl> are required (fail-closed)\n";
+        std::cerr << "t81 enclave run: --payload <canon_ref> and --policy <apl> are required "
+                     "(fail-closed)\n";
         return 1;
       }
       std::ifstream pf(policy_path, std::ios::binary);
@@ -3683,10 +3685,11 @@ int main(int argc, char* argv[]) {
           efi_path;
       if (dry_run) {
         if (as_json) {
-          std::cout << "{\"ok\":true,\"mode\":\"dry_run\",\"classification\":\"experimental_governed_non_dcp\","
+          std::cout << "{\"ok\":true,\"mode\":\"dry_run\",\"classification\":\"experimental_"
+                       "governed_non_dcp\","
                     << "\"isolation\":\"ttbr0_l3_rfc00c6\",\"payload_ref\":\"" << payload_ref
-                    << "\",\"policy_sha3_512\":\"" << pol_digest << "\",\"efi_path\":\""
-                    << efi_path << "\",\"qemu_cmd\":\"" << qemu_cmd << "\"}\n";
+                    << "\",\"policy_sha3_512\":\"" << pol_digest << "\",\"efi_path\":\"" << efi_path
+                    << "\",\"qemu_cmd\":\"" << qemu_cmd << "\"}\n";
         } else {
           std::cout << "TernaryOS Enclave Runner (dry-run, Experimental / Governed non-DCP)\n"
                     << "  payload: " << payload_ref << "\n"
