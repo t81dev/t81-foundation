@@ -95,14 +95,18 @@ struct DispatchPolicy {
   double out_of_core_tile_ratio{0.80};
   std::uint32_t metal_min_batch{16};
   std::uint64_t metal_min_working_set_bytes{64ULL * 1024ULL * 1024ULL};
+  std::uint64_t metal_min_work_ops{32ULL * 1024ULL *
+                                   1024ULL};  // 2*B*M*K gate to amortize GPU launch
   std::uint32_t metal_max_queue_depth{2};
   double hysteresis_gain_ratio{1.15};
-  std::uint32_t stream_worker_cap{0};  // 0 = auto (min(physical_cores, 4))
+  std::uint32_t stream_worker_cap{
+      0};  // 0 = auto (physical_cores on Apple unified mem, else min(cores, 4))
 };
 
 struct WorkloadQuery {
   std::uint32_t batch_size{1};
   std::uint64_t working_set_bytes{0};
+  std::uint64_t work_ops{0};      // 0 = unspecified; otherwise total arithmetic ops (2*B*M*K)
   std::uint32_t sparsity_pct{0};  // 0..100
   std::uint32_t metal_queue_depth{0};
   bool worker_pool_healthy{true};

@@ -18,7 +18,7 @@ through memory and a reopened disk driver using the original `CanonRef`.
 An `@axion_verify` program returned `7` in VM register 2 and logged the reason
 `Default policy: allow all`. All ten corrected docstring examples and the
 release-note snippet passed against the installed wheel. See the
-[release audit](../releases/v2.1.0.md#python-package-audit)
+[release audit](../../releases/v2.1.0.md#python-package-audit)
 and [PyPI file metadata](https://pypi.org/project/t81/2.1.0/#files).
 
 The binding links the native VM containing the `TMatMul` opcode. The audited

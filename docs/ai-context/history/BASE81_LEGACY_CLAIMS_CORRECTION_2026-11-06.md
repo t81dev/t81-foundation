@@ -19,7 +19,7 @@
 
 - Historical **4096×4096 AVX2 MatVec** comparison: native INT8 **17.15 GFLOP/s** versus packed 2-bit ternary **12.91 GFLOP/s** (ternary approximately **75.3%** of INT8 throughput); the packed representation uses **75% less weight storage** than 8-bit weights in this comparison. Do not confuse storage reduction with measured speedup or generalize the memory regime beyond its primary evidence.
 - Base 81 remains a legitimate **four-trit grouping / representation-interface choice**, not a proven computational optimum. The research question is whether it yields a reproducible workload-specific net benefit against matched binary alternatives after encoding, decoding, alignment and conversion costs.
-- The current [RESEARCH_IDENTITY.md](RESEARCH_IDENTITY.md) already correctly gives **6.33985 bits** and treats H03 as a falsifiable hypothesis. This note specifically prevents assistant-generated historical assertions from being elevated to authority by context reuse.
+- The current [RESEARCH_IDENTITY.md](../RESEARCH_IDENTITY.md) already correctly gives **6.33985 bits** and treats H03 as a falsifiable hypothesis. This note specifically prevents assistant-generated historical assertions from being elevated to authority by context reuse.
 
 ## Loading and provenance rule
 

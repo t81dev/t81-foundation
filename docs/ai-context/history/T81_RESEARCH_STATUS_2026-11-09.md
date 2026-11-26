@@ -3,7 +3,7 @@
 **Class:** Non-normative, dated handoff; not an independent rerun, experiment authorization, or normative amendment.  
 **Repository:** https://github.com/t81dev/t81-foundation  
 **Observed `main`:** `8dec43ac2a9a702c9ae54229cf6891ee63f285c0` (GitHub branch inspection, 2026-11-09).  
-**Primary evidence:** [SCG-07 Phase 6 qualification](../research/continuity/SCG07_PHASE6_CONSOLIDATED_QUALIFICATION.md), [PR #741](https://github.com/t81dev/t81-foundation/pull/741), preceding SCG-07 receipts and [SCG-06 reproduction](../research/continuity/SCG06_ARITHMETIC_DEFECT_REPRODUCTION_REPORT.md).  
+**Primary evidence:** [SCG-07 Phase 6 qualification](../../research/continuity/SCG07_PHASE6_CONSOLIDATED_QUALIFICATION.md), [PR #741](https://github.com/t81dev/t81-foundation/pull/741), preceding SCG-07 receipts and [SCG-06 reproduction](../../research/continuity/SCG06_ARITHMETIC_DEFECT_REPRODUCTION_REPORT.md).  
 **Freshness rule:** Recheck current main, relevant PRs, authorization, and experiment documents before acting. This document supersedes older *operational next-step* instructions, not historical evidence.
 
 ## Executive handoff
@@ -50,8 +50,8 @@ The next scientific question is **whether balanced ternary offers an advantage u
 ## Fast bootstrap for a new AI instance
 
 1. Read **this dated overlay** first; older 2026-11-08 status and 2026-11-02 `CURRENT_STATE.json` selected view are historical snapshots, **not live blockers**.
-2. Read [START_HERE](START_HERE.md), [ACTIVE_RESEARCH_HANDOFF](ACTIVE_RESEARCH_HANDOFF.md), [RESEARCH_IDENTITY](RESEARCH_IDENTITY.md), [SYSTEM_ARCHITECTURE](SYSTEM_ARCHITECTURE.md), and [DECISIONS_AND_GOVERNANCE](DECISIONS_AND_GOVERNANCE.md).
-3. Read the [SCG-07 Phase 6 qualification](../research/continuity/SCG07_PHASE6_CONSOLIDATED_QUALIFICATION.md) and primary F1–F7 receipts, then inspect PR #741 and current `main`.
+2. Read [START_HERE](../START_HERE.md), [ACTIVE_RESEARCH_HANDOFF](../ACTIVE_RESEARCH_HANDOFF.md), [RESEARCH_IDENTITY](../RESEARCH_IDENTITY.md), [SYSTEM_ARCHITECTURE](../SYSTEM_ARCHITECTURE.md), and [DECISIONS_AND_GOVERNANCE](../DECISIONS_AND_GOVERNANCE.md).
+3. Read the [SCG-07 Phase 6 qualification](../../research/continuity/SCG07_PHASE6_CONSOLIDATED_QUALIFICATION.md) and primary F1–F7 receipts, then inspect PR #741 and current `main`.
 4. Before any new experimental work, inspect the H01–H08 register, preregistrations, negative results, and SCG-08 Phase 0 status.
 5. Do **not** restart F1–F7 repair, reclassify F3's historical cause, assert universal F7 rounding, infer authorization from this document, or spend agent budget fixing unrelated CI failures.
 
