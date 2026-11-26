@@ -9,6 +9,27 @@
 
 namespace t81::vm {
 
+namespace {
+
+// Returns true when the workload's ternary non-zero density is sparse enough that
+// zero-skip CPU execution (R1/R2/R4) outperforms dense Metal GPU dispatch (R3).
+[[nodiscard]] bool is_high_sparsity_cpu_preferred(const WorkloadQuery& query,
+                                                  const DispatchPolicy& policy) noexcept {
+  if (query.nonzero_density >= 0.0) {
+    return query.nonzero_density < policy.metal_min_nonzero_density;
+  }
+  // Backwards-compatible fallback when nonzero_density is unspecified (< 0.0):
+  // explicit zero-skip INT8 sparse kernels derive density from sparsity_pct.
+  if (query.is_r2_int8_act) {
+    const std::uint32_t clamped = std::min<std::uint32_t>(query.sparsity_pct, 100U);
+    const double eff_density = static_cast<double>(100U - clamped) / 100.0;
+    return eff_density < policy.metal_min_nonzero_density;
+  }
+  return false;
+}
+
+}  // namespace
+
 HardwareProfile HardwareProfile::probe_host() noexcept {
   HardwareProfile p;
 
@@ -114,7 +135,11 @@ std::uint32_t RegimeSelector::compute_tile_batch(const WorkloadQuery& query) con
   }
   const std::uint64_t per_item = std::max<std::uint64_t>(1ULL, query.working_set_bytes / b);
   const std::uint64_t tile = max_slice / per_item;
-  return static_cast<std::uint32_t>(std::clamp<std::uint64_t>(tile, 1ULL, b));
+  // Keep at least one batch item per R4 streaming worker when batch > workers so
+  // out-of-core tiling does not starve the CPU worker pool (while preserving tile < b).
+  const std::uint32_t workers = compute_worker_count(Regime::R4_OversizedOutOfCore, b);
+  const std::uint64_t min_tile = (b > workers) ? static_cast<std::uint64_t>(workers) : 1ULL;
+  return static_cast<std::uint32_t>(std::clamp<std::uint64_t>(tile, min_tile, b));
 }
 
 double RegimeSelector::estimate_throughput_score(Regime regime,
@@ -142,7 +167,8 @@ double RegimeSelector::estimate_throughput_score(Regime regime,
       return (ws > llc * policy_.l3_resident_ratio) ? stream_w * 1.25 : stream_w * 0.75;
     }
     case Regime::R3_AcceleratorMultiBatch: {
-      if (!hardware_.metal_available || query.metal_queue_depth > policy_.metal_max_queue_depth) {
+      if (!hardware_.metal_available || query.metal_queue_depth > policy_.metal_max_queue_depth ||
+          is_high_sparsity_cpu_preferred(query, policy_)) {
         return 0.0;
       }
       const bool work_ok = (policy_.metal_min_work_ops == 0 || query.work_ops == 0 ||
@@ -183,15 +209,16 @@ DispatchDecision RegimeSelector::evaluate_candidate(const WorkloadQuery& query) 
     return d;
   }
 
-  // Check accelerator eligibility (R3) first when batch, working set & work_ops meet Metal
-  // thresholds.
+  // Check accelerator eligibility (R3) first when batch, working set, work_ops, and non-zero
+  // density meet Metal thresholds. High-sparsity workloads bypass R3 for zero-skip CPU paths.
   const bool work_ok = (policy_.metal_min_work_ops == 0 || query.work_ops == 0 ||
                         query.work_ops >= policy_.metal_min_work_ops);
-  const bool metal_eligible = hardware_.metal_available && b >= policy_.metal_min_batch &&
-                              query.working_set_bytes >= policy_.metal_min_working_set_bytes &&
-                              work_ok &&
-                              (hardware_.metal_vram_budget_bytes == 0 ||
-                               query.working_set_bytes <= hardware_.metal_vram_budget_bytes);
+  const bool dense_enough_for_metal = !is_high_sparsity_cpu_preferred(query, policy_);
+  const bool metal_eligible =
+      hardware_.metal_available && dense_enough_for_metal && b >= policy_.metal_min_batch &&
+      query.working_set_bytes >= policy_.metal_min_working_set_bytes && work_ok &&
+      (hardware_.metal_vram_budget_bytes == 0 ||
+       query.working_set_bytes <= hardware_.metal_vram_budget_bytes);
 
   if (metal_eligible) {
     if (query.metal_queue_depth <= policy_.metal_max_queue_depth) {

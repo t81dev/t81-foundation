@@ -113,6 +113,7 @@
         "metal_min_batch": { "type": "integer", "minimum": 1 },
         "metal_min_working_set_bytes": { "type": "integer", "minimum": 0 },
         "metal_min_work_ops": { "type": "integer", "minimum": 0 },
+        "metal_min_nonzero_density": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
         "hysteresis_gain_ratio": { "type": "number", "minimum": 1.0 },
         "stream_worker_cap": { "type": "integer", "minimum": 0 }
       }
@@ -166,6 +167,7 @@
           "backend": { "type": "string" },
           "regime_selected": { "type": "string" },
           "working_set_bytes": { "type": "integer", "minimum": 0 },
+          "nonzero_density": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
           "p50_us": { "type": "number", "minimum": 0.0 },
           "p95_us": { "type": "number", "minimum": 0.0 },
           "p99_us": { "type": "number", "minimum": 0.0 },
