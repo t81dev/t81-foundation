@@ -264,7 +264,7 @@ inline void M(gf& o, const gf& a, const gf& b) noexcept {
   uint64_t f[5], g[5];
   pack5(a, f);
   pack5(b, g);
-  using u128 = unsigned __int128;
+  __extension__ using u128 = unsigned __int128;
   uint64_t g1_19 = g[1] * 19, g2_19 = g[2] * 19, g3_19 = g[3] * 19, g4_19 = g[4] * 19;
   u128 h0 = u128(f[0]) * g[0] + u128(f[1]) * g4_19 + u128(f[2]) * g3_19 + u128(f[3]) * g2_19 +
             u128(f[4]) * g1_19;
@@ -360,7 +360,7 @@ inline void S(gf& o, const gf& a) noexcept {
   uint64_t f2 = (u[6] >> 6) | (u[7] << 10) | (u[8] << 26) | ((u[9] & 0x1ffULL) << 42);
   uint64_t f3 = (u[9] >> 9) | (u[10] << 7) | (u[11] << 23) | ((u[12] & 0xfffULL) << 39);
   uint64_t f4 = (u[12] >> 12) | (u[13] << 4) | (u[14] << 20) | (u[15] << 36);
-  using u128 = unsigned __int128;
+  __extension__ using u128 = unsigned __int128;
   uint64_t f0_2 = f0 * 2, f1_2 = f1 * 2;
   uint64_t f1_38 = f1 * 38, f2_38 = f2 * 38, f3_38 = f3 * 38, f4_19 = f4 * 19;
   u128 h0 = u128(f0) * f0 + u128(f1_38) * f4 + u128(f2_38) * f3;
