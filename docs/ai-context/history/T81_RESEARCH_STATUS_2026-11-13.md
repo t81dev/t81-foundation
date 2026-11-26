@@ -2,7 +2,7 @@
 
 **Classification:** Non-normative operational update. No scientific gate advancement, RFC ratification, release publication, or merge authorization.
 **Observed main:** `88300f14c1da1066ad6db25d31be0e8e912b3ef0`.
-**Evidence:** [dated GitHub receipt](receipts/2026-11-13-pr-integration-observations.json). GitHub observations were refreshed during this update; no local build or experiment was executed by this collector. Review outcomes below are supplied Codex review reports in the maintainer session, not fresh independent execution by this document's author.
+**Evidence:** [dated GitHub receipt](../receipts/2026-11-13-pr-integration-observations.json). GitHub observations were refreshed during this update; no local build or experiment was executed by this collector. Review outcomes below are supplied Codex review reports in the maintainer session, not fresh independent execution by this document's author.
 
 ## Active changes
 

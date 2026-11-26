@@ -8,10 +8,10 @@ at `64941caff9372f2e76dd3a0fb79aa6711a48b171`, which is present in the inspected
 `main` baseline `e5c30560aa77c31184a14b03ed152a6deef5c1a3`.
 
 Current source includes the registered-object retention boundary in
-[retention.py](../../experiments/h04_r03_matched_codec/retention.py) and the
+[retention.py](../../../experiments/h04_r03_matched_codec/retention.py) and the
 wire-frame-only handoff in
-[benchmark_harness.py](../../experiments/h04_r03_matched_codec/benchmark_harness.py).
-The [later FC1 receipt](../research/continuity/H04_R03_FC1_EVIDENCE_RECEIPT.md)
+[benchmark_harness.py](../../../experiments/h04_r03_matched_codec/benchmark_harness.py).
+The [later FC1 receipt](../../research/continuity/H04_R03_FC1_EVIDENCE_RECEIPT.md)
 reports 82 passing tests and the disposition
 `VERIFIED (CORRECTNESS & RETENTION BOUNDARY ENFORCED)`. These are the receipt
 author's reported results, not a new execution or independent reproduction by
