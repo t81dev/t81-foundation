@@ -33,6 +33,7 @@
 #include <type_traits>
 #include <unordered_set>
 #include <vector>
+#include "crypto/ed25519_bundle.hpp"
 #include "tools/cli/core/cli_docs_gen.hpp"
 #include "tools/cli/core/cmd_axion_canonfs.hpp"
 #include "tools/cli/core/cmd_determinism.hpp"
@@ -452,7 +453,8 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "canonize-file" || a.command == "memory-stats" ||
                  a.command == "tier" || a.command == "profile" || a.command == "c" ||
                  a.command == "rust" || a.command == "python" || a.command == "llvm" ||
-                 a.command == "mlir" || a.command == "mcp" || a.command == "enclave") {
+                 a.command == "mlir" || a.command == "mcp" || a.command == "enclave" ||
+                 a.command == "receipt") {
         a.command_args.emplace_back(argv[i]);
       } else {
         throw_usage_error("Unknown option: " + std::string(arg));
@@ -473,7 +475,7 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "canonize-file" || a.command == "memory-stats" ||
                  a.command == "tier" || a.command == "c" || a.command == "rust" ||
                  a.command == "python" || a.command == "llvm" || a.command == "mlir" ||
-                 a.command == "mcp" || a.command == "enclave") {
+                 a.command == "mcp" || a.command == "enclave" || a.command == "receipt") {
         a.command_args.emplace_back(argv[i]);
       } else {
         if (!a.input.empty()) {
@@ -3714,6 +3716,153 @@ int main(int argc, char* argv[]) {
         fsck_args.command_args = {"fsck", "--verify-hashes", "--json", "--canonfs-root", croot};
         return run_canonfs_command(fsck_args);
       });
+
+    } else if (args.command == "receipt") {
+      if (args.command_args.empty() || args.command_args[0] != "export") {
+        std::cerr << "Usage: t81 receipt export --receipt <hex_ref> --out <dir> "
+                     "[--ledger <dir>] [--json]\n";
+        return 1;
+      }
+      std::string receipt_hex;
+      fs::path ledger_dir = ".t81_receipt_ledger";
+      fs::path out_dir = args.output.value_or(fs::path{});
+      bool json_out = false;
+      for (size_t i = 1; i < args.command_args.size(); ++i) {
+        const std::string& tok = args.command_args[i];
+        if (tok == "--receipt" && i + 1 < args.command_args.size()) {
+          receipt_hex = args.command_args[++i];
+        } else if (tok == "--ledger" && i + 1 < args.command_args.size()) {
+          ledger_dir = args.command_args[++i];
+        } else if (tok == "--out" && i + 1 < args.command_args.size()) {
+          out_dir = args.command_args[++i];
+        } else if (tok == "--json") {
+          json_out = true;
+        } else {
+          std::cerr << "t81 receipt export: unknown argument '" << tok << "'\n";
+          return 1;
+        }
+      }
+      if (receipt_hex.size() != 64 || out_dir.empty()) {
+        std::cerr << "t81 receipt export requires 64-hex --receipt and --out <dir>\n";
+        return 1;
+      }
+      t81::canonfs::CanonRef ref{};
+      for (size_t i = 0; i < 32; ++i) {
+        auto nib = [](char c) -> int {
+          if (c >= '0' && c <= '9') return c - '0';
+          if (c >= 'a' && c <= 'f') return 10 + (c - 'a');
+          if (c >= 'A' && c <= 'F') return 10 + (c - 'A');
+          return -1;
+        };
+        int hi = nib(receipt_hex[2 * i]);
+        int lo = nib(receipt_hex[2 * i + 1]);
+        if (hi < 0 || lo < 0) {
+          std::cerr << "t81 receipt export: invalid hex in --receipt\n";
+          return 1;
+        }
+        ref.hash.h.bytes[i] = static_cast<uint8_t>((hi << 4) | lo);
+      }
+      auto drv = t81::canonfs::make_persistent_driver(ledger_dir);
+      auto obj = drv->read_object_bytes(ref);
+      if (!obj.has_value()) {
+        std::cerr << "t81 receipt export: receipt not found in CanonFS ledger\n";
+        return 1;
+      }
+      std::string raw(reinterpret_cast<const char*>(obj->data()), obj->size());
+      const std::string raw_sha =
+          "sha3-512:" + t81::crypto::sha3_512_hex(std::span<const uint8_t>(
+                            reinterpret_cast<const uint8_t*>(raw.data()), raw.size()));
+      auto extract_str_field = [&](const std::string& key) -> std::string {
+        const std::string pat = "\"" + key + "\":\"";
+        auto p = raw.find(pat);
+        if (p == std::string::npos) return {};
+        p += pat.size();
+        std::string out;
+        for (size_t i = p; i < raw.size(); ++i) {
+          if (raw[i] == '\\' && i + 1 < raw.size()) {
+            char nx = raw[++i];
+            if (nx == 'n')
+              out.push_back('\n');
+            else if (nx == 'r')
+              out.push_back('\r');
+            else if (nx == 't')
+              out.push_back('\t');
+            else
+              out.push_back(nx);
+          } else if (raw[i] == '"') {
+            break;
+          } else {
+            out.push_back(raw[i]);
+          }
+        }
+        return out;
+      };
+      const std::string sig_b64 = extract_str_field("ed25519_signature_b64");
+      const std::string pub_pem = extract_str_field("public_key_pem");
+      std::string payload_json;
+      {
+        const std::string pat = "\"payload\":";
+        auto p = raw.find(pat);
+        auto end_p = raw.find(",\"ed25519_signature_b64\":");
+        if (p != std::string::npos && end_p != std::string::npos && end_p > p + pat.size()) {
+          payload_json = raw.substr(p + pat.size(), end_p - (p + pat.size()));
+        }
+      }
+      bool ed25519_ok = false;
+      if (!pub_pem.empty() && !sig_b64.empty() && !payload_json.empty()) {
+        auto pub = t81::crypto::import_public_key_pem(pub_pem);
+        if (pub.has_value()) {
+          ed25519_ok = t81::crypto::verify_rfc00d4_payload_b64(*pub, payload_json, sig_b64);
+        }
+      }
+      if (!ed25519_ok) {
+        std::cerr << "t81 receipt export: fail-closed Ed25519 verification failed\n";
+        return 1;
+      }
+      std::error_code ec;
+      fs::create_directories(out_dir, ec);
+      auto atomic_write = [&](const fs::path& dst, const std::string& content) -> bool {
+        fs::path tmp = dst;
+        tmp += ".tmp";
+        {
+          std::ofstream ofs(tmp, std::ios::binary | std::ios::trunc);
+          if (!ofs) return false;
+          ofs.write(content.data(), static_cast<std::streamsize>(content.size()));
+          ofs.flush();
+          if (!ofs) return false;
+        }
+        std::error_code rec;
+        fs::rename(tmp, dst, rec);
+        if (rec) {
+          fs::remove(tmp, rec);
+          return false;
+        }
+        return true;
+      };
+      const std::string bundle_json =
+          "{\"schema\":\"t81.forensic-receipt-bundle.v1\",\"receipt_canonfs_ref\":\"" +
+          receipt_hex + "\",\"raw_sha3_512\":\"" + raw_sha +
+          "\",\"ed25519_verified\":true,\"receipt\":" + raw + "}\n";
+      const std::string bundle_sha =
+          "sha3-512:" +
+          t81::crypto::sha3_512_hex(std::span<const uint8_t>(
+              reinterpret_cast<const uint8_t*>(bundle_json.data()), bundle_json.size()));
+      if (!atomic_write(out_dir / "receipt_raw.json", raw) ||
+          !atomic_write(out_dir / "bundle.json", bundle_json) ||
+          !atomic_write(out_dir / "manifest.sha3-512",
+                        bundle_sha + "  bundle.json\n" + raw_sha + "  receipt_raw.json\n")) {
+        std::cerr << "t81 receipt export: atomic write failed\n";
+        return 1;
+      }
+      if (json_out) {
+        std::cout << "{\"ok\":true,\"receipt_canonfs_ref\":\"" << receipt_hex
+                  << "\",\"ed25519_verified\":true,\"bundle_sha3_512\":\"" << bundle_sha
+                  << "\",\"out_dir\":\"" << out_dir.generic_string() << "\"}\n";
+      } else {
+        std::cout << "Exported verified RFC-00D4 forensic bundle to " << out_dir.string() << " ("
+                  << bundle_sha << ")\n";
+      }
+      return 0;
 
     } else if (args.command == "artifact") {
       return run_artifact_command(args);

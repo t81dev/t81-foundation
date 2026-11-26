@@ -1950,4 +1950,12 @@ if(Python3_Interpreter_FOUND)
     ENVIRONMENT "T81_BIN=$<TARGET_FILE:t81>"
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     TIMEOUT 120)
+
+  add_test(NAME t81_kev_and_receipt_bundle_test
+    COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_SOURCE_DIR}/tests/ci/test_kev_and_receipt_bundle.py)
+  set_tests_properties(t81_kev_and_receipt_bundle_test PROPERTIES
+    ENVIRONMENT "T81_BIN=$<TARGET_FILE:t81>"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    TIMEOUT 120)
 endif()

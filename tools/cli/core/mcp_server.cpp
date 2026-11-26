@@ -651,6 +651,25 @@ std::string resolve_floor(const std::string& policy_text, const std::string& act
   return "fail-closed";
 }
 
+// KEV / Advisory containment helper: matches exact `(reason "<prefix><advisory_id>")` clauses.
+bool policy_has_reason_literal(const std::string& policy_text, const std::string& literal) {
+  if (literal.empty()) return false;
+  const std::string needle = "(reason \"" + literal + "\")";
+  return policy_text.find(needle) != std::string::npos;
+}
+
+int evaluate_advisory_trit(const std::string& policy_text, const std::string& advisory_id) {
+  if (advisory_id.empty()) return 1;
+  if (policy_has_reason_literal(policy_text, "block-advisory:" + advisory_id) ||
+      policy_has_reason_literal(policy_text, "kev-block:" + advisory_id)) {
+    return -1;
+  }
+  if (policy_has_reason_literal(policy_text, "defer-advisory:" + advisory_id)) {
+    return 0;
+  }
+  return 1;
+}
+
 std::string trim_ws(std::string s) {
   while (!s.empty() && (s.back() == '\n' || s.back() == '\r' || s.back() == ' ')) s.pop_back();
   return s;
@@ -1002,8 +1021,10 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
       out_err_msg = "failed to initialize CanonFS persistent receipt ledger";
       return false;
     }
+    const std::string pub_pem = t81::crypto::export_public_key_pem(session_kp.public_key);
     const std::string sealed = "{\"schema\":\"t81.provider.evidence.v1\",\"payload\":" + payload +
-                               ",\"ed25519_signature_b64\":\"" + out_sig_b64 + "\"}";
+                               ",\"ed25519_signature_b64\":\"" + out_sig_b64 +
+                               "\",\"public_key_pem\":\"" + json_escape_mcp(pub_pem) + "\"}";
     std::vector<std::byte> raw_bytes(sealed.size());
     std::memcpy(raw_bytes.data(), sealed.data(), sealed.size());
     auto wres = drv->write_object(t81::canonfs::ObjectType::RawBlock, raw_bytes);
@@ -1116,6 +1137,8 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
         const std::string ppath = arg_str(args, "policy_path");
         const std::string action_type = arg_str(args, "action_type");
         const std::string req_mode = arg_str(args, "mode");
+        const std::string advisory_id = arg_str(args, "advisory_id");
+        const std::string expected_manifest = arg_str(args, "expected_manifest_sha3_512");
         std::vector<uint8_t> abytes, pbytes;
         if (apath.empty() || ppath.empty()) {
           structured = "{\"ok\":false,\"code\":\"ERR_MISSING_ARG\",\"decision\":\"DENY\","
@@ -1149,12 +1172,28 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                 eff = req_mode;
               }
             }
-            const bool admitted = policy_admits_hash(res.value(), asha);
-            const bool blocked = (!admitted && eff == "fail-closed");
-            const std::string decision = admitted ? "ALLOW" : (eff == "warn" ? "WARN" : "DENY");
+            const int adv_trit = evaluate_advisory_trit(content, advisory_id);
+            const bool manifest_ok = expected_manifest.empty() || (expected_manifest == asha);
+            const bool admitted =
+                (adv_trit == 1) && manifest_ok && policy_admits_hash(res.value(), asha);
+            const bool blocked =
+                (!admitted && eff == "fail-closed") || (adv_trit <= 0) || !manifest_ok;
+            const std::string decision = (adv_trit == -1)  ? "DENY"
+                                         : (adv_trit == 0) ? "DEFER"
+                                         : !manifest_ok    ? "DENY"
+                                         : admitted        ? "ALLOW"
+                                                           : (eff == "warn" ? "WARN" : "DENY");
+            const std::string code = (adv_trit == -1)  ? "ERR_KEV_ADVISORY_BLOCKED"
+                                     : (adv_trit == 0) ? "DEFER_ADVISORY_REVIEW"
+                                     : !manifest_ok    ? "ERR_MANIFEST_DIGEST_MISMATCH"
+                                     : admitted        ? "OK"
+                                                       : "ERR_POLICY_HASH_DENIED";
+            const int gate_trit = (adv_trit <= 0) ? adv_trit : (admitted ? 1 : -1);
             structured =
-                std::string("{\"ok\":") + (blocked ? "false" : "true") + ",\"decision\":\"" +
-                decision + "\",\"policy_floor\":\"" + floor + "\",\"mode_applied\":\"" + eff +
+                std::string("{\"ok\":") + (blocked ? "false" : "true") +
+                ",\"trit\":" + std::to_string(gate_trit) + ",\"code\":\"" + code +
+                "\",\"decision\":\"" + decision + "\",\"policy_floor\":\"" + floor +
+                "\",\"mode_applied\":\"" + eff +
                 "\",\"downgrade_attempt_blocked\":" + (downgrade_blocked ? "true" : "false") +
                 ",\"blocked\":" + (blocked ? "true" : "false") + ",\"artifact_sha3_512\":\"" +
                 asha + "\",\"policy_hash\":\"" + psha + "\"}";
@@ -1309,6 +1348,8 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
             arg_int64_strict(args, "dualrail_fallback_count", fallback_cnt, 0);
         const bool repeat_ok = arg_bool(args, "repeat_sha3_identical", true);
         const bool req_auto_abort = arg_bool(args, "auto_abort_on_deny", false);
+        const std::string advisory_id = arg_str(args, "advisory_id");
+        const std::string expected_manifest = arg_str(args, "expected_manifest_sha3_512");
         auto it = active_txs.find(tx_id);
         if (it == active_txs.end()) {
           structured = "{\"ok\":false,\"trit\":-1,\"error\":\"unknown or closed tx_id\"}";
@@ -1415,6 +1456,18 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                   policy_ok = false;
                   deny_code = "ERR_POLICY_PARSE";
                   policy_err = pres.error();
+                } else if (evaluate_advisory_trit(ptext, advisory_id) == -1) {
+                  policy_ok = false;
+                  deny_code = "ERR_KEV_ADVISORY_BLOCKED";
+                  policy_err = "blocked by KEV/advisory policy clause: " + advisory_id;
+                } else if (evaluate_advisory_trit(ptext, advisory_id) == 0) {
+                  policy_ok = false;
+                  deny_code = "DEFER_ADVISORY_REVIEW";
+                  policy_err = "deferred by advisory review policy clause: " + advisory_id;
+                } else if (!expected_manifest.empty() && expected_manifest != after_sha) {
+                  policy_ok = false;
+                  deny_code = "ERR_MANIFEST_DIGEST_MISMATCH";
+                  policy_err = "expected_manifest_sha3_512 does not match staged artifact SHA3-512";
                 } else if (!policy_admits_hash(pres.value(), after_sha)) {
                   policy_ok = false;
                   deny_code = "ERR_POLICY_HASH_DENIED";
