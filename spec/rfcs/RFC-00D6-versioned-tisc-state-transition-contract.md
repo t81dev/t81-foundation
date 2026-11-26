@@ -1,6 +1,6 @@
 # RFC-00D6: Versioned TISC State-Transition Contract and Profile Selection Matrix
 
-**Status:** draft — proposed requirements, not binding production behavior
+**Status:** accepted — Normative (Governed non-DCP; preserves frozen TISC `v1.9.0` core `0–173` and historical `tisc-cpa-v1.0` profile)
 **Type:** standards-track
 **Created:** 2026-11-05
 **Updated:** 2026-11-06

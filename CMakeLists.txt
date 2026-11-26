@@ -213,6 +213,8 @@ set(T81_INSTALL_TARGETS
   t81_mlir
   t81_tool_cli
   t81_decode
+  t81_provider
+  t81_crypto
   t81
 )
 if(TARGET t81_dmath_runtime)

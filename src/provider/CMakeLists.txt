@@ -2,7 +2,7 @@ add_library(t81_provider STATIC
   ${CMAKE_CURRENT_SOURCE_DIR}/provider_governor.cpp
 )
 t81_preserve_root_output(t81_provider)
-target_include_directories(t81_provider PUBLIC ${PROJECT_SOURCE_DIR}/src)
+target_include_directories(t81_provider PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>)
 target_link_libraries(t81_provider PUBLIC t81_core t81_axion)
 
 add_library(t81_provider_adapters STATIC
