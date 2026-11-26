@@ -78,3 +78,11 @@ if(WIN32)
   target_link_libraries(complex_demo PRIVATE ws2_32 mswsock)
 endif()
 
+add_executable(t81_bitnet_2b_dispatch_test
+  ${CMAKE_SOURCE_DIR}/examples/research/heterogeneous-dualrail/verify_bitnet_2b_dispatch.cpp)
+target_include_directories(t81_bitnet_2b_dispatch_test PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(t81_bitnet_2b_dispatch_test PRIVATE t81_regime_dispatch t81_provider t81_crypto t81_core)
+if(T81_BUILD_TESTS)
+  add_test(NAME t81_bitnet_2b_dispatch_test COMMAND t81_bitnet_2b_dispatch_test)
+endif()
+

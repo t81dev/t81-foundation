@@ -496,6 +496,7 @@ def main() -> int:
     ap.add_argument("--emit-sbdr", action="store_true", help="Also emit canonical 1D SBDR1 .sbdr files")
     ap.add_argument("--emit-sbdr2d", action="store_true", help="Also emit 2D SBDR1T2D .sbdr2d files for T81VM TLoadHash")
     ap.add_argument("--streaming", action="store_true", help="Use memory-bounded streaming chunk ingestion")
+    ap.add_argument("--chunk-bytes", type=int, default=67108864, help="Streaming chunk budget in bytes (default: 64 MiB)")
     ap.add_argument("--self-test", action="store_true", help="Run built-in safetensors ingest + roundtrip + tamper self-test")
     ap.add_argument("--verify-2b-streaming", action="store_true", help="Run deterministic 2B-scale streaming SBDR1T2D verification")
     args = ap.parse_args()
@@ -509,7 +510,8 @@ def main() -> int:
     if not args.input:
         ap.error("provide --input <file.safetensors>, --self-test, or --verify-2b-streaming")
     if args.streaming:
-        print(json.dumps(ingest_safetensors_streaming(args.input, args.out_dir, emit_sbdr2d=args.emit_sbdr2d), indent=2))
+        chunk_elems = max(65536, args.chunk_bytes // 4)
+        print(json.dumps(ingest_safetensors_streaming(args.input, args.out_dir, chunk_elems=chunk_elems, emit_sbdr2d=args.emit_sbdr2d), indent=2))
     else:
         print(json.dumps(ingest_safetensors(args.input, args.out_dir, emit_sbdr=args.emit_sbdr, emit_sbdr2d=args.emit_sbdr2d), indent=2))
     return 0
