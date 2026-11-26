@@ -100,6 +100,76 @@ class InstalledSdkTest(unittest.TestCase):
             )
             self.assertEqual(output, payload)
 
+    def test_m3_tensor_matmul_and_zero_copy_buffer_protocol(self):
+        v1 = t81.Tensor1D3()
+        v2 = t81.Tensor1D3()
+        for i, val in enumerate((1, 0, -1)):
+            v1[i] = t81.T81Int(val)
+            v2[i] = t81.T81Int(val)
+        self.assertEqual(int(v1 @ v2), 2)
+
+        a = t81.T729IntTensor([2, 3], [t81.T81Int(x) for x in (1, 0, -1, -1, 1, 0)])
+        b = t81.T729IntTensor([3, 2], [t81.T81Int(x) for x in (1, -1, 0, 1, -1, 1)])
+        c = a @ b
+        self.assertEqual(c.shape, [2, 2])
+        self.assertEqual([int(x) for x in c.data], [2, -2, -1, 2])
+
+        dyn = t81.T729DynamicTensor([2, 2], [1.5, -2.0, 0.5, 4.0])
+        mv = memoryview(dyn)
+        self.assertEqual(mv.shape, (2, 2))
+        self.assertEqual(mv.format, "f")
+        self.assertEqual(dyn.__array_interface__["shape"], (2, 2))
+
+    def test_m3_provider_governor_and_native_ed25519_verify_dag(self):
+        kp = t81.ed25519_generate_keypair()
+        s1 = t81.sign_rfc00d4_payload(
+            kp["private_key_pem"], '{"action_type":"a"}', '{"h":"1"}', '{"verdict":"Allow"}'
+        )
+        s2 = t81.sign_rfc00d4_payload(
+            kp["private_key_pem"], '{"action_type":"b"}', '{"h":"2"}', '{"verdict":"Allow"}'
+        )
+        ok = t81.verify_dag([
+            {
+                "bundle_id": "b1",
+                "parent_bundle_ids": [],
+                "canonical_signing_payload": s1["canonical_signing_payload"],
+                "signature_b64": s1["signature_b64"],
+                "public_key_pem": s1["public_key_pem"],
+            },
+            {
+                "bundle_id": "b2",
+                "parent_bundle_ids": ["b1"],
+                "canonical_signing_payload": s2["canonical_signing_payload"],
+                "signature_b64": s2["signature_b64"],
+                "public_key_pem": s2["public_key_pem"],
+            },
+        ])
+        self.assertTrue(ok["ok"], ok)
+        self.assertEqual(ok["verified_nodes"], 2)
+
+        bad = t81.verify_dag([
+            {
+                "bundle_id": "b1",
+                "parent_bundle_ids": [],
+                "canonical_signing_payload": s1["canonical_signing_payload"] + " ",
+                "signature_b64": s1["signature_b64"],
+                "public_key_pem": s1["public_key_pem"],
+            },
+        ])
+        self.assertFalse(bad["ok"], bad)
+        self.assertEqual(bad["code"], "ERR_RECEIPT_VERIFY_FAILED")
+
+        import hashlib
+        hello_sha = "sha3-512:" + hashlib.sha3_512(b"hello").hexdigest()
+        policy = f'(policy (tier 1) (allowed-tensor-hashes ["{hello_sha}"]))'
+        gov = t81.ProviderGovernor(policy)
+        cp = t81.ControlledProvider()
+        denied = gov.execute_controlled(cp, "hello", user_consent_verified=False, seed=42)
+        self.assertFalse(denied["ok"], denied)
+        allowed = gov.execute_controlled(cp, "hello", user_consent_verified=True, seed=42)
+        self.assertTrue(allowed["ok"], allowed)
+        self.assertEqual(allowed["trit"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()

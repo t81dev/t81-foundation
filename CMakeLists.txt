@@ -151,7 +151,8 @@ if(T81_BUILD_PYTHON_BINDINGS)
   find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
   find_package(pybind11 REQUIRED)
   pybind11_add_module(_t81 lang/python/t81_python.cpp)
-  target_link_libraries(_t81 PRIVATE t81_core t81_axion t81_lang_frontend t81_isa t81_vm)
+  target_include_directories(_t81 PRIVATE ${PROJECT_SOURCE_DIR}/src)
+  target_link_libraries(_t81 PRIVATE t81_core t81_axion t81_lang_frontend t81_isa t81_vm t81_provider t81_provider_adapters t81_crypto)
   # Install the extension into the t81 package directory so scikit-build-core
   # picks it up alongside ffi/python/t81/__init__.py.
   install(TARGETS _t81 DESTINATION t81 COMPONENT python)

@@ -8,7 +8,12 @@
 #include <sstream>
 #include <string>
 #include <utility>
+#include "crypto/ed25519_bundle.hpp"
+#include "provider/controlled_provider.hpp"
+#include "provider/provider_governor.hpp"
+#include "provider/t81_vm_provider.hpp"
 #include "t81/axion/policy.hpp"
+#include "t81/axion/policy_engine.hpp"
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
 #include "t81/crypto/sha3.hpp"
@@ -175,7 +180,12 @@ PYBIND11_MODULE(_t81, m) {
            [](Tensor1D3& t, py::handle i, const T81Int<81>& v) { t(tensor_index(i, 3)) = v; })
       .def("size", [](const Tensor1D3&) { return Tensor1D3::size(); })
       .def("rank", [](const Tensor1D3&) { return Tensor1D3::rank(); })
-      .def("__add__", [](const Tensor1D3& a, const Tensor1D3& b) { return a + b; });
+      .def("__add__", [](const Tensor1D3& a, const Tensor1D3& b) { return a + b; })
+      .def("__matmul__", [](const Tensor1D3& a, const Tensor1D3& b) {
+        int64_t acc = 0;
+        for (std::size_t i = 0; i < 3; ++i) acc += a(i).to_int64() * b(i).to_int64();
+        return T81Int<81>(acc);
+      });
 
   // Bind T81Tensor<T81Int<81>, 2, 3, 3>
   using Tensor2D33 = T81Tensor<T81Int<81>, 2, 3, 3>;
@@ -196,19 +206,64 @@ PYBIND11_MODULE(_t81, m) {
            })
       .def("size", [](const Tensor2D33&) { return Tensor2D33::size(); })
       .def("rank", [](const Tensor2D33&) { return Tensor2D33::rank(); })
-      .def("__add__", [](const Tensor2D33& a, const Tensor2D33& b) { return a + b; });
+      .def("__add__", [](const Tensor2D33& a, const Tensor2D33& b) { return a + b; })
+      .def("__matmul__",
+           [](const Tensor2D33& a, const Tensor2D33& b) {
+             Tensor2D33 out;
+             for (std::size_t i = 0; i < 3; ++i) {
+               for (std::size_t j = 0; j < 3; ++j) {
+                 int64_t acc = 0;
+                 for (std::size_t k = 0; k < 3; ++k) acc += a(i, k).to_int64() * b(k, j).to_int64();
+                 out(i, j) = T81Int<81>(acc);
+               }
+             }
+             return out;
+           })
+      .def("__matmul__", [](const Tensor2D33& a, const Tensor1D3& v) {
+        Tensor1D3 out;
+        for (std::size_t i = 0; i < 3; ++i) {
+          int64_t acc = 0;
+          for (std::size_t k = 0; k < 3; ++k) acc += a(i, k).to_int64() * v(k).to_int64();
+          out(i) = T81Int<81>(acc);
+        }
+        return out;
+      });
 
-  // Bind T729DynamicTensor (float)
-  py::class_<T729DynamicTensor>(m, "T729DynamicTensor")
+  // Bind T729DynamicTensor (float) with zero-copy Python buffer protocol & __array_interface__
+  py::class_<T729DynamicTensor>(m, "T729DynamicTensor", py::buffer_protocol())
       .def(py::init<std::vector<int>>())
       .def(py::init<std::vector<int>, std::vector<float>>())
+      .def_buffer([](T729DynamicTensor& t) -> py::buffer_info {
+        const auto& sh = t.shape();
+        std::vector<py::ssize_t> shape(sh.begin(), sh.end());
+        std::vector<py::ssize_t> strides(sh.size(), static_cast<py::ssize_t>(sizeof(float)));
+        for (int i = static_cast<int>(sh.size()) - 2; i >= 0; --i) {
+          strides[i] = strides[i + 1] * shape[i + 1];
+        }
+        return py::buffer_info(const_cast<float*>(t.data().data()), sizeof(float),
+                               py::format_descriptor<float>::format(),
+                               static_cast<py::ssize_t>(sh.size()), shape, strides);
+      })
+      .def_property_readonly("__array_interface__",
+                             [](const T729DynamicTensor& t) {
+                               py::dict d;
+                               py::tuple sh(t.shape().size());
+                               for (std::size_t i = 0; i < t.shape().size(); ++i)
+                                 sh[i] = py::int_(t.shape()[i]);
+                               d["shape"] = sh;
+                               d["typestr"] = "<f4";
+                               d["data"] = py::make_tuple(
+                                   reinterpret_cast<std::uintptr_t>(t.data().data()), true);
+                               d["version"] = 3;
+                               return d;
+                             })
       .def_property_readonly("shape", &T729DynamicTensor::shape)
       .def_property("data", py::overload_cast<>(&T729DynamicTensor::data, py::const_),
                     &replace_tensor_data<T729DynamicTensor, float>)
       .def("rank", &T729DynamicTensor::rank)
       .def("size", &T729DynamicTensor::size);
 
-  // Bind T729IntTensor
+  // Bind T729IntTensor with exact Dual-Rail / int64 __matmul__ (@)
   py::class_<T729IntTensor>(m, "T729IntTensor")
       .def(py::init<std::vector<int>>())
       .def(py::init<std::vector<int>, std::vector<T81Int<81>>>())
@@ -216,7 +271,83 @@ PYBIND11_MODULE(_t81, m) {
       .def_property("data", py::overload_cast<>(&T729IntTensor::data, py::const_),
                     &replace_tensor_data<T729IntTensor, T81Int<81>>)
       .def("rank", &T729IntTensor::rank)
-      .def("size", &T729IntTensor::size);
+      .def("size", &T729IntTensor::size)
+      .def("__matmul__", [](const T729IntTensor& a, const T729IntTensor& b) {
+        if (a.shape().size() != 2 || b.shape().size() != 2 || a.shape()[1] != b.shape()[0]) {
+          throw std::invalid_argument("T729IntTensor @ requires 2D shapes (M, K) @ (K, N)");
+        }
+        const std::size_t M = static_cast<std::size_t>(a.shape()[0]);
+        const std::size_t K = static_cast<std::size_t>(a.shape()[1]);
+        const std::size_t N = static_cast<std::size_t>(b.shape()[1]);
+        const auto& ad = a.data();
+        const auto& bd = b.data();
+        bool all_ternary = true;
+        for (const auto& v : ad) {
+          int64_t x = v.to_int64();
+          if (x < -1 || x > 1) {
+            all_ternary = false;
+            break;
+          }
+        }
+        if (all_ternary) {
+          for (const auto& v : bd) {
+            int64_t x = v.to_int64();
+            if (x < -1 || x > 1) {
+              all_ternary = false;
+              break;
+            }
+          }
+        }
+        std::vector<T81Int<81>> out(M * N, T81Int<81>(0));
+        if (all_ternary) {
+          // Exact Dual-Rail (P, N) bitplane popcount accumulation (max_abs_err == 0).
+          const std::size_t words = (K + 63) / 64;
+          std::vector<uint64_t> ap(M * words, 0), an(M * words, 0);
+          std::vector<uint64_t> bp(N * words, 0), bn(N * words, 0);
+          for (std::size_t i = 0; i < M; ++i) {
+            for (std::size_t k = 0; k < K; ++k) {
+              int64_t x = ad[i * K + k].to_int64();
+              if (x == 1)
+                ap[i * words + (k >> 6)] |= (1ULL << (k & 63));
+              else if (x == -1)
+                an[i * words + (k >> 6)] |= (1ULL << (k & 63));
+            }
+          }
+          for (std::size_t j = 0; j < N; ++j) {
+            for (std::size_t k = 0; k < K; ++k) {
+              int64_t x = bd[k * N + j].to_int64();
+              if (x == 1)
+                bp[j * words + (k >> 6)] |= (1ULL << (k & 63));
+              else if (x == -1)
+                bn[j * words + (k >> 6)] |= (1ULL << (k & 63));
+            }
+          }
+          for (std::size_t i = 0; i < M; ++i) {
+            for (std::size_t j = 0; j < N; ++j) {
+              int64_t acc = 0;
+              for (std::size_t w = 0; w < words; ++w) {
+                const uint64_t pa = ap[i * words + w], na = an[i * words + w];
+                if ((pa | na) == 0ULL) continue;
+                const uint64_t pb = bp[j * words + w], nb = bn[j * words + w];
+                acc += static_cast<int64_t>(std::popcount((pa & pb) | (na & nb))) -
+                       static_cast<int64_t>(std::popcount((pa & nb) | (na & pb)));
+              }
+              out[i * N + j] = T81Int<81>(acc);
+            }
+          }
+        } else {
+          for (std::size_t i = 0; i < M; ++i) {
+            for (std::size_t j = 0; j < N; ++j) {
+              int64_t acc = 0;
+              for (std::size_t k = 0; k < K; ++k) {
+                acc += ad[i * K + k].to_int64() * bd[k * N + j].to_int64();
+              }
+              out[i * N + j] = T81Int<81>(acc);
+            }
+          }
+        }
+        return T729IntTensor({static_cast<int>(M), static_cast<int>(N)}, std::move(out));
+      });
 
   // Bind TISC Program
   py::class_<tisc::Program>(m, "Program").def(py::init<>());
@@ -591,4 +722,159 @@ PYBIND11_MODULE(_t81, m) {
       },
       py::arg("base_pos"), py::arg("base_neg"), py::arg("delta_pos"), py::arg("delta_neg"),
       py::arg("max_flip_pct") = 100.0);
+
+  // ── Wave 3 M3: Native C++ Ed25519 / verify_dag & ProviderGovernor bindings ──
+  m.def("ed25519_generate_keypair", []() {
+    auto kp = crypto::ed25519_generate_keypair();
+    py::dict d;
+    d["private_key_pem"] = crypto::export_private_key_pem(kp.seed);
+    d["public_key_pem"] = crypto::export_public_key_pem(kp.public_key);
+    return d;
+  });
+
+  m.def(
+      "sign_rfc00d4_payload",
+      [](const std::string& private_key_pem, const std::string& meaning_json,
+         const std::string& evidence_json, const std::string& authority_json) {
+        auto seed = crypto::import_private_key_pem(private_key_pem);
+        if (!seed.has_value()) throw std::invalid_argument("invalid Ed25519 private key PEM");
+        auto kp = crypto::ed25519_keypair_from_seed(*seed);
+        auto payload =
+            crypto::rfc00d4_canonical_signing_payload(meaning_json, evidence_json, authority_json);
+        py::dict d;
+        d["canonical_signing_payload"] = payload;
+        d["signature_b64"] = crypto::sign_rfc00d4_payload_b64(kp.seed, kp.public_key, payload);
+        d["public_key_pem"] = crypto::export_public_key_pem(kp.public_key);
+        return d;
+      },
+      py::arg("private_key_pem"), py::arg("meaning_json"), py::arg("evidence_json"),
+      py::arg("authority_json"));
+
+  m.def("verify_dag", [](const std::vector<py::dict>& raw_nodes) {
+    std::vector<crypto::AccountableBundleNode> nodes;
+    nodes.reserve(raw_nodes.size());
+    for (const auto& nd : raw_nodes) {
+      crypto::AccountableBundleNode node;
+      node.bundle_id = nd["bundle_id"].cast<std::string>();
+      node.parent_bundle_ids = nd["parent_bundle_ids"].cast<std::vector<std::string>>();
+      node.canonical_signing_payload = nd["canonical_signing_payload"].cast<std::string>();
+      node.signature_b64 = nd["signature_b64"].cast<std::string>();
+      auto pub = crypto::import_public_key_pem(nd["public_key_pem"].cast<std::string>());
+      if (!pub.has_value()) {
+        py::dict out;
+        out["ok"] = false;
+        out["code"] = "ERR_INVALID_PUBLIC_KEY";
+        out["error"] = "invalid Ed25519 public key PEM in DAG node";
+        out["verified_nodes"] = 0;
+        return out;
+      }
+      node.public_key = *pub;
+      nodes.push_back(std::move(node));
+    }
+    auto res = crypto::verify_dag(nodes);
+    py::dict out;
+    out["ok"] = res.ok;
+    out["code"] = res.code;
+    out["error"] = res.error;
+    out["verified_nodes"] = res.verified_nodes;
+    return out;
+  });
+
+  struct PyProviderGovernor {
+    std::shared_ptr<axion::PolicyEngine> policy_engine;
+    std::shared_ptr<canonfs::Driver> canonfs_driver;
+    std::string policy_sha3_512;
+    provider::ProviderGovernor governor;
+
+    PyProviderGovernor(const std::string& policy_text, const std::string& canonfs_root = "")
+        : policy_engine([&]() {
+            auto parsed = axion::parse_policy(policy_text);
+            if (!parsed.has_value()) throw std::invalid_argument("invalid .apl policy");
+            return std::make_shared<axion::PolicyEngine>(std::move(parsed.value()));
+          }()),
+          canonfs_driver(canonfs_root.empty()
+                             ? std::shared_ptr<canonfs::Driver>(canonfs::make_in_memory_driver())
+                             : std::shared_ptr<canonfs::Driver>(
+                                   canonfs::make_persistent_driver(canonfs_root))),
+          policy_sha3_512(policy_engine->active_policy()
+                              ? provider::ProviderGovernor::compute_policy_sha3_512(
+                                    *policy_engine->active_policy())
+                              : ""),
+          governor(policy_engine, canonfs_driver) {}
+
+    py::dict run_provider(provider::IAiProvider& prov, const std::string& operation,
+                          const std::string& media_type, const std::string& input_str,
+                          const std::string& principal_id, bool user_consent_verified,
+                          std::optional<uint64_t> seed, uint64_t max_steps) {
+      provider::ProviderRequest req;
+      req.operation = operation;
+      req.artifact.artifact_id = "python-sdk-artifact";
+      req.artifact.format = media_type;
+      req.artifact.sha3_512 =
+          "sha3-512:" + crypto::sha3_512_hex(std::span<const uint8_t>(
+                            reinterpret_cast<const uint8_t*>(input_str.data()), input_str.size()));
+      req.input.media_type = media_type;
+      req.input.bytes.resize(input_str.size());
+      if (!input_str.empty()) {
+        std::memcpy(req.input.bytes.data(), input_str.data(), input_str.size());
+      }
+      provider::ExecutionContext ctx;
+      ctx.principal_id = principal_id;
+      ctx.policy_sha3_512 = policy_sha3_512;
+      ctx.user_consent_verified = user_consent_verified;
+      ctx.seed = seed;
+      ctx.budget.max_steps = max_steps;
+      ctx.budget.max_output_tokens = 64;
+      provider::CancellationToken cancel;
+      auto outcome = governor.execute(prov, req, ctx, cancel);
+      py::dict d;
+      d["ok"] = outcome.result.ok;
+      d["trit"] = static_cast<int>(outcome.result.trit);
+      d["provider_invoked"] = outcome.provider_invoked;
+      d["evidence_json"] = outcome.evidence_json;
+      d["evidence_sha3_512"] = outcome.evidence_sha3_512;
+      d["output_bytes"] =
+          py::bytes(reinterpret_cast<const char*>(outcome.result.output.bytes.data()),
+                    outcome.result.output.bytes.size());
+      d["error_message"] = outcome.result.failure_detail;
+      return d;
+    }
+  };
+
+  py::class_<provider::T81VmProvider>(m, "T81VmProvider")
+      .def(py::init<>())
+      .def("capabilities_json", [](const provider::T81VmProvider& p) {
+        return provider::ProviderGovernor::serialize_capabilities_json(p.descriptor());
+      });
+
+  py::class_<provider::ControlledProvider>(m, "ControlledProvider")
+      .def(py::init<>())
+      .def("capabilities_json", [](const provider::ControlledProvider& p) {
+        return provider::ProviderGovernor::serialize_capabilities_json(p.descriptor());
+      });
+
+  py::class_<PyProviderGovernor>(m, "ProviderGovernor")
+      .def(py::init<const std::string&, const std::string&>(), py::arg("policy_text"),
+           py::arg("canonfs_root") = "")
+      .def_readonly("policy_sha3_512", &PyProviderGovernor::policy_sha3_512)
+      .def(
+          "execute_vm",
+          [](PyProviderGovernor& self, provider::T81VmProvider& prov, py::bytes bytecode,
+             const std::string& principal_id, uint64_t max_steps) {
+            return self.run_provider(prov, "subgraph.run", "application/x-t81-tisc",
+                                     std::string(bytecode), principal_id, true, std::nullopt,
+                                     max_steps);
+          },
+          py::arg("provider"), py::arg("bytecode"), py::arg("principal_id") = "python-agent",
+          py::arg("max_steps") = 100000)
+      .def(
+          "execute_controlled",
+          [](PyProviderGovernor& self, provider::ControlledProvider& prov,
+             const std::string& input_text, const std::string& principal_id,
+             bool user_consent_verified, std::optional<uint64_t> seed) {
+            return self.run_provider(prov, "text.generate", "text/plain;charset=utf-8", input_text,
+                                     principal_id, user_consent_verified, seed, 1000);
+          },
+          py::arg("provider"), py::arg("input_text"), py::arg("principal_id") = "python-agent",
+          py::arg("user_consent_verified") = false, py::arg("seed") = std::nullopt);
 }
