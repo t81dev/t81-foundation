@@ -46,6 +46,14 @@
 - **Speculative features**: Forward-looking research
 - **May change**: No API stability guarantees
 
+### **Frozen / Non-Blocking Experimental Prototypes (Pruned from Core CI Gates)**
+
+| Prototype / Draft | Classification | Rationale |
+| :--- | :--- | :--- |
+| **`Hanoi VM` (`experimental/hanoi/`)** | **Frozen / Non-Blocking Experimental** | Historical CWEB lineage retained for research continuity; outside DCP and non-blocking for core CI. |
+| **Partial `c`/`rust`/`python` MLIR/LLVM subset lowerings** | **Frozen / Non-Blocking Experimental** | Source-inspected research lowerings; do not inherit CPA or DCP parity. |
+| **Unratified Draft RFCs (`RFC-00D0`, `RFC-00D2`, `RFC-00D5`)** | **Frozen / Non-Blocking Experimental** | Design-led / informational proposals (`RFC-00D4` and `RFC-00D6` are ratified `Accepted — Governed non-DCP`). |
+
 ---
 
 ## **Decision Criteria**
