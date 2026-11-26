@@ -1,5 +1,9 @@
 # T81 Architecture — Governed Deterministic Ternary Runtime
 
+Status: Active (Post-Wave 5 Reconciled)  
+Last Verified (UTC): 2026-11-26  
+Related Canonical Sources: [`OVERVIEW.md`](./OVERVIEW.md) · [`AI_OS_STRATIFIED_BLUEPRINT.md`](./AI_OS_STRATIFIED_BLUEPRINT.md) (*Planned / Design Target — Horizon D*) · [`CURRENT_STATE.json`](../ai-context/CURRENT_STATE.json)
+
 ## 1. Overview
 
 T81 is a deterministic, policy-gated runtime for auditable AI inference. It operates as a ternary-native execution model built atop binary hardware substrates. The system is designed to provide exact bit-for-bit reproducible execution traces, enforcing governance and policy *before* side effects occur, and treating execution artifacts as immutable, content-addressed records.
@@ -113,17 +117,19 @@ The Axion Governance Kernel sits architecturally above the T81VM. It does not ex
 
 Axion matters architecturally because policy in traditional systems is reactive—acting after an illegal network call or memory write. In T81, Axion evaluates constraints synchronously at the opcode level. Every `AXSET`, `AXREAD`, `AGENT_INVOKE`, and `WLOAD` instruction halts the VM until Axion verifies the action against the active policy profile (e.g., checking `allowed-tensor-hashes` or `max-recursion`). It provides a fail-closed, pre-side-effect enforcement posture.
 
-## 10. CanonFS and Artifact Model
+## 10. CanonFS, Ed25519 Receipt DAGs, and Artifact Model
 
 CanonFS is the deterministic, content-addressed storage subsystem. It is deeply integrated into the VM memory model and Axion tracing.
 
-CanonFS matters architecturally because a deterministic runtime is useless if the input artifacts (weights, models, policies) can be silently altered. CanonFS enforces immutable object identity using CanonHash81. When a model is loaded via `WLOAD` or `TLOADHASH`, the VM and Axion ensure the cryptographic identity of the tensor strictly matches the approved policy profile. Execution traces, fault snippets, and compliance ledgers are written back to CanonFS, cementing a permanent, cryptographically sound provenance chain.
+CanonFS matters architecturally because a deterministic runtime is useless if the input artifacts (weights, models, policies) can be silently altered. CanonFS enforces immutable object identity using `SHA3-512` / `CanonHash81` (`K* = 0` pre-packed `SBDR1T2D` weights and RFC-00D1 foreign-filesystem interchange). When a model is loaded via `WLOAD` or `TLOADHASH`, the VM and Axion ensure the cryptographic identity of the tensor strictly matches the approved policy profile. Post-Wave 5 execution traces, `t81.provider.evidence.v1` receipts, and `RFC-00D4`/`00D6` receipt DAGs are sealed with native C++23 Ed25519 signatures (`src/crypto/ed25519_bundle.cpp`) and can be exported as atomic, offline-verifiable forensic bundles via `t81 receipt export`. Content identity verifies byte integrity and tamper resistance; it does not by itself establish the external truth or authenticity of provenance.
 
-## 11. AI Runtime Model
+## 11. AI Runtime, Control Plane, and Four-Plane Stratification
 
-T81 treats AI inference not as an opaque black box or a secondary library, but as a first-class citizen of the ISA. The decode and runtime inference processes fundamentally change the shape of the machine.
+T81 treats AI inference and agent governance not as opaque black boxes, but as first-class audited surfaces.
 
-By lifting operations like `TWMATMUL`, `QMATMUL`, and `TATTN` directly into the TISC ISA, T81 allows the Axion kernel to inspect tensor shapes, provenance hashes, and activation limits per instruction. The runtime owns the model state, attention contexts, and execution trace natively, rather than treating them as unmanaged heap allocations passed from a Python script. This shifts inference from a loosely coordinated set of GPU kernels into a deeply integrated, highly auditable state machine.
+- **ISA & Regime Execution:** Lifting `TWMATMUL`, `QMATMUL`, and `TATTN` into `TISC v1.9.0` allows `Axion` to inspect tensor shapes, provenance hashes, and activation limits per instruction, backed by Dual-Rail `(P, N)` `SBDR1T2D` kernels, chunked 2B BitNet streaming (`--chunk-bytes`), and empirical `R0`–`R4` regime routing (including Apple Metal `R3` dispatch and single-thread `x86_64` AVX2 `R1` SIMD).
+- **Native C++ MCP & DPE Airlock:** The standalone 15-tool native C++ MCP server (`t81 mcp serve`, `RFC-00D8`) enforces `--root` path jailing, `DPE`+`MCP` transactional isolation (`tx_begin`/`tx_commit`/`tx_abort`, verified by TLA+ `DpeBatchCommit`), immutable `axion_root.apl` protection, KEV/advisory fail-closed gating, and `t81==2.2.0` Python M3 SDK bindings.
+- **Four-Plane Stratified Target (`AI_OS_STRATIFIED_BLUEPRINT.md`):** Implemented deterministic policy (`Plane 1`), hybrid reconciliation/MCP (`Plane 3`), and content-addressed/enclave persistence (`Plane 0`) establish the deterministic guardrails required before any future advisory-only neural OS helpers (`Plane 2`, Horizon D, `< 100 MB` RSS cap — *Planned / Design Target*, not currently implemented) may propose state transitions.
 
 ## 12. Ternary Semantics
 
@@ -139,11 +145,12 @@ The Backend Equivalence Model (RFC-0042) explicitly forbids silent semantic drif
 
 ## 14. Surface Classification
 
-The repository clearly delineates the maturity of its architectural surfaces:
+The repository clearly delineates the maturity of its architectural surfaces and preserves all active research holds (`F01-HOST-BOLQ-v1` `M1–M6 STOP`, `SCG-08 Gate 2` `NO-GO` / PR `#859`, `H01` / Investigation 10A `BLOCKED`, `AXION-AI-001` `HD01–HD06`, and `T81-AIOPT-001 M2` `EXECUTION_BLOCKED`) and negative empirical findings (`10.6×` slower software tryte addition, `75.3%` INT8 in-cache MatVec, `cpu_dualrail_unpack`):
 
-- **Frozen:** The core TISC ISA opcodes, the canonical Data Types, and the foundational arithmetic semantics. These are locked to prevent breaking changes to execution determinism.
-- **Stable (Bounded):** The T81VM interpreter, the Axion fail-closed policy engine, and the RFC-00D1 CanonFS JSON interchange seed. These are ready for production use within the bounds of the Determinism Surface Registry.
-- **Experimental / Stubbed:** The bare-metal kernel boot paths, the TCP/IP stack (RFC-00D0), higher-order Cognitive Tiers (Tier 4+), and native ternary hardware interop. These are subject to rapid change and are not yet covered by Deterministic Core Profile (DCP) guarantees.
+- **Frozen:** The core `TISC v1.9.0` ISA opcodes (`0–173`), canonical Data Types, and the public C++ API headers locked under `docs/governance/PUBLIC_API_LOCK.json` (`v2.2.0`).
+- **Stable (Bounded Research Runtime):** The `T81VM` interpreter, `Axion` fail-closed policy engine, `CanonFS` content-addressed store + `RFC-00D1` interchange, native C++23 Ed25519 `RFC-00D4`/`00D6` receipt sealing and `t81 receipt export`, the 15-tool native C++ MCP + `DPE` transactional control plane with KEV/advisory fail-closed gating, and the `t81==2.2.0` Python M3 SDK. These surfaces are tested within the bounds of the Determinism Surface Registry; this classification does **not** constitute a production-readiness claim.
+- **Experimental / Stubbed:** Headless AArch64 `TernaryOS` enclave (`t81 enclave run`), the TCP/IP stack (`RFC-00D0`), higher-order Cognitive Tiers (Tier 4+), and hypothetical native ternary hardware interop (`RFC-0055`).
+- **Planned / Design Target (Horizon D):** Advisory-only Plane 2 neural OS helpers codified in [`AI_OS_STRATIFIED_BLUEPRINT.md`](./AI_OS_STRATIFIED_BLUEPRINT.md); not currently implemented.
 
 ## 15. TernaryOS / Peripheral Systems
 

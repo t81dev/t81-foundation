@@ -23,7 +23,7 @@ Provide deterministic allow/deny/warn governance decisions for VM syscall contex
 - `PolicyEngine` implementation  
   [`include/t81/axion/policy_engine.hpp`](../../../include/t81/axion/policy_engine.hpp), [`kernel/axion/policy_engine.cpp`](../../../kernel/axion/policy_engine.cpp)
 - VM integration callsites  
-  [`core/vm/vm.cpp`](../../../core/vm/vm.cpp)
+  [`vm/vm.cpp`](../../../vm/vm.cpp)
 
 ## Internal Flow
 
@@ -67,5 +67,5 @@ Diagram source: [`../diagrams/axion-enforcement-flow.mmd`](../diagrams/axion-enf
 - [`include/t81/axion/policy_engine.hpp`](../../../include/t81/axion/policy_engine.hpp)
 - [`kernel/axion/policy_engine.cpp`](../../../kernel/axion/policy_engine.cpp)
 - [`kernel/axion/engine.cpp`](../../../kernel/axion/engine.cpp)
-- [`core/vm/vm.cpp`](../../../core/vm/vm.cpp)
+- [`vm/vm.cpp`](../../../vm/vm.cpp)
 - [`spec/axion-kernel.md`](../../../spec/axion-kernel.md)

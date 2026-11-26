@@ -4,7 +4,7 @@ Status: Active
 Last Verified (UTC): 2026-02-26
 
 > **Architecture File Style Guide**
-> - Terminology mapping: "Governance policy" -> `docs/governance/*`; "Axion policy engine" -> `kernel/axion/policy_engine.cpp`; "VM enforcement points" -> `core/vm/vm.cpp`.
+> - Terminology mapping: "Governance policy" -> `docs/governance/*`; "Axion policy engine" -> `kernel/axion/policy_engine.cpp`; "VM enforcement points" -> `vm/vm.cpp`.
 > - Link style: repo-relative markdown links to concrete files only.
 > - Diagram conventions: GitHub-renderable Mermaid only.
 > - Maturity labels: `Frozen`, `Stable`, `Experimental`, `Stubbed`.
@@ -52,7 +52,7 @@ Diagram source: [`../diagrams/governance-axion-sequence.mmd`](../diagrams/govern
 
 - [`kernel/axion/policy_engine.cpp`](../../../kernel/axion/policy_engine.cpp)
 - [`kernel/axion/engine.cpp`](../../../kernel/axion/engine.cpp)
-- [`core/vm/vm.cpp`](../../../core/vm/vm.cpp)
+- [`vm/vm.cpp`](../../../vm/vm.cpp)
 - [`kernel/axion/canonfs_hook.cpp`](../../../kernel/axion/canonfs_hook.cpp)
 - [`docs/governance/`](../../governance)
 - [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml)

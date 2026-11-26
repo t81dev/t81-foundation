@@ -59,7 +59,7 @@ Diagram source: [`../diagrams/experimental-tiers-structure.mmd`](../diagrams/exp
 - [`experimental/tiers/README.md`](../../../experimental/tiers/README.md)
 - [`experimental/hanoi/README.md`](../../../experimental/hanoi/README.md)
 - [`include/t81/experimental/cog/tier.hpp`](../../../include/t81/experimental/cog/tier.hpp)
-- [`core/vm/vm.cpp`](../../../core/vm/vm.cpp)
+- [`vm/vm.cpp`](../../../vm/vm.cpp)
 - [`spec/cognitive-tiers.md`](../../../spec/cognitive-tiers.md)
 - [`spec/supplemental/hanoi-kernel-spec.md`](../../../spec/supplemental/hanoi-kernel-spec.md)
 - [`docs/product/DETERMINISTIC_CORE_PROFILE.md`](../../product/DETERMINISTIC_CORE_PROFILE.md)

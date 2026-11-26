@@ -5,7 +5,7 @@ Last Verified (UTC): 2026-02-26
 Maturity: `Frozen` (core canonical numerics), `Stable` (broader type library)
 
 > **Architecture File Style Guide**
-> - Terminology mapping: "Core data types" -> `core/types/` + `include/t81/types/`; "BigInt/Fraction/Float" -> `T81BigInt.hpp` / `T81Fraction.hpp` / `T81Float.hpp`.
+> - Terminology mapping: "Core data types" -> `isa/types/` + `include/t81/types/`; "BigInt/Fraction/Float" -> `T81BigInt.hpp` / `T81Fraction.hpp` / `T81Float.hpp`.
 > - Link style: repo-relative markdown links to concrete files only.
 > - Diagram conventions: GitHub-renderable Mermaid only.
 > - Maturity labels: `Frozen`, `Stable`, `Experimental`, `Stubbed`.
@@ -17,7 +17,7 @@ Provide canonical ternary-native numeric/value representations used across ISA, 
 ## Principal Data Structures and Interfaces
 
 - Core implementation module  
-  [`core/types/README.md`](../../../core/types/README.md)
+  [`isa/types/README.md`](../../../isa/types/README.md)
 - Public type surface  
   [`include/t81/types/README.md`](../../../include/t81/types/README.md)
 - Canonical numeric anchors  
@@ -59,7 +59,7 @@ Diagram source: [`../diagrams/data-types-stack.mmd`](../diagrams/data-types-stac
 
 ## Evidence
 
-- [`core/types/README.md`](../../../core/types/README.md)
+- [`isa/types/README.md`](../../../isa/types/README.md)
 - [`include/t81/types/README.md`](../../../include/t81/types/README.md)
 - [`include/t81/types/T81BigInt.hpp`](../../../include/t81/types/T81BigInt.hpp)
 - [`include/t81/types/T81Fraction.hpp`](../../../include/t81/types/T81Fraction.hpp)
