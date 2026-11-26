@@ -3773,7 +3773,7 @@ int main(int argc, char* argv[]) {
       if (json_out) {
         std::cout << "{\"ok\":true,\"receipt_canonfs_ref\":\"" << receipt_hex
                   << "\",\"ed25519_verified\":true,\"bundle_sha3_512\":\"" << bundle_sha
-                  << "\",\"out_dir\":\"" << out_dir.string() << "\"}\n";
+                  << "\",\"out_dir\":\"" << out_dir.generic_string() << "\"}\n";
       } else {
         std::cout << "Exported verified RFC-00D4 forensic bundle to " << out_dir.string() << " ("
                   << bundle_sha << ")\n";
