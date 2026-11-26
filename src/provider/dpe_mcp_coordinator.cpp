@@ -96,7 +96,37 @@ DpeMcpCommitOutcome DpeMcpCoordinator::execute_and_commit(const std::vector<DpeA
     return out;
   }
 
-  // 2. Pre-execution fail-closed Axion policy check & intra-level write-set conflict check.
+  // 2. Pre-execution fail-closed Three-Plane non-bypass check, Axion policy check,
+  //    and intra-level write-set conflict check.
+  auto valid_plane = [](const std::string& p) {
+    return p == "deterministic" || p == "stochastic" || p == "hybrid";
+  };
+  for (const auto& t : tasks) {
+    if (!valid_plane(t.source_plane) || !valid_plane(t.target_plane)) {
+      out.code = "ERR_PLANE_BYPASS_DENIED";
+      out.error = "invalid execution plane on task " + t.task_id;
+      return out;
+    }
+    if (t.source_plane == "stochastic" && t.target_plane == "deterministic") {
+      out.code = "ERR_PLANE_BYPASS_DENIED";
+      out.error = "direct stochastic -> deterministic commit denied on task " + t.task_id +
+                  "; hybrid reconciliation required";
+      return out;
+    }
+    if (t.target_plane == "deterministic") {
+      for (const auto& dep_id : t.dep_task_ids) {
+        const auto& dep = tasks[id_to_idx[dep_id]];
+        if (dep.source_plane == "stochastic" && dep.target_plane != "hybrid") {
+          out.code = "ERR_PLANE_BYPASS_DENIED";
+          out.error = "stochastic dependency " + dep_id +
+                      " must traverse a hybrid reconciliation node before deterministic commit " +
+                      t.task_id;
+          return out;
+        }
+      }
+    }
+  }
+
   const auto* active_pol = policy_engine_->active_policy();
   const std::string policy_sha =
       active_pol ? ProviderGovernor::compute_policy_sha3_512(*active_pol) : "";
@@ -130,6 +160,7 @@ DpeMcpCommitOutcome DpeMcpCoordinator::execute_and_commit(const std::vector<DpeA
 
   // 3. Execute levels concurrently across bounded workers, staging canonical deltas.
   std::map<std::string, std::string> committed_kv;
+  const std::string state_a_sha = sha3_hex_str("");
   std::vector<t81::crypto::AccountableBundleNode> dag_nodes;
   dag_nodes.reserve(tasks.size());
 
@@ -165,8 +196,12 @@ DpeMcpCommitOutcome DpeMcpCoordinator::execute_and_commit(const std::vector<DpeA
       const std::string delta_sha = sha3_hex_str(delta_serial);
       const std::string meaning_json =
           "{\"action_type\":\"dpe.task_commit\",\"agent_id\":" + std::to_string(t.agent_id) +
-          ",\"task_id\":\"" + t.task_id + "\"}";
-      const std::string evidence_json = "{\"delta_sha3_512\":\"" + delta_sha + "\"}";
+          ",\"source_plane\":\"" + t.source_plane + "\",\"target_plane\":\"" + t.target_plane +
+          "\",\"task_id\":\"" + t.task_id + "\",\"transition_kind\":\"" + t.transition_kind + "\"}";
+      const std::string evidence_json =
+          "{\"delta_sha3_512\":\"" + delta_sha + "\",\"reproducibility_class\":\"" +
+          t.reproducibility_class + "\",\"state_a_ref\":\"" + state_a_sha +
+          "\",\"state_c_ref\":\"" + delta_sha + "\",\"transition_verdict_trit\":1}";
       const std::string authority_json =
           "{\"policy_sha3_512\":\"" + policy_sha + "\",\"verdict\":\"Allow\"}";
       const std::string payload = t81::crypto::rfc00d4_canonical_signing_payload(
@@ -202,7 +237,9 @@ DpeMcpCommitOutcome DpeMcpCoordinator::execute_and_commit(const std::vector<DpeA
   out.code = "OK";
   out.levels_executed = levels.size();
   out.tasks_committed = tasks.size();
-  out.final_state_sha3_512 = sha3_hex_str(state_serial);
+  out.state_a_ref = state_a_sha;
+  out.state_c_ref = sha3_hex_str(state_serial);
+  out.final_state_sha3_512 = out.state_c_ref;
   out.receipt_dag = std::move(dag_nodes);
   return out;
 }

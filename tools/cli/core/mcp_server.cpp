@@ -744,7 +744,18 @@ std::string build_tools_list_json() {
          "\"max_abs_err\":{\"type\":\"integer\"},\"dualrail_fallback_count\":{\"type\":\"integer\"}"
          ","
          "\"repeat_sha3_identical\":{\"type\":\"boolean\"},"
-         "\"auto_abort_on_deny\":{\"type\":\"boolean\"}}}},"
+         "\"auto_abort_on_deny\":{\"type\":\"boolean\"},"
+         "\"source_plane\":{\"type\":\"string\",\"enum\":[\"deterministic\",\"stochastic\","
+         "\"hybrid\"]},"
+         "\"target_plane\":{\"type\":\"string\",\"enum\":[\"deterministic\",\"stochastic\","
+         "\"hybrid\"]},"
+         "\"transition_kind\":{\"type\":\"string\",\"enum\":[\"execution_path\",\"transition_"
+         "path\"]},"
+         "\"reproducibility_class\":{\"type\":\"string\",\"enum\":[\"deterministic\",\"seeded_"
+         "probabilistic\",\"external_probabilistic\"]},"
+         "\"hybrid_reconciled\":{\"type\":\"boolean\"},"
+         "\"hybrid_verdict_trit\":{\"type\":\"integer\"},"
+         "\"state_a_ref\":{\"type\":\"string\"}}}},"
 
          "{\"name\":\"t81.tx_abort\","
          "\"description\":\"Abort an active file transaction and restore the exact pre-mutation "
@@ -1309,6 +1320,21 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
             arg_int64_strict(args, "dualrail_fallback_count", fallback_cnt, 0);
         const bool repeat_ok = arg_bool(args, "repeat_sha3_identical", true);
         const bool req_auto_abort = arg_bool(args, "auto_abort_on_deny", false);
+        const std::string src_plane_arg = arg_str(args, "source_plane");
+        const std::string dst_plane_arg = arg_str(args, "target_plane");
+        const std::string trans_kind_arg = arg_str(args, "transition_kind");
+        const std::string repro_arg = arg_str(args, "reproducibility_class");
+        const bool hybrid_reconciled = arg_bool(args, "hybrid_reconciled", false);
+        int64_t hybrid_verdict_trit = 1;
+        const bool hybrid_trit_valid =
+            arg_int64_strict(args, "hybrid_verdict_trit", hybrid_verdict_trit, 1);
+        const std::string state_a_ref_arg = arg_str(args, "state_a_ref");
+        const std::string source_plane = src_plane_arg.empty() ? "deterministic" : src_plane_arg;
+        const std::string target_plane = dst_plane_arg.empty() ? "deterministic" : dst_plane_arg;
+        const std::string transition_kind =
+            trans_kind_arg.empty()
+                ? (source_plane == target_plane ? "execution_path" : "transition_path")
+                : trans_kind_arg;
         auto it = active_txs.find(tx_id);
         if (it == active_txs.end()) {
           structured = "{\"ok\":false,\"trit\":-1,\"error\":\"unknown or closed tx_id\"}";
@@ -1353,17 +1379,48 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
             const std::string after_sha = sha3_512_hex(after_bytes);
             const std::string live_sha = sha3_512_hex(live_bytes);
             bool policy_ok = true;
+            bool hybrid_abstain = false;
             std::string deny_code;
             std::string policy_err;
             std::string sbdr_sha;
             std::string vm_exec_receipt;
             uint64_t vm_skipped_blocks = 0;
             bool vm_repeat_verified = false;
+            auto valid_plane = [](const std::string& p) {
+              return p == "deterministic" || p == "stochastic" || p == "hybrid";
+            };
 
             if (tx.target_path.filename() == "axion_root.apl") {
               policy_ok = false;
               deny_code = "ERR_IMMUTABLE_POLICY_ROOT";
               policy_err = "axion_root.apl is immutable regardless of supplied policy_path";
+            } else if (!valid_plane(source_plane) || !valid_plane(target_plane)) {
+              policy_ok = false;
+              deny_code = "ERR_PLANE_BYPASS_DENIED";
+              policy_err = "invalid source_plane or target_plane";
+            } else if (source_plane == "stochastic" && target_plane == "deterministic" &&
+                       !hybrid_reconciled) {
+              policy_ok = false;
+              deny_code = "ERR_PLANE_BYPASS_DENIED";
+              policy_err = "direct stochastic -> deterministic commit denied; hybrid "
+                           "reconciliation required";
+            } else if (!state_a_ref_arg.empty() && state_a_ref_arg != tx.before_sha3_512) {
+              policy_ok = false;
+              deny_code = "ERR_PLANE_BYPASS_DENIED";
+              policy_err = "state_a_ref does not match pre-transition target_path SHA3-512";
+            } else if (!hybrid_trit_valid || hybrid_verdict_trit < -1 || hybrid_verdict_trit > 1) {
+              policy_ok = false;
+              deny_code = "ERR_PLANE_BYPASS_DENIED";
+              policy_err = "hybrid_verdict_trit must be in {-1, 0, +1}";
+            } else if (hybrid_verdict_trit == 0) {
+              policy_ok = false;
+              hybrid_abstain = true;
+              deny_code = "DEFER_HYBRID_ABSTAIN";
+              policy_err = "hybrid reconciliation abstained (trit=0); zero state mutation";
+            } else if (hybrid_verdict_trit == -1) {
+              policy_ok = false;
+              deny_code = "ERR_PLANE_BYPASS_DENIED";
+              policy_err = "hybrid reconciliation vetoed transition (trit=-1)";
             } else if (!max_abs_err_valid || !fallback_cnt_valid) {
               policy_ok = false;
               deny_code = "ERR_INVALID_BUDGET";
@@ -1580,11 +1637,18 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                 active_txs.erase(it);
                 auto_aborted = true;
               }
-              structured = "{\"ok\":false,\"trit\":-1,\"committed\":false,\"auto_aborted\":" +
-                           std::string(auto_aborted ? "true" : "false") + ",\"tx_id\":\"" + tx_id +
-                           "\",\"agent_id\":\"" + json_escape_mcp(tx.agent_id) + "\",\"code\":\"" +
-                           deny_code + "\",\"current_sha3_512\":\"" + live_sha + "\",\"error\":\"" +
-                           json_escape_mcp(policy_err) + "\"}";
+              const int verdict_trit = hybrid_abstain ? 0 : -1;
+              structured =
+                  "{\"ok\":false,\"trit\":" + std::to_string(verdict_trit) +
+                  ",\"transition_verdict_trit\":" + std::to_string(verdict_trit) +
+                  ",\"committed\":false,\"auto_aborted\":" +
+                  std::string(auto_aborted ? "true" : "false") + ",\"tx_id\":\"" + tx_id +
+                  "\",\"agent_id\":\"" + json_escape_mcp(tx.agent_id) + "\",\"source_plane\":\"" +
+                  json_escape_mcp(source_plane) + "\",\"target_plane\":\"" +
+                  json_escape_mcp(target_plane) + "\",\"transition_kind\":\"" +
+                  json_escape_mcp(transition_kind) + "\",\"state_a_ref\":\"" + tx.before_sha3_512 +
+                  "\",\"state_c_ref\":null,\"code\":\"" + deny_code + "\",\"current_sha3_512\":\"" +
+                  live_sha + "\",\"error\":\"" + json_escape_mcp(policy_err) + "\"}";
             } else {
               const std::string before_sha = tx.before_sha3_512;
               const bool changed = (before_sha != after_sha);
@@ -1610,15 +1674,22 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                 }
               }
               const std::string repro_class =
-                  vm_repeat_verified ? "deterministic" : "provenance_only";
+                  !repro_arg.empty()
+                      ? repro_arg
+                      : (vm_repeat_verified ? "deterministic" : "external_probabilistic");
               const std::string meaning_json =
                   "{\"action_type\":\"mcp.tx_commit\",\"agent_id\":\"" +
-                  json_escape_mcp(tx.agent_id) + "\",\"tx_id\":\"" + json_escape_mcp(tx_id) + "\"}";
+                  json_escape_mcp(tx.agent_id) + "\",\"source_plane\":\"" +
+                  json_escape_mcp(source_plane) + "\",\"target_plane\":\"" +
+                  json_escape_mcp(target_plane) + "\",\"transition_kind\":\"" +
+                  json_escape_mcp(transition_kind) + "\",\"tx_id\":\"" + json_escape_mcp(tx_id) +
+                  "\"}";
               const std::string evidence_json =
                   "{\"after_sha3_512\":\"" + after_sha + "\",\"before_sha3_512\":\"" + before_sha +
                   "\",\"commit_receipt\":\"" + commit_receipt + "\",\"parent_receipt_ref\":\"" +
                   json_escape_mcp(parent_receipt_ref) + "\",\"reproducibility_class\":\"" +
-                  repro_class + "\"}";
+                  json_escape_mcp(repro_class) + "\",\"state_a_ref\":\"" + before_sha +
+                  "\",\"state_c_ref\":\"" + after_sha + "\",\"transition_verdict_trit\":1}";
               const std::string authority_json =
                   "{\"policy_sha3_512\":\"" + policy_sha + "\",\"verdict\":\"Allow\"}";
 
@@ -1652,15 +1723,20 @@ int run_mcp_serve(const std::vector<std::string>& command_args,
                 }
                 last_commit_receipts[tx.target_path.string()] = commit_receipt;
                 active_txs.erase(it);
-                structured = "{\"ok\":true,\"trit\":1,\"committed\":true,\"tx_id\":\"" + tx_id +
-                             "\",\"agent_id\":\"" + json_escape_mcp(tx.agent_id) +
-                             "\",\"before_sha3_512\":\"" + before_sha + "\",\"after_sha3_512\":\"" +
-                             after_sha + "\",\"commit_receipt\":\"" + commit_receipt +
-                             "\",\"parent_receipt_ref\":\"" + json_escape_mcp(parent_receipt_ref) +
-                             "\",\"policy_sha3_512\":\"" + policy_sha +
-                             "\",\"reproducibility_class\":\"" + repro_class +
-                             "\",\"evidence_canonfs_ref\":\"" + evidence_ref_hex +
-                             "\",\"ed25519_signature_b64\":\"" + sig_b64 +
+                structured = "{\"ok\":true,\"trit\":1,\"transition_verdict_trit\":1,"
+                             "\"committed\":true,\"tx_id\":\"" +
+                             tx_id + "\",\"agent_id\":\"" + json_escape_mcp(tx.agent_id) +
+                             "\",\"source_plane\":\"" + json_escape_mcp(source_plane) +
+                             "\",\"target_plane\":\"" + json_escape_mcp(target_plane) +
+                             "\",\"transition_kind\":\"" + json_escape_mcp(transition_kind) +
+                             "\",\"state_a_ref\":\"" + before_sha + "\",\"state_c_ref\":\"" +
+                             after_sha + "\",\"before_sha3_512\":\"" + before_sha +
+                             "\",\"after_sha3_512\":\"" + after_sha + "\",\"commit_receipt\":\"" +
+                             commit_receipt + "\",\"parent_receipt_ref\":\"" +
+                             json_escape_mcp(parent_receipt_ref) + "\",\"policy_sha3_512\":\"" +
+                             policy_sha + "\",\"reproducibility_class\":\"" +
+                             json_escape_mcp(repro_class) + "\",\"evidence_canonfs_ref\":\"" +
+                             evidence_ref_hex + "\",\"ed25519_signature_b64\":\"" + sig_b64 +
                              "\",\"dualrail_sparse128_blocks_skipped\":" +
                              std::to_string(vm_skipped_blocks) +
                              ",\"dualrail_fallback_count\":0,\"repeat_sha3_identical\":" +

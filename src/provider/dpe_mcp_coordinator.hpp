@@ -26,17 +26,26 @@ struct DpeAgentTask {
   std::vector<std::string> write_keys;
   // Pure deterministic execution callback producing key -> payload bytes.
   std::function<std::unordered_map<std::string, std::string>()> compute;
+  // Three-Plane Stratified Execution metadata (defaults preserve deterministic base tasks).
+  std::string source_plane{"deterministic"};      // "deterministic" | "stochastic" | "hybrid"
+  std::string target_plane{"deterministic"};      // "deterministic" | "stochastic" | "hybrid"
+  std::string transition_kind{"execution_path"};  // "execution_path" | "transition_path"
+  std::string reproducibility_class{
+      "deterministic"};  // "deterministic" | "seeded_probabilistic" | "external_probabilistic"
 };
 
 struct DpeMcpCommitOutcome {
   bool ok{false};
   int trit{-1};
   std::string code;  // "OK", "ERR_DPE_CYCLE", "ERR_DPE_TX_CONFLICT",
-                     // "ERR_POLICY_DENIED", "ERR_EVIDENCE_PERSIST_FAILED"
+                     // "ERR_PLANE_BYPASS_DENIED", "ERR_POLICY_DENIED",
+                     // "ERR_EVIDENCE_PERSIST_FAILED"
   std::string error;
   uint32_t conflict_winner_agent{0};
   std::size_t levels_executed{0};
   std::size_t tasks_committed{0};
+  std::string state_a_ref;
+  std::string state_c_ref;
   std::string final_state_sha3_512;
   std::vector<t81::crypto::AccountableBundleNode> receipt_dag;
 };
