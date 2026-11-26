@@ -3,7 +3,8 @@
 This file is a lightweight Cursor adapter. **Authoritative rules, research continuity boundaries, frozen contracts, and contribution guidelines live in [`AGENTS.md`](AGENTS.md)** — read `AGENTS.md` and `docs/ai-context/START_HERE.md` first before making changes.
 
 ## Cursor-Specific Workflow Hooks
-- Locate the matching contract in `spec/` before editing implementation files (`isa/`, `vm/`, `fs/`, `kernel/axion/`, `lang/`, `src/provider/`, `tools/`).
-- Preserve frozen boundaries (`TISC v1.9.0`, `docs/governance/PUBLIC_API_LOCK.json`, `include/t81/**/*.hpp`) and all active research holds (`F01 M1–M6 STOP`, `SCG-08 Gate 2 NO-GO`, `H01` / Inv 10A `BLOCKED`, `AXION-AI-001 HD01–HD06`).
-- Prefer small, reviewable C++20/Python increments with matching unit tests (`tests/cpp/`, `tests/vm/`, `tests/ci/`) and local governance verification before opening a PR.
+- Locate the matching contract in `spec/` before editing implementation files (`isa/`, `vm/`, `fs/`, `kernel/axion/`, `lang/`, `src/crypto/`, `src/provider/`, `tools/`).
+- Preserve frozen boundaries (`TISC v1.9.0`, `docs/governance/PUBLIC_API_LOCK.json` `v2.2.0`, `include/t81/**/*.hpp`) and all active research holds (`F01 M1–M6 STOP`, `SCG-08 Gate 2 NO-GO`, `H01` / Inv 10A `BLOCKED`, `AXION-AI-001 HD01–HD06`, `T81-AIOPT-001 M2 EXECUTION_BLOCKED`).
+- Follow `DEC-004` (`docs/architecture/AI_OS_STRATIFIED_BLUEPRINT.md`): treat Horizon D Plane 2 neural OS helpers strictly as *Planned / Design Target* (`< 100 MB` RSS cap on `8 GB` M2 hosts), never as implemented.
+- Prefer small, reviewable C++23/Python increments with targeted local builds/tests (`cmake --build build --target <target> -j4`, `ctest --test-dir build -R <regex>`) and local governance verification before opening a PR.
 - Keep public claims evidence-bounded; never fabricate benchmarks, citations, or test runs.

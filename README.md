@@ -6,13 +6,13 @@
 
 **Balanced ternary · Representation-aware AI/ML · Deterministic execution · Experimental architecture**
 
-[Research Charter](docs/research/RESEARCH_CHARTER.md) · [Research Roadmap](docs/ROADMAP.md) · [Architecture](docs/explanation/ARCHITECTURE.md) · [AI Research Context](docs/ai-context/) · [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md)
+[Research Charter](docs/research/RESEARCH_CHARTER.md) · [Research Roadmap](docs/ROADMAP.md) · [Architecture Overview](docs/architecture/OVERVIEW.md) · [Stratified AI OS Blueprint (Horizon D)](docs/architecture/AI_OS_STRATIFIED_BLUEPRINT.md) · [AI Research Context](docs/ai-context/) · [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md)
 
 ---
 
-## 60-Second Proof (`v2.1.0`)
+## 60-Second Proof (`v2.2.0`)
 
-Run the verified end-to-end stack locally right after `cmake -S . -B build -G Ninja && cmake --build build --target t81 -j8`:
+Run the verified end-to-end stack locally right after `cmake -S . -B build -G Ninja && cmake --build build --target t81 -j4`:
 
 ```bash
 # 1. Native C++ MCP server (15 in-process tools: Axion policy, CanonFS, atomic tx, TISC subgraph, Dual-Rail diff/RAG/adapter)
@@ -206,12 +206,14 @@ The project distinguishes among different maturity classifications across its su
 
 | Component | Maturity | Role |
 |---|---|---|
-| **TISC** | Frozen | Computational instruction contract governing execution semantics (v1.9.0) |
-| **T81VM** | Stable | Hosted execution profile for virtual-machine execution and determinism (bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md)) |
-| **Axion Kernel** | Stable | Freestanding execution profile (bare-metal AArch64 microkernel/HAL) and pre-side-effect policy authorization |
+| **TISC** | Frozen | Computational instruction contract governing execution semantics (`v1.9.0`, opcodes `0–173` frozen) |
+| **T81VM** | Stable | Hosted execution profile for virtual-machine execution, Dual-Rail `SBDR1T2D`, and determinism (bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md)) |
+| **Axion Kernel** | Stable | Fail-closed pre-side-effect policy authorization (`axion_root.apl`) and freestanding AArch64 enclave (`t81 enclave run`, experimental) |
+| **Native C++ MCP & DPE** | Stable (bounded) | 15-tool `RFC-00D8` server (`t81 mcp serve`), `DPE`+`MCP` transactional isolation, KEV/advisory fail-closed gating, `t81==2.2.0` Python M3 SDK |
 | **T81Lang** | Stable | Language frontend and compilation infrastructure targeting TISC |
-| **T81 Core** | Stable | Numerical types, containers, and representation primitives |
-| **CanonFS** | Stable | Content-addressed artifacts and integrity mechanisms |
+| **T81 Core** | Stable | Numerical types, containers, and representation primitives (`PUBLIC_API_LOCK.json` `v2.2.0`) |
+| **CanonFS & Ed25519 Receipts** | Stable (bounded) | Content-addressed artifacts (`SHA3-512`), `RFC-00D1` interchange, native C++23 Ed25519 `RFC-00D4`/`00D6` receipt DAGs, and offline `t81 receipt export` bundles |
+| **Stratified AI OS (Horizon D)** | Planned / Design Target | Four-plane neural-symbolic architecture ([`AI_OS_STRATIFIED_BLUEPRINT.md`](docs/architecture/AI_OS_STRATIFIED_BLUEPRINT.md), `DEC-004`); advisory-only Plane 2 helpers are not currently implemented |
 | **DAIOS** | Concept | Target architecture proposal for deterministic AI operating systems (RFC-00D2) |
 | **Research experiments** | Experimental | Hypothesis testing, correctness validation, and comparative measurements |
 
@@ -305,6 +307,8 @@ See [`examples/research/agent-receipt-sidecar/QUICKSTART.md`](examples/research/
 
 | Directory / File | Description |
 |---|---|
+| [`docs/architecture/OVERVIEW.md`](docs/architecture/OVERVIEW.md) | Canonical architecture snapshot, layer boundaries, and four-plane alignment |
+| [`docs/architecture/AI_OS_STRATIFIED_BLUEPRINT.md`](docs/architecture/AI_OS_STRATIFIED_BLUEPRINT.md) | Stratified Neural-Symbolic AI OS Blueprint (*Planned / Design Target — Horizon D*, `DEC-004`) |
 | [`docs/research/`](docs/research/) | Primary scientific investigations and experimental findings |
 | [`experiments/`](experiments/) | Bounded experimental implementations, harnesses, and evidence records |
 | [`spec/`](spec/) | Instruction-set specifications and RFC directory |

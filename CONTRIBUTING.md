@@ -37,11 +37,11 @@ cmake --build build --parallel
 ctest --test-dir build --output-on-failure
 ```
 
-Single-threaded safe mode:
+Single-threaded or memory-constrained (`8 GB` RAM) targeted mode:
 
 ```bash
-cmake --build build --parallel 1
-ctest --test-dir build --output-on-failure -j1
+cmake --build build --target t81 -j4
+ctest --test-dir build -R "<regex>" --output-on-failure
 ```
 
 Optional extended suite:
@@ -74,8 +74,8 @@ ______________________________________________________________________
 
 ## 5. Code and Docs Expectations
 
-- Public API: `include/t81/`
-- Implementation: `vm/`, `fs/`, `kernel/axion/`, `lang/`, `tools/`, and other subsystem directories; `src/` primarily assembles CMake targets (see [project structure](PROJECT_STRUCTURE.md)).
+- Public API (frozen under `docs/governance/PUBLIC_API_LOCK.json` `v2.2.0`): `include/t81/`
+- Implementation: `vm/`, `fs/`, `kernel/axion/`, `lang/`, `tools/`, `src/crypto/`, `src/provider/`, and other subsystem directories (see [project structure](PROJECT_STRUCTURE.md)).
 - Tests: `tests/cpp/`
 - Docs: `docs/`
 - Root-file policy: new root-level files are prohibited without explicit approval (see `docs/governance/SPEC_AUTHORITY_MODEL.md`).
@@ -136,7 +136,7 @@ ______________________________________________________________________
 
 ## 9. Publishing Python Wheels to PyPI
 
-The [`python-wheels`](.github/workflows/python-wheels.yml) workflow publishes binary wheels for CPython 3.9–3.13 on Linux (x86_64, ARM64), macOS (arm64, x86_64), and Windows on every `v*.*.*` release tag.
+The [`python-wheels`](.github/workflows/python-wheels.yml) workflow publishes binary wheels for CPython 3.9–3.14 on Linux (x86_64, ARM64), macOS (arm64, x86_64), and Windows on every `v*.*.*` release tag.
 
 **Authentication** uses [OIDC Trusted Publishing](https://docs.pypi.org/trusted-publishers/) — no stored API tokens are needed. Before the first release, a maintainer must register the trusted publisher once on PyPI:
 

@@ -39,7 +39,9 @@ The handoff, roadmap, and buildable-next-steps documents describe maintenance la
 
 For architecture work:
 
-6. [spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md](./spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md)
+6. [docs/architecture/OVERVIEW.md](./docs/architecture/OVERVIEW.md)
+1. [docs/architecture/AI_OS_STRATIFIED_BLUEPRINT.md](./docs/architecture/AI_OS_STRATIFIED_BLUEPRINT.md) (*Planned / Design Target — Horizon D*, `DEC-004`)
+1. [spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md](./spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md)
 1. [spec/rfcs/RFC-00D0-base81-aware-tcp-ip-stack.md](./spec/rfcs/RFC-00D0-base81-aware-tcp-ip-stack.md)
 
 ## Current Priority Lanes
@@ -57,11 +59,11 @@ Do not expand subsystem count casually. Favor finishing existing lanes over star
 
 These areas have enough implementation and test weight to extend carefully:
 
-- CLI/runtime path (including the standalone 15-tool native C++ MCP server `t81 mcp serve` with RFC-00D8 compact framing, isolated multi-agent `tx_begin`/`tx_commit`/`tx_abort`, immutable `axion_root.apl` protection, and `{-1, 0, +1}` black-box evaluation in `examples/research/agent-receipt-sidecar/ai_usability_eval.py`)
-- core deterministic VM/data surfaces (including Dual-Rail `(P, N)` `TMatMul` and `SBDR1T2D` CanonFS weight caching)
+- CLI/runtime path (including the standalone 15-tool native C++ MCP server `t81 mcp serve` with RFC-00D8 compact framing, `DPE`+`MCP` transactional isolation `tx_begin`/`tx_commit`/`tx_abort` verified by TLA+ `DpeBatchCommit`, immutable `axion_root.apl` protection, KEV/advisory fail-closed gating, `t81 receipt export` offline Ed25519 bundles, `t81 enclave run` experimental headless runner, and `{-1, 0, +1}` black-box evaluation in `examples/research/agent-receipt-sidecar/ai_usability_eval.py`)
+- core deterministic VM/data surfaces (including Dual-Rail `(P, N)` `TMatMul`, `SBDR1T2D` CanonFS weight caching, chunked 2B BitNet streaming, and native C++23 Ed25519 `RFC-00D4`/`00D6` receipt sealing under `src/crypto/ed25519_bundle.cpp`)
 - Axion policy concepts
 - CanonFS interchange contracts and schemas
-- Python SDK under `ffi/python/t81/` (packaged via `pyproject.toml`, `CPython 3.9–3.14`)
+- Python SDK under `ffi/python/t81/` (`t81==2.2.0` + M3 SDK bindings, packaged via `pyproject.toml`, `CPython 3.9–3.14`)
 - accepted RFC surfaces already referenced by tests, docs, and CI
 
 ## Draft Or Design-Led Areas
@@ -87,7 +89,7 @@ Do not treat draft RFC text as license to overbuild. Narrow the implementation s
 
 `main` should stay operationally boring.
 
-Before concluding work, prefer to verify the narrowest meaningful slice locally:
+Before concluding work, prefer to verify the narrowest meaningful slice locally (on `8 GB` unified-memory hosts such as Apple Silicon M2, prefer targeted builds `cmake --build build --target <target> -j4` and filtered `ctest --test-dir build -R <regex>` rather than full unfiltered builds):
 
 - targeted `cmake` configure/build
 - relevant tests
