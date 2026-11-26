@@ -156,10 +156,11 @@ int main() {
       std::chrono::duration<double, std::micro>(t1 - t0).count() / static_cast<double>(kIters);
   std::cout << "PASS t81_ed25519_bundle_test (RFC8032 TV1-3 + PEM + DAG + warm verify " << mean_us
             << " us/op)\n";
-  // Assert well below 2000 us under Release (generous CI ceiling; M2 arm64 ~440-600 us).
+  // Assert well below 5000 us under Release (generous cross-compiler CI ceiling; M2 Clang ~440-600
+  // us).
 #ifdef NDEBUG
-  if (mean_us >= 2000.0) {
-    std::cerr << "FAIL: warm Ed25519 verify exceeded 2000 us (" << mean_us << " us)\n";
+  if (mean_us >= 5000.0) {
+    std::cerr << "FAIL: warm Ed25519 verify exceeded 5000 us (" << mean_us << " us)\n";
     return 1;
   }
 #endif
