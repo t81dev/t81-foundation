@@ -3,7 +3,7 @@
 **Status:** draft — proposed requirements, not binding production behavior
 **Type:** standards-track
 **Created:** 2026-11-05
-**Updated:** 2026-11-06
+**Updated:** 2026-11-26 (cross-referenced from non-breaking informational `spec/tisc-spec.md §6.3`; Section 10 maintainer authorization remains pending)
 **Applies-To:** TISC ISA specification (`spec/tisc-spec.md`, `spec/tisc/`), hosted `T81VM` (`vm/vm.cpp`), freestanding Axion OS evaluator (`ternaryos/hal/cpa004_evaluator.cpp`), LLVM/MLIR lowering backends (`lang/llvm/tisc_to_llvm.cpp`), and cross-profile bytecode artifacts
 **Supersedes:** nothing; provides the formal decision matrix and migration framework for ISA-001 reconciliation findings
 
