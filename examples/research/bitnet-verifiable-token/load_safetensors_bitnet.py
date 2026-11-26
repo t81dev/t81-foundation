@@ -499,13 +499,36 @@ def main() -> int:
     ap.add_argument("--chunk-bytes", type=int, default=67108864, help="Streaming chunk budget in bytes (default: 64 MiB)")
     ap.add_argument("--self-test", action="store_true", help="Run built-in safetensors ingest + roundtrip + tamper self-test")
     ap.add_argument("--verify-2b-streaming", action="store_true", help="Run deterministic 2B-scale streaming SBDR1T2D verification")
+    ap.add_argument("--verify-real-hf-if-cached", action="store_true", help="Verify cached microsoft/bitnet-b1.58-2B-4T if present, else deterministic 2B fixture")
     args = ap.parse_args()
     rc = 0
     if args.self_test:
         rc |= run_self_test()
     if args.verify_2b_streaming:
         rc |= run_verify_2b_streaming()
-    if args.self_test or args.verify_2b_streaming:
+    if args.verify_real_hf_if_cached:
+        hf_candidates = [
+            Path("models/bitnet-b1.58-2B-4T/model.safetensors"),
+            Path.home() / ".cache/huggingface/hub/models--microsoft--bitnet-b1.58-2B-4T/snapshots",
+        ]
+        found_real = None
+        for cand in hf_candidates:
+            if cand.is_file():
+                found_real = cand
+                break
+            if cand.is_dir():
+                matches = sorted(cand.rglob("*.safetensors"))
+                if matches:
+                    found_real = matches[0]
+                    break
+        if found_real is not None:
+            chunk_elems = max(65536, args.chunk_bytes // 4)
+            res = ingest_safetensors_streaming(found_real, None, chunk_elems=chunk_elems, emit_sbdr2d=False)
+            res["fixture_kind"] = "real_hf_checkpoint"
+            print(json.dumps(res, indent=2))
+        else:
+            rc |= run_verify_2b_streaming()
+    if args.self_test or args.verify_2b_streaming or args.verify_real_hf_if_cached:
         return rc
     if not args.input:
         ap.error("provide --input <file.safetensors>, --self-test, or --verify-2b-streaming")
