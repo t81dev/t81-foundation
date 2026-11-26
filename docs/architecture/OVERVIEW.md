@@ -1,7 +1,7 @@
 # T81 Architecture Overview
 
 Status: Active  
-Last Verified (UTC): 2026-11-23  
+Last Verified (UTC): 2026-11-26  
 Maturity: Mixed (`Frozen` ISA/types core, `Stable` VM/Axion/CanonFS/MCP control plane, `Experimental` TernaryOS enclave & cognitive tiers)
 
 > **Architecture File Style Guide**
@@ -97,10 +97,11 @@ Diagram source: [`diagrams/governance-axion-sequence.mmd`](./diagrams/governance
 
 - Full JIT/interpreter semantic equivalence status is not asserted here.
 - Universal cross-platform bit-identity for all floating-point transcendental behavior is not asserted here.
-- Native `x86_64` AVX2 timings for `BM_MemBound64_(DualRail_Dense|SBDR128_SIMD|INT8_Sparse128)` are currently `0` (Unmeasured / Indeterminate) until executed on native `x86_64` AVX2 hardware (`ubuntu-24.04` workflow or native host); Apple M2 `arm64` results and cross-compile syntax checks do not substitute for native `x86_64` measurements.
+- **Native `x86_64` AVX2 Scope & Boundary (Updated 2026-11-26):** Native `x86_64` AVX2 `R1` (ternary activations × ternary weights) measurements were recorded on `Intel(R) Xeon(R) 6975P-C` (`ubuntu-24.04`, `480 MiB` L3, `-O3 -march=native`) in PR `#863` (Run `#45325242627`, in-L3 `L = 64`) and PR `#864` (Run `#45328018712`, off-L3 `> 480 MiB` DRAM sweep). Off-L3 `SBDR128_SIMD` measured **`2.58×–2.88×`** faster per layer than `INT8_Sparse128` (`74.85 / 36.86 / 17.01 µs/L` vs `192.97 / 105.36 / 48.91 µs/L` at `50% / 75% / 90%` sparsity) with a confirmed `2.20×` L3→DRAM cliff on `DualRail_Dense` (`22.72 → 10.31 GB/s`). These results are single-thread software `R1` measurements only; `R2` (`int8` activations) Dual-Rail CPU unpack remains a confirmed negative (`cpu_dualrail_unpack`), multi-threaded `x86_64` sparse scaling remains unmeasured (`0`), and software bandwidth gains do not establish physical ternary silicon advantage.
 
 ## Evidence
 
+- [`docs/records/status-history/AVX2_L3_VS_OFF_L3_DRAM_CROSSOVER_2026-11-24.md`](../records/status-history/AVX2_L3_VS_OFF_L3_DRAM_CROSSOVER_2026-11-24.md)
 - [`vm/vm.cpp`](../../vm/vm.cpp)
 - [`vm/tensor_helpers.cpp`](../../vm/tensor_helpers.cpp)
 - [`include/t81/vm/vm.hpp`](../../include/t81/vm/vm.hpp)
