@@ -794,8 +794,10 @@ PYBIND11_MODULE(_t81, m) {
           }()),
           canonfs_driver(drv ? std::move(drv)
                              : std::shared_ptr<canonfs::Driver>(canonfs::make_in_memory_driver())),
-          policy_sha3_512(
-              provider::ProviderGovernor::compute_policy_sha3_512(policy_engine->policy())),
+          policy_sha3_512(policy_engine->active_policy()
+                              ? provider::ProviderGovernor::compute_policy_sha3_512(
+                                    *policy_engine->active_policy())
+                              : ""),
           governor(policy_engine, canonfs_driver) {}
 
     py::dict run_provider(provider::IAiProvider& prov, const std::string& operation,
