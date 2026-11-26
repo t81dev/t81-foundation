@@ -1,8 +1,8 @@
 {
   "schema_version": "2.0.0",
-  "generated_at": "2026-11-24",
+  "generated_at": "2026-11-26",
   "purpose": "Non-normative operational index; never grants authorization",
-  "selected_view": "2026-11-24-m1-provider-merged",
+  "selected_view": "2026-11-26-waves-0-4-phase3-merged",
   "operational_views": {
     "2026-11-02": {
       "view_date": "2026-11-02",
@@ -943,6 +943,343 @@
           "next": "Maintain F01 M1-M6 STOP, SCG-08 Gate 2 NO-GO, H01/10A BLOCKED, and AXION-AI-001 HD01-HD06 holds."
         }
       ]
+    },
+    "2026-11-26-waves-0-4-phase3-merged": {
+      "view_date": "2026-11-26",
+      "freshness": "Dated post-Waves-0-4 & Phase-3 operational view; supersedes 2026-11-24-m1-provider-merged for live main/PR status while preserving all prior views, frozen contracts (TISC v1.9.0, PUBLIC_API_LOCK.json v2.2.0), and active research holds. Refresh GitHub before acting.",
+      "coverage": {
+        "inventory_scope": "selected_prs_waves_0_4_and_workstreams_a_b_c_plus_held_859",
+        "coverage_state": "partial_selected_wave_and_maintenance_pr_tracking",
+        "open_pr_count": 39
+      },
+      "repository_observation": {
+        "envelope": {
+          "subject": "t81dev/t81-foundation main branch head after Waves 0-4, Phase 3 sparse-aware dispatch, Inference Benchmark PR-push fix, and Dependabot batch",
+          "observed_at": "2026-11-26T13:46:00Z",
+          "source_revision": {
+            "commit_sha": "8aa0869063185a8a250200742b229911793d3419"
+          },
+          "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+          "retained_receipt": "origin/main commit 8aa0869063185a8a250200742b229911793d3419"
+        },
+        "name": "t81dev/t81-foundation",
+        "base_branch": "main",
+        "observed_head": "8aa0869063185a8a250200742b229911793d3419"
+      },
+      "scientific_observations": [
+        {
+          "envelope": {
+            "subject": "H06-MEM-04 Phase 2/3 Apple M2 R3/R4 working-set tightening and ternary non-zero density sparse-aware dispatch",
+            "observed_at": "2026-11-26T13:46:00Z",
+            "source_revision": {
+              "commit_sha": "5c38735ef6fe8b86edfeae70c83b45b9d65aa6d1"
+            },
+            "collector": "AI_assisted_apple_m2_metal_microbenchmark_and_ctest_run",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/pull/882"
+          },
+          "id": "H06-MEM-04",
+          "status": "scoped_microbenchmark_verified_not_general_hardware_proof",
+          "verification": "source_reported",
+          "claims_boundary": "On Apple M2 Darwin arm64 (-O3 -DNDEBUG, Metal ON), tightening metal_min_working_set_bytes to 32 MiB and gating R3 on metal_min_work_ops=32M and metal_min_nonzero_density=0.30 routed dense 1024x4096 OUT_OF_CORE B=16 ternary kernels to R3 metal_gpu (43.79-47.05 GOPS/s, 1.56x-2.13x over cpu_simd_mt) while routing 75%-sparse INT8_Sparse128 (nz_den=0.25) to R4 8-core CPU (83.77 GOPS/s, 1.82x over metal_gpu). Negative controls preserved: 128x512 stays on CPU, 512x2048 B=16 Metal still trails CPU due to launch overhead, and synthetic microbenchmarks do not establish general ternary superiority."
+        },
+        {
+          "envelope": {
+            "subject": "Active research holds (F01 M1-M6 STOP, SCG-08 Gate 2 NO-GO, H01/10A BLOCKED, AXION-AI-001 HD01-HD06)",
+            "observed_at": "2026-11-26T13:46:00Z",
+            "source_revision": {
+              "inherit_from": "repository_observation"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "docs/research/proposals/RFC-00D7-F01-BOLQ-MIGRATION/REVIEW_PLAN.md"
+          },
+          "id": "ACTIVE-HOLDS-2026-11-26",
+          "status": "holds_intact",
+          "verification": "source_reported",
+          "claims_boundary": "F01-HOST-BOLQ-v1 NOT ADOPTED (M1-M6 STOP, linux_relock_required=true); SCG-08 Gate 2 NO-GO; H01/Investigation 10A physical evaluation BLOCKED; AXION-AI-001 HD01-HD06 open. Frozen TISC v1.9.0 and PUBLIC_API_LOCK.json v2.2.0 remain untouched."
+        },
+        {
+          "envelope": {
+            "subject": "T81-AIOPT-001 M1 fixed-catalog pattern filtering (preserved negative finding)",
+            "observed_at": "2026-11-02T00:00:00Z",
+            "source_revision": {
+              "commit_sha": "b2b9d3c73df96d6b4227ee0061c56bc2ee04a8fe"
+            },
+            "collector": "Jules_AI_assisted_source_assessment_not_independent_experimental_replication",
+            "retained_receipt": "docs/research/aiopt/T81-AIOPT-001-SCIENTIFIC-REVIEW.md"
+          },
+          "id": "AIOPT-001-M1",
+          "status": "redesign_required",
+          "verification": "falsified",
+          "claims_boundary": "Preserved negative mathematical critique of C40 equality filtering: scalar lookup/index controls invalidate an optimization claim. No ternary speedup is accepted."
+        }
+      ],
+      "pr_observations": [
+        {
+          "envelope": {
+            "subject": "PR #873 H06-MEM-04 regime dispatch rules, Apple Metal GPU path & multi-batch benchmark suite",
+            "observed_at": "2026-11-26T13:46:00Z",
+            "source_revision": {
+              "commit_sha": "4fdffaa37d42b01a9d549020f8e1e0c4b7fea234"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/pull/873"
+          },
+          "pr_number": 873,
+          "title": "feat(vm): H06-MEM-04 regime dispatch rules, Apple Metal GPU path, and multi-batch benchmark suite",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/873",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "dd39decbb5acf3f2b6bf0d7dc9d90ba46bc325a0",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "f1f28d2193c2d63799f908aa6056abda4a636426",
+          "merge_sha": {
+            "commit_sha": "4fdffaa37d42b01a9d549020f8e1e0c4b7fea234"
+          },
+          "scientific_acceptance": "Regime dispatch baseline (R0-R4), Metal GPU dispatch, and bit-exact benchmark harness verified in CI.",
+          "integration_readiness": "Merged into main with green CI.",
+          "authorization_status": "maintainer_merged"
+        },
+        {
+          "envelope": {
+            "subject": "PR #876 Wave 1 orphan src cleanup, config.hpp.backup archive & root relocation",
+            "observed_at": "2026-11-26T13:46:00Z",
+            "source_revision": {
+              "commit_sha": "147b1bfd8f0c582fd89e92dc2db9dd8174fc2c6a"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/pull/876"
+          },
+          "pr_number": 876,
+          "title": "chore(repo): Wave 1 orphan src cleanup, config.hpp.backup archive, and root review/artifacts relocation",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/876",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "4fdffaa37d42b01a9d549020f8e1e0c4b7fea234",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "b13bdf52559ff49b332844cae52d615afa4ec6f8",
+          "merge_sha": {
+            "commit_sha": "147b1bfd8f0c582fd89e92dc2db9dd8174fc2c6a"
+          },
+          "scientific_acceptance": "Repository hygiene; zero public API or TISC ISA changes.",
+          "integration_readiness": "Merged into main with green CI.",
+          "authorization_status": "maintainer_merged"
+        },
+        {
+          "envelope": {
+            "subject": "PR #877 Wave 2 docs/ai-context/history/ consolidation & .cursorrules deduplication",
+            "observed_at": "2026-11-26T13:46:00Z",
+            "source_revision": {
+              "commit_sha": "ffbaf1f676b472df775dccc9243baa3a846dcbdf"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/pull/877"
+          },
+          "pr_number": 877,
+          "title": "chore(ai-context): Wave 2 history consolidation (19 dated overlays) & .cursorrules deduplication",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/877",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "6ab01dfea2216e00fcdb0d828528981d4922b626",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "803b541858ea949111a05c3bb18439621c00fb57",
+          "merge_sha": {
+            "commit_sha": "ffbaf1f676b472df775dccc9243baa3a846dcbdf"
+          },
+          "scientific_acceptance": "Non-normative continuity hygiene; preserved all 19 dated overlays under docs/ai-context/history/.",
+          "integration_readiness": "Merged into main with 38/38 green CI.",
+          "authorization_status": "maintainer_merged"
+        },
+        {
+          "envelope": {
+            "subject": "PR #878 & #879 Wave 3 CMakeLists.txt modularization, CTest WORKING_DIRECTORY & x86_64 ai_usability_eval fix",
+            "observed_at": "2026-11-26T13:46:00Z",
+            "source_revision": {
+              "commit_sha": "6ab01dfea2216e00fcdb0d828528981d4922b626"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/pull/879"
+          },
+          "pr_number": 879,
+          "title": "fix(cmake,eval): Wave 3 CTest WORKING_DIRECTORY & x86_64 ai_usability_eval fix",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/879",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "664d38ac4f9d76e3d428231da34e2fd272a8ead7",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "3ebbfdb95d90086c7d1cbf7f95f052cba732c5b4",
+          "merge_sha": {
+            "commit_sha": "6ab01dfea2216e00fcdb0d828528981d4922b626"
+          },
+          "scientific_acceptance": "Follow-up to PR #878 (664d38ac4, root CMakeLists.txt 2,322 -> 326 lines with zero target drift); pins CTest WORKING_DIRECTORY and fixes x86_64/AMD64 hardware-honesty trial in ai_usability_eval.py.",
+          "integration_readiness": "Merged into main with 38/38 green CI.",
+          "authorization_status": "maintainer_merged"
+        },
+        {
+          "envelope": {
+            "subject": "PR #880 Wave 4 Apple M2 R3 work_ops gating, R4 8-worker cap & large-matrix sweep",
+            "observed_at": "2026-11-26T13:46:00Z",
+            "source_revision": {
+              "commit_sha": "06c8bacec31202b35e3f00033ed1276b439b365b"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/pull/880"
+          },
+          "pr_number": 880,
+          "title": "feat(h06-mem-04): Wave 4 Apple M2 R3 work_ops gating, R4 8-worker cap & large-matrix sweep",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/880",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "ffbaf1f676b472df775dccc9243baa3a846dcbdf",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "5396155aad9ec4d19ec9f0269679549d365517e3",
+          "merge_sha": {
+            "commit_sha": "06c8bacec31202b35e3f00033ed1276b439b365b"
+          },
+          "scientific_acceptance": "Scoped Apple M2 R3 work_ops=32M gate, R4 8-worker cap, and 512x2048/1024x4096 crossover sweep.",
+          "integration_readiness": "Merged into main with 38/38 green CI.",
+          "authorization_status": "maintainer_merged"
+        },
+        {
+          "envelope": {
+            "subject": "PR #881 Workstream A Inference Benchmark PR-based push flow (GH006 fix)",
+            "observed_at": "2026-11-26T13:46:00Z",
+            "source_revision": {
+              "commit_sha": "da9ed14f38ae8617bbfdeb28be334ef37190bc67"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/pull/881"
+          },
+          "pr_number": 881,
+          "title": "fix(ci): use PR-based update flow in Inference Benchmark workflow",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/881",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "06c8bacec31202b35e3f00033ed1276b439b365b",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "44e8ac0b2d7d1a640ed771b8a659014457863b1d",
+          "merge_sha": {
+            "commit_sha": "da9ed14f38ae8617bbfdeb28be334ef37190bc67"
+          },
+          "scientific_acceptance": "CI workflow maintenance replacing direct main push with peter-evans/create-pull-request.",
+          "integration_readiness": "Merged into main with 38/38 green CI.",
+          "authorization_status": "maintainer_merged"
+        },
+        {
+          "envelope": {
+            "subject": "PR #882 Workstream B Phase 3 H06-MEM-04 R3/R4 boundary tightening & sparse-aware dispatch",
+            "observed_at": "2026-11-26T13:46:00Z",
+            "source_revision": {
+              "commit_sha": "5c38735ef6fe8b86edfeae70c83b45b9d65aa6d1"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/pull/882"
+          },
+          "pr_number": 882,
+          "title": "feat(vm): Phase 3 H06-MEM-04 R3/R4 boundary tightening & sparse-aware dispatch",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/882",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "873db1a6db906b812ba500a6ffcd54deaf531a9f",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "16189c57d1424e6e6c64d0794042bfba81c70ab0",
+          "merge_sha": {
+            "commit_sha": "5c38735ef6fe8b86edfeae70c83b45b9d65aa6d1"
+          },
+          "scientific_acceptance": "Tightens metal_min_working_set_bytes to 32 MiB, adds metal_min_nonzero_density=0.30 sparse-aware routing, clamps R4 worker floor, and adds deterministic unit tests [7/8]-[8/8] (8/8 CTest suites pass).",
+          "integration_readiness": "Merged into main with 38/38 green CI.",
+          "authorization_status": "maintainer_merged"
+        },
+        {
+          "envelope": {
+            "subject": "PR #883 Workstream C atomic codeql-action 4.39.4 bump & Dependabot group (superseding #867, #869, #871) plus #866, #868, #870",
+            "observed_at": "2026-11-26T13:46:00Z",
+            "source_revision": {
+              "commit_sha": "8aa0869063185a8a250200742b229911793d3419"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/pull/883"
+          },
+          "pr_number": 883,
+          "title": "chore(deps): bump github/codeql-action/{init,autobuild,analyze} to 4.39.4 & group in dependabot",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/883",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "5c38735ef6fe8b86edfeae70c83b45b9d65aa6d1",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "bcb4a37b94a8efeab317b1be191a52aff269bea8",
+          "merge_sha": {
+            "commit_sha": "6a1e430f0e0c6cd94099d31d0811b947c7bd2d7f"
+          },
+          "scientific_acceptance": "CI dependency maintenance; #868 (873db1a6d), #883 (6a1e430f0, closing #867/#869/#871), #866 (424b43bf9), and #870 (8aa086906) all merged with green CI (0 open Dependabot PRs).",
+          "integration_readiness": "Merged into main with 38/38 green CI.",
+          "authorization_status": "maintainer_merged"
+        },
+        {
+          "envelope": {
+            "subject": "PR #859 SCG-08 Gate 1 -Wclass-memaccess warning fix (held)",
+            "observed_at": "2026-11-26T13:46:00Z",
+            "source_revision": {
+              "commit_sha": "0b6aca82acad961eb82591eb2c31d1e1faa77d97"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/pull/859"
+          },
+          "pr_number": 859,
+          "title": "fix(scg08): silence -Wclass-memaccess warning in Gate 1 negative test",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/859",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "e51970a13e1b341695266d32671beb309a398297",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "0b6aca82acad961eb82591eb2c31d1e1faa77d97",
+          "merge_sha": {
+            "value": null,
+            "reason": "pr_is_open_explicitly_held"
+          },
+          "scientific_acceptance": "Bounded warning cleanup in Gate 1 negative test; SCG-08 Gate 2 NO-GO remains intact.",
+          "integration_readiness": "Held / untouched by policy.",
+          "authorization_status": "held_by_maintainer"
+        }
+      ],
+      "ci_observations": [
+        {
+          "envelope": {
+            "subject": "Post-merge main CI on 8aa086906",
+            "observed_at": "2026-11-26T10:15:00Z",
+            "source_revision": {
+              "inherit_from": "repository_observation"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/actions/runs/45772734630"
+          },
+          "suite_name": "main_post_merge_ci",
+          "status": "passing",
+          "known_baseline_failures": []
+        }
+      ],
+      "workstreams": [
+        {
+          "id": "provider_contract_m2_m3",
+          "priority": "P0",
+          "state": "queued_not_started",
+          "source": "docs/research/proposals/PROVIDER_EXECUTION_CONTRACT_v0.1.md",
+          "next": "Queued next lanes (not started): M2 (persistent MCP receipt ledger) and M3 (Python SDK governed execution)."
+        },
+        {
+          "id": "h06_mem_04_phase3_complete",
+          "priority": "P1",
+          "state": "merged_prs_873_880_882",
+          "source": "https://github.com/t81dev/t81-foundation/pull/882",
+          "next": "Maintain bit-exact regime dispatch coverage; optional future work on OUT_OF_CORE B=8 multi-thread tiling or Xeon AVX2 sparse tuning if authorized."
+        },
+        {
+          "id": "F01-HOST-BOLQ-v1",
+          "priority": "P0",
+          "state": "NOT ADOPTED; residual risks NOT ACCEPTED; M1-M6 STOP; linux_relock_required=true",
+          "source": "docs/research/proposals/RFC-00D7-F01-BOLQ-MIGRATION/REVIEW_PLAN.md",
+          "next": "Maintain F01 M1-M6 STOP, SCG-08 Gate 2 NO-GO, H01/10A BLOCKED, and AXION-AI-001 HD01-HD06 holds."
+        }
+      ]
     }
   },
   "historical_snapshots": {
@@ -1031,5 +1368,5 @@
     "performance_measurement": false,
     "production_activation": false
   },
-  "next_gate": "2026-11-24 M1 post-merge overlay: main is at dd39decbb (PRs #861, #862, #863, #864, #872, and #865 merged; #873 open & re-running CI at f1f28d219; #859 open/held at 0b6aca82a). Next queued lanes (not started): M2 (persistent MCP receipt ledger) and M3 (Python SDK governed execution). All frozen contracts (TISC v1.9.0, PUBLIC_API_LOCK.json v2.2.0) and active research holds (F01 M1-M6 STOP, SCG-08 Gate 2 NO-GO, H01/10A BLOCKED, AXION-AI-001 HD01-HD06) remain intact. This index grants no execution, merge, or protocol-amendment authority."
+  "next_gate": "2026-11-26 post-Waves-0-4 & Phase-3 overlay: main is at 8aa086906 with 100% green post-merge CI (T81 Foundation CI, Cross-Platform Determinism Verification, CodeQL, runtime-contract, Format Check, pages-build-deployment) and 0 open Dependabot PRs. Merged: Waves 0-4 (#873-#880), Workstream A Inference Benchmark PR-push fix (#881), Workstream B Phase 3 H06-MEM-04 R3/R4 boundary tightening & sparse-aware dispatch (#882), and Workstream C Dependabot batch (#866, #868, #870, #883 closing #867/#869/#871). Held/untouched: #859 (0b6aca82a) and older draft/research PRs. Next queued lanes (not started): M2 (persistent MCP receipt ledger) and M3 (Python SDK governed execution). All frozen contracts (TISC v1.9.0, PUBLIC_API_LOCK.json v2.2.0) and active research holds (F01 M1-M6 STOP, SCG-08 Gate 2 NO-GO, H01/10A BLOCKED, AXION-AI-001 HD01-HD06) remain intact. This index grants no execution, merge, or protocol-amendment authority."
 }
