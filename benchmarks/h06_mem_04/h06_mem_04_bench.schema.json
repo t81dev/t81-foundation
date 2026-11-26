@@ -112,6 +112,7 @@
         "l3_resident_ratio": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
         "metal_min_batch": { "type": "integer", "minimum": 1 },
         "metal_min_working_set_bytes": { "type": "integer", "minimum": 0 },
+        "metal_min_work_ops": { "type": "integer", "minimum": 0 },
         "hysteresis_gain_ratio": { "type": "number", "minimum": 1.0 },
         "stream_worker_cap": { "type": "integer", "minimum": 0 }
       }
@@ -159,6 +160,8 @@
         "properties": {
           "tier": { "type": "string" },
           "batch_size": { "type": "integer", "minimum": 1 },
+          "out_dim": { "type": "integer", "minimum": 1 },
+          "k_dim": { "type": "integer", "minimum": 1 },
           "kernel": { "type": "string" },
           "backend": { "type": "string" },
           "regime_selected": { "type": "string" },
