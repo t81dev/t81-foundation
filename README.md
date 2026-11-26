@@ -31,9 +31,9 @@ See [docs/research/DUAL_RAIL_HETEROGENEOUS_TISC_NOTE.md](docs/research/DUAL_RAIL
 
 ## What is T81?
 
-**T81 Foundation is an implemented experimental computing architecture and open-source scientific research program investigating whether alternative computational representations—particularly balanced ternary—can provide measurable advantages over conventional binary systems.**
+**T81 Foundation — For AI, By AI: turning heterogeneous binary platforms (`x86_64` AVX2, `AArch64` NEON, Apple Metal, Windows, bare-metal QEMU enclaves) into a single bit-exact, fail-closed (`Axion`), content-addressed (`CanonFS`), cryptographically attested (`RFC-00D4` Ed25519) execution and verification substrate for AI agents and memory-compact ternary models (`SBDR1T2D`, `4.0×` vs `I8`).**
 
-T81 is an **implemented, functioning architecture**: it defines the Ternary Instruction Set Computer (TISC) as its computational instruction contract, with bounded cross-profile execution demonstrated across both a hosted virtual machine (T81VM) and a bare-metal freestanding microkernel environment (Axion OS / TernaryOS on AArch64 QEMU).
+T81 does **not** compete with binary ALUs on scalar arithmetic or claim physical ternary silicon superiority. It is an implemented experimental computing architecture and open-source scientific research program investigating balanced ternary representations (`{-1, 0, +1}`), deterministic execution, and policy-governed AI computation: it defines the frozen Ternary Instruction Set Computer (`TISC v1.9.0`) as its computational instruction contract, with bounded cross-profile execution demonstrated across both a hosted virtual machine (`T81VM`) and a bare-metal freestanding microkernel enclave (`Axion OS` / `TernaryOS` on AArch64 QEMU).
 
 The project studies computation across multiple domains: mathematical representation, algorithms, software execution, storage, hardware architecture, and verifiable system behavior. Its research-first architecture originated in discrete mathematics, CWEB/Hanoi, and investigations of alternative numerical systems before expanding into language, VM, instruction, policy, and research-assurance subsystems.
 

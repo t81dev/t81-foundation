@@ -13,7 +13,7 @@ Maturity: Mixed (`Frozen` ISA/types core, `Stable` VM/Axion/CanonFS/MCP control 
 
 ## Purpose
 
-T81 Foundation is an experimental computing architecture and systems research platform investigating balanced ternary representations (`{-1, 0, +1}`), deterministic execution, fail-closed policy enforcement, content-addressed artifacts, and AI-agent control planes coexisting with conventional binary hosts (`Linux`, `macOS`, `Windows`). This document is the canonical architecture snapshot of its implemented components, layer boundaries, and bounded determinism claim scope.
+T81 Foundation is an experimental computing architecture and systems research platform (*For AI, By AI*) that turns heterogeneous binary platforms (`x86_64` AVX2, `AArch64` NEON, Apple Metal, Windows, and bare-metal AArch64 QEMU enclaves) into a single bit-exact, fail-closed (`Axion`), content-addressed (`CanonFS`), cryptographically attested (`RFC-00D4` Ed25519) execution and verification substrate for AI agents and memory-compact ternary models (`SBDR1T2D`, `4.0×` vs `I8`). T81 does **not** compete with binary ALUs on scalar math or claim physical ternary silicon superiority. This document is the canonical architecture snapshot of its implemented components, layer boundaries, and bounded determinism claim scope.
 
 ## Layer Cake
 
