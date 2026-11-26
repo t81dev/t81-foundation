@@ -2,28 +2,31 @@
 
 > **Source of Truth:** This document defines the **current operational state** of the project (what is true today). For future plans, see [../process/roadmaps-plans/ROADMAP.md](../process/roadmaps-plans/ROADMAP.md). For version history, see [CHANGELOG.md](CHANGELOG.md).
 
-**Last Updated:** March 14, 2026
-**Status:** Active development (governance-controlled core with mixed maturity)
+**Last Updated:** 2026-11-26
+**Status:** Active development (governance-controlled core with mixed maturity; pinned to `v2.2.0` / `main@8aa086906`)
 
 ## 1. Snapshot
 
-- Core stack is implemented and operational across numerics, language frontend, TISC serialization, VM execution, and Axion/CanonFS enforcement, with maturity varying by subsystem.
+- Core stack is implemented and operational across balanced-ternary numerics, T81Lang frontend, frozen TISC `v1.9.0` serialization, `T81VM` interpreter (with Dual-Rail `(P, N)` NEON/AVX2 `TMatMul` and `SBDR1T2D` caching), fail-closed Axion policy enforcement, CanonFS content-addressed storage (`RFC-00D1` v1 seed), a 15-tool native C++ MCP control plane (`t81 mcp serve`), and the `t81==2.2.0` Python SDK (`31` PyPI files, CPython `3.9–3.14`).
 - C++23 is the default build language mode; C++20 remains a compatibility lane.
-- Current local validation baseline reports full CTest inventory available in this workspace snapshot.
-- Determinism guarantees are registry-bounded and must not be overclaimed outside verified surfaces.
+- Current local CTest inventory contains `432` configured tests; post-merge CI on `main@8aa086906` is 100% green (`Actions Run #45772734630`).
+- Determinism guarantees are strictly registry-bounded ([`DETERMINISM_SURFACE_REGISTRY.md`](../governance/DETERMINISM_SURFACE_REGISTRY.md)) and must not be overclaimed outside verified DCP surfaces.
 
 ## 2. Component Maturity
 
 | Component | Maturity | Spec Version | Test Coverage | Notes |
 | :--- | :--- | :--- | :--- | :--- |
-| **T81Lang** | Beta | Draft spec / Beta implementation | High | Implementation maturity is Beta under active drift/governance controls. |
-| **TISC** | Stable | v1.1.0 | High | Binary serialization and opcode matrix complete. |
-| **T81VM** | Beta | v1.1 surface | High | Core execution loop active with continued verification and governance controls; integer/BigInt paths now have explicit runtime materialization, tensor helpers preserve an explicit exact-int/exact-trit subset through integer-safe ops, finite tensors now use canonical fixed backing as the authoritative deterministic storage lane while retaining compatibility host-float views, generic tensor serialization can emit versioned canonical-fixed payloads with legacy-read compatibility, native tensor decode now routes through a shared tensor-native decoder, CanonFS tensor objects accept `CanonicalFixed` payloads, `softmax`, attention, `rmsnorm`, and `rope` use deterministic fixed math across canonical finite inputs before host-float materialization, and Axion traces emit structured tensor provenance events for storage/numeric-class transitions. Broad tensor/AI determinism claims remain scoped to governed/verified surfaces rather than the entire runtime. |
-| **Axion** | Alpha | Draft surface coverage | High | Policy enforcement active with partial draft-surface coverage. |
-| **CanonFS** | Beta | v0.9.x | Medium | Persistent/In-memory drivers implemented; integrity/performance hardening ongoing. |
-| **CLI** | Beta | - | Medium | `run`/`compile` stable; `debug`/`trace` improving. |
-| **JIT** | Experimental | - | Low | **Threaded Interpreter** only (not machine code JIT). |
-| **Cognitive Tiers** | Concept / Experimental | Draft | Mixed | Experimental, non-DCP, non-verified unless promoted through governance. |
+| **Core Data Types** | Frozen (DCP Verified) | `spec/t81-data-types.md` | High | `PUBLIC_API_LOCK.json` `v2.2.0`; bit-exact canonical encoding and soft-float rounding (`RFC-0030`). |
+| **TISC ISA** | Frozen (DCP Verified) | `v1.9.0-Stable` | High | `174` frozen core opcodes (`0–173`), `209` registry entries, `244` named C++ header entries (`0–220`, `224–246`). See `spec/tisc-spec.md §6.3` and draft `RFC-00D6`. |
+| **T81VM** | Stable (Interpreter DCP Verified) | `spec/t81vm-spec.md` | High | Interpreter path is DCP Verified; includes NEON/AVX2 Dual-Rail `(P, N)` `TMatMul` with block-zero skip and lazy `SBDR1T2D` `CanonDualRailRhsCache` (`t81_dualrail_sbdr_vm_test`). Broad AI/accelerator determinism remains governed non-DCP. |
+| **T81Lang** | Stable (Governed non-DCP) | `spec/t81lang-spec.md` | High | Matches `MATURITY_CANONICAL_STATUS.json`; fixture-based bytecode reproducibility verified via `t81lang_repro_gate.py`. |
+| **Axion Governance** | Stable (Bounded, Governed non-DCP) | `spec/axion-kernel.md` | High | Fail-closed `AxionVerdict::Deny` default; immutable `axion_root.apl` enforcement; wired into `AgentInvoke`, `TLoadHash`, `WeightsLoad`, and MCP commit paths. |
+| **CanonFS** | Stable (Bounded, Governed non-DCP) | `RFC-0054` (accepted) / `RFC-00D1` (v1 seed) | High | Content-addressed `h1-` hex persistent store + `t81 canonfs import/export` with v1 JSON schemas and negative-path fail-closed export guarantees. Content identity does not establish provenance truth. |
+| **Native C++ MCP Server** | Stable (Bounded, Governed non-DCP) | `RFC-00D8` / `TERNARYOS_ARCHITECTURE_v0.2.md` | High | `15` JSON-RPC 2.0 tools, `ScopedJsonParser`, `--root` filesystem jail, `tx_begin`/`tx_commit`/`tx_abort` isolation (`23/23` `ai_usability_eval.py` trials; TLC `14,227,489` states / `0` errors). |
+| **Python SDK (`t81`)** | Stable (Bounded) | `v2.2.0` (PyPI) | High | `31` PyPI files (`cp39–cp314`); `27` public symbols in `ffi/python/t81/__init__.py`; tested via `test_installed_sdk.py` across wheels. |
+| **CLI** | Stable (Bounded) | `v2.2.0` | High | Grouped `--help` (`24` documented topics verified by `check_cli_docs_parity.py`). |
+| **JIT** | Experimental (Non-DCP) | `RFC-0028` / `RFC-0047` | Low | **Threaded Interpreter** only (not machine-code JIT); full equivalence not yet DCP Verified. |
+| **TernaryOS / Cognitive Tiers** | Experimental (Non-DCP) | `RFC-00B0..00CE` / `spec/cognitive-tiers.md` | Mixed | Headless AArch64 QEMU enclave (`qemu-verification.yml`) and `T1–T5` cognitive tiers; explicitly excluded from DCP and general-purpose OS claims. |
 
 **Maturity Levels:**
 - **Stable:** Production-ready, API frozen, full test coverage.
