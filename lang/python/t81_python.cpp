@@ -786,14 +786,16 @@ PYBIND11_MODULE(_t81, m) {
     std::string policy_sha3_512;
     provider::ProviderGovernor governor;
 
-    PyProviderGovernor(const std::string& policy_text, std::shared_ptr<canonfs::Driver> drv)
+    PyProviderGovernor(const std::string& policy_text, const std::string& canonfs_root = "")
         : policy_engine([&]() {
             auto parsed = axion::parse_policy(policy_text);
             if (!parsed.has_value()) throw std::invalid_argument("invalid .apl policy");
             return std::make_shared<axion::PolicyEngine>(std::move(parsed.value()));
           }()),
-          canonfs_driver(drv ? std::move(drv)
-                             : std::shared_ptr<canonfs::Driver>(canonfs::make_in_memory_driver())),
+          canonfs_driver(canonfs_root.empty()
+                             ? std::shared_ptr<canonfs::Driver>(canonfs::make_in_memory_driver())
+                             : std::shared_ptr<canonfs::Driver>(
+                                   canonfs::make_persistent_driver(canonfs_root))),
           policy_sha3_512(policy_engine->active_policy()
                               ? provider::ProviderGovernor::compute_policy_sha3_512(
                                     *policy_engine->active_policy())
@@ -849,8 +851,8 @@ PYBIND11_MODULE(_t81, m) {
       });
 
   py::class_<PyProviderGovernor>(m, "ProviderGovernor")
-      .def(py::init<const std::string&, std::shared_ptr<canonfs::Driver>>(), py::arg("policy_text"),
-           py::arg("canonfs_driver") = nullptr)
+      .def(py::init<const std::string&, const std::string&>(), py::arg("policy_text"),
+           py::arg("canonfs_root") = "")
       .def_readonly("policy_sha3_512", &PyProviderGovernor::policy_sha3_512)
       .def(
           "execute_vm",
