@@ -159,7 +159,7 @@ class InstalledSdkTest(unittest.TestCase):
         self.assertFalse(bad["ok"])
         self.assertEqual(bad["code"], "ERR_RECEIPT_VERIFY_FAILED")
 
-        policy = '(policy (version 1) (default allow))'
+        policy = '(policy (tier 1))'
         gov = t81.ProviderGovernor(policy)
         cp = t81.ControlledProvider()
         denied = gov.execute_controlled(cp, "hello", user_consent_verified=False, seed=42)
