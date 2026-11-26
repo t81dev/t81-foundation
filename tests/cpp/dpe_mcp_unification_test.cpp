@@ -86,7 +86,61 @@ int main() {
     return 1;
   }
 
+  // 3. Three-Plane valid path: Deterministic -> Stochastic -> Hybrid -> Deterministic (+1 commit).
+  std::vector<t81::provider::DpeAgentTask> three_plane_ok = {
+      {"tp-det-in",
+       1,
+       {},
+       {"state_a"},
+       []() { return std::unordered_map<std::string, std::string>{{"state_a", "init"}}; },
+       "deterministic",
+       "stochastic",
+       "transition_path",
+       "deterministic"},
+      {"tp-stoch-gen",
+       2,
+       {"tp-det-in"},
+       {"proposal"},
+       []() { return std::unordered_map<std::string, std::string>{{"proposal", "cand"}}; },
+       "stochastic",
+       "hybrid",
+       "transition_path",
+       "seeded_probabilistic"},
+      {"tp-hybrid-gate",
+       3,
+       {"tp-stoch-gen"},
+       {"reconciled"},
+       []() { return std::unordered_map<std::string, std::string>{{"reconciled", "+1"}}; },
+       "hybrid",
+       "deterministic",
+       "transition_path",
+       "deterministic"},
+  };
+  auto rtp = coord.execute_and_commit(three_plane_ok);
+  if (!rtp.ok || rtp.trit != 1 || rtp.state_a_ref.empty() || rtp.state_c_ref.empty()) {
+    std::cerr << "FAIL: valid three-plane DAG failed (" << rtp.code << ": " << rtp.error << ")\n";
+    return 1;
+  }
+
+  // 4. Three-Plane non-bypass invariant: direct stochastic -> deterministic must fail closed.
+  std::vector<t81::provider::DpeAgentTask> bypass_direct = {
+      {"tp-bypass",
+       1,
+       {},
+       {"state_c"},
+       []() { return std::unordered_map<std::string, std::string>{{"state_c", "illegal"}}; },
+       "stochastic",
+       "deterministic",
+       "transition_path",
+       "external_probabilistic"},
+  };
+  auto rb = coord.execute_and_commit(bypass_direct);
+  if (rb.ok || rb.trit != -1 || rb.code != "ERR_PLANE_BYPASS_DENIED" || !rb.state_c_ref.empty()) {
+    std::cerr << "FAIL: expected ERR_PLANE_BYPASS_DENIED, got " << rb.code << "\n";
+    return 1;
+  }
+
   std::cout << "PASS t81_dpe_mcp_unification_test (3 levels, 4 tasks, bit-exact repeat SHA3-512, "
-               "Ed25519 DAG verified, conflict winner=1)\n";
+               "Ed25519 DAG verified, conflict winner=1, three-plane non-bypass verified)\n";
   return 0;
 }

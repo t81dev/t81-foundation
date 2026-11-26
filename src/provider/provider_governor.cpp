@@ -76,6 +76,31 @@ std::string build_evidence_json(const ProviderDescriptor& desc, const ProviderRe
                                                 : outcome.authoritative_artifact_sha3_512;
   const std::string recorded_policy_sha = outcome.authoritative_policy_sha3_512;
 
+  const ExecutionPlane src_plane =
+      ctx.plane_transition
+          ? ctx.plane_transition->source_plane
+          : (desc.execution_class == ExecutionClass::Deterministic ? ExecutionPlane::Deterministic
+                                                                   : ExecutionPlane::Stochastic);
+  const ExecutionPlane dst_plane =
+      ctx.plane_transition
+          ? ctx.plane_transition->target_plane
+          : (desc.execution_class == ExecutionClass::Deterministic ? ExecutionPlane::Deterministic
+                                                                   : ExecutionPlane::Hybrid);
+  const TransitionKind t_kind = ctx.plane_transition
+                                    ? ctx.plane_transition->transition_kind
+                                    : (src_plane == dst_plane ? TransitionKind::ExecutionPath
+                                                              : TransitionKind::TransitionPath);
+  const std::string state_a_json = (ctx.plane_transition && ctx.plane_transition->state_a_ref &&
+                                    !ctx.plane_transition->state_a_ref->empty())
+                                       ? json_string(*ctx.plane_transition->state_a_ref)
+                                       : artifact_ref_json;
+  const bool committed_plus1 = outcome.result.ok && outcome.result.trit == 1;
+  const std::string state_c_json =
+      (committed_plus1 && ctx.plane_transition && ctx.plane_transition->state_c_ref &&
+       !ctx.plane_transition->state_c_ref->empty())
+          ? json_string(*ctx.plane_transition->state_c_ref)
+          : (committed_plus1 ? json_string(output_digest) : "null");
+
   std::ostringstream os;
   os << "{"
      << "\"artifact\":{"
@@ -106,6 +131,15 @@ std::string build_evidence_json(const ProviderDescriptor& desc, const ProviderRe
      << "\"seed\":" << seed_json << ","
      << "\"steps_consumed\":" << outcome.result.steps_consumed << ","
      << "\"tokens_consumed\":" << outcome.result.tokens_consumed << "},"
+     << "\"plane_transition\":{"
+     << "\"reproducibility_class\":" << json_string(execution_class_name(desc.execution_class))
+     << ","
+     << "\"source_plane\":" << json_string(execution_plane_name(src_plane)) << ","
+     << "\"state_a_ref\":" << state_a_json << ","
+     << "\"state_c_ref\":" << state_c_json << ","
+     << "\"target_plane\":" << json_string(execution_plane_name(dst_plane)) << ","
+     << "\"transition_kind\":" << json_string(transition_kind_name(t_kind)) << ","
+     << "\"transition_verdict_trit\":" << static_cast<int>(outcome.result.trit) << "},"
      << "\"provider\":{"
      << "\"execution_class\":" << json_string(execution_class_name(desc.execution_class)) << ","
      << "\"isolation_mode\":" << json_string(isolation_mode_name(desc.isolation_mode)) << ","
@@ -129,6 +163,28 @@ std::string execution_class_name(ExecutionClass cls) {
       return "external_probabilistic";
   }
   return "external_probabilistic";
+}
+
+std::string execution_plane_name(ExecutionPlane plane) {
+  switch (plane) {
+    case ExecutionPlane::Deterministic:
+      return "deterministic";
+    case ExecutionPlane::Stochastic:
+      return "stochastic";
+    case ExecutionPlane::Hybrid:
+      return "hybrid";
+  }
+  return "stochastic";
+}
+
+std::string transition_kind_name(TransitionKind kind) {
+  switch (kind) {
+    case TransitionKind::ExecutionPath:
+      return "execution_path";
+    case TransitionKind::TransitionPath:
+      return "transition_path";
+  }
+  return "transition_path";
 }
 
 std::string isolation_mode_name(IsolationMode mode) {
@@ -157,6 +213,8 @@ std::string failure_code_name(FailureCode code) {
       return "ARTIFACT_DIGEST_ERROR";
     case FailureCode::InvalidBudget:
       return "INVALID_BUDGET";
+    case FailureCode::PlaneBypassDenied:
+      return "ERR_PLANE_BYPASS_DENIED";
     case FailureCode::BudgetExhausted:
       return "BUDGET_EXHAUSTED";
     case FailureCode::TimedOut:
@@ -309,6 +367,18 @@ GovernedExecutionOutcome ProviderGovernor::execute(IAiProvider& provider,
   };
 
   // 1. Preflight validation (fail-closed before Axion or provider)
+  if (context.plane_transition &&
+      context.plane_transition->source_plane == ExecutionPlane::Stochastic &&
+      context.plane_transition->target_plane == ExecutionPlane::Deterministic &&
+      !context.plane_transition->hybrid_reconciled) {
+    outcome.result.ok = false;
+    outcome.result.trit = -1;
+    outcome.result.failure_code = FailureCode::PlaneBypassDenied;
+    outcome.result.failure_detail =
+        "direct stochastic -> deterministic bypass denied; hybrid reconciliation required";
+    return finalize_and_persist();
+  }
+
   if (context.budget.capability_units < 0) {
     outcome.result.ok = false;
     outcome.result.trit = -1;
@@ -984,6 +1054,25 @@ EvidenceVerificationResult ProviderGovernor::verify_evidence_json(
     res.valid = false;
     res.reason = "honesty violation: probabilistic provider claims bit_exact_replay";
     return res;
+  }
+
+  // Three-Plane Stratified Execution honesty check: non-commit verdicts (-1 or 0)
+  // must never carry a non-null state_c_ref.
+  if (const auto* pt = get_field(root, "plane_transition", JsonVal::Kind::Object)) {
+    auto tv_it = pt->obj.find("transition_verdict_trit");
+    auto sc_it = pt->obj.find("state_c_ref");
+    bool is_non_commit = false;
+    if (tv_it != pt->obj.end()) {
+      if ((tv_it->second.kind == JsonVal::Kind::Int && tv_it->second.i <= 0) ||
+          (tv_it->second.kind == JsonVal::Kind::UInt && tv_it->second.u == 0)) {
+        is_non_commit = true;
+      }
+    }
+    if (is_non_commit && sc_it != pt->obj.end() && sc_it->second.kind != JsonVal::Kind::Null) {
+      res.valid = false;
+      res.reason = "plane_transition violation: non-commit verdict (-1/0) has non-null state_c_ref";
+      return res;
+    }
   }
 
   res.valid = true;

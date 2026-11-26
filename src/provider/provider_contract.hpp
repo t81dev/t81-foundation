@@ -19,6 +19,26 @@ enum class ExecutionClass : std::uint8_t {
   ExternalProbabilistic = 2,
 };
 
+enum class ExecutionPlane : std::uint8_t {
+  Deterministic = 0,
+  Stochastic = 1,
+  Hybrid = 2,
+};
+
+enum class TransitionKind : std::uint8_t {
+  ExecutionPath = 0,
+  TransitionPath = 1,
+};
+
+struct PlaneTransitionEnvelope {
+  ExecutionPlane source_plane{ExecutionPlane::Deterministic};
+  ExecutionPlane target_plane{ExecutionPlane::Deterministic};
+  TransitionKind transition_kind{TransitionKind::ExecutionPath};
+  std::optional<std::string> state_a_ref;
+  std::optional<std::string> state_c_ref;
+  bool hybrid_reconciled{false};
+};
+
 enum class IsolationMode : std::uint8_t {
   InProcessReadOnly = 0,
   JailedProcess = 1,
@@ -76,6 +96,7 @@ struct ExecutionContext {
   std::optional<std::uint64_t> seed;
   bool user_consent_verified{false};
   ResourceBudget budget;
+  std::optional<PlaneTransitionEnvelope> plane_transition;
 };
 
 struct ProviderRequest {
@@ -103,6 +124,7 @@ enum class FailureCode : std::uint16_t {
   CapabilityMismatch = 102,
   ArtifactDigestError = 103,
   InvalidBudget = 104,
+  PlaneBypassDenied = 105,
   BudgetExhausted = 200,
   TimedOut = 201,
   Cancelled = 202,
@@ -150,6 +172,8 @@ struct EvidenceVerificationResult {
 };
 
 [[nodiscard]] std::string execution_class_name(ExecutionClass cls);
+[[nodiscard]] std::string execution_plane_name(ExecutionPlane plane);
+[[nodiscard]] std::string transition_kind_name(TransitionKind kind);
 [[nodiscard]] std::string isolation_mode_name(IsolationMode mode);
 [[nodiscard]] std::string failure_code_name(FailureCode code);
 [[nodiscard]] std::string verdict_kind_name(t81::axion::VerdictKind kind);

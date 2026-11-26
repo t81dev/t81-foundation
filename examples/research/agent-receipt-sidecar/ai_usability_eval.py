@@ -959,6 +959,170 @@ def run_evaluation() -> dict[str, Any]:
                         "orphans": orphans_tamp,
                     },
                 )
+
+                # Three-Plane Stratified Execution Trials (+1 commit, 0 abstain, -1 bypass)
+                cur_bytes = ws["target_path"].read_bytes()
+                state_a = _sha3_512(cur_bytes)
+                # (a) Valid Deterministic -> Stochastic -> Hybrid -> Deterministic (+1)
+                tp_begin, _ = mcp.call_tool(
+                    "t81.tx_begin",
+                    {
+                        "target_path": str(ws["target_path"]),
+                        "backup_dir": str(ws["bak_dir"]),
+                        "agent_id": "three-plane-ok",
+                        "isolated": True,
+                    },
+                )
+                Path(tp_begin["staging_path"]).write_bytes(v1)
+                tp_commit, _ = mcp.call_tool(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": tp_begin["tx_id"],
+                        "policy_path": str(ws["policy_path"]),
+                        "agent_id": "three-plane-ok",
+                        "source_plane": "hybrid",
+                        "target_plane": "deterministic",
+                        "transition_kind": "transition_path",
+                        "reproducibility_class": "seeded_probabilistic",
+                        "hybrid_reconciled": True,
+                        "state_a_ref": state_a,
+                    },
+                )
+                tp_ok = (
+                    tp_commit.get("ok") is True
+                    and tp_commit.get("trit") == 1
+                    and tp_commit.get("transition_verdict_trit") == 1
+                    and tp_commit.get("state_a_ref") == state_a
+                    and tp_commit.get("state_c_ref") == _sha3_512(v1)
+                    and bool(tp_commit.get("ed25519_signature_b64"))
+                    and len(_find_orphans(root)) == 0
+                )
+                record(
+                    3,
+                    "three_plane_valid_roundtrip_plus1",
+                    TRIT_VERIFIED if tp_ok else TRIT_REJECTED,
+                    tp_ok,
+                    {
+                        "state_a_ref": tp_commit.get("state_a_ref"),
+                        "state_c_ref": tp_commit.get("state_c_ref"),
+                        "reproducibility_class": tp_commit.get("reproducibility_class"),
+                    },
+                )
+
+                # (b) Uncertain/threshold-exceeded Hybrid abstain (0, zero mutation, 0 orphans)
+                state_before_abstain = _sha3_512(ws["target_path"].read_bytes())
+                ab_begin, _ = mcp.call_tool(
+                    "t81.tx_begin",
+                    {
+                        "target_path": str(ws["target_path"]),
+                        "backup_dir": str(ws["bak_dir"]),
+                        "agent_id": "three-plane-abstain",
+                        "isolated": True,
+                    },
+                )
+                Path(ab_begin["staging_path"]).write_bytes(v2)
+                ab_commit, _ = mcp.call_tool(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": ab_begin["tx_id"],
+                        "policy_path": str(ws["policy_path"]),
+                        "agent_id": "three-plane-abstain",
+                        "source_plane": "hybrid",
+                        "target_plane": "deterministic",
+                        "transition_kind": "transition_path",
+                        "hybrid_reconciled": True,
+                        "hybrid_verdict_trit": 0,
+                        "state_a_ref": state_before_abstain,
+                    },
+                )
+                ab_ok = (
+                    ab_commit.get("ok") is False
+                    and ab_commit.get("trit") == 0
+                    and ab_commit.get("transition_verdict_trit") == 0
+                    and ab_commit.get("code") == "DEFER_HYBRID_ABSTAIN"
+                    and ab_commit.get("state_c_ref") is None
+                    and _sha3_512(ws["target_path"].read_bytes()) == state_before_abstain
+                    and len(_find_orphans(root)) == 0
+                )
+                record(
+                    3,
+                    "three_plane_hybrid_abstain_zero",
+                    TRIT_INERT if ab_ok else TRIT_REJECTED,
+                    ab_ok,
+                    {
+                        "code": ab_commit.get("code"),
+                        "state_c_ref": ab_commit.get("state_c_ref"),
+                        "orphans": _find_orphans(root),
+                    },
+                )
+
+                # (c) Direct Stochastic -> Deterministic bypass & tampered state_a_ref (-1)
+                bp_begin, _ = mcp.call_tool(
+                    "t81.tx_begin",
+                    {
+                        "target_path": str(ws["target_path"]),
+                        "backup_dir": str(ws["bak_dir"]),
+                        "agent_id": "three-plane-bypass",
+                        "isolated": True,
+                    },
+                )
+                Path(bp_begin["staging_path"]).write_bytes(v2)
+                bp_commit, _ = mcp.call_tool(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": bp_begin["tx_id"],
+                        "policy_path": str(ws["policy_path"]),
+                        "agent_id": "three-plane-bypass",
+                        "source_plane": "stochastic",
+                        "target_plane": "deterministic",
+                        "transition_kind": "transition_path",
+                        "hybrid_reconciled": False,
+                        "state_a_ref": state_before_abstain,
+                    },
+                )
+                tamp_begin, _ = mcp.call_tool(
+                    "t81.tx_begin",
+                    {
+                        "target_path": str(ws["target_path"]),
+                        "backup_dir": str(ws["bak_dir"]),
+                        "agent_id": "three-plane-tamper-a",
+                        "isolated": True,
+                    },
+                )
+                Path(tamp_begin["staging_path"]).write_bytes(v2)
+                tamp_commit, _ = mcp.call_tool(
+                    "t81.tx_commit",
+                    {
+                        "tx_id": tamp_begin["tx_id"],
+                        "policy_path": str(ws["policy_path"]),
+                        "agent_id": "three-plane-tamper-a",
+                        "source_plane": "hybrid",
+                        "target_plane": "deterministic",
+                        "hybrid_reconciled": True,
+                        "state_a_ref": "sha3-512:" + ("0" * 128),
+                    },
+                )
+                bp_ok = (
+                    bp_commit.get("ok") is False
+                    and bp_commit.get("trit") == -1
+                    and bp_commit.get("code") == "ERR_PLANE_BYPASS_DENIED"
+                    and bp_commit.get("state_c_ref") is None
+                    and tamp_commit.get("ok") is False
+                    and tamp_commit.get("code") == "ERR_PLANE_BYPASS_DENIED"
+                    and _sha3_512(ws["target_path"].read_bytes()) == state_before_abstain
+                    and len(_find_orphans(root)) == 0
+                )
+                record(
+                    3,
+                    "three_plane_stochastic_bypass_denied_minus1",
+                    TRIT_REJECTED if bp_ok else TRIT_INERT,
+                    bp_ok,
+                    {
+                        "bypass_code": bp_commit.get("code"),
+                        "tamper_a_code": tamp_commit.get("code"),
+                        "orphans": _find_orphans(root),
+                    },
+                )
         finally:
             # Restore write bit on axion_root.apl so TemporaryDirectory cleanup succeeds cleanly
             if ws["policy_path"].exists():
