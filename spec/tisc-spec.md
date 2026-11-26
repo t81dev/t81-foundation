@@ -1884,6 +1884,19 @@ No fault may leave the machine in an unspecified or partially-updated state; eit
 - the state transition is fully applied, or
 - no part of it is applied and a fault is raised.
 
+### 6.3 Non-Breaking Semantic Clarification & Open `ISA-001` / `RFC-00D6` Reconciliation (Informational)
+
+> **Non-Normative Clarification (2026-11-26):** This subsection documents four known discrepancies between this frozen `v1.9.0-Stable` specification, the opcode registry, the C++ opcode header, and the bounded `tisc-cpa-v1.0` runtime profile audited in `ISA-001`. It does **not** modify any frozen opcode (`0–173`) or authorize a silent breaking change; formal profile transition requires maintainer signature in [`RFC-00D6`](rfcs/RFC-00D6-versioned-tisc-state-transition-contract.md) §10.
+
+1. **Memory Addressing (`LOAD` `0x03`, `STORE` `0x04`):** Normative text specifies register-indirect addressing (`MEM[R[RS]]`), whereas hosted `T81VM` (`vm/vm.cpp`) and freestanding CPA evaluators (`tisc-cpa-v1.0`) execute direct immediate logical addressing (`MEM[B]` / `MEM[A]`). Raw 13-byte instructions have no embedded profile tag; `RFC-00D6` tracks explicit artifact/CLI profile selection (`--isa-profile`).
+2. **Conditional Branch Targets & Predicates (`JZ`, `JNZ`, `JN`):** Normative text specifies register-indirect targets and `FLAGS`-based predicates, whereas `tisc-cpa-v1.0` executes direct immediate targets with `R[B]` zero-test predicates.
+3. **Scalar `TXor` (`0x15`):** Implemented scalar `TXor` computes wrapped balanced ternary difference `wrap3(lhs - rhs) = ((lhs - rhs + 1) mod 3) - 1` rather than an ambiguous documentary "Sum" label.
+4. **Opcode Inventory & Reserved Ranges:**
+   - **Capability-Frozen Core:** `174` opcodes (`0–173`, `spec/tisc/TISC_CAPABILITY_CONTRACT_v1.1.0.md`).
+   - **Canonical Registry:** `209` opcodes (`spec/tisc/opcode-registry.md`, checked by `scripts/ci/check_tisc_freeze_integrity.py`).
+   - **C++ Header (`include/t81/isa/opcodes.hpp`):** `244` named opcode entries spanning `0–220` and `224–246`.
+   - **Explicitly Reserved / Unassigned Byte Values:** `221–223` and `247–255` MUST decode as `DecodeFault` / `Unimplemented` until formally assigned by an accepted RFC.
+
 ______________________________________________________________________
 
 # Cross-References

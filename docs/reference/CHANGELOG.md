@@ -18,6 +18,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Confined `t81 mcp serve` file reads and writes to the configured roots and closed the empty-name `WeightsLoad` allow when some other allowlist entry was present.
 
+## [2.2.0] - 2026-11-22
+
+See full release notes in [`docs/releases/v2.2.0.md`](../releases/v2.2.0.md).
+
+### Added
+- **Python SDK (`t81==2.2.0`, 31 PyPI files including CPython `3.14` wheels):** `CanonRef` digest reconstruction and `CanonRef.to_cli_handle()`, `StepLimitExceeded` pause/resume with `vm.halted` and `compile_and_run(..., max_steps=...)`, read-only `vm.axion_events` snapshots, dynamic tensor element-count validation, fixed-size tensor negative indexing, and `int()` conversion for `T81Int`/`BigInt`.
+- **Post-`v2.2.0` `main` Integrations (`v2.2.0` → `8aa086906`):** TernaryOS v0.2 MCP multi-agent transactional isolation + `ai_usability_eval.py` (`23/23` adversarial trials, PRs `#861`/`#872`), TLA+ `TernaryOSTransactions` TLC CI (`14,227,489` states / `0` errors, PR `#862`), native `x86_64` AVX2 L3 & off-L3 DRAM sweeps (PRs `#863`/`#864`), `M1` `ProviderGovernor` (`t81.provider.evidence.v1`, `AT-01..AT-10`, PR `#865`), and `H06-MEM-04` Phase 3 sparse-aware Apple Metal/CPU regime dispatch (`PRs #873/#880/#882`).
+
+## [2.1.0] - 2026-11-19
+
+See full release notes in [`docs/releases/v2.1.0.md`](../releases/v2.1.0.md).
+
+### Added
+- **Hardened 15-Tool Native C++ MCP Server (`t81 mcp serve`):** `ScopedJsonParser`, `t81.verify_subgraph`, `t81.diff_check`, `t81.memory_search`, `t81.adapter_apply`, and fail-closed halting `t81.run_subgraph`.
+- **`T81VM` Dual-Rail `(P, N)` `TMatMul` & `CanonFS` `SBDR1T2D` Caching:** NEON + AVX2 Dual-Rail popcount with block-zero activation skipping and lazy `CanonDualRailRhsCache` (`t81_dualrail_sbdr_vm_test`).
+- **BitNet Safetensors Ingester:** `BF16` decoding, `absmean_gamma`, `--emit-sbdr`, and `--emit-sbdr2d` verified on `models/tiny-random-llama-exported.safetensors`.
+- **Governance & CLI Parity:** Grouped `t81 --help` (`24` topics) and `18/18` CI governance scripts unmasked under `set -euo pipefail`.
+
+## [2.0.0] - 2026-11-17
+
+See full release notes in [`docs/releases/v2.0.0.md`](../releases/v2.0.0.md).
+
+### Changed
+- **Major Version & Public API Lock Baseline:** Aligned `CMakeLists.txt`, `pyproject.toml`, `include/t81/config.hpp`, and `PUBLIC_API_LOCK.json` to `2.0.0`; switched persistent `CanonFS` stores to `h1-` lowercase-hex (`t81-canonfs-hex-v1`); defaulted `AxionVerdict` to fail-closed `Deny`.
+- **Native C++ MCP Server & Accountable Decision Bundles:** Initial `t81 mcp serve` (`~109 µs` warm `gate_check`), `t81 ai checkpoint-verify`, and draft `RFC-00D4` receipt sidecar (`11/11` gauntlet scenarios).
+
 ## [1.5.0] - 2026-03-14
 
 ### Added
