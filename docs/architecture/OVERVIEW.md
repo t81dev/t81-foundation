@@ -15,6 +15,16 @@ Maturity: Mixed (`Frozen` ISA/types core, `Stable` VM/Axion/CanonFS/MCP control 
 
 T81 Foundation is an experimental computing architecture and systems research platform (*For AI, By AI*) that turns heterogeneous binary platforms (`x86_64` AVX2, `AArch64` NEON, Apple Metal, Windows, and bare-metal AArch64 QEMU enclaves) into a single bit-exact, fail-closed (`Axion`), content-addressed (`CanonFS`), cryptographically attested (`RFC-00D4` Ed25519) execution and verification substrate for AI agents and memory-compact ternary models (`SBDR1T2D`, `4.0×` vs `I8`). T81 does **not** compete with binary ALUs on scalar math or claim physical ternary silicon superiority. This document is the canonical architecture snapshot of its implemented components, layer boundaries, and bounded determinism claim scope.
 
+## Three-Plane Stratified Execution Architecture (`Deterministic` / `Stochastic` / `Hybrid`)
+
+T81 organizes AI and systems workloads into three stratified planes over a deterministic `CanonFS` / `Axion` / `TISC v1.9.0` base:
+
+| Plane | Role | `reproducibility_class` | Primary Surface | Commit Authority |
+| :--- | :--- | :--- | :--- | :--- |
+| **Deterministic** (Top / Base) | Policy loading, `TISC v1.9.0` execution, `CanonFS` persistence, `RFC-00D4` Ed25519 verification | `deterministic` (`bit_exact_replay`) | `T81VM`, `Axion`, `CanonFS`, `t81 enclave run` | May commit `State A → State C` directly (`execution_path`) |
+| **Stochastic** (Middle) | Generative proposals, model sampling, external LLM/provider calls | `seeded_probabilistic` / `external_probabilistic` | `ControlledProvider`, external MCP agents | **Zero direct commit authority** — direct `stochastic → deterministic` denied fail-closed (`ERR_PLANE_BYPASS_DENIED`) |
+| **Hybrid** (Reconciliation) | Hamming flip-budget (`t81.diff_check`), `RegimeSelector` (`R0`–`R4`) Dual-Rail `SBDR1T2D` verification, `Axion` policy gate | `deterministic` verification over `transition_path` | `ProviderGovernor`, `DpeMcpCoordinator`, `t81.tx_commit`, `TernaryOSTransactions.tla` (`PlaneTransitionInvariant`) | Emits `transition_verdict_trit ∈ {-1, 0, +1}`; seals `state_c_ref` via Ed25519 only on `+1` (`state_c_ref: null` on `-1`/`0`) |
+
 ## Layer Cake
 
 ```mermaid

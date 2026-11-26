@@ -31,7 +31,9 @@ See [docs/research/DUAL_RAIL_HETEROGENEOUS_TISC_NOTE.md](docs/research/DUAL_RAIL
 
 ## What is T81?
 
-**T81 Foundation — For AI, By AI: turning heterogeneous binary platforms (`x86_64` AVX2, `AArch64` NEON, Apple Metal, Windows, bare-metal QEMU enclaves) into a single bit-exact, fail-closed (`Axion`), content-addressed (`CanonFS`), cryptographically attested (`RFC-00D4` Ed25519) execution and verification substrate for AI agents and memory-compact ternary models (`SBDR1T2D`, `4.0×` vs `I8`).**
+**T81 Foundation — For AI, By AI: a Three-Plane Stratified Execution Architecture (`Deterministic` / `Stochastic` / `Hybrid`) over a deterministic `CanonFS` / `Axion` / `TISC v1.9.0` base, turning heterogeneous binary platforms (`x86_64` AVX2, `AArch64` NEON, Apple Metal, Windows, bare-metal QEMU enclaves) into a single bit-exact, fail-closed (`Axion`), content-addressed (`CanonFS`), cryptographically attested (`RFC-00D4` Ed25519) execution and verification substrate for AI agents and memory-compact ternary models (`SBDR1T2D`, `4.0×` vs `I8`).**
+
+Every cross-plane mutation follows explicit `State A → State C` transition receipts (`source_plane`, `target_plane`, `transition_kind`, `reproducibility_class`, `transition_verdict_trit ∈ {-1, 0, +1}`): direct `stochastic → deterministic` commits without an intervening `hybrid` reconciliation gate (`t81.diff_check` / `RegimeSelector` / `Axion`) are rejected fail-closed (`ERR_PLANE_BYPASS_DENIED`).
 
 T81 does **not** compete with binary ALUs on scalar arithmetic or claim physical ternary silicon superiority. It is an implemented experimental computing architecture and open-source scientific research program investigating balanced ternary representations (`{-1, 0, +1}`), deterministic execution, and policy-governed AI computation: it defines the frozen Ternary Instruction Set Computer (`TISC v1.9.0`) as its computational instruction contract, with bounded cross-profile execution demonstrated across both a hosted virtual machine (`T81VM`) and a bare-metal freestanding microkernel enclave (`Axion OS` / `TernaryOS` on AArch64 QEMU).
 
