@@ -144,7 +144,7 @@ class InstalledSdkTest(unittest.TestCase):
                 "public_key_pem": s2["public_key_pem"],
             },
         ])
-        self.assertTrue(ok["ok"])
+        self.assertTrue(ok["ok"], ok)
         self.assertEqual(ok["verified_nodes"], 2)
 
         bad = t81.verify_dag([
@@ -156,16 +156,18 @@ class InstalledSdkTest(unittest.TestCase):
                 "public_key_pem": s1["public_key_pem"],
             },
         ])
-        self.assertFalse(bad["ok"])
+        self.assertFalse(bad["ok"], bad)
         self.assertEqual(bad["code"], "ERR_RECEIPT_VERIFY_FAILED")
 
-        policy = '(policy (tier 1))'
+        import hashlib
+        hello_sha = "sha3-512:" + hashlib.sha3_512(b"hello").hexdigest()
+        policy = f'(policy (tier 1) (allowed-tensor-hashes ["{hello_sha}"]))'
         gov = t81.ProviderGovernor(policy)
         cp = t81.ControlledProvider()
         denied = gov.execute_controlled(cp, "hello", user_consent_verified=False, seed=42)
-        self.assertFalse(denied["ok"])
+        self.assertFalse(denied["ok"], denied)
         allowed = gov.execute_controlled(cp, "hello", user_consent_verified=True, seed=42)
-        self.assertTrue(allowed["ok"])
+        self.assertTrue(allowed["ok"], allowed)
         self.assertEqual(allowed["trit"], 1)
 
 
