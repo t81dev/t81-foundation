@@ -35,7 +35,7 @@
 
 ## 4b. Coexistence & TernaryOS v0.2 Reconciliation (`feat/ternaryos-v0.2-nonblocking`)
 
-Reconciled with [T81_RESEARCH_STATUS_2026-11-23_BY_AI_FOR_AI_COEXISTENCE.md](T81_RESEARCH_STATUS_2026-11-23_BY_AI_FOR_AI_COEXISTENCE.md), [TERNARYOS_ARCHITECTURE_v0.2.md](../research/proposals/TERNARYOS_ARCHITECTURE_v0.2.md), [TERNARYOS_BOOT_TO_RECEIPT_CONTRACT_v0.1.md](../research/proposals/TERNARYOS_BOOT_TO_RECEIPT_CONTRACT_v0.1.md), and [TERNARYOS_MULTI_AGENT_CAPABILITY_BUDGET_v0.2.md](../research/proposals/TERNARYOS_MULTI_AGENT_CAPABILITY_BUDGET_v0.2.md):
+Reconciled with [T81_RESEARCH_STATUS_2026-11-23_BY_AI_FOR_AI_COEXISTENCE.md](T81_RESEARCH_STATUS_2026-11-23_BY_AI_FOR_AI_COEXISTENCE.md), [TERNARYOS_ARCHITECTURE_v0.2.md](../../research/proposals/TERNARYOS_ARCHITECTURE_v0.2.md), [TERNARYOS_BOOT_TO_RECEIPT_CONTRACT_v0.1.md](../../research/proposals/TERNARYOS_BOOT_TO_RECEIPT_CONTRACT_v0.1.md), and [TERNARYOS_MULTI_AGENT_CAPABILITY_BUDGET_v0.2.md](../../research/proposals/TERNARYOS_MULTI_AGENT_CAPABILITY_BUDGET_v0.2.md):
 
 - **Routing Ledger & `R1`/`R2` Rules:** `10` accepted (`+1`) / `16` negative (`-1`) constraints; `M == 1` with `s >= 90%` → `CPU_1T_SBDR128_SIMD`; `s >= 75%` for `M >= 4` or `75% <= s < 90%` at `M == 1` → `GPU_R1_BitmaskSkip_Pop`; dense/moderate `R1` → `GPU_R1_DualRail_Pop`; `R2` `M = 1..4` → `CPU_4T_INT4W`, `M >= 16` → `CPU_4T_INT8W`; `k_star_prepacked == 0`.
 - **Explicit `{-1, 0, +1}` Semantics:** `+1` verified with valid `SHA3-512` receipts, `0` strictly for inert / zero-skip (`dualrail_sparse128_blocks_skipped`) / unmeasured states (including native `x86_64` AVX2 `BM_MemBound64_(DualRail_Dense|SBDR128_SIMD|INT8_Sparse128)` until measured on `ubuntu-24.04`), `-1` for fail-closed denials, conflicts, or tamper breaches.

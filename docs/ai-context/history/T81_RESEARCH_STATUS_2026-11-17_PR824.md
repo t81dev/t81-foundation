@@ -5,14 +5,14 @@
 Freshly fetched `origin/main`: `ab15820a2dd8ebcadde0efecf1fbb0d43b57d3f9`.
 This is a bounded reconciliation of PRs #823 and #824, not a repository-wide
 backlog, CI refresh, scientific finding or host-qualification receipt. The
-[retained observation receipt](receipts/2026-11-17-pr824-reconciliation.json)
+[retained observation receipt](../receipts/2026-11-17-pr824-reconciliation.json)
 records collection methods, metadata, provenance limits and exact source hashes.
 
 ## Integrated documentation and independent draft
 
 | Subject | Verified identities and status | Evidence boundary |
 |---|---|---|
-| [PR #824](https://github.com/t81dev/t81-foundation/pull/824) | Reviewed source `f803e15ebcf4896fc70608cb11d69505134e5578`; base `40695b0ba5cea3e43563b6ed2443c987d2738089`; squash merge `ab15820a2dd8ebcadde0efecf1fbb0d43b57d3f9`; merged at `2026-11-17T15:09:05Z` | Exactly one planning file integrated: [BOLQ migration review plan](../research/proposals/RFC-00D7-F01-BOLQ-MIGRATION/REVIEW_PLAN.md). Reviewed-source and merged-plan bytes match. |
+| [PR #824](https://github.com/t81dev/t81-foundation/pull/824) | Reviewed source `f803e15ebcf4896fc70608cb11d69505134e5578`; base `40695b0ba5cea3e43563b6ed2443c987d2738089`; squash merge `ab15820a2dd8ebcadde0efecf1fbb0d43b57d3f9`; merged at `2026-11-17T15:09:05Z` | Exactly one planning file integrated: [BOLQ migration review plan](../../research/proposals/RFC-00D7-F01-BOLQ-MIGRATION/REVIEW_PLAN.md). Reviewed-source and merged-plan bytes match. |
 | [PR #823](https://github.com/t81dev/t81-foundation/pull/823) | Open, draft, unmerged; head `52604ee1d4b7d90f69b19651a942f68dd5653183`; branch `docs/ai-context-morning-2026-11-17`; observed base `40695b0ba5cea3e43563b6ed2443c987d2738089` | [Morning report at its own pinned head](https://github.com/t81dev/t81-foundation/blob/52604ee1d4b7d90f69b19651a942f68dd5653183/docs/ai-context/MORNING_STATUS_2026-11-17.md) remains on that independent branch. No discussion/review entries were returned; external review is unverified. Its synthetic test-merge identity is not integration. |
 
 PR #823's next-action suggestion to prepare a migration review plan is now
@@ -44,7 +44,7 @@ of its own work. Content hashes establish identity, not authority or truth.
 
 ## Structured continuity and remaining issues
 
-[`CURRENT_STATE.json`](CURRENT_STATE.json) adds
+[`CURRENT_STATE.json`](../CURRENT_STATE.json) adds
 `operational_views.2026-11-17-pr824-reconciled` under the unchanged v2 schema.
 All earlier views and snapshots are retained unchanged. The new view carries
 the four historical scientific observations verbatim with their original dates,
@@ -62,6 +62,6 @@ assumptions is a separate scoped maintenance decision, not a gate bypass here.
 Actual host/provider/interpreter identity, containment rights, latency, reaping,
 durability, receipt feasibility and human risk decisions remain unresolved.
 Source acceptance and documentation integration do not establish qualification.
-See the [validation record](receipts/2026-11-17-pr824-validation.md) for exact
+See the [validation record](../receipts/2026-11-17-pr824-validation.md) for exact
 commands, preservation checks and limitations. The only next step supplied by
 this draft is independent documentation review; no new operational GO is granted.
