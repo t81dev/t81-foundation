@@ -159,6 +159,52 @@ private:
   std::optional<Regime> active_regime_;
 };
 
+// Pluggable accelerator backend interface (Governed non-DCP per RFC-0051).
+// Allows Apple Metal, CUDA, or ROCm backends to share identical hysteresis,
+// working-set (32 MiB), work-ops (32M), and sparsity-density (0.30) rules
+// without altering R0/R4 CPU fallback guarantees.
+class AcceleratorBackend {
+public:
+  virtual ~AcceleratorBackend() = default;
+  [[nodiscard]] virtual std::string_view name() const noexcept = 0;
+  [[nodiscard]] virtual bool is_available() const noexcept = 0;
+  [[nodiscard]] virtual std::uint64_t vram_budget_bytes() const noexcept = 0;
+  [[nodiscard]] virtual std::uint32_t max_queue_depth() const noexcept = 0;
+  [[nodiscard]] virtual bool supports_kernel(KernelKind kernel) const noexcept = 0;
+};
+
+class NullAcceleratorBackend final : public AcceleratorBackend {
+public:
+  [[nodiscard]] std::string_view name() const noexcept override { return "none"; }
+  [[nodiscard]] bool is_available() const noexcept override { return false; }
+  [[nodiscard]] std::uint64_t vram_budget_bytes() const noexcept override { return 0; }
+  [[nodiscard]] std::uint32_t max_queue_depth() const noexcept override { return 0; }
+  [[nodiscard]] bool supports_kernel(KernelKind) const noexcept override { return false; }
+};
+
+class MetalAcceleratorBackend final : public AcceleratorBackend {
+public:
+  explicit MetalAcceleratorBackend(const HardwareProfile& hw,
+                                   const DispatchPolicy& policy = {}) noexcept
+      : available_(hw.metal_available),
+        vram_budget_(hw.metal_vram_budget_bytes),
+        max_queue_(policy.metal_max_queue_depth) {}
+
+  [[nodiscard]] std::string_view name() const noexcept override { return "metal_gpu"; }
+  [[nodiscard]] bool is_available() const noexcept override { return available_; }
+  [[nodiscard]] std::uint64_t vram_budget_bytes() const noexcept override { return vram_budget_; }
+  [[nodiscard]] std::uint32_t max_queue_depth() const noexcept override { return max_queue_; }
+  [[nodiscard]] bool supports_kernel(KernelKind kernel) const noexcept override {
+    return available_ && (kernel == KernelKind::DualRail_Dense ||
+                          kernel == KernelKind::SBDR128_SIMD || kernel == KernelKind::SBDR1T2D);
+  }
+
+private:
+  bool available_{false};
+  std::uint64_t vram_budget_{0};
+  std::uint32_t max_queue_{2};
+};
+
 [[nodiscard]] constexpr std::string_view regime_name(Regime r) noexcept {
   switch (r) {
     case Regime::R0_CacheResidentInline:
