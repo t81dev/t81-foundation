@@ -173,16 +173,18 @@ inline void car25519(gf& o) noexcept {
     o[i] += (1LL << 16);
     int64_t c = o[i] >> 16;
     o[(i + 1) * (i < 15)] += c - 1 + 37 * (c - 1) * (i == 15);
-    o[i] -= c << 16;
+    o[i] -= c * 65536LL;
   }
 }
 
 inline void sel25519(gf& p, gf& q, int b) noexcept {
-  int64_t c = ~(int64_t(b) - 1);
+  const uint64_t mask = ~static_cast<uint64_t>(static_cast<int64_t>(b) - 1);
   for (int i = 0; i < 16; ++i) {
-    int64_t t = c & (p[i] ^ q[i]);
-    p[i] ^= t;
-    q[i] ^= t;
+    const uint64_t pi = static_cast<uint64_t>(p[i]);
+    const uint64_t qi = static_cast<uint64_t>(q[i]);
+    const uint64_t t = mask & (pi ^ qi);
+    p[i] = static_cast<int64_t>(pi ^ t);
+    q[i] = static_cast<int64_t>(qi ^ t);
   }
 }
 
@@ -238,7 +240,7 @@ inline void Z(gf& o, const gf& a, const gf& b) noexcept {
 }
 
 inline void M(gf& o, const gf& a, const gf& b) noexcept {
-#if defined(__SIZEOF_INT128__)
+#if defined(__SIZEOF_INT128__) && defined(__clang__)
   // Fast 5-limb 51-bit radix-2^51 multiplication using __uint128_t (~8x faster than 16x16).
   auto pack5 = [](const gf& x, uint64_t r[5]) noexcept {
     gf t = x;
@@ -340,7 +342,7 @@ inline void M(gf& o, const gf& a, const gf& b) noexcept {
 }
 
 inline void S(gf& o, const gf& a) noexcept {
-#if defined(__SIZEOF_INT128__)
+#if defined(__SIZEOF_INT128__) && defined(__clang__)
   gf t = a;
   car25519(t);
   car25519(t);
@@ -578,7 +580,7 @@ inline void modL(uint8_t r[32], int64_t x[64]) noexcept {
     for (; j < i - 12; ++j) {
       x[j] += carry - 16 * x[i] * static_cast<int64_t>(kL[j - (i - 32)]);
       carry = (x[j] + 128) >> 8;
-      x[j] -= carry << 8;
+      x[j] -= carry * 256LL;
     }
     x[j] += carry;
     x[i] = 0;
