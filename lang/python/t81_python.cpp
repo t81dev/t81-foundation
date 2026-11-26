@@ -207,17 +207,18 @@ PYBIND11_MODULE(_t81, m) {
       .def("size", [](const Tensor2D33&) { return Tensor2D33::size(); })
       .def("rank", [](const Tensor2D33&) { return Tensor2D33::rank(); })
       .def("__add__", [](const Tensor2D33& a, const Tensor2D33& b) { return a + b; })
-      .def("__matmul__", [](const Tensor2D33& a, const Tensor2D33& b) {
-        Tensor2D33 out;
-        for (std::size_t i = 0; i < 3; ++i) {
-          for (std::size_t j = 0; j < 3; ++j) {
-            int64_t acc = 0;
-            for (std::size_t k = 0; k < 3; ++k) acc += a(i, k).to_int64() * b(k, j).to_int64();
-            out(i, j) = T81Int<81>(acc);
-          }
-        }
-        return out;
-      })
+      .def("__matmul__",
+           [](const Tensor2D33& a, const Tensor2D33& b) {
+             Tensor2D33 out;
+             for (std::size_t i = 0; i < 3; ++i) {
+               for (std::size_t j = 0; j < 3; ++j) {
+                 int64_t acc = 0;
+                 for (std::size_t k = 0; k < 3; ++k) acc += a(i, k).to_int64() * b(k, j).to_int64();
+                 out(i, j) = T81Int<81>(acc);
+               }
+             }
+             return out;
+           })
       .def("__matmul__", [](const Tensor2D33& a, const Tensor1D3& v) {
         Tensor1D3 out;
         for (std::size_t i = 0; i < 3; ++i) {
@@ -306,15 +307,19 @@ PYBIND11_MODULE(_t81, m) {
           for (std::size_t i = 0; i < M; ++i) {
             for (std::size_t k = 0; k < K; ++k) {
               int64_t x = ad[i * K + k].to_int64();
-              if (x == 1) ap[i * words + (k >> 6)] |= (1ULL << (k & 63));
-              else if (x == -1) an[i * words + (k >> 6)] |= (1ULL << (k & 63));
+              if (x == 1)
+                ap[i * words + (k >> 6)] |= (1ULL << (k & 63));
+              else if (x == -1)
+                an[i * words + (k >> 6)] |= (1ULL << (k & 63));
             }
           }
           for (std::size_t j = 0; j < N; ++j) {
             for (std::size_t k = 0; k < K; ++k) {
               int64_t x = bd[k * N + j].to_int64();
-              if (x == 1) bp[j * words + (k >> 6)] |= (1ULL << (k & 63));
-              else if (x == -1) bn[j * words + (k >> 6)] |= (1ULL << (k & 63));
+              if (x == 1)
+                bp[j * words + (k >> 6)] |= (1ULL << (k & 63));
+              else if (x == -1)
+                bn[j * words + (k >> 6)] |= (1ULL << (k & 63));
             }
           }
           for (std::size_t i = 0; i < M; ++i) {
@@ -734,8 +739,8 @@ PYBIND11_MODULE(_t81, m) {
         auto seed = crypto::import_private_key_pem(private_key_pem);
         if (!seed.has_value()) throw std::invalid_argument("invalid Ed25519 private key PEM");
         auto kp = crypto::ed25519_keypair_from_seed(*seed);
-        auto payload = crypto::rfc00d4_canonical_signing_payload(meaning_json, evidence_json,
-                                                                 authority_json);
+        auto payload =
+            crypto::rfc00d4_canonical_signing_payload(meaning_json, evidence_json, authority_json);
         py::dict d;
         d["canonical_signing_payload"] = payload;
         d["signature_b64"] = crypto::sign_rfc00d4_payload_b64(kp.seed, kp.public_key, payload);
@@ -836,8 +841,8 @@ PYBIND11_MODULE(_t81, m) {
       });
 
   py::class_<PyProviderGovernor>(m, "ProviderGovernor")
-      .def(py::init<const std::string&, std::shared_ptr<canonfs::Driver>>(),
-           py::arg("policy_text"), py::arg("canonfs_driver") = nullptr)
+      .def(py::init<const std::string&, std::shared_ptr<canonfs::Driver>>(), py::arg("policy_text"),
+           py::arg("canonfs_driver") = nullptr)
       .def_readonly("policy_sha3_512", &PyProviderGovernor::policy_sha3_512)
       .def(
           "execute_vm",
