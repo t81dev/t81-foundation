@@ -544,6 +544,11 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
                  ${CMAKE_SOURCE_DIR}/tests/vm/test_regime_dispatch.cpp)
   target_link_libraries(test_regime_dispatch PRIVATE t81_regime_dispatch Threads::Threads)
 
+  add_executable(t81_ed25519_bundle_test
+    ${PROJECT_SOURCE_DIR}/tests/cpp/ed25519_bundle_test.cpp)
+  target_link_libraries(t81_ed25519_bundle_test PRIVATE t81_crypto)
+  add_test(NAME t81_ed25519_bundle_test COMMAND t81_ed25519_bundle_test)
+
   add_executable(t81_provider_contract_test
                  ${CMAKE_SOURCE_DIR}/tests/cpp/provider_contract_test.cpp)
   target_link_libraries(t81_provider_contract_test PRIVATE t81_provider_adapters t81_provider t81_vm t81_core)

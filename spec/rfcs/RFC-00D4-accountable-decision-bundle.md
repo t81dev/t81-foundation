@@ -3,7 +3,7 @@
 * **RFC Number:** RFC-00D4
 * **Title:** Accountable Decision Bundle Schema and Detached Evidence Verification Protocol
 * **Author:** Research Systems Architecture Group
-* **Status:** Draft
+* **Status:** Accepted (Governed non-DCP; verified via `t81_ed25519_bundle_test`, `t81_provider_contract_test`, and M2 persistent MCP receipt ledger)
 * **Created:** April 2026
 * **Category:** Standards Track / Evidence Protocol
 
