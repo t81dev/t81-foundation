@@ -554,6 +554,13 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   target_link_libraries(t81_dpe_mcp_unification_test PRIVATE t81_provider t81_crypto t81_core)
   add_test(NAME t81_dpe_mcp_unification_test COMMAND t81_dpe_mcp_unification_test)
 
+  if(Python3_Interpreter_FOUND)
+    add_test(NAME t81_cross_platform_differential_test
+      COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tests/determinism/cross_platform_differential_test.py)
+    set_tests_properties(t81_cross_platform_differential_test PROPERTIES
+      ENVIRONMENT "T81_BUILD_DIR=${CMAKE_BINARY_DIR}")
+  endif()
+
   add_executable(t81_provider_contract_test
                  ${CMAKE_SOURCE_DIR}/tests/cpp/provider_contract_test.cpp)
   target_link_libraries(t81_provider_contract_test PRIVATE t81_provider_adapters t81_provider t81_vm t81_core)
@@ -1956,6 +1963,14 @@ if(Python3_Interpreter_FOUND)
       ${CMAKE_SOURCE_DIR}/tests/ci/test_kev_and_receipt_bundle.py)
   set_tests_properties(t81_kev_and_receipt_bundle_test PROPERTIES
     ENVIRONMENT "T81_BIN=$<TARGET_FILE:t81>"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    TIMEOUT 120)
+
+  add_test(NAME t81_three_plane_differential_test
+    COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_SOURCE_DIR}/tests/determinism/three_plane_differential_test.py)
+  set_tests_properties(t81_three_plane_differential_test PROPERTIES
+    ENVIRONMENT "T81_BUILD_DIR=${CMAKE_BINARY_DIR}"
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     TIMEOUT 120)
 endif()

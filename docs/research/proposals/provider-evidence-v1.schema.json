@@ -130,6 +130,43 @@
           "enum": ["bit_exact_replay", "seeded_bounded_attestation", "provenance_only"]
         }
       }
+    },
+    "plane_transition": {
+      "type": "object",
+      "required": [
+        "source_plane",
+        "target_plane",
+        "transition_kind",
+        "reproducibility_class",
+        "transition_verdict_trit",
+        "state_a_ref",
+        "state_c_ref"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "source_plane": {
+          "type": "string",
+          "enum": ["deterministic", "stochastic", "hybrid"]
+        },
+        "target_plane": {
+          "type": "string",
+          "enum": ["deterministic", "stochastic", "hybrid"]
+        },
+        "transition_kind": {
+          "type": "string",
+          "enum": ["execution_path", "transition_path"]
+        },
+        "reproducibility_class": {
+          "type": "string",
+          "enum": ["deterministic", "seeded_probabilistic", "external_probabilistic"]
+        },
+        "transition_verdict_trit": {
+          "type": "integer",
+          "enum": [-1, 0, 1]
+        },
+        "state_a_ref": { "type": ["string", "null"] },
+        "state_c_ref": { "type": ["string", "null"] }
+      }
     }
   }
 }
