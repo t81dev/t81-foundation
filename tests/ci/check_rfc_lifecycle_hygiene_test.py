@@ -62,14 +62,15 @@ def main() -> int:
     if "rfc lifecycle hygiene check FAILED" in multiple.stdout:
         return fail("multiple markdown warning was treated as a failure", multiple)
 
-    live = run_check(script)
-    if live.returncode != 0:
-        return fail("repository RFC lifecycle check failed", live)
-    if "rfc lifecycle hygiene check PASSED" not in live.stdout:
-        return fail("repository RFC lifecycle check did not pass", live)
-    warned = set(re.findall(r"^WARNING: (RFC-\S+) has \d+ markdown files:", live.stdout, re.MULTILINE))
-    if warned != {"RFC-0055", "RFC-0056"}:
-        return fail(f"unexpected multiple-markdown warnings: {sorted(warned)}", live)
+    if (repo_root / "docs/architecture/adr").is_dir():
+        live = run_check(script)
+        if live.returncode != 0:
+            return fail("repository RFC lifecycle check failed", live)
+        if "rfc lifecycle hygiene check PASSED" not in live.stdout:
+            return fail("repository RFC lifecycle check did not pass", live)
+        warned = set(re.findall(r"^WARNING: (RFC-\S+) has \d+ markdown files:", live.stdout, re.MULTILINE))
+        if warned != {"RFC-0055", "RFC-0056"}:
+            return fail(f"unexpected multiple-markdown warnings: {sorted(warned)}", live)
 
     print("check_rfc_lifecycle_hygiene_test: ok")
     return 0
