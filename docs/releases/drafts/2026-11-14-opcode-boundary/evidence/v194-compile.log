@@ -1,0 +1,5 @@
+Undefined symbols for architecture arm64:
+  "t81::codec::base81::signed_integer_digit_strings()", referenced from:
+      t81::v1::detail::base81_alphabet_vec() in binary_io-30b798.o
+ld: symbol(s) not found for architecture arm64
+clang++: error: linker command failed with exit code 1 (use -v to see invocation)

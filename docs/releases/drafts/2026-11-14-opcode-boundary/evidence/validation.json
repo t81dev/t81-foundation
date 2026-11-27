@@ -1,0 +1,15 @@
+{
+  "result": "PASS for reproduced loader misidentification, not safe behavior",
+  "NDEBUG": "explicit probe branches remain active",
+  "source_unchanged": true,
+  "run_exit_codes": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    5
+  ],
+  "all_json_parsed": true,
+  "no_runtime_implementation": true
+}

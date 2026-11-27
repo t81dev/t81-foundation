@@ -1,0 +1,68 @@
+[
+  {
+    "label": "v194-write-by-v194",
+    "argv": [
+      "/private/tmp/t81-artifact-probe-v194",
+      "write",
+      "docs/releases/drafts/2026-11-14-opcode-boundary/evidence/v194"
+    ],
+    "exit": 0,
+    "stdout": "writer=VLoad byte=194\n",
+    "stderr": ""
+  },
+  {
+    "label": "v194-read-by-v194",
+    "argv": [
+      "/private/tmp/t81-artifact-probe-v194",
+      "read",
+      "docs/releases/drafts/2026-11-14-opcode-boundary/evidence/v194"
+    ],
+    "exit": 0,
+    "stdout": "load_program=VLoad byte=194 a=1 b=2 c=3\ndecode_raw13=VLoad byte=194\n",
+    "stderr": ""
+  },
+  {
+    "label": "v194-read-by-main",
+    "argv": [
+      "/private/tmp/t81-artifact-probe-main",
+      "read",
+      "docs/releases/drafts/2026-11-14-opcode-boundary/evidence/v194"
+    ],
+    "exit": 0,
+    "stdout": "load_program=TWMATMUL byte=194 a=1 b=2 c=3\ndecode_raw13=TWMATMUL byte=194\n",
+    "stderr": ""
+  },
+  {
+    "label": "main-write-by-main",
+    "argv": [
+      "/private/tmp/t81-artifact-probe-main",
+      "write",
+      "docs/releases/drafts/2026-11-14-opcode-boundary/evidence/main"
+    ],
+    "exit": 0,
+    "stdout": "writer=VLoad byte=240\n",
+    "stderr": ""
+  },
+  {
+    "label": "main-read-by-main",
+    "argv": [
+      "/private/tmp/t81-artifact-probe-main",
+      "read",
+      "docs/releases/drafts/2026-11-14-opcode-boundary/evidence/main"
+    ],
+    "exit": 0,
+    "stdout": "load_program=VLoad byte=240 a=1 b=2 c=3\ndecode_raw13=VLoad byte=240\n",
+    "stderr": ""
+  },
+  {
+    "label": "main-read-by-v194",
+    "argv": [
+      "/private/tmp/t81-artifact-probe-v194",
+      "read",
+      "docs/releases/drafts/2026-11-14-opcode-boundary/evidence/main"
+    ],
+    "exit": 5,
+    "stdout": "load_program=Unknown byte=240 a=1 b=2 c=3\n",
+    "stderr": ""
+  }
+]

@@ -1,0 +1,110 @@
+{
+  "status": "design only; no implementation authorized",
+  "main": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+  "baseline": "295fc67245179f1b26e5284c70520019e72bb6c3",
+  "environment": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "compiler": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin\n",
+  "compiled_with_NDEBUG": true,
+  "source_comparison": {
+    "isa/encoding.cpp": {
+      "identical": true,
+      "diff": ""
+    },
+    "isa/binary_io.cpp": {
+      "identical": true,
+      "diff": ""
+    },
+    "include/t81/isa/program.hpp": {
+      "identical": true,
+      "diff": ""
+    }
+  },
+  "sources": {
+    "isa/encoding.cpp": {
+      "sha256": "d9fd81f87e9b6b47c55c8ddf5e7bdeef95e0ce48a965b1973e23526c32f2a391",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/isa/encoding.cpp"
+    },
+    "isa/binary_io.cpp": {
+      "sha256": "797d3fe424136cb9109811b1bc47de4b453791d12bc0f860c7dcc96947de6aec",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/isa/binary_io.cpp"
+    },
+    "isa/base81_view.cpp": {
+      "sha256": "e5777da9f0c3c5bb25b18eab2d0cd2377347fcbb8b6f1b54a4e2171a68281d6d",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/isa/base81_view.cpp"
+    },
+    "tools/tisc_base81.cpp": {
+      "sha256": "bb3198b513249fb2a63dd8f3d23530ae811c71f646693ba7228af2833e72b696",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/tools/tisc_base81.cpp"
+    },
+    "include/t81/isa/program.hpp": {
+      "sha256": "ff8cf5ea48284515cce4440187a5be484ba95646895263defa0978ed1a8226e9",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/include/t81/isa/program.hpp"
+    },
+    "include/t81/isa/opcodes.hpp": {
+      "sha256": "f9459c3b93c583f36addf19df1a5f5930a298eee5e3916abb8139f3eeb46e35a",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/include/t81/isa/opcodes.hpp"
+    },
+    "tools/cli/core/main.cpp": {
+      "sha256": "13c9df0dab3bfe05d820024ee25ebeb1b66fc1ab73a55791e008d3ceaa45a36e",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/tools/cli/core/main.cpp"
+    },
+    "tools/cli/core/driver.cpp": {
+      "sha256": "6c3eab12afe0af2aa03311079f2d07d8e00f5c060b5eb8e7eb022ec415684cb2",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/tools/cli/core/driver.cpp"
+    },
+    "scripts/ci/t81lang_repro_gate.py": {
+      "sha256": "6246dfb107d6dba6da977aeeba97f3160528e02e9710df8d4c8b417f0df1decb",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/scripts/ci/t81lang_repro_gate.py"
+    },
+    "tests/cpp/tisc_encoding_test.cpp": {
+      "sha256": "c763deb184e2fd8db211002dd42ea7baee316ceac8b0d23b8f7939f9f38c968c",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/tests/cpp/tisc_encoding_test.cpp"
+    },
+    "tests/cpp/tisc_opcode_matrix_test.cpp": {
+      "sha256": "05f1812488bbf0ea19cdf50e609b93617db122196c3b9bd9f9462f92e3ce78f3",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/tests/cpp/tisc_opcode_matrix_test.cpp"
+    },
+    "spec/tisc/TISC_CAPABILITY_CONTRACT_v1.1.0.md": {
+      "sha256": "ef2e13c796de38911939aec11099795e303d9d2d5895f84334812dbf54f7f17e",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/spec/tisc/TISC_CAPABILITY_CONTRACT_v1.1.0.md"
+    },
+    "spec/rfcs/RFC-00D6-versioned-tisc-state-transition-contract.md": {
+      "sha256": "98f1a287bb07705f7dedd527709024bbd9d3900769245f0b1d472481e5cef27a",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/spec/rfcs/RFC-00D6-versioned-tisc-state-transition-contract.md"
+    },
+    "docs/research/commons/manifest.v1.json": {
+      "sha256": "c6e2642365399b85a98e53727d1ec5a8240c3cb51ea86416565543a0658de911",
+      "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/research/commons/manifest.v1.json"
+    }
+  },
+  "generated_artifacts": [
+    {
+      "path": "v194.tisc",
+      "bytes": 106,
+      "sha256": "96a18c69e33cd90abf5553cbae4e03af52446430446c3ed63664f998e05b4951"
+    },
+    {
+      "path": "v194.raw13",
+      "bytes": 13,
+      "sha256": "d0079eb1555bd5eee53731ed106780dcef2350807212d09707e644a214fb711b"
+    },
+    {
+      "path": "main.tisc",
+      "bytes": 106,
+      "sha256": "243bc89bf85ab982500c81a5936fe868dda1131d7bbda1fa86fe439fc50fc988"
+    },
+    {
+      "path": "main.raw13",
+      "bytes": 13,
+      "sha256": "3c3ee60f2b5cc8be535b5c3e2e38fedc7b76f9ab82a8f69a990fef7f409facd8"
+    }
+  ],
+  "limitations": [
+    "Fresh source compilation of selected loader/codec files, not release binaries or whole toolchain",
+    "No full CLI, VM execution, Windows, Linux or ARMv9 execution in this task",
+    "No historical artifact authentication",
+    "Fixture inspection assumes current layout solely for inventory; no producer version inferred",
+    "Initial linking failures retained; dependency-complete builds succeeded",
+    "RFC-00D6 draft authorization record unfilled; referenced CPA implementation paths absent from this pinned main"
+  ]
+}

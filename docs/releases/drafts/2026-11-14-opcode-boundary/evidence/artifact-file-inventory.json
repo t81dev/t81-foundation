@@ -1,0 +1,289 @@
+[
+  {
+    "path": "examples/compiler-and-ffi/tisc/accumulator.tisc",
+    "size": 152,
+    "sha256": "b212635233ddfc1caf665bc22f905b05ef9228d2e6f0f15cb847ad6b40d1dc42",
+    "prefix_hex": "0400000000000000020100000064000000000000000000000000020200000000",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/advanced_datatypes_showcase.tisc",
+    "size": 2291,
+    "sha256": "f781eaf1d001a7c1357c9ea489a486823e3d6e3ae834f827b779ad34f304438d",
+    "prefix_hex": "5c000000000000000201000000320000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/advanced_monitor.tisc",
+    "size": 366,
+    "sha256": "e44bf2166f5fbe3c5bc9b84b6834ebdc9abffd1e407398a78eae2cc9857313cc",
+    "prefix_hex": "0f000000000000000201000000040000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/all_types_showcase.tisc",
+    "size": 510,
+    "sha256": "1262169161ef605731e52e2cb395f9839af14d0c6584afe793c09fca37465d33",
+    "prefix_hex": "17000000000000000201000000040000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/autonomous_agent.tisc",
+    "size": 840,
+    "sha256": "2f00c9f04606684caaf81212bb644d1d75835126c408dfb50ff8ff44efda4fe7",
+    "prefix_hex": "21000000000000000201000000040000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/axion-guard.tisc",
+    "size": 1501,
+    "sha256": "a47d2acd239f0537aa7ea0a0509b06921871d1073820cae00e395693f4e09afa",
+    "prefix_hex": "330000000000000002010000002a0000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/basic_test.tisc",
+    "size": 314,
+    "sha256": "ab40b7a7dbde12b1cd3c5c7be0e593b9a8d67b6da390b13d48d3474379ee071d",
+    "prefix_hex": "0d000000000000000201000000040000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/bigint_demo.tisc",
+    "size": 422,
+    "sha256": "b55f99987ad6b96f30d1a9811578f92af7450f75552236a08136d6b0f9e63e92",
+    "prefix_hex": "13000000000000000201000000040000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/bigint_fraction_verification.tisc",
+    "size": 1646,
+    "sha256": "3e33d6dcd21b7f74d2461661126f296767b802c125dab998579fff73b2fc2f41",
+    "prefix_hex": "570000000000000002010000000010a5d4e80000000000000000020200000000",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/cell_demo.tisc",
+    "size": 368,
+    "sha256": "5d5891725e2db63f94ce9954bddbce7cce3c968cc742a634feed6c8677949b3f",
+    "prefix_hex": "10000000000000000201000000040000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/cognition.tisc",
+    "size": 278,
+    "sha256": "a3010c1c31dcdc7fdf8a29730c311a56e4cb22051584f3a9b27a97296f8e0d4b",
+    "prefix_hex": "0b00000000000000020100000064000000000000000000000000020200000032",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/data_types.tisc",
+    "size": 413,
+    "sha256": "c7c36aea9f8462b81f276cf31279cc17974eb996c43f491e644b4108e2b7ec45",
+    "prefix_hex": "11000000000000000201000000040000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/distributed_inference.tisc",
+    "size": 476,
+    "sha256": "cbde7ce8cb01e10646f68bbacc7d2de5b75fd8bcdaa79dd9faf7615d344cb684",
+    "prefix_hex": "16000000000000000201000000040000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/evolutionary_db.tisc",
+    "size": 948,
+    "sha256": "3427a498641d83afe7ce2e3db815805e8d6a2692d1cca78edbfec78f5d554939",
+    "prefix_hex": "270000000000000002010000000d0000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/float_demo.tisc",
+    "size": 554,
+    "sha256": "7a4c172078adb3cac0577c9d4c36969c35ac9775c476b0b467e4288a246e6cdc",
+    "prefix_hex": "19000000000000000201000000100000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/fraction_demo.tisc",
+    "size": 530,
+    "sha256": "84f7382ff98073a38cdaee80eca66bc34880866957141c75428d940177796ff0",
+    "prefix_hex": "19000000000000000201000000100000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/graph_demo.tisc",
+    "size": 842,
+    "sha256": "1e305c03c278a9d376ec80a5af4f1953b2d1012a1cf1ca7c7d6224f8cc239f2d",
+    "prefix_hex": "250000000000000002010000001c0000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/guard_match.tisc",
+    "size": 1501,
+    "sha256": "a47d2acd239f0537aa7ea0a0509b06921871d1073820cae00e395693f4e09afa",
+    "prefix_hex": "330000000000000002010000002a0000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/hello_world.tisc",
+    "size": 335,
+    "sha256": "4edf1697e0257bcf067a948520ca9c7497c56c4c46dfb8e834a39f11948667a7",
+    "prefix_hex": "0d000000000000000201000000040000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/high_rank_tensor_demo.tisc",
+    "size": 656,
+    "sha256": "a2e18ce4b0cf1357a921f592d85e44b85abab5e0acd888d359745cd371f404ad",
+    "prefix_hex": "1c000000000000000201000000130000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/inference.tisc",
+    "size": 332,
+    "sha256": "62806c9b830b15b4178b768d6b53c63f4c99b85e3d90494214c1a740594bb5dd",
+    "prefix_hex": "0e000000000000000201000000040000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/match_demo.tisc",
+    "size": 1501,
+    "sha256": "a47d2acd239f0537aa7ea0a0509b06921871d1073820cae00e395693f4e09afa",
+    "prefix_hex": "330000000000000002010000002a0000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/matrix_demo.tisc",
+    "size": 640,
+    "sha256": "f71bfefef5cf9ec7609427862e83aa98b7f4133dcc7ce7cae0c863d8ee9b704a",
+    "prefix_hex": "1c000000000000000201000000130000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/option_result_match.tisc",
+    "size": 1945,
+    "sha256": "7ac311107f0a9d6a4bcbd699e1ea79d250b78d656621fe9633063c0ae4d2cf50",
+    "prefix_hex": "4b000000000000000201000000310000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/quaternion_demo.tisc",
+    "size": 548,
+    "sha256": "b560b44dfc7a5c8d3dc4e38b137b69e1613f291d37759d06bcf5ba2435a49352",
+    "prefix_hex": "1a000000000000000201000000110000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/string_demo.tisc",
+    "size": 377,
+    "sha256": "7a1e29a6eb8649e8ce30bd5d5aefe4356fdca0aca34f6fcb09395424bb24485a",
+    "prefix_hex": "0f000000000000000201000000040000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/system_integration.tisc",
+    "size": 2374,
+    "sha256": "f0eaf6dfeb63cc83da35e2428c9ce60e3c1475eb6597d792916dc6642efd581d",
+    "prefix_hex": "5b000000000000000201000000040000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/tensor_demo.tisc",
+    "size": 782,
+    "sha256": "c545e2eae6d0fd9b0c63736e608a50f1e7af7118c48bdff593efc911364dbb21",
+    "prefix_hex": "230000000000000002010000001a0000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/ternary_verification.tisc",
+    "size": 2312,
+    "sha256": "7206f6e75eadcb4ddcea902e87c749a7f6b88ae41d8cddc0aa90d5cde3949816",
+    "prefix_hex": "7c00000000000000020100000001000000000000000000000000020200000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/ternary_verification_root.tisc",
+    "size": 2312,
+    "sha256": "7206f6e75eadcb4ddcea902e87c749a7f6b88ae41d8cddc0aa90d5cde3949816",
+    "prefix_hex": "7c00000000000000020100000001000000000000000000000000020200000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/vector_demo.tisc",
+    "size": 400,
+    "sha256": "d84dc496157e889abb2e24890c5658060b158269e05e160af9e9f6de94f12a46",
+    "prefix_hex": "10000000000000000201000000040000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/compiler-and-ffi/tisc/verify.tisc",
+    "size": 2312,
+    "sha256": "7206f6e75eadcb4ddcea902e87c749a7f6b88ae41d8cddc0aa90d5cde3949816",
+    "prefix_hex": "7c00000000000000020100000001000000000000000000000000020200000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/experiments/container_structural.tisc",
+    "size": 1174,
+    "sha256": "efcd8edfaadc82323bf6377717f92686a27403b41437124dcb68773682f8acee",
+    "prefix_hex": "2d000000000000000201000000240000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/experiments/cross_layer.tisc",
+    "size": 4123,
+    "sha256": "0b2a9c47e749094f84a9893701e4093f926ffddf12d2f3bb89b75a2d97247454",
+    "prefix_hex": "b5000000000000000201000000ac0000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/experiments/monadic_flow.tisc",
+    "size": 3232,
+    "sha256": "a4fdaba8a5a4ed78a734b9c2942d368a9e0f4784a9aa2650c9fa814220da6c06",
+    "prefix_hex": "6a000000000000000201000000610000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/experiments/numerical_tensor.tisc",
+    "size": 905,
+    "sha256": "c638497bb55bb85a4531001a1b93d7c05bd62894a3ae2e15cf87433cb7e13103",
+    "prefix_hex": "21000000000000000201000000180000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/experiments/primitive_arithmetic.tisc",
+    "size": 2705,
+    "sha256": "b3572cafe85f8a93d58d8e73cd92c0413e641e6a9a294723803841cb71418f4b",
+    "prefix_hex": "6f000000000000000201000000660000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/experiments/reflective_layer.tisc",
+    "size": 1184,
+    "sha256": "b4723b07b550858c0742ffb9f666bc391a3c16057e99c35f4e9aa9ff1f7c20f8",
+    "prefix_hex": "2c000000000000000201000000230000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "examples/experiments/symbolic_algebraic.tisc",
+    "size": 1224,
+    "sha256": "30a7cd6bcb5c6b0960275f324e48edef6addd3e6f44c0db1bb500ab63535cb53",
+    "prefix_hex": "340000000000000002010000002b0000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "symbolic_algebraic.tisc",
+    "size": 1232,
+    "sha256": "50b832c009157eb87659a2d675289f54996228ef398ffaa43281e0ca37908097",
+    "prefix_hex": "340000000000000002010000002b0000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  },
+  {
+    "path": "symbolic_algebraic_exported.tisc",
+    "size": 1232,
+    "sha256": "50b832c009157eb87659a2d675289f54996228ef398ffaa43281e0ca37908097",
+    "prefix_hex": "340000000000000002010000002b0000000000000000000000001a0000000001",
+    "classification": "binary candidate; schema not inferred"
+  }
+]

@@ -1,0 +1,2 @@
+load_program=VLoad byte=194 a=1 b=2 c=3
+decode_raw13=VLoad byte=194

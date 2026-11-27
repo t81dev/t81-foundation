@@ -1,0 +1,46 @@
+[
+  {
+    "line": 1122,
+    "context": "      std::ifstream f(p, std::ios::binary);\n      if (!f) throw std::runtime_error(\"Failed to open source file\");\n      std::ostringstream ss;\n      ss << f.rdbuf();\n      return ss.str();\n    }(input);\n  } else {\n    source = source_override;\n  }\n\n  auto program = build_program_from_source(source, diag_name, weights_model);\n  if (!program) return 1;\n\n  verbose(\"Writing \" + output.string());\n  t81::tisc::save_program(*program, output.string());\n\n  if (announce_success) {\n    info(\"Compilation successful \u2192 \" + output.string());"
+  },
+  {
+    "line": 1235,
+    "context": "  auto execute_buffer = [&]() -> bool {\n    if (buffer.empty()) {\n      info(\"Nothing to run (buffer is empty)\");\n      return true;\n    }\n    auto program = build_program_from_source(buffer, \"<repl>\", active_model);\n    if (!program) {\n      clear_buffer();\n      return false;\n    }\n    if (!policy_content.empty()) {\n      program->axion_policy_text = policy_content;\n    }\n    auto vm = t81::vm::make_interpreter_vm();\n    vm->load_program(*program);\n    auto result = vm->run_to_halt();\n    last_vm = std::move(vm);\n    executed_snippets.push_back(buffer);"
+  },
+  {
+    "line": 1412,
+    "context": "    }\n\n    append_line(line);\n  }\n\n  info(\"Exiting REPL\");\n  return 0;\n}\n\nint run_tisc(const fs::path& path, const std::optional<fs::path>& policy_path, bool trace_enabled,\n             const std::optional<fs::path>& trace_output_path,\n             const std::shared_ptr<t81::weights::ModelFile>& weights_model) {\n  verbose(\"Loading TISC program: \" + path.string());\n\n  auto program = t81::tisc::load_program(path.string());\n  verbose(\"Program loaded (\" + std::to_string(program.insns.size()) + \" insns)\");\n\n  if (weights_model) {"
+  },
+  {
+    "line": 1432,
+    "context": "  }\n\n  if (policy_path) {\n    std::ifstream ifs(*policy_path);\n    if (ifs) {\n      std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());\n      program.axion_policy_text = content;\n      verbose(\"Axion policy loaded from \" + policy_path->string());\n    } else {\n      error(\"Could not open policy file: \" + policy_path->string());\n    }\n  }\n\n  auto vm = t81::vm::make_interpreter_vm();\n  vm->load_program(program);\n\n  verbose(\"Executing...\");\n  auto result = vm->run_to_halt();"
+  },
+  {
+    "line": 1505,
+    "context": "      std::cerr << \"result kind: tensor_handle\\n\";\n      std::cerr << \"operation: tensor-backed execution completed under attached weights\\n\";\n      std::cerr << \"note: output is a VM tensor handle, not materialized tensor contents; \"\n                   \"use --trace to inspect execution flow or a workflow that exports/materializes tensors\\n\";\n      std::cerr << \"next (progress): none on this path; the result remains a runtime tensor handle\\n\";\n      std::cerr << \"next (inspect): rerun with --trace to inspect the executed tensor ops and Axion events\\n\";\n    }\n  }\n  return 0;\n}\n\nint disasm_tisc(const fs::path& path) {\n  verbose(\"Loading TISC program for disassembly: \" + path.string());\n\n  auto program = t81::tisc::load_program(path.string());\n  std::cout << \"; t81 disasm \" << path.string() << \"\\n\";\n  std::cout << \"; instructions=\" << program.insns.size() << \" floats=\" << program.float_pool.size()\n            << \" fractions=\" << program.fraction_pool.size()"
+  },
+  {
+    "line": 1539,
+    "context": "\n  for (size_t pc = 0; pc < program.insns.size(); ++pc) {\n    const auto& insn = program.insns[pc];\n    std::cout << std::setw(4) << std::setfill('0') << pc << std::setfill(' ') << \": \"\n              << t81::tisc::opcode_name(insn.opcode) << \" a=\" << insn.a << \" b=\" << insn.b\n              << \" c=\" << insn.c << \" lit=\" << static_cast<int>(insn.literal_kind) << \"\\n\";\n  }\n  return 0;\n}\n\nint debug_tisc(const fs::path& path, const std::optional<fs::path>& policy_path,\n               const std::shared_ptr<t81::weights::ModelFile>& weights_model) {\n  verbose(\"Loading TISC program for debugging: \" + path.string());\n\n  auto program = t81::tisc::load_program(path.string());\n\n  if (weights_model) {\n    program.weights_model = weights_model;"
+  },
+  {
+    "line": 1558,
+    "context": "  }\n\n  if (policy_path) {\n    verbose(\"Loading Axion policy for debugging: \" + policy_path->string());\n    std::ifstream ifs(*policy_path);\n    if (!ifs) {\n      error(\"Could not open policy file: \" + policy_path->string());\n      return 1;\n    }\n    std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());\n    program.axion_policy_text = content;\n  }\n\n  auto vm = t81::vm::make_interpreter_vm();\n  vm->load_program(program);\n\n  Debugger dbg(std::move(vm), program);\n  dbg.run();"
+  },
+  {
+    "line": 2405,
+    "context": "          break;\n        case '\\t':\n          out += \"\\\\t\";\n          break;\n        default:\n          out.push_back(c);\n          break;\n      }\n    }\n    return out;\n  };\n\n  fs::path tisc_path = positional[0];\n  fs::path trace_path = positional[1];\n  auto program = t81::tisc::load_program(tisc_path.string());\n  auto vm = t81::vm::make_interpreter_vm();\n  vm->load_program(program);\n  (void)vm->run_to_halt();"
+  },
+  {
+    "line": 2407,
+    "context": "          out += \"\\\\t\";\n          break;\n        default:\n          out.push_back(c);\n          break;\n      }\n    }\n    return out;\n  };\n\n  fs::path tisc_path = positional[0];\n  fs::path trace_path = positional[1];\n  auto program = t81::tisc::load_program(tisc_path.string());\n  auto vm = t81::vm::make_interpreter_vm();\n  vm->load_program(program);\n  (void)vm->run_to_halt();\n  const auto& current_trace = vm->state().trace;\n  std::ifstream ifs(trace_path);"
+  },
+  {
+    "line": 3083,
+    "context": "  if (la.subcommand != \"compile\") {\n    error(\"t81 llvm: unknown subcommand '\" + la.subcommand + \"'. Try 't81 llvm help'.\");\n    return 1;\n  }\n\n  if (la.input.empty()) {\n    error(\"t81 llvm compile: no input file specified.\");\n    return 1;\n  }\n\n  // Load or compile the program.\n  t81::tisc::Program prog;\n  const auto ext = la.input.extension().string();\n  if (ext == \".tisc\") {\n    prog = t81::tisc::load_program(la.input.string());\n  } else if (ext == \".t81\") {\n    std::ifstream f(la.input);\n    if (!f) {"
+  },
+  {
+    "line": 3199,
+    "context": "  if (is_lower) {\n    fs::path out = ma.output.empty() ? fs::path(ma.input).replace_extension(\".ll\") : ma.output;\n    if (!t81::mlir_frontend::lower_mlir_file(ma.input, out)) {\n      error(\"MLIR lowering failed for: \" + ma.input.string());\n      return 1;\n    }\n    std::cout << \"LLVM IR written to: \" << out.string() << \"\\n\";\n    return 0;\n  }\n\n  // \u2500\u2500 compile / pipeline: load or compile TISC program \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  t81::tisc::Program prog;\n  const auto ext = ma.input.extension().string();\n  if (ext == \".tisc\") {\n    prog = t81::tisc::load_program(ma.input.string());\n  } else if (ext == \".t81\") {\n    std::ifstream f(ma.input);\n    if (!f) {"
+  }
+]
