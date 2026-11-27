@@ -1,0 +1,21 @@
+Internal ctest changing into directory: $BUILD
+Test project $BUILD
+    Start 399: t81_exp_scg08_01_test
+1/8 Test #399: t81_exp_scg08_01_test ..........................   Passed
+    Start 400: t81_exp_scg08_01_result_rejection
+2/8 Test #400: t81_exp_scg08_01_result_rejection ..............   Passed
+    Start 401: t81_exp_scg08_01_result_rejection_driver
+3/8 Test #401: t81_exp_scg08_01_result_rejection_driver .......   Passed
+    Start 402: t81_exp_scg08_01_schema_validation
+4/8 Test #402: t81_exp_scg08_01_schema_validation .............   Passed
+    Start 403: t81_exp_scg08_01_schema_negative_validation
+5/8 Test #403: t81_exp_scg08_01_schema_negative_validation ....   Passed
+    Start 404: t81_exp_scg08_01_schema_json_files
+6/8 Test #404: t81_exp_scg08_01_schema_json_files .............   Passed
+    Start 405: t81_exp_scg08_01_schema_negative_optimized
+7/8 Test #405: t81_exp_scg08_01_schema_negative_optimized .....   Passed
+    Start 406: t81_exp_scg08_01_schema_json_files_optimized
+8/8 Test #406: t81_exp_scg08_01_schema_json_files_optimized ...   Passed
+
+100% tests passed, 0 tests failed out of 8
+

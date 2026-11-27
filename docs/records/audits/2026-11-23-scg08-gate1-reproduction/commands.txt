@@ -1,0 +1,43 @@
+# Executed from the repository root on tested harness SHA
+# 5a005b2dea5e1eb262d4af45698f8338d16b137c.
+# $PY is the out-of-tree virtualenv interpreter.
+# $BUILD is the out-of-tree Release build directory.
+# Absolute machine paths are omitted from this packet.
+
+git fetch origin main
+git rev-parse HEAD
+git rev-parse origin/main
+
+python3 -m venv "$VENV"
+"$VENV/bin/pip" install -r scripts/ci/scg08-validator-requirements.txt
+
+cmake -B "$BUILD" -S . \
+  -DT81_BUILD_EXPERIMENTS=ON \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_C_COMPILER=gcc \
+  -DCMAKE_CXX_COMPILER=g++ \
+  -DPython3_EXECUTABLE="$PY"
+
+cmake --build "$BUILD" --target t81_exp_scg08_01_test -j 4
+
+"$PY" scripts/ci/validate_scg08_gate1_evidence.py \
+  experiments/scg08_arithmetic_work/gate1_evidence_record.json \
+  experiments/scg08_arithmetic_work/evidence_schema.json
+
+"$PY" -O scripts/ci/validate_scg08_gate1_evidence.py \
+  experiments/scg08_arithmetic_work/gate1_evidence_record.json \
+  experiments/scg08_arithmetic_work/evidence_schema.json
+
+"$PY" scripts/ci/validate_scg08_gate1_evidence.py --test-negative
+"$PY" -O scripts/ci/validate_scg08_gate1_evidence.py --test-negative
+"$PY" scripts/ci/validate_scg08_gate1_evidence.py --test-json-files
+"$PY" -O scripts/ci/validate_scg08_gate1_evidence.py --test-json-files
+
+"$BUILD/experiments/scg08_arithmetic_work/t81_exp_scg08_01_test"
+
+"$PY" experiments/scg08_arithmetic_work/test_result_rejection.py \
+  "$BUILD/experiments/scg08_arithmetic_work/t81_exp_scg08_01_test"
+
+"$PY" experiments/scg08_arithmetic_work/test_result_rejection_driver.py
+
+ctest --test-dir "$BUILD" --output-on-failure --no-tests=error -R '^t81_exp_scg08_01'
