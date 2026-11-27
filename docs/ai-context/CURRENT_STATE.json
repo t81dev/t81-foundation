@@ -1,8 +1,8 @@
 {
   "schema_version": "2.0.0",
-  "generated_at": "2026-11-26",
+  "generated_at": "2026-11-27",
   "purpose": "Non-normative operational index; never grants authorization",
-  "selected_view": "2026-11-26-waves-0-4-phase3-merged",
+  "selected_view": "2026-11-27-post-wave5-backlog-cleared",
   "operational_views": {
     "2026-11-02": {
       "view_date": "2026-11-02",
@@ -1280,6 +1280,203 @@
           "next": "Maintain F01 M1-M6 STOP, SCG-08 Gate 2 NO-GO, H01/10A BLOCKED, and AXION-AI-001 HD01-HD06 holds."
         }
       ]
+    },
+    "2026-11-27-post-wave5-backlog-cleared": {
+      "view_date": "2026-11-27",
+      "freshness": "dated_operational_view",
+      "coverage": {
+        "inventory_scope": "post_wave5_consolidation_and_pr_backlog_clearance",
+        "coverage_state": "complete_held_prs_only_remaining",
+        "open_pr_count": 15
+      },
+      "repository_observation": {
+        "envelope": {
+          "subject": "t81dev/t81-foundation main branch head (post-Wave 5, KEV, Three-Plane, docs & PR backlog cleared)",
+          "observed_at": "2026-11-27T16:34:00Z",
+          "source_revision": {
+            "commit_sha": "5be621553f886a6ee0d1d4062b148978f4016a12"
+          },
+          "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+          "retained_receipt": "origin/main commit 5be621553f886a6ee0d1d4062b148978f4016a12"
+        },
+        "name": "t81dev/t81-foundation",
+        "base_branch": "main",
+        "observed_head": "5be621553f886a6ee0d1d4062b148978f4016a12"
+      },
+      "scientific_observations": [
+        {
+          "envelope": {
+            "subject": "Active research holds (F01 M1-M6 STOP, SCG-08 Gate 2 NO-GO, H01/10A BLOCKED, AXION-AI-001 HD01-HD06, T81-AIOPT-001 M2 EXECUTION_BLOCKED)",
+            "observed_at": "2026-11-27T16:34:00Z",
+            "source_revision": {
+              "inherit_from": "repository_observation"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "docs/research/proposals/RFC-00D7-F01-BOLQ-MIGRATION/REVIEW_PLAN.md"
+          },
+          "id": "ACTIVE-HOLDS-2026-11-27",
+          "status": "holds_intact",
+          "verification": "source_reported",
+          "claims_boundary": "F01-HOST-BOLQ-v1 NOT ADOPTED (M1-M6 STOP); SCG-08 Gate 2 NO-GO (#859 held); H01/Investigation 10A physical evaluation BLOCKED; AXION-AI-001 HD01-HD06 open (#789-#791 held); T81-AIOPT-001 M2 EXECUTION_BLOCKED. Frozen TISC v1.9.0 and PUBLIC_API_LOCK.json v2.2.0 remain untouched."
+        },
+        {
+          "envelope": {
+            "subject": "T81-AIOPT-001 M1 fixed-catalog pattern filtering (preserved negative finding)",
+            "observed_at": "2026-11-02T00:00:00Z",
+            "source_revision": {
+              "commit_sha": "b2b9d3c73df96d6b4227ee0061c56bc2ee04a8fe"
+            },
+            "collector": "Jules_AI_assisted_source_assessment_not_independent_experimental_replication",
+            "retained_receipt": "docs/research/aiopt/T81-AIOPT-001-SCIENTIFIC-REVIEW.md"
+          },
+          "id": "AIOPT-001-M1",
+          "status": "redesign_required",
+          "verification": "falsified",
+          "claims_boundary": "Preserved negative mathematical critique of C40 equality filtering: scalar lookup/index controls invalidate an optimization claim. No ternary speedup is accepted."
+        }
+      ],
+      "pr_observations": [
+        {
+          "envelope": {
+            "subject": "PR #901 Consolidated Wycheproof Ed25519 hardening, Three-Plane transition contract, TLA+ PlaneTransitionInvariant & differential oracles",
+            "observed_at": "2026-11-27T16:34:00Z",
+            "source_revision": {
+              "commit_sha": "b19dccb3a5060a75b0023b14672b6117a0dcb9d2"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/pull/901"
+          },
+          "pr_number": 901,
+          "title": "feat(crypto,provider,formal,determinism): Wycheproof Ed25519 hardening, Three-Plane transition contract, TLA+ PlaneTransitionInvariant & differential oracles",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/901",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "a463e0619757943a88b3457a2b6525539b5e8f7b",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "b19dccb3a5060a75b0023b14672b6117a0dcb9d2",
+          "merge_sha": {
+            "commit_sha": "b19dccb3a5060a75b0023b14672b6117a0dcb9d2"
+          },
+          "scientific_acceptance": "Consolidates #890/#891/#893/#894 cleanly onto post-Wave 5 main with 100% green CI across Linux/macOS/Windows, TLA+ TLC, and provider-evidence-v1.schema.json conformance.",
+          "integration_readiness": "Merged into main with green CI.",
+          "authorization_status": "maintainer_merged"
+        },
+        {
+          "envelope": {
+            "subject": "PR #902 Archive unique research reports from historical PRs #573-#803",
+            "observed_at": "2026-11-27T16:34:00Z",
+            "source_revision": {
+              "commit_sha": "f89e1c9d49abbe8271d82899c737e2eee0c6da6a"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/pull/902"
+          },
+          "pr_number": 902,
+          "title": "docs(research): archive unique reports from historical PRs #573-#803",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/902",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "b16ada4d34fa90e7c903e773be519106e7478dca",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "f89e1c9d49abbe8271d82899c737e2eee0c6da6a",
+          "merge_sha": {
+            "commit_sha": "f89e1c9d49abbe8271d82899c737e2eee0c6da6a"
+          },
+          "scientific_acceptance": "Preserves 16 unique historical research reports under docs/research/archive/ with provenance headers; closed the 16 archived historical PRs.",
+          "integration_readiness": "Merged into main with green CI.",
+          "authorization_status": "maintainer_merged"
+        },
+        {
+          "envelope": {
+            "subject": "PR #851 Register missing RFC index rows and catch numbering collisions",
+            "observed_at": "2026-11-27T16:34:00Z",
+            "source_revision": {
+              "commit_sha": "5be621553f886a6ee0d1d4062b148978f4016a12"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/pull/851"
+          },
+          "pr_number": 851,
+          "title": "Register missing RFC index rows and catch numbering collisions",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/851",
+          "state": "merged",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "f89e1c9d49abbe8271d82899c737e2eee0c6da6a",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "5be621553f886a6ee0d1d4062b148978f4016a12",
+          "merge_sha": {
+            "commit_sha": "5be621553f886a6ee0d1d4062b148978f4016a12"
+          },
+          "scientific_acceptance": "Validates 114 RFC index entries and 7 numbered ADR files with collision detection wired into CTest.",
+          "integration_readiness": "Merged into main with green CI.",
+          "authorization_status": "maintainer_merged"
+        },
+        {
+          "envelope": {
+            "subject": "PR #859 SCG-08 Gate 1 -Wclass-memaccess warning fix (held)",
+            "observed_at": "2026-11-27T16:34:00Z",
+            "source_revision": {
+              "commit_sha": "0b6aca82acad961eb82591eb2c31d1e1faa77d97"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/pull/859"
+          },
+          "pr_number": 859,
+          "title": "fix(scg08): silence -Wclass-memaccess warning in Gate 1 negative test",
+          "pr_url": "https://github.com/t81dev/t81-foundation/pull/859",
+          "state": "open",
+          "base_repository": "t81dev/t81-foundation",
+          "base_sha": "e51970a13e1b341695266d32671beb309a398297",
+          "head_repository": "t81dev/t81-foundation",
+          "head_sha": "0b6aca82acad961eb82591eb2c31d1e1faa77d97",
+          "merge_sha": {
+            "value": null,
+            "reason": "pr_is_open_explicitly_held"
+          },
+          "scientific_acceptance": "Bounded warning cleanup in Gate 1 negative test; SCG-08 Gate 2 NO-GO remains intact.",
+          "integration_readiness": "Held / untouched by policy.",
+          "authorization_status": "held_by_maintainer"
+        }
+      ],
+      "ci_observations": [
+        {
+          "envelope": {
+            "subject": "Post-merge main CI on b19dccb3a and PR #851/#853/#854/#902 merges through 5be621553",
+            "observed_at": "2026-11-27T16:34:00Z",
+            "source_revision": {
+              "inherit_from": "repository_observation"
+            },
+            "collector": "AI_assisted_git_and_GitHub_CLI_observation",
+            "retained_receipt": "https://github.com/t81dev/t81-foundation/pull/851"
+          },
+          "suite_name": "main_post_merge_ci",
+          "status": "passing",
+          "known_baseline_failures": []
+        }
+      ],
+      "workstreams": [
+        {
+          "id": "post_wave5_v230_readiness",
+          "priority": "P0",
+          "state": "milestones_a_b_c_merged",
+          "source": "docs/reference/CHANGELOG.md",
+          "next": "Prepare v2.3.0 release cut (keeping C++ PUBLIC_API_LOCK.json v2.2.0 frozen unless explicitly bumped) and deepen RFC-00D1 policy-profile denial tests."
+        },
+        {
+          "id": "horizon_d_stratified_blueprint",
+          "priority": "P1",
+          "state": "planned_design_target_dec_004",
+          "source": "docs/architecture/AI_OS_STRATIFIED_BLUEPRINT.md",
+          "next": "Horizon D Plane 2 advisory helpers (<100 MB RSS cap) remain Planned / Design Target only; require maintainer sign-off and matched static-control CI benchmarks before any prototype."
+        },
+        {
+          "id": "F01-HOST-BOLQ-v1",
+          "priority": "P0",
+          "state": "NOT ADOPTED; residual risks NOT ACCEPTED; M1-M6 STOP; linux_relock_required=true",
+          "source": "docs/research/proposals/RFC-00D7-F01-BOLQ-MIGRATION/REVIEW_PLAN.md",
+          "next": "Maintain F01 M1-M6 STOP, SCG-08 Gate 2 NO-GO (#859), H01/10A BLOCKED, AXION-AI-001 HD01-HD06 (#789-#791), and T81-AIOPT-001 M2 EXECUTION_BLOCKED holds."
+        }
+      ]
     }
   },
   "historical_snapshots": {
@@ -1368,5 +1565,5 @@
     "performance_measurement": false,
     "production_activation": false
   },
-  "next_gate": "2026-11-26 post-Waves-0-4 & Phase-3 overlay: main is at 8aa086906 with 100% green post-merge CI (T81 Foundation CI, Cross-Platform Determinism Verification, CodeQL, runtime-contract, Format Check, pages-build-deployment) and 0 open Dependabot PRs. Merged: Waves 0-4 (#873-#880), Workstream A Inference Benchmark PR-push fix (#881), Workstream B Phase 3 H06-MEM-04 R3/R4 boundary tightening & sparse-aware dispatch (#882), and Workstream C Dependabot batch (#866, #868, #870, #883 closing #867/#869/#871). Held/untouched: #859 (0b6aca82a) and older draft/research PRs. Next queued lanes (not started): M2 (persistent MCP receipt ledger) and M3 (Python SDK governed execution). All frozen contracts (TISC v1.9.0, PUBLIC_API_LOCK.json v2.2.0) and active research holds (F01 M1-M6 STOP, SCG-08 Gate 2 NO-GO, H01/10A BLOCKED, AXION-AI-001 HD01-HD06) remain intact. This index grants no execution, merge, or protocol-amendment authority."
+  "next_gate": "2026-11-27 post-Wave-5 & backlog-cleared overlay: main is at 5be621553 with 0 open Dependabot PRs and only the 15 governance-held PRs remaining open (#859 SCG-08 Gate 2 NO-GO, #804-#814 F01, #789-#791 AXION-AI-001). Milestones A, B, and C (#887-#902, #851, #853, #854) are merged; 16 unique historical research reports are archived under docs/research/archive/. All frozen contracts (TISC v1.9.0, PUBLIC_API_LOCK.json v2.2.0) and active research holds remain intact. This index grants no execution, merge, or protocol-amendment authority."
 }
