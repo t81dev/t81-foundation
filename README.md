@@ -12,10 +12,17 @@
 
 ## 60-Second Proof (`v2.2.0`)
 
-Run the verified end-to-end stack locally right after `cmake -S . -B build -G Ninja && cmake --build build --target t81 -j4`:
+Install the Python SDK wheels (`CPython 3.9–3.14` on Linux, macOS, Windows) or build the C++23 CLI locally:
 
 ```bash
-# 1. Native C++ MCP server (15 in-process tools: Axion policy, CanonFS, atomic tx, TISC subgraph, Dual-Rail diff/RAG/adapter)
+# Quickstart via PyPI (no C++ compiler required)
+pip install t81
+```
+
+Or build from source (`cmake -S . -B build -G Ninja && cmake --build build --target t81 -j4`) and run the verified end-to-end stack:
+
+```bash
+# 1. Native C++ MCP server (15 in-process tools: Axion policy, CanonFS, DPE+MCP tx, KEV gate, Dual-Rail diff/RAG/adapter)
 python3 examples/research/agent-receipt-sidecar/test_native_mcp.py
 
 # 2. Full-stack CanonFS -> Axion -> TISC -> T81VM -> Dual-Rail TMatMul (bit-exact SHA3-512 receipt)
@@ -136,22 +143,11 @@ The relevant question is not simply whether another representation works, but wh
 
 ### 4. Bounded cross-profile execution demonstrated (CPA-004/CPA-005)
 
-**Evidence classification: bounded determinism and portability, not comparative performance or whole-system maturity.** Determinism guarantees are strictly bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md).
-
-Recent research in the Cross-Profile Architecture (CPA) program demonstrated that the computational core of T81 executes identically across divergent execution environments:
-
-- **Canonical Program Artifact:** A frozen 351-byte canonical program comprising 27 canonical 13-byte records (SHA-256 `b0649777cfa1c9e0fa1febb8bdfb1191c5cd3deea0d313791a4a32d5f207c80b`) exercised an admitted subset of 17 TISC instructions.
-- **Cross-Profile Equivalence:** Fresh executions across three hosted T81VM processes and three fresh AArch64 QEMU bare-metal boots (after UEFI `ExitBootServices`) matched an independently derived mathematical oracle at **all 25 observation boundaries** (initial state + 24 instruction steps).
-- **Comprehensive Boundary Matching:** Equivalence was verified across all 81 register values and tags, 1,563 logical memory words and tags, flags, and system registers (R75–R80), halting deterministically at PC=27, SP=283.
-- **Distinction:** Demonstrating cross-profile execution correctness proves the computational architecture functions as specified; it is **not** evidence of ternary performance, energy, or hardware superiority over binary baselines.
+**Evidence classification: bounded determinism and portability, not comparative performance.** Across three hosted `T81VM` processes and three fresh bare-metal AArch64 QEMU boots (after UEFI `ExitBootServices`), a frozen 351-byte canonical program (17 TISC instructions) matched an independent mathematical oracle at all **25 observation boundaries** across all 81 registers, 1,563 logical memory words, flags, and system registers (`R75–R80`). This demonstrates execution correctness within the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md), not ternary speed or hardware superiority.
 
 ### 5. SCG-08 active research program: carry propagation and arithmetic work
 
-Program **SCG-08** investigates balanced-ternary carry propagation and multi-precision arithmetic work under a frozen weighted cost metric:
-
-- **Phase 0 Research Charter:** Accepted and integrated (`SCG08_PHASE0_RESEARCH_CHARTER.md`).
-- **Phase 1 Gate 1 Arithmetic Harness:** Implemented and verified under isolated test harness `experiments/scg08_arithmetic_work/`. It establishes mathematical correctness across 5 standardized operand bit-widths (64, 128, 256, 512, 1024 bits) against a decoupled arbitrary-precision base-$10^9$ exact integer oracle, deterministic replay, exact primitive operation accounting, and strict trial budget enforcement ($\le 1,000$ trials; 179 executed in the smoke suite).
-- **Gate 2 Benchmarking Status:** **STRICTLY WITHHELD.** Full-scale empirical campaigns and statistical hypothesis evaluations remain unauthorized until explicit, authoritative review and gate elevation occur. Merged harness code does not constitute experimental authorization.
+Program **SCG-08** investigates balanced-ternary carry propagation under a frozen weighted cost metric (`SCG08_PHASE0_RESEARCH_CHARTER.md`). Its Phase 1 Gate 1 harness (`experiments/scg08_arithmetic_work/`) is verified across 64–1024 bit widths against an exact arbitrary-precision oracle; **Gate 2 empirical benchmarking remains strictly withheld (`NO-GO`)** pending explicit maintainer authorization.
 
 ### 6. Physical ternary computing remains an open question
 
@@ -168,27 +164,25 @@ Physical evaluation remains blocked where adequate device-characterization evide
 The repository contains several subsystems developed to investigate computational representations and controlled execution.
 
 ```text
-                     T81 FOUNDATION
-                Implemented Architecture & Research
-                             |
-          +------------------+------------------+
-          |                  |                  |
-    REPRESENTATION       EXECUTION          ASSURANCE
-          |                  |                  |
-    Balanced ternary     TISC ISA (Contract)  Axion Policy
-    Base-81 / Base-243   +-- T81VM (Hosted)   CanonFS
-    Packed data          +-- Axion (Baremetal) Evidence
-    Adaptive tiering     T81Lang Frontend     Provenance
-          |                  |                  |
-          +------------------+------------------+
-                             |
-                   CONTROLLED EXPERIMENTS
-                             |
-               Conventional binary baselines
-                             |
-                 Verification and comparison
-                             |
-                    Research conclusions
++-------------------------------------------------------------------+
+| Plane 1: Deterministic Policy & Context (Implemented)             |
+|   Axion .apl (axion_root.apl) · TISC v1.9.0 · {-1, 0, +1} Lattice |
++-------------------------------------------------------------------+
+                                 |
++-------------------------------------------------------------------+
+| Plane 2: Stochastic / Neural Helpers (Planned — Horizon D)        |
+|   Advisory Only · Zero direct write authority · < 100 MB RSS cap  |
++-------------------------------------------------------------------+
+                                 |
++-------------------------------------------------------------------+
+| Plane 3: Hybrid Reconciliation & Control Plane (Implemented)      |
+|   15-Tool C++ MCP · DPE+MCP tx · KEV Gate · RegimeSelector R0–R4  |
++-------------------------------------------------------------------+
+                                 |
++-------------------------------------------------------------------+
+| Plane 0: Deterministic Foundation & Enclave Base (Implemented)    |
+|   T81VM · CanonFS SHA3-512 · C++23 Ed25519 RFC-00D4 · SIMD/Metal  |
++-------------------------------------------------------------------+
 ```
 
 ### Computational Contract and Execution Profiles
@@ -225,7 +219,7 @@ The project distinguishes among different maturity classifications across its su
 
 Building T81 requires:
 - **CMake** 3.24 or higher
-- **C++20 compliant compiler** (GCC 12+, Clang 15+, or MSVC 2022)
+- **C++23 compliant compiler** (GCC 14+, Clang 18+, or MSVC 2022; C++20 compatibility lane supported)
 - **Python** 3.10+ (for governance, validation, and testing scripts)
 - *Optional:* Ninja build system, QEMU AArch64 (for bare-metal targets)
 

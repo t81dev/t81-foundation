@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added (Post-Wave 5 — Candidate for `v2.3.0`)
+
+- **Native C++23 Ed25519 Receipts & Wycheproof Hardening (`src/crypto/ed25519_bundle.cpp`):** RFC 8032 signing/verification + `verify_dag`, Wycheproof canonical `y < p` and 8 small-order torsion point rejections, cross-compiler GCC/Clang/MSVC support, and atomic offline forensic bundle export (`t81 receipt export`).
+- **DPE + MCP Transactional Unification & Three-Plane Contract (`#888`, `#897`, `#901`):** `DpeMcpCoordinator` (`tx_begin`/`tx_commit`/`tx_abort`), KEV/advisory fail-closed MCP gating (`ERR_KEV_ADVISORY_BLOCKED`, `DEFER_ADVISORY_REVIEW`, `ERR_MANIFEST_DIGEST_MISMATCH`), Three-Plane `ERR_PLANE_BYPASS_DENIED` + `plane_transition` evidence schema, TLA+ `DpeBatchCommit` & `PlaneTransitionInvariant`, and cross-platform differential oracles (`cross_platform_differential_test.py`, `t81_three_plane_differential_test`).
+- **M3 Python SDK, BitNet-2B Streaming & Enclave Runner (`#887`, `#888`, `#898`):** `PyProviderGovernor` governed Python SDK bindings, `AcceleratorBackend` abstraction, `--chunk-bytes` 2B BitNet streaming (`4.0×` vs INT8 storage) with Apple M2 `R3` Metal dispatch receipt, and experimental `t81 enclave run`.
+- **Stratified AI OS Blueprint & Governance Hygiene (`#896`, `#899`, `#900`, `#851`, `#853`, `#854`, `#902`):** `docs/architecture/AI_OS_STRATIFIED_BLUEPRINT.md` (`DEC-004`, Horizon D — *Planned / Design Target*), architecture & root docs reconciliation (19 broken links repaired), RFC index & ADR collision checker (`114` RFCs, `7` ADRs), CI `set -o pipefail` exit-code propagation, `SCG-08` Gate 1 reproduction audit record, and 16 archived historical research reports under `docs/research/archive/`.
+
 ### BREAKING CHANGES
 
 - **MCP filesystem confinement.** `t81 mcp serve` file tools resolve `..` and symlinks and refuse paths outside `--root` (the working directory when `--root` is omitted), including absolute paths and symlinks that leave the root. Percent-encoded dots and slashes stay literal name characters. An embedded NUL is rejected. Reads stop at 64 MiB. Migration: [mcp-serve-weightsload-fail-closed.md](../migration/mcp-serve-weightsload-fail-closed.md).

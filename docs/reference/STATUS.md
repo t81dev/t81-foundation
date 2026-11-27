@@ -2,14 +2,14 @@
 
 > **Source of Truth:** This document defines the **current operational state** of the project (what is true today). For future plans, see [../process/roadmaps-plans/ROADMAP.md](../process/roadmaps-plans/ROADMAP.md). For version history, see [CHANGELOG.md](CHANGELOG.md).
 
-**Last Updated:** 2026-11-26
-**Status:** Active development (governance-controlled core with mixed maturity; pinned to `v2.2.0` / `main@8aa086906`)
+**Last Updated:** 2026-11-27
+**Status:** Active development (governance-controlled core with mixed maturity; pinned to `v2.2.0` frozen C++ API / `main@5be621553`, post-Wave 5 & backlog cleared)
 
 ## 1. Snapshot
 
-- Core stack is implemented and operational across balanced-ternary numerics, T81Lang frontend, frozen TISC `v1.9.0` serialization, `T81VM` interpreter (with Dual-Rail `(P, N)` NEON/AVX2 `TMatMul` and `SBDR1T2D` caching), fail-closed Axion policy enforcement, CanonFS content-addressed storage (`RFC-00D1` v1 seed), a 15-tool native C++ MCP control plane (`t81 mcp serve`), and the `t81==2.2.0` Python SDK (`31` PyPI files, CPython `3.9–3.14`).
+- Core stack is implemented and operational across balanced-ternary numerics, T81Lang frontend, frozen TISC `v1.9.0` serialization (`RFC-00D6` accepted), `T81VM` interpreter (with Dual-Rail `(P, N)` NEON/AVX2 `TMatMul`, `SBDR1T2D` caching, Apple Metal `R3` dispatch, and 2B BitNet chunked streaming), fail-closed Axion policy enforcement, CanonFS content-addressed storage (`RFC-00D1` v1 seed), native C++23 RFC 8032/Wycheproof Ed25519 receipt sealing (`RFC-00D4` accepted, `t81 receipt export`), a 15-tool native C++ MCP + `DPE` transactional control plane (`t81 mcp serve`, KEV/advisory fail-closed gating, Three-Plane `ERR_PLANE_BYPASS_DENIED`, TLA+ `DpeBatchCommit` & `PlaneTransitionInvariant`), and the `t81==2.2.0` Python M3 SDK (`31` PyPI files, CPython `3.9–3.14`).
 - C++23 is the default build language mode; C++20 remains a compatibility lane.
-- Current local CTest inventory contains `432` configured tests; post-merge CI on `main@8aa086906` is 100% green (`Actions Run #45772734630`).
+- Open PR backlog is cleared to **only the 15 governance-held PRs** (`#859`, `#804`–`#814`, `#789`–`#791`); unique historical research reports (`#573`–`#803`) are preserved under `docs/research/archive/`.
 - Determinism guarantees are strictly registry-bounded ([`DETERMINISM_SURFACE_REGISTRY.md`](../governance/DETERMINISM_SURFACE_REGISTRY.md)) and must not be overclaimed outside verified DCP surfaces.
 
 ## 2. Component Maturity
