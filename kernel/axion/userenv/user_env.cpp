@@ -55,18 +55,17 @@ bool ServiceRegistry::load_from_file(const std::string& filename) {
     std::fprintf(stderr, "Failed to open services file: %s\n", filename.c_str());
     return false;
   }
-  
+
   std::stringstream buffer;
   buffer << file.rdbuf();
   std::string json_text = buffer.str();
-  
+
   try {
     ServiceRegistry loaded = load_service_registry(json_text);
     *this = std::move(loaded);
     return true;
   } catch (const std::exception& e) {
-    std::fprintf(stderr, "Failed to parse services file %s: %s\n", 
-                filename.c_str(), e.what());
+    std::fprintf(stderr, "Failed to parse services file %s: %s\n", filename.c_str(), e.what());
     return false;
   }
 }
@@ -98,12 +97,10 @@ std::vector<const ServiceEntry*> ServiceRegistry::required_order() const {
     auto it = queue.begin();
     const std::string cur = *it;
     queue.erase(it);
-    if (const auto* e = find(cur))
-      result.push_back(e);
+    if (const auto* e = find(cur)) result.push_back(e);
     if (adj.count(cur)) {
       for (const auto& next : adj.at(cur)) {
-        if (--in_degree.at(next) == 0)
-          queue.push_back(next);
+        if (--in_degree.at(next) == 0) queue.push_back(next);
       }
       std::sort(queue.begin(), queue.end());
     }
@@ -133,8 +130,7 @@ std::string json_string_value(const std::string& text, const std::string& key) {
   return text.substr(pos + 1, end - pos - 1);
 }
 
-uint32_t json_uint_value(const std::string& text, const std::string& key,
-                          uint32_t default_val) {
+uint32_t json_uint_value(const std::string& text, const std::string& key, uint32_t default_val) {
   const std::string needle = "\"" + key + "\":";
   auto pos = text.find(needle);
   if (pos == std::string::npos) return default_val;
@@ -163,15 +159,14 @@ std::vector<std::string> json_string_array(const std::string& text, const std::s
   while (std::getline(ss, token, ',')) {
     auto a = token.find('"');
     auto b = token.rfind('"');
-    if (a != std::string::npos && b != a)
-      result.push_back(token.substr(a + 1, b - a - 1));
+    if (a != std::string::npos && b != a) result.push_back(token.substr(a + 1, b - a - 1));
   }
   return result;
 }
 
 ActivationMode parse_activation(const std::string& s) {
   if (s == "on_demand") return ActivationMode::OnDemand;
-  if (s == "manual")    return ActivationMode::Manual;
+  if (s == "manual") return ActivationMode::Manual;
   return ActivationMode::Required;
 }
 
@@ -187,29 +182,38 @@ ServiceRegistry load_service_registry(const std::string& json_text) {
   while ((pos = json_text.find(id_needle, pos)) != std::string::npos) {
     // Find the enclosing object by scanning backwards to '{'.
     std::size_t obj_start = json_text.rfind('{', pos);
-    if (obj_start == std::string::npos) { ++pos; continue; }
+    if (obj_start == std::string::npos) {
+      ++pos;
+      continue;
+    }
     // Find the closing '}'.
     int depth = 0;
     std::size_t obj_end = obj_start;
     for (std::size_t i = obj_start; i < json_text.size(); ++i) {
-      if (json_text[i] == '{') ++depth;
-      else if (json_text[i] == '}') { --depth; if (depth == 0) { obj_end = i; break; } }
+      if (json_text[i] == '{')
+        ++depth;
+      else if (json_text[i] == '}') {
+        --depth;
+        if (depth == 0) {
+          obj_end = i;
+          break;
+        }
+      }
     }
     const std::string obj = json_text.substr(obj_start, obj_end - obj_start + 1);
 
     ServiceEntry e;
-    e.id             = json_string_value(obj, "id");
-    e.binary         = json_string_value(obj, "binary");
-    e.canon_hash     = json_string_value(obj, "canon_hash");
-    e.activation     = parse_activation(json_string_value(obj, "activation"));
-    e.depends        = json_string_array(obj, "depends");
-    e.capabilities   = json_string_array(obj, "capabilities");
+    e.id = json_string_value(obj, "id");
+    e.binary = json_string_value(obj, "binary");
+    e.canon_hash = json_string_value(obj, "canon_hash");
+    e.activation = parse_activation(json_string_value(obj, "activation"));
+    e.depends = json_string_array(obj, "depends");
+    e.capabilities = json_string_array(obj, "capabilities");
     e.start_timeout_ms = json_uint_value(obj, "start_timeout_ms", 2000);
     e.restart_policy = json_string_value(obj, "restart_policy");
     if (e.restart_policy.empty()) e.restart_policy = "always";
 
-    if (!e.id.empty())
-      reg.services.push_back(std::move(e));
+    if (!e.id.empty()) reg.services.push_back(std::move(e));
 
     pos = obj_end + 1;
   }
@@ -224,13 +228,12 @@ ServiceRegistry make_service_registry(std::vector<ServiceEntry> entries) {
 
 // ─── simulate_boot ────────────────────────────────────────────────────────────
 
-BootResult simulate_boot(
-    const ServiceRegistry& registry,
-    const std::unordered_map<std::string, std::string>& binary_hashes) {
+BootResult simulate_boot(const ServiceRegistry& registry,
+                         const std::unordered_map<std::string, std::string>& binary_hashes) {
   BootResult result;
 
   const auto ordered = registry.required_order();  // throws on cycle
-  uint64_t hash_accum = 0xcbf29ce484222325ULL;  // FNV-1a offset
+  uint64_t hash_accum = 0xcbf29ce484222325ULL;     // FNV-1a offset
 
   for (const auto* svc : ordered) {
     SpawnRecord sr;
@@ -253,17 +256,17 @@ BootResult simulate_boot(
 
     // 3. Fire BootService Axion gate.
     AxionGateEvent ev;
-    ev.op      = "BootService";
+    ev.op = "BootService";
     ev.subject = svc->id;
     ev.payload = svc->canon_hash;
     if (!sr.integrity_ok) {
-      ev.verdict    = GateVerdict::Deny;
-      sr.verdict    = GateVerdict::Deny;
-      sr.started    = false;
+      ev.verdict = GateVerdict::Deny;
+      sr.verdict = GateVerdict::Deny;
+      sr.started = false;
     } else if (!sr.capability_ok) {
-      ev.verdict    = GateVerdict::Deny;
-      sr.verdict    = GateVerdict::Deny;
-      sr.started    = false;
+      ev.verdict = GateVerdict::Deny;
+      sr.verdict = GateVerdict::Deny;
+      sr.started = false;
     } else {
       ev.verdict = GateVerdict::Allow;
       sr.verdict = GateVerdict::Allow;
@@ -277,8 +280,8 @@ BootResult simulate_boot(
   }
 
   result.boot_hash = hex64(hash_accum);
-  result.success   = std::all_of(result.spawn_log.begin(), result.spawn_log.end(),
-                                  [](const SpawnRecord& s) { return s.started; });
+  result.success = std::all_of(result.spawn_log.begin(), result.spawn_log.end(),
+                               [](const SpawnRecord& s) { return s.started; });
   return result;
 }
 
@@ -296,13 +299,13 @@ SessionEnv make_session_env(const SessionRecord& rec, const std::string& canon_r
   SessionEnv env;
   char buf[64];
   std::snprintf(buf, sizeof(buf), "%016" PRIx64, rec.session_id);
-  env.T81_SESSION_ID  = buf;
-  env.T81_PRINCIPAL   = rec.principal_name;
-  env.T81_TTY         = rec.tty_handle;
+  env.T81_SESSION_ID = buf;
+  env.T81_PRINCIPAL = rec.principal_name;
+  env.T81_TTY = rec.tty_handle;
   std::snprintf(buf, sizeof(buf), "%" PRIu64, rec.start_epoch);
-  env.T81_EPOCH       = buf;
-  env.T81_CANON_ROOT  = canon_root;
-  env.PATH            = "/bin:/usr/bin:/usr/local/bin";
+  env.T81_EPOCH = buf;
+  env.T81_CANON_ROOT = canon_root;
+  env.PATH = "/bin:/usr/bin:/usr/local/bin";
   return env;
 }
 
@@ -313,28 +316,28 @@ void SessionManager::load_principals(std::vector<PrincipalEntry> principals) {
 namespace {
 
 std::string session_record_to_json(const SessionRecord& rec) {
-  const char* state_str =
-    (rec.state == SessionState::Active)     ? "Active" :
-    (rec.state == SessionState::Suspended)  ? "Suspended" : "Terminated";
+  const char* state_str = (rec.state == SessionState::Active)      ? "Active"
+                          : (rec.state == SessionState::Suspended) ? "Suspended"
+                                                                   : "Terminated";
   char buf[512];
   std::snprintf(buf, sizeof(buf),
-    "{\"session_id\":%" PRIu64 ","
-    "\"principal_id\":%" PRIu64 ","
-    "\"principal\":\"%s\",\"tty\":\"%s\",\"start_epoch\":%" PRIu64 ","
-    "\"state\":\"%s\",\"canon_hash\":\"%s\"}",
-    rec.session_id, rec.principal_id,
-    rec.principal_name.c_str(), rec.tty_handle.c_str(), rec.start_epoch,
-    state_str, rec.canon_hash.c_str());
+                "{\"session_id\":%" PRIu64 ","
+                "\"principal_id\":%" PRIu64 ","
+                "\"principal\":\"%s\",\"tty\":\"%s\",\"start_epoch\":%" PRIu64 ","
+                "\"state\":\"%s\",\"canon_hash\":\"%s\"}",
+                rec.session_id, rec.principal_id, rec.principal_name.c_str(),
+                rec.tty_handle.c_str(), rec.start_epoch, state_str, rec.canon_hash.c_str());
   return buf;
 }
 
 uint64_t fnv1a_session(const SessionRecord& rec) {
-  const std::string data = std::to_string(rec.session_id)
-                         + rec.principal_name
-                         + rec.tty_handle
-                         + std::to_string(rec.start_epoch);
+  const std::string data = std::to_string(rec.session_id) + rec.principal_name + rec.tty_handle +
+                           std::to_string(rec.start_epoch);
   uint64_t h = 14695981039346656037ULL;
-  for (unsigned char c : data) { h ^= c; h *= 1099511628211ULL; }
+  for (unsigned char c : data) {
+    h ^= c;
+    h *= 1099511628211ULL;
+  }
   return h;
 }
 
@@ -345,21 +348,23 @@ void SessionManager::write_canon_record(const SessionRecord& rec) {
 }
 
 LoginResult SessionManager::login(const std::string& principal_name,
-                                   const std::string& credential_hash,
-                                   const std::string& tty_handle,
-                                   uint64_t           start_epoch) {
+                                  const std::string& credential_hash, const std::string& tty_handle,
+                                  uint64_t start_epoch) {
   LoginResult res;
   res.gate_event.op = "SessionCreate";
 
   // Credential check.
   const PrincipalEntry* principal = nullptr;
   for (const auto& p : principals_)
-    if (p.name == principal_name) { principal = &p; break; }
+    if (p.name == principal_name) {
+      principal = &p;
+      break;
+    }
 
   const bool skip_auth = (credential_hash == SessionManager::kAnonymousHash);
   if (!skip_auth) {
     if (!principal || principal->password_hash != credential_hash) {
-      res.status         = LoginStatus::BadCredentials;
+      res.status = LoginStatus::BadCredentials;
       res.gate_event.subject = principal_name;
       res.gate_event.verdict = GateVerdict::Deny;
       gate_events_.push_back(res.gate_event);
@@ -369,12 +374,12 @@ LoginResult SessionManager::login(const std::string& principal_name,
 
   // Build session record.
   SessionRecord rec;
-  rec.session_id    = next_session_id_++;
-  rec.principal_id  = principal ? principal->id : 0;
+  rec.session_id = next_session_id_++;
+  rec.principal_id = principal ? principal->id : 0;
   rec.principal_name = principal_name;
-  rec.tty_handle    = tty_handle;
-  rec.start_epoch   = start_epoch;
-  rec.state         = SessionState::Active;
+  rec.tty_handle = tty_handle;
+  rec.start_epoch = start_epoch;
+  rec.state = SessionState::Active;
   char hash_buf[17];
   std::snprintf(hash_buf, sizeof(hash_buf), "%016" PRIx64, fnv1a_session(rec));
   rec.canon_hash = hash_buf;
@@ -396,7 +401,7 @@ LoginResult SessionManager::login(const std::string& principal_name,
   write_canon_record(rec);
 
   res.status = LoginStatus::Success;
-  res.record  = rec;
+  res.record = rec;
   return res;
 }
 
@@ -409,13 +414,15 @@ LogoutResult SessionManager::logout(uint64_t session_id, uint32_t /*drain_timeou
   rec.state = SessionState::Terminated;
   // Update CanonHash to cover final state.
   char hash_buf[17];
-  std::snprintf(hash_buf, sizeof(hash_buf), "%016" PRIx64,
-                fnv1a_session(rec) ^ 0xdeadbeefULL);
+  // XOR in uint64_t. 0xdeadbeefULL is unsigned long long, and on LP64 that
+  // promotion makes the PRIx64 argument unsigned long long (-Wformat/-Werror).
+  const uint64_t final_hash = fnv1a_session(rec) ^ static_cast<uint64_t>(0xdeadbeefULL);
+  std::snprintf(hash_buf, sizeof(hash_buf), "%016" PRIx64, final_hash);
   rec.canon_hash = hash_buf;
   write_canon_record(rec);
 
   res.drained_cleanly = true;
-  res.final_record    = rec;
+  res.final_record = rec;
   return res;
 }
 
@@ -427,16 +434,16 @@ const SessionRecord* SessionManager::find_session(uint64_t session_id) const {
 // ─── activate_service ─────────────────────────────────────────────────────────
 
 ServiceActivationResult activate_service(const ServiceRegistry& registry,
-                                          const std::string&     service_id,
-                                          uint64_t               requesting_session_id) {
+                                         const std::string& service_id,
+                                         uint64_t requesting_session_id) {
   ServiceActivationResult res;
-  res.gate_event.op      = "ServiceSpawn";
+  res.gate_event.op = "ServiceSpawn";
   res.gate_event.subject = service_id;
   res.gate_event.payload = std::to_string(requesting_session_id);
 
   const ServiceEntry* svc = registry.find(service_id);
   if (!svc) {
-    res.rejection_reason   = "service not found: " + service_id;
+    res.rejection_reason = "service not found: " + service_id;
     res.gate_event.verdict = GateVerdict::Deny;
     return res;
   }
@@ -444,7 +451,7 @@ ServiceActivationResult activate_service(const ServiceRegistry& registry,
   // Validate all capabilities (AC-14).
   for (const auto& cap : svc->capabilities) {
     if (!is_known_capability(cap)) {
-      res.rejection_reason   = "unrecognised capability: " + cap;
+      res.rejection_reason = "unrecognised capability: " + cap;
       res.gate_event.verdict = GateVerdict::Deny;
       return res;
     }
@@ -464,8 +471,9 @@ ServiceActivationResult activate_service(const ServiceRegistry& registry,
 std::string history_entry_to_jsonl(const ShellHistoryEntry& e) {
   char buf[512];
   std::snprintf(buf, sizeof(buf),
-    "{\"epoch\":%" PRIu64 ",\"cmd\":\"%s\",\"exit_code\":%d,\"duration_ms\":%u,\"axion_verdict\":\"%s\"}",
-    e.epoch, e.cmd.c_str(), e.exit_code, e.duration_ms, e.axion_verdict.c_str());
+                "{\"epoch\":%" PRIu64
+                ",\"cmd\":\"%s\",\"exit_code\":%d,\"duration_ms\":%u,\"axion_verdict\":\"%s\"}",
+                e.epoch, e.cmd.c_str(), e.exit_code, e.duration_ms, e.axion_verdict.c_str());
   return buf;
 }
 
@@ -477,23 +485,22 @@ T81Shell::T81Shell(SessionRecord session, uint32_t tier)
 std::string T81Shell::prompt() const {
   // "[principal@session_id tier=N]$ "
   char buf[128];
-  std::snprintf(buf, sizeof(buf), "[%s@%08" PRIx64 " tier=%u]$ ",
-                session_.principal_name.c_str(), session_.session_id, tier_);
+  std::snprintf(buf, sizeof(buf), "[%s@%08" PRIx64 " tier=%u]$ ", session_.principal_name.c_str(),
+                session_.session_id, tier_);
   return buf;
 }
 
 std::string T81Shell::history_canon_path() const {
   char buf[96];
-  std::snprintf(buf, sizeof(buf),
-                "canonfs://var/sessions/%" PRIu64 "/history.jsonl", session_.session_id);
+  std::snprintf(buf, sizeof(buf), "canonfs://var/sessions/%" PRIu64 "/history.jsonl",
+                session_.session_id);
   return buf;
 }
 
 // Builtins defined by RFC-00B9 §8.3.
 static constexpr const char* kBuiltins[] = {
-  "exit", "cd", "ls", "cat", "hash", "run", "compile",
-  "policy", "service", "tier", "studio", "agent",
-  "history", "env", "pwd",
+    "exit",    "cd",   "ls",     "cat",   "hash",    "run", "compile", "policy",
+    "service", "tier", "studio", "agent", "history", "env", "pwd",
 };
 
 bool T81Shell::is_builtin(const std::string& first_token) {
@@ -506,27 +513,28 @@ bool T81Shell::is_builtin(const std::string& first_token) {
 // return, std, or a type name (i32, f81, bool, Tensor).
 bool T81Shell::is_repl_input(const std::string& line) {
   static constexpr const char* kT81Keywords[] = {
-    "fn ", "let ", "var ", "if ", "for ", "agent ", "return ",
-    "std.", "i32 ", "f81 ", "bool ", "Tensor ",
+      "fn ",     "let ", "var ", "if ",  "for ",  "agent ",
+      "return ", "std.", "i32 ", "f81 ", "bool ", "Tensor ",
   };
   for (const char* kw : kT81Keywords)
-    if (line.size() >= std::strlen(kw) &&
-        line.substr(0, std::strlen(kw)) == kw)
-      return true;
+    if (line.size() >= std::strlen(kw) && line.substr(0, std::strlen(kw)) == kw) return true;
   return false;
 }
 
 AxionGateEvent T81Shell::fire_shell_exec_gate(const std::string& cmd,
-                                               const std::string& args) const {
+                                              const std::string& args) const {
   AxionGateEvent ev;
-  ev.op      = "ShellExec";
+  ev.op = "ShellExec";
   ev.subject = cmd;
-  ev.payload = args + ",session=" + std::to_string(session_.session_id)
-             + ",tier=" + std::to_string(tier_);
+  ev.payload =
+      args + ",session=" + std::to_string(session_.session_id) + ",tier=" + std::to_string(tier_);
 
   // Check deny list.
   for (const auto& denied : denied_commands_)
-    if (cmd == denied) { ev.verdict = GateVerdict::Deny; return ev; }
+    if (cmd == denied) {
+      ev.verdict = GateVerdict::Deny;
+      return ev;
+    }
 
   ev.verdict = GateVerdict::Allow;
   return ev;
@@ -552,21 +560,20 @@ bool T81Shell::dispatch_builtin(const std::string& line) {
     (void)restore_tty(ho);
     return ho.transferred;
   }
-  if (cmd == "compile" || cmd == "run" || cmd == "hash" ||
-      cmd == "policy"  || cmd == "service" ||
-      cmd == "cd" || cmd == "ls" || cmd == "cat" ||
-      cmd == "history" || cmd == "env" || cmd == "pwd") {
+  if (cmd == "compile" || cmd == "run" || cmd == "hash" || cmd == "policy" || cmd == "service" ||
+      cmd == "cd" || cmd == "ls" || cmd == "cat" || cmd == "history" || cmd == "env" ||
+      cmd == "pwd") {
     // All other builtins succeed in simulation.
     return true;
   }
   return false;
 }
 
-void T81Shell::record_history(const std::string& cmd, int exit_code,
-                               GateVerdict verdict, uint64_t epoch,
-                               uint32_t duration_ms) {
-  const char* vstr = (verdict == GateVerdict::Allow) ? "Allow" :
-                     (verdict == GateVerdict::Deny)  ? "Deny"  : "Warn";
+void T81Shell::record_history(const std::string& cmd, int exit_code, GateVerdict verdict,
+                              uint64_t epoch, uint32_t duration_ms) {
+  const char* vstr = (verdict == GateVerdict::Allow)  ? "Allow"
+                     : (verdict == GateVerdict::Deny) ? "Deny"
+                                                      : "Warn";
   ShellHistoryEntry e{epoch, cmd, exit_code, duration_ms, vstr};
   history_.push_back(e);
   history_jsonl_.push_back(history_entry_to_jsonl(e));
@@ -580,8 +587,7 @@ bool T81Shell::exec_repl(const std::string& expr, uint64_t epoch) {
   ss >> kw;
   if (kw == "let" || kw == "var") {
     std::string name, eq, value;
-    if (ss >> name >> eq >> value && eq == "=")
-      repl_.bindings[name] = value;
+    if (ss >> name >> eq >> value && eq == "=") repl_.bindings[name] = value;
   }
   repl_.exec_count++;
   record_history(expr, 0, GateVerdict::Allow, epoch);
@@ -595,8 +601,7 @@ bool T81Shell::exec_command(const std::string& line, uint64_t epoch) {
   const uint64_t cur_epoch = (epoch != 0) ? epoch : ++exec_epoch_;
 
   // T81Lang REPL path.
-  if (is_repl_input(line))
-    return exec_repl(line, cur_epoch);
+  if (is_repl_input(line)) return exec_repl(line, cur_epoch);
 
   // Parse first token for builtin/gate decision.
   std::istringstream ss(line);
@@ -635,17 +640,16 @@ void T81Shell::deny_commands(std::vector<std::string> denied) {
 
 // ─── TTY handoff (RFC-00B9 §10.2) ─────────────────────────────────────────────
 
-TtyHandoff handoff_tty_to_tui(const std::string& tty_handle,
-                                const std::string& tui_command) {
+TtyHandoff handoff_tty_to_tui(const std::string& tty_handle, const std::string& tui_command) {
   TtyHandoff ho;
-  ho.tty_handle  = tty_handle;
-  ho.mode        = TtyMode::Raw;        // TIOCSRAW
+  ho.tty_handle = tty_handle;
+  ho.mode = TtyMode::Raw;  // TIOCSRAW
   ho.transferred = (!tui_command.empty() && !tty_handle.empty());
   return ho;
 }
 
 TtyHandoff restore_tty(TtyHandoff handoff) {
-  handoff.mode        = TtyMode::Cooked;  // TIOCSNORMAL
+  handoff.mode = TtyMode::Cooked;  // TIOCSNORMAL
   handoff.transferred = false;
   return handoff;
 }
