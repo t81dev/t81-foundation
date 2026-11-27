@@ -10,7 +10,7 @@ This document defines the strict enforcement rules for "Frozen" subsystems withi
 
 *   `spec/supplemental/deterministic-core-profile-v1.md` (What is frozen)
 *   `docs/governance/SPEC_DRIFT_POLICY.md` (Code/Spec divergence)
-*   `docs/status/VERIFIED_SURFACE_AUDIT.md` (Verification status)
+*   `docs/records/audits/VERIFIED_SURFACE_AUDIT.md` (Verification status)
 
 ---
 
@@ -21,7 +21,7 @@ The following subsystems are designated as **Frozen**. Modifications to these ar
 For a concise summary of frozen vs. experimental components, see the [Deterministic Core Profile](../../spec/supplemental/deterministic-core-profile-v1.md).
 
 ### A. Data Types
-*   **Scope:** `core/types/`, `spec/t81-data-types.md`
+*   **Scope:** `include/t81/types/`, `isa/types/bigint.cpp`, `isa/types/fraction.cpp`, `spec/t81-data-types.md`
 *   **Frozen Surface:**
     *   Binary representation of `Trit`, `Tryte`, `T81Float`, `T81Fraction`.
     *   Canonicalization rules for all composite types.
@@ -30,7 +30,7 @@ For a concise summary of frozen vs. experimental components, see the [Determinis
 *   **Allowed:** Performance optimizations that do not alter binary output.
 
 ### B. TISC ISA
-*   **Scope:** `core/isa/`, `core/vm/`, `spec/tisc-spec.md`
+*   **Scope:** `include/t81/isa/`, `isa/base81_view.cpp`, `isa/binary_emitter.cpp`, `isa/binary_io.cpp`, `isa/encoding.cpp`, `isa/pretty_printer.cpp`, `vm/` (including `vm/internal/`), `spec/tisc-spec.md`
 *   **Frozen Surface:**
     *   Opcode values and encoding.
     *   Instruction semantics (state transitions).
