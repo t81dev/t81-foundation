@@ -21,7 +21,7 @@ integrated, production-ready, or comparatively superior. Begin with the
 | `spec/`, `spec/rfcs/`        | Specifications and RFCs; distinguish accepted contracts from drafts                               |
 | `include/t81/`               | Public C++ headers and contracts                                                                  |
 | `vm/`                        | Interpreter, decoder, tensor helpers, JIT and execution support                                   |
-| `isa/`, `codec/`, `crypto/`  | ISA support, encodings, and cryptographic mechanisms                                              |
+| `isa/`, `codec/`, `crypto/`, `src/crypto/` | ISA support, encodings, and native C++23 Ed25519 `RFC-00D4`/`00D6` receipt sealing |
 | `lang/`                      | Frontend, standard library, and language support                                                  |
 | `kernel/axion/`              | Policy parsing, evaluation, and governance mechanisms                                             |
 | `fs/`                        | CanonFS drivers, interchange, identity, and storage operations                                    |
@@ -39,7 +39,7 @@ The root [support guide](SUPPORT_TAXONOMY.md) explains this distinction.
 - `CMakeLists.txt`, `cmake/`, `CMakePresets.json`: authoritative out-of-source CMake build configuration.
 - `tests/`: unit, contract, conformance, fixture, and regression tests. Enabled targets depend on CMake options.
 - `scripts/`, `.github/`: validation tooling, workflows, and contributor templates (including `scripts/ci/verify_fast.sh` and the ratcheting Agent Synthesis Gate `scripts/ci/check_agent_synthesis_gate.py`). Workflow definitions are not evidence that a particular run passed.
-- `docs/`: research, governance, references, maintenance handoff, and historical records (including `docs/ai-context/` operational ledgers and `docs/research/proposals/`).
+- `docs/`: research, governance, architecture ([`docs/architecture/OVERVIEW.md`](docs/architecture/OVERVIEW.md), [`docs/architecture/AI_OS_STRATIFIED_BLUEPRINT.md`](docs/architecture/AI_OS_STRATIFIED_BLUEPRINT.md)), references, maintenance handoff, and historical records (including `docs/ai-context/` operational ledgers and `docs/research/proposals/`).
 - `archive/`: consolidated historical development, product, OpenClaw skill wrapper, and market material (`customer_tools/`, `development_tests/`, `execution_reports/`, `market-demos/`, `market_analysis/`, `skills/`, `strategic_docs/`). These names and documents do not establish validated customer, performance, or security capabilities.
 - `artifacts/` and `examples/legacy-root-samples/`: recorded/generated material and relocated legacy root sample records; inspect provenance before treating it as reproducible evidence.
 - `third_party/`: external dependencies. Some dependencies are fetched during configuration; see [build instructions](CONTRIBUTING.md).
