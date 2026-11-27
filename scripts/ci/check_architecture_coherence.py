@@ -12,20 +12,53 @@ def must_contain(text: str, pattern: str, what: str, errors: list[str]) -> None:
         errors.append(f"missing {what}: /{pattern}/")
 
 
-def main() -> int:
-    repo = Path(__file__).resolve().parents[2]
+def vm_dispatch_text(repo: Path, errors: list[str]) -> tuple[str, list[str]]:
+    """Return Interpreter::step() dispatch text and the files that compose it.
+
+    Opcode arms live in vm/vm.cpp and in vm/internal/*.inc fragments that
+    vm.cpp #includes directly inside switch (insn.opcode). Those fragments
+    are the compiled dispatch source; searching only vm/vm.cpp misses arms
+    that the monolith split moved out, including QMATMUL and EMBED.
+    """
+    vm_cpp_path = repo / "vm" / "vm.cpp"
+    vm_cpp = vm_cpp_path.read_text(encoding="utf-8")
+    chunks = [vm_cpp]
+    searched = ["vm/vm.cpp"]
+    repo_root = repo.resolve()
+    for rel in re.findall(r'^\s*#include\s+"([^"]+\.inc)"', vm_cpp, flags=re.MULTILINE):
+        inc_path = (vm_cpp_path.parent / rel).resolve()
+        try:
+            rel_repo = inc_path.relative_to(repo_root).as_posix()
+        except ValueError:
+            errors.append(f"VM dispatch include escapes repository: {rel}")
+            continue
+        if not inc_path.is_file():
+            errors.append(f"VM dispatch include missing: {rel_repo}")
+            continue
+        chunks.append(inc_path.read_text(encoding="utf-8"))
+        searched.append(rel_repo)
+    return "\n".join(chunks), searched
+
+
+def main(repo: Path | None = None) -> int:
+    if repo is None:
+        repo = Path(__file__).resolve().parents[2]
+    else:
+        repo = Path(repo)
     errors: list[str] = []
 
     opcodes_h = (repo / "include/t81/isa/opcodes.hpp").read_text(encoding="utf-8")
-    vm_cpp = (repo / "vm/vm.cpp").read_text(encoding="utf-8")
+    vm_dispatch, dispatch_files = vm_dispatch_text(repo, errors)
+    dispatch_where = ", ".join(dispatch_files)
     tensor_helpers = (repo / "vm/tensor_helpers.cpp").read_text(encoding="utf-8")
     axion_reasons = (repo / "include/t81/axion/reasons.hpp").read_text(encoding="utf-8")
     policy_trace_bridge = (repo / "vm/policy_trace_bridge.cpp").read_text(encoding="utf-8")
     tensor_native = (repo / "include/t81/tensor/native.hpp").read_text(encoding="utf-8")
-    cmake = "\n".join(
-        p.read_text(encoding="utf-8")
-        for p in [repo / "CMakeLists.txt", *sorted((repo / "src").rglob("CMakeLists.txt"))]
-    )
+    cmake_files = [repo / "CMakeLists.txt", *sorted((repo / "src").rglob("CMakeLists.txt"))]
+    tests_cmake = repo / "tests/CMakeLists.txt"
+    if tests_cmake.is_file():
+        cmake_files.append(tests_cmake)
+    cmake = "\n".join(p.read_text(encoding="utf-8") for p in cmake_files)
     ci = (repo / ".github/workflows/ci.yml").read_text(encoding="utf-8")
     ai_compat = (repo / "include/t81/isa/ai_native_opcodes.hpp").read_text(encoding="utf-8")
     wload_expect = json.loads(
@@ -37,7 +70,12 @@ def main() -> int:
     # ISA <-> VM coherence for RFC-0026 phase-1 opcodes.
     for op in ("ATTN", "QMATMUL", "EMBED"):
         must_contain(opcodes_h, rf"\b{op}\b", f"ISA opcode {op}", errors)
-        must_contain(vm_cpp, rf"Opcode::{op}\b", f"VM dispatch for {op}", errors)
+        must_contain(
+            vm_dispatch,
+            rf"Opcode::{op}\b",
+            f"VM dispatch for {op} in {dispatch_where}",
+            errors,
+        )
 
     # Ensure this compatibility header is no longer placeholder handler surface.
     if "TODO: Implement actual" in ai_compat or "create_opcode_handler" in ai_compat:
@@ -83,7 +121,12 @@ def main() -> int:
         "tensor provenance reason code emission",
         errors,
     )
-    must_contain(vm_cpp, r"log_tensor_provenance\s*\(", "VM tensor provenance logging hook", errors)
+    must_contain(
+        vm_dispatch,
+        r"log_tensor_provenance\s*\(",
+        "VM tensor provenance logging hook",
+        errors,
+    )
     must_contain(
         cmake,
         r"\bt81_vm_tensor_provenance_trace_test\b",
