@@ -1,0 +1,26 @@
+{
+  "status": "PROPOSAL ONLY / NOT AUTHORIZED / NOT ACTIVE",
+  "target_adr": "ADR-0007",
+  "target_package_sha": "781ec9ac8785a8449762f88d83e575fe73171dbd",
+  "reviewed_design_sha": "07968a9a307415bf8a7aa6f04056caa22db01c78",
+  "policy_baseline_sha": "9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2",
+  "two_reviewer_requirement_satisfied": false,
+  "maintainer_exact_proposal_sha_approval": null,
+  "amendment_authority_basis": null,
+  "amendment_ratification_record": null,
+  "activation_record": null,
+  "implementation_sha": null,
+  "witness_transition_sha": null,
+  "technical_reviews": [],
+  "formal_github_approvals": [],
+  "implementation_adversarial_review": null,
+  "Release_active_negative_tests": null,
+  "cross_platform_qualification": null,
+  "approved_dual_witness_transition": null,
+  "Gemini_proposal_review": "pending; to be supplied after publication",
+  "remaining_policy": "unchanged",
+  "known_CODEOWNERS": [
+    "t81dev"
+  ],
+  "second_reviewer_eligibility_established": false
+}

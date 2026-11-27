@@ -1,0 +1,119 @@
+[
+  {
+    "path": "docs/governance/MODULE_OWNERSHIP_CHARTER.md",
+    "lines": [
+      48,
+      74
+    ],
+    "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/governance/MODULE_OWNERSHIP_CHARTER.md#L48-L74",
+    "exact_text": "## Ownership Model\n\n1. Every module must have at least one primary owner in `CODEOWNERS`.\n2. Frozen modules require two approvals for:\n   - spec change\n   - determinism change\n   - public API modification\n3. Experimental modules require one owner approval.\n4. Ownership assignments do not supersede authority ordering:\n   `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`.\n\n## Freeze Escalation Rules\n\nThe following change classes require escalation:\n\n- TISC ISA changes (`core/isa/`, relevant `/spec` surfaces)\n- Core Data Type changes (`core/types/`, canonical encoding/semantics)\n- Deterministic Core Profile surface changes\n\nMandatory controls:\n\n1. ADR entry under `docs/architecture/adr/`\n2. Determinism registry update in\n   `docs/governance/DETERMINISM_SURFACE_REGISTRY.md`\n3. Explicit PR label: `freeze-exception`\n4. Two reviewer approvals\n"
+  },
+  {
+    "path": "docs/governance/APPROVAL_DELEGATION.md",
+    "lines": [
+      23,
+      51
+    ],
+    "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/governance/APPROVAL_DELEGATION.md#L23-L51",
+    "exact_text": "\n- `docs/governance/FREEZE_ENFORCEMENT.md`\n- `docs/governance/DETERMINISM_SURFACE_REGISTRY.md`\n- `docs/governance/SPEC_AUTHORITY_MODEL.md`\n\n## Roles\n\n- Primary approver: `@t81dev`\n- Deputy approver(s): maintainers designated in `CODEOWNERS` and listed in\n  release/governance packets.\n\n## Deputy Eligibility\n\nA deputy must satisfy all criteria:\n\n1. Active maintainer in the affected module surface.\n2. No unresolved conflict-of-interest on the change.\n3. Familiarity with freeze and determinism policy boundaries.\n4. Able to provide same-day incident response for reverted or blocked stamps.\n\n## Delegation Rules\n\n1. Deputy approval is allowed when the primary approver is unavailable.\n2. Deputy approval is allowed for time-bound gates (release cutoff, month-close)\n   when waiting would miss the window.\n3. At least one approval on frozen or DCP-sensitive changes must come from either:\n   primary approver, or a deputy plus a second maintainer.\n4. Freeze exceptions still require two approvals and ADR evidence.\n5. A deputy cannot self-approve their own authored GO/HOLD packet."
+  },
+  {
+    "path": "docs/governance/SPEC_AUTHORITY_MODEL.md",
+    "lines": [
+      14,
+      21
+    ],
+    "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/governance/SPEC_AUTHORITY_MODEL.md#L14-L21",
+    "exact_text": "| Level | Path | Content Type | Authority |\n| :--- | :--- | :--- | :--- |\n| **1** | `/spec/**` | **Normative Specs** | **Absolute**. Defines the \"law\" of the system. |\n| **2** | `/docs/architecture/OVERVIEW.md` | **Architecture** | **High**. Defines system boundaries and invariants. |\n| **3** | `/docs/**` | **Descriptive Docs** | **Medium**. Explains the specs and architecture. |\n| **4** | `/docs/developer-guide/book/**` | **Narrative** | **Low**. Educational and illustrative. |\n| **5** | `/notebooks/**`, `/examples/**` | **Experimental** | **None**. Use at your own risk. |\n| **N/A** | `/artifacts/**`, `/benchmarks/results/**` | **Generated** | **None**. Ephemeral outputs. |"
+  },
+  {
+    "path": "docs/governance/SPEC_AUTHORITY_MODEL.md",
+    "lines": [
+      78,
+      84
+    ],
+    "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/governance/SPEC_AUTHORITY_MODEL.md#L78-L84",
+    "exact_text": "### D. Breaking Change\n*   **Definition**: Any change that alters the meaning of existing TISC bytecode, breaks binary compatibility of data types, or changes the public API in a backward-incompatible way.\n*   **Requirement**:\n    1.  **Major Version Bump** (e.g., v1.x -> v2.0).\n    2.  **RFC Approval**: Must be approved via the RFC process.\n    3.  **Migration Guide**: A guide must be added to `docs/migration/`.\n    4.  **Changelog**: Explicit entry in the changelog."
+  },
+  {
+    "path": "docs/governance/SPEC_AUTHORITY_MODEL.md",
+    "lines": [
+      95,
+      113
+    ],
+    "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/governance/SPEC_AUTHORITY_MODEL.md#L95-L113",
+    "exact_text": "## 5. Architecture Decision Records (ADR) Protocol\n\nArchitecture and governance decisions with boundary impact must be recorded under:\n\n* `docs/architecture/adr/`\n\nUse:\n\n* `docs/architecture/adr/ADR_TEMPLATE.md`\n\nRequired when decisions affect:\n\n* Freeze boundaries\n* Determinism surface classification\n* Public API boundary interpretation\n* Release discipline requirements\n\nADR records are descriptive artifacts under `/docs` authority and do not\noverride normative `/spec` definitions."
+  },
+  {
+    "path": "docs/governance/FREEZE_ENFORCEMENT.md",
+    "lines": [
+      76,
+      97
+    ],
+    "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/governance/FREEZE_ENFORCEMENT.md#L76-L97",
+    "exact_text": "\n## 3. Break Procedure\n\nIf a freeze boundary **must** be broken (e.g., to fix a critical design flaw or security vulnerability), the following procedure is mandatory.\n\n1.  **Draft Breaking Change RFC**:\n    *   Explain *why* the break is unavoidable.\n    *   Analyze the impact on the ecosystem (VMs, compilers, data).\n    *   Propose a mitigation strategy.\n2.  **Update Specification**:\n    *   Modify the relevant file in `/spec/`.\n    *   Update the version number in the spec header.\n3.  **Update Implementation Matrix**:\n    *   Update `docs/status/IMPLEMENTATION_MATRIX.md` to reflect the new spec version.\n4.  **Add Migration Notes**:\n    *   Create a migration guide in `docs/migration/` (e.g., `v1_to_v2_migration.md`).\n5.  **Bump MAJOR Version**:\n    *   Update the project version in `CMakeLists.txt` and `package.json` (if applicable).\n6.  **Update Changelog**:\n    *   Add a distinct \"BREAKING CHANGES\" section to the changelog.\n7.  **Deprecate Previous Major**:\n    *   Explicitly mark the previous major version as \"Maintenance Mode\" or \"Deprecated\"."
+  },
+  {
+    "path": "docs/governance/FREEZE_ENFORCEMENT.md",
+    "lines": [
+      101,
+      119
+    ],
+    "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/governance/FREEZE_ENFORCEMENT.md#L101-L119",
+    "exact_text": "## 4. Determinism Breach Protocol\n\nBreach classification follows RFC-0043 \u00a76 (Deterministic Conformance Validation Framework):\n\n| Class | Trigger | Merge Impact |\n| :---- | :------ | :----------- |\n| **Hard Divergence** | Final bytes, trap class, trace hash, or canonical serialization differ across platforms or backends | Merge-blocked \u2014 Critical Defect |\n| **Soft Divergence** | Non-DCP diagnostic strings or non-governed metadata differ | Not blocking unless it crosses a governed boundary |\n| **UB Exposure** | Backend depends on undefined behavior; memory layout or ABI mismatch changes results | Treated as Hard Divergence on a verified surface |\n\nIf a change is detected that breaks determinism on a verified surface (e.g., CI failure in `repro-ledger.yml`, `t81lang_repro_gate.py`, or any backend equivalence test):\n\n1.  **Immediate Stop**: The PR is blocked. **Do not merge.**\n2.  **Classification**: Classify the failure using the RFC-0043 \u00a76 breach taxonomy above.\n3.  **Root Cause Analysis**:\n    *   Identify the source of nondeterminism (e.g., uninitialized memory, hash map iteration order, floating-point compiler flags, UB-dependent backend).\n    *   Produce a minimal reproduction case.\n4.  **Postmortem**:\n    *   Document the cause and the fix."
+  },
+  {
+    "path": "docs/product/RELEASE_DISCIPLINE.md",
+    "lines": [
+      26,
+      32
+    ],
+    "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/product/RELEASE_DISCIPLINE.md#L26-L32",
+    "exact_text": "Before tagging `vX.Y.Z`, all of the following must hold:\n\n1. Determinism registry verified surfaces are current and accurate.\n2. DCP compliance is confirmed for release scope.\n3. Structural integrity scripts and required checks pass.\n4. No open freeze exceptions.\n5. No open determinism breach on verified surfaces."
+  },
+  {
+    "path": "docs/product/RELEASE_DISCIPLINE.md",
+    "lines": [
+      96,
+      98
+    ],
+    "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/product/RELEASE_DISCIPLINE.md#L96-L98",
+    "exact_text": "4. If failure intersects DCP, verified determinism surfaces, freeze boundaries,\n   or public API contract, it is release-impacting by default and may not be\n   waived without governance escalation."
+  },
+  {
+    "path": "docs/product/RELEASE_DISCIPLINE.md",
+    "lines": [
+      110,
+      113
+    ],
+    "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/product/RELEASE_DISCIPLINE.md#L110-L113",
+    "exact_text": "## Versioning Statement\n\nThis manifest is governance policy. Any relaxation of release preconditions\nrequires explicit governance review and ADR traceability."
+  },
+  {
+    "path": "docs/status/DECISION_LOG.md",
+    "lines": [
+      527,
+      553
+    ],
+    "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/status/DECISION_LOG.md#L527-L553",
+    "exact_text": "### DEC-015 \u2014 Conditional single-use CI-gate exception for PR #775 (SCG-08 Gate 1 evidence repair)\n\n**Date (UTC):** 2026-11-12T02:09:24Z\n**Approver:** @t81dev (explicit maintainer approval to publish this exception record; **no merge authorization**)\n**Category:** Governance / CI / Operational\n**Target:** PR #775, head `1fe9044cb497484ecf5f89d4f1bc7581b141eae5`, base `89223724038ff7dec349343469df4ea8389ede26`\n**Status:** APPROVED FOR PUBLICATION; EXCEPTION EXECUTION AND MERGE NOT AUTHORIZED\n\n**Decision:** Approve documentation of a narrowly scoped, single-use administrative exception for PR #775 at the pinned head. The exception may be exercised **only after separate, explicit maintainer authorization to merge** and renewed verification of the PR head, base, review findings, and required-check status. A changed head or base invalidates this evaluation. Publishing this record does not waive any check, authorize an administrative override, or merge the PR.\n\n**Policy classification:** The required `quality gate / required` check is failing. Using GitHub's `enforce_admins: false` capability would be an explicit departure from the current Hard-Fail policy in `docs/governance/ENFORCEMENT_MATRIX.md` and `docs/status/CI_GATE_STATUS.md`, not compliance with it and not a release waiver under `docs/product/RELEASE_DISCIPLINE.md` \u00a74. No general precedent or standing CI waiver is created.\n\n**Technical evidence and review:**\n- Exactly four files are changed: `experiments/scg08_arithmetic_work/GATE1_IMPLEMENTATION_REPORT.md`, `evidence_schema.json`, `gate1_evidence_record.json`, and `scripts/ci/validate_scg08_gate1_evidence.py`. No C++, CMake, or CI workflow files change.\n- Antigravity's external read-only technical assessment found the bounded evidence repair ACCEPTANCE READY. It ran 94 negative validator cases, 61 Draft 7 parity rejection cases, and two positive records with `jsonschema==4.26.0`. Draft 7's acceptance of integral-valued floats differs from the stricter Python validator and is disclosed; no full parity is claimed.\n- Codex authored the candidate, so its local validation is author-side, not an independent review. The automated Codex GitHub review summary for head `1fe9044` reports completion with zero findings (2026-11-12T01:59:36Z). Human owner approval of the PR and final merge authorization remain distinct.\n- The historical evidence-generation commit remains unverified (`evidence_generation_sha: null`); the timestamp, observations, and 179-trial count are preserved. The libc++/libstdc++ PRNG explanation reproduces smoke observations mathematically, but does not establish historical execution provenance or native Linux verification.\n\n**Required CI and baseline comparison:**\n- `Analyze (cpp)` succeeded (job `130899172378`).\n- `quality gate / required` failed (job `130915725780`, run `43132315331`) because `build-and-test` failed.\n- Windows MSVC failed 3/401 tests (job `130900388075`); Windows clang-cl failed 8/401 (job `130900388119`); macOS x86_64 GCC was cancelled after the 40-minute test timeout (job `130900388055`). Antigravity compared these with the pinned `main` baseline run `43022879680` and found matching failures/cancellation.\n- Baseline-equivalent failures support non-regression for those specific failures only. They do **not** establish general merge safety or branch health; downstream jobs skipped because of the failing dependency remain unexecuted.\n\n**Alternatives considered:** Hold integration until baseline Windows/macOS-GCC CI and the documented informational-versus-required gate inconsistency are repaired (strict policy compliance but delays an isolated evidence repair); silently override the required check (rejected for lack of governance traceability).\n\n**Scope and conditions:** This approval covers publishing DEC-015 and evaluating a possible later single-use override for the pinned PR only. It does not authorize merging, changing branch protection, changing CI, ratifying draft RFC-00E1, accepting SCG-08 Gate 1, or executing Gate 2. Formal Gate 1 acceptance remains WITHHELD; Gate 2 remains **STRICT NO-GO**."
+  },
+  {
+    "path": "docs/status/DECISION_LOG.md",
+    "lines": [
+      585,
+      596
+    ],
+    "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/status/DECISION_LOG.md#L585-L596",
+    "exact_text": "### DEC-015-C2 \u2014 Post-PR #776 baseline reconciliation and single-use PR #775 integration authorization\n\n**Date (UTC):** 2026-11-12T02:30:53.165Z\n**Approver:** @t81dev (explicit maintainer authorization)\n**Category:** Governance / CI / Baseline reconciliation\n**Amends:** DEC-015's target baseline and invalidation clause; preserves DEC-015, DEC-015-C1, and DEC-015-C1-A unchanged.\n\n**Decision:** Approve the reconciled baseline `e42f30af051ee596bc03e4343c4c34cafd37e5b8` (PR #776 merge) for the single-use administrative integration exception covering PR #775 at **exact head `1fe9044cb497484ecf5f89d4f1bc7581b141eae5`**. The maintainer explicitly authorizes the administrative override of the failing `quality gate / required` and strict `BEHIND` condition for this specific PR, without rebasing or modifying the reviewed head. This is an exceptional departure from the documented Hard-Fail policy, not a finding that the required checks passed.\n\n**Basis:** PR #776 changed only `docs/status/DECISION_LOG.md` relative to the original baseline `89223724038ff7dec349343469df4ea8389ede26` (+58/-0). All non-governance source, CMake, CI, RFC, and SCG-08 paths remained identical. Antigravity independently reconciled the unchanged four-file PR #775 patch (+264/-69; SHA-256 `082f4529c3d31d48f9be100ff15a35b7f7291c7a52e012356eb7103e6a14ab22`) as conflict-free and confirmed no new review findings. Windows MSVC 3/401 and clang-cl 8/401 failing tests matched the earlier pinned baseline; this is specific non-regression evidence, not general branch-health certification. The macOS GCC cancellation occurred during CTest at the overall 40-minute **job** timeout; CTest ran approximately 8m17s for PR #775 versus 11m03s on the original baseline, so no identical test-level failure is asserted. CI on the updated `main` baseline was still queued/in progress when reconciled; the required gate on PR #775 remained failed. No new experimental executions were authorized.\n\n**Execution conditions:** The exception is single-use and limited to PR #775 at `1fe9044cb497484ecf5f89d4f1bc7581b141eae5`; revalidate the current PR head and mergeability immediately before the merge. This governance-only recording commit may advance `main` without changing the evaluated non-governance code baseline. Any non-governance changes to `main` or head changes before execution require a fresh assessment. Do not modify branch protection or CI configuration. Preserve the exception's provenance in this append-only record."
+  },
+  {
+    "path": "docs/status/DECISION_LOG.md",
+    "lines": [
+      620,
+      623
+    ],
+    "url": "https://github.com/t81dev/t81-foundation/blob/9256b6ec57a09e07799ae69a6f7b5467fd6ca4d2/docs/status/DECISION_LOG.md#L620-L623",
+    "exact_text": "## Versioning Statement\n\nThis log is an operational governance artifact. Entries do not override `/spec`,\nfreeze policy, or determinism registry boundaries."
+  }
+]
