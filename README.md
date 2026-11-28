@@ -155,7 +155,17 @@ The relevant question is not simply whether another representation works, but wh
 
 Program **SCG-08** investigates balanced-ternary carry propagation under a frozen weighted cost metric (`SCG08_PHASE0_RESEARCH_CHARTER.md`). Its Phase 1 Gate 1 harness (`experiments/scg08_arithmetic_work/`) is verified across 64–1024 bit widths against an exact arbitrary-precision oracle; **Gate 2 empirical benchmarking remains strictly withheld (`NO-GO`)** pending explicit maintainer authorization.
 
-### 6. Physical ternary computing remains an open question
+### 6. Representation-independent governed execution is regime-bounded (`H07` closed)
+
+In the reproducible head-to-head comparison against `Wasmtime 51.0.0` (precompiled `.cwasm`) + `OPA 1.23.0` (`opa eval` / persistent HTTP keep-alive) + `OpenSSL 3.6.2` on Apple Silicon M2 (`#906`), hypothesis **`H07`** closed as **`PARTIALLY SUPPORTED (REGIME-BOUNDED)`**:
+
+- **Where T81 won:** Binary footprint (`5.48 MB` vs `83.36 MB`, `15.2×` smaller), steady-state daemon RSS (`3.38 MiB` vs `40.14 MiB` for OPA alone, `11.9×` lower), `p99` policy tail latency (`298 µs` vs `446 µs`, `N=1,000`), offline receipt verification (`9.12 ms` vs `10.12 ms`), and built-in policy-pinning + RFC 8032 Ed25519 receipt integration without external glue.
+- **Where `Wasmtime + OPA` won:** Pure AOT compute (`8.52 ms` vs `157.11 ms` `.tisc` interpreter, `18.4×` faster), end-to-end cold-start (`54.23 ms` vs `168.22 ms`, `3.1×` faster), and median warm policy-only `p50` (`152.1 µs` vs `166.1 µs`).
+- **Attribution & "For AI, By AI" Handoff:** Observed T81 wins come from single-binary C++23 systems integration rather than ternary arithmetic superiority. Together with the `pip install t81` outsider-reproducible proof ([examples/stranger-proof/README.md](examples/stranger-proof/README.md), `#905`), these primitives anchor the [RFC-00D4](spec/rfcs/RFC-00D4-accountable-decision-bundle.md) offline two-agent receipt handoff roadmap (draft companion profile in PR `#908`).
+
+[Read the H07 Wasmtime + OPA comparison](docs/research/H07_WASMTIME_OPA_COMPARISON.md)
+
+### 7. Physical ternary computing remains an open question
 
 Software-emulated ternary computation on binary CPUs is not equivalent to computation on native ternary hardware.
 
