@@ -50,6 +50,7 @@ cmake.args = [
   "-DT81_BUILD_TESTS=OFF",
   "-DT81_BUILD_EXAMPLES=OFF",
   "-DT81_BUILD_BENCHMARKS=OFF",
+  "-DT81_BUILD_TUI=OFF",
 ]
 cmake.build-type = "Release"
 build.targets = ["_t81", "t81"]

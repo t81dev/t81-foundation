@@ -30,7 +30,7 @@ target_include_directories(t81_jit PRIVATE
 )
 
 target_sources(t81_vm PRIVATE $<TARGET_OBJECTS:t81_jit>)
-target_link_libraries(t81_vm PUBLIC t81_core t81_isa t81_axion t81_ffi t81_experimental)
+target_link_libraries(t81_vm PUBLIC t81_core t81_isa t81_axion t81_ffi t81_experimental ${CMAKE_DL_LIBS})
 
 add_library(t81_regime_dispatch STATIC
   ${CMAKE_CURRENT_SOURCE_DIR}/regime_dispatch.cpp
