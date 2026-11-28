@@ -1,0 +1,9 @@
+fn main() -> i32 {
+  let mut i: i32 = 0;
+  let mut acc: i32 = 0;
+  while (i < 1000) {
+    acc = (acc + i * 3 + 1) % 65521;
+    i = i + 1;
+  }
+  return acc;
+}

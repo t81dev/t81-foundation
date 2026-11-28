@@ -3,7 +3,7 @@
 > **Source of Truth:** This document defines the **current operational state** of the project (what is true today). For future plans, see [../process/roadmaps-plans/ROADMAP.md](../process/roadmaps-plans/ROADMAP.md). For version history, see [CHANGELOG.md](CHANGELOG.md).
 
 **Last Updated:** 2026-11-27
-**Status:** Active development (governance-controlled core with mixed maturity; preparing `v2.3.0` on `main@e14244b72`, post-Wave 5 & backlog cleared)
+**Status:** Active development (governance-controlled core with mixed maturity; `v2.3.0` released, outsider-reproducible proof shipped in `#905`, and `H07` closed as `PARTIALLY SUPPORTED (REGIME-BOUNDED)`)
 
 ## 1. Snapshot
 

@@ -348,13 +348,13 @@
       ],
       "measurement": "Replay/tamper/revocation and pre-side-effect denial with trustworthy test execution.",
       "falsifier": "Conventional baseline meets the same defined property at lower cost, or evidence/authorization bypass is reproduced.",
-      "result": "Separate engineering track. PRs #565/#566 remain open/draft: both CodeQL pass, required quality gate fails. Existing source/test reports are not a new independent security certification here.",
+      "result": "A: CLOSED — PARTIALLY SUPPORTED (REGIME-BOUNDED) on 2026-11-27 via reproducible Apple M2 arm64 head-to-head benchmark (benchmarks/h07_wasmtime_opa/results/m2_arm64_2026-11-27.json, docs/research/H07_WASMTIME_OPA_COMPARISON.md) comparing T81 v2.3.0 against Wasmtime 51.0.0 (precompiled .cwasm) + OPA 1.23.0 (opa eval / persistent HTTP server) + OpenSSL 3.6.2 Ed25519. Both stacks achieved 100% (3/3) fail-closed fault rejection. T81 won on binary footprint (5.48 MB vs 83.36 MB, 15.2x), daemon RSS (3.38 MiB vs 40.14 MiB, 11.9x), policy p99 tail latency (298 us vs 446 us, N=1000), CLI-glued governed commit+Ed25519 (2.75 ms vs 10.64 ms), offline verification (9.12 ms vs 10.12 ms), and built-in policy/receipt integration. Wasmtime+OPA won decisively on pure compute (8.52 ms vs 157.11 ms, 18.4x), end-to-end cold-start (54.23 ms vs 168.22 ms, 3.1x), and median warm policy-only p50 (152.1 us vs 166.1 us). Observed T81 advantages are representation-independent single-binary systems integration, not ternary arithmetic superiority.",
       "evidence_tiers": [
-        "B",
-        "C"
+        "A",
+        "B"
       ],
-      "confidence": "Current PR metadata checked; prior security tests not rerun in this session.",
-      "next_action": "Maintain the bounded CI/security investigation separately; Protocol 001 remains NOT READY."
+      "confidence": "High for measured Apple M2 arm64 regime boundaries; Linux x86_64 and custom embedded Rust/Go Wasmtime+OPA host remain secondary comparison points.",
+      "next_action": "H07 closed as PARTIALLY SUPPORTED (REGIME-BOUNDED); retain CI smoke test (t81_h07_wasmtime_opa_smoke_test); Protocol 001 remains NOT READY."
     },
     {
       "id": "H08",

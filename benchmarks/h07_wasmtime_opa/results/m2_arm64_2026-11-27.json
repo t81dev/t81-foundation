@@ -1,0 +1,157 @@
+{
+  "schema": "t81.h07-wasmtime-opa-benchmark.v1",
+  "timestamp_utc": "2026-11-28T03:24:16.690301+00:00",
+  "environment": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "python": "3.14.3",
+    "t81_version": "T81 Foundation 2.3.0",
+    "wasmtime_version": "wasmtime 51.0.0 (32656dc48 2026-11-20)",
+    "opa_version": "Version: 1.23.0",
+    "openssl_version": "OpenSSL 3.6.2 7 Apr 2026 (Library: OpenSSL 3.6.2 7 Apr 2026)"
+  },
+  "footprint": {
+    "t81_binary_mb": 5.48,
+    "wasmtime_binary_mb": 43.96,
+    "opa_binary_mb": 39.4,
+    "wasmtime_plus_opa_binary_mb": 83.36,
+    "t81_mcp_daemon_rss_mb_initial": 2.31,
+    "t81_mcp_daemon_rss_mb_post_w2": 3.38,
+    "opa_server_rss_mb_initial": 34.31,
+    "opa_server_rss_mb_post_w2": 40.14
+  },
+  "workloads": {
+    "W1_cold_start_ms": {
+      "t81": {
+        "n": 20,
+        "unit": "ms",
+        "min": 166.673,
+        "p50": 168.221,
+        "p95": 180.574,
+        "p99": 185.303,
+        "max": 186.486,
+        "iqr": 1.999,
+        "mean": 170.488
+      },
+      "wasmtime_opa": {
+        "n": 20,
+        "unit": "ms",
+        "min": 52.796,
+        "p50": 54.227,
+        "p95": 69.191,
+        "p99": 86.738,
+        "max": 91.125,
+        "iqr": 7.554,
+        "mean": 58.679
+      }
+    },
+    "W2_warm_policy_only_us": {
+      "t81_mcp_gate_check": {
+        "n": 1000,
+        "unit": "us",
+        "min": 157.458,
+        "p50": 166.062,
+        "p95": 213.593,
+        "p99": 298.39,
+        "max": 735.0,
+        "iqr": 11.25,
+        "mean": 175.343
+      },
+      "opa_http_keepalive": {
+        "n": 1000,
+        "unit": "us",
+        "min": 131.959,
+        "p50": 152.105,
+        "p95": 255.76,
+        "p99": 445.668,
+        "max": 1071.0,
+        "iqr": 34.229,
+        "mean": 171.219
+      }
+    },
+    "W2_warm_governed_commit_us": {
+      "t81_mcp_tx_ed25519": {
+        "n": 1000,
+        "unit": "us",
+        "min": 2593.416,
+        "p50": 2750.0,
+        "p95": 3148.604,
+        "p99": 3534.764,
+        "max": 5226.5,
+        "iqr": 155.104,
+        "mean": 2805.667
+      },
+      "opa_http_plus_openssl_ed25519": {
+        "n": 1000,
+        "unit": "us",
+        "min": 9889.625,
+        "p50": 10640.334,
+        "p95": 12863.732,
+        "p99": 15614.213,
+        "max": 61596.542,
+        "iqr": 778.449,
+        "mean": 11019.936
+      }
+    },
+    "W2_compute_kernel_cli_ms": {
+      "t81_vm_run_precompiled_tisc": {
+        "n": 20,
+        "unit": "ms",
+        "min": 154.378,
+        "p50": 157.109,
+        "p95": 157.74,
+        "p99": 159.067,
+        "max": 159.399,
+        "iqr": 1.72,
+        "mean": 156.689
+      },
+      "wasmtime_aot_cwasm": {
+        "n": 20,
+        "unit": "ms",
+        "min": 8.097,
+        "p50": 8.523,
+        "p95": 12.342,
+        "p99": 37.036,
+        "max": 43.209,
+        "iqr": 0.774,
+        "mean": 10.63
+      }
+    },
+    "W3_fault_injection_fail_closed": {
+      "t81": {
+        "bypass_denied": true,
+        "policy_tamper_denied": true,
+        "receipt_tamper_denied": true
+      },
+      "wasmtime_opa": {
+        "bypass_denied": true,
+        "policy_tamper_denied": true,
+        "receipt_tamper_denied": true
+      }
+    },
+    "W3_offline_verify_ms": {
+      "t81_receipt_export_verify": {
+        "n": 25,
+        "unit": "ms",
+        "min": 8.801,
+        "p50": 9.122,
+        "p95": 10.02,
+        "p99": 16.838,
+        "max": 18.987,
+        "iqr": 0.322,
+        "mean": 9.57
+      },
+      "wasmtime_opa_openssl_verify": {
+        "n": 25,
+        "unit": "ms",
+        "min": 9.745,
+        "p50": 10.124,
+        "p95": 14.324,
+        "p99": 19.626,
+        "max": 21.052,
+        "iqr": 0.652,
+        "mean": 10.859
+      }
+    }
+  }
+}
