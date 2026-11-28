@@ -12,12 +12,18 @@
 
 ## 60-Second Proof (`v2.3.0`)
 
-Install the Python SDK wheels (`CPython 3.9–3.14` on Linux, macOS, Windows) or build the C++23 CLI locally:
+Install the Python SDK wheels (`CPython 3.9–3.14` on Linux, macOS, Windows) and run the self-contained **BitNet-2B streaming ingest + governed MCP session + offline Ed25519 receipt verification** proof from any empty directory (no repo clone or compiler required):
 
 ```bash
-# Quickstart via PyPI (no C++ compiler required)
+# Quickstart via PyPI (no C++ compiler or repo clone required)
 pip install t81
+python -m t81.examples.stranger_proof --keep-dir ./t81_proof_out
+
+# Re-verify the exported forensic bundle 100% offline (zero server running)
+python -m t81.examples.stranger_proof --verify-bundle ./t81_proof_out/forensic_bundle
 ```
+
+See the full walkthrough and expected pinned SHA3-512 / Ed25519 output in **[examples/stranger-proof/README.md](examples/stranger-proof/README.md)**.
 
 Or build from source (`cmake -S . -B build -G Ninja && cmake --build build --target t81 -j4`) and run the verified end-to-end stack:
 

@@ -32,6 +32,9 @@ classifiers = [
   "Typing :: Typed",
 ]
 
+[project.scripts]
+t81-stranger-proof = "t81.examples.stranger_proof:main"
+
 [project.urls]
 Homepage        = "https://github.com/t81dev/t81-foundation"
 Documentation   = "https://github.com/t81dev/t81-foundation/tree/main/docs"
@@ -49,7 +52,7 @@ cmake.args = [
   "-DT81_BUILD_BENCHMARKS=OFF",
 ]
 cmake.build-type = "Release"
-build.targets = ["_t81"]
+build.targets = ["_t81", "t81"]
 install.components = ["python"]
 sdist.include = ["tools/model/weights_t81w_emitter.cpp"]
 

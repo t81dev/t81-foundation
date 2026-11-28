@@ -27,6 +27,10 @@ True
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
+import shutil
+
 from t81._t81 import (  # noqa: F401  (re-exported as public API)
     # ── Ternary numeric types ─────────────────────────────────────────────────
     T81Int,
@@ -73,7 +77,35 @@ from t81._t81 import (  # noqa: F401  (re-exported as public API)
 # Friendly alias: `t81.VM()` instead of `t81.make_interpreter_vm()`
 VM = make_interpreter_vm
 
+
+def cli_path() -> Path:
+    """Return the path to the bundled native ``t81`` CLI binary.
+
+    Resolution order:
+      1. ``T81_BIN`` environment variable (explicit override)
+      2. Bundled ``t81/bin/t81`` (or ``t81.exe`` on Windows) inside this package
+      3. ``t81`` on ``PATH``
+    """
+    env_bin = os.environ.get("T81_BIN")
+    if env_bin:
+        candidate = Path(env_bin)
+        if candidate.is_file():
+            return candidate
+    exe_name = "t81.exe" if os.name == "nt" else "t81"
+    bundled = Path(__file__).resolve().parent / "bin" / exe_name
+    if bundled.is_file():
+        return bundled
+    found = shutil.which("t81")
+    if found:
+        return Path(found)
+    raise FileNotFoundError(
+        f"Native t81 CLI binary not found at {bundled} or on PATH. "
+        "Reinstall the t81 wheel or set T81_BIN=/path/to/t81."
+    )
+
+
 __all__ = [
+    "cli_path",
     # Numeric types
     "T81Int",
     "BigInt",

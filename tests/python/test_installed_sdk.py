@@ -170,6 +170,30 @@ class InstalledSdkTest(unittest.TestCase):
         self.assertTrue(allowed["ok"], allowed)
         self.assertEqual(allowed["trit"], 1)
 
+    def test_bundled_cli_and_stranger_proof_out_of_tree(self):
+        from t81.examples.stranger_proof import PINNED_BITNET_2B_MANIFEST_SHA3_512
+
+        cli_bin = t81.cli_path()
+        self.assertTrue(cli_bin.is_file(), f"bundled CLI missing: {cli_bin}")
+        with tempfile.TemporaryDirectory(prefix="t81-wheel-stranger-") as td:
+            out = subprocess.check_output(
+                [sys.executable, "-m", "t81.examples.stranger_proof", "--json"],
+                cwd=td,
+                text=True,
+            )
+            import json
+
+            res = json.loads(out)
+            self.assertTrue(res["ok"], res)
+            self.assertEqual(
+                res["bitnet_2b"]["manifest_sha3_512"],
+                PINNED_BITNET_2B_MANIFEST_SHA3_512,
+            )
+            self.assertEqual(res["mcp_session"]["plane_bypass_code"], "ERR_PLANE_BYPASS_DENIED")
+            self.assertTrue(res["mcp_session"]["out_of_root_denied"])
+            self.assertTrue(res["offline_verification"]["ed25519_dag_ok"])
+            self.assertTrue(res["offline_verification"]["tamper_rejected"])
+
 
 if __name__ == "__main__":
     unittest.main()
