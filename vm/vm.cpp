@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <charconv>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -89,7 +90,8 @@ using t81::vm::internal::try_promote_tier;
 class Interpreter : public IVirtualMachine {
 public:
   explicit Interpreter(std::unique_ptr<t81::axion::Engine> engine)
-      : axion_engine_(std::move(engine)) {
+      : axion_engine_(std::move(engine)),
+        using_default_allow_all_engine_(axion_engine_ == nullptr) {
     if (!axion_engine_) {
       axion_engine_ = t81::axion::make_allow_all_engine();
     }
@@ -193,6 +195,7 @@ public:
       if (policy.has_value()) {
         state_.policy = policy.value();
         axion_engine_ = t81::axion::make_policy_engine(state_.policy);
+        using_default_allow_all_engine_ = false;
         for (const auto& loop : state_.policy->loops) {
           AxionEvent event;
           event.opcode = t81::tisc::Opcode::Nop;
@@ -215,6 +218,7 @@ public:
       } else {
         const std::string parse_error = "Axion policy parse failed: " + policy.error();
         axion_engine_ = make_deny_with_reason_engine(parse_error);
+        using_default_allow_all_engine_ = false;
 
         AxionEvent event;
         event.opcode = t81::tisc::Opcode::Nop;
@@ -301,10 +305,22 @@ public:
 
       t81::axion::Verdict enter_event{t81::axion::VerdictKind::Allow, ""};
       {
-        std::ostringstream reason;
-        reason << t81::axion::reasons::kJitTraceEnter << " pc=" << trace_pc
-               << " trace-len=" << trace_it->second->size();
-        enter_event.reason = reason.str();
+        char buf[128];
+        char* p = buf;
+        const auto append_sv = [&](std::string_view sv) {
+          std::memcpy(p, sv.data(), sv.size());
+          p += sv.size();
+        };
+        const auto append_u = [&](std::size_t v) {
+          auto res = std::to_chars(p, buf + sizeof(buf), v);
+          p = res.ptr;
+        };
+        append_sv(t81::axion::reasons::kJitTraceEnter);
+        append_sv(" pc=");
+        append_u(trace_pc);
+        append_sv(" trace-len=");
+        append_u(trace_it->second->size());
+        enter_event.reason.assign(buf, static_cast<std::size_t>(p - buf));
       }
       record_axion_event(t81::tisc::Opcode::Nop,
                          static_cast<std::int32_t>(trace_it->second->size()),
@@ -338,32 +354,44 @@ public:
 
       t81::axion::Verdict exit_event{t81::axion::VerdictKind::Allow, ""};
       {
-        std::ostringstream reason;
+        char buf[128];
+        char* p = buf;
+        const auto append_sv = [&](std::string_view sv) {
+          std::memcpy(p, sv.data(), sv.size());
+          p += sv.size();
+        };
+        const auto append_u = [&](std::size_t v) {
+          auto res = std::to_chars(p, buf + sizeof(buf), v);
+          p = res.ptr;
+        };
         const bool deopt = exec_result.exit_kind == JitTrace::ExitKind::GuardDeopt;
-        reason << (deopt ? t81::axion::reasons::kJitTraceDeopt : t81::axion::reasons::kJitTraceExit)
-               << " pc=" << ctx.pc << " executed=" << exec_result.instructions_executed
-               << " exit-kind=";
+        append_sv(deopt ? t81::axion::reasons::kJitTraceDeopt : t81::axion::reasons::kJitTraceExit);
+        append_sv(" pc=");
+        append_u(ctx.pc);
+        append_sv(" executed=");
+        append_u(exec_result.instructions_executed);
+        append_sv(" exit-kind=");
         switch (exec_result.exit_kind) {
           case JitTrace::ExitKind::Completed:
-            reason << "completed";
+            append_sv("completed");
             break;
           case JitTrace::ExitKind::Branch:
-            reason << "branch";
+            append_sv("branch");
             break;
           case JitTrace::ExitKind::GuardDeopt:
-            reason << "guard-deopt";
+            append_sv("guard-deopt");
             break;
           case JitTrace::ExitKind::PolicyDeny:
-            reason << "policy-deny";
+            append_sv("policy-deny");
             break;
           case JitTrace::ExitKind::AxionBoundary:
             // RFC-0028 §5: Axion-gated opcode (AxRead/AxSet/AxVerify/AxReport).
             // The trace exits cleanly; the interpreter resumes and evaluates
             // the Axion boundary natively via policy_engine.cpp.
-            reason << "axion-boundary";
+            append_sv("axion-boundary");
             break;
         }
-        exit_event.reason = reason.str();
+        exit_event.reason.assign(buf, static_cast<std::size_t>(p - buf));
       }
       record_axion_event(t81::tisc::Opcode::Nop,
                          static_cast<std::int32_t>(exec_result.instructions_executed),
@@ -2757,6 +2785,9 @@ private:
       std::string_view syscall, std::size_t prog_counter, t81::tisc::Opcode opcode,
       std::string_view payload = {},
       std::optional<std::size_t> instruction_count_override = std::nullopt) {
+    if (using_default_allow_all_engine_ && !state_.policy.has_value()) {
+      return t81::axion::Verdict{t81::axion::VerdictKind::Allow, "Default policy: allow all"};
+    }
     if (syscall == t81::axion::reasons::kMetaRead) {
       // Internal MetaRead check could go here
     }
@@ -3130,6 +3161,7 @@ private:
   State state_{};
   t81::tisc::Program program_{};
   std::unique_ptr<t81::axion::Engine> axion_engine_;
+  bool using_default_allow_all_engine_{false};
   std::shared_ptr<t81::canonfs::Driver> canonfs_driver_;
   std::unordered_map<std::int64_t, std::string> tensor_canon_hashes_;
   t81::axion::DeterminismDetector* determinism_detector_{nullptr};
