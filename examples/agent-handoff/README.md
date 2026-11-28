@@ -16,7 +16,7 @@ Covers valid signed handoff (`PASS`) plus fail-closed rejection (`FAIL-CLOSED`) 
 3. Mismatched `expected_policy_sha3_512` (`ERR_POLICY_DIGEST_MISMATCH`)
 
 ```bash
-python3 -m unittest examples/agent-handoff/test_handoff.py -v
+python3 -m unittest examples/agent-handoff/test_handoff.py examples/agent-handoff/test_mcp_handoff_e2e.py -v
 ```
 
 See [`docs/rfcs/RFC-00D4-agent-receipt-handoff.md`](../../docs/rfcs/RFC-00D4-agent-receipt-handoff.md) for the protocol specification.
