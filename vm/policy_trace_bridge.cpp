@@ -38,9 +38,16 @@ t81::axion::SyscallContext make_syscall_context(const State& state, std::size_t 
   sys_ctx.reflection_count = state.reflection_count;
   sys_ctx.meta_write_count = state.meta_write_count;
   sys_ctx.policy = state.policy ? &*state.policy : nullptr;
-  sys_ctx.trace_reasons.reserve(state.axion_log.size());
-  for (const auto& entry : state.axion_log) {
-    sys_ctx.trace_reasons.push_back(entry.verdict.reason);
+  const bool needs_trace_reasons =
+      !state.policy.has_value() || !state.policy->loops.empty() ||
+      !state.policy->match_guards.empty() || !state.policy->segment_requirements.empty() ||
+      !state.policy->axion_event_requirements.empty() ||
+      !state.policy->alignment_requirements.empty() || !state.policy->bytecode.empty();
+  if (needs_trace_reasons) {
+    sys_ctx.trace_reasons.reserve(state.axion_log.size());
+    for (const auto& entry : state.axion_log) {
+      sys_ctx.trace_reasons.push_back(entry.verdict.reason);
+    }
   }
   return sys_ctx;
 }
@@ -96,8 +103,8 @@ void log_bounds_fault(State& state, std::size_t current_context, t81::tisc::Opco
                      static_cast<std::int64_t>(addr), verdict);
 }
 
-void log_canonfs_operation(State& state, std::size_t current_context,
-                           t81::tisc::Opcode opcode, std::string_view action) {
+void log_canonfs_operation(State& state, std::size_t current_context, t81::tisc::Opcode opcode,
+                           std::string_view action) {
   t81::axion::Verdict verdict;
   verdict.kind = t81::axion::VerdictKind::Allow;
   verdict.reason = t81::axion::reasons::canonical_meta_slot_reason(state.meta_ptr, action);
@@ -152,11 +159,11 @@ void record_axion_event(State& state, std::size_t current_context, t81::tisc::Op
   event.value = val_data;
   event.verdict = verdict;
   event.structured.reason = verdict.reason;
-  
+
   // AX-M6: Use canonical reason string format for Stable promotion
   // Update verdict.reason to use canonical format from structured event
   event.verdict.reason = event.structured.to_canonical_reason_string();
-  
+
   if (!state.contexts.empty() && current_context < state.contexts.size()) {
     event.structured.pc = state.contexts[current_context].pc;
   } else {
