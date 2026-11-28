@@ -1987,4 +1987,13 @@ if(Python3_Interpreter_FOUND)
     ENVIRONMENT "T81_BUILD_DIR=${CMAKE_BINARY_DIR}"
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     TIMEOUT 120)
+
+  add_test(NAME t81_h07_wasmtime_opa_smoke_test
+    COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_SOURCE_DIR}/benchmarks/h07_wasmtime_opa/run_h07_benchmark.py
+      --smoke --allow-missing-deps)
+  set_tests_properties(t81_h07_wasmtime_opa_smoke_test PROPERTIES
+    ENVIRONMENT "T81_BIN=$<TARGET_FILE:t81>"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    TIMEOUT 120)
 endif()

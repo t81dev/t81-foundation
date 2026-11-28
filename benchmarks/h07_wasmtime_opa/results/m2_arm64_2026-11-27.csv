@@ -1,0 +1,11 @@
+workload,stack,n,unit,min,p50,p95,p99,max,iqr,mean
+W1_cold_start_ms,t81,20,ms,166.673,168.221,180.574,185.303,186.486,1.999,170.488
+W1_cold_start_ms,wasmtime_opa,20,ms,52.796,54.227,69.191,86.738,91.125,7.554,58.679
+W2_warm_policy_only_us,t81_mcp_gate_check,1000,us,157.458,166.062,213.593,298.39,735.0,11.25,175.343
+W2_warm_policy_only_us,opa_http_keepalive,1000,us,131.959,152.105,255.76,445.668,1071.0,34.229,171.219
+W2_warm_governed_commit_us,t81_mcp_tx_ed25519,1000,us,2593.416,2750.0,3148.604,3534.764,5226.5,155.104,2805.667
+W2_warm_governed_commit_us,opa_http_plus_openssl_ed25519,1000,us,9889.625,10640.334,12863.732,15614.213,61596.542,778.449,11019.936
+W2_compute_kernel_cli_ms,t81_vm_run_precompiled_tisc,20,ms,154.378,157.109,157.74,159.067,159.399,1.72,156.689
+W2_compute_kernel_cli_ms,wasmtime_aot_cwasm,20,ms,8.097,8.523,12.342,37.036,43.209,0.774,10.63
+W3_offline_verify_ms,t81_receipt_export_verify,25,ms,8.801,9.122,10.02,16.838,18.987,0.322,9.57
+W3_offline_verify_ms,wasmtime_opa_openssl_verify,25,ms,9.745,10.124,14.324,19.626,21.052,0.652,10.859

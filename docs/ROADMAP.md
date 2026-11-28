@@ -43,6 +43,7 @@ Current evidence includes:
 - **Cross-Profile Execution (CPA-004/005):** Demonstrated bit-exact execution across hosted T81VM and bare-metal AArch64 QEMU profiles on a frozen 351-byte canonical program, establishing execution correctness without asserting performance advantage.
 - **SCG-08 Carry Propagation & Arithmetic Work:** Phase 1 Gate 1 harness is implemented and verified against an arbitrary-precision exact oracle, but Gate 2 empirical benchmarking remains **strictly withheld**.
 - **Physical Evaluation (Investigation 10A):** Physical evaluation is blocked because matched device-characterization data are unavailable. This does not establish a universal physical disadvantage or close H01.
+- **Governed Execution Comparison (`H07` — Closed 2026-11-27):** Classified **`PARTIALLY SUPPORTED (REGIME-BOUNDED)`** via reproducible head-to-head benchmark (`T81 v2.3.0` vs `Wasmtime 51.0.0 + OPA 1.23.0 + OpenSSL 3.6.2`, [H07_WASMTIME_OPA_COMPARISON.md](research/H07_WASMTIME_OPA_COMPARISON.md)). Both stacks achieved `100%` (`3/3`) fail-closed fault rejection; T81 won on footprint (`5.48 MB` vs `83.36 MB`), daemon RSS (`3.38 MiB` vs `40.14 MiB`), `p99` policy tail latency (`298 µs` vs `446 µs`), and integrated in-binary receipts, while `Wasmtime + OPA` won decisively on raw compute (`8.52 ms` vs `157.11 ms`, `18.4×`), cold-start (`54.23 ms` vs `168.22 ms`, `3.1×`), and `p50` policy-only latency (`152.1 µs` vs `166.1 µs`).
 
 These results are bounded to their tested workloads, implementations, and assumptions.
 
