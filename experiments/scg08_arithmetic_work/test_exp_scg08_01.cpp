@@ -145,12 +145,9 @@ void run_band_verification(size_t bit_width) {
   };
 
   std::vector<BandTestCase> test_cases = {
-      {val_zero, val_zero, false, false},
-      {val_one, val_one, false, false},
-      {val_one, val_neg_one, false, false},
-      {val_max, val_min, false, true},
-      {val_max, val_max, true, true},
-      {val_min, val_min, true, true},
+      {val_zero, val_zero, false, false},   {val_one, val_one, false, false},
+      {val_one, val_neg_one, false, false}, {val_max, val_min, false, true},
+      {val_max, val_max, true, true},       {val_min, val_min, true, true},
       {val_min, val_one, false, false},
   };
 
@@ -191,14 +188,11 @@ void run_band_verification(size_t bit_width) {
             bit_width, oa, ob, ta, tb, t_sum, t_prod, ba, bb, b_sum, b_prod, expected_oa_sum,
             expected_oa_prod, tc.expected_sum_overflow, tc.expected_prod_overflow);
 
-    enforce_oracle_parity(oracle_rep.numerical_equality,
-                          "Dimension 1 (numerical_equality) failed");
+    enforce_oracle_parity(oracle_rep.numerical_equality, "Dimension 1 (numerical_equality) failed");
     enforce_oracle_parity(oracle_rep.overflow_classification,
                           "Dimension 2 (overflow_classification) failed");
-    enforce_oracle_parity(oracle_rep.canonical_digits,
-                          "Dimension 3 (canonical_digits) failed");
-    enforce_oracle_parity(oracle_rep.sign_handling,
-                          "Dimension 4 (sign_handling) failed");
+    enforce_oracle_parity(oracle_rep.canonical_digits, "Dimension 3 (canonical_digits) failed");
+    enforce_oracle_parity(oracle_rep.sign_handling, "Dimension 4 (sign_handling) failed");
     enforce_oracle_parity(oracle_rep.absence_of_truncation,
                           "Dimension 5 (absence_of_truncation) failed");
     enforce_oracle_parity(oracle_rep.all_passed(),
@@ -229,12 +223,14 @@ void run_band_verification(size_t bit_width) {
                   "mul_ternary must record exact tryte encodes");
 
     // Verify add_ternary deterministic counter relationship:
-    // op_table_lookup = 38 * (T_In + K_cin), op_alu_add_sub = T_In + 2 * K_cin, op_branch_cond = T_Add
+    // op_table_lookup = 38 * (T_In + K_cin), op_alu_add_sub = T_In + 2 * K_cin, op_branch_cond =
+    // T_Add
     SCG08_REQUIRE(acc_t_add.op_table_lookup % 38 == 0,
                   "Ternary add table lookups must be a multiple of 38");
     uint64_t k_cin = (acc_t_add.op_table_lookup / 38) - T_In;
     SCG08_REQUIRE(acc_t_add.op_alu_add_sub == T_In + 2 * k_cin,
-                  "Ternary add op_alu_add_sub must equal T_In + 2*K_cin (including c1+c2, excluding extension copy)");
+                  "Ternary add op_alu_add_sub must equal T_In + 2*K_cin (including c1+c2, "
+                  "excluding extension copy)");
     SCG08_REQUIRE(acc_t_add.op_branch_cond == T_Add,
                   "Ternary add op_branch_cond must equal OutLimbs");
     uint64_t ext_carry = (T_Add > T_In && t_sum_trits[T_In * 27] != 0) ? 1 : 0;
@@ -244,16 +240,19 @@ void run_band_verification(size_t bit_width) {
                   "Ternary add conv_tryte_encodes must equal 9 * (K_cin + C_ext)");
 
     // At B=128 (T_In=3, T_Add=4) and B=256 (T_In=6, T_Add=7), val_max+val_max and val_min+val_min
-    // require 82 and 163 trits respectively, propagating a carry into the extension limb (i = T_In).
+    // require 82 and 163 trits respectively, propagating a carry into the extension limb (i =
+    // T_In).
     if ((bit_width == 128 || bit_width == 256) && (case_idx == 4 || case_idx == 5)) {
       SCG08_REQUIRE(ext_carry == 1,
                     "Extension limb carry must be active for extreme sums at B=128 and B=256");
     }
 
-    // Verify add_binary deterministic counter relationships across same-sign and opposite-sign cases
+    // Verify add_binary deterministic counter relationships across same-sign and opposite-sign
+    // cases
     if (oa.negative == ob.negative) {
       SCG08_REQUIRE(acc_b_add.op_alu_add_sub == 2 * B_In,
-                    "Same-sign binary add must count 2 additions (a+b and +carry) per input limb and 0 for extension copy");
+                    "Same-sign binary add must count 2 additions (a+b and +carry) per input limb "
+                    "and 0 for extension copy");
       SCG08_REQUIRE(acc_b_add.op_branch_cond == 1 + 2 * B_In,
                     "Same-sign binary add must count 1 sign check + 2 carry checks per input limb");
       SCG08_REQUIRE(acc_b_add.compute_w_ops() == 4 * B_In + 1,
@@ -262,12 +261,14 @@ void run_band_verification(size_t bit_width) {
       // {val_one, val_neg_one}: equal magnitude opposite-sign subtraction (c == 0)
       SCG08_REQUIRE(acc_b_add.op_alu_add_sub == 0,
                     "Equal-magnitude opposite-sign binary add performs 0 limb subtractions");
-      SCG08_REQUIRE(acc_b_add.op_branch_cond == B_In + 2,
-                    "Equal-magnitude opposite-sign binary add evaluates B_In cmp checks + sign + c==0");
+      SCG08_REQUIRE(
+          acc_b_add.op_branch_cond == B_In + 2,
+          "Equal-magnitude opposite-sign binary add evaluates B_In cmp checks + sign + c==0");
     } else {
       // {val_max, val_min} or {val_min, val_one}: unequal magnitude opposite-sign subtraction
-      SCG08_REQUIRE(acc_b_add.op_alu_add_sub == 2 * B_In,
-                    "Unequal-magnitude opposite-sign binary add performs 2 add/sub ops per input limb");
+      SCG08_REQUIRE(
+          acc_b_add.op_alu_add_sub == 2 * B_In,
+          "Unequal-magnitude opposite-sign binary add performs 2 add/sub ops per input limb");
     }
     (void)spec;
   }
@@ -357,7 +358,8 @@ void test_deterministic_exact_counts() {
   SCG08_REQUIRE(acc_b_add_sp.op_branch_cond == 3, "Binary sparse add branch count mismatch");
   SCG08_REQUIRE(acc_b_add_sp.compute_w_ops() == 5, "Binary sparse add W_ops mismatch");
 
-  // Ternary Sparse Mul (1 * 1): N_a = 1, N_b = 1 -> 1 mul, 1 add, 54*(1+1)+1 = 109 branches, 1 norm pass
+  // Ternary Sparse Mul (1 * 1): N_a = 1, N_b = 1 -> 1 mul, 1 add, 54*(1+1)+1 = 109 branches, 1 norm
+  // pass
   SCG08_REQUIRE(acc_t_mul_sp.op_alu_mul == 1, "Ternary sparse mul ALU mul mismatch");
   SCG08_REQUIRE(acc_t_mul_sp.op_alu_add_sub == 1, "Ternary sparse mul ALU add mismatch");
   SCG08_REQUIRE(acc_t_mul_sp.op_branch_cond == 109, "Ternary sparse mul branch count mismatch");
@@ -406,7 +408,8 @@ void test_deterministic_exact_counts() {
   // Case D: Carry-Propagating Operands
   // In balanced ternary, limb 0 max is 27 trits of 1. Adding 1 generates a carry-out c1 = +1.
   // Limb 1 (K_cin = 1) performs a nested addc(c_limb) (3 * 38 = 114 table lookups) and combines
-  // c1 + c2 (+1 scalar addition), giving op_alu_add_sub = 2 + 1 + 1 = 4 and W_ops = 4 + 114 + 2 = 120.
+  // c1 + c2 (+1 scalar addition), giving op_alu_add_sub = 2 + 1 + 1 = 4 and W_ops = 4 + 114 + 2 =
+  // 120.
   std::vector<int8_t> trits_cprop(54, 0);
   for (size_t i = 0; i < 27; ++i) trits_cprop[i] = 1;
   auto t_cprop_a = TernaryMultiLimb<2>::from_trits(trits_cprop);
@@ -415,8 +418,9 @@ void test_deterministic_exact_counts() {
   OperationAccounting acc_t_add_cprop;
   ArithmeticWorkHarness::add_ternary<2, 2>(t_cprop_a, t_cprop_b, acc_t_add_cprop);
 
-  SCG08_REQUIRE(acc_t_add_cprop.op_alu_add_sub == 4,
-                "Ternary carry-prop add ALU count mismatch (2 primary addc + 1 carry addc + 1 c1+c2)");
+  SCG08_REQUIRE(
+      acc_t_add_cprop.op_alu_add_sub == 4,
+      "Ternary carry-prop add ALU count mismatch (2 primary addc + 1 carry addc + 1 c1+c2)");
   SCG08_REQUIRE(acc_t_add_cprop.op_table_lookup == 114,
                 "Ternary carry-prop table lookup mismatch (3 * 38)");
   SCG08_REQUIRE(acc_t_add_cprop.op_branch_cond == 2, "Ternary carry-prop branch count mismatch");
@@ -426,9 +430,10 @@ void test_deterministic_exact_counts() {
   SCG08_REQUIRE(acc_t_add_cprop.conv_tryte_encodes == 9,
                 "Ternary carry-prop must record 9 tryte encodes");
 
-  // In binary, B=128 (InLimbs=2, OutLimbs=3): limb 0 = 0xFFFFFFFFFFFFFFFF, adding 1 propagates carry to limb 1.
-  // Each input limb executes 2 additions (a+b and +carry) and 2 branch checks (carry!=0 and carry predicate),
-  // plus 1 sign check at entry; extension limb 2 is a pure data copy (0 arithmetic ops).
+  // In binary, B=128 (InLimbs=2, OutLimbs=3): limb 0 = 0xFFFFFFFFFFFFFFFF, adding 1 propagates
+  // carry to limb 1. Each input limb executes 2 additions (a+b and +carry) and 2 branch checks
+  // (carry!=0 and carry predicate), plus 1 sign check at entry; extension limb 2 is a pure data
+  // copy (0 arithmetic ops).
   BinaryMultiLimb<2> b_cprop_a;
   b_cprop_a.limbs[0] = 0xFFFFFFFFFFFFFFFFULL;
   b_cprop_a.limbs[1] = 0;
@@ -439,8 +444,9 @@ void test_deterministic_exact_counts() {
   OperationAccounting acc_b_add_cprop;
   ArithmeticWorkHarness::add_binary<2, 3>(b_cprop_a, b_cprop_b, acc_b_add_cprop);
 
-  SCG08_REQUIRE(acc_b_add_cprop.op_alu_add_sub == 4,
-                "Binary carry-prop add ALU count mismatch (2 per input limb, 0 for extension copy)");
+  SCG08_REQUIRE(
+      acc_b_add_cprop.op_alu_add_sub == 4,
+      "Binary carry-prop add ALU count mismatch (2 per input limb, 0 for extension copy)");
   SCG08_REQUIRE(acc_b_add_cprop.op_branch_cond == 5,
                 "Binary carry-prop branch count mismatch (1 sign + 2 per input limb)");
   SCG08_REQUIRE(acc_b_add_cprop.compute_w_ops() == 9, "Binary carry-prop W_ops mismatch");
@@ -542,7 +548,8 @@ static void reject_if_selected(std::string_view name, bool condition, const char
 void test_oracle_rejection_fixtures() {
   std::cout << "[SCG-08 GATE 1] Checking deliberate 5-D oracle corruption fixtures...\n";
 
-  // Construct valid baseline B=64 inputs and expected oracle outputs without consuming parent trial budget
+  // Construct valid baseline B=64 inputs and expected oracle outputs without consuming parent trial
+  // budget
   constexpr size_t B = 64;
   const auto& spec = get_accumulator_spec(B);
   ExactBigIntOracle val_max = ExactBigIntOracle::from_power_of_two(B - 1);
@@ -579,8 +586,7 @@ void test_oracle_rejection_fixtures() {
     auto rep = evaluate_oracle_validation_report<2, 2, 3, 1, 2, 2>(
         B, val_max, val_max, ta, ta_trits, tb, tb_trits, t_sum, t_sum_trits, t_prod, t_prod_trits,
         ba, bb, b_sum_corrupt, b_prod, expected_sum, expected_prod, true, true);
-    SCG08_REQUIRE(!rep.numerical_equality,
-                  "Corrupted binary sum must fail numerical_equality");
+    SCG08_REQUIRE(!rep.numerical_equality, "Corrupted binary sum must fail numerical_equality");
     SCG08_REQUIRE(!rep.all_passed(), "Corrupted numerical_equality must fail all_passed()");
     reject_if_selected("numerical-equality", rep.all_passed(),
                        "Deliberate numerical equality corruption");
@@ -597,8 +603,7 @@ void test_oracle_rejection_fixtures() {
         ba, bb, b_sum, b_prod, expected_sum, expected_prod, false, true);
     SCG08_REQUIRE(!rep_misclass.overflow_classification,
                   "Misclassified sum overflow must fail overflow_classification");
-    SCG08_REQUIRE(!rep_misclass.all_passed(),
-                  "Misclassified overflow must fail all_passed()");
+    SCG08_REQUIRE(!rep_misclass.all_passed(), "Misclassified overflow must fail all_passed()");
     reject_if_selected("overflow-classification", rep_misclass.all_passed(),
                        "Deliberate overflow classification mismatch");
 
@@ -627,15 +632,15 @@ void test_oracle_rejection_fixtures() {
                   "Exact negative product bound -2^(B-1)*(2^(B-1)-1) must pass validation");
 
     // 1 below exact negative product bound: -2^(B-1)*(2^(B-1)-1) - 1 (still > -2^(2B-2))
-    ExactBigIntOracle below_min_prod =
-        ExactBigIntOracle::sub(exact_min_prod, ExactBigIntOracle(1));
+    ExactBigIntOracle below_min_prod = ExactBigIntOracle::sub(exact_min_prod, ExactBigIntOracle(1));
     auto t_prod_below_min = TernaryMultiLimb<3>::from_oracle(below_min_prod);
     auto b_prod_below_min = BinaryMultiLimb<2>::from_oracle(below_min_prod);
     auto rep_below_min_prod = evaluate_oracle_validation_report<2, 2, 3, 1, 2, 2>(
         B, val_max, val_min, ta, tb_min, t_sum_mm, t_prod_below_min, ba, bb_min, b_sum_mm,
         b_prod_below_min, sum_max_min, below_min_prod, false, true);
     SCG08_REQUIRE(!rep_below_min_prod.overflow_classification,
-                  "Product below exact negative bound -2^(B-1)*(2^(B-1)-1) must fail overflow_classification");
+                  "Product below exact negative bound -2^(B-1)*(2^(B-1)-1) must fail "
+                  "overflow_classification");
     SCG08_REQUIRE(!rep_below_min_prod.all_passed(),
                   "Product below exact negative bound must fail all_passed()");
     reject_if_selected("negative-product-bound", rep_below_min_prod.all_passed(),
@@ -655,14 +660,13 @@ void test_oracle_rejection_fixtures() {
         t_prod_trits, ba, bb, b_sum, b_prod, expected_sum, expected_prod, true, true);
     SCG08_REQUIRE(!rep_trit.canonical_digits,
                   "Non-canonical output trit (+2) must fail canonical_digits");
-    SCG08_REQUIRE(!rep_trit.all_passed(),
-                  "Non-canonical output trit must fail all_passed()");
+    SCG08_REQUIRE(!rep_trit.all_passed(), "Non-canonical output trit must fail all_passed()");
     reject_if_selected("canonical-trits", rep_trit.all_passed(),
                        "Deliberate non-canonical output trit corruption");
 
     auto t_sum_tryte_corrupt = t_sum;
     int8_t bad_tryte = 14;
-    std::memcpy(&t_sum_tryte_corrupt.limbs[0], &bad_tryte, 1);
+    std::memcpy(static_cast<void*>(&t_sum_tryte_corrupt.limbs[0]), &bad_tryte, 1);
 
     // Exercise the actual object-level verification path (NOT passing pre-extracted t_sum_trits)
     auto rep_tryte = evaluate_oracle_validation_report<2, 2, 3, 1, 2, 2>(
@@ -670,8 +674,7 @@ void test_oracle_rejection_fixtures() {
         expected_sum, expected_prod, true, true);
     SCG08_REQUIRE(!rep_tryte.canonical_digits,
                   "Non-canonical stored tryte (+14) must fail canonical_digits");
-    SCG08_REQUIRE(!rep_tryte.all_passed(),
-                  "Non-canonical stored tryte must fail all_passed()");
+    SCG08_REQUIRE(!rep_tryte.all_passed(), "Non-canonical stored tryte must fail all_passed()");
 
     // Subprocess 3b-i: Full object-level verification path on corrupted TernaryMultiLimb (+14)
     run_rejection_case("stored-tryte-validation", [&]() {
@@ -716,8 +719,7 @@ void test_oracle_rejection_fixtures() {
     auto rep_bsign = evaluate_oracle_validation_report<2, 2, 3, 1, 2, 2>(
         B, val_max, val_max, ta, ta_trits, tb, tb_trits, t_sum, t_sum_trits, t_prod, t_prod_trits,
         ba, bb, b_sum_bad_sign, b_prod, expected_sum, expected_prod, true, true);
-    SCG08_REQUIRE(!rep_bsign.sign_handling,
-                  "Inverted binary output sign must fail sign_handling");
+    SCG08_REQUIRE(!rep_bsign.sign_handling, "Inverted binary output sign must fail sign_handling");
     SCG08_REQUIRE(!rep_bsign.all_passed(), "Inverted binary sign must fail all_passed()");
     reject_if_selected("sign-handling", rep_bsign.all_passed(),
                        "Deliberate sign handling corruption");
