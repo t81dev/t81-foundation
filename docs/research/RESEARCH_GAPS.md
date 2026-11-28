@@ -1,5 +1,24 @@
 # T81 Foundation Architecture — Research Gaps & Open Scientific Questions
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation Architecture — Research Gaps & Open Scientific Questions](#t81-foundation-architecture-—-research-gaps-&-open-scientific-questions)
+  - [Executive Overview](#executive-overview)
+  - [1. Summary of Prior Scientific Investigations (01–08)](#1-summary-of-prior-scientific-investigations-01–08)
+  - [2. Four Classes of Gaps in T81 Architecture](#2-four-classes-of-gaps-in-t81-architecture)
+    - [2.1 Class 1: Implementation Gaps](#21-class-1-implementation-gaps)
+    - [2.2 Class 2: Verification Gaps](#22-class-2-verification-gaps)
+    - [2.3 Class 3: Measurement Gaps](#23-class-3-measurement-gaps)
+    - [2.4 Class 4: Architectural Gaps](#24-class-4-architectural-gaps)
+  - [3. Scientific Coordination & Investigation 09 Integration](#3-scientific-coordination-&-investigation-09-integration)
+    - [Guidance for Interpreting Investigation 09 Evidence:](#guidance-for-interpreting-investigation-09-evidence)
+  - [4. Scientifically Justified Future Experiments](#4-scientifically-justified-future-experiments)
+
+<!-- T81-TOC:END -->
+
+
 ## Executive Overview
 
 This document provides a systematic analysis of unresolved research hypotheses, unverified claims, and architectural gaps in the T81 Foundation computing stack.

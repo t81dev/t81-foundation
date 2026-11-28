@@ -1,5 +1,40 @@
 # Model Artifact Strategy
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Model Artifact Strategy](#model-artifact-strategy)
+  - [Purpose](#purpose)
+  - [Narrow Thesis](#narrow-thesis)
+  - [Problem](#problem)
+  - [User](#user)
+  - [Product Wedge](#product-wedge)
+  - [What T81 Should Do](#what-t81-should-do)
+    - [Import](#import)
+    - [Report](#report)
+    - [Diff](#diff)
+    - [Export](#export)
+  - [Why This Fits T81](#why-this-fits-t81)
+    - [CanonFS](#canonfs)
+    - [Axion](#axion)
+    - [Deterministic Runtime Pieces](#deterministic-runtime-pieces)
+  - [What This Is Not](#what-this-is-not)
+  - [Messaging Shift](#messaging-shift)
+  - [Smallest Buildable Milestone](#smallest-buildable-milestone)
+    - [Scope](#scope)
+    - [Deliverables](#deliverables)
+    - [Success Criteria](#success-criteria)
+  - [Recommended Sequencing](#recommended-sequencing)
+    - [Phase 1](#phase-1)
+    - [Phase 2](#phase-2)
+    - [Phase 3](#phase-3)
+  - [Current Repo Implications](#current-repo-implications)
+  - [Bottom Line](#bottom-line)
+
+<!-- T81-TOC:END -->
+
+
 Status: Draft
 Last Updated: 2026-04-08
 

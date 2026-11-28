@@ -1,5 +1,16 @@
 # Verified Surface Audit
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Verified Surface Audit](#verified-surface-audit)
+  - [Audit Matrix](#audit-matrix)
+  - [Traceability Gaps](#traceability-gaps)
+
+<!-- T81-TOC:END -->
+
+
 **Status:** Active Audit
 **Last Updated:** 2026-02-25
 **Reference:** `docs/governance/DETERMINISM_SURFACE_REGISTRY.md`

@@ -1,5 +1,24 @@
 # AGENTS.md — Operational Contract for AI Coding Agents in T81 Foundation
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [AGENTS.md — Operational Contract for AI Coding Agents in T81 Foundation](#agentsmd-—-operational-contract-for-ai-coding-agents-in-t81-foundation)
+  - [1. Repository Map — What Is Sacred, What Is Malleable](#1-repository-map-—-what-is-sacred-what-is-malleable)
+  - [2. Build & Test — Non-Negotiable Ritual](#2-build-&-test-—-non-negotiable-ritual)
+  - [3. Coding Rules — Enforced by Constitution](#3-coding-rules-—-enforced-by-constitution)
+    - [C++ (the One True Path forward)](#c++-the-one-true-path-forward)
+    - [Ternary Semantic Invariants (Hard Constraints)](#ternary-semantic-invariants-hard-constraints)
+    - [Testing Doctrine](#testing-doctrine)
+  - [4. Allowed & Encouraged Agent Superpowers (2025+)](#4-allowed-&-encouraged-agent-superpowers-2025+)
+  - [5. The RFC Fast-Path (How Smart Agents Actually Change the Spec)](#5-the-rfc-fast-path-how-smart-agents-actually-change-the-spec)
+  - [6. Agent Personas & Recommended Workflow](#6-agent-personas-&-recommended-workflow)
+  - [7. Final Directive — The Axion Override](#7-final-directive-—-the-axion-override)
+
+<!-- T81-TOC:END -->
+
+
 > **Historical agent contract — qualified October 27, 2026.** Use the [root AGENTS.md](../../../AGENTS.md) for current contributor instructions and research boundaries. The historical body below is retained for traceability; its unrestricted subsystem suggestions, maturity framing, and treatment of Hanoi as an oracle are not current guidance. This notice does not amend normative specifications or governance activation.
 
 You are an AI agent (Grok 4, Claude 3.5/4, o3, Gemini 2, Cursor, Aider, etc.) contributing to the **T81 Foundation** — a constitutionally governed, ternary-native, cognition-first computing stack.

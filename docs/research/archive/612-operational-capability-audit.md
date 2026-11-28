@@ -8,6 +8,30 @@
 
 # Operational Capability and Agent Skills Audit
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Operational Capability and Agent Skills Audit](#operational-capability-and-agent-skills-audit)
+  - [Inventory and evidence interpretation](#inventory-and-evidence-interpretation)
+  - [Authority and investigation boundary](#authority-and-investigation-boundary)
+  - [Findings by severity](#findings-by-severity)
+    - [OP-SEC-01 — HIGH: shell interpretation precedes Axion](#op-sec-01-—-high-shell-interpretation-precedes-axion)
+    - [OP-SEC-02 — HIGH: requested execution policy is not reliably bound](#op-sec-02-—-high-requested-execution-policy-is-not-reliably-bound)
+    - [OP-COMP-01 — MEDIUM: delegators erase the selected operation](#op-comp-01-—-medium-delegators-erase-the-selected-operation)
+    - [OP-COMP-02 — MEDIUM: missing routes and mismatched syntax](#op-comp-02-—-medium-missing-routes-and-mismatched-syntax)
+    - [OP-SEC-03 — MEDIUM: host mutation is not an agent capability boundary](#op-sec-03-—-medium-host-mutation-is-not-an-agent-capability-boundary)
+    - [OP-COMP-03 — MEDIUM: shell/runtime portability defects](#op-comp-03-—-medium-shellruntime-portability-defects)
+    - [OP-CLAIM-01 — MEDIUM: advertised assurance/output exceeds the tested surface](#op-claim-01-—-medium-advertised-assuranceoutput-exceeds-the-tested-surface)
+    - [OP-CONTRACT-01 — MEDIUM: runtime and companion JSON Schemas disagree](#op-contract-01-—-medium-runtime-and-companion-json-schemas-disagree)
+    - [OP-REP-01 — LOW: a missing fixture blocks existing CLI contract coverage](#op-rep-01-—-low-a-missing-fixture-blocks-existing-cli-contract-coverage)
+  - [Actually exercised native paths](#actually-exercised-native-paths)
+  - [Scientific adapter integration: current versus proposed](#scientific-adapter-integration-current-versus-proposed)
+  - [Recommendation and smallest next step](#recommendation-and-smallest-next-step)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** 2026-10-27. **Role:** implementation engineer/auditor (Codex; exact
 underlying model identity unrecorded). **Pinned main:**
 `fabc7aa90f70ead227ec257a1ae6833fa16ced40` (merged PR608). This is a bounded

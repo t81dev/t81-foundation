@@ -1,5 +1,17 @@
 # Proposal: RFC-00D8 (Draft Seed) — Compact Canonical MCP Error & State-Diff Envelope
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Proposal: RFC-00D8 (Draft Seed) — Compact Canonical MCP Error & State-Diff Envelope](#proposal-rfc-00d8-draft-seed-—-compact-canonical-mcp-error-&-state-diff-envelope)
+  - [1. Motivation](#1-motivation)
+  - [2. Backward-Compatible Contract Changes (Apply After PR `#847` Merges)](#2-backward-compatible-contract-changes-apply-after-pr-`#847`-merges)
+  - [3. Verification Plan (Post-`#847` Application)](#3-verification-plan-post-`#847`-application)
+
+<!-- T81-TOC:END -->
+
+
 - **Status:** Draft Proposal (staged conflict-free behind PR `#847` and PR `#851`)
 - **Scope:** Additive, backward-compatible hardening of `tools/cli/core/mcp_server.cpp` (`t81 mcp serve`)
 - **Public API Impact:** Zero mutations to `include/t81/**/*.hpp` (`PUBLIC_API_LOCK.json`) or frozen `TISC v1.9.0` opcodes.

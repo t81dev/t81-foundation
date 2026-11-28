@@ -1,5 +1,19 @@
 # Native `x86_64` AVX2 Crossover Note: L3-Resident (`PR #863`) vs. Off-L3 `> 480 MiB` DRAM (`PR #864`)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Native `x86_64` AVX2 Crossover Note: L3-Resident (`PR #863`) vs. Off-L3 `> 480 MiB` DRAM (`PR #864`)](#native-`x86_64`-avx2-crossover-note-l3-resident-`pr-#863`-vs-off-l3-`>-480-mib`-dram-`pr-#864`)
+  - [1. Host & Measurement Provenance](#1-host-&-measurement-provenance)
+  - [2. L3-Resident (`L = 64`) vs. Off-L3 DRAM (`> 480 MiB`) Comparison](#2-l3-resident-`l-=-64`-vs-off-l3-dram-`>-480-mib`-comparison)
+    - [2.1 In-L3 Regime (`L = 64`, `< 480 MiB`)](#21-in-l3-regime-`l-=-64`-`<-480-mib`)
+    - [2.2 Off-L3 DRAM-Stressed Regime (`> 480 MiB` Working Set, Run `#45328018712`)](#22-off-l3-dram-stressed-regime-`>-480-mib`-working-set-run-`#45328018712`)
+  - [3. Empirical Crossover Takeaways & Caveats](#3-empirical-crossover-takeaways-&-caveats)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** 2026-11-24  
 **Status:** Non-normative empirical measurement summary (single-thread `x86_64` software benchmark; does **not** establish general ternary hardware superiority; preserves all research holds `F01 M1–M6 STOP`, `SCG-08 Gate 2 NO-GO`, `H01`/10A `BLOCKED`, `AXION-AI-001 HD01–HD06`).
 

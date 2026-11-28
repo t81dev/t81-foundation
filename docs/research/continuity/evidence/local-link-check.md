@@ -1,5 +1,14 @@
 # Summary
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Summary](#summary)
+
+<!-- T81-TOC:END -->
+
+
 | Status        | Count |
 |---------------|-------|
 | 🔍 Total      | 13    |

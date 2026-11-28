@@ -1,5 +1,17 @@
 # Native Weights Execution Evidence Snapshot
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Native Weights Execution Evidence Snapshot](#native-weights-execution-evidence-snapshot)
+  - [Scope](#scope)
+  - [Verification](#verification)
+  - [Interpretation](#interpretation)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Date: 2026-03-18
 Owner: @t81dev

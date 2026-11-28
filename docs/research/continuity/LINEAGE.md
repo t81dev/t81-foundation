@@ -1,5 +1,20 @@
 # Source- and commit-grounded lineage
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Source- and commit-grounded lineage](#source--and-commit-grounded-lineage)
+  - [Intellectual origin versus code evidence](#intellectual-origin-versus-code-evidence)
+  - [Recovered sequence](#recovered-sequence)
+  - [Direct inheritance that can be checked](#direct-inheritance-that-can-be-checked)
+  - [What changed in the meaning of “tier” and “Axion”](#what-changed-in-the-meaning-of-“tier”-and-“axion”)
+  - [Reproduced arithmetic contradiction](#reproduced-arithmetic-contradiction)
+  - [Unclosed provenance gaps](#unclosed-provenance-gaps)
+
+<!-- T81-TOC:END -->
+
+
 Scope: six repositories pinned in [source-pins.json](evidence/source-pins.json). Commit metadata is a repository record, not independent proof of when an idea was invented. “Earliest” below means earliest identified in the available inspected history. Source identity proves shared content, not authorship or whole-system semantic equivalence.
 
 ## Intellectual origin versus code evidence

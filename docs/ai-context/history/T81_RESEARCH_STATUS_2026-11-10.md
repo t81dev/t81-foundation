@@ -1,5 +1,18 @@
 # T81 Foundation — PR and Research Continuity Review (2026-11-10)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation — PR and Research Continuity Review (2026-11-10)](#t81-foundation-—-pr-and-research-continuity-review-2026-11-10)
+  - [Executive state](#executive-state)
+  - [Current pull-request triage](#current-pull-request-triage)
+  - [Suggested integration ordering](#suggested-integration-ordering)
+  - [Evidence and freshness rules](#evidence-and-freshness-rules)
+
+<!-- T81-TOC:END -->
+
+
 **Classification:** Non-normative, dated GitHub review; not an independent test execution, approval, benchmark, or merge authorization.
 **Repository:** https://github.com/t81dev/t81-foundation
 **Observed scope:** GitHub open-PR search, selected PR metadata, merged-PR history, and repository AI-context files, reviewed 2026-11-10. Search inventory is a point-in-time observation; recheck before acting.

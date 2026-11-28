@@ -8,6 +8,24 @@
 
 # Investigation 08 controlled measurement — proposed preregistration v1
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Investigation 08 controlled measurement — proposed preregistration v1](#investigation-08-controlled-measurement-—-proposed-preregistration-v1)
+  - [Baseline and prior knowledge](#baseline-and-prior-knowledge)
+  - [Readiness gates — complete before freezing or timing](#readiness-gates-—-complete-before-freezing-or-timing)
+  - [Matching obligations and endpoints](#matching-obligations-and-endpoints)
+  - [Conditions, sample and ordering](#conditions-sample-and-ordering)
+  - [Statistical decision rule — proposed, not accepted](#statistical-decision-rule-—-proposed-not-accepted)
+  - [Exclusions, stopping and raw records](#exclusions-stopping-and-raw-records)
+  - [Environment, identities and permitted implementation scope](#environment-identities-and-permitted-implementation-scope)
+  - [Reproduction and deliverables after approval](#reproduction-and-deliverables-after-approval)
+  - [Interpretation and remaining gates](#interpretation-and-remaining-gates)
+
+<!-- T81-TOC:END -->
+
+
 **Status: DESIGN CONDITIONALLY ACCEPTED; apparatus awaits independent Jules
 review. Confirmatory execution is NOT AUTHORIZED.**
 The maintainer accepted the six cells, N=60/cell, reciprocal 10% margin,

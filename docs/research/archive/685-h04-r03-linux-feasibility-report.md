@@ -8,6 +8,23 @@
 
 # H04-R03 Linux enforcement feasibility investigation
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [H04-R03 Linux enforcement feasibility investigation](#h04-r03-linux-enforcement-feasibility-investigation)
+  - [Evidence scope and status rules](#evidence-scope-and-status-rules)
+  - [F1 — launch-time containment](#f1-—-launch-time-containment)
+    - [Kernel, permissions and delegation requirements](#kernel-permissions-and-delegation-requirements)
+  - [F2 — exact continuous RSS](#f2-—-exact-continuous-rss)
+  - [F3 — complete scratch enforcement](#f3-—-complete-scratch-enforcement)
+  - [F4 — retention and reclamation](#f4-—-retention-and-reclamation)
+  - [F5 — host feasibility and reproduction](#f5-—-host-feasibility-and-reproduction)
+  - [Unresolved blockers and stopping point](#unresolved-blockers-and-stopping-point)
+
+<!-- T81-TOC:END -->
+
+
 **Overall disposition: FEASIBILITY BLOCKED.**
 
 The frozen protocol's exact continuous RSS and complete scratch-enforcement

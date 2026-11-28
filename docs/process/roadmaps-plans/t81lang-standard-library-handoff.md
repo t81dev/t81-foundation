@@ -1,5 +1,21 @@
 # T81Lang Standard Library Handoff
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Standard Library Handoff](#t81lang-standard-library-handoff)
+  - [1. Current State](#1-current-state)
+  - [2. Files Most Recently Touched](#2-files-most-recently-touched)
+  - [3. Required Validation Gate](#3-required-validation-gate)
+  - [4. What Is Next (Priority Order)](#4-what-is-next-priority-order)
+  - [5. Determinism/Quality Rules To Preserve](#5-determinismquality-rules-to-preserve)
+  - [6. Suggested Commit Chunking](#6-suggested-commit-chunking)
+  - [7. Fast Resume Checklist For New AI](#7-fast-resume-checklist-for-new-ai)
+
+<!-- T81-TOC:END -->
+
+
 This document is the execution handoff for continuing the standard library plan with another AI agent.
 
 ## 1. Current State

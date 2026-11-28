@@ -1,5 +1,16 @@
 # CanonHash-81 Formal Test Vectors
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [CanonHash-81 Formal Test Vectors](#canonhash-81-formal-test-vectors)
+  - [Base-81 Vectors](#base-81-vectors)
+  - [Test Execution](#test-execution)
+
+<!-- T81-TOC:END -->
+
+
 This document contains the official Reference Vectors for `CanonHash-81`, the 256-bit truncated SHA3-512 digest structurally encoded into the 41-43 character Base-81 alphabet natively used by the T81 Architecture.
 
 These vectors allow downstream interoperability implementers to formally verify their CanonHash-81 algorithms against expected exact match outputs for deterministic parsing.

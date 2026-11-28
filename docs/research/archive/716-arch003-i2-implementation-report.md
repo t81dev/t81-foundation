@@ -8,6 +8,23 @@
 
 # ARCH-003 current implementation report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [ARCH-003 current implementation report](#arch-003-current-implementation-report)
+- [ARCH-003-I1 implementation report](#arch-003-i1-implementation-report)
+  - [Implemented source](#implemented-source)
+  - [Build and bounded component evidence](#build-and-bounded-component-evidence)
+  - [Oracle independence assessment](#oracle-independence-assessment)
+  - [Evidence-verifier assessment](#evidence-verifier-assessment)
+  - [Remaining defect and untested requirements](#remaining-defect-and-untested-requirements)
+  - [Resource feasibility limits](#resource-feasibility-limits)
+  - [Proposed exact-commit campaign authorization](#proposed-exact-commit-campaign-authorization)
+
+<!-- T81-TOC:END -->
+
+
 **I2 disposition: ACCOUNTING VERIFIED within the bounded Linux ARM64 fixture
 scope; independent review and campaign authorization remain pending.**
 

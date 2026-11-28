@@ -1,5 +1,24 @@
 # Multilingual Governance Policy
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Multilingual Governance Policy](#multilingual-governance-policy)
+  - [1. Canonical Source of Truth](#1-canonical-source-of-truth)
+  - [2. Directory Structure](#2-directory-structure)
+  - [3. Translation Synchronization Workflow](#3-translation-synchronization-workflow)
+    - [3.1. The "Diff-Propagation" Process](#31-the-"diff-propagation"-process)
+    - [3.2. Version Tagging](#32-version-tagging)
+  - [4. Automation & CI Enforcement](#4-automation-&-ci-enforcement)
+    - [4.1. Structural Integrity Check](#41-structural-integrity-check)
+    - [4.2. Staleness Detection](#42-staleness-detection)
+  - [5. Contribution Guidelines for Translators](#5-contribution-guidelines-for-translators)
+  - [6. Adding a New Language](#6-adding-a-new-language)
+
+<!-- T81-TOC:END -->
+
+
 ## 1. Canonical Source of Truth
 
 **English (`en`) is the single source of truth for all T81 Foundation documentation and specifications.**

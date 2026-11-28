@@ -1,5 +1,19 @@
 # Latest Benchmark Results
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Latest Benchmark Results](#latest-benchmark-results)
+  - [Executive Summary](#executive-summary)
+  - [Key Metrics](#key-metrics)
+    - [Tritwise Operations (4096 Trits)](#tritwise-operations-4096-trits)
+    - [VM Simulation](#vm-simulation)
+  - [Raw Data](#raw-data)
+
+<!-- T81-TOC:END -->
+
+
 **Last Updated**: 2024-05-22
 **Commit**: `HEAD`
 

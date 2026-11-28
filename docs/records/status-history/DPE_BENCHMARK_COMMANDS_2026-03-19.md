@@ -1,5 +1,22 @@
 # DPE Benchmark Commands
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [DPE Benchmark Commands](#dpe-benchmark-commands)
+  - [Scope](#scope)
+  - [Benchmark Families](#benchmark-families)
+  - [Build](#build)
+  - [Focused DPE Run](#focused-dpe-run)
+  - [Verbose Console Run](#verbose-console-run)
+  - [Comparative Shape Run](#comparative-shape-run)
+  - [Report-Writing Run](#report-writing-run)
+  - [Notes](#notes)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-03-19  
 Status: Active  
 Owner: @t81dev

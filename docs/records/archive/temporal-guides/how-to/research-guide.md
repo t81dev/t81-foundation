@@ -1,5 +1,23 @@
 # T81 Foundation: Researcher's Guide
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation: Researcher's Guide](#t81-foundation-researcher's-guide)
+  - [1. Balanced Ternary Mathematics](#1-balanced-ternary-mathematics)
+    - [1.1 Advantages for Cognition](#11-advantages-for-cognition)
+    - [1.2 Canonical Data Types](#12-canonical-data-types)
+  - [2. Cognitive Tiers of Execution](#2-cognitive-tiers-of-execution)
+  - [3. Axion: A Formal Safety Kernel](#3-axion-a-formal-safety-kernel)
+    - [3.1 Trace-Based Verification](#31-trace-based-verification)
+    - [3.2 The Policy DSL](#32-the-policy-dsl)
+  - [4. Deterministic AI & Llama Integration](#4-deterministic-ai-&-llama-integration)
+  - [5. Further Research Areas](#5-further-research-areas)
+
+<!-- T81-TOC:END -->
+
+
 This document explores the mathematical foundations, cognitive models, and formal safety mechanisms that define the T81 Ecosystem. It is intended for researchers in computer science, mathematics, and AI safety.
 
 ______________________________________________________________________

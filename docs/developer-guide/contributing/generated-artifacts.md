@@ -1,5 +1,17 @@
 # Generated Artifacts Policy
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Generated Artifacts Policy](#generated-artifacts-policy)
+  - [Scope](#scope)
+  - [Doxygen Output](#doxygen-output)
+  - [Contribution Rules](#contribution-rules)
+
+<!-- T81-TOC:END -->
+
+
 This repository does not track generated build artifacts in Git.
 
 ## Scope

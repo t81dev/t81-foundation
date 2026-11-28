@@ -1,5 +1,49 @@
 # Independent Acceptance Review: PR #679 (EXP-H04-R03 Candidate A B729-µ5)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Independent Acceptance Review: PR #679 (EXP-H04-R03 Candidate A B729-µ5)](#independent-acceptance-review-pr-#679-exp-h04-r03-candidate-a-b729-µ5)
+  - [1. Executive Summary & Review Scope](#1-executive-summary-&-review-scope)
+    - [1.1 Scope Boundaries & Non-Claims](#11-scope-boundaries-&-non-claims)
+    - [1.2 Base Commit & PR Ancestry Verification](#12-base-commit-&-pr-ancestry-verification)
+  - [2. Evaluation Against Review Requirements](#2-evaluation-against-review-requirements)
+  - [3. Detailed Review Findings](#3-detailed-review-findings)
+    - [3.1 Requirement 1: Protocol Fidelity (PASS)](#31-requirement-1-protocol-fidelity-pass)
+    - [3.2 Requirement 2: Mathematical Verification (PASS)](#32-requirement-2-mathematical-verification-pass)
+    - [3.3 Requirement 3: Codec Correctness (PASS)](#33-requirement-3-codec-correctness-pass)
+    - [3.4 Requirement 4: Workload Reproducibility (PASS)](#34-requirement-4-workload-reproducibility-pass)
+    - [3.5 Requirement 5: Experimental Harness (PASS — BOUNDED TO TESTED DRY-RUN)](#35-requirement-5-experimental-harness-pass-—-bounded-to-tested-dry-run)
+    - [3.6 Requirement 6: Preservation (PASS)](#36-requirement-6-preservation-pass)
+  - [4. Defect Classification & Findings](#4-defect-classification-&-findings)
+    - [P0 Findings (Blockers)](#p0-findings-blockers)
+    - [P1 Findings (Major Scope & Verification Boundaries)](#p1-findings-major-scope-&-verification-boundaries)
+    - [P2 Findings (Minor / Informational)](#p2-findings-minor--informational)
+  - [5. Independent Validation Execution Log](#5-independent-validation-execution-log)
+- [1. Run complete matched codec test suite (38 tests)](#1-run-complete-matched-codec-test-suite-38-tests)
+- [Output: Ran 38 tests in 12.299s - OK](#output-ran-38-tests-in-12299s---ok)
+- [2. Run Phase B baseline test suite (17 tests)](#2-run-phase-b-baseline-test-suite-17-tests)
+- [Output: Ran 17 tests - OK](#output-ran-17-tests---ok)
+- [3. Run B729-µ5 correctness test suite (9 tests)](#3-run-b729-µ5-correctness-test-suite-9-tests)
+- [Output: Ran 9 tests - OK](#output-ran-9-tests---ok)
+- [4. Run deterministic workload test suite (4 tests)](#4-run-deterministic-workload-test-suite-4-tests)
+- [Output: Ran 4 tests - OK](#output-ran-4-tests---ok)
+- [5. Run benchmark harness and decision rule test suite (8 tests)](#5-run-benchmark-harness-and-decision-rule-test-suite-8-tests)
+- [Output: Ran 8 tests - OK](#output-ran-8-tests---ok)
+- [6. Verify universal mathematical equality for m in [1, 100000)](#6-verify-universal-mathematical-equality-for-m-in-[1-100000)
+- [Output: Verified m in [1, 100000)](#output-verified-m-in-[1-100000)
+- [7. Verify execution freeze enforcement on measurement flag](#7-verify-execution-freeze-enforcement-on-measurement-flag)
+- [Output: ERROR: Phase C performance measurement is FROZEN. Exit code: 1](#output-error-phase-c-performance-measurement-is-frozen-exit-code-1)
+- [8. Verify root structure governance compliance](#8-verify-root-structure-governance-compliance)
+- [Output: root structure check PASSED (81 entries checked)](#output-root-structure-check-passed-81-entries-checked)
+  - [6. Reconciliation with Phase C Scaffolding (PR #682)](#6-reconciliation-with-phase-c-scaffolding-pr-#682)
+  - [7. Remaining Prerequisites for Phase C Execution Authorization](#7-remaining-prerequisites-for-phase-c-execution-authorization)
+  - [8. Final Acceptance Disposition](#8-final-acceptance-disposition)
+
+<!-- T81-TOC:END -->
+
+
 **Document:** `docs/research/continuity/H04_R03_CANDIDATE_A_ACCEPTANCE_REVIEW.md`  
 **Date:** 2026-11-02  
 **Target Review:** PR #679 — EXP-H04-R03 Candidate A B729-µ5 Implementation  

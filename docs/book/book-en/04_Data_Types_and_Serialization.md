@@ -1,5 +1,25 @@
 # Chapter 4: Data Types and Serialization
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Chapter 4: Data Types and Serialization](#chapter-4-data-types-and-serialization)
+  - [4.1 Primitive Types](#41-primitive-types)
+  - [4.2 T81Float and dmath](#42-t81float-and-dmath)
+  - [4.3 Tensors and Canonical Layouts](#43-tensors-and-canonical-layouts)
+  - [4.4 Canonical Serialization Rules](#44-canonical-serialization-rules)
+    - [Try It](#try-it)
+    - [Role-Based Learning Path](#role-based-learning-path)
+    - [Worked Example](#worked-example)
+    - [Hands-On Lab](#hands-on-lab)
+    - [Expected Outcomes](#expected-outcomes)
+    - [Chapter Summary](#chapter-summary)
+    - [Read Next](#read-next)
+
+<!-- T81-TOC:END -->
+
+
 In deterministic systems, representation details are system behavior. This chapter explains why T81 treats data shape, numeric meaning, and serialization rules as assurance infrastructure.
 
 ## 4.1 Primitive Types

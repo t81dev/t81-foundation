@@ -1,5 +1,21 @@
 # TISC ISA Layer
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [TISC ISA Layer](#tisc-isa-layer)
+  - [Purpose and Responsibilities](#purpose-and-responsibilities)
+  - [Principal Data Structures and Interfaces](#principal-data-structures-and-interfaces)
+  - [Structural View](#structural-view)
+  - [Key Invariants / Guarantees](#key-invariants--guarantees)
+  - [Principal Failure Modes and Handling](#principal-failure-modes-and-handling)
+  - [Indeterminate](#indeterminate)
+  - [Evidence](#evidence)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active  
 Last Verified (UTC): 2026-02-26  
 Maturity: `Frozen`

@@ -8,6 +8,22 @@
 
 # BASE-01 B1 scientific contract reconciliation
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [BASE-01 B1 scientific contract reconciliation](#base-01-b1-scientific-contract-reconciliation)
+  - [Authority, scope and independence](#authority-scope-and-independence)
+  - [Source-pinned contradiction report](#source-pinned-contradiction-report)
+  - [Correction options](#correction-options)
+  - [First-insertion invariant](#first-insertion-invariant)
+  - [Compatibility and historical evidence](#compatibility-and-historical-evidence)
+  - [Explicit maintainer decisions](#explicit-maintainer-decisions)
+  - [Audit verification and limits](#audit-verification-and-limits)
+
+<!-- T81-TOC:END -->
+
+
 **PROPOSED — NOT APPROVED. Verdict: FURTHER_PROTOCOL_DESIGN_REQUIRED.**
 November 3, 2026. Documentation-only review; no measurement authorization.
 

@@ -1,5 +1,48 @@
 # T81 AI Experiments
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 AI Experiments](#t81-ai-experiments)
+  - [Overview](#overview)
+  - [Purpose](#purpose)
+  - [Architecture](#architecture)
+    - [Isolation Guarantees](#isolation-guarantees)
+    - [Experimental Status](#experimental-status)
+  - [Building AI Experiments](#building-ai-experiments)
+    - [Prerequisites](#prerequisites)
+    - [Compiler Compatibility](#compiler-compatibility)
+    - [Build Commands](#build-commands)
+- [Configure build with AI experiments enabled](#configure-build-with-ai-experiments-enabled)
+- [Build AI CLI](#build-ai-cli)
+- [Alternative: Build all experiments](#alternative-build-all-experiments)
+    - [Installation](#installation)
+  - [Usage](#usage)
+    - [Current Commands](#current-commands)
+- [Show help](#show-help)
+- [Inspect model file](#inspect-model-file)
+- [Verify model integrity](#verify-model-integrity)
+    - [Examples](#examples)
+- [Get help](#get-help)
+- [Inspect a model file](#inspect-a-model-file)
+- [Verify model integrity](#verify-model-integrity)
+  - [Current Implementation Status](#current-implementation-status)
+    - [✅ Completed Features](#✅-completed-features)
+    - [🚧 Future Features (Not Implemented)](#🚧-future-features-not-implemented)
+  - [Development Guidelines](#development-guidelines)
+    - [Adding New Features](#adding-new-features)
+    - [Build System Integration](#build-system-integration)
+  - [Security Considerations](#security-considerations)
+  - [Troubleshooting](#troubleshooting)
+    - [Build Issues](#build-issues)
+    - [Runtime Issues](#runtime-issues)
+  - [Related RFCs](#related-rfcs)
+  - [Version History](#version-history)
+
+<!-- T81-TOC:END -->
+
+
 ## Overview
 
 This document describes the experimental AI CLI system introduced under `/experiments/ai/`.

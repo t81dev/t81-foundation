@@ -1,5 +1,19 @@
 # Multi-Agent Capability, Budget & Isolation Specification (TernaryOS v0.2)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Multi-Agent Capability, Budget & Isolation Specification (TernaryOS v0.2)](#multi-agent-capability-budget-&-isolation-specification-ternaryos-v02)
+  - [1. Purpose](#1-purpose)
+  - [2. Typed Capability Scopes](#2-typed-capability-scopes)
+  - [3. Fail-Closed Error, Fallback & Latency Budgets](#3-fail-closed-error-fallback-&-latency-budgets)
+  - [4. Multi-Agent Transactional Isolation (`tx_begin` / `tx_commit` / `tx_abort`)](#4-multi-agent-transactional-isolation-`tx_begin`--`tx_commit`--`tx_abort`)
+  - [5. Verification Anchor](#5-verification-anchor)
+
+<!-- T81-TOC:END -->
+
+
 **Status:** Draft research specification (coexistence control-plane contract; does not claim production multi-tenant OS isolation).  
 **Dependencies:** [TERNARYOS_ARCHITECTURE_v0.2.md](./TERNARYOS_ARCHITECTURE_v0.2.md), [TERNARYOS_BOOT_TO_RECEIPT_CONTRACT_v0.1.md](./TERNARYOS_BOOT_TO_RECEIPT_CONTRACT_v0.1.md), `docs/governance/PUBLIC_API_LOCK.json` (`v2.2.0`), frozen `TISC v1.9.0`, and the 15-tool native C++ MCP server (`./build/t81 mcp serve`).
 

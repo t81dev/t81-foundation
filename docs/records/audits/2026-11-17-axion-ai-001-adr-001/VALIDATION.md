@@ -1,5 +1,19 @@
 # AXION-AI-001 ADR-001 — Candidate Preparation Validation
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [AXION-AI-001 ADR-001 — Candidate Preparation Validation](#axion-ai-001-adr-001-—-candidate-preparation-validation)
+  - [Scope and workflow](#scope-and-workflow)
+  - [Corrections and manual consistency inspection](#corrections-and-manual-consistency-inspection)
+  - [Results and limits](#results-and-limits)
+  - [Commands, outputs and source identities](#commands-outputs-and-source-identities)
+  - [Reproduction of the preparation-only check](#reproduction-of-the-preparation-only-check)
+
+<!-- T81-TOC:END -->
+
+
 Status: Non-normative documentation evidence only
 Date: 2026-11-17
 Base: `56db3a18909a029042f7ceded2e19d96aec57cdc`

@@ -1,5 +1,29 @@
 # Benchmark Suite Evidence — 2026-11-23
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Benchmark Suite Evidence — 2026-11-23](#benchmark-suite-evidence-—-2026-11-23)
+  - [Scope](#scope)
+  - [Hardware caveat](#hardware-caveat)
+  - [Environment](#environment)
+  - [Commands](#commands)
+  - [Within-run guardrails](#within-run-guardrails)
+    - [VM dispatch / native loop](#vm-dispatch--native-loop)
+    - [`BM_Kernel_TAnd` AVX2 versus SWAR](#`bm_kernel_tand`-avx2-versus-swar)
+  - [Comparison with stored baselines](#comparison-with-stored-baselines)
+    - [BASE-PERF-00 `Cell` throughput](#base-perf-00-`cell`-throughput)
+    - [Inference comparison published table](#inference-comparison-published-table)
+    - [Other stored benchmark text](#other-stored-benchmark-text)
+  - [Smoke mean aggregates on this guest](#smoke-mean-aggregates-on-this-guest)
+  - [Not run](#not-run)
+  - [Raw artifacts](#raw-artifacts)
+  - [Disposition](#disposition)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-11-23
 Status: Recorded
 Source commit: `5a005b2dea5e1eb262d4af45698f8338d16b137c` (`main`)

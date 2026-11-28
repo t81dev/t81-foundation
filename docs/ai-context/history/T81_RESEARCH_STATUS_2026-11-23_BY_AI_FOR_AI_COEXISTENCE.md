@@ -1,5 +1,18 @@
 # T81 Engineering & Research Status Overlay — "By AI, For AI" Coexistence & `H06-MEM` Falsification (2026-11-23)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Engineering & Research Status Overlay — "By AI, For AI" Coexistence & `H06-MEM` Falsification (2026-11-23)](#t81-engineering-&-research-status-overlay-—-"by-ai-for-ai"-coexistence-&-`h06-mem`-falsification-2026-11-23)
+  - [1. Verified Runtime & Gate Improvements (`VM-LAZY-01` + Agent Synthesis Gate)](#1-verified-runtime-&-gate-improvements-`vm-lazy-01`-+-agent-synthesis-gate)
+  - [2. Measured Falsification Ledger (`H06-MEM-01`, `H06-MEM-02`, `H06-MEM-03`)](#2-measured-falsification-ledger-`h06-mem-01`-`h06-mem-02`-`h06-mem-03`)
+    - [`H06-MEM-10` Negative-Results Note (Closed Path)](#`h06-mem-10`-negative-results-note-closed-path)
+    - [Cross-Architecture Calibration Runbook (x86-64 AVX2 / AVX-512)](#cross-architecture-calibration-runbook-x86-64-avx2--avx-512)
+
+<!-- T81-TOC:END -->
+
+
 **Status:** Non-normative dated operational snapshot (conflict-safe complement to PR `#855`; preserves all historical research holds and negative findings).  
 **Public API Lock:** `docs/governance/PUBLIC_API_LOCK.json` (`v2.2.0`, digest `06b7a31088bc85dd6efa4c8dff97c41777314204df124840594a720577b746e3`, zero mutations).  
 **Coexistence Posture:** T81 operates as a deterministic, machine-native compute, memory, and policy substrate coexisting with binary hosts (`Linux`/`macOS`/`Windows`, `FFI`, `CanonFS`, 15-tool native C++ MCP server), with `ternaryos/` scoped as a minimal headless enclave/guest lane rather than a general-purpose OS.

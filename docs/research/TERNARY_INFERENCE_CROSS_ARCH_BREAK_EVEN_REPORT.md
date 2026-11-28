@@ -1,5 +1,25 @@
 # Research Report: Cross-Architecture Ternary Inference Break-Even Analysis
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Research Report: Cross-Architecture Ternary Inference Break-Even Analysis](#research-report-cross-architecture-ternary-inference-break-even-analysis)
+  - [1. Executive Summary & Mission Scope](#1-executive-summary-&-mission-scope)
+    - [Primary Decision: **STOP (Freeze Further CPU Kernel Optimization)**](#primary-decision-**stop-freeze-further-cpu-kernel-optimization**)
+  - [2. Environment & Audit Methodology](#2-environment-&-audit-methodology)
+    - [Hardware & Software Test Environment](#hardware-&-software-test-environment)
+    - [Phase 1 Audit & Adversarial Verification](#phase-1-audit-&-adversarial-verification)
+  - [3. Measurable Break-Even Matrix](#3-measurable-break-even-matrix)
+  - [4. Workload Benchmark Data](#4-workload-benchmark-data)
+    - [x86_64 AVX2 Benchmark Summary ($100 \text{ Repetitions}$)](#x86_64-avx2-benchmark-summary-$100-\text{-repetitions}$)
+  - [5. Cost Separation Analysis](#5-cost-separation-analysis)
+  - [6. Realistic Quantized Inference Considerations](#6-realistic-quantized-inference-considerations)
+  - [7. Decision & Research Recommendations](#7-decision-&-research-recommendations)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `docs/research/TERNARY_INFERENCE_CROSS_ARCH_BREAK_EVEN_REPORT.md`
 **Date:** April 2026
 **Status:** Frozen / STOP (Closed via Synthesis Report `TERNARY_RESEARCH_CLOSURE_AND_NEXT_HYPOTHESIS.md`)

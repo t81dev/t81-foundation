@@ -8,6 +8,43 @@
 
 # T81 ARCH-003-R2 — External Deadline Authority Protocol Amendment Proposal
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 ARCH-003-R2 — External Deadline Authority Protocol Amendment Proposal](#t81-arch-003-r2-—-external-deadline-authority-protocol-amendment-proposal)
+  - [Executive Summary and Non-Activation Statement](#executive-summary-and-non-activation-statement)
+  - [Proposal-level choices](#proposal-level-choices)
+  - [1. Codex Review Findings and Residual Defects Disposition](#1-codex-review-findings-and-residual-defects-disposition)
+  - [2. Required Technical Analysis and Specification](#2-required-technical-analysis-and-specification)
+    - [2.1 Item 1: Exact §8 Process Restrictions Prohibiting the H05 Watchdog](#21-item-1-exact-§8-process-restrictions-prohibiting-the-h05-watchdog)
+    - [2.2 Item 2: Bounded Exception for Host-Side Deadline Authority (Role H)](#22-item-2-bounded-exception-for-host-side-deadline-authority-role-h)
+    - [2.3 Item 3: Suspend-Aware Clocks, Cryptographic Authentication, and Terminal Handshake](#23-item-3-suspend-aware-clocks-cryptographic-authentication-and-terminal-handshake)
+      - [2.3.1 Suspend-Aware Platform Clocks, Matching-Rate Pairing, and Unified Sleep Detection Formula](#231-suspend-aware-platform-clocks-matching-rate-pairing-and-unified-sleep-detection-formula)
+      - [2.3.2 Independently Trusted Ed25519 Public-Key Identity](#232-independently-trusted-ed25519-public-key-identity)
+      - [2.3.3 Terminal Handshake, Strict Operation Ordering, and Authoritative Host Deadline Timestamp](#233-terminal-handshake-strict-operation-ordering-and-authoritative-host-deadline-timestamp)
+      - [2.3.4 Cryptographic Receipt Authentication, Canonical Serialization, and Strict Payload Schema](#234-cryptographic-receipt-authentication-canonical-serialization-and-strict-payload-schema)
+    - [2.4 Item 4: Fail-Closed Semantics for All Boundary Faults](#24-item-4-fail-closed-semantics-for-all-boundary-faults)
+    - [2.5 Item 5: Host-Side Monitoring Boundary, 16 MiB Watchdog Cap, Helper Processes, and Offline Audit Separation](#25-item-5-host-side-monitoring-boundary-16-mib-watchdog-cap-helper-processes-and-offline-audit-separation)
+    - [2.6 Item 6: Inclusive 1,800-Second Campaign Envelope and Authoritative Completion Ordering](#26-item-6-inclusive-1800-second-campaign-envelope-and-authoritative-completion-ordering)
+    - [2.7 Item 7: macOS Battery Operation and Sleep Invalidation](#27-item-7-macos-battery-operation-and-sleep-invalidation)
+    - [2.8 Item 8: Independent Acceptance Tests and Real Suspension Negative Controls](#28-item-8-independent-acceptance-tests-and-real-suspension-negative-controls)
+    - [2.9 Item 9: Preservation of Scientific Workloads, Verification Contract, and 100 MiB Evidence Envelope](#29-item-9-preservation-of-scientific-workloads-verification-contract-and-100-mib-evidence-envelope)
+    - [2.10 Item 10: Revision Lineage, Verifier Revision, and Separate Acceptance Gate](#210-item-10-revision-lineage-verifier-revision-and-separate-acceptance-gate)
+    - [2.11 Item 11: Independent Final Acceptance Mechanism (Host Acceptance Verifier)](#211-item-11-independent-final-acceptance-mechanism-host-acceptance-verifier)
+    - [2.12 Item 12: Mandatory Specification Counterexamples](#212-item-12-mandatory-specification-counterexamples)
+  - [3. Proposed R2 Protocol Amendment Text](#3-proposed-r2-protocol-amendment-text)
+    - [Proposed Amendment to Section 6 (Host Qualification)](#proposed-amendment-to-section-6-host-qualification)
+    - [Proposed Amendment to Section 8 (Resource Feasibility, Risks and Process Hierarchy)](#proposed-amendment-to-section-8-resource-feasibility-risks-and-process-hierarchy)
+  - [4. R1-to-R2 Change Matrix](#4-r1-to-r2-change-matrix)
+  - [5. New Acceptance Criteria for Protocol R2](#5-new-acceptance-criteria-for-protocol-r2)
+  - [6. Compatibility and Provenance Analysis](#6-compatibility-and-provenance-analysis)
+  - [7. Explicit List of Implementation Changes Required (ARCH-003-I3)](#7-explicit-list-of-implementation-changes-required-arch-003-i3)
+  - [8. Independent Reviewer Checklist](#8-independent-reviewer-checklist)
+
+<!-- T81-TOC:END -->
+
+
 **Document Status:** PROPOSED / REVIEW DRAFT (Non-Authoritative Proposal)
 **Proposed Identifier:** T81-ARCH-003-R2
 **Baseline Proposed R1 Protocol:** Git commit `1454bd63426d21686cfb5ef22dbaebc3c9cae94b` (`docs/research/arch002/PROTOCOL.md`). That file's own status is proposed. PR #714 is an open draft.

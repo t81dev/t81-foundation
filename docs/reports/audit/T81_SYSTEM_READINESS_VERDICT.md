@@ -1,5 +1,24 @@
 # T81 Foundation — System Readiness Verdict
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation — System Readiness Verdict](#t81-foundation-—-system-readiness-verdict)
+  - [1. Subsystem Readiness Dispositions](#1-subsystem-readiness-dispositions)
+  - [2. Architectural Identity Evaluation](#2-architectural-identity-evaluation)
+  - [3. Commercial and Government Feasibility Analysis](#3-commercial-and-government-feasibility-analysis)
+  - [4. Separation of Value: Ternary vs. Software vs. Integration](#4-separation-of-value-ternary-vs-software-vs-integration)
+    - [T — Ternary-Specific Mechanisms](#t-—-ternary-specific-mechanisms)
+    - [S — Software Architecture Mechanisms](#s-—-software-architecture-mechanisms)
+    - [I — Integration](#i-—-integration)
+  - [5. Final Concluding Answers](#5-final-concluding-answers)
+  - [6. The Five Highest-Value Engineering Milestones](#6-the-five-highest-value-engineering-milestones)
+    - [The Single Next Integration Milestone](#the-single-next-integration-milestone)
+
+<!-- T81-TOC:END -->
+
+
 **Audit Designation:** T81-SIA-001
 **Reference Document:** Final Architectural Identity, System Readiness Dispositions, and Engineering Roadmap
 **Head Commit:** `9bbc4453ca136251448201cf9166c2bd167e1f67`

@@ -1,5 +1,24 @@
 # Approval Delegation Policy
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Approval Delegation Policy](#approval-delegation-policy)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Roles](#roles)
+  - [Deputy Eligibility](#deputy-eligibility)
+  - [Delegation Rules](#delegation-rules)
+  - [Required Evidence for Deputy GO/HOLD](#required-evidence-for-deputy-gohold)
+  - [Escalation and Revocation](#escalation-and-revocation)
+  - [Audit Trail](#audit-trail)
+  - [Cross-References](#cross-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Version: 1.0.0
 Owner: Governance

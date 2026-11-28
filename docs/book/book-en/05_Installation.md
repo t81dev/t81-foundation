@@ -1,5 +1,25 @@
 # Chapter 5: Installation and Build Verification
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Chapter 5: Installation and Build Verification](#chapter-5-installation-and-build-verification)
+  - [5.1 Prerequisites](#51-prerequisites)
+  - [5.2 Building from Source](#52-building-from-source)
+  - [5.3 Verifying the Build](#53-verifying-the-build)
+  - [5.4 Troubleshooting](#54-troubleshooting)
+    - [First 60-Minute Onboarding Exercise](#first-60-minute-onboarding-exercise)
+    - [Role-Based Learning Path](#role-based-learning-path)
+    - [Worked Example](#worked-example)
+    - [Hands-On Lab](#hands-on-lab)
+    - [Expected Outcomes](#expected-outcomes)
+    - [Chapter Summary](#chapter-summary)
+    - [Read Next](#read-next)
+
+<!-- T81-TOC:END -->
+
+
 This chapter teaches installation as reproducible setup. In T81, build behavior is part of what you can later claim, so setup discipline matters.
 
 ## 5.1 Prerequisites

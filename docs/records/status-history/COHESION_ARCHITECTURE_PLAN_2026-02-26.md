@@ -1,5 +1,39 @@
 # Cohesion Architecture Plan (Operational, CI-Enforceable)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Cohesion Architecture Plan (Operational, CI-Enforceable)](#cohesion-architecture-plan-operational-ci-enforceable)
+  - [1) Canonical Authority Model](#1-canonical-authority-model)
+    - [Authority hierarchy (current enforced model)](#authority-hierarchy-current-enforced-model)
+    - [Conflict resolution rules](#conflict-resolution-rules)
+  - [2) Deterministic Profile Boundary](#2-deterministic-profile-boundary)
+    - [Deterministic Profile v1 schema (operational)](#deterministic-profile-v1-schema-operational)
+    - [Enforcement mapping (rule -> CI)](#enforcement-mapping-rule-->-ci)
+  - [3) Extension Surface Containment](#3-extension-surface-containment)
+    - [Extension Activation Protocol](#extension-activation-protocol)
+    - [Fail-closed invariants checklist](#fail-closed-invariants-checklist)
+  - [4) Governance Enforcement Convergence](#4-governance-enforcement-convergence)
+    - [Machine-verifiability matrix (current reality)](#machine-verifiability-matrix-current-reality)
+    - [Governance hardening roadmap](#governance-hardening-roadmap)
+  - [5) Spec ↔ Implementation Synchronization Mechanism](#5-spec-↔-implementation-synchronization-mechanism)
+    - [Sync enforcement plan](#sync-enforcement-plan)
+  - [6) Trace-Mode Integrity Strategy](#6-trace-mode-integrity-strategy)
+    - [Trace integrity checklist](#trace-integrity-checklist)
+    - [Equivalence proof surface map](#equivalence-proof-surface-map)
+  - [7) Translation & Documentation Drift Prevention](#7-translation-&-documentation-drift-prevention)
+    - [Documentation cohesion policy](#documentation-cohesion-policy)
+    - [CI staleness enforcement logic](#ci-staleness-enforcement-logic)
+  - [8) System Invariants (Non-Negotiable)](#8-system-invariants-non-negotiable)
+  - [9) Cohesion Scoring Model](#9-cohesion-scoring-model)
+    - [Quantitative model](#quantitative-model)
+    - [Thresholds](#thresholds)
+  - [Prioritized 90-Day Cohesion Execution Plan](#prioritized-90-day-cohesion-execution-plan)
+
+<!-- T81-TOC:END -->
+
+
 ## 1) Canonical Authority Model
 
 ### Authority hierarchy (current enforced model)

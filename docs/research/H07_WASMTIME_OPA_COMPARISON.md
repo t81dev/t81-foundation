@@ -1,5 +1,22 @@
 # H07 Closure Report: Reproducible Head-to-Head Comparison (`T81` vs. `Wasmtime + OPA`)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [H07 Closure Report: Reproducible Head-to-Head Comparison (`T81` vs. `Wasmtime + OPA`)](#h07-closure-report-reproducible-head-to-head-comparison-`t81`-vs-`wasmtime-+-opa`)
+  - [1. Test Environment & Pinned Toolchains](#1-test-environment-&-pinned-toolchains)
+    - [Anti-Strawman Control Parity](#anti-strawman-control-parity)
+  - [2. Quantitative Results (Wins, Ties, and Losses Verbatim)](#2-quantitative-results-wins-ties-and-losses-verbatim)
+    - [2.1 Binary & Steady-State Memory Footprint](#21-binary-&-steady-state-memory-footprint)
+    - [2.2 Latency & Throughput (`W1`, `W2`, `W3`)](#22-latency-&-throughput-`w1`-`w2`-`w3`)
+    - [2.3 Fault Injection Parity (`W3`)](#23-fault-injection-parity-`w3`)
+  - [3. Falsification Analysis & Scope Boundaries](#3-falsification-analysis-&-scope-boundaries)
+  - [4. Exact Reproduction Command](#4-exact-reproduction-command)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** 2026-11-27  
 **Hypothesis:** `H07` ([`HYPOTHESIS_REGISTER_v1.json`](continuity/HYPOTHESIS_REGISTER_v1.json)) — *"Representation-independent governed execution can improve a defined auditability property."*  
 **Verdict:** **`PARTIALLY SUPPORTED (REGIME-BOUNDED)`**  

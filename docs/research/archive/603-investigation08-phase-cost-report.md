@@ -8,6 +8,25 @@
 
 # Investigation 08 — phase costs and observer effects
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Investigation 08 — phase costs and observer effects](#investigation-08-—-phase-costs-and-observer-effects)
+  - [Baseline, environment and evidence](#baseline-environment-and-evidence)
+  - [Semantic noninterference and accounting](#semantic-noninterference-and-accounting)
+  - [Fresh-process observations](#fresh-process-observations)
+    - [Partition of the instrumented application window](#partition-of-the-instrumented-application-window)
+    - [Verification, storage and replay outside initial execution](#verification-storage-and-replay-outside-initial-execution)
+    - [Warm native process](#warm-native-process)
+  - [Instrumentation overhead and observer perturbation](#instrumentation-overhead-and-observer-perturbation)
+  - [Attribution: what is known and what remains open](#attribution-what-is-known-and-what-remains-open)
+  - [Next discriminating experiment](#next-discriminating-experiment)
+  - [Validation and reproduction](#validation-and-reproduction)
+
+<!-- T81-TOC:END -->
+
+
 **Disposition: INCONCLUSIVE for architectural performance or assurance superiority.**
 The bounded OFF/ON semantic gate passed. This report explains measured costs of a
 specific implementation; it does not close Investigation 08 or establish limits

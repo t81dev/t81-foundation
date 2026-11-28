@@ -1,5 +1,16 @@
 # T81Lang Standard Library Promotion Snapshot
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Standard Library Promotion Snapshot](#t81lang-standard-library-promotion-snapshot)
+  - [1. Module Status Matrix](#1-module-status-matrix)
+  - [2. Governance Notes](#2-governance-notes)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-03-01
 Status: Active Snapshot
 Baseline: `c5c4aa59` → Sprint 2 fixture promotion (io/sys/async/agent)

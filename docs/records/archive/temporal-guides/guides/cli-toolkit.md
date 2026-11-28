@@ -8,11 +8,15 @@
   - [Commands](#commands)
   - [`t81` Executable Wrappers](#`t81`-executable-wrappers)
   - [Structural Metadata Guarantees](#structural-metadata-guarantees)
+  - [Axion Trace Metadata and Guard Context](#axion-trace-metadata-and-guard-context)
+    - [Guard trace example](#guard-trace-example)
   - [Regression Tests](#regression-tests)
   - [Notes for CLI Consumers](#notes-for-cli-consumers)
   - [Advanced Examples](#advanced-examples)
 
 <!-- T81-TOC:END -->
+
+
 
 
 

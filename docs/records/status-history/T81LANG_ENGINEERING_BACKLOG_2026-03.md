@@ -1,5 +1,21 @@
 # T81Lang Engineering Backlog (2026-03)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Engineering Backlog (2026-03)](#t81lang-engineering-backlog-2026-03)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Ranking Method](#ranking-method)
+  - [Ranked Backlog](#ranked-backlog)
+  - [Execution Constraints](#execution-constraints)
+  - [Cross-References](#cross-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Owner: @t81dev
 Last Updated: 2026-02-28

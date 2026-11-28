@@ -8,6 +8,56 @@
 
 # Scientific & Mathematical Review: T81-AIOPT-001 (Fixed-Catalog Ternary Pattern Filtering)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Scientific & Mathematical Review: T81-AIOPT-001 (Fixed-Catalog Ternary Pattern Filtering)](#scientific-&-mathematical-review-t81-aiopt-001-fixed-catalog-ternary-pattern-filtering)
+  - [1. Executive Assessment](#1-executive-assessment)
+    - [Core Review Findings](#core-review-findings)
+    - [Disposition](#disposition)
+  - [2. Mathematical Analysis of the Proposed Workload](#2-mathematical-analysis-of-the-proposed-workload)
+    - [2.1 Domain Cardinality, Information Content, and Packing Density](#21-domain-cardinality-information-content-and-packing-density)
+    - [2.2 Workload Degeneracy: Mutual Exclusivity and Structural Collapse](#22-workload-degeneracy-mutual-exclusivity-and-structural-collapse)
+    - [2.3 Catalog Selection Bias in $C_{40}$](#23-catalog-selection-bias-in-$c_{40}$)
+    - [2.4 Mechanics of SWAR Pattern Matching in M1](#24-mechanics-of-swar-pattern-matching-in-m1)
+    - [2.5 Intrinsic vs. Encoding Costs](#25-intrinsic-vs-encoding-costs)
+  - [3. Relationship to the H01–H08 Hypothesis Program](#3-relationship-to-the-h01–h08-hypothesis-program)
+    - [3.1 Interaction with H03 (Base-81 Interfacing & Grouping)](#31-interaction-with-h03-base-81-interfacing-&-grouping)
+    - [3.2 Interaction with H04 (Adaptive Representation) & H04-R02 Findings](#32-interaction-with-h04-adaptive-representation-&-h04-r02-findings)
+    - [3.3 Prior CPU Ternary Arithmetic Closure (PRs #544–#549)](#33-prior-cpu-ternary-arithmetic-closure-prs-#544–#549)
+    - [3.4 Interaction with H08 (AI-Assisted Research Trustworthiness)](#34-interaction-with-h08-ai-assisted-research-trustworthiness)
+  - [4. Meaningful Comparator Framework](#4-meaningful-comparator-framework)
+    - [4.1 Specification of the Five Comparators](#41-specification-of-the-five-comparators)
+      - [Comparator 1: Conventional Binary Scalar (Integer Lexicographical Index)](#comparator-1-conventional-binary-scalar-integer-lexicographical-index)
+      - [Comparator 2: Direct Table Lookup (LUT-81 / LUT-256)](#comparator-2-direct-table-lookup-lut-81--lut-256)
+      - [Comparator 3: Bitset / 64-Bit Word Mask](#comparator-3-bitset--64-bit-word-mask)
+      - [Comparator 4: Packed SWAR Adapter (M1 Reconstructed)](#comparator-4-packed-swar-adapter-m1-reconstructed)
+      - [Comparator 5: Byte-Oriented Adapter (M1 Reconstructed)](#comparator-5-byte-oriented-adapter-m1-reconstructed)
+    - [4.2 Accounting Requirements for Fair Comparison](#42-accounting-requirements-for-fair-comparison)
+  - [5. AI-Guided Optimization Research Boundaries](#5-ai-guided-optimization-research-boundaries)
+    - [5.1 The Hierarchy of Optimization Autonomy](#51-the-hierarchy-of-optimization-autonomy)
+    - [5.2 Criteria for Demonstrating Legitimate Learned Selection](#52-criteria-for-demonstrating-legitimate-learned-selection)
+  - [6. Non-Binding Alternative for Milestone M2 (Specification Only)](#6-non-binding-alternative-for-milestone-m2-specification-only)
+    - [6.1 Primary Research Question](#61-primary-research-question)
+    - [6.2 Formal Hypotheses](#62-formal-hypotheses)
+    - [6.3 Workload Families & Parameter Grid](#63-workload-families-&-parameter-grid)
+    - [6.4 Comparator Implementations](#64-comparator-implementations)
+    - [6.5 Fairness Constraints](#65-fairness-constraints)
+    - [6.6 Measurement Environment & Statistical Protocol](#66-measurement-environment-&-statistical-protocol)
+    - [6.7 Stopping, Negative Evidence, and Inconclusive Outcomes](#67-stopping-negative-evidence-and-inconclusive-outcomes)
+  - [7. Threats to Validity](#7-threats-to-validity)
+    - [7.1 Internal Validity](#71-internal-validity)
+    - [7.2 External Validity](#72-external-validity)
+    - [7.3 Construct Validity](#73-construct-validity)
+    - [7.4 Conclusion Validity](#74-conclusion-validity)
+  - [8. Final Recommendation & Answers to Guiding Questions](#8-final-recommendation-&-answers-to-guiding-questions)
+    - [8.1 Answers to Mandatory Review Questions](#81-answers-to-mandatory-review-questions)
+  - [9. Deliverable Summary Ledger](#9-deliverable-summary-ledger)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `docs/research/aiopt/T81-AIOPT-001-SCIENTIFIC-REVIEW.md`
 **Date:** November 2026
 **Status:** AI-assisted mathematical source assessment; independent experimental replication not established

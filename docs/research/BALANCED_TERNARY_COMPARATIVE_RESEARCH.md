@@ -1,4 +1,42 @@
 # Scientific Investigation 05
+
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Scientific Investigation 05](#scientific-investigation-05)
+  - [Balanced Ternary Versus Binary: Fundamental Representation and Arithmetic Study](#balanced-ternary-versus-binary-fundamental-representation-and-arithmetic-study)
+    - [Executive Summary](#executive-summary)
+    - [Phase 1 — Establish the Mathematical Foundations](#phase-1-—-establish-the-mathematical-foundations)
+      - [1.1 Information Density and Radix Efficiency](#11-information-density-and-radix-efficiency)
+      - [1.2 Signed-Number Representation and Symmetry](#12-signed-number-representation-and-symmetry)
+      - [1.3 Addition, Subtraction, and Carry Propagation](#13-addition-subtraction-and-carry-propagation)
+      - [1.4 Multiplication and Partial-Product Structure](#14-multiplication-and-partial-product-structure)
+      - [1.5 Rounding and Quantization Behavior](#15-rounding-and-quantization-behavior)
+      - [1.6 Representation Redundancy and Canonicality](#16-representation-redundancy-and-canonicality)
+    - [Phase 2 — Review Historical Research](#phase-2-—-review-historical-research)
+      - [2.1 Lineage and Historical Implementations](#21-lineage-and-historical-implementations)
+      - [2.2 Literature Evidence Taxonomy](#22-literature-evidence-taxonomy)
+    - [Phase 3 — Construct Fair Binary Comparisons](#phase-3-—-construct-fair-binary-comparisons)
+      - [3.1 Constraint Matching Matrix](#31-constraint-matching-matrix)
+      - [3.2 Comparative Evaluation Across Domains](#32-comparative-evaluation-across-domains)
+      - [3.3 BigInt Limb Scaling: Strawman vs Actual Implementation](#33-bigint-limb-scaling-strawman-vs-actual-implementation)
+    - [Phase 4 — Separate Three Research Domains](#phase-4-—-separate-three-research-domains)
+      - [Domain A: Pure Mathematical Representation](#domain-a-pure-mathematical-representation)
+      - [Domain B: Binary-Host Software Implementation](#domain-b-binary-host-software-implementation)
+      - [Domain C: Hypothetical Native Ternary Hardware](#domain-c-hypothetical-native-ternary-hardware)
+    - [Phase 5 — Identify Falsifiable Hypotheses](#phase-5-—-identify-falsifiable-hypotheses)
+      - [Hypothesis 1: Multi-Threshold Ternary Logic Gate Energy Efficiency vs Binary CMOS (Hardware Domain)](#hypothesis-1-multi-threshold-ternary-logic-gate-energy-efficiency-vs-binary-cmos-hardware-domain)
+      - [Hypothesis 2: 2-Bit Packed Ternary SIMD Vector Dequantization Throughput (Software Domain)](#hypothesis-2-2-bit-packed-ternary-simd-vector-dequantization-throughput-software-domain)
+      - [Hypothesis 3: Cross-Platform Bit-Identical Execution & Trace Provenance in Policy-Gated Runtimes (Systems Domain)](#hypothesis-3-cross-platform-bit-identical-execution-&-trace-provenance-in-policy-gated-runtimes-systems-domain)
+    - [Prioritized Experimental Agenda & Recommended Experiment](#prioritized-experimental-agenda-&-recommended-experiment)
+      - [Prioritized Ranking](#prioritized-ranking)
+      - [Recommended Single Experiment Protocol](#recommended-single-experiment-protocol)
+    - [Final Scientific Disposition](#final-scientific-disposition)
+    - [**Disposition: NARROW SCOPE / FROZEN CPU ARITHMETIC**](#**disposition-narrow-scope--frozen-cpu-arithmetic**)
+
+<!-- T81-TOC:END -->
+
 ## Balanced Ternary Versus Binary: Fundamental Representation and Arithmetic Study
 
 **Repository:** https://github.com/t81dev/t81-foundation

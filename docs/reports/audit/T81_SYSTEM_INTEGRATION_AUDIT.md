@@ -1,5 +1,20 @@
 # T81 Foundation — Independent End-to-End System Integration Audit (T81-SIA-001)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation — Independent End-to-End System Integration Audit (T81-SIA-001)](#t81-foundation-—-independent-end-to-end-system-integration-audit-t81-sia-001)
+  - [Executive Summary & System Audit Report](#executive-summary-&-system-audit-report)
+    - [1. Executive Findings](#1-executive-findings)
+    - [2. Subsystem Maturity Overview](#2-subsystem-maturity-overview)
+    - [3. Verified System Capabilities](#3-verified-system-capabilities)
+    - [4. Critical Architectural Limitations & Missing Links](#4-critical-architectural-limitations-&-missing-links)
+    - [5. Document Structure of the Audit Report Suite](#5-document-structure-of-the-audit-report-suite)
+
+<!-- T81-TOC:END -->
+
+
 ## Executive Summary & System Audit Report
 
 **Audit Designation:** T81-SIA-001

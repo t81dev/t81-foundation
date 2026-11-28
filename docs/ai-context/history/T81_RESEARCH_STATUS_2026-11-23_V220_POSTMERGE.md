@@ -1,5 +1,20 @@
 # T81 Engineering & Research Status Overlay — `v2.2.0` Release & Post-Merge `main` Reconciliation (2026-11-23)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Engineering & Research Status Overlay — `v2.2.0` Release & Post-Merge `main` Reconciliation (2026-11-23)](#t81-engineering-&-research-status-overlay-—-`v220`-release-&-post-merge-`main`-reconciliation-2026-11-23)
+  - [1. Shipped `v2.2.0` Surface & Packaging Verification](#1-shipped-`v220`-surface-&-packaging-verification)
+  - [2. Post-`v2.2.0` Merges on `main` (`7aa734ea4` → `2e6e78056`)](#2-post-`v220`-merges-on-`main`-`7aa734ea4`-→-`2e6e78056`)
+  - [4b. Coexistence & TernaryOS v0.2 Reconciliation (`feat/ternaryos-v0.2-nonblocking`)](#4b-coexistence-&-ternaryos-v02-reconciliation-`featternaryos-v02-nonblocking`)
+  - [3. CI & Determinism Gate Check (`2026-11-23`)](#3-ci-&-determinism-gate-check-`2026-11-23`)
+  - [4. TernaryOS Alpha Track — Scoped Next Target](#4-ternaryos-alpha-track-—-scoped-next-target)
+  - [5. Preserved Research Holds](#5-preserved-research-holds)
+
+<!-- T81-TOC:END -->
+
+
 **Status:** Non-normative dated operational snapshot (supersedes `2026-11-20` overlay for release and `main` layout; preserves all historical research holds, negative findings, and `CURRENT_STATE.json` contract-test compatibility).  
 **Pinned Release Tag:** `v2.2.0` (`7aa734ea4`, published `2026-11-22T13:31:48Z`) · **Pinned `origin/main`:** `b2248e457`
 

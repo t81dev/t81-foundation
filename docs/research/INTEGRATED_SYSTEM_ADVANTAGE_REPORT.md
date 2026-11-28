@@ -1,5 +1,21 @@
 # Scientific Investigation 08 — Integrated Architecture, Emergent Advantages, and System-Level Evaluation (Corrected)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Scientific Investigation 08 — Integrated Architecture, Emergent Advantages, and System-Level Evaluation (Corrected)](#scientific-investigation-08-—-integrated-architecture-emergent-advantages-and-system-level-evaluation-corrected)
+  - [Executive Summary](#executive-summary)
+    - [Key Operational Findings & Corrected Dispositions](#key-operational-findings-&-corrected-dispositions)
+  - [1. Subsystem Integration Matrix](#1-subsystem-integration-matrix)
+  - [2. Configuration Definitions & Ablation Seam Status](#2-configuration-definitions-&-ablation-seam-status)
+  - [3. Empirical Results & Measurements](#3-empirical-results-&-measurements)
+  - [4. Scientific Dispositions](#4-scientific-dispositions)
+  - [Reproducibility Instructions](#reproducibility-instructions)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `docs/research/INTEGRATED_SYSTEM_ADVANTAGE_REPORT.md`
 **Date:** October 2026
 **Status:** Complete / Corrected Report

@@ -1,5 +1,35 @@
 # T81 Architecture — Governed Deterministic Ternary Runtime
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Architecture — Governed Deterministic Ternary Runtime](#t81-architecture-—-governed-deterministic-ternary-runtime)
+  - [1. Overview](#1-overview)
+  - [2. Architectural Thesis](#2-architectural-thesis)
+  - [3. Layer Stack](#3-layer-stack)
+  - [4. Binary Host Boundary](#4-binary-host-boundary)
+  - [5. Core Machine Model](#5-core-machine-model)
+  - [6. Instruction Set Model](#6-instruction-set-model)
+  - [7. Determinism Model](#7-determinism-model)
+  - [8. Fault Model](#8-fault-model)
+  - [9. Governance Model (Axion)](#9-governance-model-axion)
+  - [10. CanonFS, Ed25519 Receipt DAGs, and Artifact Model](#10-canonfs-ed25519-receipt-dags-and-artifact-model)
+  - [11. AI Runtime, Control Plane, and Four-Plane Stratification](#11-ai-runtime-control-plane-and-four-plane-stratification)
+  - [12. Ternary Semantics](#12-ternary-semantics)
+  - [13. Backend and Equivalence Model](#13-backend-and-equivalence-model)
+  - [14. Surface Classification](#14-surface-classification)
+  - [15. TernaryOS / Peripheral Systems](#15-ternaryos--peripheral-systems)
+  - [16. Relation to Host and Future Hardware](#16-relation-to-host-and-future-hardware)
+  - [17. Verification and Conformance](#17-verification-and-conformance)
+  - [18. What T81 Is Not](#18-what-t81-is-not)
+  - [19. The Load-Bearing Thesis](#19-the-load-bearing-thesis)
+  - [20. Final Architectural Summary](#20-final-architectural-summary)
+  - [Appendix: Architectural One-Sentence Definition](#appendix-architectural-one-sentence-definition)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active (Post-Wave 5 Reconciled)  
 Last Verified (UTC): 2026-11-26  
 Related Canonical Sources: [`OVERVIEW.md`](./OVERVIEW.md) · [`AI_OS_STRATIFIED_BLUEPRINT.md`](./AI_OS_STRATIFIED_BLUEPRINT.md) (*Planned / Design Target — Horizon D*) · [`CURRENT_STATE.json`](../ai-context/CURRENT_STATE.json)

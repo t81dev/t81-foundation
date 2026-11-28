@@ -1,5 +1,38 @@
 # T81 Foundation — Comprehensive Repository Research & Architecture Reassessment
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation — Comprehensive Repository Research & Architecture Reassessment](#t81-foundation-—-comprehensive-repository-research-&-architecture-reassessment)
+  - [A. Executive Assessment](#a-executive-assessment)
+    - [Key Reassessment Findings](#key-reassessment-findings)
+  - [B. Architecture Inventory](#b-architecture-inventory)
+    - [External Dependencies](#external-dependencies)
+  - [C. Historical Lineage & Hanoi Research Inheritance](#c-historical-lineage-&-hanoi-research-inheritance)
+    - [Archaeological Findings](#archaeological-findings)
+  - [D. Hypothesis Assessment (Master Canonical H01–H08 Register)](#d-hypothesis-assessment-master-canonical-h01–h08-register)
+    - [H01: Native Ternary Storage & Logic Cost Reduction (Track R)](#h01-native-ternary-storage-&-logic-cost-reduction-track-r)
+    - [H02: Balanced Ternary Signed Arithmetic & Rounding (Track R)](#h02-balanced-ternary-signed-arithmetic-&-rounding-track-r)
+    - [H03: Base-81 Digit Grouping & Representation Interface (Track R)](#h03-base-81-digit-grouping-&-representation-interface-track-r)
+    - [H04: Adaptive Representation Tiering (Track R)](#h04-adaptive-representation-tiering-track-r)
+    - [H05: Three-State Algebra Primitives & Architectures (Track R)](#h05-three-state-algebra-primitives-&-architectures-track-r)
+    - [H06: Ternary Weights & Activations for AI Inference (Track R)](#h06-ternary-weights-&-activations-for-ai-inference-track-r)
+    - [H07: Representation-Independent Governed Execution (Track F)](#h07-representation-independent-governed-execution-track-f)
+    - [H08: AI-Assisted Iterative Research & Trustworthy Discovery (Track M)](#h08-ai-assisted-iterative-research-&-trustworthy-discovery-track-m)
+    - [E. Historical Experiment Evidence Mapping](#e-historical-experiment-evidence-mapping)
+  - [E. Claims Audit](#e-claims-audit)
+  - [F. Technical Debt and Risks](#f-technical-debt-and-risks)
+  - [G. Research Opportunities](#g-research-opportunities)
+  - [H. Next Discriminating Experiments & Research Sequence](#h-next-discriminating-experiments-&-research-sequence)
+    - [1. Track R Research Sequence: H04-R01 & H04-R02 (Adaptive Representation Discriminator)](#1-track-r-research-sequence-h04-r01-&-h04-r02-adaptive-representation-discriminator)
+    - [2. Track F Candidate: Cross-Platform Deterministic AI Execution & Trace Parity (Candidate 3)](#2-track-f-candidate-cross-platform-deterministic-ai-execution-&-trace-parity-candidate-3)
+  - [I. README Change Rationale](#i-readme-change-rationale)
+  - [J. Evidence Ledger](#j-evidence-ledger)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `docs/research/T81_FULL_REASSESSMENT_2026-10-25.md`
 **Date:** October 25, 2026
 **Status:** Complete / Final Research Assessment

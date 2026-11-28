@@ -8,6 +8,21 @@
 
 # BASE-01 B1 CanonFS retained-read budget — proposed amendment A1
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [BASE-01 B1 CanonFS retained-read budget — proposed amendment A1](#base-01-b1-canonfs-retained-read-budget-—-proposed-amendment-a1)
+  - [Conflict and scope](#conflict-and-scope)
+  - [Proposed normative change (subject to approval)](#proposed-normative-change-subject-to-approval)
+    - [Timing-preserving accounting](#timing-preserving-accounting)
+    - [Resource containment and acceptance](#resource-containment-and-acceptance)
+    - [Fixed-count qualification exception](#fixed-count-qualification-exception)
+  - [Acceptance and integration gates](#acceptance-and-integration-gates)
+
+<!-- T81-TOC:END -->
+
+
 **Status: HUMAN-DIRECTED PROTOCOL INTEGRATION CANDIDATE — NOT MERGED OR ACTIVATED.** The maintainer instructed integration after Codex's five-finding proposal-level acceptance review (conversation instruction, 2026-11-03). This records direction to prepare the normative-document changes on draft PR #699, not signed measurement authorization or proof of a qualified host. The effective published protocol remains the current default branch until separately reviewed and merged. No qualification, timed execution, warm-up, pilot, measurement, host provisioning, or measured-source change is authorized.
 
 ## Conflict and scope

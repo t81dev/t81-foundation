@@ -1,5 +1,27 @@
 # T81 Internal Architecture Mapping & Visualization Data Foundation (`T81-ARCH-VIZ-002`)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Internal Architecture Mapping & Visualization Data Foundation (`T81-ARCH-VIZ-002`)](#t81-internal-architecture-mapping-&-visualization-data-foundation-`t81-arch-viz-002`)
+  - [1. Executive Summary](#1-executive-summary)
+  - [2. Pinned Baseline & Census Reconciliation](#2-pinned-baseline-&-census-reconciliation)
+    - [2.1 Repository Census](#21-repository-census)
+    - [2.2 CMake Target Reconciliation](#22-cmake-target-reconciliation)
+    - [2.6 Semantic Definition of Production and Qualification Classifications](#26-semantic-definition-of-production-and-qualification-classifications)
+    - [2.5 Scoped Qualification Boundaries](#25-scoped-qualification-boundaries)
+    - [2.4 Structural Source Reference Typing & Evidence Hardening (T81-ARCH-VIZ-002)](#24-structural-source-reference-typing-&-evidence-hardening-t81-arch-viz-002)
+    - [2.7 Corrective Review Diff Composition (PR #749)](#27-corrective-review-diff-composition-pr-#749)
+    - [2.3 Test Suite Reconciliation](#23-test-suite-reconciliation)
+  - [3. Seven-Layer Architecture Model](#3-seven-layer-architecture-model)
+  - [4. Nine Traced Execution Pathways](#4-nine-traced-execution-pathways)
+  - [5. Architectural Integration Opportunities](#5-architectural-integration-opportunities)
+  - [6. Interactive Architecture & Research Status Dashboard (`T81-ARCH-VIZ-003`)](#6-interactive-architecture-&-research-status-dashboard-`t81-arch-viz-003`)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `T81-ARCH-VIZ-002-REPORT-R1`
 **Baseline Anchor Commit:** `4f96cb24358bfd260e67387b2c4db2797b01236f`
 **Classification:** Source-grounded internal architecture model, dependency graph, and 3D visualization data foundation

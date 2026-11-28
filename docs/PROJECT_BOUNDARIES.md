@@ -1,5 +1,35 @@
 # T81 Project Boundaries
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Project Boundaries](#t81-project-boundaries)
+  - [**Stable Core (Verified / Bounded Surfaces)**](#**stable-core-verified--bounded-surfaces**)
+    - [What IS Stable Core:](#what-is-stable-core)
+    - [Location:](#location)
+    - [Status:](#status)
+  - [**Experimental Frontier (Research-Grade)**](#**experimental-frontier-research-grade**)
+    - [What IS Experimental:](#what-is-experimental)
+    - [Location:](#location)
+    - [Status:](#status)
+    - [**Frozen / Non-Blocking Experimental Prototypes (Pruned from Core CI Gates)**](#**frozen--non-blocking-experimental-prototypes-pruned-from-core-ci-gates**)
+  - [**Decision Criteria**](#**decision-criteria**)
+    - [**Stable Core Addition Criteria:**](#**stable-core-addition-criteria**)
+    - [**Experimental Retention Criteria:**](#**experimental-retention-criteria**)
+    - [**Critical Boundary: Determinism vs Nondeterminism**](#**critical-boundary-determinism-vs-nondeterminism**)
+      - [**Stable Core T81 Runtime: ALWAYS DETERMINISTIC (DCP-Bounded)**](#**stable-core-t81-runtime-always-deterministic-dcp-bounded**)
+      - [**Experimental Research: MAY EXPLORE NONDETERMINISM**](#**experimental-research-may-explore-nondeterminism**)
+  - [**Usage Guidelines**](#**usage-guidelines**)
+    - [**For Stable Core Users:**](#**for-stable-core-users**)
+    - [**For Researchers/Contributors:**](#**for-researcherscontributors**)
+  - [**Project Positioning**](#**project-positioning**)
+    - [**Primary Identity**: **"Deterministic AI Runtime"**](#**primary-identity**-**"deterministic-ai-runtime"**)
+    - [**Secondary Identity**: **"AI Operating System Research"**](#**secondary-identity**-**"ai-operating-system-research"**)
+
+<!-- T81-TOC:END -->
+
+
 > **Research Posture Alignment:** Per [`AGENTS.md`](../AGENTS.md) and [`docs/releases/v2.1.0.md`](releases/v2.1.0.md), T81 Foundation is an experimental computing architecture and systems research platform. "Stable Core" denotes strictly verified, fail-closed, deterministic software surfaces—not commercial production readiness, general ternary superiority, or physical ternary hardware advantage.
 
 ## **Stable Core (Verified / Bounded Surfaces)**

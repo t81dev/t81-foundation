@@ -8,6 +8,24 @@
 
 # Frozen TISC semantics: differential evidence
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Frozen TISC semantics: differential evidence](#frozen-tisc-semantics-differential-evidence)
+  - [Load (`0x03`) and Store (`0x04`)](#load-`0x03`-and-store-`0x04`)
+    - [Options considered](#options-considered)
+  - [JumpIfZero (`0x0B`) and JumpIfNotZero (`0x19`)](#jumpifzero-`0x0b`-and-jumpifnotzero-`0x19`)
+    - [Options considered](#options-considered)
+  - [TXor (`0x15`)](#txor-`0x15`)
+    - [Options considered](#options-considered)
+  - [How to run](#how-to-run)
+  - [2026-11-23 revalidation](#2026-11-23-revalidation)
+  - [2026-11-15 packet](#2026-11-15-packet)
+
+<!-- T81-TOC:END -->
+
+
 This directory records the Load/Store, JZ/JNZ, and TXor split between the
 frozen ISA text and the hosted interpreter. The draft decision is the two
 named profiles in

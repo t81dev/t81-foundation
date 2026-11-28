@@ -8,6 +8,42 @@
 
 # T81 SCG-05 — Generic Result Contract Feasibility Assessment
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 SCG-05 — Generic Result Contract Feasibility Assessment](#t81-scg-05-—-generic-result-contract-feasibility-assessment)
+  - [1. Executive Summary](#1-executive-summary)
+    - [Key Conclusions](#key-conclusions)
+  - [2. Source Inventory: Existing `Result` and `T81Result` Callers](#2-source-inventory-existing-`result`-and-`t81result`-callers)
+    - [2.1 Search Methodology and Search Scope](#21-search-methodology-and-search-scope)
+    - [2.2 Caller Taxonomy](#22-caller-taxonomy)
+    - [2.3 Observed Architectural Fragmentation](#23-observed-architectural-fragmentation)
+    - [2.4 Matches Omitted from the 18-Row Table](#24-matches-omitted-from-the-18-row-table)
+  - [3. Analysis of `T81Error` Infrastructure](#3-analysis-of-`t81error`-infrastructure)
+    - [3.1 Characteristics and Determinism Profile](#31-characteristics-and-determinism-profile)
+    - [3.2 Preservation of `T81Error`](#32-preservation-of-`t81error`)
+  - [4. Evaluation of Candidate Architectures & Standards](#4-evaluation-of-candidate-architectures-&-standards)
+    - [4.1 Candidate Architectures](#41-candidate-architectures)
+      - [Architecture A: Modifying `T81Result<T>` in Place (Rejected)](#architecture-a-modifying-`t81result<t>`-in-place-rejected)
+      - [Architecture B: Additive Generic `Result<T, E>` while Preserving Concrete `T81Result<T>` (Recommended)](#architecture-b-additive-generic-`result<t-e>`-while-preserving-concrete-`t81result<t>`-recommended)
+    - [4.2 Standards Evaluation: C++23 `std::expected` vs C++20 `t81::expected`](#42-standards-evaluation-c++23-`stdexpected`-vs-c++20-`t81expected`)
+  - [5. Proposed API Contract for Generic `Result<T, E>`](#5-proposed-api-contract-for-generic-`result<t-e>`)
+    - [5.1 Class Template Definition](#51-class-template-definition)
+    - [5.2 Exception Specification Principles](#52-exception-specification-principles)
+  - [6. Compatibility & Migration Impact Assessment](#6-compatibility-&-migration-impact-assessment)
+    - [6.1 Preserving Concrete `T81Result<T>` vs Alias Risks](#61-preserving-concrete-`t81result<t>`-vs-alias-risks)
+    - [6.2 Phased Migration Strategy](#62-phased-migration-strategy)
+  - [7. Test and Acceptance Matrix](#7-test-and-acceptance-matrix)
+  - [8. Deferred Items and Implementation Pre-conditions](#8-deferred-items-and-implementation-pre-conditions)
+    - [Deferred](#deferred)
+    - [8.1 Open Technical Question](#81-open-technical-question)
+    - [8.2 Explicit Scope Limits for Future Implementation Authorization](#82-explicit-scope-limits-for-future-implementation-authorization)
+  - [9. Baseline Attestation and Sign-Off](#9-baseline-attestation-and-sign-off)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** T81-SCG-05-FEASIBILITY-001-R4
 **Baseline Git SHA:** `e45c5435aa47d4ccb8f343798214eb917352c871`
 **Rechecked against:** `2e6e78056e2b80855f06cd9a3690c4a65cb33d2a` (`origin/main` on 2026-11-23)

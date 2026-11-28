@@ -1,5 +1,27 @@
 # T81 SCG-04 Decision Memorandum — Normative Semantic Reconciliation
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 SCG-04 Decision Memorandum — Normative Semantic Reconciliation](#t81-scg-04-decision-memorandum-—-normative-semantic-reconciliation)
+  - [1. Executive Summary & Governance Authority](#1-executive-summary-&-governance-authority)
+  - [2. Reference to the SCG-01 Contradiction Register](#2-reference-to-the-scg-01-contradiction-register)
+  - [3. Minimum Normative Decisions Required](#3-minimum-normative-decisions-required)
+    - [Decision D1: T81Int Arithmetic Error Propagation Surface](#decision-d1-t81int-arithmetic-error-propagation-surface)
+    - [Decision D2: T81Float Binary Conversion Contract & Rounding Policy](#decision-d2-t81float-binary-conversion-contract-&-rounding-policy)
+    - [Decision D3: TISC Fault & State-Transition Atomic Boundaries](#decision-d3-tisc-fault-&-state-transition-atomic-boundaries)
+    - [Decision D4: Result and T81Result Surface Standardization](#decision-d4-result-and-t81result-surface-standardization)
+  - [4. Comprehensive SCG-04 Decision Table](#4-comprehensive-scg-04-decision-table)
+  - [5. Architectural Determinism vs. Radix-Specific Advantage](#5-architectural-determinism-vs-radix-specific-advantage)
+  - [6. Compatibility Consequences & Maintainer Action Items](#6-compatibility-consequences-&-maintainer-action-items)
+    - [6.1 Compatibility Impact Matrix](#61-compatibility-impact-matrix)
+    - [6.2 Required Maintainer Authorizations](#62-required-maintainer-authorizations)
+  - [7. Disposition and Next Steps](#7-disposition-and-next-steps)
+
+<!-- T81-TOC:END -->
+
+
 **Document:** `docs/research/continuity/SCG04_PREPARATION_DECISION_MEMORANDUM.md`
 **Date:** 2026-11-08
 **Task Anchor:** SCG-04 Preparation (Read-Only Specification Decision Instrument)

@@ -1,5 +1,29 @@
 # T81 SCG-04 Maintainer Decision Record — Normative Semantic Reconciliation
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 SCG-04 Maintainer Decision Record — Normative Semantic Reconciliation](#t81-scg-04-maintainer-decision-record-—-normative-semantic-reconciliation)
+  - [1. Executive Summary & Context](#1-executive-summary-&-context)
+  - [2. Baseline Cryptographic Inventory](#2-baseline-cryptographic-inventory)
+  - [3. Detailed Decision Proposals: D1–D4](#3-detailed-decision-proposals-d1–d4)
+    - [3.1 Decision D1: `T81Int<N>` Arithmetic Error Propagation Surface](#31-decision-d1-`t81int<n>`-arithmetic-error-propagation-surface)
+    - [3.2 Decision D2: `T81Float` Binary Conversion Contract & Rounding Policy](#32-decision-d2-`t81float`-binary-conversion-contract-&-rounding-policy)
+    - [3.3 Decision D3: TISC Fault & State-Transition Atomic Boundaries](#33-decision-d3-tisc-fault-&-state-transition-atomic-boundaries)
+    - [3.4 Decision D4: `Result` and `T81Result` Surface Type Standardization](#34-decision-d4-`result`-and-`t81result`-surface-type-standardization)
+  - [4. Dependencies, Sequencing, and Categorization](#4-dependencies-sequencing-and-categorization)
+    - [4.1 Dependency and Sequencing Analysis](#41-dependency-and-sequencing-analysis)
+    - [4.2 Categorization: Specification / Policy Approval vs. Future Implementation Authorization](#42-categorization-specification--policy-approval-vs-future-implementation-authorization)
+  - [5. Architectural Determinism vs. Radix-Specific Advantage](#5-architectural-determinism-vs-radix-specific-advantage)
+  - [6. Actionable Maintainer Decision Ballot](#6-actionable-maintainer-decision-ballot)
+  - [7. Evidence References & Blockers](#7-evidence-references-&-blockers)
+    - [7.1 Authoritative Evidence References](#71-authoritative-evidence-references)
+    - [7.2 Unresolved External Blockers](#72-unresolved-external-blockers)
+
+<!-- T81-TOC:END -->
+
+
 **Document:** `docs/research/continuity/SCG04_MAINTAINER_DECISION_RECORD.md`
 **Date:** 2026-11-08
 **Task Anchor:** SCG-04 Maintainer Decision Preparation (PR #731 Revision)

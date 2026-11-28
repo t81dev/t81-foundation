@@ -8,6 +8,23 @@
 
 # T81-AIOPT-001-M1-VERIFY correctness review
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81-AIOPT-001-M1-VERIFY correctness review](#t81-aiopt-001-m1-verify-correctness-review)
+  - [Executive summary](#executive-summary)
+  - [Provenance and independence boundary](#provenance-and-independence-boundary)
+  - [Protocol-to-implementation compliance](#protocol-to-implementation-compliance)
+  - [Independent mathematical methodology](#independent-mathematical-methodology)
+  - [Exact executed counts](#exact-executed-counts)
+  - [Defects and narrow corrections](#defects-and-narrow-corrections)
+  - [Deterministic reproduction and commands](#deterministic-reproduction-and-commands)
+  - [Changes, limitations and recommendation](#changes-limitations-and-recommendation)
+
+<!-- T81-TOC:END -->
+
+
 ## Executive summary
 
 **Recommendation: READY_FOR_INDEPENDENT_ACCEPTANCE.** Corrected code passes the

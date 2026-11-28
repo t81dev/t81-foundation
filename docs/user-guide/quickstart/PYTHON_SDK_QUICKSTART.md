@@ -1,5 +1,20 @@
 # Python SDK quickstart for a deterministic decision table
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Python SDK quickstart for a deterministic decision table](#python-sdk-quickstart-for-a-deterministic-decision-table)
+  - [1. Install the PR candidate](#1-install-the-pr-candidate)
+  - [2. Run and recover a decision](#2-run-and-recover-a-decision)
+    - [Verify and retrieve it with the native CLI](#verify-and-retrieve-it-with-the-native-cli)
+  - [3. Change the approval threshold and compare](#3-change-the-approval-threshold-and-compare)
+  - [4. Add a rule and choose its precedence](#4-add-a-rule-and-choose-its-precedence)
+  - [Error semantics](#error-semantics)
+
+<!-- T81-TOC:END -->
+
+
 Run a small T81Lang decision table, store its canonical result bytes in
 CanonFS, and recover them in a fresh Python process. This example covers
 execution and storage. Axion policy enforcement is outside its scope. The

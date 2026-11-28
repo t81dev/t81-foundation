@@ -1,5 +1,48 @@
 # T81 Contributor Roadmap
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Contributor Roadmap](#t81-contributor-roadmap)
+  - [Authoritative references](#authoritative-references)
+  - [Current research posture](#current-research-posture)
+    - [Evidence classifications](#evidence-classifications)
+  - [Phase 1: Establish trustworthy experimental comparators & Gate 1 qualifications](#phase-1-establish-trustworthy-experimental-comparators-&-gate-1-qualifications)
+    - [Active Research Tracks](#active-research-tracks)
+    - [Success criteria](#success-criteria)
+  - [Phase 2: Measure subsystem advantages under controlled conditions](#phase-2-measure-subsystem-advantages-under-controlled-conditions)
+    - [Experimental dimensions](#experimental-dimensions)
+    - [Measurement requirements](#measurement-requirements)
+    - [Success criteria](#success-criteria)
+  - [Phase 3: Resolve the physical ternary feasibility questions](#phase-3-resolve-the-physical-ternary-feasibility-questions)
+    - [Current limitation](#current-limitation)
+    - [Recommended work](#recommended-work)
+    - [Success criteria](#success-criteria)
+  - [Phase 4: Stabilize the contributor-facing runtime](#phase-4-stabilize-the-contributor-facing-runtime)
+    - [Recommended work](#recommended-work)
+    - [Success criteria](#success-criteria)
+  - [Phase 5: Harden the CanonFS interchange lane](#phase-5-harden-the-canonfs-interchange-lane)
+    - [Existing seed surface](#existing-seed-surface)
+    - [Recommended work](#recommended-work)
+    - [Success criteria](#success-criteria)
+  - [Phase 6: Evaluate narrowly scoped architectural extensions](#phase-6-evaluate-narrowly-scoped-architectural-extensions)
+  - [Phase 7: Keep the repository reliable to operate](#phase-7-keep-the-repository-reliable-to-operate)
+    - [Recommended work](#recommended-work)
+    - [Success criteria](#success-criteria)
+  - [What not to do next](#what-not-to-do-next)
+  - [Contributor decision rule](#contributor-decision-rule)
+  - [AI-Native Deterministic Control Plane Trajectory](#ai-native-deterministic-control-plane-trajectory)
+    - [Completed / Pinned Baseline (`v2.2.0` → `main@8aa086906`)](#completed--pinned-baseline-`v220`-→-`main@8aa086906`)
+    - [Engineering Milestones (Gated by Verification & Maintainer Authorization)](#engineering-milestones-gated-by-verification-&-maintainer-authorization)
+    - [Horizon D: Stratified Neural-Symbolic AI OS (`Deterministic` / `Stochastic` / `Hybrid`) — *Planned / Design Target*](#horizon-d-stratified-neural-symbolic-ai-os-`deterministic`--`stochastic`--`hybrid`-—-*planned--design-target*)
+    - [Closed / Falsified Hypotheses & Active Research Holds (Do Not Re-Open Without New Controls)](#closed--falsified-hypotheses-&-active-research-holds-do-not-re-open-without-new-controls)
+  - [Near-term execution sequence](#near-term-execution-sequence)
+  - [Long-term research direction](#long-term-research-direction)
+
+<!-- T81-TOC:END -->
+
+
 **Engineering Maintenance, Experimental Validation, and Research Priorities**
 
 **Updated:** 2026-11-26. Live `main` observed at `8aa0869063185a8a250200742b229911793d3419` (post-`v2.2.0`, Waves 0–4 and `H06-MEM-04` Phase 3 merged). This date refreshes the AI-Native Deterministic Control Plane trajectory and near-term queue below. It does not authorize `SCG-08` Gate 2, close `H01`/10A, adopt `F01`, or change `H01–H08`.

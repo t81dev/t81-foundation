@@ -1,5 +1,34 @@
 # Model Artifact Prototype Checklist
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Model Artifact Prototype Checklist](#model-artifact-prototype-checklist)
+  - [Purpose](#purpose)
+  - [Scope Boundary](#scope-boundary)
+  - [Existing Surfaces To Reuse](#existing-surfaces-to-reuse)
+  - [Prototype Deliverables](#prototype-deliverables)
+    - [1. Narrow CLI Entry](#1-narrow-cli-entry)
+    - [2. Canonical Manifest](#2-canonical-manifest)
+    - [3. Tensor Inventory](#3-tensor-inventory)
+    - [4. Human-Readable Report](#4-human-readable-report)
+    - [5. Golden Example](#5-golden-example)
+    - [6. Negative Test](#6-negative-test)
+  - [Implementation Sequence](#implementation-sequence)
+    - [Step 1: Find The Smallest Reuse Path](#step-1-find-the-smallest-reuse-path)
+    - [Step 2: Define The Prototype Result Shape](#step-2-define-the-prototype-result-shape)
+    - [Step 3: Implement `safetensors` Import](#step-3-implement-`safetensors`-import)
+    - [Step 4: Add Report Mode](#step-4-add-report-mode)
+    - [Step 5: Add Example And Negative Test](#step-5-add-example-and-negative-test)
+  - [Acceptance Criteria](#acceptance-criteria)
+  - [Evaluation Handoff](#evaluation-handoff)
+  - [Stop Conditions](#stop-conditions)
+  - [Immediate Next Task](#immediate-next-task)
+
+<!-- T81-TOC:END -->
+
+
 Status: Draft
 Last Updated: 2026-04-08
 

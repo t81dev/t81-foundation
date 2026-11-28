@@ -1,5 +1,29 @@
 # Repository Restructure Masterplan
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Repository Restructure Masterplan](#repository-restructure-masterplan)
+  - [0.1 Target Directory Tree (Canonical)](#01-target-directory-tree-canonical)
+  - [0.2 Mapping Table: Old → New](#02-mapping-table-old-→-new)
+  - [0.3 Public vs Internal API Policy](#03-public-vs-internal-api-policy)
+  - [0.4 Build System Strategy](#04-build-system-strategy)
+  - [0.5 Migration Rules](#05-migration-rules)
+  - [0.6 Rollout Phases](#06-rollout-phases)
+    - [Phase 1: Core Types Migration (The Pilot)](#phase-1-core-types-migration-the-pilot)
+    - [Phase 2: ISA (TISC) Module](#phase-2-isa-tisc-module)
+    - [Phase 3: VM Core](#phase-3-vm-core)
+    - [Phase 4: Axion Kernel](#phase-4-axion-kernel)
+    - [Phase 5: Language & Tooling](#phase-5-language-&-tooling)
+    - [Phase 6: Runtime & Serialization](#phase-6-runtime-&-serialization)
+    - [Phase 7: Experimental Containment](#phase-7-experimental-containment)
+    - [Phase 8: Public API Cleanup & Final Polish](#phase-8-public-api-cleanup-&-final-polish)
+    - [Phase 9: Documentation Updates](#phase-9-documentation-updates)
+
+<!-- T81-TOC:END -->
+
+
 ## 0.1 Target Directory Tree (Canonical)
 
 This layout reflects the conceptual architecture of the T81 Foundation stack.

@@ -1,5 +1,27 @@
 # Axion Governance Kernel — Beta Stability Review (2026-03)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Axion Governance Kernel — Beta Stability Review (2026-03)](#axion-governance-kernel-—-beta-stability-review-2026-03)
+  - [1. Scope](#1-scope)
+  - [2. Promotion Requirements Matrix](#2-promotion-requirements-matrix)
+    - [P1 — §1.1 Determinism Stewardship (AX-M5)](#p1-—-§11-determinism-stewardship-ax-m5)
+    - [P2 — §1.10 CanonFS Observability (AX-M6)](#p2-—-§110-canonfs-observability-ax-m6)
+    - [P3 — §1.3 Complexity Measurement (AX-M7)](#p3-—-§13-complexity-measurement-ax-m7)
+    - [P4 — §1.2 Safety & Ethics Enforcement](#p4-—-§12-safety-&-ethics-enforcement)
+    - [P5 — §1.6 Privileged Instruction Arbitration](#p5-—-§16-privileged-instruction-arbitration)
+    - [Additional Coverage](#additional-coverage)
+  - [3. Test Summary](#3-test-summary)
+  - [4. AX-G01 Satisfaction](#4-ax-g01-satisfaction)
+  - [5. Deferred Items (Not Beta Blockers)](#5-deferred-items-not-beta-blockers)
+  - [6. Decision](#6-decision)
+  - [7. Cross-References](#7-cross-references)
+
+<!-- T81-TOC:END -->
+
+
 **Review ID:** AXION-BETA-REVIEW-2026-03-15
 **Review Type:** Alpha → Beta candidacy / Beta stability assessment
 **Status:** **GO — BETA CANDIDACY CONFIRMED**

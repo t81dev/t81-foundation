@@ -1,5 +1,17 @@
 # T81 Research & Engineering Status Overlay — `v2.1.0` Consolidation (2026-11-19)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Research & Engineering Status Overlay — `v2.1.0` Consolidation (2026-11-19)](#t81-research-&-engineering-status-overlay-—-`v210`-consolidation-2026-11-19)
+  - [1. What Landed Since `v2.0.1` (`f3b41b583` → `f25387cb7`)](#1-what-landed-since-`v201`-`f3b41b583`-→-`f25387cb7`)
+  - [2. Preserved Negative & Boundary Findings (Do Not Reopen Without New Controls)](#2-preserved-negative-&-boundary-findings-do-not-reopen-without-new-controls)
+  - [3. Recommended Next Steps (Fresh Session)](#3-recommended-next-steps-fresh-session)
+
+<!-- T81-TOC:END -->
+
+
 **Status:** Non-normative dated operational snapshot (supersedes earlier `2026-11-19` `v2.0.1` overlay for `main` state; preserves all historical research holds and negative findings).  
 **Pinned Tag:** `v2.1.0` (`9ddeeccda`) · **Pinned `main`:** `f25387cb7` (plus this handoff commit)
 

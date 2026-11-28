@@ -1,5 +1,25 @@
 # RFC-0041 SIMD Evidence Note — 2026-03-22
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [RFC-0041 SIMD Evidence Note — 2026-03-22](#rfc-0041-simd-evidence-note-—-2026-03-22)
+  - [Summary](#summary)
+  - [Deprecation Wording (closed 2026-03-22)](#deprecation-wording-closed-2026-03-22)
+  - [Benchmark Results — AArch64 (2026-03-22)](#benchmark-results-—-aarch64-2026-03-22)
+    - [Trit-NOT](#trit-not)
+    - [Trit-AND](#trit-and)
+    - [Trit-OR](#trit-or)
+    - [Trit-XOR](#trit-xor)
+    - [Dispatch overhead](#dispatch-overhead)
+  - [x86_64 Evidence Status](#x86_64-evidence-status)
+  - [Compatibility / Deprecation Status](#compatibility--deprecation-status)
+  - [Cross-Reference](#cross-reference)
+
+<!-- T81-TOC:END -->
+
+
 **RFC:** RFC-0041 (SIMD Formalization)
 **Status at time of snapshot:** accepted
 **Host:** Apple Silicon AArch64 (ARM Neoverse-class, macOS Darwin 25.3.0)

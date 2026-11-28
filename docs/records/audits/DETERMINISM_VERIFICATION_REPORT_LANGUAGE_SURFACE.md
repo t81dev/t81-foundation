@@ -1,5 +1,23 @@
 # Determinism Verification Report (Language-Surface Edition)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Determinism Verification Report (Language-Surface Edition)](#determinism-verification-report-language-surface-edition)
+  - [Surface Inventory Audit](#surface-inventory-audit)
+    - [Canonical Types](#canonical-types)
+    - [Gap Classification](#gap-classification)
+  - [Deterministic Exposure Completion](#deterministic-exposure-completion)
+    - [A. Language Exposure](#a-language-exposure)
+    - [B. Canonical Serialization](#b-canonical-serialization)
+    - [C. Deterministic Construction](#c-deterministic-construction)
+  - [DecodeFault Elimination](#decodefault-elimination)
+  - [Conclusion](#conclusion)
+
+<!-- T81-TOC:END -->
+
+
 ## Surface Inventory Audit
 
 ### Canonical Types

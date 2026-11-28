@@ -1,5 +1,25 @@
 # Research Commons implementation and limitations
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Research Commons implementation and limitations](#research-commons-implementation-and-limitations)
+  - [Delivered boundary](#delivered-boundary)
+  - [Evidence reconciliation](#evidence-reconciliation)
+  - [Verification actually performed](#verification-actually-performed)
+  - [Portability assessment and unresolved limits](#portability-assessment-and-unresolved-limits)
+  - [Evidence integration checkpoint — 2026-10-27 (PR610 not merged)](#evidence-integration-checkpoint-—-2026-10-27-pr610-not-merged)
+    - [Commands and actual local results for this update](#commands-and-actual-local-results-for-this-update)
+    - [Cross-platform CI review (original #609 head)](#cross-platform-ci-review-original-#609-head)
+  - [Release-preparation checkpoint — 2026-10-27](#release-preparation-checkpoint-—-2026-10-27)
+    - [Directly related Windows failure and minimal correction](#directly-related-windows-failure-and-minimal-correction)
+    - [Historical baselines remain traceable](#historical-baselines-remain-traceable)
+    - [Integration and human acceptance plan after PR610 actually merges](#integration-and-human-acceptance-plan-after-pr610-actually-merges)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-10-27. Implementation author: Codex; exact underlying model identity
 not recorded. This is implementation verification, not independent research
 validation. No research experiment was executed by this assignment.

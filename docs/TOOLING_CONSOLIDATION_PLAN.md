@@ -1,5 +1,33 @@
 # Tooling Consolidation Plan
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Tooling Consolidation Plan](#tooling-consolidation-plan)
+  - [**Problem Statement**](#**problem-statement**)
+  - [**Current Tooling Inventory**](#**current-tooling-inventory**)
+    - [**Stable Core Tooling (KEEP)**](#**stable-core-tooling-keep**)
+    - [**Experimental Tooling (MOVE/CONSOLIDATE)**](#**experimental-tooling-moveconsolidate**)
+    - [**Redundant/Duplicate Tooling**](#**redundantduplicate-tooling**)
+  - [**Consolidation Strategy**](#**consolidation-strategy**)
+    - [**Phase 1: Move Experimental to Clear Boundary**](#**phase-1-move-experimental-to-clear-boundary**)
+    - [**Phase 2: Consolidate Overlapping Functionality**](#**phase-2-consolidate-overlapping-functionality**)
+    - [**Phase 3: Documentation and Disclaimers**](#**phase-3-documentation-and-disclaimers**)
+  - [**Implementation Priority**](#**implementation-priority**)
+    - [**High Priority (Immediate)**](#**high-priority-immediate**)
+    - [**Medium Priority (Next Sprint)**](#**medium-priority-next-sprint**)
+    - [**Low Priority (Future)**](#**low-priority-future**)
+  - [**Success Metrics**](#**success-metrics**)
+    - [**Quantitative Goals:**](#**quantitative-goals**)
+    - [**Qualitative Goals:**](#**qualitative-goals**)
+  - [**Risk Mitigation**](#**risk-mitigation**)
+    - [**Preserve Value:**](#**preserve-value**)
+    - [**Avoid Disruption:**](#**avoid-disruption**)
+
+<!-- T81-TOC:END -->
+
+
 ## **Problem Statement**
 
 The T81 project has **201+ tooling files** creating unnecessary complexity and maintenance burden. This dilutes focus from the **stable deterministic runtime** that actually works.

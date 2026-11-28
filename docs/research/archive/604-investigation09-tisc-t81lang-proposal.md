@@ -8,6 +8,27 @@
 
 # Investigation 09: TISC and T81Lang advantage discovery
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Investigation 09: TISC and T81Lang advantage discovery](#investigation-09-tisc-and-t81lang-advantage-discovery)
+  - [Scope and evidence rules](#scope-and-evidence-rules)
+  - [Reconstructing the actual instruction system](#reconstructing-the-actual-instruction-system)
+  - [Reconstructing the actual language and compiler](#reconstructing-the-actual-language-and-compiler)
+  - [Historical continuity and existing counterevidence](#historical-continuity-and-existing-counterevidence)
+  - [Hypothesis and comparator matrix](#hypothesis-and-comparator-matrix)
+  - [Shared experimental contract](#shared-experimental-contract)
+  - [I09-E1 — Three-state executable footprint (selected)](#i09-e1-—-three-state-executable-footprint-selected)
+  - [I09-E2 — Semantic constraints versus conventional optimization](#i09-e2-—-semantic-constraints-versus-conventional-optimization)
+  - [I09-E3 — Representation selection with equal binary adaptation](#i09-e3-—-representation-selection-with-equal-binary-adaptation)
+  - [I09-E4 — Deterministic and policy-visible assurance cost](#i09-e4-—-deterministic-and-policy-visible-assurance-cost)
+  - [Priority and execution decision](#priority-and-execution-decision)
+  - [Review and release gate](#review-and-release-gate)
+
+<!-- T81-TOC:END -->
+
+
 **Status:** Proposed experiments; no comparative advantage established. Research design only.\
 **Audit date:** 2026-10-27.\
 **Source baseline:** Foundation [`c930b8c2ee7478782bf3c6d231bdd59984595ef2`](https://github.com/t81dev/t81-foundation/tree/c930b8c2ee7478782bf3c6d231bdd59984595ef2). All source observations below refer to this revision.\

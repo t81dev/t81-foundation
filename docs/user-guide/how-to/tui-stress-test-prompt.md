@@ -1,5 +1,43 @@
 # TUI Stress-Test & Exploration Prompt
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [TUI Stress-Test & Exploration Prompt](#tui-stress-test-&-exploration-prompt)
+  - [System under test](#system-under-test)
+  - [How to use this prompt](#how-to-use-this-prompt)
+  - [Part A — `t81 studio` systematic walkthrough](#part-a-—-`t81-studio`-systematic-walkthrough)
+    - [A1  Navigation and startup](#a1--navigation-and-startup)
+    - [A2  REPL view](#a2--repl-view)
+    - [A3  Compiler view](#a3--compiler-view)
+    - [A4  Determinism view](#a4--determinism-view)
+    - [A5  CanonFS view](#a5--canonfs-view)
+    - [A6  Axion view](#a6--axion-view)
+    - [A7  Trace view](#a7--trace-view)
+    - [A8  Command palette (Ctrl+P)](#a8--command-palette-ctrl+p)
+    - [A9  Scrolling edge cases](#a9--scrolling-edge-cases)
+    - [A10  'q' and Escape exit behavior](#a10--'q'-and-escape-exit-behavior)
+  - [Part B — `t81 agent` systematic walkthrough](#part-b-—-`t81-agent`-systematic-walkthrough)
+    - [B1  Startup and session management](#b1--startup-and-session-management)
+    - [B2  Slash commands](#b2--slash-commands)
+    - [B3  Model name parsing from `/infer`](#b3--model-name-parsing-from-`infer`)
+    - [B4  Conversation scrolling](#b4--conversation-scrolling)
+    - [B5  Session persistence edge cases](#b5--session-persistence-edge-cases)
+    - [B6  Exit behavior](#b6--exit-behavior)
+  - [Part C — `t81 ui` launcher](#part-c-—-`t81-ui`-launcher)
+  - [Part D — Adversarial and boundary scenarios](#part-d-—-adversarial-and-boundary-scenarios)
+    - [D1  Shell injection via file paths](#d1--shell-injection-via-file-paths)
+    - [D2  Terminal resize](#d2--terminal-resize)
+    - [D3  Rapid key mashing](#d3--rapid-key-mashing)
+    - [D4  Unicode and multi-byte input](#d4--unicode-and-multi-byte-input)
+    - [D5  Extremely long input strings](#d5--extremely-long-input-strings)
+  - [Observation log template](#observation-log-template)
+  - [Known fixed issues (do not re-report)](#known-fixed-issues-do-not-re-report)
+
+<!-- T81-TOC:END -->
+
+
 Use this document as a prompt to an AI agent (or a human tester) to systematically
 explore, stress-test, and document the behavior of the T81 TUI (`t81 studio` and
 `t81 agent`).  The goal is to discover crashes, visual glitches, logic errors, and

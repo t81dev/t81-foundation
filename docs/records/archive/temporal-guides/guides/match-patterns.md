@@ -1,5 +1,16 @@
 # Match Patterns
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Match Patterns](#match-patterns)
+  - [Nested Variant Bindings](#nested-variant-bindings)
+  - [CLI metadata for Axion traces](#cli-metadata-for-axion-traces)
+
+<!-- T81-TOC:END -->
+
+
 This guide summarizes the match pattern semantics provided by the T81 compiler frontend so you can write expressive, deterministic arms that descend into nested variants and records.
 
 ## Nested Variant Bindings

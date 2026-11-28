@@ -1,5 +1,20 @@
 # CLI Replay Bundles
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [CLI Replay Bundles](#cli-replay-bundles)
+  - [Goal](#goal)
+  - [Collector](#collector)
+  - [Canonical Local Invocation](#canonical-local-invocation)
+  - [Bundle Rules](#bundle-rules)
+  - [Interpreting Results](#interpreting-results)
+  - [Relationship to Other Evidence](#relationship-to-other-evidence)
+
+<!-- T81-TOC:END -->
+
+
 This guide defines the current replay-bundle ritual for core governed `t81`
 CLI workflows.
 

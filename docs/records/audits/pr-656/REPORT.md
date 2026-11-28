@@ -1,5 +1,20 @@
 # PR #656 implementation validation
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [PR #656 implementation validation](#pr-#656-implementation-validation)
+  - [PR #678 replay compatibility correction — 2026-11-02](#pr-#678-replay-compatibility-correction-—-2026-11-02)
+  - [Findings at the pinned head](#findings-at-the-pinned-head)
+  - [Commands, environment and retained outputs](#commands-environment-and-retained-outputs)
+  - [Freshness, provenance and authority limits](#freshness-provenance-and-authority-limits)
+  - [Corrective scope and disposition](#corrective-scope-and-disposition)
+  - [Corrective integration publication checks](#corrective-integration-publication-checks)
+
+<!-- T81-TOC:END -->
+
+
 ## PR #678 replay compatibility correction — 2026-11-02
 
 The historical replay commands below now load both variants with `git show`:

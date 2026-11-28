@@ -1,5 +1,31 @@
 # T81 BASE-PERF-00 — Correctness-Verified `Cell` Throughput Baseline
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 BASE-PERF-00 — Correctness-Verified `Cell` Throughput Baseline](#t81-base-perf-00-—-correctness-verified-`cell`-throughput-baseline)
+  - [Scope and Governance Notice](#scope-and-governance-notice)
+  - [Phase A — Execution Identity & Provenance Classification](#phase-a-—-execution-identity-&-provenance-classification)
+    - [Provenance Classification](#provenance-classification)
+    - [Author-Reported Build & Environment Identity (Original Run, Unverified by Retained Receipt)](#author-reported-build-&-environment-identity-original-run-unverified-by-retained-receipt)
+  - [Phase B — Numerical Correctness Oracle Results](#phase-b-—-numerical-correctness-oracle-results)
+  - [Phase C — Measurement-Blocking Defects Repaired](#phase-c-—-measurement-blocking-defects-repaired)
+  - [Phase D — Bounded Measurement Results (HOST-LOCAL / PHYSICAL WORKSTATION)](#phase-d-—-bounded-measurement-results-host-local--physical-workstation)
+    - [Exact Build and Execution Commands](#exact-build-and-execution-commands)
+- [1. Configure Release build (using local Google Benchmark v1.9.5 source cache)](#1-configure-release-build-using-local-google-benchmark-v195-source-cache)
+- [2. Build correctness test and benchmark_runner](#2-build-correctness-test-and-benchmark_runner)
+- [3. Execute exhaustive host-integer oracle correctness test](#3-execute-exhaustive-host-integer-oracle-correctness-test)
+- [4. Execute bounded BASE-PERF-00 benchmark (5 repetitions per operation after 0.05s warmup)](#4-execute-bounded-base-perf-00-benchmark-5-repetitions-per-operation-after-005s-warmup)
+    - [Summary of Measured `Cell` CPU-Time Throughput (5 Repetitions After 0.05s Warm-Up, `DATA_SIZE = 10,000` ops/iter)](#summary-of-measured-`cell`-cpu-time-throughput-5-repetitions-after-005s-warm-up-`data_size-=-10000`-opsiter)
+    - [Wall-Clock Batch Iteration Times (`10,000` Operations per Iteration)](#wall-clock-batch-iteration-times-`10000`-operations-per-iteration)
+    - [Raw Per-Repetition Measurements (`CPU-time ops/s` / `wall-clock real_time_ns per 10,000-op iter`)](#raw-per-repetition-measurements-`cpu-time-opss`--`wall-clock-real_time_ns-per-10000-op-iter`)
+  - [Limitations and Unresolved Technical Findings](#limitations-and-unresolved-technical-findings)
+  - [Dispositions](#dispositions)
+
+<!-- T81-TOC:END -->
+
+
 ## Scope and Governance Notice
 
 This record documents an authorized, bounded **BASE-PERF-00** engineering throughput baseline for `t81::core::Cell` (5-trit balanced ternary cell, range `[-121, +121]`) using the existing TCB-Core `benchmark_runner` infrastructure.

@@ -1,5 +1,21 @@
 # BASE-01 VM R75 semantic qualification
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [BASE-01 VM R75 semantic qualification](#base-01-vm-r75-semantic-qualification)
+  - [Fixed references and result](#fixed-references-and-result)
+  - [Source-derived count and publication rules](#source-derived-count-and-publication-rules)
+    - [Guards and Axion side exits](#guards-and-axion-side-exits)
+  - [Ledger for all six exact builders](#ledger-for-all-six-exact-builders)
+  - [Completion predicate and counterexamples](#completion-predicate-and-counterexamples)
+  - [Correctness apparatus and evidence](#correctness-apparatus-and-evidence)
+  - [Reproduction, limits and remaining prerequisites](#reproduction-limits-and-remaining-prerequisites)
+
+<!-- T81-TOC:END -->
+
+
 **Disposition: R75 SEMANTICS ESTABLISHED**, within the exact six-builder,
 fresh-single-context, successful-explicit-Halt domain specified below.
 This establishes a software-count interpretation, not measurement readiness or

@@ -1,5 +1,17 @@
 # Maintainers
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Maintainers](#maintainers)
+  - [1. Active Maintainers](#1-active-maintainers)
+  - [2. Emeritus Maintainers](#2-emeritus-maintainers)
+  - [3. Becoming a Maintainer](#3-becoming-a-maintainer)
+
+<!-- T81-TOC:END -->
+
+
 > **Source of Truth:** This document lists the **active maintainers** and their responsibilities.
 
 **Last Updated:** February 10, 2026

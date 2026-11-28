@@ -1,5 +1,19 @@
 # RFC-00D1 Contract Review Checklist
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [RFC-00D1 Contract Review Checklist](#rfc-00d1-contract-review-checklist)
+  - [Use This For Changes To](#use-this-for-changes-to)
+  - [The Current Build-Against Surfaces Must Stay Aligned](#the-current-build-against-surfaces-must-stay-aligned)
+  - [Treat These As Breaking For The Current Seed Contract](#treat-these-as-breaking-for-the-current-seed-contract)
+  - [Keep These Questions Explicitly Deferred](#keep-these-questions-explicitly-deferred)
+  - [Minimal Review Questions](#minimal-review-questions)
+
+<!-- T81-TOC:END -->
+
+
 Use this checklist when changing the current RFC-00D1 build-against surface.
 
 It is a maintenance checklist for the existing seed contract, not a promotion

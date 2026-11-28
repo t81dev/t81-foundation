@@ -1,5 +1,19 @@
 # Release Policy
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Release Policy](#release-policy)
+  - [1. Release Types](#1-release-types)
+  - [2. Artifact Integrity](#2-artifact-integrity)
+  - [3. Signing Policy](#3-signing-policy)
+  - [4. Release Process](#4-release-process)
+  - [5. Artifact Retention](#5-artifact-retention)
+
+<!-- T81-TOC:END -->
+
+
 > **Source of Truth:** This document defines the **release process, artifact integrity, and signing policy**.
 
 **Last Updated:** February 10, 2026

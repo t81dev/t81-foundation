@@ -1,5 +1,19 @@
 # T81 Engineering & Research Status Overlay — Post-`v2.1.0` Modularization & CI Hardening (2026-11-20)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Engineering & Research Status Overlay — Post-`v2.1.0` Modularization & CI Hardening (2026-11-20)](#t81-engineering-&-research-status-overlay-—-post-`v210`-modularization-&-ci-hardening-2026-11-20)
+  - [1. What Landed Since `f25387cb7` (`43730f0dd` → `217cc0698`)](#1-what-landed-since-`f25387cb7`-`43730f0dd`-→-`217cc0698`)
+  - [2. Updated Modular File Map](#2-updated-modular-file-map)
+    - [CLI (`tools/cli/core/`, linked into `t81` / `t81_tool_cli`)](#cli-`toolsclicore`-linked-into-`t81`--`t81_tool_cli`)
+    - [Virtual Machine (`vm/` and `vm/internal/`, built into `t81_vm`)](#virtual-machine-`vm`-and-`vminternal`-built-into-`t81_vm`)
+  - [3. Preserved Research Holds & Next Actions](#3-preserved-research-holds-&-next-actions)
+
+<!-- T81-TOC:END -->
+
+
 **Status:** Non-normative dated operational snapshot (supersedes `2026-11-19` `v2.1.0` overlay for `main` layout; preserves all historical research holds and negative findings).  
 **Pinned Tag:** `v2.1.0` (`9ddeeccda`) · **Pinned `main`:** `217cc0698` (plus this handoff commit)
 

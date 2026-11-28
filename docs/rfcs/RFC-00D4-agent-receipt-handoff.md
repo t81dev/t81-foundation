@@ -1,5 +1,19 @@
 # RFC-00D4 Companion Profile: Offline Two-Agent Receipt Handoff ("For AI, By AI")
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [RFC-00D4 Companion Profile: Offline Two-Agent Receipt Handoff ("For AI, By AI")](#rfc-00d4-companion-profile-offline-two-agent-receipt-handoff-"for-ai-by-ai")
+  - [1. Purpose](#1-purpose)
+  - [2. Fail-Closed Error Contract](#2-fail-closed-error-contract)
+  - [3. Handoff Envelope Schema (`t81.agent-handoff-envelope.v1`)](#3-handoff-envelope-schema-`t81agent-handoff-envelopev1`)
+  - [4. Reference Implementation & Verification](#4-reference-implementation-&-verification)
+  - [5. Scope Boundary](#5-scope-boundary)
+
+<!-- T81-TOC:END -->
+
+
 **Status:** Draft Companion Profile (built on accepted [`spec/rfcs/RFC-00D4-accountable-decision-bundle.md`](../../spec/rfcs/RFC-00D4-accountable-decision-bundle.md))  
 **Baseline:** `T81 Foundation v2.3.0` (`DpeMcpCoordinator`, immutable `axion_root.apl`, `CanonFS`, `t81 receipt export`, RFC 8032 / Wycheproof Ed25519 `verify_dag`)  
 **Public C++ API / ISA Impact:** None (`include/t81/**/*.hpp`, `PUBLIC_API_LOCK.json`, and frozen `TISC v1.9.0-Stable` unchanged)

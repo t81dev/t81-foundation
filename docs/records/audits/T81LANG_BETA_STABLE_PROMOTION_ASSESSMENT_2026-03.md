@@ -1,5 +1,38 @@
 # T81Lang Beta → Stable Promotion Assessment (2026-03)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Beta → Stable Promotion Assessment (2026-03)](#t81lang-beta-→-stable-promotion-assessment-2026-03)
+  - [📋 **Executive Summary**](#📋-**executive-summary**)
+  - [🎯 **Stable Promotion Requirements Analysis**](#🎯-**stable-promotion-requirements-analysis**)
+    - [**Requirement 1: Spec Finalization** ⚠️ **BLOCKER**](#**requirement-1-spec-finalization**-⚠️-**blocker**)
+    - [**Requirement 2: Cross-Platform Verification** ⚠️ **PARTIAL**](#**requirement-2-cross-platform-verification**-⚠️-**partial**)
+    - [**Requirement 3: Performance Baselines** ❌ **MISSING**](#**requirement-3-performance-baselines**-❌-**missing**)
+    - [**Requirement 4: Security Audit** ⚠️ **NOT ADDRESSED**](#**requirement-4-security-audit**-⚠️-**not-addressed**)
+    - [**Requirement 5: Production Readiness** ⚠️ **PARTIAL**](#**requirement-5-production-readiness**-⚠️-**partial**)
+  - [📊 **Current Capability Assessment**](#📊-**current-capability-assessment**)
+    - [**Strengths (Ready for Production)**](#**strengths-ready-for-production**)
+    - [**Gaps (Blocking Stable Promotion)**](#**gaps-blocking-stable-promotion**)
+  - [🚀 **Promotion Roadmap**](#🚀-**promotion-roadmap**)
+    - [**Phase 1: Specification Finalization (Week 1-2)**](#**phase-1-specification-finalization-week-1-2**)
+    - [**Phase 2: Cross-Platform Verification (Week 3-4)**](#**phase-2-cross-platform-verification-week-3-4**)
+    - [**Phase 3: Performance & Security (Week 5-6)**](#**phase-3-performance-&-security-week-5-6**)
+    - [**Phase 4: Production Readiness (Week 7-8)**](#**phase-4-production-readiness-week-7-8**)
+  - [✅ **Success Criteria**](#✅-**success-criteria**)
+    - [**Specification Finalization:**](#**specification-finalization**)
+    - [**Cross-Platform Verification:**](#**cross-platform-verification**)
+    - [**Performance Baselines:**](#**performance-baselines**)
+    - [**Security Audit:**](#**security-audit**)
+    - [**Production Readiness:**](#**production-readiness**)
+  - [🎯 **Recommendation**](#🎯-**recommendation**)
+    - [**Decision:** **CONDITIONAL APPROVAL FOR STABLE PROMOTION**](#**decision**-**conditional-approval-for-stable-promotion**)
+  - [📋 **Next Actions**](#📋-**next-actions**)
+
+<!-- T81-TOC:END -->
+
+
 **Assessment ID:** T81LANG-BETA-STABLE-2026-03-14  
 **Current Status:** Beta (Implementation Maturity)  
 **Target Status:** Stable (Production Ready)  

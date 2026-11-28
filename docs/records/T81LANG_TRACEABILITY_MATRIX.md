@@ -1,5 +1,46 @@
 # T81Lang to TISC Traceability Matrix
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang to TISC Traceability Matrix](#t81lang-to-tisc-traceability-matrix)
+  - [Executive Summary](#executive-summary)
+  - [1. Compilation Pipeline Overview](#1-compilation-pipeline-overview)
+    - [Current Status](#current-status)
+  - [2. Language Construct Traceability Matrix](#2-language-construct-traceability-matrix)
+    - [2.1 Arithmetic Operations](#21-arithmetic-operations)
+    - [2.2 Comparison Operations](#22-comparison-operations)
+    - [2.3 Logical Operations](#23-logical-operations)
+    - [2.4 Bitwise Operations](#24-bitwise-operations)
+    - [2.5 Control Flow](#25-control-flow)
+    - [2.6 Function Operations](#26-function-operations)
+    - [2.7 Data Types](#27-data-types)
+  - [3. Deterministic Compilation Profile Gaps](#3-deterministic-compilation-profile-gaps)
+    - [3.1 High Priority Gaps](#31-high-priority-gaps)
+    - [3.2 Medium Priority Gaps](#32-medium-priority-gaps)
+  - [4. Test Coverage Analysis](#4-test-coverage-analysis)
+    - [4.1 Current Test Suite Coverage](#41-current-test-suite-coverage)
+    - [4.2 Missing Test Categories](#42-missing-test-categories)
+  - [5. Implementation Status by File](#5-implementation-status-by-file)
+    - [5.1 Frontend Components](#51-frontend-components)
+    - [5.2 Backend Components](#52-backend-components)
+  - [6. Remediation Plan](#6-remediation-plan)
+    - [Phase 1: Immediate (Week 1)](#phase-1-immediate-week-1)
+    - [Phase 2: Short Term (Week 2-3)](#phase-2-short-term-week-2-3)
+    - [Phase 3: Medium Term (Week 4-6)](#phase-3-medium-term-week-4-6)
+  - [7. Success Metrics](#7-success-metrics)
+    - [7.1 Quantitative Metrics](#71-quantitative-metrics)
+    - [7.2 Qualitative Metrics](#72-qualitative-metrics)
+  - [8. Files Requiring Updates](#8-files-requiring-updates)
+    - [Documentation](#documentation)
+    - [Code Changes](#code-changes)
+    - [CI/Testing](#citesting)
+  - [9. Conclusion](#9-conclusion)
+
+<!-- T81-TOC:END -->
+
+
 **Generated:** 2026-03-06  
 **Purpose:** Provide comprehensive traceability from T81Lang source constructs to emitted TISC bytecode and runtime semantics  
 **Status:** Initial Implementation - Partial Coverage

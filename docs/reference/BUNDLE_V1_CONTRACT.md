@@ -1,5 +1,39 @@
 # Bundle v1 Consumption Contract
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Bundle v1 Consumption Contract](#bundle-v1-consumption-contract)
+  - [Purpose](#purpose)
+  - [Bundle Structure](#bundle-structure)
+    - [Required Fields](#required-fields)
+    - [Schema Values](#schema-values)
+  - [Consumer Obligations](#consumer-obligations)
+    - [1. Schema Validation](#1-schema-validation)
+    - [2. Reference Resolution](#2-reference-resolution)
+    - [3. Record Schema Validation](#3-record-schema-validation)
+    - [4. Field Extraction](#4-field-extraction)
+      - [Assess-Fixed Record](#assess-fixed-record)
+      - [Route-Fixed Record](#route-fixed-record)
+      - [Classify-Fixed Record](#classify-fixed-record)
+  - [Error Handling](#error-handling)
+    - [Required Error Conditions](#required-error-conditions)
+    - [Error Format](#error-format)
+  - [Failure Semantics](#failure-semantics)
+    - [Bundle Consumption Failure](#bundle-consumption-failure)
+    - [Reference Resolution Failure](#reference-resolution-failure)
+  - [Compatibility Rules](#compatibility-rules)
+    - [v1 Compatibility](#v1-compatibility)
+    - [Implementation Requirements](#implementation-requirements)
+    - [Minimal Consumer](#minimal-consumer)
+    - [Testing Requirements](#testing-requirements)
+  - [Non-Goals](#non-goals)
+  - [Version Boundary](#version-boundary)
+
+<!-- T81-TOC:END -->
+
+
 This specification defines the exact contract for consuming T81 decision bundles, version 1.
 
 ## Purpose

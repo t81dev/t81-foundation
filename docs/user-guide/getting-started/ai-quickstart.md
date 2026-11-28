@@ -1,5 +1,28 @@
 # AI Quickstart — T81 Foundation
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [AI Quickstart — T81 Foundation](#ai-quickstart-—-t81-foundation)
+- [Ledger Entry 1. Files to Read First](#ledger-entry-1-files-to-read-first)
+  - [2. Environment and Tooling](#2-environment-and-tooling)
+    - [2.1 Required tools](#21-required-tools)
+  - [3. Build and Test Commands](#3-build-and-test-commands)
+    - [3.1 Configure and build](#31-configure-and-build)
+    - [3.2 Run the C++ test suite](#32-run-the-c++-test-suite)
+  - [4. Repository Map for Agents](#4-repository-map-for-agents)
+  - [5. Safe and High-Value Tasks for Agents](#5-safe-and-high-value-tasks-for-agents)
+  - [6. Ground Rules for Automated Changes](#6-ground-rules-for-automated-changes)
+  - [7. Suggested Workflow for Agents](#7-suggested-workflow-for-agents)
+  - [8. When to Ask for Human Review](#8-when-to-ask-for-human-review)
+  - [Visual Reference](#visual-reference)
+    - [Toolchain & Execution Flow](#toolchain-&-execution-flow)
+    - [Workflow & Artifact Loop](#workflow-&-artifact-loop)
+
+<!-- T81-TOC:END -->
+
+
 This quickstart is the manifesto portal for automated agents: follow these steps to prove every session is reproducible, Axion-safe, and spec-aligned before publishing artifacts.
 
 The goal is to give you the deterministic ledger keys (tools, specs, workflows) that map directly to the README portal.

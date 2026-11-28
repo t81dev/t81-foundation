@@ -1,5 +1,21 @@
 # RFC-00E1 corrective review packet
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [RFC-00E1 corrective review packet](#rfc-00e1-corrective-review-packet)
+  - [Finding-to-file matrix](#finding-to-file-matrix)
+  - [Accounting events and expected counts](#accounting-events-and-expected-counts)
+    - [Addition](#addition)
+    - [Multiplication](#multiplication)
+  - [Oracle enforcement and limitations](#oracle-enforcement-and-limitations)
+  - [Verification and evidence limits](#verification-and-evidence-limits)
+  - [Maintainer scientific choices left open](#maintainer-scientific-choices-left-open)
+
+<!-- T81-TOC:END -->
+
+
 Disposition: **READY FOR INDEPENDENT REVIEW** (implementation corrections only).
 RFC-00E1 remains **DRAFT**. Formal Gate 1 acceptance remains **WITHHELD**.
 Gate 2 remains **STRICT NO-GO**. No merge, ratification or campaign is authorized

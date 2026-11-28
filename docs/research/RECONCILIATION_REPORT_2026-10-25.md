@@ -1,5 +1,20 @@
 # T81 Foundation — Research & Hypothesis Continuity Reconciliation Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation — Research & Hypothesis Continuity Reconciliation Report](#t81-foundation-—-research-&-hypothesis-continuity-reconciliation-report)
+  - [1. Executive Summary & Reconciliation Purpose](#1-executive-summary-&-reconciliation-purpose)
+  - [2. Restored Continuity Artifacts](#2-restored-continuity-artifacts)
+  - [3. Canonical Hypothesis Register (H01–H08) Reconciliation](#3-canonical-hypothesis-register-h01–h08-reconciliation)
+  - [4. Historical Experiment Evidence Mapping](#4-historical-experiment-evidence-mapping)
+  - [5. Research Sequence Integration (H04-R01, H04-R02, and Candidate 3)](#5-research-sequence-integration-h04-r01-h04-r02-and-candidate-3)
+  - [6. Verification and Build Integrity Summary](#6-verification-and-build-integrity-summary)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `docs/research/RECONCILIATION_REPORT_2026-10-25.md`
 **Date:** October 25, 2026
 **Status:** Complete / Authoritative Reconciliation

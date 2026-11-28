@@ -8,6 +8,18 @@
 
 # CPA-004 acceptance report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [CPA-004 acceptance report](#cpa-004-acceptance-report)
+  - [Acceptance and implementation boundary](#acceptance-and-implementation-boundary)
+  - [Results and retained failures](#results-and-retained-failures)
+  - [Remaining discrepancies and limits](#remaining-discrepancies-and-limits)
+
+<!-- T81-TOC:END -->
+
+
 **PASS for the frozen hosted raw13 experimental profile.** Three fresh hosted
 processes and three fresh AArch64 QEMU boots agree with the separately derived
 oracle at all 25 observation boundaries (initial state plus 24 instructions).

@@ -1,5 +1,17 @@
 # Minimal "TernaryOS For AI, By AI" Boot-to-Receipt Contract (v0.1 Draft)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Minimal "TernaryOS For AI, By AI" Boot-to-Receipt Contract (v0.1 Draft)](#minimal-"ternaryos-for-ai-by-ai"-boot-to-receipt-contract-v01-draft)
+  - [1. Scope & Authority Boundary](#1-scope-&-authority-boundary)
+  - [2. Four-Stage Deterministic Boot-to-Receipt Pipeline](#2-four-stage-deterministic-boot-to-receipt-pipeline)
+  - [3. Verification & Limitations](#3-verification-&-limitations)
+
+<!-- T81-TOC:END -->
+
+
 **Status:** Draft specification & control-plane verification contract (minimal headless guest/enclave scope; does not claim general-purpose OS readiness).  
 **Frozen Dependencies:** `docs/governance/PUBLIC_API_LOCK.json` (`v2.2.0`), frozen `TISC v1.9.0` (`209` opcodes), `Axion` fail-closed policy engine, `CanonFS` `SBDR1T2D` (`K* = 0`), and `RFC-00D8` MCP receipts.
 

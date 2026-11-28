@@ -1,5 +1,69 @@
 # T81 Foundation Comprehensive Capabilities Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation Comprehensive Capabilities Report](#t81-foundation-comprehensive-capabilities-report)
+  - [Executive Summary](#executive-summary)
+  - [Core Architecture Foundations](#core-architecture-foundations)
+    - [1. Ternary Computing Stack (RFC-0000)](#1-ternary-computing-stack-rfc-0000)
+    - [2. Architecture Principles (RFC-0001)](#2-architecture-principles-rfc-0001)
+    - [3. Deterministic Execution Contract (RFC-0002)](#3-deterministic-execution-contract-rfc-0002)
+  - [Capability Domains](#capability-domains)
+    - [🧠 AI & Machine Learning Capabilities](#🧠-ai-&-machine-learning-capabilities)
+      - [Core AI Infrastructure](#core-ai-infrastructure)
+      - [Neural Network Support](#neural-network-support)
+      - [Cognitive Reasoning](#cognitive-reasoning)
+    - [⚡ High-Performance Computing](#⚡-high-performance-computing)
+      - [SIMD & Vector Processing](#simd-&-vector-processing)
+      - [Parallel Execution](#parallel-execution)
+    - [🔒 Security & Cryptography](#🔒-security-&-cryptography)
+      - [Post-Quantum Security](#post-quantum-security)
+      - [System Security](#system-security)
+    - [📁 Storage & Filesystems](#📁-storage-&-filesystems)
+      - [CanonFS Content-Addressed Storage](#canonfs-content-addressed-storage)
+      - [Distributed Storage](#distributed-storage)
+    - [🌐 Language & Compiler Infrastructure](#🌐-language-&-compiler-infrastructure)
+      - [T81Lang Language Features](#t81lang-language-features)
+      - [Compilation & JIT](#compilation-&-jit)
+    - [⚙️ System & Runtime](#⚙️-system-&-runtime)
+      - [Axion Governance Kernel](#axion-governance-kernel)
+      - [Memory Management](#memory-management)
+      - [OS Integration](#os-integration)
+    - [🔧 Development & Tooling](#🔧-development-&-tooling)
+      - [Development Tools](#development-tools)
+      - [Quality Assurance](#quality-assurance)
+  - [Implementation Status](#implementation-status)
+    - [Fully Accepted Core RFCs (23)](#fully-accepted-core-rfcs-23)
+    - [Proposed/In-Progress RFCs (15)](#proposedin-progress-rfcs-15)
+    - [Superseded RFCs (3)](#superseded-rfcs-3)
+  - [Key Technical Innovations](#key-technical-innovations)
+    - [1. Ternary Computing Advantage](#1-ternary-computing-advantage)
+    - [2. Deterministic AI Execution](#2-deterministic-ai-execution)
+    - [3. Cognitive Tier System](#3-cognitive-tier-system)
+    - [4. Post-Quantum Security](#4-post-quantum-security)
+  - [Performance Characteristics](#performance-characteristics)
+    - [Computational Performance](#computational-performance)
+    - [AI Inference Performance](#ai-inference-performance)
+    - [Security Performance](#security-performance)
+  - [Security & Safety Guarantees](#security-&-safety-guarantees)
+    - [Deterministic Security](#deterministic-security)
+    - [AGI Containment](#agi-containment)
+    - [Post-Quantum Readiness](#post-quantum-readiness)
+  - [Development Ecosystem](#development-ecosystem)
+    - [Language Support](#language-support)
+    - [Testing & Verification](#testing-&-verification)
+    - [Build & Deployment](#build-&-deployment)
+  - [Future Roadmap](#future-roadmap)
+    - [Near-Term (2026 Q2-Q3)](#near-term-2026-q2-q3)
+    - [Medium-Term (2026 Q4-2027 Q1)](#medium-term-2026-q4-2027-q1)
+    - [Long-Term (2027+)](#long-term-2027+)
+  - [Conclusion](#conclusion)
+
+<!-- T81-TOC:END -->
+
+
 > **Historical report — qualified October 27, 2026.** The original body is preserved as a dated description, not a current implementation or security certification. Claims of production readiness, universal determinism, complete integration, or capability inferred solely from RFCs require source and test evidence. Use the [current research overview](README.md), [surface register](../governance/GOVERNANCE_SURFACE_REGISTER.md), and [alignment audit](ROOT_DOCUMENTATION_ALIGNMENT_AUDIT.md) for present interpretation.
 
 **Generated:** 2026-03-19  

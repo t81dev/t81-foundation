@@ -1,5 +1,31 @@
 # CanonFS Interchange v1 Contract
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [CanonFS Interchange v1 Contract](#canonfs-interchange-v1-contract)
+  - [Stable v1 Surface](#stable-v1-surface)
+    - [Supported operations](#supported-operations)
+    - [Schema identifiers](#schema-identifiers)
+    - [Supported source and target kinds](#supported-source-and-target-kinds)
+    - [Supported policy-profile names](#supported-policy-profile-names)
+  - [Result Documents](#result-documents)
+    - [Import result](#import-result)
+    - [Export result](#export-result)
+  - [Structured Error Contract](#structured-error-contract)
+    - [Deterministic reason mapping](#deterministic-reason-mapping)
+      - [Import reasons](#import-reasons)
+      - [Export reasons](#export-reasons)
+  - [Result Linkage Fields](#result-linkage-fields)
+  - [CLI/Core Alignment](#clicore-alignment)
+  - [Guaranteed Stable in v1](#guaranteed-stable-in-v1)
+  - [Explicitly Deferred / Not in v1](#explicitly-deferred--not-in-v1)
+  - [Canonical Examples](#canonical-examples)
+
+<!-- T81-TOC:END -->
+
+
 This document is the authoritative contributor-facing contract for the current
 CanonFS interchange v1 surface.
 

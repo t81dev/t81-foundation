@@ -1,5 +1,44 @@
 # Deep Research Report on t81dev/t81-foundation
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Deep Research Report on t81dev/t81-foundation](#deep-research-report-on-t81devt81-foundation)
+  - [Project overview](#project-overview)
+  - [Technical architecture](#technical-architecture)
+    - [Layered “authority stack” and component boundaries](#layered-“authority-stack”-and-component-boundaries)
+    - [Balanced ternary as the computational substrate](#balanced-ternary-as-the-computational-substrate)
+    - [Deterministic execution and “bounded guarantees”](#deterministic-execution-and-“bounded-guarantees”)
+    - [Quantization context and ternary AI](#quantization-context-and-ternary-ai)
+  - [Codebase review and quality signals](#codebase-review-and-quality-signals)
+    - [Repository layout and languages](#repository-layout-and-languages)
+    - [Build, toolchain assumptions, and reproducibility gates](#build-toolchain-assumptions-and-reproducibility-gates)
+    - [Maturity declarations by subsystem](#maturity-declarations-by-subsystem)
+    - [Notable implementations and engineering strengths](#notable-implementations-and-engineering-strengths)
+    - [Potential risks and optimization opportunities](#potential-risks-and-optimization-opportunities)
+  - [Innovations, differentiators, and comparisons](#innovations-differentiators-and-comparisons)
+    - [“Governed determinism” as a primary design axis](#“governed-determinism”-as-a-primary-design-axis)
+    - [ISA-level governance (Axion) as an auditable control plane](#isa-level-governance-axion-as-an-auditable-control-plane)
+    - [Relevance to ternary AI trajectories](#relevance-to-ternary-ai-trajectories)
+    - [Comparison lens against historic ternary systems](#comparison-lens-against-historic-ternary-systems)
+  - [Installation, usage, and a simple workflow walk-through](#installation-usage-and-a-simple-workflow-walk-through)
+    - [Build and verify from source](#build-and-verify-from-source)
+    - [“Hello World” in T81Lang and VM execution](#“hello-world”-in-t81lang-and-vm-execution)
+  - [Community signals and potential impact](#community-signals-and-potential-impact)
+    - [Current community footprint](#current-community-footprint)
+    - [Plausible real-world application zones](#plausible-real-world-application-zones)
+    - [Likely adoption challenges](#likely-adoption-challenges)
+  - [Recommendations](#recommendations)
+    - [Strengthen evidence-backed determinism claims](#strengthen-evidence-backed-determinism-claims)
+    - [Improve accessibility of specs and code references](#improve-accessibility-of-specs-and-code-references)
+    - [Make AI/LLM integration concrete and interoperable](#make-aillm-integration-concrete-and-interoperable)
+    - [Clarify the “cognitive tiers” as an engineering surface](#clarify-the-“cognitive-tiers”-as-an-engineering-surface)
+    - [Grow community engagement with high-signal scaffolding](#grow-community-engagement-with-high-signal-scaffolding)
+
+<!-- T81-TOC:END -->
+
+
 ## Project overview
 
 The repository describes itself as a “deterministic, ternary-native computing stack” centered on **base‑81 data types**, a **TISC** (Ternary Instruction Set Computer) ISA, **T81VM**, **T81Lang**, an **Axion** safety/optimization (policy) kernel, and “recursive cognition tiers,” with the explicit goal of “bit‑exact, auditable, reproducible execution” across sensitive domains such as AI, cryptography, and scientific computing. citeturn7view0turn13view4

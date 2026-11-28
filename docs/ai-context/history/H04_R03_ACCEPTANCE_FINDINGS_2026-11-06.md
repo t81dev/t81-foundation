@@ -1,5 +1,22 @@
 # H04-R03 — Dated Acceptance-Finding Reconciliation (2026-11-06; Reconciled 2026-11-07)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [H04-R03 — Dated Acceptance-Finding Reconciliation (2026-11-06; Reconciled 2026-11-07)](#h04-r03-—-dated-acceptance-finding-reconciliation-2026-11-06-reconciled-2026-11-07)
+  - [Operational overlay — 2026-11-10](#operational-overlay-—-2026-11-10)
+  - [Historical snapshot — PR #724 (`50087972`)](#historical-snapshot-—-pr-#724-`50087972`)
+  - [Exact repository and review identities](#exact-repository-and-review-identities)
+  - [Three acceptance-related findings and FC1 corrective resolution](#three-acceptance-related-findings-and-fc1-corrective-resolution)
+    - [Status classification](#status-classification)
+  - [Other bounded findings to preserve](#other-bounded-findings-to-preserve)
+  - [FC1 milestone status summary](#fc1-milestone-status-summary)
+  - [Next bounded action](#next-bounded-action)
+
+<!-- T81-TOC:END -->
+
+
 ## Operational overlay — 2026-11-10
 
 The historical snapshot below describes PR #724 at `50087972`. It predates

@@ -1,5 +1,20 @@
 # T81-CPA-002 — Opcode conformance gate repair
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81-CPA-002 — Opcode conformance gate repair](#t81-cpa-002-—-opcode-conformance-gate-repair)
+  - [Scope and source identity](#scope-and-source-identity)
+  - [Verified cause and corrective change](#verified-cause-and-corrective-change)
+  - [Before/after and effective Release checks](#beforeafter-and-effective-release-checks)
+  - [Remaining registry/header discrepancies — not repaired here](#remaining-registryheader-discrepancies-—-not-repaired-here)
+  - [Exact commands and reproduction](#exact-commands-and-reproduction)
+- [Stored after-results are sorted by label; compile every binary before runs.](#stored-after-results-are-sorted-by-label-compile-every-binary-before-runs)
+
+<!-- T81-TOC:END -->
+
+
 ## Scope and source identity
 
 This corrects the deterministic runtime / CI stability lane. Only the opcode

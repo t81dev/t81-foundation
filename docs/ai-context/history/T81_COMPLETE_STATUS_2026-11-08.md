@@ -1,5 +1,26 @@
 # T81 Foundation — Comprehensive Research Status (2026-11-08)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation — Comprehensive Research Status (2026-11-08)](#t81-foundation-—-comprehensive-research-status-2026-11-08)
+  - [1. Executive disposition](#1-executive-disposition)
+  - [2. Repository and SCG state (observed 2026-11-08)](#2-repository-and-scg-state-observed-2026-11-08)
+  - [3. SCG-04 decisions and SCG-05 feasibility](#3-scg-04-decisions-and-scg-05-feasibility)
+  - [4. SCG-06 F1–F7 defect matrix — reported evidence, not completed fixes](#4-scg-06-f1–f7-defect-matrix-—-reported-evidence-not-completed-fixes)
+  - [5. SCG-03 CI attribution: what is actually established](#5-scg-03-ci-attribution-what-is-actually-established)
+  - [6. Other research tracks and maturity boundaries](#6-other-research-tracks-and-maturity-boundaries)
+    - [Track F — deterministic execution, cross-profile TISC and ISA](#track-f-—-deterministic-execution-cross-profile-tisc-and-isa)
+    - [Track R — representation and performance hypotheses](#track-r-—-representation-and-performance-hypotheses)
+    - [Track M — research governance and AI-assisted auditability](#track-m-—-research-governance-and-ai-assisted-auditability)
+  - [7. Current blockers and actionable next gates](#7-current-blockers-and-actionable-next-gates)
+  - [8. Evidence and authority ladder](#8-evidence-and-authority-ladder)
+  - [9. Reading order for a new AI instance](#9-reading-order-for-a-new-ai-instance)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** T81-AI-CONTEXT-STATUS-2026-11-08
 **Class:** Non-normative, dated research handoff; not an authorization, benchmark, certification, or independent reproduction of every historical experiment.
 **Repository:** https://github.com/t81dev/t81-foundation

@@ -1,5 +1,16 @@
 # Executed scoped CI results for PR #785
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Executed scoped CI results for PR #785](#executed-scoped-ci-results-for-pr-#785)
+  - [Retained evidence](#retained-evidence)
+  - [Limits](#limits)
+
+<!-- T81-TOC:END -->
+
+
 All three targeted jobs completed successfully in
 [Actions run 43538262449](https://github.com/t81dev/t81-foundation/actions/runs/43538262449),
 at CI harness commit `b24cd1b1595f0e9c2c55a94a3cc0df89b57e83c1` on draft #786.

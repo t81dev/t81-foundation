@@ -1,5 +1,38 @@
 # BASE-01 Reference Performance Baseline: Workload Discovery, Eligibility Audit, and Measurement Readiness (Phase A)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [BASE-01 Reference Performance Baseline: Workload Discovery, Eligibility Audit, and Measurement Readiness (Phase A)](#base-01-reference-performance-baseline-workload-discovery-eligibility-audit-and-measurement-readiness-phase-a)
+  - [1. Executive Summary & Source Inspection](#1-executive-summary-&-source-inspection)
+    - [1.1 Mission & Objectives](#11-mission-&-objectives)
+    - [1.2 Exact Repository Revision Pins](#12-exact-repository-revision-pins)
+    - [1.3 Mandatory Research Boundaries & Freeze Constraints](#13-mandatory-research-boundaries-&-freeze-constraints)
+  - [2. Existing Benchmark and Test Infrastructure Inventory](#2-existing-benchmark-and-test-infrastructure-inventory)
+  - [3. Workload Eligibility Audit](#3-workload-eligibility-audit)
+    - [3.1 Domain A: Arithmetic](#31-domain-a-arithmetic)
+      - [Workload 1: `WL-ARITH-CODEC-I64`](#workload-1-`wl-arith-codec-i64`)
+      - [Workload 2: `WL-ARITH-LIMB-MUL`](#workload-2-`wl-arith-limb-mul`)
+      - [Workload 3: `WL-ARITH-SWAR-TRITWISE`](#workload-3-`wl-arith-swar-tritwise`)
+    - [3.2 Domain B: TISC / HanoiVM](#32-domain-b-tisc--hanoivm)
+      - [Workload 4: `WL-VM-TISC-DETERMINISM-TIERS`](#workload-4-`wl-vm-tisc-determinism-tiers`)
+      - [Workload 5: `WL-VM-HANOI-COMMAND-SURFACE`](#workload-5-`wl-vm-hanoi-command-surface`)
+      - [Workload 6: `WL-VM-CMP3-DECISION`](#workload-6-`wl-vm-cmp3-decision`)
+    - [3.3 Domain C: CanonFS](#33-domain-c-canonfs)
+      - [Workload 7: `WL-CANONFS-MEM-THROUGHPUT`](#workload-7-`wl-canonfs-mem-throughput`)
+      - [Workload 8: `WL-CANONFS-PERSISTENT-IO`](#workload-8-`wl-canonfs-persistent-io`)
+      - [Workload 9: `WL-CANONFS-BLOCK-BACKED-POLICY`](#workload-9-`wl-canonfs-block-backed-policy`)
+    - [3.4 Domain D: Resource Consumption](#34-domain-d-resource-consumption)
+      - [Workload 10: `WL-RES-RUSAGE-METRICS`](#workload-10-`wl-res-rusage-metrics`)
+      - [Workload 11: `WL-RES-ARTIFACT-SIZE`](#workload-11-`wl-res-artifact-size`)
+  - [4. Workload Classification Summary](#4-workload-classification-summary)
+  - [5. Proposed Phase B Measurement Methodology](#5-proposed-phase-b-measurement-methodology)
+  - [6. Recommended Minimal Phase B Workload Set](#6-recommended-minimal-phase-b-workload-set)
+
+<!-- T81-TOC:END -->
+
+
 **Document:** `docs/research/base01/BASE01_WORKLOAD_AUDIT.md`
 **Mission:** BASE-01 Phase A — Workload Discovery, Eligibility Audit, and Measurement Readiness
 **Status:** READ-ONLY INVESTIGATION & REPRODUCIBILITY AUDIT (PHASE A ONLY)

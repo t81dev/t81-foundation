@@ -1,5 +1,26 @@
 # "TernaryOS For AI, By AI" Architecture & Guardrails (v0.2 Draft)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- ["TernaryOS For AI, By AI" Architecture & Guardrails (v0.2 Draft)](#"ternaryos-for-ai-by-ai"-architecture-&-guardrails-v02-draft)
+  - [1. Architectural Posture: Binary Coexistence, Not OS Replacement](#1-architectural-posture-binary-coexistence-not-os-replacement)
+  - [2. Core Subsystems & Contracts](#2-core-subsystems-&-contracts)
+    - [2.1 Deterministic Headless AArch64 Guest Boot & Serial Round-Trip](#21-deterministic-headless-aarch64-guest-boot-&-serial-round-trip)
+    - [2.2 Immutable `axion_root.apl` Policy Enforcement](#22-immutable-`axion_rootapl`-policy-enforcement)
+    - [2.3 `CanonFS` `SBDR1T2D` Content-Addressed Object Handling](#23-`canonfs`-`sbdr1t2d`-content-addressed-object-handling)
+    - [2.4 `TISC v1.9.0` Execution & Evidence-Bounded `R1`/`R2` Regime Routing](#24-`tisc-v190`-execution-&-evidence-bounded-`r1``r2`-regime-routing)
+    - [2.5 15-Tool Native C++ MCP Control Plane & Transacted Workspaces](#25-15-tool-native-c++-mcp-control-plane-&-transacted-workspaces)
+    - [2.6 Canonical `SHA3-512` Replay Receipts](#26-canonical-`sha3-512`-replay-receipts)
+  - [3. Strict AI-Authoring Guardrails](#3-strict-ai-authoring-guardrails)
+  - [4. By-AI-for-AI Execution Contracts](#4-by-ai-for-ai-execution-contracts)
+  - [5. Three-State `{-1, 0, +1}` Semantics Across Control, Sparsity, and Falsification](#5-three-state-`{-1-0-+1}`-semantics-across-control-sparsity-and-falsification)
+  - [6. Transactional Isolation (`tx_begin` / `tx_commit` / `tx_abort`)](#6-transactional-isolation-`tx_begin`--`tx_commit`--`tx_abort`)
+
+<!-- T81-TOC:END -->
+
+
 **Status:** Draft architecture specification & verified control-plane/QEMU-contract baseline (minimal deterministic headless guest/enclave scope; does **not** claim general-purpose OS readiness or native x86-64 hardware timings).  
 **Lineage:** Builds directly on [TERNARYOS_BOOT_TO_RECEIPT_CONTRACT_v0.1.md](./TERNARYOS_BOOT_TO_RECEIPT_CONTRACT_v0.1.md), [tests/qemu/test_boot_to_receipt_contract.py](../../../tests/qemu/test_boot_to_receipt_contract.py), and [T81_RESEARCH_STATUS_2026-11-23_BY_AI_FOR_AI_COEXISTENCE.md](../../ai-context/history/T81_RESEARCH_STATUS_2026-11-23_BY_AI_FOR_AI_COEXISTENCE.md).  
 **Frozen Dependencies:** `docs/governance/PUBLIC_API_LOCK.json` (`v2.2.0`), frozen `TISC v1.9.0` (`209` opcodes), `Axion` fail-closed policy engine, `CanonFS` `SBDR1T2D` (`K* = 0`), and `RFC-00D8` native C++ MCP control plane.

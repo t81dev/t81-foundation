@@ -1,5 +1,26 @@
 # T81 Architecture Overview
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Architecture Overview](#t81-architecture-overview)
+  - [Purpose](#purpose)
+  - [Layer Cake](#layer-cake)
+  - [Current State by Layer](#current-state-by-layer)
+  - [Four-Plane Stratified Architecture Alignment](#four-plane-stratified-architecture-alignment)
+  - [Architecture Navigation Index](#architecture-navigation-index)
+  - [Binary Host Execution Boundary & Regime Routing](#binary-host-execution-boundary-&-regime-routing)
+  - [Key Invariants](#key-invariants)
+  - [Failure Modes](#failure-modes)
+  - [Execution Summary](#execution-summary)
+  - [Indeterminate](#indeterminate)
+  - [Evidence](#evidence)
+  - [Acceptance Criteria](#acceptance-criteria)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active  
 Last Verified (UTC): 2026-11-26  
 Maturity: Mixed (`Frozen` ISA/types core, `Stable` VM/Axion/CanonFS/MCP control plane, `Experimental` TernaryOS enclave & cognitive tiers)

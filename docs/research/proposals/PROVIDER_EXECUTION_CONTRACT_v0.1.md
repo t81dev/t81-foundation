@@ -1,5 +1,19 @@
 # T81 Provider Execution Contract (M1-A / M1-B Draft Specification)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Provider Execution Contract (M1-A / M1-B Draft Specification)](#t81-provider-execution-contract-m1-a--m1-b-draft-specification)
+  - [1. Scope and Non-Goals](#1-scope-and-non-goals)
+  - [2. Three Execution Classes](#2-three-execution-classes)
+  - [3. Governance & Execution Lifecycle](#3-governance-&-execution-lifecycle)
+  - [4. RFC-00D4 Projection](#4-rfc-00d4-projection)
+  - [5. Acceptance Tests & Falsification Criteria](#5-acceptance-tests-&-falsification-criteria)
+
+<!-- T81-TOC:END -->
+
+
 **Status:** Draft (Proposal — Not Yet Promoted to Normative Public API)  
 **Schema Versions:** `t81.provider.capabilities.v1`, `t81.provider.evidence.v1`  
 **Target Namespace:** `t81::provider` (staged under `src/provider/` to preserve `v2.2.0` `PUBLIC_API_LOCK.json` and frozen TISC `v1.9.0` ISA)  

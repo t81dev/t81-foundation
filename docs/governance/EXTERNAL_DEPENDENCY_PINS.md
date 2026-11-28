@@ -1,5 +1,20 @@
 # External Dependency Pins
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [External Dependency Pins](#external-dependency-pins)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Pinned Dependencies](#pinned-dependencies)
+    - [llama.cpp](#llamacpp)
+  - [Change Control](#change-control)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Last Updated: 2026-02-25
 

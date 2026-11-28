@@ -1,5 +1,23 @@
 # CI Workflow Confirmation
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [CI Workflow Confirmation](#ci-workflow-confirmation)
+  - [AI Experiments CI Workflow](#ai-experiments-ci-workflow)
+    - [File Location](#file-location)
+    - [What It Builds](#what-it-builds)
+    - [What It Tests](#what-it-tests)
+    - [How It Prevents Regressions](#how-it-prevents-regressions)
+    - [Triggers](#triggers)
+    - [Failure Conditions](#failure-conditions)
+    - [Success Indicators](#success-indicators)
+    - [Reviewer Benefits](#reviewer-benefits)
+
+<!-- T81-TOC:END -->
+
+
 Last Updated: 2026-03-06
 
 ## AI Experiments CI Workflow

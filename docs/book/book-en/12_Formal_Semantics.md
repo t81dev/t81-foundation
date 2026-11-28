@@ -1,5 +1,26 @@
 # Chapter 12: Formal Semantics of TISC and T81VM
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Chapter 12: Formal Semantics of TISC and T81VM](#chapter-12-formal-semantics-of-tisc-and-t81vm)
+  - [12.1 Operational Semantics](#121-operational-semantics)
+  - [12.2 Algebraic Transition Function](#122-algebraic-transition-function)
+  - [12.3 Canonicalization Rewrite System](#123-canonicalization-rewrite-system)
+  - [12.4 Determinism Proof Sketches](#124-determinism-proof-sketches)
+  - [12.5 Interpreter vs Trace-JIT Equivalence](#125-interpreter-vs-trace-jit-equivalence)
+    - [Study Exercise](#study-exercise)
+    - [Role-Based Learning Path](#role-based-learning-path)
+    - [Worked Example](#worked-example)
+    - [Hands-On Lab](#hands-on-lab)
+    - [Expected Outcomes](#expected-outcomes)
+    - [Chapter Summary](#chapter-summary)
+    - [Read Next](#read-next)
+
+<!-- T81-TOC:END -->
+
+
 This chapter explains why formalization matters for deterministic claims. Informal understanding can guide implementation, but formal semantics provide the stable reference needed for rigorous verification and long-term maintenance.
 
 For onboarding, think of this chapter as the bridge between intuition and proof-oriented reasoning.

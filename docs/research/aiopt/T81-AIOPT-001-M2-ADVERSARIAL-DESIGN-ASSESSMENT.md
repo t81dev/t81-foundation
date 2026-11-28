@@ -1,5 +1,65 @@
 # T81-AIOPT-001 M2 — Adversarial Research Design & Premise Assessment
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81-AIOPT-001 M2 — Adversarial Research Design & Premise Assessment](#t81-aiopt-001-m2-—-adversarial-research-design-&-premise-assessment)
+  - [1. Executive Summary & Core Verdict](#1-executive-summary-&-core-verdict)
+    - [Primary Finding: Premise Invalidation](#primary-finding-premise-invalidation)
+    - [Strategic Recommendation](#strategic-recommendation)
+  - [2. Source and Evidence Ledger](#2-source-and-evidence-ledger)
+  - [3. Adversarial Critique of the Existing M2 Premise](#3-adversarial-critique-of-the-existing-m2-premise)
+    - [3.1 Binary Bitset and Bit-Sliced Competitiveness](#31-binary-bitset-and-bit-sliced-competitiveness)
+    - [3.2 Representation Density vs. Ternary Computation](#32-representation-density-vs-ternary-computation)
+    - [3.3 Indexing, Preprocessing, and Algorithmic Realism](#33-indexing-preprocessing-and-algorithmic-realism)
+    - [3.4 Workload Non-Representativeness](#34-workload-non-representativeness)
+    - [3.5 Negative Outcome Utility](#35-negative-outcome-utility)
+  - [4. Specification of Three Competing Experimental Candidates](#4-specification-of-three-competing-experimental-candidates)
+    - [Candidate A: Parameterized Wildcard Pattern Filtering (Redesigned M2)](#candidate-a-parameterized-wildcard-pattern-filtering-redesigned-m2)
+      - [1. Scientific Hypothesis](#1-scientific-hypothesis)
+      - [2. Appropriate Binary Baselines](#2-appropriate-binary-baselines)
+      - [3. Expected Sources of Overhead](#3-expected-sources-of-overhead)
+      - [4. Required Correctness Evidence](#4-required-correctness-evidence)
+      - [5. Minimum Meaningful Experimental Scope](#5-minimum-meaningful-experimental-scope)
+      - [6. Failure and Inconclusive Criteria](#6-failure-and-inconclusive-criteria)
+      - [7. Resource Requirements](#7-resource-requirements)
+      - [8. Relationship to T81 Long-Term Objectives](#8-relationship-to-t81-long-term-objectives)
+    - [Candidate B: Adaptive Representation Selection (Workload-Driven Representation)](#candidate-b-adaptive-representation-selection-workload-driven-representation)
+      - [1. Scientific Hypothesis](#1-scientific-hypothesis)
+      - [2. Appropriate Binary Baselines](#2-appropriate-binary-baselines)
+      - [3. Expected Sources of Overhead](#3-expected-sources-of-overhead)
+      - [4. Required Correctness Evidence](#4-required-correctness-evidence)
+      - [5. Minimum Meaningful Experimental Scope](#5-minimum-meaningful-experimental-scope)
+      - [6. Failure and Inconclusive Criteria](#6-failure-and-inconclusive-criteria)
+      - [7. Resource Requirements](#7-resource-requirements)
+      - [8. Relationship to T81 Long-Term Objectives](#8-relationship-to-t81-long-term-objectives)
+    - [Candidate C: Ternary-Native Structural Workload (Ternary MatVec with Zero-Skipping)](#candidate-c-ternary-native-structural-workload-ternary-matvec-with-zero-skipping)
+      - [1. Scientific Hypothesis](#1-scientific-hypothesis)
+      - [2. Specific Delta Versus Prior CPU Experiments (PRs #544–#549)](#2-specific-delta-versus-prior-cpu-experiments-prs-#544–#549)
+      - [3. Appropriate Binary Baselines](#3-appropriate-binary-baselines)
+      - [4. Expected Sources of Overhead](#4-expected-sources-of-overhead)
+      - [5. Required Correctness Evidence](#5-required-correctness-evidence)
+      - [6. Minimum Meaningful Experimental Scope](#6-minimum-meaningful-experimental-scope)
+      - [7. Bounded Failure and Inconclusive Criteria](#7-bounded-failure-and-inconclusive-criteria)
+      - [8. Resource Requirements](#8-resource-requirements)
+      - [9. Relationship to T81 Long-Term Objectives](#9-relationship-to-t81-long-term-objectives)
+  - [5. Comparative Decision Matrix & Candidate Ranking](#5-comparative-decision-matrix-&-candidate-ranking)
+    - [Evaluation Criteria Definitions](#evaluation-criteria-definitions)
+    - [Decision Matrix](#decision-matrix)
+  - [6. Recommended Minimum Meaningful Experiment](#6-recommended-minimum-meaningful-experiment)
+    - [Recommendation: Pivot Away from Wildcard Pattern Filtering](#recommendation-pivot-away-from-wildcard-pattern-filtering)
+    - [Minimum Viable Experimental Specification for Candidate C](#minimum-viable-experimental-specification-for-candidate-c)
+  - [7. Explicit Unresolved Assumptions & Threats to Validity](#7-explicit-unresolved-assumptions-&-threats-to-validity)
+  - [8. Separation of Evidence, Analysis, and Speculation](#8-separation-of-evidence-analysis-and-speculation)
+    - [Verified Empirical Evidence](#verified-empirical-evidence)
+    - [Analytical Findings](#analytical-findings)
+    - [Speculative Projections](#speculative-projections)
+  - [9. Conclusion](#9-conclusion)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `docs/research/aiopt/T81-AIOPT-001-M2-ADVERSARIAL-DESIGN-ASSESSMENT.md`
 **Date:** 2026-11-01
 **Role:** Independent Experimental-Design Critic

@@ -1,5 +1,36 @@
 # T81 SCG-06: Independent Arithmetic Defect Reproduction and Regression Attribution Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 SCG-06: Independent Arithmetic Defect Reproduction and Regression Attribution Report](#t81-scg-06-independent-arithmetic-defect-reproduction-and-regression-attribution-report)
+  - [1. Executive Summary](#1-executive-summary)
+    - [Key Findings](#key-findings)
+  - [2. Baseline & Environment Inventory](#2-baseline-&-environment-inventory)
+  - [3. Independent Mathematical Oracles & Reproduction Methodology](#3-independent-mathematical-oracles-&-reproduction-methodology)
+    - [3.1 Independent Oracle Principles](#31-independent-oracle-principles)
+    - [3.2 Process-Safe Subprocess Harness (`test_runner.py` / `reproduce_f1_f7.py`)](#32-process-safe-subprocess-harness-`test_runnerpy`--`reproduce_f1_f7py`)
+  - [4. Findings F1–F7 Evidence Matrix](#4-findings-f1–f7-evidence-matrix)
+  - [5. Detailed Reproduction Analysis](#5-detailed-reproduction-analysis)
+    - [5.1 Finding F1: `T81Limb27` Booth Table Scaling](#51-finding-f1-`t81limb27`-booth-table-scaling)
+    - [5.2 Finding F2: `T81Limb54::reference_mul` Carry Normalization](#52-finding-f2-`t81limb54reference_mul`-carry-normalization)
+    - [5.3 Finding F3: `T81Limb54::karatsuba` Intermediate Carry Discard and Product Equivalence](#53-finding-f3-`t81limb54karatsuba`-intermediate-carry-discard-and-product-equivalence)
+    - [5.4 Finding F4: `T81Int<N>::operator*` Overflow Handling](#54-finding-f4-`t81int<n>operator*`-overflow-handling)
+    - [5.5 Finding F5: `T81BigInt` Subtraction Termination](#55-finding-f5-`t81bigint`-subtraction-termination)
+    - [5.6 Finding F6: `T81Fraction<81>` Numerator Overflow and Failure-Mode Change](#56-finding-f6-`t81fraction<81>`-numerator-overflow-and-failure-mode-change)
+    - [5.7 Finding F7: `T81Fraction::to_double()` Exception Across `noexcept` Boundary](#57-finding-f7-`t81fractionto_double`-exception-across-`noexcept`-boundary)
+  - [6. Evaluation of Issue #717 Proposed Remediations](#6-evaluation-of-issue-#717-proposed-remediations)
+    - [Highest-Priority Recommended Repair](#highest-priority-recommended-repair)
+  - [7. Appendix: SCG-03 CI Attribution Boundary Audit](#7-appendix-scg-03-ci-attribution-boundary-audit)
+    - [7.1 Exhaustive Check Reconciliation Across Both Commits](#71-exhaustive-check-reconciliation-across-both-commits)
+    - [7.2 Deconstruction of the "Nine Failures" Claim](#72-deconstruction-of-the-"nine-failures"-claim)
+  - [8. Cryptographic Digests of Evidence Artifacts](#8-cryptographic-digests-of-evidence-artifacts)
+  - [9. Verification Limitations & Constraints Attestation](#9-verification-limitations-&-constraints-attestation)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `T81-SCG-06-REPRODUCTION-001-R1`
 **Date:** 2026-11-08
 **Task Classification:** READ-ONLY REPRODUCTION AND ROOT-CAUSE ASSESSMENT

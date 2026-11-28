@@ -1,5 +1,16 @@
 # T81 PyPI SDK audit and Windows CI · November 21, 2026
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 PyPI SDK audit and Windows CI · November 21, 2026](#t81-pypi-sdk-audit-and-windows-ci-·-november-21-2026)
+  - [Wheel audit](#wheel-audit)
+  - [Hosted Windows clang-cl](#hosted-windows-clang-cl)
+
+<!-- T81-TOC:END -->
+
+
 Codex performed these checks. The SDK observations refer to the published wheel
 for tag `v2.1.0` at `9ddeeccda3170f1d12d262f757d56a0c8c903485`. The Windows
 CI run tested a separate workflow change.

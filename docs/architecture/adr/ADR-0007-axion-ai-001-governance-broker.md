@@ -1,5 +1,35 @@
 # ADR-0007: AXION-AI-001 ADR-001 — Isolated Interchangeable AI Workers
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [ADR-0007: AXION-AI-001 ADR-001 — Isolated Interchangeable AI Workers](#adr-0007-axion-ai-001-adr-001-—-isolated-interchangeable-ai-workers)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Context: implemented vs experimental boundary](#context-implemented-vs-experimental-boundary)
+  - [Decision](#decision)
+    - [1. Fail-closed broker initialization and session-local audit](#1-fail-closed-broker-initialization-and-session-local-audit)
+    - [2. Trust-boundary model and immutable model admission](#2-trust-boundary-model-and-immutable-model-admission)
+    - [3. RFC-00D3 conflict and external binding envelope](#3-rfc-00d3-conflict-and-external-binding-envelope)
+    - [4. Adapter ABI v1 draft](#4-adapter-abi-v1-draft)
+    - [5. Authorization, revocation and local effect commitment](#5-authorization-revocation-and-local-effect-commitment)
+    - [6. External-effect and dispatch-progress state machines](#6-external-effect-and-dispatch-progress-state-machines)
+      - [Correction 1: torn dispatch-marker recovery](#correction-1-torn-dispatch-marker-recovery)
+    - [7. PortableTaskStateV1 and replacement admission](#7-portabletaskstatev1-and-replacement-admission)
+      - [Correction 2: context-window shrinkage](#correction-2-context-window-shrinkage)
+    - [8. Logical fencing, suspension and aggregate resources](#8-logical-fencing-suspension-and-aggregate-resources)
+    - [9. Deterministic governance replay](#9-deterministic-governance-replay)
+  - [Alternatives Considered](#alternatives-considered)
+  - [Key invariants and Acceptance Criteria](#key-invariants-and-acceptance-criteria)
+  - [Failure modes and consequences](#failure-modes-and-consequences)
+  - [Indeterminate: six outstanding human decision gates](#indeterminate-six-outstanding-human-decision-gates)
+  - [Evidence and references](#evidence-and-references)
+  - [Versioning statement and independent-review handoff](#versioning-statement-and-independent-review-handoff)
+
+<!-- T81-TOC:END -->
+
+
 Status: Proposed — NON-NORMATIVE candidate for independent review
 Date: 2026-11-17
 Last Updated: 2026-11-17

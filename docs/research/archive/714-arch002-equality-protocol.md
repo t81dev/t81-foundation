@@ -8,6 +8,27 @@
 
 # T81-ARCH-002-R1 — Packed-trit equality correctness protocol closure
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81-ARCH-002-R1 — Packed-trit equality correctness protocol closure](#t81-arch-002-r1-—-packed-trit-equality-correctness-protocol-closure)
+  - [1. Reuse and non-duplication gate](#1-reuse-and-non-duplication-gate)
+  - [2. Mathematical operation and experimental API contract](#2-mathematical-operation-and-experimental-api-contract)
+  - [3. Canonical representations and transformations](#3-canonical-representations-and-transformations)
+  - [4. Frozen correctness campaign](#4-frozen-correctness-campaign)
+    - [4.1 Schedule and ordering](#41-schedule-and-ordering)
+    - [4.2 Builds, sanitizers and harness-negative controls](#42-builds-sanitizers-and-harness-negative-controls)
+    - [4.3 Stable evidence serialization and verification](#43-stable-evidence-serialization-and-verification)
+  - [5. Comparator qualification and cost boundaries](#5-comparator-qualification-and-cost-boundaries)
+  - [6. Host qualification and fixed future execution conditions](#6-host-qualification-and-fixed-future-execution-conditions)
+  - [7. Performance preregistration — DESIGN ONLY](#7-performance-preregistration-—-design-only)
+  - [8. Resource feasibility, risks and next gate](#8-resource-feasibility-risks-and-next-gate)
+  - [9. R1 decision ledger and acceptance boundary](#9-r1-decision-ledger-and-acceptance-boundary)
+
+<!-- T81-TOC:END -->
+
+
 **Recommendation: ACCEPTANCE-READY for independent protocol review.** Status:
 proposed; date: 2026-11-05. Acceptance and commit-scoped correctness-only
 implementation/execution authorization remain separate human decisions. No

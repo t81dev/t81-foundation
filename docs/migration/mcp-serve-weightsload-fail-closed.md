@@ -1,5 +1,16 @@
 # MCP serve path confinement and WeightsLoad fail-closed
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [MCP serve path confinement and WeightsLoad fail-closed](#mcp-serve-path-confinement-and-weightsload-fail-closed)
+  - [`t81 mcp serve`](#`t81-mcp-serve`)
+  - [Governed `WeightsLoad`](#governed-`weightsload`)
+
+<!-- T81-TOC:END -->
+
+
 This note covers caller-visible changes in `t81 mcp serve` and governed `WeightsLoad`. Ungoverned VMs, frozen opcode numbers, and frozen spec text are unchanged.
 
 ## `t81 mcp serve`

@@ -1,5 +1,19 @@
 # Stratified Neural-Symbolic AI OS Blueprint
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Stratified Neural-Symbolic AI OS Blueprint](#stratified-neural-symbolic-ai-os-blueprint)
+  - [1. Architectural Thesis](#1-architectural-thesis)
+  - [2. Four-Plane Stratification](#2-four-plane-stratification)
+  - [3. Subsystem Replacement Matrix (Horizon D — Planned / Design Target)](#3-subsystem-replacement-matrix-horizon-d-—-planned--design-target)
+  - [4. Five-Step `State A → State C` Transition Lifecycle](#4-five-step-`state-a-→-state-c`-transition-lifecycle)
+  - [5. Resource Budget (`8 GB` Apple M2 Air + Hosted CI)](#5-resource-budget-`8-gb`-apple-m2-air-+-hosted-ci)
+
+<!-- T81-TOC:END -->
+
+
 **Status:** Planned / Design Target (Non-Normative Architecture Blueprint)  
 **Last Reviewed (UTC):** 2026-11-26  
 **Scope:** Horizon D target architecture over T81's frozen deterministic core (`TISC v1.9.0`, `PUBLIC_API_LOCK.json` `v2.2.0`).  

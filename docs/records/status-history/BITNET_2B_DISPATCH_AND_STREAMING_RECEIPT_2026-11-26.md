@@ -1,5 +1,17 @@
 # BitNet-b1.58-2B-4T Streaming Ingestion & `H06-MEM-04` Apple M2 Dispatch Receipt (2026-11-26)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [BitNet-b1.58-2B-4T Streaming Ingestion & `H06-MEM-04` Apple M2 Dispatch Receipt (2026-11-26)](#bitnet-b158-2b-4t-streaming-ingestion-&-`h06-mem-04`-apple-m2-dispatch-receipt-2026-11-26)
+  - [1. Streaming 2B Architecture Fixture Ingestion (`exact_2b_architecture_fixture`)](#1-streaming-2b-architecture-fixture-ingestion-`exact_2b_architecture_fixture`)
+  - [2. `H06-MEM-04` Sparse-Aware Regime Dispatch & Ed25519 Receipt Verification (`t81_bitnet_2b_dispatch_test`)](#2-`h06-mem-04`-sparse-aware-regime-dispatch-&-ed25519-receipt-verification-`t81_bitnet_2b_dispatch_test`)
+    - [Preserved Negative Controls & Accountability Receipt](#preserved-negative-controls-&-accountability-receipt)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** 2026-11-26  
 **Status:** Non-normative scoped software measurement receipt (does **not** establish universal ternary hardware superiority or production readiness; preserves all active holds `F01 M1–M6 STOP`, `SCG-08 Gate 2 NO-GO`, `H01`/10A `BLOCKED`, `AXION-AI-001 HD01–HD06`, `T81-AIOPT-001 M2` frozen).  
 **Host:** Apple Silicon M2 (`Darwin arm64`, `-O3 -DNDEBUG`, Metal reference profile)  

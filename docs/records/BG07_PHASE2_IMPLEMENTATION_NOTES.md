@@ -1,5 +1,19 @@
 # BG-07 Phase 2 Implementation Notes
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [BG-07 Phase 2 Implementation Notes](#bg-07-phase-2-implementation-notes)
+  - [Scope](#scope)
+  - [Current Constraint](#current-constraint)
+  - [Phase 2 Work Items](#phase-2-work-items)
+  - [Progress (2026-03-05)](#progress-2026-03-05)
+  - [Acceptance Signal](#acceptance-signal)
+
+<!-- T81-TOC:END -->
+
+
 Last Updated: 2026-03-05
 Owner: @t81dev
 

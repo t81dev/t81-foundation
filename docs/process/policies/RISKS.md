@@ -1,5 +1,17 @@
 # Risk Register
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Risk Register](#risk-register)
+  - [1. Technical Risks](#1-technical-risks)
+  - [2. Open Questions](#2-open-questions)
+  - [3. Mitigation Status](#3-mitigation-status)
+
+<!-- T81-TOC:END -->
+
+
 > **Source of Truth:** This document tracks **known technical risks** and open questions. It signals transparency and intellectual honesty.
 
 **Last Updated:** February 10, 2026

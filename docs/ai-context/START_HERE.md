@@ -22,6 +22,35 @@
 
 # T81 Research Continuity — START_HERE
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Research Continuity — START_HERE](#t81-research-continuity-—-start_here)
+  - [1. T81 Identity in One Paragraph](#1-t81-identity-in-one-paragraph)
+  - [2. Research Mission and Boundaries](#2-research-mission-and-boundaries)
+    - [Core Boundaries](#core-boundaries)
+  - [3. Document Loading Order](#3-document-loading-order)
+  - [4. Authority Depends on the Question](#4-authority-depends-on-the-question)
+  - [5. Evidence Classification Rules](#5-evidence-classification-rules)
+  - [6. Current-State Verification Requirements](#6-current-state-verification-requirements)
+  - [7. Prohibited Assumptions and Overclaims](#7-prohibited-assumptions-and-overclaims)
+  - [8. Research Continuation Protocol & Contradiction Resolution](#8-research-continuation-protocol-&-contradiction-resolution)
+    - [Continuation Protocol](#continuation-protocol)
+    - [Resolving Contradictions](#resolving-contradictions)
+  - [9. Rules for Updating the Continuity Package](#9-rules-for-updating-the-continuity-package)
+  - [10. Latest Operational Addenda (2026-10-29)](#10-latest-operational-addenda-2026-10-29)
+  - [11. Operational reading order — 2026-10-31](#11-operational-reading-order-—-2026-10-31)
+  - [2026-10-31 continuity reconciliation](#2026-10-31-continuity-reconciliation)
+  - [2026-10-31 research synthesis and publication boundary](#2026-10-31-research-synthesis-and-publication-boundary)
+  - [2026-11-01 active AIOPT M2 research boundary](#2026-11-01-active-aiopt-m2-research-boundary)
+  - [12. Cross-Profile Architecture (CPA-001 through CPA-005) Summary — 2026-11-05](#12-cross-profile-architecture-cpa-001-through-cpa-005-summary-—-2026-11-05)
+  - [13. Current research gate — 2026-11-05, after CPA-006 and ISA-001](#13-current-research-gate-—-2026-11-05-after-cpa-006-and-isa-001)
+  - [14. Historical Status Overlays](#14-historical-status-overlays)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `docs/ai-context/START_HERE.md`
 **Version:** 1.0.1 · **Last Reviewed:** 2026-11-17
 **Source Snapshot:** `main` at `0c89cec6ab87fe7aad16666b2bd75bbc6722ebe9` (refresh before use)

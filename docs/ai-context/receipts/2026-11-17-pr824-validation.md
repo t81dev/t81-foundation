@@ -1,5 +1,17 @@
 # PR #824 AI-context Reconciliation — Validation Record
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [PR #824 AI-context Reconciliation — Validation Record](#pr-#824-ai-context-reconciliation-—-validation-record)
+  - [Outcomes and limits](#outcomes-and-limits)
+  - [Reproducing the preservation and source checks](#reproducing-the-preservation-and-source-checks)
+  - [Retained commands, outputs, environment and source identities](#retained-commands-outputs-environment-and-source-identities)
+
+<!-- T81-TOC:END -->
+
+
 **NON-NORMATIVE / DOCUMENTATION ONLY / NO AUTHORIZATION**
 
 Base: `ab15820a2dd8ebcadde0efecf1fbb0d43b57d3f9`. Collector: Codex,

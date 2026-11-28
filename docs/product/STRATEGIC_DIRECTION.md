@@ -1,5 +1,21 @@
 # Strategic Direction
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Strategic Direction](#strategic-direction)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Definitions](#definitions)
+  - [Direction Statement](#direction-statement)
+  - [Boundary Conditions](#boundary-conditions)
+  - [Cross-References](#cross-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Owner: Product/Governance
 Last Updated: 2026-02-25

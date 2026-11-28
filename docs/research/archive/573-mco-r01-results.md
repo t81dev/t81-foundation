@@ -8,6 +8,20 @@
 
 # MCO-R01 results
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [MCO-R01 results](#mco-r01-results)
+  - [Executed results](#executed-results)
+  - [Mutation results](#mutation-results)
+  - [External analyzability](#external-analyzability)
+  - [Scientific interpretation and limits](#scientific-interpretation-and-limits)
+  - [Repository review and CI baseline](#repository-review-and-ci-baseline)
+
+<!-- T81-TOC:END -->
+
+
 Recommendation: **REVISE**. Under the declared finite, honest-owner assumptions,
 both ordinary application implementations enforce the contract and permit
 independent reconstruction. No measured benefit of three-state composition,

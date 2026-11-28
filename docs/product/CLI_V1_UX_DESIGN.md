@@ -1,5 +1,37 @@
 # CLI v1 UX Design (t81)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [CLI v1 UX Design (t81)](#cli-v1-ux-design-t81)
+  - [1. Design Goal](#1-design-goal)
+  - [2. Primary Personas](#2-primary-personas)
+  - [3. UX Principles (v1)](#3-ux-principles-v1)
+  - [4. Experience Model](#4-experience-model)
+    - [4.1 Command Families](#41-command-families)
+    - [4.2 Help Model](#42-help-model)
+    - [4.3 Output Model](#43-output-model)
+    - [4.4 Exit Model](#44-exit-model)
+  - [5. Workflow Design](#5-workflow-design)
+    - [5.1 First 5 Minutes (critical path)](#51-first-5-minutes-critical-path)
+    - [5.2 Debugging Path](#52-debugging-path)
+    - [5.3 CI/Automation Path](#53-ciautomation-path)
+  - [6. Current vs Desired (Command-Level)](#6-current-vs-desired-command-level)
+    - [6.1 Core Commands](#61-core-commands)
+    - [6.2 Command Families](#62-command-families)
+    - [6.3 Global Behavior](#63-global-behavior)
+  - [7. What We Failed Before (Retrospective)](#7-what-we-failed-before-retrospective)
+  - [8. Backlog (Prioritized)](#8-backlog-prioritized)
+    - [P0 (Must ship for v1 readiness)](#p0-must-ship-for-v1-readiness)
+    - [P1 (Should ship in same release train)](#p1-should-ship-in-same-release-train)
+    - [P2 (Post-v1 enhancements)](#p2-post-v1-enhancements)
+  - [9. Delivery Plan](#9-delivery-plan)
+  - [10. Acceptance Criteria for "World-Class v1"](#10-acceptance-criteria-for-"world-class-v1")
+
+<!-- T81-TOC:END -->
+
+
 Status: Draft
 Last Updated: 2026-02-26
 Owner: Product/Tooling

@@ -1,5 +1,31 @@
 # Governance Review Cadence
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Governance Review Cadence](#governance-review-cadence)
+  - [1. Monthly Governance Review Checklist](#1-monthly-governance-review-checklist)
+    - [1a. Required Contexts (Branch Protection)](#1a-required-contexts-branch-protection)
+    - [1b. Determinism and Integrity Gates](#1b-determinism-and-integrity-gates)
+    - [1c. Governance Artifacts](#1c-governance-artifacts)
+    - [1d. Structural Integrity](#1d-structural-integrity)
+    - [1e. Stdlib and Surface Baseline](#1e-stdlib-and-surface-baseline)
+    - [1f. Release Decision](#1f-release-decision)
+  - [2. Drift Review Protocol](#2-drift-review-protocol)
+  - [3. Registry Update Procedure](#3-registry-update-procedure)
+  - [4. Promotion Gate Protocol](#4-promotion-gate-protocol)
+    - [Stage 1: Experimental or Governed non-DCP → Verified Candidate](#stage-1-experimental-or-governed-non-dcp-→-verified-candidate)
+    - [Stage 2: Verified Candidate → Verified (DCP eligible)](#stage-2-verified-candidate-→-verified-dcp-eligible)
+    - [Rollback Triggers](#rollback-triggers)
+  - [5. T81Lang Promotion Gate Criteria](#5-t81lang-promotion-gate-criteria)
+  - [6. C2 Month-Close Execution](#6-c2-month-close-execution)
+  - [7. Governance Directives (Non-Negotiable)](#7-governance-directives-non-negotiable)
+  - [Cross-References](#cross-references)
+
+<!-- T81-TOC:END -->
+
+
 Last Updated: 2026-03-19
 Owner: @t81dev
 

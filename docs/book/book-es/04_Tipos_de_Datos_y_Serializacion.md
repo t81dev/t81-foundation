@@ -1,5 +1,25 @@
 # Capítulo 4: Tipos de Datos y Serialización
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Capítulo 4: Tipos de Datos y Serialización](#capítulo-4-tipos-de-datos-y-serialización)
+  - [4.1 Tipos Primitivos](#41-tipos-primitivos)
+    - [4.1.1 Trits y Trytes](#411-trits-y-trytes)
+    - [4.1.2 T81Int (Entero de Precisión Arbitraria)](#412-t81int-entero-de-precisión-arbitraria)
+  - [4.2 T81Float y dmath](#42-t81float-y-dmath)
+    - [4.2.1 Definición Canónica](#421-definición-canónica)
+    - [4.2.2 El Backend dmath](#422-el-backend-dmath)
+  - [4.3 Tensores y Diseños Canónicos](#43-tensores-y-diseños-canónicos)
+    - [4.3.1 Diseño de Memoria](#431-diseño-de-memoria)
+    - [4.3.2 Serialización (.t81w)](#432-serialización-t81w)
+    - [4.3.3 Cuantización (T3_K)](#433-cuantización-t3_k)
+  - [4.4 Reglas de Serialización Canónica](#44-reglas-de-serialización-canónica)
+
+<!-- T81-TOC:END -->
+
+
 ## 4.1 Tipos Primitivos
 
 **Estado: Implementado y Probado**

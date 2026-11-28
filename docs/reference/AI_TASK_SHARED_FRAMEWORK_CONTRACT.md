@@ -1,5 +1,22 @@
 # AI Task Shared Framework Contract
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [AI Task Shared Framework Contract](#ai-task-shared-framework-contract)
+  - [Shared Runner Responsibilities](#shared-runner-responsibilities)
+  - [Task Descriptor Responsibilities](#task-descriptor-responsibilities)
+  - [Materializer Boundary](#materializer-boundary)
+  - [Artifact Rules](#artifact-rules)
+  - [Current Bundle Contract Family](#current-bundle-contract-family)
+  - [Typed Helper Coverage](#typed-helper-coverage)
+  - [Guardrails](#guardrails)
+  - [Current Task Families](#current-task-families)
+
+<!-- T81-TOC:END -->
+
+
 This document defines the shared internal contract for deterministic governed AI tasks that run through the T81 AI task subsystem.
 
 Canonical runnable example:

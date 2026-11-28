@@ -1,5 +1,28 @@
 # Axion Partial-Coverage Alignment Plan (2026-03)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Axion Partial-Coverage Alignment Plan (2026-03)](#axion-partial-coverage-alignment-plan-2026-03)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Baseline Gap Statement](#baseline-gap-statement)
+  - [Milestone Checklist](#milestone-checklist)
+    - [M1 — Draft Scope Segmentation](#m1-—-draft-scope-segmentation)
+    - [M2 — Coverage Gap Prioritization](#m2-—-coverage-gap-prioritization)
+    - [M3 — Evidence Mapping](#m3-—-evidence-mapping)
+    - [M4 — Matrix and Review Synchronization](#m4-—-matrix-and-review-synchronization)
+  - [Bounded Next Actions](#bounded-next-actions)
+  - [M1 Scope Segmentation Table](#m1-scope-segmentation-table)
+  - [M2 Prioritized Gap Queue (Top 3)](#m2-prioritized-gap-queue-top-3)
+  - [M3 Evidence Mapping for Prioritized Segments](#m3-evidence-mapping-for-prioritized-segments)
+  - [Cross-References](#cross-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Completed (Planning Milestone Closed)
 Owner: @t81dev
 Last Updated: 2026-02-25

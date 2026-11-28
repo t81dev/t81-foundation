@@ -1,5 +1,18 @@
 # Capítulo 15: Fronteira de Pesquisa
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Capítulo 15: Fronteira de Pesquisa](#capítulo-15-fronteira-de-pesquisa)
+  - [15.1 Aceleração de Hardware Ternário](#151-aceleração-de-hardware-ternário)
+  - [15.2 Caminhos de Verificação Formal](#152-caminhos-de-verificação-formal)
+  - [15.3 CanonFS como Substrato Merkle](#153-canonfs-como-substrato-merkle)
+  - [15.4 Inferência de IA Determinística em Escala](#154-inferência-de-ia-determinística-em-escala)
+
+<!-- T81-TOC:END -->
+
+
 ## 15.1 Aceleração de Hardware Ternário
 
 **Status: Pesquisa**

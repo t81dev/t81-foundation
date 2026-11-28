@@ -1,5 +1,52 @@
 # SCG-08 Phase 0: Architectural Advantage Research Charter
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [SCG-08 Phase 0: Architectural Advantage Research Charter](#scg-08-phase-0-architectural-advantage-research-charter)
+  - [1. Executive Research Objective](#1-executive-research-objective)
+  - [2. Pinned Repository Baseline](#2-pinned-repository-baseline)
+    - [2.1 Pinned Commit SHA](#21-pinned-commit-sha)
+    - [2.2 Preceding SCG-07 Remediation & Qualification Sequence](#22-preceding-scg-07-remediation-&-qualification-sequence)
+    - [2.3 Audited Arithmetic Limitations](#23-audited-arithmetic-limitations)
+  - [3. Historical Evidence Matrix Across Eight Domains](#3-historical-evidence-matrix-across-eight-domains)
+  - [4. Existing Hypothesis Register Mapping](#4-existing-hypothesis-register-mapping)
+    - [Hypotheses Dispositions in SCG-08 Context:](#hypotheses-dispositions-in-scg-08-context)
+  - [5. Selected Unresolved Hypotheses](#5-selected-unresolved-hypotheses)
+    - [Hypothesis H02-A: Balanced-Ternary Multi-Precision Carry-Chain Length and Propagation Density](#hypothesis-h02-a-balanced-ternary-multi-precision-carry-chain-length-and-propagation-density)
+    - [Hypothesis H03-A: Tryte Limb Memory Organization vs Binary 64-Bit Host Efficiency](#hypothesis-h03-a-tryte-limb-memory-organization-vs-binary-64-bit-host-efficiency)
+    - [Hypothesis H01/H05-A: Device Parameterized Energy-Delay Product Sensitivity Model](#hypothesis-h01h05-a-device-parameterized-energy-delay-product-sensitivity-model)
+  - [6. Representation-Neutral Mathematical Cost Model](#6-representation-neutral-mathematical-cost-model)
+    - [6.1 Fundamental Mathematical Properties](#61-fundamental-mathematical-properties)
+    - [6.2 Complete Three-State Carry Markov Chain Derivation](#62-complete-three-state-carry-markov-chain-derivation)
+      - [1. Transition Probabilities by Incoming State](#1-transition-probabilities-by-incoming-state)
+      - [2. Complete Transition Probability Matrix](#2-complete-transition-probability-matrix)
+      - [3. Stationary Distribution](#3-stationary-distribution)
+      - [4. Transient Dynamics and Expected Chain Lengths](#4-transient-dynamics-and-expected-chain-lengths)
+      - [5. Comparison with Binary Carry Mechanics](#5-comparison-with-binary-carry-mechanics)
+    - [6.3 Implementation Memory Layout and Cost Models](#63-implementation-memory-layout-and-cost-models)
+      - [1. Actual Implemented C++ Class Layouts (`include/t81/types/T81Limb.hpp`)](#1-actual-implemented-c++-class-layouts-`includet81typest81limbhpp`)
+      - [2. Hypothetical Scalar-Packed Limb Layouts (Not Currently Implemented)](#2-hypothetical-scalar-packed-limb-layouts-not-currently-implemented)
+  - [7. Binary Control Requirements](#7-binary-control-requirements)
+  - [8. Experimental Confounders & Threat Model](#8-experimental-confounders-&-threat-model)
+  - [9. Falsification Criteria](#9-falsification-criteria)
+  - [10. Recommended First Experiment: EXP-SCG08-01](#10-recommended-first-experiment-exp-scg08-01)
+    - [10.1 Experiment Title](#101-experiment-title)
+    - [10.2 Objective & Scope](#102-objective-&-scope)
+    - [10.3 Three-Tier Experimental Architecture](#103-three-tier-experimental-architecture)
+      - [Tier 1: Primary Mathematical Carry-Propagation Evaluation](#tier-1-primary-mathematical-carry-propagation-evaluation)
+      - [Tier 2: Secondary Implementation Operation-Count Comparison](#tier-2-secondary-implementation-operation-count-comparison)
+      - [Tier 3: Exploratory Host Timing Comparison](#tier-3-exploratory-host-timing-comparison)
+    - [10.4 Matched Evaluation Bands](#104-matched-evaluation-bands)
+    - [10.5 Preregistered Success & Failure Criteria](#105-preregistered-success-&-failure-criteria)
+  - [11. Reproducibility Requirements & Artifact Inventory](#11-reproducibility-requirements-&-artifact-inventory)
+  - [12. Research Limitations](#12-research-limitations)
+  - [13. Explicit Authorization Boundaries](#13-explicit-authorization-boundaries)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `T81-SCG-08-PHASE0-CHARTER-001-R2`
 **Classification:** RESEARCH CHARTER & EVIDENCE RECONCILIATION
 **Task Classification:** Research Design, Evidence Harmonization & Experiment Preregistration

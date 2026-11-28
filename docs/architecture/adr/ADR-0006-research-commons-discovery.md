@@ -1,5 +1,18 @@
 # ADR-0006: Read-only Research Commons discovery
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [ADR-0006: Read-only Research Commons discovery](#adr-0006-read-only-research-commons-discovery)
+  - [Context and inspection](#context-and-inspection)
+  - [Decision](#decision)
+  - [Consequences and boundaries](#consequences-and-boundaries)
+  - [Additional integrity discrepancy](#additional-integrity-discrepancy)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-10-27. Status: proposed implementation for human review.
 
 ## Context and inspection

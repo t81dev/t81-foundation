@@ -1,5 +1,21 @@
 # BASE-01 correctness execution report — November 3, 2026
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [BASE-01 correctness execution report — November 3, 2026](#base-01-correctness-execution-report-—-november-3-2026)
+  - [Source and environment](#source-and-environment)
+  - [Results](#results)
+  - [CanonFS observations](#canonfs-observations)
+  - [Failures, diagnosis and corrections](#failures-diagnosis-and-corrections)
+  - [Limits and remaining blockers](#limits-and-remaining-blockers)
+  - [Commands and raw evidence](#commands-and-raw-evidence)
+- [That worktree attempt failed because the original .git/worktrees directory is not writable.](#that-worktree-attempt-failed-because-the-original-gitworktrees-directory-is-not-writable)
+
+<!-- T81-TOC:END -->
+
+
 Observed results from this session. Codex executed these checks with prior author/reviewer context; this is not independent scientific certification. No results below are inferred from historical passing logs.
 
 ## Source and environment
