@@ -10,7 +10,7 @@
 
 ---
 
-## 60-Second Proof (`v2.2.0`)
+## 60-Second Proof (`v2.3.0`)
 
 Install the Python SDK wheels (`CPython 3.9–3.14` on Linux, macOS, Windows) or build the C++23 CLI locally:
 
@@ -203,9 +203,9 @@ The project distinguishes among different maturity classifications across its su
 | **TISC** | Frozen | Computational instruction contract governing execution semantics (`v1.9.0`, opcodes `0–173` frozen) |
 | **T81VM** | Stable | Hosted execution profile for virtual-machine execution, Dual-Rail `SBDR1T2D`, and determinism (bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md)) |
 | **Axion Kernel** | Stable | Fail-closed pre-side-effect policy authorization (`axion_root.apl`) and freestanding AArch64 enclave (`t81 enclave run`, experimental) |
-| **Native C++ MCP & DPE** | Stable (bounded) | 15-tool `RFC-00D8` server (`t81 mcp serve`), `DPE`+`MCP` transactional isolation, KEV/advisory fail-closed gating, `t81==2.2.0` Python M3 SDK |
+| **Native C++ MCP & DPE** | Stable (bounded) | 15-tool `RFC-00D8` server (`t81 mcp serve`), `DPE`+`MCP` transactional isolation, KEV/advisory fail-closed gating, `t81==2.3.0` Python M3 SDK |
 | **T81Lang** | Stable | Language frontend and compilation infrastructure targeting TISC |
-| **T81 Core** | Stable | Numerical types, containers, and representation primitives (`PUBLIC_API_LOCK.json` `v2.2.0`) |
+| **T81 Core** | Stable | Numerical types, containers, and representation primitives (`PUBLIC_API_LOCK.json` `v2.3.0`) |
 | **CanonFS & Ed25519 Receipts** | Stable (bounded) | Content-addressed artifacts (`SHA3-512`), `RFC-00D1` interchange, native C++23 Ed25519 `RFC-00D4`/`00D6` receipt DAGs, and offline `t81 receipt export` bundles |
 | **Stratified AI OS (Horizon D)** | Planned / Design Target | Four-plane neural-symbolic architecture ([`AI_OS_STRATIFIED_BLUEPRINT.md`](docs/architecture/AI_OS_STRATIFIED_BLUEPRINT.md), `DEC-004`); advisory-only Plane 2 helpers are not currently implemented |
 | **DAIOS** | Concept | Target architecture proposal for deterministic AI operating systems (RFC-00D2) |
