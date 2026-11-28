@@ -6,7 +6,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "t81"
-version = "2.2.0"
+version = "2.3.0"
 description = "Experimental computing and systems research: alternative representations, deterministic execution, and policy-governed artifacts"
 readme = "ffi/python/README.md"
 license = { text = "Apache-2.0" }
